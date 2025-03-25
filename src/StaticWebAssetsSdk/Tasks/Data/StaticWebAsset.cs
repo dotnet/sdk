@@ -3,20 +3,19 @@
 
 #nullable disable
 
+using System.Collections;
 using System.Diagnostics;
-using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay("{" + nameof(GetDebuggerDisplay) + "(),nq}")]
 #if WASM_TASKS
-internal sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
+internal sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>, ITaskItem2
 #else
-public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
+public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>, ITaskItem2
 #endif
 {
     public const string DateTimeAssetFormat = "ddd, dd MMM yyyy HH:mm:ss 'GMT'";
@@ -44,6 +43,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private string _originalItemSpec;
     private long _fileLength = -1;
     private DateTimeOffset _lastWriteTime = DateTimeOffset.MinValue;
+    private Dictionary<string, string> _additionalCustomMetadata;
 
     public StaticWebAsset()
     {
@@ -74,11 +74,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         _integrity = asset.Integrity;
     }
 
-    private string GetMetadata(string name) => _originalItem?.GetMetadata(name);
+    private string GetOriginalItemMetadata(string name) => _originalItem?.GetMetadata(name);
 
     public string Identity
     {
-        get => _identity ??= GetMetadata("FullPath");
+        get => _identity ??= GetOriginalItemMetadata("FullPath");
         set
         {
             _modified = true;
@@ -88,7 +88,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string SourceId
     {
-        get => _sourceId ??= GetMetadata(nameof(SourceId));
+        get => _sourceId ??= GetOriginalItemMetadata(nameof(SourceId));
         set
         {
             _modified = true;
@@ -98,7 +98,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string SourceType
     {
-        get => _sourceType ??= GetMetadata(nameof(SourceType));
+        get => _sourceType ??= GetOriginalItemMetadata(nameof(SourceType));
         set
         {
             _modified = true;
@@ -108,7 +108,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string ContentRoot
     {
-        get => _contentRoot ??= GetMetadata(nameof(ContentRoot));
+        get => _contentRoot ??= GetOriginalItemMetadata(nameof(ContentRoot));
         set
         {
             _modified = true;
@@ -118,7 +118,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string BasePath
     {
-        get => _basePath ??= GetMetadata(nameof(BasePath));
+        get => _basePath ??= GetOriginalItemMetadata(nameof(BasePath));
         set
         {
             _modified = true;
@@ -128,7 +128,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string RelativePath
     {
-        get => _relativePath ??= GetMetadata(nameof(RelativePath));
+        get => _relativePath ??= GetOriginalItemMetadata(nameof(RelativePath));
         set
         {
             _modified = true;
@@ -138,7 +138,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetKind
     {
-        get => _assetKind ??= GetMetadata(nameof(AssetKind));
+        get => _assetKind ??= GetOriginalItemMetadata(nameof(AssetKind));
         set
         {
             _modified = true;
@@ -148,7 +148,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetMode
     {
-        get => _assetMode ??= GetMetadata(nameof(AssetMode));
+        get => _assetMode ??= GetOriginalItemMetadata(nameof(AssetMode));
         set
         {
             _modified = true;
@@ -158,7 +158,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetRole
     {
-        get => _assetRole ??= GetMetadata(nameof(AssetRole));
+        get => _assetRole ??= GetOriginalItemMetadata(nameof(AssetRole));
         set
         {
             _modified = true;
@@ -168,7 +168,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetMergeBehavior
     {
-        get => _assetMergeBehavior ??= GetMetadata(nameof(AssetMergeBehavior));
+        get => _assetMergeBehavior ??= GetOriginalItemMetadata(nameof(AssetMergeBehavior));
         set
         {
             _modified = true;
@@ -178,7 +178,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetMergeSource
     {
-        get => _assetMergeSource ??= GetMetadata(nameof(AssetMergeSource));
+        get => _assetMergeSource ??= GetOriginalItemMetadata(nameof(AssetMergeSource));
         set
         {
             _modified = true;
@@ -188,7 +188,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string RelatedAsset
     {
-        get => _relatedAsset ??= GetMetadata(nameof(RelatedAsset));
+        get => _relatedAsset ??= GetOriginalItemMetadata(nameof(RelatedAsset));
         set
         {
             _modified = true;
@@ -198,7 +198,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetTraitName
     {
-        get => _assetTraitName ??= GetMetadata(nameof(AssetTraitName));
+        get => _assetTraitName ??= GetOriginalItemMetadata(nameof(AssetTraitName));
         set
         {
             _modified = true;
@@ -208,7 +208,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string AssetTraitValue
     {
-        get => _assetTraitValue ??= GetMetadata(nameof(AssetTraitValue));
+        get => _assetTraitValue ??= GetOriginalItemMetadata(nameof(AssetTraitValue));
         set
         {
             _modified = true;
@@ -218,7 +218,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string Fingerprint
     {
-        get => _fingerprint ??= GetMetadata(nameof(Fingerprint));
+        get => _fingerprint ??= GetOriginalItemMetadata(nameof(Fingerprint));
         set
         {
             _modified = true;
@@ -228,7 +228,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string Integrity
     {
-        get => _integrity ??= GetMetadata(nameof(Integrity));
+        get => _integrity ??= GetOriginalItemMetadata(nameof(Integrity));
         set
         {
             _modified = true;
@@ -238,7 +238,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string CopyToOutputDirectory
     {
-        get => _copyToOutputDirectory ??= GetMetadata(nameof(CopyToOutputDirectory));
+        get => _copyToOutputDirectory ??= GetOriginalItemMetadata(nameof(CopyToOutputDirectory));
         set
         {
             _modified = true;
@@ -248,7 +248,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string CopyToPublishDirectory
     {
-        get => _copyToPublishDirectory ??= GetMetadata(nameof(CopyToPublishDirectory));
+        get => _copyToPublishDirectory ??= GetOriginalItemMetadata(nameof(CopyToPublishDirectory));
         set
         {
             _modified = true;
@@ -258,7 +258,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string OriginalItemSpec
     {
-        get => _originalItemSpec ??= GetMetadata(nameof(OriginalItemSpec));
+        get => _originalItemSpec ??= GetOriginalItemMetadata(nameof(OriginalItemSpec));
         set
         {
             _modified = true;
@@ -272,7 +272,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             if (_fileLength < 0)
             {
-                var fileLengthString = GetMetadata(nameof(FileLength));
+                var fileLengthString = GetOriginalItemMetadata(nameof(FileLength));
                 _fileLength = !string.IsNullOrEmpty(fileLengthString) && long.TryParse(fileLengthString, out var fileLength)
                     ? fileLength
                     : -1;
@@ -292,7 +292,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             if (_lastWriteTime == DateTimeOffset.MinValue)
             {
-                var lastWriteTimeString = GetMetadata(nameof(LastWriteTime));
+                var lastWriteTimeString = GetOriginalItemMetadata(nameof(LastWriteTime));
                 _lastWriteTime = !string.IsNullOrEmpty(lastWriteTimeString) && DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime)
                     ? lastWriteTime
                     : DateTimeOffset.MinValue;
@@ -506,33 +506,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public ITaskItem ToTaskItem()
     {
-        if (_originalItem != null && !_modified)
+        if (!_modified && _originalItem != null)
         {
+            // We haven't modified the item, we can just return the original item.
+            // This is still interesting because MSBuild can optimize things and avoid
+            // additional copies.
             return _originalItem;
         }
-
-        var result = new TaskItem(Identity);
-        result.SetMetadata(nameof(SourceType), SourceType);
-        result.SetMetadata(nameof(SourceId), SourceId);
-        result.SetMetadata(nameof(ContentRoot), ContentRoot);
-        result.SetMetadata(nameof(BasePath), BasePath);
-        result.SetMetadata(nameof(RelativePath), RelativePath);
-        result.SetMetadata(nameof(AssetKind), AssetKind);
-        result.SetMetadata(nameof(AssetMode), AssetMode);
-        result.SetMetadata(nameof(AssetRole), AssetRole);
-        result.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
-        result.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
-        result.SetMetadata(nameof(RelatedAsset), RelatedAsset);
-        result.SetMetadata(nameof(AssetTraitName), AssetTraitName);
-        result.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
-        result.SetMetadata(nameof(Fingerprint), Fingerprint);
-        result.SetMetadata(nameof(Integrity), Integrity);
-        result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
-        result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
-        result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
-        result.SetMetadata(nameof(FileLength), FileLength.ToString(CultureInfo.InvariantCulture));
-        result.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture));
-        return result;
+        // We can always return ourselves, any property that wasn't modified we will copy from the original item if exists.
+        return this;
     }
 
     public void Validate()
@@ -677,7 +659,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             CopyToPublishDirectory = copyToPublishDirectory,
             OriginalItemSpec = originalItemSpec,
             FileLength = fileLength,
-            LastWriteTime = lastWriteTime
+            LastWriteTime = lastWriteTime,
         };
 
         result.ApplyDefaults();
@@ -1267,6 +1249,192 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             _ => false
         };
     }
+
+    // We provide the minimal ITaskItem2 implementation so that we can return StaticWebAsset instances without having to convert them
+    // to task items. This is because the underlying implementation uses an immutable dictionary and every call to SetMetadata results
+    // in a new allocation.
+    // When the task returns, MSBuild will convert the task into a ProjectItem instance and will copy the custom metadata, at which point
+    // it will get rid of the instance that we returned and won't use it any longer.
+    // For that reason, and since we control inside the tasks how this is used, we can safely ignore the pieces that MSBuild won't call.
+    #region ITaskItem2 implementation
+
+    string ITaskItem2.EvaluatedIncludeEscaped { get => Identity; set => throw new NotImplementedException(); }
+    string ITaskItem.ItemSpec { get => Identity; set => throw new NotImplementedException(); }
+    ICollection ITaskItem.MetadataNames => throw new NotImplementedException();
+    int ITaskItem.MetadataCount => throw new NotImplementedException();
+
+    string ITaskItem2.GetMetadataValueEscaped(string metadataName) => throw new NotImplementedException();
+    void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue) => throw new NotImplementedException();
+
+    IDictionary ITaskItem2.CloneCustomMetadataEscaped()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(Identity), Identity },
+            { nameof(SourceId), SourceId },
+            { nameof(SourceType), SourceType },
+            { nameof(ContentRoot), ContentRoot },
+            { nameof(BasePath), BasePath },
+            { nameof(RelativePath), RelativePath },
+            { nameof(AssetKind), AssetKind },
+            { nameof(AssetMode), AssetMode },
+            { nameof(AssetRole), AssetRole },
+            { nameof(AssetMergeBehavior), AssetMergeBehavior },
+            { nameof(AssetMergeSource), AssetMergeSource },
+            { nameof(RelatedAsset), RelatedAsset },
+            { nameof(AssetTraitName), AssetTraitName },
+            { nameof(AssetTraitValue), AssetTraitValue },
+            { nameof(Fingerprint), Fingerprint },
+            { nameof(Integrity), Integrity },
+            { nameof(CopyToOutputDirectory), CopyToOutputDirectory },
+            { nameof(CopyToPublishDirectory), CopyToPublishDirectory },
+            { nameof(OriginalItemSpec), OriginalItemSpec },
+            { nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) },
+            { nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) }
+        };
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                result[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return result;
+    }
+
+    string ITaskItem.GetMetadata(string metadataName) => metadataName switch
+    {
+        nameof(Identity) => Identity ?? "",
+        nameof(SourceId) => SourceId ?? "",
+        nameof(SourceType) => SourceType ?? "",
+        nameof(ContentRoot) => ContentRoot ?? "",
+        nameof(BasePath) => BasePath ?? "",
+        nameof(RelativePath) => RelativePath ?? "",
+        nameof(AssetKind) => AssetKind ?? "",
+        nameof(AssetMode) => AssetMode ?? "",
+        nameof(AssetRole) => AssetRole ?? "",
+        nameof(AssetMergeBehavior) => AssetMergeBehavior ?? "",
+        nameof(AssetMergeSource) => AssetMergeSource ?? "",
+        nameof(RelatedAsset) => RelatedAsset ?? "",
+        nameof(AssetTraitName) => AssetTraitName ?? "",
+        nameof(AssetTraitValue) => AssetTraitValue ?? "",
+        nameof(Fingerprint) => Fingerprint ?? "",
+        nameof(Integrity) => Integrity ?? "",
+        nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
+        nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
+        nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
+        nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture),
+        nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture),
+        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? value : ""
+    };
+
+    void ITaskItem.SetMetadata(string metadataName, string metadataValue)
+    {
+        switch (metadataName)
+        {
+            case nameof(Identity):
+                Identity = metadataValue;
+                break;
+            case nameof(SourceId):
+                SourceId = metadataValue;
+                break;
+            case nameof(SourceType):
+                SourceType = metadataValue;
+                break;
+            case nameof(ContentRoot):
+                ContentRoot = metadataValue;
+                break;
+            case nameof(BasePath):
+                BasePath = metadataValue;
+                break;
+            case nameof(RelativePath):
+                RelativePath = metadataValue;
+                break;
+            case nameof(AssetKind):
+                AssetKind = metadataValue;
+                break;
+            case nameof(AssetMode):
+                AssetMode = metadataValue;
+                break;
+            case nameof(AssetRole):
+                AssetRole = metadataValue;
+                break;
+            case nameof(AssetMergeBehavior):
+                AssetMergeBehavior = metadataValue;
+                break;
+            case nameof(AssetMergeSource):
+                AssetMergeSource = metadataValue;
+                break;
+            case nameof(RelatedAsset):
+                RelatedAsset = metadataValue;
+                break;
+            case nameof(AssetTraitName):
+                AssetTraitName = metadataValue;
+                break;
+            case nameof(AssetTraitValue):
+                AssetTraitValue = metadataValue;
+                break;
+            case nameof(Fingerprint):
+                Fingerprint = metadataValue;
+                break;
+            case nameof(Integrity):
+                Integrity = metadataValue;
+                break;
+            case nameof(CopyToOutputDirectory):
+                CopyToOutputDirectory = metadataValue;
+                break;
+            case nameof(CopyToPublishDirectory):
+                CopyToPublishDirectory = metadataValue;
+                break;
+            default:
+                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                _additionalCustomMetadata[metadataName] = metadataValue;
+                _modified = true;
+                break;
+        }
+    }
+
+    void ITaskItem.RemoveMetadata(string metadataName)
+    {
+        _additionalCustomMetadata?.Remove(metadataName);
+    }
+
+    void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
+    {
+        destinationItem.SetMetadata(nameof(Identity), Identity);
+        destinationItem.SetMetadata(nameof(SourceId), SourceId);
+        destinationItem.SetMetadata(nameof(SourceType), SourceType);
+        destinationItem.SetMetadata(nameof(ContentRoot), ContentRoot);
+        destinationItem.SetMetadata(nameof(BasePath), BasePath);
+        destinationItem.SetMetadata(nameof(RelativePath), RelativePath);
+        destinationItem.SetMetadata(nameof(AssetKind), AssetKind);
+        destinationItem.SetMetadata(nameof(AssetMode), AssetMode);
+        destinationItem.SetMetadata(nameof(AssetRole), AssetRole);
+        destinationItem.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
+        destinationItem.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
+        destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset);
+        destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName);
+        destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
+        destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint);
+        destinationItem.SetMetadata(nameof(Integrity), Integrity);
+        destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
+        destinationItem.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
+        destinationItem.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
+        destinationItem.SetMetadata(nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        destinationItem.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture));
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                destinationItem.SetMetadata(kvp.Key, kvp.Value);
+            }
+        }
+    }
+
+    IDictionary ITaskItem.CloneCustomMetadata() => ((ITaskItem2)this).CloneCustomMetadataEscaped();
+
+    #endregion
 
     [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
     internal sealed class StaticWebAssetResolvedRoute(string pathLabel, string path, Dictionary<string, string> tokens)
