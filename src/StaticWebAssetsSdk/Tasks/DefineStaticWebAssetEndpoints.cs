@@ -33,7 +33,7 @@ public class DefineStaticWebAssetEndpoints : Task
             CandidateAssets.Length,
             () => new ParallelWorker(
                 endpoints,
-                new List<StaticWebAssetEndpoint>(),
+                new List<StaticWebAssetEndpoint>(512),
                 CandidateAssets,
                 existingEndpointsByAssetFile,
                 Log,
@@ -50,7 +50,7 @@ public class DefineStaticWebAssetEndpoints : Task
     {
         if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
         {
-            Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
+            Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(ExistingEndpoints.Length, OSPath.PathComparer);
             var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
             foreach (var asset in CandidateAssets)
             {
@@ -98,19 +98,20 @@ public class DefineStaticWebAssetEndpoints : Task
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(
-            List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
+        private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
+
+        private void CreateAnAddEndpoints(
             StaticWebAsset asset,
             string length,
             string lastModified,
             StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            var result = new List<StaticWebAssetEndpoint>();
-            foreach (var (label, route, values) in routes)
+            foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
-                List<StaticWebAssetEndpointResponseHeader> headers = [
-                        new()
+                var headers = new StaticWebAssetEndpointResponseHeader[6]
+                {
+                    new()
                     {
                         Name = "Accept-Ranges",
                         Value = "bytes"
@@ -135,35 +136,42 @@ public class DefineStaticWebAssetEndpoints : Task
                         Name = "Last-Modified",
                         Value = lastModified,
                     },
-                ];
+                    default
+                };
 
                 if (values.ContainsKey("fingerprint"))
                 {
                     // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
                     // max-age is for browsers that do not support immutable.
-                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" });
+                    headers[5] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers.Add(new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" });
+                    headers[5] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
                 }
 
-                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
+                var properties = new StaticWebAssetEndpointProperty[values.Count + (values.Count > 0 ? 2 : 1)];
+                var i = 0;
+                foreach (var value in values)
+                {
+                    properties[i++] = new StaticWebAssetEndpointProperty { Name = value.Key, Value = value.Value };
+                }
+
                 if (values.Count > 0)
                 {
                     // If an endpoint has values from its route replaced, we add a label to the endpoint so that it can be easily identified.
                     // The combination of label and list of values should be unique.
                     // In this way, we can identify an endpoint resource.fingerprint.ext by its label (for example resource.ext) and its values
                     // (fingerprint).
-                    properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
+                    properties[i++] = new StaticWebAssetEndpointProperty { Name = "label", Value = label };
                 }
 
                 // We append the integrity in the format expected by the browser so that it can be opaque to the runtime.
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
-                properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" });
+                properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
 
                 var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
@@ -171,13 +179,13 @@ public class DefineStaticWebAssetEndpoints : Task
                 {
                     Route = finalRoute,
                     AssetFile = asset.Identity,
-                    EndpointProperties = [.. properties],
-                    ResponseHeaders = [.. headers]
+                    EndpointProperties = properties,
+                    ResponseHeaders = headers
                 };
-                result.Add(endpoint);
-            }
 
-            return result;
+                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
+                CurrentEndpoints.Add(endpoint);
+            }
         }
 
         private static (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext, TaskLoggingHelper log)
@@ -208,7 +216,7 @@ public class DefineStaticWebAssetEndpoints : Task
         internal ParallelWorker Process(int i, ParallelLoopState _)
         {
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
-            var routes = asset.ComputeRoutes().ToList();
+            asset.ComputeRoutes(_resolvedRoutes);
             // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
             var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));
             var lastWriteTime = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.LastWriteTime));
@@ -216,9 +224,9 @@ public class DefineStaticWebAssetEndpoints : Task
 
             if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
-                for (var j = routes.Count - 1; j >= 0; j--)
+                for (var j = _resolvedRoutes.Count - 1; j >= 0; j--)
                 {
-                    var (_, route, _) = routes[j];
+                    var (_, route, _) = _resolvedRoutes[j];
                     // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                     // package or a referenced project and ignored if it comes from the current project.
                     // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
@@ -231,16 +239,12 @@ public class DefineStaticWebAssetEndpoints : Task
                     if (set.Contains(finalRoute))
                     {
                         Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
-                        routes.RemoveAt(j);
+                        _resolvedRoutes.RemoveAt(j);
                     }
                 }
             }
 
-            foreach (var endpoint in CreateEndpoints(routes, asset, length, lastWriteTime, matchContext))
-            {
-                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
-                CurrentEndpoints.Add(endpoint);
-            }
+            CreateAnAddEndpoints(asset, length, lastWriteTime, matchContext);
 
             return this;
         }

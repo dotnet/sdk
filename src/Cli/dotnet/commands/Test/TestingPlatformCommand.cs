@@ -26,7 +26,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
     public int Run(ParseResult parseResult)
     {
-        bool hasFailed = false;
+        int exitCode = ExitCode.Success;
         try
         {
             ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
@@ -64,7 +64,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             }
 
             _actionQueue.EnqueueCompleted();
-            hasFailed = _actionQueue.WaitAllActions();
+            exitCode = _actionQueue.WaitAllActions();
         }
         finally
         {
@@ -72,7 +72,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             CleanUp();
         }
 
-        return hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
+        return exitCode;
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)

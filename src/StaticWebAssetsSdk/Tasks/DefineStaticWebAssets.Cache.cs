@@ -265,6 +265,8 @@ public partial class DefineStaticWebAssets : Task
     }
 
     [JsonSerializable(typeof(DefineStaticWebAssetsCache))]
-    [JsonSourceGenerationOptions(WriteIndented = false)]
+    [JsonSourceGenerationOptions(
+        GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
+        WriteIndented = false)]
     internal partial class DefineStaticWebAssetsSerializerContext : JsonSerializerContext { }
 }
