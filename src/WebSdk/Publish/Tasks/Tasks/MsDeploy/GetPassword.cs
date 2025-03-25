@@ -7,10 +7,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
 {
     public class GetPassword : Task
     {
-        public string EncryptedPassword { get; set; }
+        public string? EncryptedPassword { get; set; }
 
         [Output]
-        public string ClearPassword { get; set; }
+        public string? ClearPassword { get; set; }
 
         public override bool Execute()
         {
@@ -22,7 +22,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
             return true;
         }
 
-        public string GetClearTextPassword(string base64EncodedString)
+        public string? GetClearTextPassword(string? base64EncodedString)
         {
             if (base64EncodedString == null)
             {

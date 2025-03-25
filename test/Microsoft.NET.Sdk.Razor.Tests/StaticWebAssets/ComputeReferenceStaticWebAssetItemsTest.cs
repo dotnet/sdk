@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -334,7 +336,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.StaticWebAssets.Should().HaveCount(0);
         }
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
             string sourceType,
@@ -362,6 +364,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 // Add these to avoid accessing the disk to compute them
                 Integrity = "integrity",
                 Fingerprint = "fingerprint",
+                FileLength = 10,
+                LastWriteTime = DateTime.UtcNow,
             };
 
             result.ApplyDefaults();
@@ -370,7 +374,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             return result.ToTaskItem();
         }
 
-        private ITaskItem CreatePatternCandidate(
+        private static ITaskItem CreatePatternCandidate(
             string name,
             string basePath,
             string contentRoot,

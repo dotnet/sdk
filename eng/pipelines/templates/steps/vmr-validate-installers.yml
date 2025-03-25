@@ -1,0 +1,67 @@
+parameters:
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: targetArchitecture
+  type: string
+  default: ''
+
+- name: OS
+  type: string
+  values:
+    - Windows_NT
+    - Linux
+    - Darwin
+
+steps:
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: BlobArtifacts
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+  displayName: Download Blob Artifacts
+
+- task: DownloadBuildArtifacts@1
+  inputs:
+    artifactName: PackageArtifacts
+    downloadPath: $(Build.ArtifactStagingDirectory)
+    checkDownloadedFiles: true
+  displayName: Download Package Artifacts
+
+# This is necessary whenever we want to publish/restore to an AzDO private feed
+# Since sdk-task.ps1 tries to restore packages we need to do this authentication here
+# otherwise it'll complain about accessing a private feed.
+- task: NuGetAuthenticate@1
+  displayName: 'Authenticate to AzDO Feeds'
+
+- ${{ if eq(parameters.OS, 'Linux') }}:
+  - script: |
+      extraBuildProperties="/p:TestRpmPackages=true"
+      if [[ '${{ parameters.targetArchitecture }}' == 'x64' ]]; then
+        # At the moment Deb packages are only available for x64
+        extraBuildProperties="$extraBuildProperties /p:TestDebPackages=true"
+      fi
+
+      ./build.sh \
+      --ci \
+      -t \
+      --projects test/Microsoft.DotNet.Installer.Tests/Microsoft.DotNet.Installer.Tests.csproj \
+      /p:BlobArtifactsDir=$(Build.ArtifactStagingDirectory)/BlobArtifacts \
+      /p:PackageArtifactsDir=$(Build.ArtifactStagingDirectory)/PackageArtifacts \
+      $extraBuildProperties
+    displayName: Validate installer packages
+    workingDirectory: $(Build.SourcesDirectory)
+    continueOnError: ${{ parameters.continueOnError }}
+
+  - task: PublishTestResults@2
+    displayName: Publish Test Results
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      testRunner: VSTest
+      testResultsFiles: 'artifacts/TestResults/Release/*.trx'
+      searchFolder: $(Build.SourcesDirectory)
+      mergeTestResults: true
+      publishRunAttachments: true
+      testRunTitle: Tests_$(Agent.JobName)
