@@ -45,7 +45,7 @@
     <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
-    <!-- nuget-client is not compliant with Unified Build -->
+    <!-- nuget-client is not compliant with Unified Build: https://github.com/dotnet/source-build/issues/4974 -->
     <RepositoryReference Include="nuget-client" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
     <RepositoryReference Include="razor" />
     <RepositoryReference Include="roslyn-analyzers" />
