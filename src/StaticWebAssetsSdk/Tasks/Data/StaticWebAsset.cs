@@ -51,27 +51,27 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public StaticWebAsset(StaticWebAsset asset)
     {
-        _identity = asset._identity;
-        _sourceType = asset._sourceType;
-        _sourceId = asset._sourceId;
-        _contentRoot = asset._contentRoot;
-        _basePath = asset._basePath;
-        _relativePath = asset._relativePath;
-        _assetKind = asset._assetKind;
-        _assetMode = asset._assetMode;
-        _assetRole = asset._assetRole;
-        _assetMergeBehavior = asset._assetMergeBehavior;
-        _assetMergeSource = asset._assetMergeSource;
-        _relatedAsset = asset._relatedAsset;
-        _assetTraitName = asset._assetTraitName;
-        _assetTraitValue = asset._assetTraitValue;
-        _copyToOutputDirectory = asset._copyToOutputDirectory;
-        _copyToPublishDirectory = asset._copyToPublishDirectory;
-        _originalItemSpec = asset._originalItemSpec;
-        _fileLength = asset._fileLength;
-        _lastWriteTime = asset._lastWriteTime;
-        _fingerprint = asset._fingerprint;
-        _integrity = asset._integrity;
+        _identity = asset.Identity;
+        _sourceType = asset.SourceType;
+        _sourceId = asset.SourceId;
+        _contentRoot = asset.ContentRoot;
+        _basePath = asset.BasePath;
+        _relativePath = asset.RelativePath;
+        _assetKind = asset.AssetKind;
+        _assetMode = asset.AssetMode;
+        _assetRole = asset.AssetRole;
+        _assetMergeBehavior = asset.AssetMergeBehavior;
+        _assetMergeSource = asset.AssetMergeSource;
+        _relatedAsset = asset.RelatedAsset;
+        _assetTraitName = asset.AssetTraitName;
+        _assetTraitValue = asset.AssetTraitValue;
+        _copyToOutputDirectory = asset.CopyToOutputDirectory;
+        _copyToPublishDirectory = asset.CopyToPublishDirectory;
+        _originalItemSpec = asset.OriginalItemSpec;
+        _fileLength = asset.FileLength;
+        _lastWriteTime = asset.LastWriteTime;
+        _fingerprint = asset.Fingerprint;
+        _integrity = asset.Integrity;
     }
 
     private string GetMetadata(string name) => _originalItem?.GetMetadata(name);
