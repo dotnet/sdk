@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
@@ -85,4 +86,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <Compile Remove="Approvals\**\*" />
     <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
+
 </Project>
