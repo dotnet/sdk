@@ -46,6 +46,8 @@ public partial class WriteImportMapToHtml : Task
 
     private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
+    private static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""\s*[/]?>");
+
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints).Where(e => e.AssetFile.EndsWith(".js") || e.AssetFile.EndsWith(".mjs"));
@@ -73,6 +75,13 @@ public partial class WriteImportMapToHtml : Task
                 {
                     Log.LogMessage("Writing importmap to '{0}'", item.ItemSpec);
                     return $"<script type=\"importmap\">{JsonSerializer.Serialize(importMap, ImportMapSerializerContext.CustomEncoder.Options)}</script>";
+                });
+
+                // Generate import map
+                outputContent = _preloadRegex.Replace(content, e =>
+                {
+                    Log.LogMessage("Writing preload links to '{0}'", item.ItemSpec);
+                    return GeneratePreloadLinks(resources);
                 });
 
                 // Fingerprint all assets used in html
@@ -105,6 +114,42 @@ public partial class WriteImportMapToHtml : Task
         return true;
     }
 
+    private static string GeneratePreloadLinks(List<ResourceAsset> assets)
+    {
+        var links = new List<(string? Order, string Value)>();
+        foreach (var asset in assets)
+        {
+            if (asset.PreloadRel == null)
+            {
+                continue;
+            }
+
+            string link = $"<link href=\"{asset.Url}\" rel=\"{asset.PreloadRel}\"";
+            if (!string.IsNullOrEmpty(asset.PreloadAs))
+            {
+                link = String.Concat(link, " as=\"", asset.PreloadAs, "\"");
+            }
+            if (!string.IsNullOrEmpty(asset.PreloadPriority))
+            {
+                link = String.Concat(link, " fetchpriority=\"", asset.PreloadPriority, "\"");
+            }
+            if (!string.IsNullOrEmpty(asset.PreloadCrossorigin))
+            {
+                link = String.Concat(link, " crossorigin=\"", asset.PreloadCrossorigin, "\"");
+            }
+            if (!string.IsNullOrEmpty(asset.Integrity))
+            {
+                link = String.Concat(link, " integrity=\"", asset.Integrity, "\"");
+            }
+
+            link += " />";
+            links.Add((asset.PreloadOrder, link));
+        }
+
+        links.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
+        return String.Join(Environment.NewLine, links);
+    }
+
     private string GetFingerprintedAssetPath(Dictionary<string, ResourceAsset> urlMappings, string assetPath)
     {
         if (urlMappings.TryGetValue(assetPath, out var asset) && (!IncludeOnlyHardFingerprintedModules || asset.IsHardFingerprinted))
@@ -125,33 +170,50 @@ public partial class WriteImportMapToHtml : Task
         // subresource integrity to things like images, script tags, etc.
         foreach (var endpoint in endpoints)
         {
-            string? label = null;
-            string? integrity = null;
-
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
             if (endpoint.Selectors?.Length == 0)
             {
+                var resourceAsset = new ResourceAsset(endpoint.Route);
                 for (var i = 0; i < endpoint.EndpointProperties?.Length; i++)
                 {
                     var property = endpoint.EndpointProperties[i];
                     if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                     {
-                        label = property.Value;
+                        resourceAsset.Label = property.Value;
                     }
                     else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
                     {
-                        integrity = property.Value;
+                        resourceAsset.Integrity = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadRel = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadas", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadAs = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadpriority", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadPriority = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadcrossorigin", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadCrossorigin = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadOrder = property.Value;
                     }
                 }
 
-                bool isHardFingerprinted = true;
                 var asset = Assets.FirstOrDefault(a => a.ItemSpec == endpoint.AssetFile);
                 if (asset != null)
                 {
-                    isHardFingerprinted = asset.GetMetadata("RelativePath").Contains("#[.{fingerprint}]!");
+                    resourceAsset.IsHardFingerprinted = asset.GetMetadata("RelativePath").Contains("#[.{fingerprint}]!");
                 }
 
-                resources.Add(new ResourceAsset(endpoint.Route, label, integrity, isHardFingerprinted));
+                resources.Add(resourceAsset);
             }
         }
 
@@ -207,12 +269,17 @@ public partial class WriteImportMapToHtml : Task
     }
 }
 
-internal sealed class ResourceAsset(string url, string? label, string? integrity, bool isHardFingerprinted)
+internal sealed class ResourceAsset(string url)
 {
     public string Url { get; } = url;
-    public string? Label { get; set; } = label;
-    public string? Integrity { get; set; } = integrity;
-    public bool IsHardFingerprinted { get; set; } = isHardFingerprinted;
+    public string? Label { get; set; }
+    public string? Integrity { get; set; }
+    public string? PreloadRel { get; set; }
+    public string? PreloadAs { get; set; }
+    public string? PreloadPriority { get; set; }
+    public string? PreloadCrossorigin { get; set; }
+    public string? PreloadOrder { get; set; }
+    public bool IsHardFingerprinted { get; set; } = true;
 }
 
 internal class ImportMap(Dictionary<string, string> imports, Dictionary<string, Dictionary<string, string>> scopes, Dictionary<string, string> integrity)
