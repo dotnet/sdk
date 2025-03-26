@@ -38,7 +38,8 @@ internal class PackageListCommand(
         if (!noRestore)
         {
             ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
-            restoreExitCode = RunRestore(projectFile, formatOption);
+            bool interactive = _parseResult.GetValue((CliOption<bool>)PackageListCommandParser.InteractiveOption);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive);
         }
 
         return restoreExitCode == 0
@@ -46,9 +47,24 @@ internal class PackageListCommand(
             : restoreExitCode;
     }
 
-    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption)
+    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
     {
-        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: ["-target:restore", projectOrSolution, "-noConsoleLogger"]);
+        List<string> args;
+
+        if (formatOption == ReportOutputFormat.json)
+        {
+            args = ["-target:restore", projectOrSolution, "-noConsoleLogger"];
+        }
+        else
+        {
+            args = ["-target:restore", projectOrSolution, "--consoleLoggerParameters:Verbosity=Minimal;NoSummary"];
+        }
+
+        if (interactive)
+        {
+            args.Add("-interactive:true");
+        }
+            MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
 
         int exitCode = 0;
 
@@ -77,10 +93,6 @@ internal class PackageListCommand(
 }
 """;
                 Console.WriteLine(jsonError);
-            }
-            else
-            {
-                Console.WriteLine(String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore));
             }
         }
 

@@ -119,6 +119,7 @@ internal static class PackageListCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(FormatOption);
         command.Options.Add(OutputVersionOption);
+        command.Options.Add(NoRestore);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
         command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
