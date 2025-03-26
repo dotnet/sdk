@@ -264,6 +264,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMode="CurrentProject"
       AssetRole="Primary"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       AssetTraitName="JSModule"
       AssetTraitValue="JSModuleManifest"
     >
@@ -380,6 +381,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       AssetTraitName="JSModule"
       AssetTraitValue="JSModuleManifest"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
     >
       <Output TaskParameter="Assets" ItemName="_PublishJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
