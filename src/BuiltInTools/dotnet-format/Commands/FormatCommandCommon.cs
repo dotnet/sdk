@@ -137,10 +137,10 @@ namespace Microsoft.CodeAnalysis.Tools
             return arg;
         }
 
-        public static ILogger<Program> SetupLogging(this IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
+        public static ILogger<Program> SetupLogging(LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
         {
             var loggerFactory = new LoggerFactory()
-                .AddSimpleConsole(console, minimalLogLevel, minimalErrorLevel);
+                .AddSimpleConsole(minimalLogLevel, minimalErrorLevel);
             var logger = loggerFactory.CreateLogger<Program>();
             return logger;
         }

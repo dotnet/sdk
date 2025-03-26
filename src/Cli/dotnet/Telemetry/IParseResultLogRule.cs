@@ -4,10 +4,9 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Telemetry
+namespace Microsoft.DotNet.Cli.Telemetry;
+
+internal interface IParseResultLogRule
 {
-    internal interface IParseResultLogRule
-    {
-        List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null);
-    }
+    List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null);
 }

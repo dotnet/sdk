@@ -328,6 +328,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">도구 {0}에 대한 도구 설정 파일이 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">업데이트</target>

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
 {
@@ -214,7 +215,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var testInstance = _testAssetsManager.CreateTestProject(testProject);
 
             new DotnetBuildCommand(Log)
-               .WithWorkingDirectory(Path.Combine(testInstance.Path, testProject.Name))
+               .WithWorkingDirectory(Path.Combine(testInstance.Path, testProject.Name ?? string.Empty))
                .Execute("-r", "win-x64")
                .Should()
                .Pass()
@@ -273,7 +274,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
 
-            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name))
+            new DotnetBuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name ?? string.Empty))
                .Execute(executeOptions)
                .Should()
                .Pass()
@@ -305,7 +306,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             new DotnetCommand(Log)
-               .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name))
+               .WithWorkingDirectory(Path.Combine(testAsset.Path, testProject.Name ?? string.Empty))
                .Execute("build", "-r", EnvironmentInfo.GetCompatibleRid(), "--self-contained")
                .Should()
                .Pass()
@@ -334,7 +335,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
     <PackageReference Include=""Library.ContainsAnalyzer2"" Version=""1.0.0"" />
   </ItemGroup>");
 
-                project.Root.Add(itemGroup);
+                project.Root?.Add(itemGroup);
             });
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
@@ -374,17 +375,17 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             }
         }
 
-        static readonly List<string> nugetRoots = new()
+        static readonly List<string?> nugetRoots = new()
         {
             TestContext.Current.NuGetCachePath,
-            Path.Combine(FileConstants.UserProfileFolder, ".dotnet", "NuGetFallbackFolder")
+            Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 
         static string RelativeNuGetPath(string absoluteNuGetPath)
         {
             foreach (var nugetRoot in nugetRoots)
             {
-                if (absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
+                if (nugetRoot is not null &&  absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
                 {
                     return absoluteNuGetPath.Substring(nugetRoot.Length + 1)
                                 .Replace(Path.DirectorySeparatorChar, '/');
