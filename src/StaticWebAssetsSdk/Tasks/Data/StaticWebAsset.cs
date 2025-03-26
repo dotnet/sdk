@@ -1262,13 +1262,158 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     // For that reason, and since we control inside the tasks how this is used, we can safely ignore the pieces that MSBuild won't call.
     #region ITaskItem2 implementation
 
-    string ITaskItem2.EvaluatedIncludeEscaped { get => Identity; set => throw new NotImplementedException(); }
-    string ITaskItem.ItemSpec { get => Identity; set => throw new NotImplementedException(); }
-    ICollection ITaskItem.MetadataNames => throw new NotImplementedException();
-    int ITaskItem.MetadataCount => throw new NotImplementedException();
+    string ITaskItem2.EvaluatedIncludeEscaped { get => Identity; set => Identity = value; }
+    string ITaskItem.ItemSpec { get => Identity; set => Identity = value; }
 
-    string ITaskItem2.GetMetadataValueEscaped(string metadataName) => throw new NotImplementedException();
-    void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue) => throw new NotImplementedException();
+    private static readonly string[] _defaultPropertyNames = [
+        nameof(SourceId),
+        nameof(SourceType),
+        nameof(ContentRoot),
+        nameof(BasePath),
+        nameof(RelativePath),
+        nameof(AssetKind),
+        nameof(AssetMode),
+        nameof(AssetRole),
+        nameof(AssetMergeBehavior),
+        nameof(AssetMergeSource),
+        nameof(RelatedAsset),
+        nameof(AssetTraitName),
+        nameof(AssetTraitValue),
+        nameof(Fingerprint),
+        nameof(Integrity),
+        nameof(CopyToOutputDirectory),
+        nameof(CopyToPublishDirectory),
+        nameof(OriginalItemSpec),
+        nameof(FileLength),
+        nameof(LastWriteTime)
+    ];
+
+    ICollection ITaskItem.MetadataNames
+    {
+        get
+        {
+            if (_additionalCustomMetadata == null)
+            {
+                return _defaultPropertyNames;
+            }
+            else
+            {
+
+            }
+            var result = new List<string>(_defaultPropertyNames.Length + _additionalCustomMetadata.Count);
+            result.AddRange(_defaultPropertyNames);
+
+            if (_additionalCustomMetadata != null)
+            {
+                foreach (var kvp in _additionalCustomMetadata)
+                {
+                    result.Add(kvp.Key);
+                }
+            }
+            return result;
+        }
+    }
+
+    int ITaskItem.MetadataCount => _defaultPropertyNames.Length + _additionalCustomMetadata?.Count ?? 0;
+    string ITaskItem2.GetMetadataValueEscaped(string metadataName)
+    {
+        return metadataName switch
+        {
+            nameof(SourceId) => SourceId ?? "",
+            nameof(SourceType) => SourceType ?? "",
+            nameof(ContentRoot) => ContentRoot ?? "",
+            nameof(BasePath) => BasePath ?? "",
+            nameof(RelativePath) => RelativePath ?? "",
+            nameof(AssetKind) => AssetKind ?? "",
+            nameof(AssetMode) => AssetMode ?? "",
+            nameof(AssetRole) => AssetRole ?? "",
+            nameof(AssetMergeBehavior) => AssetMergeBehavior ?? "",
+            nameof(AssetMergeSource) => AssetMergeSource ?? "",
+            nameof(RelatedAsset) => RelatedAsset ?? "",
+            nameof(AssetTraitName) => AssetTraitName ?? "",
+            nameof(AssetTraitValue) => AssetTraitValue ?? "",
+            nameof(Fingerprint) => Fingerprint ?? "",
+            nameof(Integrity) => Integrity ?? "",
+            nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
+            nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
+            nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
+            nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
+            nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
+            _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? value : "",
+        };
+    }
+
+    void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue)
+    {
+        switch (metadataName)
+        {
+            case nameof(SourceId):
+                SourceId = metadataValue;
+                break;
+            case nameof(SourceType):
+                SourceType = metadataValue;
+                break;
+            case nameof(ContentRoot):
+                ContentRoot = metadataValue;
+                break;
+            case nameof(BasePath):
+                BasePath = metadataValue;
+                break;
+            case nameof(RelativePath):
+                RelativePath = metadataValue;
+                break;
+            case nameof(AssetKind):
+                AssetKind = metadataValue;
+                break;
+            case nameof(AssetMode):
+                AssetMode = metadataValue;
+                break;
+            case nameof(AssetRole):
+                AssetRole = metadataValue;
+                break;
+            case nameof(AssetMergeBehavior):
+                AssetMergeBehavior = metadataValue;
+                break;
+            case nameof(AssetMergeSource):
+                AssetMergeSource = metadataValue;
+                break;
+            case nameof(RelatedAsset):
+                RelatedAsset = metadataValue;
+                break;
+            case nameof(AssetTraitName):
+                AssetTraitName = metadataValue;
+                break;
+            case nameof(AssetTraitValue):
+                AssetTraitValue = metadataValue;
+                break;
+            case nameof(Fingerprint):
+                Fingerprint = metadataValue;
+                break;
+            case nameof(Integrity):
+                Integrity = metadataValue;
+                break;
+            case nameof(CopyToOutputDirectory):
+                CopyToOutputDirectory = metadataValue;
+                break;
+            case nameof(CopyToPublishDirectory):
+                CopyToPublishDirectory = metadataValue;
+                break;
+            case nameof(OriginalItemSpec):
+                OriginalItemSpec = metadataValue;
+                break;
+            case nameof(FileLength):
+                FileLength = long.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
+                break;
+            case nameof(LastWriteTime):
+                LastWriteTime = DateTimeOffset.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
+                break;
+            default:
+                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                _additionalCustomMetadata[metadataName] = metadataValue;
+                _modified = true;
+                break;
+        }
+    }
 
     IDictionary ITaskItem2.CloneCustomMetadataEscaped()
     {
@@ -1327,8 +1472,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
         nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
         nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
-        nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture),
-        nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture),
+        nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
+        nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
         _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? value : ""
     };
 
@@ -1386,6 +1531,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             case nameof(CopyToPublishDirectory):
                 CopyToPublishDirectory = metadataValue;
+                break;
+            case nameof(OriginalItemSpec):
+                OriginalItemSpec = metadataValue;
+                break;
+            case nameof(FileLength):
+                FileLength = long.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
+                break;
+            case nameof(LastWriteTime):
+                LastWriteTime = DateTimeOffset.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
                 break;
             default:
                 _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
