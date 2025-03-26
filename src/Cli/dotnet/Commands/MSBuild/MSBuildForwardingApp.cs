@@ -25,9 +25,8 @@ public class MSBuildForwardingApp
                 Type loggerType = typeof(MSBuildLogger);
                 Type forwardingLoggerType = typeof(MSBuildForwardingLogger);
 
-                return argsToForward.Concat(
-                    [$"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"]
-                );
+                return argsToForward
+                    .Concat([$"-distributedlogger:{loggerType.FullName},{loggerType.GetTypeInfo().Assembly.Location}*{forwardingLoggerType.FullName},{forwardingLoggerType.GetTypeInfo().Assembly.Location}"]);
             }
             catch (Exception)
             {
