@@ -29,50 +29,63 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         int exitCode = ExitCode.Success;
         try
         {
-            ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
-
-            PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
-
-            InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
-
-            InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
-
-            BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
-            _msBuildHandler = new(buildOptions, _actionQueue, _output);
-            TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
-
-            _eventHandlers = new TestApplicationsEventHandlers(_output);
-
-            if (testOptions.HasFilterMode)
+            exitCode = RunInternal(parseResult);
+        }
+        catch
+        {
+            // Make sure we don't return success when we caught error, but also don't overwrite existing error state.
+            if (exitCode == ExitCode.Success)
             {
-                if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions))
-                {
-                    return ExitCode.GenericFailure;
-                }
+                exitCode = ExitCode.GenericFailure;
             }
-            else
-            {
-                if (!_msBuildHandler.RunMSBuild())
-                {
-                    return ExitCode.GenericFailure;
-                }
-
-                if (!_msBuildHandler.EnqueueTestApplications())
-                {
-                    return ExitCode.GenericFailure;
-                }
-            }
-
-            _actionQueue.EnqueueCompleted();
-            exitCode = _actionQueue.WaitAllActions();
         }
         finally
         {
-            CompleteRun();
+            CompleteRun(exitCode);
             CleanUp();
         }
 
         return exitCode;
+    }
+
+    private int RunInternal(ParseResult parseResult)
+    {
+        ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult);
+
+        PrepareEnvironment(parseResult, out TestOptions testOptions, out int degreeOfParallelism);
+
+        InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
+
+        InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
+
+        BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+        _msBuildHandler = new(buildOptions, _actionQueue, _output);
+        TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
+
+        _eventHandlers = new TestApplicationsEventHandlers(_output);
+
+        if (testOptions.HasFilterMode)
+        {
+            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions))
+            {
+                return ExitCode.GenericFailure;
+            }
+        }
+        else
+        {
+            if (!_msBuildHandler.RunMSBuild())
+            {
+                return ExitCode.GenericFailure;
+            }
+
+            if (!_msBuildHandler.EnqueueTestApplications())
+            {
+                return ExitCode.GenericFailure;
+            }
+        }
+
+        _actionQueue.EnqueueCompleted();
+        return _actionQueue.WaitAllActions();
     }
 
     private void PrepareEnvironment(ParseResult parseResult, out TestOptions testOptions, out int degreeOfParallelism)
@@ -106,7 +119,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         Console.CancelKeyPress += (s, e) =>
         {
             _output?.StartCancelling();
-            CompleteRun();
+            CompleteRun(exitCode: 3);
         };
     }
 
@@ -178,11 +191,11 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         return args.Contains(TestingPlatformOptions.ListTestsOption.Name);
     }
 
-    private void CompleteRun()
+    private void CompleteRun(int exitCode)
     {
         if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
         {
-            _output?.TestExecutionCompleted(DateTimeOffset.Now);
+            _output?.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
     }
 

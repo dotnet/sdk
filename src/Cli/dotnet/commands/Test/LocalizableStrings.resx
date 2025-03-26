@@ -534,4 +534,13 @@ dotnet.config is a name don't translate.</comment>
   <data name="CmdNumberName" xml:space="preserve">
     <value>NUMBER</value>
   </data>
+  <data name="TestRunExitCode" xml:space="preserve">
+    <value>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
+    <comment>0 is whole number, the value of exit code</comment>
+  </data>
+  <data name="TestDiscoveryExitCode" xml:space="preserve">
+    <value>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</value>
+    <comment>0 is whole number, the value of exit code
+</comment>
+  </data>
 </root>
