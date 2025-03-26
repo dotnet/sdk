@@ -48,6 +48,11 @@ parameters:
   type: boolean
   default: false
 
+- name: signDac
+  displayName: True when the diagnostic files should be signed
+  type: boolean
+  default: false
+
 # Overrides the rid that is produced by the build.
 - name: targetRid
   type: string
@@ -241,11 +246,6 @@ jobs:
         value: real
       - name: signProperties
         value: /p:DotNetSignType=real /p:TeamName=$(_TeamName)
-    - name: _EnableDacSigning
-      ${{ if and(eq(parameters.isBuiltFromVmr, true), ne(parameters.buildSourceOnly, 'True')) }}:
-        value: true
-      ${{ else }}:
-        value: false
   - ${{ else }}:
     - name: signArguments
       value: ''
@@ -417,11 +417,11 @@ jobs:
       inputs:
         versionSpec: 20.x
 
-    - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+    - ${{ if eq(parameters.signDac, 'true') }}:
       # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/install-diagnostic-certs.yml
         parameters:
-          isOfficialBuild: ${{ variables.isOfficialBuild }}
+          isOfficialBuild: true
           certNames:
           - 'dotnetesrp-diagnostics-aad-ssl-cert'
           - 'dotnet-diagnostics-esrp-pki-onecert'
@@ -442,11 +442,11 @@ jobs:
       displayName: Build
       workingDirectory: ${{ variables.sourcesPath }}
 
-    - ${{ if eq(variables['_EnableDacSigning'], 'true') }}:
+    - ${{ if eq(parameters.signDac, 'true') }}:
       # TODO: Once we turn off the dotnet/runtime official build, move these templates into the VMR's eng folder.
       - template: ${{ variables['Build.SourcesDirectory'] }}/src/runtime/eng/pipelines/coreclr/templates/remove-diagnostic-certs.yml
         parameters:
-          isOfficialBuild: ${{ variables.isOfficialBuild }}
+          isOfficialBuild: true
           scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - ${{ if eq(parameters.runTests, 'True') }}:
