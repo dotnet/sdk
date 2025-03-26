@@ -33,13 +33,6 @@
     <Copy DestinationFiles="@(InstallerOutputFile)"
           SourceFiles="@(InstallerOutputFile->Metadata('Source'))"
           SkipUnchangedFiles="true" />
-
-    <Exec Command="chmod +x $(TestHostDotNet)" Condition="'$(OS)' != 'Windows_NT'" />
-
-    <!-- Run "dotnet new" (which will just display usage and available templates) in order to print first time
-         use message so that it doesn't interfere with tests which check the output of commands. -->
-    <Exec Command="$(TestHostDotNet) new"
-          EnvironmentVariables="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
   </Target>
 
   <Target Name="PublishTestWorkloads"
