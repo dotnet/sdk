@@ -220,6 +220,80 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference.Reference" && c.Type == "referenceassembly");
         }
 
+        [Fact]
+        public void ItHandlesReferencesThatCannotBeRemovedProperly()
+        {
+            string mainProjectName = "simple.dependencies";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                []);
+
+            ITaskItem[] referencePaths = new ITaskItem[]
+            {
+                new MockTaskItem(
+                    "/usr/Path/System.NotConflicting.dll",
+                    new Dictionary<string, string>
+                    {
+                        { "CopyLocal", "false" },
+                        { "FusionName", "System.NotConflicting, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" },
+                        { "Version", "" },
+                    }),
+                new MockTaskItem(
+                    "/usr/Path/System.Collections.NonGeneric.dll",
+                    new Dictionary<string, string>
+                    {
+                        { "CopyLocal", "false" },
+                        { "FusionName", "System.Collections.NonGeneric, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" },
+                        { "Version", "" },
+                    }),
+                new MockTaskItem(
+                    "/usr/Path/System.Collections.NonGeneric.Reference.dll",
+                    new Dictionary<string, string>
+                    {
+                        { "CopyLocal", "false" },
+                        { "FusionName", "System.Collections.NonGeneric.Reference, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" },
+                        { "Version", "" },
+                    }),
+            };
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.NetCoreApp10.GetShortFolderName(),
+                runtime: null,
+                platformLibraryName: Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            CompilationOptions compilationOptions = CreateCompilationOptions();
+
+            IEnumerable<ReferenceInfo> directReferences =
+                ReferenceInfo.CreateDirectReferenceInfos(
+                    referencePaths,
+                    [],
+                    lockFileLookup: new LockFileLookup(lockFile),
+                    i => true,
+                    true);
+
+            DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: new LockFileLookup(lockFile))
+                .WithReferenceAssemblies(ReferenceInfo.CreateReferenceInfos(referencePaths))
+                .WithCompilationOptions(compilationOptions)
+                .WithDirectReferences(directReferences)
+                .Build();
+
+            // ensure the DependencyContext can be written out successfully - it has no duplicate dependency names
+            Save(dependencyContext);
+
+            dependencyContext.RuntimeLibraries.Count.Should().Be(4);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("simple.dependencies"));
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.NotConflicting"));
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.Collections.NonGeneric.Reference"));
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.Collections.NonGeneric.Reference.Reference"));
+        }
+
         private DependencyContext BuildDependencyContextWithReferenceAssemblies(bool useCompilationOptions)
         {
             string mainProjectName = "simple.dependencies";
