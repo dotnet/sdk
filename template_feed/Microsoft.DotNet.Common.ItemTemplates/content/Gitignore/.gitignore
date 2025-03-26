@@ -426,9 +426,6 @@ test-results/
 
 # Mac bundle stuff
 *.dmg
-*.app
-# but not .app/ directories, which are common
-!*.app/
 
 # content below from: https://github.com/github/gitignore/blob/main/Global/macOS.gitignore
 # General
