@@ -19,7 +19,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// <summary>
     /// The two directory separator characters to be passed to methods like <see cref="string.IndexOfAny(char[])"/>.
     /// </summary>
-    private static readonly string[] NewLineStrings = { "\r\n", "\n" };
+    private static readonly string[] NewLineStrings = ["\r\n", "\n"];
 
     internal const string SingleIndentation = "  ";
 

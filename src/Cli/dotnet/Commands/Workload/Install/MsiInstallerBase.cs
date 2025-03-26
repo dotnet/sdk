@@ -55,7 +55,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// Supported installer architectures used to map workload packs to architecture
     /// specific payload packs to acquire MSIs.
     /// </summary>
-    protected static readonly string[] SupportedArchitectures = { "x86", "amd64", "arm64" };
+    protected static readonly string[] SupportedArchitectures = ["x86", "amd64", "arm64"];
 
     /// <summary>
     /// Determines whether the parent process is still active.

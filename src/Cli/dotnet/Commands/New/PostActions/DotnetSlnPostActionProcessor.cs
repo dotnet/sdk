@@ -34,11 +34,11 @@ internal class DotnetSlnPostActionProcessor : PostActionProcessorBase
     internal static bool TryGetProjectFilesToAdd(IPostAction actionConfig, ICreationResult templateCreationResult, string outputBasePath, [NotNullWhen(true)] out IReadOnlyList<string> projectFiles)
     {
         List<string> filesToAdd = [];
-        projectFiles = new List<string>();
+        projectFiles = [];
 
         if ((actionConfig.Args != null) && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))
         {
-            foreach (string indexString in projectIndexes.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            foreach (string indexString in projectIndexes.Split([';'], StringSplitOptions.RemoveEmptyEntries))
             {
                 if (int.TryParse(indexString.Trim(), out int index))
                 {

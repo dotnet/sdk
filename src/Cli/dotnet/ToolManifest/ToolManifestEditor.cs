@@ -159,8 +159,7 @@ internal class ToolManifestEditor : IToolManifestEditor
 
                 if (root.TryGetProperty(JsonPropertyTools, out var tools))
                 {
-                    serializableLocalToolsManifest.Tools =
-                        [];
+                    serializableLocalToolsManifest.Tools = [];
 
                     if (tools.ValueKind != JsonValueKind.Object)
                     {

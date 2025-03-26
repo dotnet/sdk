@@ -444,7 +444,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 var maxPriorFeatureBand = priorFeatureBands.Max();
                 return _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(maxPriorFeatureBand);
             }
-            return new List<WorkloadId>();
+            return [];
         }
         else
         {

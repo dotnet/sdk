@@ -26,8 +26,8 @@ public static class Parser
     public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
 
     // Subcommands
-    public static readonly CliCommand[] Subcommands = new CliCommand[]
-    {
+    public static readonly CliCommand[] Subcommands =
+    [
         AddCommandParser.GetCommand(),
         BuildCommandParser.GetCommand(),
         BuildServerCommandParser.GetCommand(),
@@ -58,7 +58,7 @@ public static class Parser
         InstallSuccessCommand,
         WorkloadCommandParser.GetCommand(),
         new System.CommandLine.StaticCompletions.CompletionsCommand()
-    };
+    ];
 
     public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 

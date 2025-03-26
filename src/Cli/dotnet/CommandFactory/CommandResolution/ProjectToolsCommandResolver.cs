@@ -26,10 +26,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         _packagedCommandSpecFactory = packagedCommandSpecFactory;
         _environment = environment;
 
-        _allowedCommandExtensions =
-        [
-            FileNameSuffixes.DotNet.DynamicLib
-        ];
+        _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
     }
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
@@ -339,13 +336,13 @@ public class ProjectToolsCommandResolver : ICommandResolver
 
         var tempDepsFile = Path.Combine(PathUtilities.CreateTempSubdirectory(), Path.GetRandomFileName());
 
-        var args = new List<string>
-        {
+        List<string> args =
+        [
             toolDepsJsonGeneratorProject,
             $"-property:ProjectAssetsFile=\"{toolLockFile.Path}\"",
             $"-property:ToolName={toolLibrary.Name}",
             $"-property:ProjectDepsFilePath={tempDepsFile}"
-        };
+        ];
 
         var toolTargetFramework = toolLockFile.Targets.First().TargetFramework.GetShortFolderName();
         args.Add($"-property:TargetFramework={toolTargetFramework}");

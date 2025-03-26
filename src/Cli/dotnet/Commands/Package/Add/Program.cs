@@ -67,8 +67,8 @@ internal class AddPackageReferenceCommand : CommandBase
 
     private void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
     {
-        var args = new List<string>
-        {
+        List<string> args =
+        [
             // Pass the project file path
             projectFilePath,
 
@@ -86,7 +86,7 @@ internal class AddPackageReferenceCommand : CommandBase
 
             // Output should not include MSBuild version header
             "-nologo"
-        };
+        ];
 
         var result = new MSBuildForwardingApp(args).Execute();
 

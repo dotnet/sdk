@@ -30,7 +30,7 @@ public static class ProjectInstanceExtensions
     {
         return (projectInstance.GetPropertyValue("Platforms") ?? "")
             .Split(
-                new char[] { ';' },
+                [';'],
                 StringSplitOptions.RemoveEmptyEntries)
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .DefaultIfEmpty("AnyCPU");
@@ -46,7 +46,7 @@ public static class ProjectInstanceExtensions
 
         return foundConfig
             .Split(
-                new char[] { ';' },
+                [';'],
                 StringSplitOptions.RemoveEmptyEntries)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .DefaultIfEmpty("Debug");

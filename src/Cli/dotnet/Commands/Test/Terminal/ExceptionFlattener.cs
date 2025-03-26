@@ -17,10 +17,7 @@ internal sealed class ExceptionFlattener
         string? stackTrace = exception?.StackTrace;
         var flatException = new FlatException(message, type, stackTrace);
 
-        List<FlatException> flatExceptions =
-        [
-           flatException,
-        ];
+        List<FlatException> flatExceptions = [flatException];
 
         // Add all inner exceptions. This will flatten top level AggregateExceptions,
         // and all AggregateExceptions that are directly in AggregateExceptions, but won't expand

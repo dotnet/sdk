@@ -133,28 +133,28 @@ public sealed class MSBuildLogger : INodeLogger
                 }
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
-                    toBeHashed: new[] { "ProjectPath", "BuildTarget" },
-                    toBeMeasured: new[] { "BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds" });
+                    toBeHashed: ["ProjectPath", "BuildTarget"],
+                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]);
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
                     toBeHashed: Array.Empty<string>(),
-                    toBeMeasured: new[] { "FileLoggersCount" });
+                    toBeMeasured: ["FileLoggersCount"]);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
-                    toBeHashed: new[] { "AssemblyName", "ExceptionType", "ExceptionMessage" },
+                    toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"],
                     toBeMeasured: Array.Empty<string>());
                 break;
             case BuildcheckRunEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
                     toBeHashed: Array.Empty<string>(),
-                    toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             case BuildcheckRuleStatsEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
-                    toBeHashed: new[] { "RuleId", "CheckFriendlyName" },
-                    toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
+                    toBeHashed: ["RuleId", "CheckFriendlyName"],
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             // Pass through events that don't need special handling
             case SdkTaskBaseCatchExceptionTelemetryEventName:

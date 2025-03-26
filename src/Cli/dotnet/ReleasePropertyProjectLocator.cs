@@ -70,7 +70,7 @@ internal class ReleasePropertyProjectLocator
         // Configuration doesn't work in a .proj file, but it does as a global property.
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
         if (_options.ConfigurationOption != null || globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
-            return new List<string> { $"-property:{EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE}=true" }; // Don't throw error if publish* conflicts but global config specified.
+            return [$"-property:{EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE}=true"]; // Don't throw error if publish* conflicts but global config specified.
 
         // Determine the project being acted upon
         ProjectInstance? project = GetTargetedProject(globalProperties);

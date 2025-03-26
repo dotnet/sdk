@@ -27,12 +27,12 @@ internal static class VisualStudioWorkloads
     /// Visual Studio product ID filters. We dont' want to query SKUs such as Server, TeamExplorer, TestAgent
     /// TestController and BuildTools.
     /// </summary>
-    private static readonly string[] s_visualStudioProducts = new string[]
-    {
+    private static readonly string[] s_visualStudioProducts =
+    [
         "Microsoft.VisualStudio.Product.Community",
         "Microsoft.VisualStudio.Product.Professional",
         "Microsoft.VisualStudio.Product.Enterprise",
-    };
+    ];
 
     /// <summary>
     /// Default prefix to use for Visual Studio component and component group IDs.
@@ -42,7 +42,7 @@ internal static class VisualStudioWorkloads
     /// <summary>
     /// Well-known prefixes used by some workloads that can be replaced when generating component IDs.
     /// </summary>
-    private static readonly string[] s_wellKnownWorkloadPrefixes = { "Microsoft.NET.", "Microsoft." };
+    private static readonly string[] s_wellKnownWorkloadPrefixes = ["Microsoft.NET.", "Microsoft."];
 
     /// <summary>
     /// The SWIX package ID wrapping the SDK installer in Visual Studio. The ID should contain

@@ -187,10 +187,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         var depsFileArguments = GetDepsFileArguments(depsJsonFile);
         var additionalProbingPathArguments = GetAdditionalProbingPathArguments();
 
-        var muxerArgs = new List<string>
-        {
-            "exec"
-        };
+        List<string> muxerArgs = ["exec"];
         muxerArgs.AddRange(depsFileArguments);
         muxerArgs.AddRange(additionalProbingPathArguments);
         muxerArgs.Add(commandPath);
@@ -220,12 +217,12 @@ public class DepsJsonCommandResolver : ICommandResolver
 
     private IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
     {
-        return new[] { "--depsfile", depsJsonFile };
+        return ["--depsfile", depsJsonFile];
     }
 
     private IEnumerable<string> GetAdditionalProbingPathArguments()
     {
-        return new[] { "--additionalProbingPath", _nugetPackageRoot };
+        return ["--additionalProbingPath", _nugetPackageRoot];
     }
 
     private class CommandCandidate
