@@ -1339,12 +1339,13 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
             nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
             nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
-            _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? value : "",
+            _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : "",
         };
     }
 
     void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue)
     {
+        metadataValue ??= "";
         switch (metadataName)
         {
             case nameof(SourceId):
@@ -1419,26 +1420,26 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var result = new Dictionary<string, string>
         {
-            { nameof(SourceId), SourceId },
-            { nameof(SourceType), SourceType },
-            { nameof(ContentRoot), ContentRoot },
-            { nameof(BasePath), BasePath },
-            { nameof(RelativePath), RelativePath },
-            { nameof(AssetKind), AssetKind },
-            { nameof(AssetMode), AssetMode },
-            { nameof(AssetRole), AssetRole },
-            { nameof(AssetMergeBehavior), AssetMergeBehavior },
-            { nameof(AssetMergeSource), AssetMergeSource },
-            { nameof(RelatedAsset), RelatedAsset },
-            { nameof(AssetTraitName), AssetTraitName },
-            { nameof(AssetTraitValue), AssetTraitValue },
-            { nameof(Fingerprint), Fingerprint },
-            { nameof(Integrity), Integrity },
-            { nameof(CopyToOutputDirectory), CopyToOutputDirectory },
-            { nameof(CopyToPublishDirectory), CopyToPublishDirectory },
-            { nameof(OriginalItemSpec), OriginalItemSpec },
-            { nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) },
-            { nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) }
+            { nameof(SourceId), SourceId ?? "" },
+            { nameof(SourceType), SourceType  ?? "" },
+            { nameof(ContentRoot), ContentRoot  ?? "" },
+            { nameof(BasePath), BasePath  ?? "" },
+            { nameof(RelativePath), RelativePath  ?? "" },
+            { nameof(AssetKind), AssetKind  ?? "" },
+            { nameof(AssetMode), AssetMode  ?? "" },
+            { nameof(AssetRole), AssetRole  ?? "" },
+            { nameof(AssetMergeBehavior), AssetMergeBehavior  ?? "" },
+            { nameof(AssetMergeSource), AssetMergeSource  ?? "" },
+            { nameof(RelatedAsset), RelatedAsset  ?? "" },
+            { nameof(AssetTraitName), AssetTraitName  ?? "" },
+            { nameof(AssetTraitValue), AssetTraitValue  ?? "" },
+            { nameof(Fingerprint), Fingerprint  ?? "" },
+            { nameof(Integrity), Integrity  ?? "" },
+            { nameof(CopyToOutputDirectory), CopyToOutputDirectory  ?? "" },
+            { nameof(CopyToPublishDirectory), CopyToPublishDirectory  ?? "" },
+            { nameof(OriginalItemSpec), OriginalItemSpec  ?? "" },
+            { nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "" },
+            { nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "" }
         };
         if (_additionalCustomMetadata != null)
         {
@@ -1474,11 +1475,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
         nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
         nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
-        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? value : ""
+        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : ""
     };
 
     void ITaskItem.SetMetadata(string metadataName, string metadataValue)
     {
+        metadataValue ??= "";
         switch (metadataName)
         {
             case nameof(SourceId):
@@ -1556,31 +1558,31 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
-        destinationItem.SetMetadata(nameof(SourceId), SourceId);
-        destinationItem.SetMetadata(nameof(SourceType), SourceType);
-        destinationItem.SetMetadata(nameof(ContentRoot), ContentRoot);
-        destinationItem.SetMetadata(nameof(BasePath), BasePath);
-        destinationItem.SetMetadata(nameof(RelativePath), RelativePath);
-        destinationItem.SetMetadata(nameof(AssetKind), AssetKind);
-        destinationItem.SetMetadata(nameof(AssetMode), AssetMode);
-        destinationItem.SetMetadata(nameof(AssetRole), AssetRole);
-        destinationItem.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior);
-        destinationItem.SetMetadata(nameof(AssetMergeSource), AssetMergeSource);
-        destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset);
-        destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName);
-        destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue);
-        destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint);
-        destinationItem.SetMetadata(nameof(Integrity), Integrity);
-        destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
-        destinationItem.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
-        destinationItem.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
-        destinationItem.SetMetadata(nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture));
-        destinationItem.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture));
+        destinationItem.SetMetadata(nameof(SourceId), SourceId ?? "");
+        destinationItem.SetMetadata(nameof(SourceType), SourceType ?? "");
+        destinationItem.SetMetadata(nameof(ContentRoot), ContentRoot ?? "");
+        destinationItem.SetMetadata(nameof(BasePath), BasePath ?? "");
+        destinationItem.SetMetadata(nameof(RelativePath), RelativePath ?? "");
+        destinationItem.SetMetadata(nameof(AssetKind), AssetKind ?? "");
+        destinationItem.SetMetadata(nameof(AssetMode), AssetMode ?? "");
+        destinationItem.SetMetadata(nameof(AssetRole), AssetRole ?? "");
+        destinationItem.SetMetadata(nameof(AssetMergeBehavior), AssetMergeBehavior ?? "");
+        destinationItem.SetMetadata(nameof(AssetMergeSource), AssetMergeSource ?? "");
+        destinationItem.SetMetadata(nameof(RelatedAsset), RelatedAsset ?? "");
+        destinationItem.SetMetadata(nameof(AssetTraitName), AssetTraitName ?? "");
+        destinationItem.SetMetadata(nameof(AssetTraitValue), AssetTraitValue ?? "");
+        destinationItem.SetMetadata(nameof(Fingerprint), Fingerprint ?? "");
+        destinationItem.SetMetadata(nameof(Integrity), Integrity ?? "");
+        destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory ?? "");
+        destinationItem.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory ?? "");
+        destinationItem.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec ?? "");
+        destinationItem.SetMetadata(nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "");
+        destinationItem.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "");
         if (_additionalCustomMetadata != null)
         {
             foreach (var kvp in _additionalCustomMetadata)
             {
-                destinationItem.SetMetadata(kvp.Key, kvp.Value);
+                destinationItem.SetMetadata(kvp.Key, kvp.Value ?? "");
             }
         }
     }
