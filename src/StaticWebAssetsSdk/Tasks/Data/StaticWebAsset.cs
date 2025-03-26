@@ -78,7 +78,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     public string Identity
     {
-        get => _identity ??= GetOriginalItemMetadata("FullPath");
+        get
+        {
+            return _identity ??= GetOriginalItemMetadata("FullPath");
+        }
+
         set
         {
             _modified = true;
@@ -1270,7 +1274,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var result = new Dictionary<string, string>
         {
-            { nameof(Identity), Identity },
             { nameof(SourceId), SourceId },
             { nameof(SourceType), SourceType },
             { nameof(ContentRoot), ContentRoot },
@@ -1305,7 +1308,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     string ITaskItem.GetMetadata(string metadataName) => metadataName switch
     {
-        nameof(Identity) => Identity ?? "",
+        "FullPath" => Identity ?? "",
         nameof(SourceId) => SourceId ?? "",
         nameof(SourceType) => SourceType ?? "",
         nameof(ContentRoot) => ContentRoot ?? "",
@@ -1333,9 +1336,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         switch (metadataName)
         {
-            case nameof(Identity):
-                Identity = metadataValue;
-                break;
             case nameof(SourceId):
                 SourceId = metadataValue;
                 break;
@@ -1402,7 +1402,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
-        destinationItem.SetMetadata(nameof(Identity), Identity);
         destinationItem.SetMetadata(nameof(SourceId), SourceId);
         destinationItem.SetMetadata(nameof(SourceType), SourceType);
         destinationItem.SetMetadata(nameof(ContentRoot), ContentRoot);
