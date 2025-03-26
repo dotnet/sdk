@@ -227,10 +227,12 @@
     <!-- Inputs: Packages to include in the tarball -->
     <ItemGroup>
       <ArtifactsPackageToBundle Include="$(ArtifactsShippingPackagesDir)**;
-                                          $(ArtifactsNonShippingPackagesDir)**"
-                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
-      <ReferencePackageToBundle Include="$(ReferencePackagesDir)**"
-                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+                                          $(ArtifactsNonShippingPackagesDir)**" />
+      <ArtifactsPackageToBundle Remove="@(ArtifactsPackageToBundle)"
+                                Condition="$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+      <ReferencePackageToBundle Include="$(ReferencePackagesDir)**" />
+      <ReferencePackageToBundle Remove="@(ReferencePackageToBundle)"
+                                Condition="$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
       <MergedAssetManifest Include="$(MergedAssetManifestOutputPath)" />
     </ItemGroup>
 

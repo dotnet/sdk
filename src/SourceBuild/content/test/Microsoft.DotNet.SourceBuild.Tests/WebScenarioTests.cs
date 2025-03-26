@@ -62,11 +62,11 @@ public class WebScenarioTests : SdkTests
 
         string packagesDirectory = Path.Combine(Environment.CurrentDirectory, "packages");
 
-        IEnumerable<string> packages = restoredPackageFiles
+        IEnumerable<string> packages = restoredPackageFiles.GetValues<string>()
+            .Where(file => file is not null)
             .Select(file =>
             {
-                string path = file.ToString();
-                path = path.Substring(packagesDirectory.Length + 1); // trim the leading path up to the package name directory
+                string path = file.Substring(packagesDirectory.Length + 1); // trim the leading path up to the package name directory
                 return path.Substring(0, path.IndexOf('/')); // trim the rest of the path
             })
             .Except(allowedPackages, StringComparer.OrdinalIgnoreCase);
