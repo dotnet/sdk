@@ -156,8 +156,8 @@ internal class ReleasePropertyProjectLocator
         }
 
         _isHandlingSolution = true;
-        List<ProjectInstance> configuredProjects = new();
-        HashSet<string> configValues = new();
+        List<ProjectInstance> configuredProjects = [];
+        HashSet<string> configValues = [];
         object projectDataLock = new();
 
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))

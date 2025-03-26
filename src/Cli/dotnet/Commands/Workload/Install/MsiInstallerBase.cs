@@ -22,7 +22,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <summary>
     /// Track messages that should never be reported more than once.
     /// </summary>
-    private HashSet<string> _reportedMessages = new();
+    private HashSet<string> _reportedMessages = [];
 
     /// <summary>
     /// Backing field for the install location of .NET

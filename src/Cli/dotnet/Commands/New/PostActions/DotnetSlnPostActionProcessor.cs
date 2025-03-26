@@ -33,7 +33,7 @@ internal class DotnetSlnPostActionProcessor : PostActionProcessorBase
     // If any indexes are out of range or non-numeric, this method returns false and projectFiles is set to null.
     internal static bool TryGetProjectFilesToAdd(IPostAction actionConfig, ICreationResult templateCreationResult, string outputBasePath, [NotNullWhen(true)] out IReadOnlyList<string> projectFiles)
     {
-        List<string> filesToAdd = new();
+        List<string> filesToAdd = [];
         projectFiles = new List<string>();
 
         if ((actionConfig.Args != null) && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))

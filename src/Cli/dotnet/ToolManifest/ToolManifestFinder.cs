@@ -62,7 +62,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         if (!TryFindToolManifestPackages(allPossibleManifests, out var toolManifestPackageAndSource))
         {
             toolManifestPackageAndSource =
-                new List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+                [];
         }
 
         return toolManifestPackageAndSource.ToArray();
@@ -74,7 +74,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
     {
         bool findAnyManifest = false;
         toolManifestPackageAndSource
-            = new List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+            = [];
         foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in allPossibleManifests)
         {
             if (!_fileSystem.File.Exists(possibleManifest.Value))

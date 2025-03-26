@@ -41,7 +41,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private readonly ConcurrentDictionary<string, TestProgressState> _assemblies = new();
 
-    private readonly List<TestRunArtifact> _artifacts = new();
+    private readonly List<TestRunArtifact> _artifacts = [];
 
     private readonly TerminalTestReporterOptions _options;
 

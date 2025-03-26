@@ -329,7 +329,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             Name = packageId.ToString(),
             Version = version,
             Type = LibraryType.Package,
-            PackageType = new List<PackageType>() { PackageType.DotnetTool }
+            PackageType = [PackageType.DotnetTool]
         };
 
         //  Create NuGetv3LocalRepository

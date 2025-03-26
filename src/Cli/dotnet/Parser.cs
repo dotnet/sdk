@@ -259,8 +259,8 @@ public static class Parser
 
         public void additionalOption(HelpContext context)
         {
-            List<TwoColumnHelpRow> options = new();
-            HashSet<CliOption> uniqueOptions = new();
+            List<TwoColumnHelpRow> options = [];
+            HashSet<CliOption> uniqueOptions = [];
             foreach (CliOption option in context.Command.Options)
             {
                 if (!option.Hidden && uniqueOptions.Add(option))

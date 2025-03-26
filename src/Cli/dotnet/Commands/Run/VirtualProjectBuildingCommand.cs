@@ -26,7 +26,7 @@ internal sealed class VirtualProjectBuildingCommand
     public int Execute(string[] binaryLoggerArgs, ILogger consoleLogger)
     {
         var binaryLogger = GetBinaryLogger(binaryLoggerArgs);
-        Dictionary<string, string?> savedEnvironmentVariables = new();
+        Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
             // Set environment variables.

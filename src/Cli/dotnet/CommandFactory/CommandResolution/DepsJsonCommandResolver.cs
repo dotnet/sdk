@@ -187,8 +187,10 @@ public class DepsJsonCommandResolver : ICommandResolver
         var depsFileArguments = GetDepsFileArguments(depsJsonFile);
         var additionalProbingPathArguments = GetAdditionalProbingPathArguments();
 
-        var muxerArgs = new List<string>();
-        muxerArgs.Add("exec");
+        var muxerArgs = new List<string>
+        {
+            "exec"
+        };
         muxerArgs.AddRange(depsFileArguments);
         muxerArgs.AddRange(additionalProbingPathArguments);
         muxerArgs.Add(commandPath);

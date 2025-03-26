@@ -276,10 +276,10 @@ public partial class RunCommand
 
     private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
     {
-        List<string> args = new()
-        {
+        List<string> args =
+        [
             "-nologo"
-        };
+        ];
 
         if (Verbosity is null)
         {

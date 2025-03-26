@@ -29,9 +29,10 @@ internal class ProjectRestorer : IProjectRestorer
         PackageLocation packageLocation,
         string verbosity = null)
     {
-        var argsToPassToRestore = new List<string>();
-
-        argsToPassToRestore.Add(project.Value);
+        var argsToPassToRestore = new List<string>
+        {
+            project.Value
+        };
         if (packageLocation.NugetConfig != null)
         {
             argsToPassToRestore.Add("--configfile");

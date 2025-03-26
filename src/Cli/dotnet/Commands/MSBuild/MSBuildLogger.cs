@@ -110,7 +110,7 @@ public sealed class MSBuildLogger : INodeLogger
             case TargetFrameworkTelemetryEventName:
                 {
                     var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
-                    Dictionary<string, string> maskedProperties = new();
+                    Dictionary<string, string> maskedProperties = [];
 
                     foreach (var key in new[] {
                         TargetFrameworkVersionTelemetryPropertyKey,
@@ -197,7 +197,7 @@ public sealed class MSBuildLogger : INodeLogger
                 if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    measurements ??= new Dictionary<string, double>();
+                    measurements ??= [];
                     measurements[propertyToBeMeasured] = realValue;
                 }
             }

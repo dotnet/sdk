@@ -361,7 +361,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
 
-        List<WorkloadDownload> ret = new();
+        List<WorkloadDownload> ret = [];
         DirectoryPath? tempPath = null;
         try
         {

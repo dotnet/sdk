@@ -67,25 +67,26 @@ internal class AddPackageReferenceCommand : CommandBase
 
     private void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
     {
-        var args = new List<string>();
+        var args = new List<string>
+        {
+            // Pass the project file path
+            projectFilePath,
 
-        // Pass the project file path
-        args.Add(projectFilePath);
+            // Pass the task as generate restore Dependency Graph file
+            "-target:GenerateRestoreGraphFile",
 
-        // Pass the task as generate restore Dependency Graph file
-        args.Add("-target:GenerateRestoreGraphFile");
+            // Pass Dependency Graph file output path
+            $"-property:RestoreGraphOutputPath=\"{dgFilePath}\"",
 
-        // Pass Dependency Graph file output path
-        args.Add($"-property:RestoreGraphOutputPath=\"{dgFilePath}\"");
+            // Turn off recursive restore
+            $"-property:RestoreRecursive=false",
 
-        // Turn off recursive restore
-        args.Add($"-property:RestoreRecursive=false");
+            // Turn off restore for Dotnet cli tool references so that we do not generate extra dg specs
+            $"-property:RestoreDotnetCliToolReferences=false",
 
-        // Turn off restore for Dotnet cli tool references so that we do not generate extra dg specs
-        args.Add($"-property:RestoreDotnetCliToolReferences=false");
-
-        // Output should not include MSBuild version header
-        args.Add("-nologo");
+            // Output should not include MSBuild version header
+            "-nologo"
+        };
 
         var result = new MSBuildForwardingApp(args).Execute();
 

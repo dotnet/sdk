@@ -280,8 +280,10 @@ internal class MsbuildProject
     private IEnumerable<string> GetIncludeAlternativesForRemoval(string reference)
     {
         // We do not care about duplicates in case when i.e. reference is already full path
-        var ret = new List<string>();
-        ret.Add(reference);
+        var ret = new List<string>
+        {
+            reference
+        };
 
         string fullPath = Path.GetFullPath(reference);
         ret.Add(fullPath);

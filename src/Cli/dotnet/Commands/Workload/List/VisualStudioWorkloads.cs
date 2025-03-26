@@ -103,7 +103,7 @@ internal static class VisualStudioWorkloads
         InstalledWorkloadsCollection installedWorkloads, SdkFeatureBand? sdkFeatureBand = null)
     {
         Dictionary<string, string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
-        HashSet<string> installedWorkloadComponents = new();
+        HashSet<string> installedWorkloadComponents = [];
 
         // Visual Studio instances contain a large set of packages and we have to perform a linear
         // search to determine whether a matching SDK was installed and look for each installable
@@ -211,7 +211,7 @@ internal static class VisualStudioWorkloads
         // https://dev.azure.com/devdiv/DevDiv/_workitems/edit/2241752/
         lock (s_guard)
         {
-            List<ISetupInstance> vsInstances = new();
+            List<ISetupInstance> vsInstances = [];
 
             try
             {
