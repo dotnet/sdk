@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -47,7 +48,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -121,7 +122,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -157,7 +158,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }

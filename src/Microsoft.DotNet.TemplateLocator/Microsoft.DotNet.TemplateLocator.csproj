@@ -32,16 +32,16 @@
        2 different ways of doing things
   -->
   <ItemGroup>
-    <Compile Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader"/>
-    <Compile Include="..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="Microsoft.DotNet.SdkResolver"/>
-    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
+    <Compile Include="..\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\FXVersion.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli"/>
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization"/>
+    <EmbeddedResource Include="..\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">

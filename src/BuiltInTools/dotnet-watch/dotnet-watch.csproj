@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <Import Project="..\AspireService\Microsoft.WebTools.AspireService.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
@@ -42,11 +42,8 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)\src\Cli\dotnet\dotnet.csproj" />
-
     <ProjectReference Include="..\BrowserRefresh\Microsoft.AspNetCore.Watch.BrowserRefresh.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="middleware\Microsoft.AspNetCore.Watch.BrowserRefresh.dll" CopyToOutputDirectory="PreserveNewest" />
-
     <ProjectReference Include="..\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" TargetPath="hotreload\Microsoft.Extensions.DotNetDeltaApplier.dll" CopyToOutputDirectory="PreserveNewest" />
-
     <ProjectReference Include="..\DotNetWatchTasks\DotNetWatchTasks.csproj" PrivateAssets="All" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" UndefineProperties="TargetFramework;TargetFrameworks" OutputItemType="Content" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

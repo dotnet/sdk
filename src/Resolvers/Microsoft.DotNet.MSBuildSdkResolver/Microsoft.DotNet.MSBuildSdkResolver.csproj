@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization"/>
+    <EmbeddedResource Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Sdk.Localization" />
   </ItemGroup>
 
   <!-- We need to use relative path due to if we want to run tests in helix. Since we would need to run the tests in a different helix machine
@@ -31,7 +31,7 @@
     </PropertyGroup>
 
     <Error Condition=" '$(MSBuildRuntimeType)' == 'Core' And '$(_TargetPathRelativePath)' != '$(_TargetPathRelativePathCheck)'"
-           Text="Incorrect relative path calculation"/>
+           Text="Incorrect relative path calculation" />
 
     <ItemGroup>
       <ManifestLines Include="&lt;SdkResolver&gt;" />
@@ -48,18 +48,18 @@
 
   <!-- To reduce dll load (cause RPS perf regression). Directly compile files from Microsoft.DotNet.NativeWrapper, Microsoft.DotNet.SdkResolver, and the workload resolver -->
   <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\dotnet-workload\InstallStateContents.cs" LinkBase="Cli"/>
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
     <Compile Include="..\Microsoft.DotNet.NativeWrapper\**\*.cs" LinkBase="Microsoft.DotNet.NativeWrapper" />
     <Compile Include="..\Microsoft.DotNet.SdkResolver\**\*.cs" LinkBase="Microsoft.DotNet.SdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\CachingWorkloadResolver.cs" LinkBase="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" />
     <Compile Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\**\*.cs" LinkBase="Microsoft.NET.Sdk.WorkloadManifestReader" />
-    <Compile Include="..\..\Cli\dotnet\commands\dotnet-workload\install\WorkloadInstallRecords\**\*.cs"
-             Exclude="..\..\Cli\dotnet\commands\dotnet-workload\install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
+    <Compile Include="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\**\*.cs"
+             Exclude="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
              LinkBase="WorkloadInstallRecords" />
 
-    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
   </ItemGroup>
 
@@ -100,7 +100,7 @@
 
   <Target Name="VerifyDependencies" AfterTargets="Build" Condition="'$(ExcludeFromDotNetBuild)' != 'true'">
     <ResolveAssemblyReference AssemblyFiles="$(TargetPath)" SearchPaths="" AutoUnify="true">
-      <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies"/>
+      <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies" />
     </ResolveAssemblyReference>
 
     <ItemGroup>

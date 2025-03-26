@@ -1,4 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
@@ -19,7 +20,7 @@
   <ItemGroup>
     <!-- Use string resources from product in order to validate test output. -->
     <EmbeddedResource Include="..\..\src\Cli\dotnet\CommonLocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\commands\dotnet-sln\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\Commands\Solution\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,4 +28,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 </Project>
