@@ -53,7 +53,7 @@ internal sealed class TestModulesFilterHandler
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, true, true), buildOptions);
+            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, true, true), buildOptions, null);
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }

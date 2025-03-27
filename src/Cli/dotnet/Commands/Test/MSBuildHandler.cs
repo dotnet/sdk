@@ -4,6 +4,8 @@
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Tools.Run.LaunchSettings;
 using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -75,6 +77,23 @@ internal sealed class MSBuildHandler : IDisposable
         (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
         InitializeTestApplications(projects);
+        // refactor
+        foreach (var project in projects)
+        {
+            if (!project.IsTestProject && !project.IsTestingPlatformApplication)
+            {
+                // This should never happen. We should only ever create TestModule if it's a test project.
+                throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
+            }
+
+            if (!TryGetLaunchProfileSettingsIfNeeded(project.ProjectFullPath, out ProjectLaunchSettingsModel? launchSettings))
+            {
+                return ExitCode.GenericFailure;
+            }
+
+            var testApp = new TestApplication(project, _buildOptions, launchSettings);
+            _testApplications.Add(testApp);
+        }
 
         return restored ? ExitCode.Success : ExitCode.GenericFailure;
     }
@@ -85,7 +104,100 @@ internal sealed class MSBuildHandler : IDisposable
 
         InitializeTestApplications(projects);
 
+        // refactor
+        foreach (var project in projects)
+        {
+            if (!project.IsTestProject && !project.IsTestingPlatformApplication)
+            {
+                // This should never happen. We should only ever create TestModule if it's a test project.
+                throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
+            }
+
+            if (!TryGetLaunchProfileSettingsIfNeeded(project.ProjectFullPath, out ProjectLaunchSettingsModel? launchSettings))
+            {
+                return ExitCode.GenericFailure;
+            }
+
+            var testApp = new TestApplication(project, _buildOptions, launchSettings);
+            _testApplications.Add(testApp);
+        }
+
         return restored ? ExitCode.Success : ExitCode.GenericFailure;
+    }
+
+    private bool TryGetLaunchProfileSettingsIfNeeded(string projectFilePath, out ProjectLaunchSettingsModel? launchSettingsModel)
+    {
+        launchSettingsModel = default;
+        if (_buildOptions.LaunchSettingsOption.NoLaunchProfile)
+        {
+            return true;
+        }
+
+        var launchSettingsPath = TryFindLaunchSettings(projectFilePath);
+        var launchProfile = _buildOptions.LaunchSettingsOption.LaunchProfile;
+        if (!File.Exists(launchSettingsPath))
+        {
+            if (!string.IsNullOrEmpty(launchProfile))
+            {
+                _output.WriteMessage(string.Format("RunCommandExceptionCouldNotLocateALaunchSettingsFile").Bold().Red());
+            }
+            return true;
+        }
+
+        //if (_buildOptions.Verbosity.IsQuiet() != true)
+        //{
+        //    Reporter.Output.WriteLine(string.Format("UsingLaunchSettingsFromMessage"));
+        //}
+
+        string profileName = string.IsNullOrEmpty(launchProfile) ? "DefaultLaunchProfileDisplayName" : launchProfile;
+
+        try
+        {
+            var launchSettingsFileContents = File.ReadAllText(launchSettingsPath);
+            var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, launchProfile);
+            if (!applyResult.Success)
+            {
+                _output.WriteMessage(string.Format("RunCommandExceptionCouldNotApplyLaunchSettings").Bold().Red());
+            }
+            else
+            {
+                launchSettingsModel = applyResult.LaunchSettings;
+            }
+        }
+        catch (IOException ex)
+        {
+            _output.WriteMessage(string.Format("RunCommandExceptionCouldNotApplyLaunchSettings").Bold().Red());
+            _output.WriteMessage(ex.Message.Bold().Red());
+            return false;
+        }
+
+        return true;
+
+        static string? TryFindLaunchSettings(string projectOrEntryPointFilePath)
+        {
+            var buildPathContainer = File.Exists(projectOrEntryPointFilePath) ? Path.GetDirectoryName(projectOrEntryPointFilePath) : projectOrEntryPointFilePath;
+            if (buildPathContainer is null)
+            {
+                return null;
+            }
+
+            string propsDirectory;
+
+            // VB.NET projects store the launch settings file in the
+            // "My Project" directory instead of a "Properties" directory.
+            // TODO: use the `AppDesignerFolder` MSBuild property instead, which captures this logic already
+            if (string.Equals(Path.GetExtension(projectOrEntryPointFilePath), ".vbproj", StringComparison.OrdinalIgnoreCase))
+            {
+                propsDirectory = "My Project";
+            }
+            else
+            {
+                propsDirectory = "Properties";
+            }
+
+            var launchSettingsPath = Path.Combine(buildPathContainer, propsDirectory, "launchSettings.json");
+            return launchSettingsPath;
+        }
     }
 
     private void InitializeTestApplications(IEnumerable<TestModule> modules)
@@ -106,17 +218,17 @@ internal sealed class MSBuildHandler : IDisposable
             return;
         }
 
-        foreach (TestModule module in modules)
-        {
-            if (!module.IsTestProject && !module.IsTestingPlatformApplication)
-            {
-                // This should never happen. We should only ever create TestModule if it's a test project.
-                throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
-            }
+        //foreach (TestModule module in modules)
+        //{
+        //    if (!module.IsTestProject && !module.IsTestingPlatformApplication)
+        //    {
+        //        // This should never happen. We should only ever create TestModule if it's a test project.
+        //        throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
+        //    }
 
-            var testApp = new TestApplication(module, _buildOptions);
-            _testApplications.Add(testApp);
-        }
+        //    var testApp = new TestApplication(module, _buildOptions);
+        //    _testApplications.Add(testApp);
+        //}
     }
 
     public bool EnqueueTestApplications()

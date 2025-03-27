@@ -59,6 +59,16 @@ internal static class MSBuildUtility
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
+        PathOptions pathOptions = new(parseResult.GetValue(
+            TestingPlatformOptions.ProjectOption),
+            parseResult.GetValue(TestingPlatformOptions.SolutionOption),
+            parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
+
+        LaunchSettingsOptions launchSettingsOptions = new(
+            parseResult.GetValue(CommonOptions.LaunchProfileOption),
+            parseResult.GetValue(CommonOptions.NoLaunchProfileOption),
+            parseResult.GetValue(CommonOptions.NoLaunchProfileArgumentsOption));
+
         var binLogArgs = new List<string>();
         var otherArgs = new List<string>();
 
@@ -77,13 +87,9 @@ internal static class MSBuildUtility
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);
 
-        PathOptions pathOptions = new(parseResult.GetValue(
-            TestingPlatformOptions.ProjectOption),
-            parseResult.GetValue(TestingPlatformOptions.SolutionOption),
-            parseResult.GetValue(TestingPlatformOptions.DirectoryOption));
-
         return new BuildOptions(
             pathOptions,
+            launchSettingsOptions,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
