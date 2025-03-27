@@ -288,9 +288,9 @@
     Versions need to be conditionally selected: due to https://github.com/dotnet/sdk/issues/45155
   -->
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <SystemBuffersVersion>4.6.0</SystemBuffersVersion>
-    <SystemMemoryVersion>4.6.0</SystemMemoryVersion>
-    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
+    <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
+    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
+    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
