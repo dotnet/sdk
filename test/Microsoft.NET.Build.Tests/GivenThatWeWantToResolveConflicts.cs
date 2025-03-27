@@ -365,8 +365,16 @@ namespace Microsoft.NET.Build.Tests
 
                 foreach (var kvp in prunedPackages)
                 {
-                    NuGetVersion.Parse(kvp.Value).Patch.Should().BeGreaterThan(99, $"Patch for {kvp.Key} should be at least 100");
+                    if (nugetFramework.Framework.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase))
+                    {
+                        NuGetVersion.Parse(kvp.Value).Patch.Should().BeGreaterThan(99, $"Patch for {kvp.Key} should be at least 100");
+                    }
+                    else
+                    {
+                        NuGetVersion.Parse(kvp.Value).Patch.Should().BeLessThan(1000, $"Patch for {kvp.Key} should be less than 1000");
+                    }
                 }
+
 
                 return prunedPackages;
             }

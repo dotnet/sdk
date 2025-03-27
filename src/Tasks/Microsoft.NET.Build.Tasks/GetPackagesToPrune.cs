@@ -204,18 +204,29 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+
+
             return packagesToPrune.Select(p =>
             {
                 var item = new TaskItem(p.Key);
 
-                //  If a given version of a package is included in a framework, assume that any patches
-                //  to that package will be included in patches to the framework, and thus should be pruned.
-                //  See https://github.com/dotnet/sdk/issues/44566
-                //  To do this, we set the patch version for the package to be pruned to 32767, which should be
-                //  higher than any actual patch version.
-                var maxPatch = new NuGetVersion(p.Value.Major, p.Value.Minor, 32767);
+                string version;
+                if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase))
+                { 
+                    //  If a given version of a package is included in a framework, assume that any patches
+                    //  to that package will be included in patches to the framework, and thus should be pruned.
+                    //  See https://github.com/dotnet/sdk/issues/44566
+                    //  To do this, we set the patch version for the package to be pruned to 32767, which should be
+                    //  higher than any actual patch version.
+                    var maxPatch = new NuGetVersion(p.Value.Major, p.Value.Minor, 32767);
+                    version = maxPatch.ToString();
+                }
+                else
+                {
+                    version = p.Value.ToString();
+                }
 
-                item.SetMetadata("Version", maxPatch.ToString());
+                item.SetMetadata("Version", version.ToString());
                 return item;
             }).ToArray();
         }
