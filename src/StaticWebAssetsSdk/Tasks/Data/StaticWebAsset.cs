@@ -86,7 +86,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         set
         {
             _modified = true;
-            _identity = Path.GetFullPath(value);
+            _identity = value;
         }
     }
 
