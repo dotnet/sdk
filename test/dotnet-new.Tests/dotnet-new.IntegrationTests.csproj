@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
   <PropertyGroup>
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
@@ -11,7 +12,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="..\..\src\Cli\dotnet-new3\dotnet-new3.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
     <PackageReference Include="Moq" />
     <PackageReference Include="Verify.Xunit" />
@@ -86,4 +86,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <Compile Remove="Approvals\**\*" />
     <None Include="Approvals\**\*" CopyToOutputDirectory="Never" />
   </ItemGroup>
+
 </Project>

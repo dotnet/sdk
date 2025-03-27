@@ -4,7 +4,6 @@
 #nullable disable
 
 using System.Globalization;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -17,27 +16,11 @@ public class ApplyCompressionNegotiation : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
-    public ITaskItem[] AssetFileDetails { get; set; }
-
     [Output]
     public ITaskItem[] UpdatedEndpoints { get; set; }
 
-    public Func<string, long> TestResolveFileLength;
-
-    private Dictionary<string, ITaskItem> _assetFileDetails;
-
     public override bool Execute()
     {
-        if (AssetFileDetails != null)
-        {
-            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (var i = 0; i < AssetFileDetails.Length; i++)
-            {
-                var item = AssetFileDetails[i];
-                _assetFileDetails[item.ItemSpec] = item;
-            }
-        }
-
         var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
 
         var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
@@ -211,28 +194,14 @@ public class ApplyCompressionNegotiation : Task
         return true;
     }
 
-    private string ResolveQuality(StaticWebAsset compressedAsset)
-    {
-        long length;
-        if (_assetFileDetails != null && _assetFileDetails.TryGetValue(compressedAsset.Identity, out var assetFileDetail))
-        {
-            length = long.Parse(assetFileDetail.GetMetadata("FileLength"), CultureInfo.InvariantCulture);
-        }
-        else
-        {
-            length = TestResolveFileLength != null
-                ? TestResolveFileLength(compressedAsset.Identity)
-                : new FileInfo(compressedAsset.Identity).Length;
-        }
-
-        return Math.Round(1.0 / (length + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
-    }
+    private static string ResolveQuality(StaticWebAsset compressedAsset) =>
+        Math.Round(1.0 / (compressedAsset.FileLength + 1), 12).ToString("F12", CultureInfo.InvariantCulture);
 
     private static bool IsCompatible(StaticWebAssetEndpoint compressedEndpoint, StaticWebAssetEndpoint relatedEndpointCandidate)
     {
         var compressedFingerprint = compressedEndpoint.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
         var relatedFingerprint = relatedEndpointCandidate.EndpointProperties.FirstOrDefault(ep => ep.Name == "fingerprint");
-        return string.Equals(compressedFingerprint?.Value, relatedFingerprint?.Value, StringComparison.Ordinal);
+        return string.Equals(compressedFingerprint.Value, relatedFingerprint.Value, StringComparison.Ordinal);
     }
 
     private void ApplyCompressedEndpointHeaders(List<StaticWebAssetEndpointResponseHeader> headers, StaticWebAssetEndpoint compressedEndpoint, string relatedEndpointCandidateRoute)

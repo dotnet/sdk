@@ -2,115 +2,115 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory;
+
+public static class CommandFactoryUsingResolver
 {
-    public static class CommandFactoryUsingResolver
+    private static string[] _knownCommandsAvailableAsDotNetTool = ["dotnet-dev-certs", "dotnet-sql-cache", "dotnet-user-secrets", "dotnet-watch", "dotnet-user-jwts"];
+
+    public static Command CreateDotNet(
+        string commandName,
+        IEnumerable<string> args,
+        NuGetFramework framework = null,
+        string configuration = Constants.DefaultConfiguration,
+        string currentWorkingDirectory = null)
     {
-        private static string[] _knownCommandsAvailableAsDotNetTool = new[] { "dotnet-dev-certs", "dotnet-sql-cache", "dotnet-user-secrets", "dotnet-watch", "dotnet-user-jwts" };
+        return Create("dotnet",
+            new[] { commandName }.Concat(args),
+            framework,
+            configuration: configuration,
+            currentWorkingDirectory);
+    }
 
-        public static Command CreateDotNet(
-            string commandName,
-            IEnumerable<string> args,
-            NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration,
-            string currentWorkingDirectory = null)
+    /// <summary>
+    /// Create a command with the specified arg array. Args will be 
+    /// escaped properly to ensure that exactly the strings in this
+    /// array will be present in the corresponding argument array
+    /// in the command's process.
+    /// </summary>
+    public static Command Create(
+        string commandName,
+        IEnumerable<string> args,
+        NuGetFramework framework = null,
+        string configuration = Constants.DefaultConfiguration,
+        string outputPath = null,
+        string applicationName = null,
+        string currentWorkingDirectory = null)
+    {
+        return Create(
+            new DefaultCommandResolverPolicy(),
+            commandName,
+            args,
+            framework,
+            configuration,
+            outputPath,
+            applicationName,
+            currentWorkingDirectory);
+    }
+
+    public static Command Create(
+        ICommandResolverPolicy commandResolverPolicy,
+        string commandName,
+        IEnumerable<string> args,
+        NuGetFramework framework = null,
+        string configuration = Constants.DefaultConfiguration,
+        string outputPath = null,
+        string applicationName = null,
+        string currentWorkingDirectory = null)
+    {
+        var commandSpec = CommandResolver.TryResolveCommandSpec(
+            commandResolverPolicy,
+            commandName,
+            args,
+            framework,
+            configuration: configuration,
+            outputPath: outputPath,
+            applicationName: applicationName,
+            currentWorkingDirectory: currentWorkingDirectory);
+
+        if (commandSpec == null)
         {
-            return Create("dotnet",
-                new[] { commandName }.Concat(args),
-                framework,
-                configuration: configuration,
-                currentWorkingDirectory);
-        }
-
-        /// <summary>
-        /// Create a command with the specified arg array. Args will be 
-        /// escaped properly to ensure that exactly the strings in this
-        /// array will be present in the corresponding argument array
-        /// in the command's process.
-        /// </summary>
-        public static Command Create(
-            string commandName,
-            IEnumerable<string> args,
-            NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration,
-            string outputPath = null,
-            string applicationName = null,
-            string currentWorkingDirectory = null)
-        {
-            return Create(
-                new DefaultCommandResolverPolicy(),
-                commandName,
-                args,
-                framework,
-                configuration,
-                outputPath,
-                applicationName,
-                currentWorkingDirectory);
-        }
-
-        public static Command Create(
-            ICommandResolverPolicy commandResolverPolicy,
-            string commandName,
-            IEnumerable<string> args,
-            NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration,
-            string outputPath = null,
-            string applicationName = null,
-            string currentWorkingDirectory = null)
-        {
-            var commandSpec = CommandResolver.TryResolveCommandSpec(
-                commandResolverPolicy,
-                commandName,
-                args,
-                framework,
-                configuration: configuration,
-                outputPath: outputPath,
-                applicationName: applicationName,
-                currentWorkingDirectory: currentWorkingDirectory);
-
-            if (commandSpec == null)
+            if (_knownCommandsAvailableAsDotNetTool.Contains(commandName, StringComparer.OrdinalIgnoreCase))
             {
-                if (_knownCommandsAvailableAsDotNetTool.Contains(commandName, StringComparer.OrdinalIgnoreCase))
-                {
-                    throw new CommandAvailableAsDotNetToolException(commandName);
-                }
-                else
-                {
-                    throw new CommandUnknownException(commandName);
-                }
+                throw new CommandAvailableAsDotNetToolException(commandName);
             }
-
-            var command = Create(commandSpec);
-
-            return command;
-        }
-
-        public static Command Create(CommandSpec commandSpec)
-        {
-            var psi = new ProcessStartInfo
+            else
             {
-                FileName = commandSpec.Path,
-                Arguments = commandSpec.Args,
-                UseShellExecute = false
-            };
-
-            foreach (var environmentVariable in commandSpec.EnvironmentVariables)
-            {
-                if (!psi.Environment.ContainsKey(environmentVariable.Key))
-                {
-                    psi.Environment.Add(environmentVariable.Key, environmentVariable.Value);
-                }
+                throw new CommandUnknownException(commandName);
             }
-
-            var _process = new Process
-            {
-                StartInfo = psi
-            };
-
-            return new Command(_process);
         }
+
+        var command = Create(commandSpec);
+
+        return command;
+    }
+
+    public static Command Create(CommandSpec commandSpec)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = commandSpec.Path,
+            Arguments = commandSpec.Args,
+            UseShellExecute = false
+        };
+
+        foreach (var environmentVariable in commandSpec.EnvironmentVariables)
+        {
+            if (!psi.Environment.ContainsKey(environmentVariable.Key))
+            {
+                psi.Environment.Add(environmentVariable.Key, environmentVariable.Value);
+            }
+        }
+
+        var _process = new Process
+        {
+            StartInfo = psi
+        };
+
+        return new Command(_process);
     }
 }

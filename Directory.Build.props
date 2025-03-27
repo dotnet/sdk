@@ -9,13 +9,6 @@
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
     <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
-
-    <!--
-      The finalizer.nativeproject needs to have Platform set to build for the correct architecture, but this value being set below isn't used by the project because of the build hierarchy when using the CMake SDK.
-      Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
-      Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
-    -->
-    <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
@@ -23,11 +16,6 @@
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
   <PropertyGroup>
-    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
-    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
-    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
-    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
-
     <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
@@ -35,30 +23,13 @@
     <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
     <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
 
-    <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) OR $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
-    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
-    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+    <OSName Condition="'$(OSName)' == '' AND $(Rid) != ''">$(Rid.Substring(0, $(Rid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
   </PropertyGroup>
 
   <PropertyGroup>
-    <ArchiveExtension>.tar.gz</ArchiveExtension>
-    <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
-
-    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.msi</InstallerExtension>
-    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.pkg</InstallerExtension>
-    <InstallerExtension Condition="'$(IsDebianBaseDistro)' == 'true'">.deb</InstallerExtension>
-    <InstallerExtension Condition="'$(IsRPMBasedDistro)' == 'true'">.rpm</InstallerExtension>
-
-    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.exe</BundleExtension>
-    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(InstallerExtension)</BundleExtension>
-    <BundleExtension Condition="'$(IsDebianBaseDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
-    <BundleExtension Condition="'$(IsRPMBasedDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
-
-    <ExeExtension>.exe</ExeExtension>
-    <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
-  </PropertyGroup>
-
-  <PropertyGroup>
+    <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
+    <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Latest</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
@@ -83,8 +54,6 @@
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
-
-    <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
 
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>

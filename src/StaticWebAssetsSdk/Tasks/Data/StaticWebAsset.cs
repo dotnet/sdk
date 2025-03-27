@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
@@ -18,6 +19,8 @@ internal sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<S
 public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<StaticWebAsset>
 #endif
 {
+    public const string DateTimeAssetFormat = "ddd, dd MMM yyyy HH:mm:ss 'GMT'";
+
     public StaticWebAsset()
     {
     }
@@ -41,6 +44,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         CopyToOutputDirectory = asset.CopyToOutputDirectory;
         CopyToPublishDirectory = asset.CopyToPublishDirectory;
         OriginalItemSpec = asset.OriginalItemSpec;
+        FileLength = asset.FileLength;
+        LastWriteTime = asset.LastWriteTime;
     }
 
     public string Identity { get; set; }
@@ -80,6 +85,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public string CopyToPublishDirectory { get; set; }
 
     public string OriginalItemSpec { get; set; }
+
+    public long FileLength { get; set; } = -1;
+
+    public DateTimeOffset LastWriteTime { get; set; } = DateTimeOffset.MinValue;
 
     public static StaticWebAsset FromTaskItem(ITaskItem item)
     {
@@ -179,7 +188,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         var result = FromTaskItemCore(item);
         result.ApplyDefaults();
-        result.OriginalItemSpec = item.GetMetadata("FullPath");
+        result.OriginalItemSpec = string.IsNullOrEmpty(result.OriginalItemSpec) ? item.GetMetadata("FullPath") : result.OriginalItemSpec;
 
         result.Normalize();
         result.Validate();
@@ -212,31 +221,36 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             CopyToOutputDirectory = item.GetMetadata(nameof(CopyToOutputDirectory)),
             CopyToPublishDirectory = item.GetMetadata(nameof(CopyToPublishDirectory)),
             OriginalItemSpec = item.GetMetadata(nameof(OriginalItemSpec)),
+            FileLength = item.GetMetadata("FileLength") is string fileLengthString &&
+                long.TryParse(fileLengthString, out var fileLength) ? fileLength : -1,
+            LastWriteTime = item.GetMetadata("LastWriteTime") is string lastWriteTimeString &&
+                DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime) ? lastWriteTime : DateTimeOffset.MinValue
         };
 
     public void ApplyDefaults()
     {
         CopyToOutputDirectory = string.IsNullOrEmpty(CopyToOutputDirectory) ? AssetCopyOptions.Never : CopyToOutputDirectory;
         CopyToPublishDirectory = string.IsNullOrEmpty(CopyToPublishDirectory) ? AssetCopyOptions.PreserveNewest : CopyToPublishDirectory;
-        (Fingerprint, Integrity) = ComputeFingerprintAndIntegrity();
         AssetKind = !string.IsNullOrEmpty(AssetKind) ? AssetKind : !ShouldCopyToPublishDirectory() ? AssetKinds.Build : AssetKinds.All;
         AssetMode = string.IsNullOrEmpty(AssetMode) ? AssetModes.All : AssetMode;
         AssetRole = string.IsNullOrEmpty(AssetRole) ? AssetRoles.Primary : AssetRole;
+        if (string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) || FileLength == -1 || LastWriteTime == DateTimeOffset.MinValue)
+        {
+            var file = ResolveFile(Identity, OriginalItemSpec);
+            (Fingerprint, Integrity) = string.IsNullOrEmpty(Fingerprint) || string.IsNullOrEmpty(Integrity) ?
+                ComputeFingerprintAndIntegrityIfNeeded(file) : (Fingerprint, Integrity);
+            FileLength = FileLength == -1 ? file.Length : FileLength;
+            LastWriteTime = LastWriteTime == DateTimeOffset.MinValue ? file.LastWriteTimeUtc : LastWriteTime;
+        }
     }
 
-    private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrity() =>
+    private (string Fingerprint, string Integrity) ComputeFingerprintAndIntegrityIfNeeded(FileInfo file) =>
         (Fingerprint, Integrity) switch
         {
-            ("", "") => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec),
+            ("", "") => ComputeFingerprintAndIntegrity(file),
             (not null, not null) => (Fingerprint, Integrity),
-            _ => ComputeFingerprintAndIntegrity(Identity, OriginalItemSpec)
+            _ => ComputeFingerprintAndIntegrity(file)
         };
-
-    internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(string identity, string originalItemSpec)
-    {
-        var fileInfo = ResolveFile(identity, originalItemSpec);
-        return ComputeFingerprintAndIntegrity(fileInfo);
-    }
 
     internal static (string fingerprint, string integrity) ComputeFingerprintAndIntegrity(FileInfo fileInfo)
     {
@@ -306,6 +320,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         result.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory);
         result.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory);
         result.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec);
+        result.SetMetadata("FileLength", FileLength.ToString(CultureInfo.InvariantCulture));
+        result.SetMetadata("LastWriteTime", LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture));
         return result;
     }
 
@@ -320,7 +336,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown source type '{SourceType}' for '{Identity}'.");
-        };
+        }
 
         if (string.IsNullOrEmpty(SourceId))
         {
@@ -355,7 +371,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset kind '{AssetKind}' for '{Identity}'.");
-        };
+        }
 
         switch (AssetMode)
         {
@@ -365,7 +381,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset mode '{AssetMode}' for '{Identity}'.");
-        };
+        }
 
         switch (AssetRole)
         {
@@ -375,7 +391,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 break;
             default:
                 throw new InvalidOperationException($"Unknown Asset role '{AssetRole}' for '{Identity}'.");
-        };
+        }
 
         if (!IsPrimaryAsset() && string.IsNullOrEmpty(RelatedAsset))
         {
@@ -395,6 +411,16 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         if (string.IsNullOrEmpty(Integrity))
         {
             throw new InvalidOperationException($"Integrity for '{Identity}' is not defined.");
+        }
+
+        if (FileLength < 0)
+        {
+            throw new InvalidOperationException($"File length for '{Identity}' is not defined.");
+        }
+
+        if (LastWriteTime == DateTimeOffset.MinValue)
+        {
+            throw new InvalidOperationException($"Last write time for '{Identity}' is not defined.");
         }
     }
 
@@ -416,7 +442,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         string integrity,
         string copyToOutputDirectory,
         string copyToPublishDirectory,
-        string originalItemSpec)
+        string originalItemSpec,
+        long fileLength,
+        DateTimeOffset lastWriteTime)
     {
         var result = new StaticWebAsset
         {
@@ -437,7 +465,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             Integrity = integrity,
             CopyToOutputDirectory = copyToOutputDirectory,
             CopyToPublishDirectory = copyToPublishDirectory,
-            OriginalItemSpec = originalItemSpec
+            OriginalItemSpec = originalItemSpec,
+            FileLength = fileLength,
+            LastWriteTime = lastWriteTime
         };
 
         result.ApplyDefaults();
@@ -554,27 +584,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return asset.ItemSpec;
     }
 
-    // Compares all fields in this order
-    // Identity
-    // SourceType
-    // SourceId
-    // ContentRoot
-    // BasePath
-    // RelativePath
-    // AssetKind
-    // AssetMode
-    // AssetRole
-    // AssetMergeSource
-    // AssetMergeBehavior
-    // RelatedAsset
-    // AssetTraitName
-    // AssetTraitValue
-    // Fingerprint
-    // Integrity
-    // CopyToOutputDirectory
-    // CopyToPublishDirectory
-    // OriginalItemSpec
-
     public int CompareTo(StaticWebAsset other)
     {
         var result = string.Compare(Identity, other.Identity, StringComparison.Ordinal);
@@ -584,6 +593,18 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
 
         result = string.Compare(SourceType, other.SourceType, StringComparison.Ordinal);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = FileLength.CompareTo(other.FileLength);
+        if (result != 0)
+        {
+            return result;
+        }
+
+        result = LastWriteTime.CompareTo(other.LastWriteTime);
         if (result != 0)
         {
             return result;
@@ -694,6 +715,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     public bool Equals(StaticWebAsset other) =>
         Identity == other.Identity &&
         SourceType == other.SourceType &&
+        FileLength == other.FileLength &&
+        LastWriteTime == other.LastWriteTime &&
         SourceId == other.SourceId &&
         ContentRoot == other.ContentRoot &&
         BasePath == other.BasePath &&
@@ -851,6 +874,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         $"AssetTraitValue: {AssetTraitValue}, " +
         $"Fingerprint: {Fingerprint}, " +
         $"Integrity: {Integrity}, " +
+        $"FileLength: {FileLength}, " +
+        $"LastWriteTime: {LastWriteTime}, " +
         $"CopyToOutputDirectory: {CopyToOutputDirectory}, " +
         $"CopyToPublishDirectory: {CopyToPublishDirectory}, " +
         $"OriginalItemSpec: {OriginalItemSpec}";
@@ -861,6 +886,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var hash = new HashCode();
         hash.Add(Identity);
         hash.Add(SourceType);
+        hash.Add(FileLength);
+        hash.Add(LastWriteTime);
         hash.Add(SourceId);
         hash.Add(ContentRoot);
         hash.Add(BasePath);
@@ -883,6 +910,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         var hashCode = 1447485498;
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Identity);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceType);
+        hashCode = hashCode * -1521134295 + FileLength.GetHashCode();
+        hashCode = hashCode * -1521134295 + LastWriteTime.GetHashCode();
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(SourceId);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ContentRoot);
         hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(BasePath);
@@ -904,14 +933,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 #endif
     }
 
-    internal IEnumerable<StaticWebAssetResolvedRoute> ComputeRoutes()
+    internal void ComputeRoutes(List<StaticWebAssetResolvedRoute> routes)
     {
+        routes.Clear();
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
         var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
         foreach (var expandedPattern in pattern.ExpandPatternExpression())
         {
             var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
-            yield return new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens);
+            routes.Add(new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens));
         }
     }
 

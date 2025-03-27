@@ -213,6 +213,14 @@ extends:
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
+              buildArchitecture: arm64
+              runtimeIdentifier: linux-arm64
+              # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              officialBuildProperties: $(_officialBuildProperties)
+              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              runTests: false
+            - categoryName: Portable
               container: centosStream9
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
@@ -277,7 +285,7 @@ extends:
             name: Azure Pipelines
             image: macOS-latest
             os: macOS
-          helixTargetQueue: osx.13.amd64
+          helixTargetQueue: osx.15.amd64
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
@@ -305,7 +313,7 @@ extends:
               name: Azure Pipelines
               vmImage: macOS-latest
               os: macOS
-            helixTargetQueue: osx.13.arm64
+            helixTargetQueue: osx.15.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
               buildArchitecture: arm64

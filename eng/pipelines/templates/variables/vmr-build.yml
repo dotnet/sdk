@@ -9,6 +9,11 @@ parameters:
   type: string
   default: ''
 
+- name: desiredIBC
+  displayName: IBC on/IBC off/default IBC parameters
+  type: string
+  default: ''
+
 variables:
 - ${{ if ne(parameters.vmrBranch, '') }}:
   - name: VmrBranch
@@ -27,10 +32,24 @@ variables:
   value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
 
 ## Note: The use of if expressons underneath the variable is necessary to get the updated isOfficialBuild value
-- name: ibcEnabled
-  ${{ if eq(variables['isOfficialBuild'], true) }}:
+- ${{ if eq(parameters.desiredIBC, 'Enabled') }}:
+  - name: ibcEnabled
     value: true
-  ${{ else }}:
+- ${{ elseif eq(parameters.desiredIBC, 'Disabled') }}:
+  - name: ibcEnabled
+    value: false
+- ${{ elseif or(startsWith(parameters.desiredIBC, 'Default'), eq(parameters.desiredIBC, '')) }}:
+  # Enable IBC on the internal project if the, branch is a main or release branch
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+    # IBC disabled until Mismatched MVIDs issue resolved. https://github.com/dotnet/source-build/issues/4954
+    - name: ibcEnabled
+      value: false
+  # No IBC otherwise.
+  - ${{ else }}:
+    - name: ibcEnabled
+      value: false
+- ${{ else }}:
+  - name: ibcEnabled
     value: false
 
 - name: officialBuildParameter
@@ -42,10 +61,10 @@ variables:
 - ${{ if eq(parameters.desiredSigning, 'Signed') }}:
   - name: signEnabled
     value: true
-- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+- ${{ elseif eq(parameters.desiredSigning, 'Unsigned') }}:
   - name: signEnabled
     value: false
-- ${{ if or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
+- ${{ elseif or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
   # Always sign on the public project (will be dry-run signing)
   - ${{ if eq(variables['System.TeamProject'], 'public') }}:
     - name: signEnabled
@@ -64,6 +83,19 @@ variables:
       value: false
 - ${{ else }}:
   - name: signEnabled
+    value: false
+
+# If signing is disabled, don't sign the DAC.
+- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signDacEnabled
+    value: false
+# Otherwise, sign if the branch is a release branch.
+# We can't sign the DAC in main because the certificates are locked down.
+- ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/reltest/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+  - name: signDacEnabled
+    value: true
+- ${{ else }}:
+  - name: signDacEnabled
     value: false
 
 - name: almaLinuxContainerName
