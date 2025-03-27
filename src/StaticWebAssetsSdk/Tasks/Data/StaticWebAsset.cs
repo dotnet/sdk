@@ -86,8 +86,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         set
         {
             _modified = true;
-            // Note, this is the same ItemSpec does in new TaskItem
-            _identity = FixFilePath(value);
+            _identity = Path.GetFullPath(value);
         }
     }
 
@@ -1264,14 +1263,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     #region ITaskItem2 implementation
 
     string ITaskItem2.EvaluatedIncludeEscaped { get => Identity; set => Identity = value; }
-
-    string ITaskItem.ItemSpec {
-        get => Identity;
-        set => Identity = value;
-    }
-
-    // This mimics the implementation from
-    private static string FixFilePath(string value) => string.IsNullOrEmpty(value) || Path.DirectorySeparatorChar == '\\' ? value : value.Replace('\\', '/');
+    string ITaskItem.ItemSpec { get => Identity; set => Identity = value; }
 
     private static readonly string[] _defaultPropertyNames = [
         nameof(SourceId),
