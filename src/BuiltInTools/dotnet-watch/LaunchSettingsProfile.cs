@@ -83,6 +83,12 @@ namespace Microsoft.DotNet.Watch
             }
 
             var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(f => f.Value.CommandName == "Project").Key;
+            if (defaultProfileKey is null)
+            {
+                reporter.Verbose("Unable to find 'Project' command in the default launch profile.");
+                return null;
+            }
+
             var defaultProfile = launchSettings.Profiles[defaultProfileKey];
             defaultProfile.LaunchProfileName = defaultProfileKey;
             return defaultProfile;
