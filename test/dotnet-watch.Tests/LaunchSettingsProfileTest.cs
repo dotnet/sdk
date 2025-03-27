@@ -71,7 +71,7 @@ public class LaunchSettingsProfileTest
         {
           "profiles": {
             "profile": {
-              "applicationUrl": "http://localhost:5000",
+              "applicationUrl": "http://localhost:5000"
             }
           }
         }
