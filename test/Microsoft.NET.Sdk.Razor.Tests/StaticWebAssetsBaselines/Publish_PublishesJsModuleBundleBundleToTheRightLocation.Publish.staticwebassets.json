@@ -2022,7 +2022,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.eq4eem9pbl.modules.json.br",
+      "Route": "ComponentApp.__fingerprint__.modules.json.br",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.modules.json.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2130,7 +2130,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.eq4eem9pbl.modules.json",
+      "Route": "ComponentApp.__fingerprint__.modules.json",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.modules.json.br",
       "Selectors": [
         {
@@ -2238,7 +2238,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.eq4eem9pbl.modules.json.gz",
+      "Route": "ComponentApp.__fingerprint__.modules.json.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.modules.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2346,7 +2346,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.eq4eem9pbl.modules.json",
+      "Route": "ComponentApp.__fingerprint__.modules.json",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.modules.json.gz",
       "Selectors": [
         {
@@ -3094,7 +3094,7 @@
       ]
     },
     {
-      "Route": "ComponentApp.eq4eem9pbl.modules.json",
+      "Route": "ComponentApp.__fingerprint__.modules.json",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.publish.manifest.json",
       "Selectors": [],
       "ResponseHeaders": [
