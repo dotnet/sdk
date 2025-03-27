@@ -216,7 +216,7 @@ jobs:
       value: clean-while-building
 
   - name: baseArguments
-    value: $(commandPrefix)ci $(commandPrefix) $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
+    value: $(commandPrefix)ci $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
 
   - name: baseProperties
     value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
