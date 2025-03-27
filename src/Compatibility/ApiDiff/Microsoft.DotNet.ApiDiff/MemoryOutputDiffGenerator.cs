@@ -2,8 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Reflection;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
@@ -39,6 +42,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private readonly SyntaxList<AttributeListSyntax> _emptyAttributeList;
     private readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> _diagnosticOptions;
     private readonly ConcurrentDictionary<string, string> _results;
+    private readonly ChildrenNodesComparer _childrenNodesComparer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MemoryOutputDiffGenerator"/> class.
@@ -80,6 +84,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _emptyAttributeList = SyntaxFactory.List<AttributeListSyntax>();
         _results = [];
         _endOfLineTrivia = Environment.NewLine == "\r\n" ? SyntaxFactory.CarriageReturnLineFeed : SyntaxFactory.LineFeed;
+        _childrenNodesComparer = new ChildrenNodesComparer();
     }
 
     /// <inheritdoc/>
@@ -217,7 +222,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         StringBuilder sb = new();
         // Traverse all the elements found on the left side. This only visits unchanged, modified and deleted APIs.
         // In other words, this loop excludes those that are new on the right. Those are handled later.
-        foreach ((string beforeMemberName, MemberDeclarationSyntax beforeMemberNode) in beforeChildrenNodes.OrderBy(x => x.Key))
+        foreach ((string beforeMemberName, MemberDeclarationSyntax beforeMemberNode) in beforeChildrenNodes.Order(_childrenNodesComparer))
         {
             if (afterChildrenNodes.TryGetValue(beforeMemberName, out MemberDeclarationSyntax? afterMemberNode) &&
                 beforeMemberNode.Kind() == afterMemberNode.Kind())
@@ -265,7 +270,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         if (!afterChildrenNodes.IsEmpty)
         {
             // Traverse all the elements that are new on the right side which were not found on the left. They are all treated as new APIs.
-            foreach ((string newMemberName, MemberDeclarationSyntax newMemberNode) in afterChildrenNodes.OrderBy(x => x.Key))
+            foreach ((string newMemberName, MemberDeclarationSyntax newMemberNode) in afterChildrenNodes.Order(_childrenNodesComparer))
             {
                 // Need to do a full visit of each member of namespaces and types anyway, so that leaf bodies are removed
                 if (newMemberNode is BaseTypeDeclarationSyntax or BaseNamespaceDeclarationSyntax)
@@ -311,30 +316,37 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
         ConcurrentDictionary<string, MemberDeclarationSyntax> dictionary = [];
 
-        if (parentNode is RecordDeclarationSyntax record && record.Members.Any())
+        if (parentNode is BaseNamespaceDeclarationSyntax)
         {
-            foreach (MemberDeclarationSyntax memberNode in record.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtectedOrDestructor(m)).Cast<MemberDeclarationSyntax>())
-            {
-                // Note that these could also be nested types
-                dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
-            }
-        }
-        else if (parentNode is BaseNamespaceDeclarationSyntax)
-        {
-            foreach (BaseTypeDeclarationSyntax typeNode in parentNode.ChildNodes().Where(n => n is BaseTypeDeclarationSyntax t && IsPublicOrProtectedOrDestructor(t)).Cast<BaseTypeDeclarationSyntax>())
+            // Find all types
+            foreach (BaseTypeDeclarationSyntax typeNode in GetMembersOfType<BaseTypeDeclarationSyntax>(parentNode))
             {
                 dictionary.TryAdd(GetDocId(typeNode, model), typeNode);
             }
-            foreach (DelegateDeclarationSyntax delegateNode in parentNode.ChildNodes().Where(n => n is DelegateDeclarationSyntax d && IsPublicOrProtectedOrDestructor(d)).Cast<DelegateDeclarationSyntax>())
+
+            // Find all delegates
+            foreach (DelegateDeclarationSyntax delegateNode in GetMembersOfType<DelegateDeclarationSyntax>(parentNode))
             {
                 dictionary.TryAdd(GetDocId(delegateNode, model), delegateNode);
             }
         }
         else if (parentNode is BaseTypeDeclarationSyntax)
         {
-            foreach (MemberDeclarationSyntax memberNode in parentNode.ChildNodes().Where(n => n is MemberDeclarationSyntax m && IsPublicOrProtectedOrDestructor(m)).Cast<MemberDeclarationSyntax>())
+            // Special case for records that have members
+            if (parentNode is RecordDeclarationSyntax record && record.Members.Any())
             {
-                dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
+                foreach (MemberDeclarationSyntax memberNode in GetMembersOfType<MemberDeclarationSyntax>(parentNode))
+                {
+                    // Note that these could also be nested types
+                    dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
+                }
+            }
+            else
+            {
+                foreach (MemberDeclarationSyntax memberNode in GetMembersOfType<MemberDeclarationSyntax>(parentNode))
+                {
+                    dictionary.TryAdd(GetDocId(memberNode, model), memberNode);
+                }
             }
         }
         else if (parentNode is CompilationUnitSyntax)
@@ -417,9 +429,21 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             return null;
         }
 
-        if (node is BaseNamespaceDeclarationSyntax namespaceNode)
+        if (node is EnumMemberDeclarationSyntax enumMember)
+        {
+            SyntaxTriviaList commaTrivia = SyntaxFactory.TriviaList(SyntaxFactory.SyntaxTrivia(SyntaxKind.EndOfLineTrivia, ","));
+            return enumMember
+                .WithAttributeLists(_emptyAttributeList)
+                .WithLeadingTrivia(node.GetLeadingTrivia())
+                .WithTrailingTrivia(commaTrivia);
+        }
+        else if (node is BaseNamespaceDeclarationSyntax namespaceNode)
         {
             return namespaceNode.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
+        }
+        else if (node is MemberDeclarationSyntax memberDeclaration)
+        {
+            return memberDeclaration.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
         }
 
         return node.WithAttributeLists(_emptyAttributeList).WithLeadingTrivia(node.GetLeadingTrivia());
@@ -614,9 +638,17 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                          .ToFullString();
     }
 
-    private static bool IsPublicOrProtectedOrDestructor(MemberDeclarationSyntax m) =>
+    private static bool IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(MemberDeclarationSyntax m) =>
         // Destructors don't have visibility modifiers so they're special-cased
-        m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword) || m.IsKind(SyntaxKind.DestructorDeclaration);
+        m.Modifiers.Any(SyntaxKind.PublicKeyword) || m.Modifiers.Any(SyntaxKind.ProtectedKeyword) ||
+        // Enum member declarations don't have any modifiers
+        m is EnumMemberDeclarationSyntax ||
+        m.IsKind(SyntaxKind.DestructorDeclaration);
+
+    private static IEnumerable<T> GetMembersOfType<T>(SyntaxNode node) where T : MemberDeclarationSyntax => node
+        .ChildNodes()
+        .Where(n => n is T m && IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(m))
+        .Cast<T>();
 
     private static string GetDocId(SyntaxNode node, SemanticModel model)
     {
@@ -691,5 +723,23 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             }
         }
         return sb.Length == 0 ? null : sb.ToString();
+    }
+
+    private class ChildrenNodesComparer : IComparer<KeyValuePair<string, MemberDeclarationSyntax>>
+    {
+        public int Compare(KeyValuePair<string, MemberDeclarationSyntax> first, KeyValuePair<string, MemberDeclarationSyntax> second)
+        {
+            // Enum members need to be sorted by their value, not alphabetically, so they need to be special-cased.
+            if (first.Value is EnumMemberDeclarationSyntax beforeMember && second.Value is EnumMemberDeclarationSyntax afterMember &&
+                beforeMember.EqualsValue is EqualsValueClauseSyntax beforeEVCS && afterMember.EqualsValue is EqualsValueClauseSyntax afterEVCS &&
+                beforeEVCS.Value is LiteralExpressionSyntax beforeLes && afterEVCS.Value is LiteralExpressionSyntax afterLes)
+            {
+                    return beforeLes.Token.ValueText.CompareTo(afterLes.Token.ValueText);
+            }
+
+            // Everything else is shown alphabetically.
+            return first.Key.CompareTo(second.Key);
+        }
+
     }
 }

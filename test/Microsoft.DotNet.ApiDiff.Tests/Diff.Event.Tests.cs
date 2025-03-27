@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.ApiDiff.Tests;
 
-public class DiffEventsTests : DiffBaseTests
+public class DiffEventTests : DiffBaseTests
 {
     [Fact]
     public Task TestEventAdd() => RunTestAsync(
@@ -105,7 +105,6 @@ public class DiffEventsTests : DiffBaseTests
               }
           }
         """);
-
 
     [Fact]
     public Task TestAbstractEvent() => RunTestAsync(
