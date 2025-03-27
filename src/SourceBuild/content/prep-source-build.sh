@@ -204,7 +204,7 @@ function BootstrapArtifacts {
 
   properties=( "/p:ArchiveDir=$packagesArchiveDir" )
   if [[ -n "$target_rid" ]]; then
-    properties+=( "/p:TargetRid=$target_rid" )
+    properties+=( "/p:PortableRid=$target_rid" )
   fi
 
   # Run restore on project to initiate download of bootstrap packages
