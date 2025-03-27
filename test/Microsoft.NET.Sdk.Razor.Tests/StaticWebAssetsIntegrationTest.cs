@@ -258,7 +258,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
 
             var publish = CreatePublishCommand(ProjectDirectory);
-            ExecuteCommand(publish, "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            ExecuteCommand(publish, "/p:PublishSingleFile=true", "/p:SelfContained=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
@@ -776,7 +776,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             ExecuteCommand(restore).Should().Pass();
 
             var publish = CreatePublishCommand(ProjectDirectory, "AppWithPackageAndP2PReference");
-            ExecuteCommand(publish, "/p:PublishSingleFile=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
+            ExecuteCommand(publish, "/p:PublishSingleFile=true", "/p:SelfContained=true", $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}").Should().Pass();
 
             var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug", RuntimeInformation.RuntimeIdentifier).ToString();
             var publishPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
