@@ -144,6 +144,8 @@ public class DiffConstructorTests : DiffBaseTests
 
     [Fact]
     public Task TestPrimaryConstructorChange() => RunTestAsync(
+                // This isn't really a modification, but a deletion and an addition, and since
+                // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -245,6 +247,8 @@ public class DiffConstructorTests : DiffBaseTests
 
     [Fact]
     public Task TestChangeHideImplicitDefaultConstructors() => RunTestAsync(
+                // This isn't really a modification, but a deletion and an addition, and since
+                // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -330,6 +334,8 @@ public class DiffConstructorTests : DiffBaseTests
 
     [Fact]
     public Task TestNestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
+                // This isn't really a modification, but a deletion and an addition, and since
+                // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
                 namespace MyNamespace
                 {
