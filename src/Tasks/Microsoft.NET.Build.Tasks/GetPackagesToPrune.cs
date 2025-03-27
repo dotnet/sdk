@@ -224,10 +224,10 @@ namespace Microsoft.NET.Build.Tasks
         {
             var nugetFramework = new NuGetFramework(targetFrameworkIdentifier, Version.Parse(targetFrameworkVersion));
 
-            //  FrameworkPackages just has data for .NET Framework 4.6.1 and doesn't handle framework compatibility, so treat anything greater than .NET Framework as if it were 4.6.1
-            if (nugetFramework.IsDesktop() && nugetFramework.Version > new Version(4,6,1))
+            //  FrameworkPackages just has data for .NET Framework 4.6.1, so turn on fallback for anything greater than that so it will resolve to the .NET Framework 4.6.1 data
+            if (!acceptNearestMatch && nugetFramework.IsDesktop() && nugetFramework.Version > new Version(4,6,1))
             {
-                nugetFramework = NuGetFramework.Parse("net461");
+                acceptNearestMatch = true;
             }
 
             var frameworkPackages = FrameworkPackages.GetFrameworkPackages(nugetFramework, [frameworkReference], acceptNearestMatch)
