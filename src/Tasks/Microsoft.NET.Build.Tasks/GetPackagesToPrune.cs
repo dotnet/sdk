@@ -211,7 +211,7 @@ namespace Microsoft.NET.Build.Tasks
                 var item = new TaskItem(p.Key);
 
                 string version;
-                if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase))
+                if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && !p.Value.IsPrerelease)
                 { 
                     //  If a given version of a package is included in a framework, assume that any patches
                     //  to that package will be included in patches to the framework, and thus should be pruned.
