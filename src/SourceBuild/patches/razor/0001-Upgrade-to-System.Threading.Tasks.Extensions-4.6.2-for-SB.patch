@@ -1,0 +1,22 @@
+From 276a8dabbbe99be5a9ae4423d21060fabb34a10d Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Thu, 27 Mar 2025 08:54:34 -0500
+Subject: [PATCH] Upgrade to System.Threading.Tasks.Extensions 4.6.2 for SB
+
+Backport: https://github.com/dotnet/razor/pull/11669
+---
+ eng/Versions.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 65753a952d..91d725f1d7 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -105,6 +105,6 @@
+   </PropertyGroup>
+   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+     <MicrosoftIORedistVersion>6.1.0</MicrosoftIORedistVersion>
+-    <SystemThreadingTasksExtensionsVersion>4.6.0</SystemThreadingTasksExtensionsVersion>
++    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
+   </PropertyGroup>
+ </Project>
