@@ -55,7 +55,7 @@ internal class DotnetAddPostActionProcessor : PostActionProcessorBase
                     return false;
                 }
 
-                extensionLimiters.UnionWith(projectFileExtensions.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries));
+                extensionLimiters.UnionWith(projectFileExtensions.Split([';'], StringSplitOptions.RemoveEmptyEntries));
             }
             projectsToProcess = TryFindProjects(environment, outputBasePath, extensionLimiters);
             if (projectsToProcess.Count > 1)

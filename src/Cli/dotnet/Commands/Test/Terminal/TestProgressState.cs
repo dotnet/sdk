@@ -27,9 +27,9 @@ internal sealed class TestProgressState
 
     public IStopwatch Stopwatch { get; }
 
-    public List<string> Attachments { get; } = new();
+    public List<string> Attachments { get; } = [];
 
-    public List<IProgressMessage> Messages { get; } = new();
+    public List<IProgressMessage> Messages { get; } = [];
 
     public int FailedTests { get; internal set; }
 
@@ -47,7 +47,7 @@ internal sealed class TestProgressState
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = new();
+    public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = [];
     public int? ExitCode { get; internal set; }
     public bool Success { get; internal set; }
 

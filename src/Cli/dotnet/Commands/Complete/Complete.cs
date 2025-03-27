@@ -55,7 +55,7 @@ internal static class Complete
     {
         try
         {
-            return (GetMSBuildProject()?.GetConfigurations() ?? new[] { "Debug", "Release" }).Select(ToCompletionItem);
+            return (GetMSBuildProject()?.GetConfigurations() ?? ["Debug", "Release"]).Select(ToCompletionItem);
         }
         catch (Exception)
         {

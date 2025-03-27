@@ -423,7 +423,7 @@ internal class FileBasedInstaller : IInstaller
                 //  If there are no install records for a workload set that is on disk, then ignore it.  It is probably a baseline workload set.
                 continue;
             }
-            List<SdkFeatureBand> featureBandsToRemove = new();
+            List<SdkFeatureBand> featureBandsToRemove = [];
             foreach (var referencingFeatureBand in referencingFeatureBands)
             {
                 if (!installedSdkFeatureBands.Contains(referencingFeatureBand))
@@ -463,7 +463,7 @@ internal class FileBasedInstaller : IInstaller
         foreach (var (manifestId, manifestVersion, manifestFeatureBand) in manifestInstallRecords.Keys)
         {
             var referencingFeatureBands = manifestInstallRecords[(manifestId, manifestVersion, manifestFeatureBand)];
-            List<SdkFeatureBand> featureBandsToRemove = new();
+            List<SdkFeatureBand> featureBandsToRemove = [];
             foreach (var referencingFeatureBand in referencingFeatureBands)
             {
                 if (!installedSdkFeatureBands.Contains(referencingFeatureBand))
@@ -500,7 +500,7 @@ internal class FileBasedInstaller : IInstaller
         foreach (var (packId, packVersion) in packInstallRecords.Keys)
         {
             var referencingFeatureBands = packInstallRecords[(packId, packVersion)];
-            List<SdkFeatureBand> featureBandsToRemove = new();
+            List<SdkFeatureBand> featureBandsToRemove = [];
             foreach (var referencingFeatureBand in referencingFeatureBands)
             {
                 if (cleanAllPacks)
@@ -740,7 +740,7 @@ internal class FileBasedInstaller : IInstaller
 
     private Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> GetAllWorkloadSetInstallRecords()
     {
-        Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> records = new();
+        Dictionary<(string workloadSetVersion, SdkFeatureBand workloadSetFeatureBand), List<SdkFeatureBand>> records = [];
 
         var installedWorkloadSetsDir = Path.Combine(_workloadMetadataDir, InstalledWorkloadSetsDir, "v1");
 
@@ -760,7 +760,7 @@ internal class FileBasedInstaller : IInstaller
                     var referencingFeatureBand = new SdkFeatureBand(Path.GetFileName(featureBandInstallationRecord));
                     if (!records.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out var referencingFeatureBands))
                     {
-                        referencingFeatureBands = new List<SdkFeatureBand>();
+                        referencingFeatureBands = [];
                         records[(workloadSetVersion, workloadSetFeatureBand)] = referencingFeatureBands;
                     }
 
@@ -791,7 +791,7 @@ internal class FileBasedInstaller : IInstaller
 
     private Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> GetAllManifestInstallRecords()
     {
-        Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> records = new();
+        Dictionary<(ManifestId manifestId, ManifestVersion manifestVersion, SdkFeatureBand manifestFeatureBand), List<SdkFeatureBand>> records = [];
 
         var installedManifestsDir = Path.Combine(_workloadMetadataDir, InstalledManifestsDir, "v1");
 
@@ -815,7 +815,7 @@ internal class FileBasedInstaller : IInstaller
 
                         if (!records.TryGetValue((manifestId, manifestVersion, manifestFeatureBand), out var referencingFeatureBands))
                         {
-                            referencingFeatureBands = new List<SdkFeatureBand>();
+                            referencingFeatureBands = [];
                             records[(manifestId, manifestVersion, manifestFeatureBand)] = referencingFeatureBands;
                         }
 
@@ -833,7 +833,7 @@ internal class FileBasedInstaller : IInstaller
 
     private Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> GetAllPackInstallRecords()
     {
-        Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> records = new();
+        Dictionary<(WorkloadPackId packId, string packVersion), List<SdkFeatureBand>> records = [];
 
         var installedPacksDir = Path.Combine(_workloadMetadataDir, InstalledPacksDir, "v1");
 
@@ -854,7 +854,7 @@ internal class FileBasedInstaller : IInstaller
 
                     if (!records.TryGetValue((packId, packVersion), out var referencingFeatureBands))
                     {
-                        referencingFeatureBands = new List<SdkFeatureBand>();
+                        referencingFeatureBands = [];
                         records[(packId, packVersion)] = referencingFeatureBands;
                     }
                     referencingFeatureBands.Add(referencingFeatureBand);

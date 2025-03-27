@@ -16,21 +16,21 @@
       Encoding="ASCII" />
 
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.NETCore.App.Ref">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
 
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.AspNetCore.App.Ref">
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
 
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.WindowsDesktop.App.Ref">
        <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
@@ -1345,7 +1345,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledVersionsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledVersionsPropsFileName)"
+    <WriteLinesToFile File="$(OutputPath)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -1380,7 +1380,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledBundledCliToolsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
+    <WriteLinesToFile File="$(OutputPath)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -1428,7 +1428,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </BundledMSBuildPropsFileContent>
     </PropertyGroup>
 
-  <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledMSBuildPropsFileName)"
+  <WriteLinesToFile File="$(OutputPath)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
     Overwrite="true" />
   </Target>
