@@ -87,7 +87,7 @@
 
   <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
        necessary for the msi/pkg to install correctly and put the content under that sub path. -->
-  <Target Name="PrepareSdkInstallerLayout" DependsOnTargets="GenerateSdkLayout">
+  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateSdkLayout">
     <PropertyGroup>
       <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)', 'sdk-installer'))</IntermediateSdkInstallerOutputPath>
     </PropertyGroup>

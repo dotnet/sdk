@@ -93,7 +93,7 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareSdkInstallerLayout"
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareIntermediateSdkInstallerOutput"
           Inputs="$(IntermediateSdkInstallerOutputPath)**/*;
                   $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">

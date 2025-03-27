@@ -139,8 +139,8 @@
   <Target Name="GenerateSdkPkg"
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
-          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs;PrepareSdkInstallerLayout">
-    <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
+          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs;PrepareIntermediateSdkInstallerOutput">
+    <!-- Copy ASP.NET runtime and targeting pack to the sdk layout, as we currently don't chain that in with a pkg dependency -->
     <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
                                DestinationDirectory="$(IntermediateSdkInstallerOutputPath)"
                                DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
