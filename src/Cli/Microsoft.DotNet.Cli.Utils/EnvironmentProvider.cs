@@ -7,8 +7,8 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 public class EnvironmentProvider : IEnvironmentProvider
 {
-    private static char[] s_pathSeparator = new char[] { Path.PathSeparator };
-    private static char[] s_quote = new char[] { '"' };
+    private static char[] s_pathSeparator = [Path.PathSeparator];
+    private static char[] s_quote = ['"'];
     private IEnumerable<string>? _searchPaths;
     private readonly Lazy<string> _userHomeDirectory = new(() => Environment.GetEnvironmentVariable("HOME") ?? string.Empty);
     private IEnumerable<string>? _executableExtensions;

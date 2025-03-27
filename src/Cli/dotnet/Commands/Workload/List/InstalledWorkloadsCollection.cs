@@ -27,7 +27,7 @@ internal class InstalledWorkloadsCollection
 
     public InstalledWorkloadsCollection()
     {
-        _workloads = new();
+        _workloads = [];
     }
 
     public IEnumerable<KeyValuePair<string, string>> AsEnumerable() =>
