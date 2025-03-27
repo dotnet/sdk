@@ -139,28 +139,13 @@
   <Target Name="GenerateSdkPkg"
           Inputs="@(GenerateSdkPkgInputs)"
           Outputs="$(SdkPKGInstallerFile)"
-          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs">
-    <!-- Copy the sdk layout into a temporary folder to be able to make changes to it. -->
-    <PropertyGroup>
-      <SdkInternalLayoutPath>$(IntermediateOutputPath)installer/</SdkInternalLayoutPath>
-    </PropertyGroup>
-
-    <!-- Create "SDK Internal" layout. -->
-    <ItemGroup>
-      <SdkOutputFile Include="$(OutputPath)**/*" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(SdkOutputFile)"
-          DestinationFiles="@(SdkOutputFile -> '$(SdkInternalLayoutPath)sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')"
-          UseHardLinksIfPossible="true"
-          SkipUnchangedFiles="true" />
-
+          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs;PrepareSdkInstallerLayout">
     <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
     <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
-                               DestinationDirectory="$(SdkInternalLayoutPath)"
+                               DestinationDirectory="$(IntermediateSdkInstallerOutputPath)"
                                DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
     <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetTargetingPackArchiveFileName)"
-                               DestinationDirectory="$(SdkInternalLayoutPath)" />
+                               DestinationDirectory="$(IntermediateSdkInstallerOutputPath)" />
 
     <ItemGroup>
       <TemplateFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
@@ -168,12 +153,12 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(TemplateFiles)"
-          DestinationFiles="@(TemplateFiles->'$(SdkInternalLayoutPath)templates/%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(TemplateFiles->'$(IntermediateSdkInstallerOutputPath)templates/%(RecursiveDir)%(Filename)%(Extension)')"
           UseHardLinksIfPossible="true"
           SkipUnchangedFiles="true" />
 
     <Copy SourceFiles="@(ManifestFiles)"
-          DestinationFiles="@(ManifestFiles->'$(SdkInternalLayoutPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(ManifestFiles->'$(IntermediateSdkInstallerOutputPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
           UseHardLinksIfPossible="true"
           SkipUnchangedFiles="true" />
 
@@ -192,7 +177,7 @@
     <Exec Command="chmod ugo+x $(SdkPkgScriptFile)" />
 
     <Exec Command="pkgbuild \
-                    --root '$(SdkInternalLayoutPath)' \
+                    --root '$(IntermediateSdkInstallerOutputPath)' \
                     --identifier '$(SdkComponentId)' \
                     --version '$(Version)' \
                     --install-location '$(PkgInstallDirectory)' \

@@ -93,8 +93,8 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs"
-          Inputs="$(OutputPath)**/*;
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareSdkInstallerLayout"
+          Inputs="$(IntermediateSdkInstallerOutputPath)**/*;
                   $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
@@ -102,7 +102,7 @@
     </GenerateGuidFromName>
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
-                      '$(OutputPath.TrimEnd('\'))' ^
+                      '$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))' ^
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(ToolsetBrandName)' ^
