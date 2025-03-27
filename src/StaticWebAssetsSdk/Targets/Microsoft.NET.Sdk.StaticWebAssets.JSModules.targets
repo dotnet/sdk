@@ -411,7 +411,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            a content item, we'll prefer that over the potential item in the None item group
       -->
       <_JSFileModuleCandidates Include="@(Content->Distinct())" />
-      <_JSFileModuleNoneCandidates Include="@(None)" Exclude="@(Content)" />
+      <_JSFileModuleNoneCandidates Include="@(None->Distinct())" Exclude="@(Content)" />
       <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
     </ItemGroup>
 
