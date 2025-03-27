@@ -147,7 +147,7 @@ public partial class WriteImportMapToHtml : Task
         }
 
         links.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
-        return String.Join(Environment.NewLine, links);
+        return String.Join(Environment.NewLine, links.Select(l => l.Value));
     }
 
     private string GetFingerprintedAssetPath(Dictionary<string, ResourceAsset> urlMappings, string assetPath)
