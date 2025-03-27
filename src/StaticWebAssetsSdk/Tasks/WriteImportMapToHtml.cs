@@ -78,7 +78,7 @@ public partial class WriteImportMapToHtml : Task
                 });
 
                 // Generate import map
-                outputContent = _preloadRegex.Replace(content, e =>
+                outputContent = _preloadRegex.Replace(outputContent, e =>
                 {
                     Log.LogMessage("Writing preload links to '{0}'", item.ItemSpec);
                     return GeneratePreloadLinks(resources);
