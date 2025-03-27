@@ -82,7 +82,7 @@ internal sealed class PerformanceLogManager
     {
         if (_fileSystem.Directory.Exists(_perfLogRoot))
         {
-            List<DirectoryInfo> logDirectories = new();
+            List<DirectoryInfo> logDirectories = [];
             foreach (string directoryPath in _fileSystem.Directory.EnumerateDirectories(_perfLogRoot))
             {
                 logDirectories.Add(new DirectoryInfo(directoryPath));

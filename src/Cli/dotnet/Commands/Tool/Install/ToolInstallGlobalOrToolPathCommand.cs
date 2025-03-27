@@ -258,12 +258,11 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         if (oldPackageNullable != null && (newInstalledPackage.Version < oldPackageNullable.Version && !allowDowngrade))
         {
             throw new GracefulException(
-                new[]
-                {
+                [
                     string.Format(Update.LocalizableStrings.UpdateToLowerVersion,
                         newInstalledPackage.Version.ToNormalizedString(),
                         oldPackageNullable.Version.ToNormalizedString())
-                },
+                ],
                 isUserError: false);
         }
     }
@@ -298,7 +297,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             throw new GracefulException(
                 messages: message,
-                verboseMessages: new[] { ex.ToString() },
+                verboseMessages: [ex.ToString()],
                 isUserError: false);
         }
     }
@@ -321,7 +320,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             throw new GracefulException(
                 messages: message,
-                verboseMessages: new[] { ex.ToString() },
+                verboseMessages: [ex.ToString()],
                 isUserError: false);
         }
     }
@@ -347,12 +346,12 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         catch (InvalidOperationException)
         {
             throw new GracefulException(
-                messages: new[]
-                {
+                messages:
+                [
                     string.Format(
                         Update.LocalizableStrings.ToolHasMultipleVersionsInstalled,
                         packageId),
-                },
+                ],
                 isUserError: false);
         }
 

@@ -26,7 +26,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(BundledToolFiles)"
-          DestinationFiles="@(BundledToolFiles->'$(InstallerOutputDirectory)DotnetTools\%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
+          DestinationFiles="@(BundledToolFiles->'$(OutputPath)DotnetTools\%(PackageToRestore)\%(PackageVersionToRestore)\%(RecursiveDir)%(Filename)%(Extension)')"
           SkipUnchangedFiles="true" />
   </Target>
 

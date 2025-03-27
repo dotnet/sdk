@@ -29,9 +29,7 @@ public static class ProjectInstanceExtensions
     public static IEnumerable<string> GetPlatforms(this ProjectInstance projectInstance)
     {
         return (projectInstance.GetPropertyValue("Platforms") ?? "")
-            .Split(
-                new char[] { ';' },
-                StringSplitOptions.RemoveEmptyEntries)
+            .Split([';'], StringSplitOptions.RemoveEmptyEntries)
             .Where(p => !string.IsNullOrWhiteSpace(p))
             .DefaultIfEmpty("AnyCPU");
     }
@@ -45,9 +43,7 @@ public static class ProjectInstanceExtensions
         }
 
         return foundConfig
-            .Split(
-                new char[] { ';' },
-                StringSplitOptions.RemoveEmptyEntries)
+            .Split([';'], StringSplitOptions.RemoveEmptyEntries)
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .DefaultIfEmpty("Debug");
     }

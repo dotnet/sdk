@@ -10,7 +10,7 @@ internal static class LoggerUtility
 {
     public static FacadeLogger? DetermineBinlogger(string[] restoreArgs, string verb)
     {
-        List<BinaryLogger> binaryLoggers = new();
+        List<BinaryLogger> binaryLoggers = [];
 
         for (int i = restoreArgs.Length - 1; i >= 0; i--)
         {

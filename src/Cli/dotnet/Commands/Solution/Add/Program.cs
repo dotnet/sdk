@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add;
 
 internal class AddProjectToSolutionCommand : CommandBase
 {
-    private static string[] _defaultPlatforms = new[] { "Any CPU", "x64", "x86" };
-    private static string[] _defaultBuildTypes = new[] { "Debug", "Release" };
+    private static string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
+    private static string[] _defaultBuildTypes = ["Debug", "Release"];
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
     private readonly IReadOnlyCollection<string> _projects;
