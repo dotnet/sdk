@@ -30,7 +30,7 @@ public static class DotDefaultPathCorrector
             return false;
         }
 
-        IEnumerable<string> paths = existingPath.Split(new char[] { ';' }, StringSplitOptions.RemoveEmptyEntries);
+        IEnumerable<string> paths = existingPath.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
         var inCorrectToolsPaths =
             paths.Where(p => p.EndsWith(DotnetToolsSuffix, StringComparison.OrdinalIgnoreCase));

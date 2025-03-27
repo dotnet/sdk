@@ -305,7 +305,7 @@ Options:
                 .BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory(Skip = "vs-solutionpersistence does not allow duplicate references.")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47860")]
         [InlineData("sln")]
         [InlineData("solution")]
         public async Task WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)

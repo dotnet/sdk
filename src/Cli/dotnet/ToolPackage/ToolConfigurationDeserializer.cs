@@ -68,7 +68,7 @@ internal static class ToolConfigurationDeserializer
 
     private static List<string> GenerateWarningAccordingToVersionAttribute(DotNetCliTool dotNetCliTool)
     {
-        List<string> warnings = new();
+        List<string> warnings = [];
         if (string.IsNullOrWhiteSpace(dotNetCliTool.Version))
         {
             warnings.Add(CommonLocalizableStrings.FormatVersionIsMissing);

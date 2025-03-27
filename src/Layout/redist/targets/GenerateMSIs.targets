@@ -94,7 +94,7 @@
 
   <Target Name="GenerateSdkMsi"
           DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs"
-          Inputs="$(SdkInternalLayoutPath)**/*;
+          Inputs="$(OutputPath)**/*;
                   $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
@@ -102,7 +102,7 @@
     </GenerateGuidFromName>
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
-                      '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
+                      '$(OutputPath.TrimEnd('\'))' ^
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(ToolsetBrandName)' ^
@@ -224,7 +224,7 @@
 
     <ItemGroup>
       <TemplatesMsiComponent Include="@(TemplatesComponents)">
-        <LayoutPath>$(RedistInstallerBaseOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
+        <LayoutPath>$(IntermediateOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
         <BrandName>%(TemplatesComponents.BrandNameWithoutVersion) $(Version)</BrandName>
         <MsiVersion>%(TemplatesComponents.MSIVersion)</MsiVersion>
         <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>

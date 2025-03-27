@@ -1,0 +1,81 @@
+From 4522aca61fec37ee7d3b518f314fc1e6091f052a Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Mon, 24 Mar 2025 19:17:03 +0100
+Subject: [PATCH] Use NetFrameworkCurrent in tests since xunit now targets a
+ later netfx version
+
+Backport: https://github.com/dotnet/efcore/pull/35833
+
+---
+ .../Microsoft.Data.Sqlite.Tests.csproj                          | 2 +-
+ .../Microsoft.Data.Sqlite.e_sqlcipher.Tests.csproj              | 2 +-
+ .../Microsoft.Data.Sqlite.e_sqlite3mc.Tests.csproj              | 2 +-
+ .../Microsoft.Data.Sqlite.sqlite3.Tests.csproj                  | 2 +-
+ .../Microsoft.Data.Sqlite.winsqlite3.Tests.csproj               | 2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.Tests.csproj b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.Tests.csproj
+index 4decb62d26f..7c19ff01620 100644
+--- a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.Tests.csproj
++++ b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net462</TargetFrameworks>
++    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);E_SQLITE3</DefineConstants>
+     <Nullable>enable</Nullable>
+   </PropertyGroup>
+diff --git a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlcipher.Tests.csproj b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlcipher.Tests.csproj
+index 675c49e1c0d..29447db7f09 100644
+--- a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlcipher.Tests.csproj
++++ b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlcipher.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net462</TargetFrameworks>
++    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);E_SQLCIPHER</DefineConstants>
+     <Nullable>enable</Nullable>
+   </PropertyGroup>
+diff --git a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlite3mc.Tests.csproj b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlite3mc.Tests.csproj
+index 5695d730aff..33eff6e0c39 100644
+--- a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlite3mc.Tests.csproj
++++ b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.e_sqlite3mc.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net462</TargetFrameworks>
++    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);E_SQLITE3MC</DefineConstants>
+     <Nullable>enable</Nullable>
+   </PropertyGroup>
+diff --git a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.sqlite3.Tests.csproj b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.sqlite3.Tests.csproj
+index c057b2cf32a..58047b3caef 100644
+--- a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.sqlite3.Tests.csproj
++++ b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.sqlite3.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net462</TargetFrameworks>
++    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);SQLITE3</DefineConstants>
+     <Nullable>enable</Nullable>
+   </PropertyGroup>
+diff --git a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.winsqlite3.Tests.csproj b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.winsqlite3.Tests.csproj
+index d5a11003545..e0a71beed0f 100644
+--- a/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.winsqlite3.Tests.csproj
++++ b/test/Microsoft.Data.Sqlite.Tests/Microsoft.Data.Sqlite.winsqlite3.Tests.csproj
+@@ -1,7 +1,7 @@
+ <Project Sdk="Microsoft.NET.Sdk">
+ 
+   <PropertyGroup>
+-    <TargetFrameworks>$(DefaultNetCoreTargetFramework);net462</TargetFrameworks>
++    <TargetFrameworks>$(DefaultNetCoreTargetFramework);$(NetFrameworkCurrent)</TargetFrameworks>
+     <DefineConstants>$(DefineConstants);WINSQLITE3</DefineConstants>
+     <Nullable>enable</Nullable>
+   </PropertyGroup>
