@@ -3,28 +3,27 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.ShellShim
+namespace Microsoft.DotNet.Cli.ShellShim;
+
+internal static class ZshDetector
 {
-    internal static class ZshDetector
+    private const string ZshFileName = "zsh";
+    /// <summary>
+    /// Returns true if the `SHELL` environment variable ends with `zsh` for the filename.
+    /// </summary>
+    public static bool IsZshTheUsersShell(IEnvironmentProvider environmentProvider)
     {
-        private const string ZshFileName = "zsh";
-        /// <summary>
-        /// Returns true if the `SHELL` environment variable ends with `zsh` for the filename.
-        /// </summary>
-        public static bool IsZshTheUsersShell(IEnvironmentProvider environmentProvider)
+        string environmentVariable = environmentProvider.GetEnvironmentVariable("SHELL");
+        if (string.IsNullOrWhiteSpace(environmentVariable))
         {
-            string environmentVariable = environmentProvider.GetEnvironmentVariable("SHELL");
-            if (string.IsNullOrWhiteSpace(environmentVariable))
-            {
-                return false;
-            }
-
-            if (Path.GetFileName(environmentVariable).Equals(ZshFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
             return false;
         }
+
+        if (Path.GetFileName(environmentVariable).Equals(ZshFileName, StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

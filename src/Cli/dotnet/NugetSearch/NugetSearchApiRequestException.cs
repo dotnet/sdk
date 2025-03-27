@@ -3,13 +3,12 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.NugetSearch
+namespace Microsoft.DotNet.Cli.NugetSearch;
+
+internal class NugetSearchApiRequestException : GracefulException
 {
-    internal class NugetSearchApiRequestException : GracefulException
+    public NugetSearchApiRequestException(string message)
+        : base([message], null, false)
     {
-        public NugetSearchApiRequestException(string message)
-            : base(new[] { message }, null, false)
-        {
-        }
     }
 }

@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             IEnumerable<List<string>> microsoftPackages = tableOutput.Where(row => row[2] == "Microsoft" && row[3].StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase));
             IEnumerable<string> installationCommands = microsoftPackages.Select(package => $"new install {package[3].Split(" /")[0]}").ToList();
 
-            bool ContainsOneOfInstallationCommands(string output) => installationCommands.Any(command => output.Contains(command));
+            bool ContainsOneOfInstallationCommands(string? output) => installationCommands.Any(command => output is not null && output.Contains(command));
             commandResult.Should().HaveStdOutContaining(ContainsOneOfInstallationCommands, "Checks if the output contains one of the expected installation commands");
         }
 
@@ -876,9 +876,9 @@ For more information, run:
             return tableOutput.Any(row => !string.IsNullOrWhiteSpace(row[columnIndex]));
         }
 
-        private static List<List<string>> ParseTableOutput(string stdOut, string[] expectedColumns)
+        private static List<List<string>> ParseTableOutput(string? stdOut, string[] expectedColumns)
         {
-            string[] lines = stdOut.Split(Environment.NewLine);
+            string[] lines = stdOut?.Split(Environment.NewLine) ?? Array.Empty<string>();
 
             int headerLineIndex = Array.FindIndex(lines, line => expectedColumns.All(column => line.Contains(column)));
             string headerLine = lines[headerLineIndex];
