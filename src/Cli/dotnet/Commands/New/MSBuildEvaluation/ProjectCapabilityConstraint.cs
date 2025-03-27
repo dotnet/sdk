@@ -108,7 +108,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.MultipleProjectFound)
             {
-                string foundProjects = string.Join("; ", (_evaluationResult as MultipleProjectsEvaluationResult)?.ProjectPaths ?? (IReadOnlyList<string?>)new[] { _evaluationResult.ProjectPath });
+                string foundProjects = string.Join("; ", (_evaluationResult as MultipleProjectsEvaluationResult)?.ProjectPaths ?? (IReadOnlyList<string?>)[_evaluationResult.ProjectPath]);
                 _logger.LogDebug("Multiple projects found: {0}, specify the project to use.", foundProjects);
                 return TemplateConstraintResult.CreateRestricted(
                     this,

@@ -16,7 +16,7 @@ namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 internal static class AnsiDetector
 {
     private static readonly Regex[] TerminalsRegexes =
-    {
+    [
         new("^xterm"), // xterm, PuTTY, Mintty
         new("^rxvt"), // RXVT
         new("^(?!eterm-color).*eterm.*"), // Accepts eterm, but not eterm-color, which does not support moving the cursor, see #9950.
@@ -34,7 +34,7 @@ internal static class AnsiDetector
         new("bvterm"), // Bitvise SSH Client
         new("^st-256color"), // Suckless Simple Terminal, st
         new("alacritty"), // Alacritty
-    };
+    ];
 
     public static bool IsAnsiSupported(string? termType)
         => !String.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));

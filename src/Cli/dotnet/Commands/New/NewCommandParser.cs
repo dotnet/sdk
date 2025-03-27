@@ -137,12 +137,12 @@ internal static class NewCommandParser
         builtIns.AddRange(TemplateSearch.Common.Components.AllComponents);
 
         //post actions
-        builtIns.AddRange(new (Type, IIdentifiedComponent)[]
-        {
+        builtIns.AddRange(
+        [
             (typeof(IPostActionProcessor), new DotnetAddPostActionProcessor()),
             (typeof(IPostActionProcessor), new DotnetSlnPostActionProcessor()),
             (typeof(IPostActionProcessor), new DotnetRestorePostActionProcessor())
-        });
+        ]);
         if (!disableSdkTemplates)
         {
             builtIns.Add((typeof(ITemplatePackageProviderFactory), new BuiltInTemplatePackageProviderFactory()));

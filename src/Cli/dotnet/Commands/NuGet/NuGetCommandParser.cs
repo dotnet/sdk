@@ -77,7 +77,7 @@ internal static class NuGetCommandParser
         CliCommand localsCommand = new("locals");
 
         CliArgument<string> foldersArgument = new("folders");
-        foldersArgument.AcceptOnlyFromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" });
+        foldersArgument.AcceptOnlyFromAmong(["all", "http-cache", "global-packages", "plugins-cache", "temp"]);
 
         localsCommand.Arguments.Add(foldersArgument);
 

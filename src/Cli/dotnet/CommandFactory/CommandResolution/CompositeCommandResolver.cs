@@ -20,7 +20,7 @@ public class CompositeCommandResolver : ICommandResolver
 
     public CompositeCommandResolver()
     {
-        _orderedCommandResolvers = new List<ICommandResolver>();
+        _orderedCommandResolvers = [];
     }
 
     public void AddCommandResolver(ICommandResolver commandResolver)

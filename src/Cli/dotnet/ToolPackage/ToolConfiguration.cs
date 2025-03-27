@@ -28,7 +28,7 @@ internal class ToolConfiguration
 
         CommandName = commandName;
         ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
-        Warnings = warnings ?? new List<string>();
+        Warnings = warnings ?? [];
     }
 
     private void EnsureNoInvalidFilenameCharacters(string commandName)

@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 
 public sealed class StreamForwarder
 {
-    private static readonly char[] s_ignoreCharacters = new char[] { '\r' };
+    private static readonly char[] s_ignoreCharacters = ['\r'];
     private static readonly char s_flushBuilderCharacter = '\n';
 
     private StringBuilder? _builder;

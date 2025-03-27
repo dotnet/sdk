@@ -29,20 +29,14 @@ internal class ProjectRestorer : IProjectRestorer
         PackageLocation packageLocation,
         string verbosity = null)
     {
-        var argsToPassToRestore = new List<string>();
-
-        argsToPassToRestore.Add(project.Value);
+        List<string> argsToPassToRestore = [project.Value];
         if (packageLocation.NugetConfig != null)
         {
             argsToPassToRestore.Add("--configfile");
             argsToPassToRestore.Add(packageLocation.NugetConfig.Value.Value);
         }
 
-        argsToPassToRestore.AddRange(new List<string>
-        {
-            "--runtime",
-            Constants.AnyRid
-        });
+        argsToPassToRestore.AddRange(["--runtime", Constants.AnyRid]);
 
         argsToPassToRestore.Add($"--verbosity:{verbosity ?? GetDefaultVerbosity()}");
 

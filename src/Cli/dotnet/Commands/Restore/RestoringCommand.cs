@@ -115,8 +115,8 @@ public class RestoringCommand : MSBuildForwardingApp
     private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
     {
         // Separate restore should be silent in terminal logger - regardless of actual scenario
-        HashSet<string> newArgumentsToAdd = new() { "-tlp:verbosity=quiet" };
-        List<string> existingArgumentsToForward = new();
+        HashSet<string> newArgumentsToAdd = ["-tlp:verbosity=quiet"];
+        List<string> existingArgumentsToForward = [];
 
         foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>())
         {

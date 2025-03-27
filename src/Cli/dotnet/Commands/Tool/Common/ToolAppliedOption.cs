@@ -45,7 +45,7 @@ internal class ToolAppliedOption
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new();
+        List<string> options = [];
         if (parseResult.GetResult(GlobalOption) is not null)
         {
             options.Add(GlobalOption.Name);
@@ -74,7 +74,7 @@ internal class ToolAppliedOption
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new List<string>();
+        List<string> options = [];
         if (parseResult.GetResult(UpdateAllOption) is not null)
         {
             options.Add(UpdateAllOption.Name);

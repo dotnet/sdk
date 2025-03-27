@@ -61,7 +61,7 @@ internal class ToolUpdateCommand : CommandBase
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new List<string>();
+        List<string> options = [];
         if (parseResult.GetResult(ToolAppliedOption.UpdateAllOption) is not null)
         {
             options.Add(ToolAppliedOption.UpdateAllOption.Name);

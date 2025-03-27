@@ -36,10 +36,9 @@ internal class ForwardingAppImplementation
         _depsFile = depsFile;
         _runtimeConfig = runtimeConfig;
         _additionalProbingPath = additionalProbingPath;
-        _environmentVariables = environmentVariables ?? new Dictionary<string, string>();
+        _environmentVariables = environmentVariables ?? [];
 
-        var allArgs = new List<string>();
-        allArgs.Add("exec");
+        List<string> allArgs = ["exec"];
 
         if (_depsFile != null)
         {

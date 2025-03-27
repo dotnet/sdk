@@ -82,42 +82,42 @@ internal class TelemetryFilter : ITelemetryFilter
             }).ToList();
     }
 
-    private static List<IParseResultLogRule> ParseResultLogRules => new()
-    {
-        new AllowListToSendFirstArgument(new HashSet<string> {"new", "help"}),
-        new AllowListToSendFirstAppliedOptions(new HashSet<string> {"add", "remove", "list", "solution", "nuget"}),
+    private static List<IParseResultLogRule> ParseResultLogRules =>
+    [
+        new AllowListToSendFirstArgument(["new", "help"]),
+        new AllowListToSendFirstAppliedOptions(["add", "remove", "list", "solution", "nuget"]),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"build", "publish"},
-            optionsToLog: new HashSet<CliOption> { BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
+            topLevelCommandName: ["build", "publish"],
+            optionsToLog: [ BuildCommandParser.FrameworkOption, PublishCommandParser.FrameworkOption,
                 BuildCommandParser.RuntimeOption, PublishCommandParser.RuntimeOption, BuildCommandParser.ConfigurationOption,
-                PublishCommandParser.ConfigurationOption }
+                PublishCommandParser.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"run", "clean", "test"},
-            optionsToLog: new HashSet<CliOption> { RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
+            topLevelCommandName: ["run", "clean", "test"],
+            optionsToLog: [ RunCommandParser.FrameworkOption, CleanCommandParser.FrameworkOption,
                 TestCommandParser.FrameworkOption, RunCommandParser.ConfigurationOption, CleanCommandParser.ConfigurationOption,
-                TestCommandParser.ConfigurationOption }
+                TestCommandParser.ConfigurationOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"pack"},
-            optionsToLog: new HashSet<CliOption> { PackCommandParser.ConfigurationOption }
+            topLevelCommandName: ["pack"],
+            optionsToLog: [PackCommandParser.ConfigurationOption]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"vstest"},
-            optionsToLog: new HashSet<CliOption> { CommonOptions.TestPlatformOption,
-                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption }
+            topLevelCommandName: ["vstest"],
+            optionsToLog: [ CommonOptions.TestPlatformOption,
+                CommonOptions.TestFrameworkOption, CommonOptions.TestLoggerOption ]
         ),
         new TopLevelCommandNameAndOptionToLog
         (
-            topLevelCommandName: new HashSet<string> {"publish"},
-            optionsToLog: new HashSet<CliOption> { PublishCommandParser.RuntimeOption }
+            topLevelCommandName: ["publish"],
+            optionsToLog: [PublishCommandParser.RuntimeOption]
         ),
-        new AllowListToSendVerbSecondVerbFirstArgument(new HashSet<string> {"workload", "tool", "new"}),
-    };
+        new AllowListToSendVerbSecondVerbFirstArgument(["workload", "tool", "new"]),
+    ];
 
     private static void LogVerbosityForAllTopLevelCommand(
         ICollection<ApplicationInsightsEntryFormat> result,

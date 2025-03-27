@@ -80,7 +80,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
         {
             // All VS Workloads should have a corresponding MSI based SDK. This means we can pull all of the VS SDK feature bands using MSI/VS related registry keys.
             var installedSDKVersionsWithPotentialVSRecords = MsiInstallerBase.GetInstalledSdkVersions();
-            HashSet<string> vsWorkloadUninstallWarnings = new();
+            HashSet<string> vsWorkloadUninstallWarnings = [];
 
             string defaultDotnetWinPath = MsiInstallerBase.GetDotNetHome();
             foreach (string sdkVersion in installedSDKVersionsWithPotentialVSRecords)

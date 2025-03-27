@@ -19,7 +19,7 @@ internal sealed class TestApplication : IDisposable
     private readonly CancellationTokenSource _cancellationToken = new();
 
     private Task _testAppPipeConnectionLoop;
-    private readonly List<NamedPipeServer> _testAppPipeConnections = new();
+    private readonly List<NamedPipeServer> _testAppPipeConnections = [];
 
     public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;

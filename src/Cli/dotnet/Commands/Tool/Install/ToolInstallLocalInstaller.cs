@@ -83,7 +83,7 @@ internal class ToolInstallLocalInstaller
         {
             throw new GracefulException(
                 messages: InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
-                verboseMessages: new[] { ex.ToString() },
+                verboseMessages: [ex.ToString()],
                 isUserError: false);
         }
     }

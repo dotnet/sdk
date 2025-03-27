@@ -82,7 +82,7 @@ internal partial class NetSdkMsiInstallerClient
         Log?.LogMessage($"Detecting installed workload manifests for {HostArchitecture}.");
 
         var manifestRecords = new List<WorkloadManifestRecord>();
-        HashSet<(string id, string version)> discoveredManifests = new();
+        HashSet<(string id, string version)> discoveredManifests = [];
 
         using RegistryKey installedManifestsKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledManifests\{HostArchitecture}");
         if (installedManifestsKey != null)
@@ -300,7 +300,7 @@ internal partial class NetSdkMsiInstallerClient
     protected List<WorkloadPackRecord> GetWorkloadPackRecords()
     {
         Log?.LogMessage($"Detecting installed workload packs for {HostArchitecture}.");
-        List<WorkloadPackRecord> workloadPackRecords = new();
+        List<WorkloadPackRecord> workloadPackRecords = [];
         using RegistryKey installedPacksKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledPacks\{HostArchitecture}");
 
         static void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)

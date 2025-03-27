@@ -27,12 +27,12 @@ internal static class VisualStudioWorkloads
     /// Visual Studio product ID filters. We dont' want to query SKUs such as Server, TeamExplorer, TestAgent
     /// TestController and BuildTools.
     /// </summary>
-    private static readonly string[] s_visualStudioProducts = new string[]
-    {
+    private static readonly string[] s_visualStudioProducts =
+    [
         "Microsoft.VisualStudio.Product.Community",
         "Microsoft.VisualStudio.Product.Professional",
         "Microsoft.VisualStudio.Product.Enterprise",
-    };
+    ];
 
     /// <summary>
     /// Default prefix to use for Visual Studio component and component group IDs.
@@ -42,7 +42,7 @@ internal static class VisualStudioWorkloads
     /// <summary>
     /// Well-known prefixes used by some workloads that can be replaced when generating component IDs.
     /// </summary>
-    private static readonly string[] s_wellKnownWorkloadPrefixes = { "Microsoft.NET.", "Microsoft." };
+    private static readonly string[] s_wellKnownWorkloadPrefixes = ["Microsoft.NET.", "Microsoft."];
 
     /// <summary>
     /// The SWIX package ID wrapping the SDK installer in Visual Studio. The ID should contain
@@ -103,7 +103,7 @@ internal static class VisualStudioWorkloads
         InstalledWorkloadsCollection installedWorkloads, SdkFeatureBand? sdkFeatureBand = null)
     {
         Dictionary<string, string> visualStudioWorkloadIds = GetAvailableVisualStudioWorkloads(workloadResolver);
-        HashSet<string> installedWorkloadComponents = new();
+        HashSet<string> installedWorkloadComponents = [];
 
         // Visual Studio instances contain a large set of packages and we have to perform a linear
         // search to determine whether a matching SDK was installed and look for each installable
@@ -211,7 +211,7 @@ internal static class VisualStudioWorkloads
         // https://dev.azure.com/devdiv/DevDiv/_workitems/edit/2241752/
         lock (s_guard)
         {
-            List<ISetupInstance> vsInstances = new();
+            List<ISetupInstance> vsInstances = [];
 
             try
             {

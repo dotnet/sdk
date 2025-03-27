@@ -26,9 +26,9 @@ internal class WorkloadGarbageCollector
     Dictionary<string, string> _globalJsonWorkloadSetVersions;
     IReporter _verboseReporter;
 
-    public HashSet<string> WorkloadSetsToKeep = new();
-    public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = new();
-    public HashSet<(WorkloadPackId id, string version)> PacksToKeep = new();
+    public HashSet<string> WorkloadSetsToKeep = [];
+    public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = [];
+    public HashSet<(WorkloadPackId id, string version)> PacksToKeep = [];
 
     enum GCAction
     {
@@ -37,8 +37,8 @@ internal class WorkloadGarbageCollector
         Keep = 2,
     }
 
-    Dictionary<string, GCAction> _workloadSets = new();
-    Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = new();
+    Dictionary<string, GCAction> _workloadSets = [];
+    Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
 
     //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
     //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
@@ -135,8 +135,7 @@ internal class WorkloadGarbageCollector
         //  - Any manifests listed in the rollback state file (default.json)
         //  - The latest version of each manifest, if a workload set is not installed and there is no rollback state file
 
-        List<(IWorkloadResolver, string workloadSet, GCAction gcAction)> resolvers = new();
-        resolvers.Add((GetResolver(), "<none>", GCAction.Keep));
+        List<(IWorkloadResolver, string workloadSet, GCAction gcAction)> resolvers = [(GetResolver(), "<none>", GCAction.Keep)];
 
 
         //  Iterate through all installed workload sets for this SDK feature band that have not been marked for garbage collection

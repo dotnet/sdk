@@ -16,7 +16,7 @@ internal sealed class MSBuildHandler : IDisposable
     private readonly TestApplicationActionQueue _actionQueue;
     private readonly TerminalTestReporter _output;
 
-    private readonly ConcurrentBag<TestApplication> _testApplications = new();
+    private readonly ConcurrentBag<TestApplication> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
 
     public MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)

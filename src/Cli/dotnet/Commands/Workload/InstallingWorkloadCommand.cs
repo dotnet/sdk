@@ -361,7 +361,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         reporter ??= Reporter;
         packageDownloader ??= PackageDownloader;
 
-        List<WorkloadDownload> ret = new();
+        List<WorkloadDownload> ret = [];
         DirectoryPath? tempPath = null;
         try
         {
@@ -444,7 +444,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 var maxPriorFeatureBand = priorFeatureBands.Max();
                 return _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(maxPriorFeatureBand);
             }
-            return new List<WorkloadId>();
+            return [];
         }
         else
         {

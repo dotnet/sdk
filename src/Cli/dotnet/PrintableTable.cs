@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli;
 internal class PrintableTable<T>
 {
     public const string ColumnDelimiter = "      ";
-    private List<Column> _columns = new();
+    private List<Column> _columns = [];
 
     private class Column
     {

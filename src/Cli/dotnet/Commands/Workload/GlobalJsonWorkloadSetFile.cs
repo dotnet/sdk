@@ -37,7 +37,7 @@ internal class GlobalJsonWorkloadSetsFile
             }
             else
             {
-                globalJsonWorkloadSetVersions = new();
+                globalJsonWorkloadSetVersions = [];
             }
             globalJsonWorkloadSetVersions[globalJsonPath] = workloadSetVersion;
             fileStream.Seek(0, SeekOrigin.Begin);
@@ -68,7 +68,7 @@ internal class GlobalJsonWorkloadSetsFile
         {
             if (fileStream == null)
             {
-                return new Dictionary<string, string>();
+                return [];
             }
 
             var globalJsonWorkloadSetVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(fileStream, _jsonSerializerOptions);

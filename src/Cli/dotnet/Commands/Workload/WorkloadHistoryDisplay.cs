@@ -20,7 +20,7 @@ internal static class WorkloadHistoryDisplay
 
     public static List<DisplayRecord> ProcessWorkloadHistoryRecords(IEnumerable<WorkloadHistoryRecord> historyRecords, out bool unknownRecordsPresent)
     {
-        List<DisplayRecord> displayRecords = new();
+        List<DisplayRecord> displayRecords = [];
         unknownRecordsPresent = false;
 
         int currentId = 2;

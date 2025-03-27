@@ -88,7 +88,7 @@ public static class OptionForwardingExtensions
         return option;
     }
 
-    internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = new();
+    internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = [];
 
     public static CliOption<T> WithHelpDescription<T>(this CliOption<T> option, CliCommand command, string helpText)
     {

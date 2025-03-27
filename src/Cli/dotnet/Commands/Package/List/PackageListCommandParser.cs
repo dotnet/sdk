@@ -63,7 +63,7 @@ internal static class PackageListCommandParser
     {
         Description = LocalizableStrings.CmdConfigDescription,
         HelpName = LocalizableStrings.CmdConfig
-    }.ForwardAsMany(o => new[] { "--config", o });
+    }.ForwardAsMany(o => ["--config", o]);
 
     public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {

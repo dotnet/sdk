@@ -23,18 +23,11 @@ internal static class ToolManifestFinderExtensions
         IReadOnlyList<FilePath> manifestFilesContainPackageId;
         try
         {
-            manifestFilesContainPackageId
-             = toolManifestFinder.FindByPackageId(packageId);
+            manifestFilesContainPackageId = toolManifestFinder.FindByPackageId(packageId);
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException(new[]
-                {
-                    e.Message,
-                    LocalizableStrings.NoManifestGuide
-                },
-                verboseMessages: new[] { e.VerboseMessage },
-                isUserError: false);
+            throw new GracefulException([e.Message, LocalizableStrings.NoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
         }
 
         if (manifestFilesContainPackageId.Any())

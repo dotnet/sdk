@@ -53,7 +53,7 @@ static class WorkloadFileBasedInstall
             return Enumerable.Empty<WorkloadHistoryRecord>();
         }
 
-        List<WorkloadHistoryRecord> historyRecords = new();
+        List<WorkloadHistoryRecord> historyRecords = [];
 
         foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
         {

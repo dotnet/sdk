@@ -26,7 +26,7 @@ internal class FileBasedInstallationRecordRepository : IWorkloadInstallationReco
         }
         else
         {
-            return new List<SdkFeatureBand>();
+            return [];
         }
     }
 
@@ -40,7 +40,7 @@ internal class FileBasedInstallationRecordRepository : IWorkloadInstallationReco
         }
         else
         {
-            return new List<WorkloadId>();
+            return [];
         }
     }
 

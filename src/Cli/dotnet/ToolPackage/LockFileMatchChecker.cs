@@ -71,7 +71,7 @@ internal class LockFileMatcher
     {
         if (string.IsNullOrEmpty(path))
         {
-            return new string[0];
+            return [];
         }
 
         return path.Split('\\', '/');

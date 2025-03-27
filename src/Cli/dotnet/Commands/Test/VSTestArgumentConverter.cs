@@ -89,7 +89,7 @@ public class VSTestArgumentConverter
     public List<string> Convert(string[] args, out List<string> ignoredArgs)
     {
         var newArgList = new List<string>();
-        ignoredArgs = new List<string>();
+        ignoredArgs = [];
 
         string activeArgument = null;
         BlameArgs blame = new();

@@ -14,7 +14,7 @@ public class CommandSpec
     {
         Path = path;
         Args = args;
-        EnvironmentVariables = environmentVariables ?? new Dictionary<string, string>();
+        EnvironmentVariables = environmentVariables ?? [];
     }
 
     public string Path { get; }

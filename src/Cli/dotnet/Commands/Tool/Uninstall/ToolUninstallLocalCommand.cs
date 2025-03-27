@@ -45,9 +45,7 @@ internal class ToolUninstallLocalCommand : CommandBase
 
         if (!manifestFileOptional.HasValue)
         {
-            throw new GracefulException(
-                new[] { string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId) },
-                isUserError: false);
+            throw new GracefulException([string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId)], isUserError: false);
         }
 
         var manifestFile = manifestFileOptional.Value;
