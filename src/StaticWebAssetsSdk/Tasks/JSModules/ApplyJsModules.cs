@@ -39,7 +39,7 @@ public class ApplyJsModules : Task
                 unmatchedJsModules,
                 jsModulesByRazorItem,
                 "RazorComponent",
-                "(.*)\\.razor\\.js$",
+                "(.*?)(?:#\\[.*?\\](?:\\?|!)?)?(\\.razor\\.js)$",
                 "$1.razor");
         }
 
@@ -52,7 +52,7 @@ public class ApplyJsModules : Task
                 unmatchedJsModules,
                 jsModulesByRazorItem,
                 "View",
-                "(.*)\\.cshtml\\.js$",
+                "(.*?)(?:#\\[.*?\\](?:\\?|!)?)?(\\.cshtml\\.js)$",
                 "$1.cshtml");
         }
 
