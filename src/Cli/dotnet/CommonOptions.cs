@@ -115,6 +115,23 @@ internal static class CommonOptions
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
 
+    // Localization needs to be fixed here
+    public static readonly CliOption<string> LaunchProfileOption = new("--launch-profile", "-lp")
+    {
+        Description = "LocalizableStrings.CommandOptionLaunchProfileDescription"
+    };
+
+    public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    {
+        Description = "LocalizableStrings.CommandOptionNoLaunchProfileDescription",
+        Arity = ArgumentArity.Zero
+    };
+
+    public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
+    {
+        Description = "LocalizableStrings.CommandOptionNoLaunchProfileArgumentsDescription"
+    };
+
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 

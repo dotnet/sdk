@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Run.LaunchSettings;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli;
@@ -12,6 +13,7 @@ internal sealed class TestApplication : IDisposable
 {
     private readonly TestModule _module;
     private readonly BuildOptions _buildOptions;
+    private readonly ProjectLaunchSettingsModel _projectLaunchSettings;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -19,7 +21,7 @@ internal sealed class TestApplication : IDisposable
     private readonly CancellationTokenSource _cancellationToken = new();
 
     private Task _testAppPipeConnectionLoop;
-    private readonly List<NamedPipeServer> _testAppPipeConnections = new();
+    private readonly List<NamedPipeServer> _testAppPipeConnections = [];
 
     public event EventHandler<HandshakeArgs> HandshakeReceived;
     public event EventHandler<HelpEventArgs> HelpRequested;
@@ -32,10 +34,11 @@ internal sealed class TestApplication : IDisposable
 
     public TestModule Module => _module;
 
-    public TestApplication(TestModule module, BuildOptions buildOptions)
+    public TestApplication(TestModule module, BuildOptions buildOptions, ProjectLaunchSettingsModel projectLaunchSettings)
     {
         _module = module;
         _buildOptions = buildOptions;
+        _projectLaunchSettings = projectLaunchSettings;
     }
 
     public async Task<int> RunAsync(TestOptions testOptions)
@@ -71,7 +74,35 @@ internal sealed class TestApplication : IDisposable
             processStartInfo.WorkingDirectory = _module.RunProperties.RunWorkingDirectory;
         }
 
+        if (Logger.TraceEnabled)
+        {
+            Logger.LogTrace(() => $"Process Start Info - FileName: {processStartInfo.FileName}, Arguments: {processStartInfo.Arguments}");
+        }
+
+        ApplyLaunchSettingsProfileToProcessStartInfo(processStartInfo, _projectLaunchSettings);
+
         return processStartInfo;
+    }
+
+    private void ApplyLaunchSettingsProfileToProcessStartInfo(ProcessStartInfo processStartInfo, ProjectLaunchSettingsModel? launchSettings)
+    {
+        if (launchSettings == null)
+        {
+            return;
+        }
+
+        if (!string.IsNullOrEmpty(launchSettings.ApplicationUrl))
+        {
+            processStartInfo.EnvironmentVariables["ASPNETCORE_URLS"] = launchSettings.ApplicationUrl;
+        }
+
+        processStartInfo.EnvironmentVariables["DOTNET_LAUNCH_PROFILE"] = launchSettings.LaunchProfileName;
+
+        foreach (var entry in launchSettings.EnvironmentVariables)
+        {
+            string value = Environment.ExpandEnvironmentVariables(entry.Value);
+            processStartInfo.EnvironmentVariables[entry.Key] = value;
+        }
     }
 
     private string GetFileName(TestOptions testOptions, bool isDll)
@@ -276,6 +307,8 @@ internal sealed class TestApplication : IDisposable
 
         AppendCommonArgs(builder, testOptions);
 
+        Logger.LogTrace(() => $"Test application arguments: {builder.ToString()}");
+
         return builder.ToString();
     }
 
@@ -303,6 +336,8 @@ internal sealed class TestApplication : IDisposable
 
         AppendCommonArgs(builder, testOptions);
 
+        Logger.LogTrace(() => $"Test application arguments: {builder.ToString()}");
+
         return builder.ToString();
     }
 
@@ -319,6 +354,11 @@ internal sealed class TestApplication : IDisposable
             : string.Empty);
 
         builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {_module.RunProperties.RunArguments}");
+
+        if (!_buildOptions.LaunchSettingsOption.NoLaunchProfileArguments && _projectLaunchSettings.CommandLineArgs != null)
+        {
+            builder.Append($" {_projectLaunchSettings.CommandLineArgs} ");
+        }
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
