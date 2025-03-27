@@ -40,16 +40,14 @@
 
   <PropertyGroup>
     <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
-    <CLISdkRoot>$(RedistInstallerLayoutPath)sdk/</CLISdkRoot>
-    <TemplatesRoot>$(RedistInstallerLayoutPath)templates/</TemplatesRoot>
   </PropertyGroup>
 
   <Target Name="PublishToDisk">
     <Error Condition="'$(OutputPath)' == ''" Text="Publishing to disk requires the OutputPath to be set to the root of the path to write to." />
 
     <ItemGroup>
-      <CLISdkFiles Include="$(CLISdkRoot)**/*" />
-      <TemplatesFiles Include="$(TemplatesRoot)**/*" />
+      <CLISdkFiles Include="$(RedistInstallerLayoutPath)sdk/**/*" />
+      <TemplatesFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
       <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
     </ItemGroup>
 

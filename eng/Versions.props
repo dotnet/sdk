@@ -155,18 +155,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.14.0-preview.1.89</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.14.0-preview.1.89</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.14.0-preview.1.89</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.14.0-preview.1.89</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.14.0-preview.1.89</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.14.0-preview.1.89</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.0-preview.1.89</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.14.0-preview.1.89</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.14.0-preview.1.89</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.14.0-preview.1.89</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.14.0-preview.1.89</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.14.0-preview.1.89</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.14.0-preview.1.93</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.14.0-preview.1.93</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.14.0-preview.1.93</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.14.0-preview.1.93</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.14.0-preview.1.93</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.14.0-preview.1.93</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.14.0-preview.1.93</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>6.14.0-preview.1.93</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.14.0-preview.1.93</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.14.0-preview.1.93</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.14.0-preview.1.93</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.14.0-preview.1.93</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
@@ -202,8 +202,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.15.0-preview-25167-10</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.15.0-preview-25167-10</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.14.0-preview-25175-08</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.14.0-preview-25175-08</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.13</MinimumVSVersion>
   </PropertyGroup>
@@ -256,9 +256,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.25173.9</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.25173.9</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.25173.9</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>9.0.0-preview.25176.2</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>9.0.0-preview.25176.2</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>9.0.0-preview.25176.2</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
