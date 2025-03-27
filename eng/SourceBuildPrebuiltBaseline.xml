@@ -51,7 +51,7 @@
     <UsagePattern IdentityGlob="System.Buffers/4.6.1" />
     <UsagePattern IdentityGlob="System.Memory/4.6.2" />
     <UsagePattern IdentityGlob="System.Numerics.Vectors/4.6.1" />
-    <UsagePattern IdentityGlob="System.Runtime.CompilerServices.Unsafe/6.1.0" />
+    <UsagePattern IdentityGlob="System.Runtime.CompilerServices.Unsafe/6.1.*" />
     <UsagePattern IdentityGlob="System.Threading.Tasks.Extensions/4.6.2" />
 
     <!-- Used only for publishing -->
