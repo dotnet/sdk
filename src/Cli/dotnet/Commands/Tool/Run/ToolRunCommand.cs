@@ -44,9 +44,7 @@ internal class ToolRunCommand : CommandBase
 
         if (commandspec == null)
         {
-            throw new GracefulException(
-                new string[] { string.Format(LocalizableStrings.CannotFindCommandName, _toolCommandName) },
-                isUserError: false);
+            throw new GracefulException([string.Format(LocalizableStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
         var result = CommandFactoryUsingResolver.Create(commandspec).Execute();

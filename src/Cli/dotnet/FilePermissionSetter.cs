@@ -30,7 +30,7 @@ internal class FilePermissionSetter : IFilePermissionSetter
         }
 
         CommandResult result = new CommandFactory.CommandFactory()
-            .Create("chmod", new[] { chmodArgument, path })
+            .Create("chmod", [chmodArgument, path])
             .CaptureStdOut()
             .CaptureStdErr()
             .Execute();
