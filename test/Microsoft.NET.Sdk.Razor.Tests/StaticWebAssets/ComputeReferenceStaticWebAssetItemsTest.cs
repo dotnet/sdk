@@ -23,7 +23,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Build",
                 ProjectMode = "Default"
@@ -49,8 +49,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All") },
-                Patterns = new[] { CreatePatternCandidate(Path.Combine("MyPackage","wwwroot"), "base", Directory.GetCurrentDirectory(), "wwwroot\\**", "MyPackage") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All") },
+                Patterns = new[] { CreatePatternCandidate("MyPackage\\wwwroot", "base", Directory.GetCurrentDirectory(), "wwwroot\\**", "MyPackage") },
                 AssetKind = "Build",
                 ProjectMode = "Default"
             };
@@ -75,7 +75,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All") },
                 Patterns = new[] { CreatePatternCandidate("Other\\wwwroot", "base", Directory.GetCurrentDirectory(), "wwwroot\\**", "Other") },
                 AssetKind = "Build",
                 ProjectMode = "Default"
@@ -103,8 +103,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Source = "MyPackage",
                 Assets = new[]
                 {
-                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All"),
-                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "Build", "All")
+                    CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All"),
+                    CreateCandidate("wwwroot\\candidate.other.js", "MyPackage", "Discovered", "candidate.js", "Build", "All")
                 },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Build",
@@ -134,9 +134,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Source = "MyPackage",
                 Assets = new[]
                 {
-                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All"),
-                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "Build", "All"),
-                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "Publish", "All")
+                    CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All"),
+                    CreateCandidate("wwwroot\\candidate.other.js", "MyPackage", "Discovered", "candidate.js", "Build", "All"),
+                    CreateCandidate("wwwroot\\candidate.publish.js", "MyPackage", "Discovered", "candidate.js", "Publish", "All")
                 },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Build",
@@ -166,7 +166,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", assetKind, "All") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", assetKind, "All") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = manifestKind,
                 ProjectMode = "Default"
@@ -192,7 +192,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "CurrentProject") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "CurrentProject") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Default",
                 ProjectMode = "Default"
@@ -218,7 +218,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "Reference") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "Reference") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Default",
                 ProjectMode = "Default"
@@ -244,7 +244,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "CurrentProject") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "CurrentProject") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Default",
                 ProjectMode = "Root"
@@ -270,7 +270,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "Reference") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "Reference") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Default",
                 ProjectMode = "Root"
@@ -296,7 +296,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "Other", "Project", "candidate.js", "All", "All") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "Other", "Project", "candidate.js", "All", "All") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Build",
                 ProjectMode = "Default"
@@ -322,7 +322,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             {
                 BuildEngine = buildEngine.Object,
                 Source = "MyPackage",
-                Assets = new[] { CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "Other", "Package", "candidate.js", "All", "All") },
+                Assets = new[] { CreateCandidate("wwwroot\\candidate.js", "Other", "Package", "candidate.js", "All", "All") },
                 Patterns = new ITaskItem[] { },
                 AssetKind = "Build",
                 ProjectMode = "Default"
