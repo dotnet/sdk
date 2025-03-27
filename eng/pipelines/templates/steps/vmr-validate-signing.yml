@@ -1,7 +1,4 @@
 parameters:
-- name: artifactName
-  type: string
-
 - name: continueOnError
   type: boolean
   default: false
@@ -13,13 +10,48 @@ parameters:
     - Linux
     - Darwin
 
+## Internal properties not to be set by the user ##
+- name: engDirectory
+  type: string
+  default: '$(Build.SourcesDirectory)/eng'
+
+- name: signCheckFilesDirectory
+  type: string
+  default: '$(Build.ArtifactStagingDirectory)/SignCheckFiles'
+
+- name: assetManifests
+  type: string
+  default: '$(Build.ArtifactStagingDirectory)/AssetManifests'
+
+- name: outputDirectory
+  type: string
+  default: '$(Build.ArtifactStagingDirectory)/SigningValidation'
+
 steps:
-- task: DownloadBuildArtifacts@1
+- task: DownloadPipelineArtifact@2
+  displayName: Download Asset Manifest
+  continueOnError: ${{ parameters.continueOnError }}
+  enabled: true
   inputs:
-    artifactName: ${{ parameters.artifactName }}
-    downloadPath: $(Build.ArtifactStagingDirectory)
-    checkDownloadedFiles: true
-  displayName: Download Artifacts
+    artifact: AssetManifests
+    itemPattern: '**/MergedManifest.xml'
+    downloadPath: '${{ parameters.assetManifests }}'
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download Blob Artifacts
+  continueOnError: ${{ parameters.continueOnError }}
+  enabled: true
+  inputs:
+    artifact: BlobArtifacts
+    downloadPath: '${{ parameters.signCheckFilesDirectory }}/BlobArtifacts'
+
+- task: DownloadPipelineArtifact@2
+  displayName: Download Package Artifacts
+  continueOnError: ${{ parameters.continueOnError }}
+  enabled: true
+  inputs:
+    artifact: PackageArtifacts
+    downloadPath: '${{ parameters.signCheckFilesDirectory }}/PackageArtifacts'
 
 # This is necessary whenever we want to publish/restore to an AzDO private feed
 # Since sdk-task.ps1 tries to restore packages we need to do this authentication here
@@ -30,17 +62,42 @@ steps:
 - ${{ if eq(parameters.OS, 'Windows_NT') }}:
   - task: PowerShell@2
     inputs:
-      filePath: eng\common\sdk-task.ps1
-      arguments: -task SigningValidation -restore -msbuildEngine vs
-        /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-    displayName: Validate Signing of Packages
+      targetType: 'inline'
+      script: |
+        . ${{ parameters.engDirectory}}\common\tools.ps1
+
+        MSBuild -restore ${{ parameters.engDirectory}}/signing-validation.proj `
+        /t:SigningValidation `
+        /p:ArtifactDownloadDirectory=${{ parameters.signCheckFilesDirectory }} `
+        /p:DotNetRootDirectory=$(Build.SourcesDirectory) `
+        /p:MergedManifest=${{ parameters.assetManifests }}/MergedManifest.xml `
+        /p:OutputLogsDirectory=${{ parameters.outputDirectory }}
+
+    displayName: Validate Signing
     continueOnError: ${{ parameters.continueOnError }}
 
 - ${{ else }}:
   - task: Bash@3
     inputs:
-      filePath: eng/common/sdk-task.sh
-      arguments: --task SigningValidation --restore
-        /p:PackageBasePath='$(Build.ArtifactStagingDirectory)/${{ parameters.artifactName }}'
-    displayName: Validate - ${{ parameters.OS }}
+      targetType: 'inline'
+      script: |
+        . ${{ parameters.engDirectory}}/common/tools.sh
+
+        MSBuild -restore ${{ parameters.engDirectory}}/signing-validation.proj \
+        /t:SigningValidation \
+        /p:ArtifactDownloadDirectory=${{ parameters.signCheckFilesDirectory }} \
+        /p:DotNetRootDirectory=$(Build.SourcesDirectory) \
+        /p:MergedManifest=${{ parameters.assetManifests }}/MergedManifest.xml \
+        /p:OutputLogsDirectory=${{ parameters.outputDirectory }}
+
+    displayName: Validate Signing
     continueOnError: ${{ parameters.continueOnError }}
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish SignCheck Logs
+  continueOnError: true
+  inputs:
+    path: ${{ parameters.outputDirectory }}
+    artifactName: SignCheck_${{ parameters.OS }}
+    artifactType: Container
+    parallel: true
