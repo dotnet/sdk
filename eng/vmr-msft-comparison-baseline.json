@@ -374,5 +374,61 @@
     "issueType": "MisclassifiedAsset",
     "idMatch": ".*Microsoft.DotNet.XliffTasks.*",
     "justification": "Classified correctly in the VMR"
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": "Microsoft.DotNet.XliffTask",
+    "justification": "Very old version of xliff tasks. To be removed."
+  },
+  {
+    "issueType": "ExtraPackageContent",
+    "idMatch": "Microsoft.DotNet.XliffTask",
+    "justification": "Very old version of xliff tasks. To be removed."
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "descriptionMatch": "sdk/DotnetTools/dotnet-watch/tools/net10.0/any/.*(Microsoft.Extensions|System).*",
+    "justification": "Tearing in non-VMR builds can introduce extra shared framework binaries into dotnet-watch"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": ".*Razor\\.*",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.CodeAnalysis",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
+    "descriptionMatch": "aspnetcorev2_inprocess.dll",
+    "justification": "Expected missing content"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "rzls.*",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "csc.Symbols|csi.Symbols|InteractiveHost64.Symbols|vbc.Symbols|VBCSCompiler.Symbols",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.VisualStudio.LanguageServices.DevKit",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.Build.Runtime",
+    "justification": "Effect of better package pruning in net10"
   }
 ]
