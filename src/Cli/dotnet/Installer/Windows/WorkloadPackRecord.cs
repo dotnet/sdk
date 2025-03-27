@@ -46,7 +46,7 @@ internal class WorkloadPackRecord
     /// <summary>
     /// The workload pack IDs and versions that are installed by this MSI
     /// </summary>
-    public List<(WorkloadPackId id, NuGetVersion version)> InstalledPacks { get; set; } = new();
+    public List<(WorkloadPackId id, NuGetVersion version)> InstalledPacks { get; set; } = [];
 
     /// <summary>
     /// The product code (GUID) of the workload pack MSI.
