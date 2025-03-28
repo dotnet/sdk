@@ -16,6 +16,8 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
@@ -29,7 +31,6 @@ namespace Microsoft.DotNet.Tools;
 internal sealed class VirtualProjectBuildingCommand
 {
     private ImmutableArray<CSharpDirective> _directives;
-    private string? _targetFilePath;
 
     public Dictionary<string, string> GlobalProperties { get; } = new(StringComparer.OrdinalIgnoreCase);
     public required string EntryPointFileFullPath { get; init; }
@@ -135,22 +136,10 @@ internal sealed class VirtualProjectBuildingCommand
     /// </summary>
     public VirtualProjectBuildingCommand PrepareProjectInstance()
     {
-        Debug.Assert(_directives.IsDefault && _targetFilePath is null, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
+        Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
 
         var sourceFile = LoadSourceFile(EntryPointFileFullPath);
         _directives = FindDirectives(sourceFile);
-
-        // If there were any `#:` directives, remove them from the file.
-        // (This is temporary until Roslyn is updated to ignore them.)
-        _targetFilePath = EntryPointFileFullPath;
-        if (_directives.Length != 0)
-        {
-            var targetDirectory = Path.Join(Path.GetDirectoryName(_targetFilePath), "obj");
-            Directory.CreateDirectory(targetDirectory);
-            _targetFilePath = Path.Join(targetDirectory, Path.GetFileName(_targetFilePath));
-
-            RemoveDirectivesFromFile(_directives, sourceFile.Text, _targetFilePath);
-        }
 
         return this;
     }
@@ -180,11 +169,11 @@ internal sealed class VirtualProjectBuildingCommand
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            Debug.Assert(!_directives.IsDefault && _targetFilePath is not null, $"{nameof(PrepareProjectInstance)} should have been called first.");
+            Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: EntryPointFileFullPath);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -301,6 +290,17 @@ internal sealed class VirtualProjectBuildingCommand
             writer.WriteLine("  </PropertyGroup>");
         }
 
+        if (isVirtualProject)
+        {
+            // After `#:property` directives so they don't override this.
+            writer.WriteLine("""
+
+                  <PropertyGroup>
+                    <Features>$(Features);FileBasedProgram</Features>
+                  </PropertyGroup>
+                """);
+        }
+
         if (packageDirectives.Any())
         {
             writer.WriteLine("""
@@ -397,28 +397,58 @@ internal sealed class VirtualProjectBuildingCommand
         static string EscapeValue(string value) => SecurityElement.Escape(value);
     }
 
+#pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
+#pragma warning disable RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
     public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
+        SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
+            CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
 
-        // NOTE: When Roslyn is updated to support "ignored directives", we should use its SyntaxTokenParser instead.
-        foreach (var line in sourceFile.Text.Lines)
+        var result = tokenizer.ParseLeadingTrivia();
+        TextSpan previousWhiteSpaceSpan = default;
+        foreach (var trivia in result.Token.LeadingTrivia)
         {
-            var lineText = sourceFile.Text.ToString(line.Span);
+            // Stop when the trivia contains an error (e.g., because it's after #if).
+            if (trivia.ContainsDiagnostics)
+            {
+                break;
+            }
 
-            if (Patterns.Shebang.IsMatch(lineText))
+            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             {
-                builder.Add(new CSharpDirective.Shebang { Span = line.SpanIncludingLineBreak });
+                previousWhiteSpaceSpan = trivia.FullSpan;
+                continue;
             }
-            else if (Patterns.Directive.Match(lineText) is { Success: true } match)
+
+            if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
             {
-                builder.Add(CSharpDirective.Parse(sourceFile, line.SpanIncludingLineBreak, match.Groups[1].Value, match.Groups[2].Value));
+                Debug.Assert(previousWhiteSpaceSpan.IsEmpty, "#! should be at the first character");
+                builder.Add(new CSharpDirective.Shebang { Span = trivia.FullSpan });
             }
+            else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                // Include the preceding whitespace in the span, i.e., span will be the whole line.
+                var span = previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
+
+                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { EndOfDirectiveToken.LeadingTrivia: [{ RawKind: (int)SyntaxKind.PreprocessingMessageTrivia } messageTrivia] }
+                    ? messageTrivia.ToString().AsSpan().Trim()
+                    : "";
+                var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
+                var name = parts.MoveNext() ? message[parts.Current] : default;
+                var value = parts.MoveNext() ? message[parts.Current] : default;
+                Debug.Assert(!parts.MoveNext());
+                builder.Add(CSharpDirective.Parse(sourceFile, span, name.ToString(), value.ToString()));
+            }
+
+            previousWhiteSpaceSpan = default;
         }
 
         // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
     }
+#pragma warning restore RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
+#pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
     public static SourceFile LoadSourceFile(string filePath)
     {
@@ -471,11 +501,8 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
 
 internal static partial class Patterns
 {
-    [GeneratedRegex("""^\s*#:\s*(\w*)\s*(.*?)\s*$""")]
-    public static partial Regex Directive { get; }
-
-    [GeneratedRegex("""^\s*#!.*$""")]
-    public static partial Regex Shebang { get; }
+    [GeneratedRegex("""\s+""")]
+    public static partial Regex Whitespace { get; }
 }
 
 /// <summary>
