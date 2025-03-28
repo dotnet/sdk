@@ -805,7 +805,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
-            terminal.AppendLine();
         });
     }
 
@@ -814,24 +813,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(LocalizableStrings.ExitCode);
         terminal.Append(": ");
         terminal.AppendLine(exitCode?.ToString(CultureInfo.CurrentCulture) ?? "<null>");
-        AppendWithSingleNewline(LocalizableStrings.StandardOutput, outputData);
-        AppendWithSingleNewline(LocalizableStrings.StandardError, errorData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardOutput, outputData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardError, errorData);
 
-        void AppendWithSingleNewline(string description, string? output)
+        void AppendOutputWhenPresent(string description, string? output)
         {
             if (!string.IsNullOrWhiteSpace(output))
             {
-                terminal.Append(description);
-                terminal.AppendLine(":");
-                terminal.AppendLine(output);
-                if (!outputData.EndsWith(Environment.NewLine))
-                {
-                  //  terminal.AppendLine();
-                }
+                AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
             }
         }
-
-       //  terminal.AppendLine();
     }
 
     private static string? NormalizeSpecialCharacters(string? text)
