@@ -49,15 +49,16 @@ internal class PackageListCommand(
 
     private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
     {
-        List<string> args;
+        List<string> args = ["-target:Restore", projectOrSolution];
 
         if (formatOption == ReportOutputFormat.json)
         {
-            args = ["-target:restore", projectOrSolution, "-noConsoleLogger"];
+            args.Add("-noConsoleLogger");
         }
         else
         {
-            args = ["-target:restore", projectOrSolution, "--consoleLoggerParameters:Verbosity=Minimal;NoSummary"];
+            args.Add("-consoleLoggerParameters:NoSummary");
+            args.Add("-verbosity:minimal");
         }
 
         if (interactive)
