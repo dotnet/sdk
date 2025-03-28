@@ -35,12 +35,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveHtmlImportMapBuildStaticWebAssets
     </ResolveBuildServiceWorkerStaticWebAssetsDependsOn>
     <ResolveHtmlImportMapBuildStaticWebAssetsDependsOn>
-      GenerateHtmlImportMapBuildStaticWebAssets;
-      $(ResolveHtmlImportMapBuildStaticWebAssetsDependsOn)
+      $(ResolveHtmlImportMapBuildStaticWebAssetsDependsOn);
+      GenerateHtmlImportMapBuildStaticWebAssets
     </ResolveHtmlImportMapBuildStaticWebAssetsDependsOn>
     <GenerateHtmlImportMapBuildStaticWebAssetsDependsOn>
-      ResolveHtmlImportMapBuildConfiguration;
-      $(GenerateHtmlImportMapBuildStaticWebAssetsDependsOn)
+      $(GenerateHtmlImportMapBuildStaticWebAssetsDependsOn);
+      ResolveHtmlImportMapBuildConfiguration
     </GenerateHtmlImportMapBuildStaticWebAssetsDependsOn>
 
     <!--
@@ -62,12 +62,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       ResolveHtmlImportMapPublishStaticWebAssets
     </ResolvePublishServiceWorkerStaticWebAssetsDependsOn>
     <ResolveHtmlImportMapPublishStaticWebAssetsDependsOn>
-      GenerateHtmlImportMapPublishStaticWebAssets;
-      $(ResolveHtmlImportMapPublishStaticWebAssetsDependsOn)
+      $(ResolveHtmlImportMapPublishStaticWebAssetsDependsOn);
+      GenerateHtmlImportMapPublishStaticWebAssets
     </ResolveHtmlImportMapPublishStaticWebAssetsDependsOn>
     <GenerateHtmlImportMapPublishStaticWebAssetsDependsOn>
-      ResolveHtmlImportMapPublishConfiguration;
-      $(GenerateHtmlImportMapPublishStaticWebAssetsDependsOn)
+      $(GenerateHtmlImportMapPublishStaticWebAssetsDependsOn);
+      ResolveHtmlImportMapPublishConfiguration
     </GenerateHtmlImportMapPublishStaticWebAssetsDependsOn>
 
   </PropertyGroup>

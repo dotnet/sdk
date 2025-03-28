@@ -57,38 +57,38 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
     [MemberData(nameof(WriteImportMapToHtmlData))]
     public void Build_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
         FingerprintUserJavascriptAssets(fingerprintUserJavascriptAssets);
 
         var build = CreateBuildCommand(ProjectDirectory);
-        ExecuteCommand(build, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets}").Should().Pass();
+        ExecuteCommand(build, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "importmaphtml", "build"), "*.html").Single();
         var endpointsManifestPath = Path.Combine(intermediateOutputPath, $"staticwebassets.build.endpoints.json");
 
-        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript);
+        AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm");
     }
 
     [Theory]
     [MemberData(nameof(WriteImportMapToHtmlData))]
     public void Publish_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
-        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
         FingerprintUserJavascriptAssets(fingerprintUserJavascriptAssets);
 
         var projectName = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(ProjectDirectory.TestRoot, "*.csproj").Single());
 
         var publish = CreatePublishCommand(ProjectDirectory);
-        ExecuteCommand(publish, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets}").Should().Pass();
+        ExecuteCommand(publish, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlOutputPath = Path.Combine(outputPath, "wwwroot", "index.html");
         var endpointsManifestPath = Path.Combine(outputPath, $"{projectName}.staticwebassets.endpoints.json");
 
-        AssertImportMapInHtml(indexHtmlOutputPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript);
+        AssertImportMapInHtml(indexHtmlOutputPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm");
     }
 
     private void FingerprintUserJavascriptAssets(bool fingerprintUserJavascriptAssets)
@@ -125,7 +125,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         }
     }
 
-    private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath, string scriptPath, bool expectFingerprintOnScript = true)
+    private void AssertImportMapInHtml(string indexHtmlPath, string endpointsManifestPath, string scriptPath, bool expectFingerprintOnScript = true, bool expectPreloadElement = false)
     {
         var indexHtmlContent = File.ReadAllText(indexHtmlPath);
         var endpoints = JsonSerializer.Deserialize<StaticWebAssetEndpointsManifest>(File.ReadAllText(endpointsManifestPath));
@@ -149,6 +149,12 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         Assert.Contains(GetFingerprintedPath("_framework/dotnet.js"), indexHtmlContent);
         Assert.Contains(GetFingerprintedPath("_framework/dotnet.native.js"), indexHtmlContent);
         Assert.Contains(GetFingerprintedPath("_framework/dotnet.runtime.js"), indexHtmlContent);
+
+        if (expectPreloadElement)
+        {
+            Assert.DoesNotContain("<link rel=\"preload\">", indexHtmlContent);
+            Assert.Contains($"<link href=\"{fingerprintedScriptPath}\" rel=\"preload\" as=\"script\" fetchpriority=\"high\" crossorigin=\"anonymous\"", indexHtmlContent);
+        }
 
         string GetFingerprintedPath(string route)
             => endpoints.Endpoints.FirstOrDefault(e => e.Route == route && e.Selectors.Length == 0)?.AssetFile ?? throw new Exception($"Missing endpoint for file '{route}' in '{endpointsManifestPath}'");
