@@ -124,7 +124,7 @@
     <value>Command to add package reference</value>
   </data>
   <data name="CmdPackageDescription" xml:space="preserve">
-    <value>The package reference to add.</value>
+    <value>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</value>
   </data>
   <data name="SpecifyExactlyOnePackageReference" xml:space="preserve">
     <value>Specify one package reference to add.</value>
