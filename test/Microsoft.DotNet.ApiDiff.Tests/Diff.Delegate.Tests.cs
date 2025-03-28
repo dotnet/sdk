@@ -8,7 +8,7 @@ public class DiffDelegateTests : DiffBaseTests
     #region Delegates
 
     [Fact]
-    public Task TestDelegateAdd() => RunTestAsync(
+    public Task DelegateAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -34,7 +34,7 @@ public class DiffDelegateTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestDelegateChange() => RunTestAsync(
+    public Task DelegateChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -56,7 +56,7 @@ public class DiffDelegateTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestDelegateDelete() => RunTestAsync(
+    public Task DelegateDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

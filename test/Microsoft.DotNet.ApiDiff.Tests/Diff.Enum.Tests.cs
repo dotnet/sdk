@@ -8,7 +8,7 @@ public class DiffEnumTests : DiffBaseTests
     #region Enum types
 
     [Fact]
-    public Task TestEnumTypeAddWithOneMember() => RunTestAsync(
+    public Task EnumTypeAddWithOneMember() => RunTestAsync(
         // Dummy record is added to avoid thinking namespace is empty.
         beforeCode: """
         namespace MyNamespace
@@ -37,7 +37,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumTypeAddWithMultipleSortedMembers() => RunTestAsync(
+    public Task EnumTypeAddWithMultipleSortedMembers() => RunTestAsync(
         // Dummy record is added to avoid thinking namespace is empty.
         beforeCode: """
         namespace MyNamespace
@@ -70,7 +70,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumTypeAddWithMultipleUnsortedMembers() => RunTestAsync(
+    public Task EnumTypeAddWithMultipleUnsortedMembers() => RunTestAsync(
         // Enum members shall show up sorted by value, not alphabetically.
         // Dummy record is added to avoid thinking namespace is empty.
         beforeCode: """
@@ -106,7 +106,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumTypeWithOneMemberRemove() => RunTestAsync(
+    public Task EnumTypeWithOneMemberRemove() => RunTestAsync(
         // Dummy record is added to avoid thinking namespace is empty.
         beforeCode: """
         namespace MyNamespace
@@ -135,7 +135,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumTypeWithMultipleMembersRemove() => RunTestAsync(
+    public Task EnumTypeWithMultipleMembersRemove() => RunTestAsync(
         // Dummy record is added to avoid thinking namespace is empty.
         beforeCode: """
         namespace MyNamespace
@@ -172,7 +172,7 @@ public class DiffEnumTests : DiffBaseTests
     #region Enum members
 
     [Fact]
-    public Task TestEnumMemberAddOne() => RunTestAsync(
+    public Task EnumMemberAddOne() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -203,7 +203,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberAddMultipleSorted() => RunTestAsync(
+    public Task EnumMemberAddMultipleSorted() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -236,7 +236,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberAddMultipleUnsorted() => RunTestAsync(
+    public Task EnumMemberAddMultipleUnsorted() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -269,7 +269,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberValueChange() => RunTestAsync(
+    public Task EnumMemberValueChange() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -304,7 +304,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberNameChange() => RunTestAsync(
+    public Task EnumMemberNameChange() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -337,7 +337,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberRemoveOne() => RunTestAsync(
+    public Task EnumMemberRemoveOne() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {
@@ -368,7 +368,7 @@ public class DiffEnumTests : DiffBaseTests
         """);
 
     [Fact]
-    public Task TestEnumMemberRemoveMultiple() => RunTestAsync(
+    public Task EnumMemberRemoveMultiple() => RunTestAsync(
         beforeCode: """
         namespace MyNamespace
         {

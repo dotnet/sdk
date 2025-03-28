@@ -8,7 +8,7 @@ public class DiffStructTests : DiffBaseTests
     #region Structs
 
     [Fact]
-    public Task TestStructAdd() => RunTestAsync(
+    public Task StructAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -38,7 +38,7 @@ public class DiffStructTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestStructChange() => RunTestAsync(
+    public Task StructChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -68,7 +68,7 @@ public class DiffStructTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestStructDelete() => RunTestAsync(
+    public Task StructDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

@@ -8,7 +8,7 @@ public class DiffNamespaceTests : DiffBaseTests
     #region Block-scoped namespaces
 
     [Fact]
-    public Task TestBlockScopedNamespaceAdd() => RunTestAsync(
+    public Task BlockScopedNamespaceAdd() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """
                 namespace MyAddedNamespace
@@ -28,7 +28,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestBlockScopedNamespaceChange() => RunTestAsync(
+    public Task BlockScopedNamespaceChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyBeforeNamespace
                 {
@@ -61,7 +61,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestBlockScopedNamespaceDelete() => RunTestAsync(
+    public Task BlockScopedNamespaceDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyDeletedNamespace
                 {
@@ -81,7 +81,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestBlockScopedNamespaceSortAlphabetically() =>
+    public Task BlockScopedNamespaceSortAlphabetically() =>
         // The output is block scoped
         RunTestAsync(
                 beforeCode: "",
@@ -139,7 +139,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestBlockScopedNamespaceUnchanged() => RunTestAsync(
+    public Task BlockScopedNamespaceUnchanged() => RunTestAsync(
                 beforeCode: """
                 namespace MyAddedNamespace
                 {
@@ -163,7 +163,7 @@ public class DiffNamespaceTests : DiffBaseTests
     #region File-scoped namespaces
 
     [Fact]
-    public Task TestFileScopedNamespaceAdd() =>
+    public Task FileScopedNamespaceAdd() =>
         // The output is block scoped
         RunTestAsync(
                 beforeCode: "",
@@ -183,7 +183,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFileScopedNamespaceChange() =>
+    public Task FileScopedNamespaceChange() =>
         // The output is block scoped
         RunTestAsync(
                 beforeCode: """
@@ -214,7 +214,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFileScopedNamespaceDelete() =>
+    public Task FileScopedNamespaceDelete() =>
         // The output is block scoped
         RunTestAsync(
                 beforeCode: """
@@ -234,7 +234,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFileScopedNamespaceUnchanged() =>
+    public Task FileScopedNamespaceUnchanged() =>
         RunTestAsync(
                 beforeCode: """
                 namespace MyAddedNamespace;
@@ -255,7 +255,7 @@ public class DiffNamespaceTests : DiffBaseTests
     #region Exclusions
 
     [Fact]
-    public Task TestExcludeAddedNamespace() => RunTestAsync(
+    public Task ExcludeAddedNamespace() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """
                 namespace MyNamespace
@@ -266,7 +266,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 apisToExclude: ["N:MyNamespace.MyNamespace"]);
 
     [Fact]
-    public Task TestExcludeModifiedNamespace() => RunTestAsync(
+    public Task ExcludeModifiedNamespace() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace1
                 {
@@ -281,7 +281,7 @@ public class DiffNamespaceTests : DiffBaseTests
                 apisToExclude: ["N:MyNamespace.MyNamespace1", "N:MyNamespace.MyNamespace2"]);
 
     [Fact]
-    public Task TestExcludeRemovedNamespace() => RunTestAsync(
+    public Task ExcludeRemovedNamespace() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -296,7 +296,7 @@ public class DiffNamespaceTests : DiffBaseTests
     #region Full names
 
     [Fact/*(Skip = "Still working on this")*/]
-    public Task TestNamespaceUsingDependencyKeepFullName() =>
+    public Task NamespaceUsingDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
         // excluding part of the namespace, make sure the final result contains the full name.
@@ -324,7 +324,7 @@ public class DiffNamespaceTests : DiffBaseTests
         hideImplicitDefaultConstructors: true);
 
     [Fact/*(Skip = "Still working on this")*/]
-    public Task TestNamespacesSameAssemblyDependencyKeepFullName() =>
+    public Task NamespacesSameAssemblyDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
         // excluding part of the namespace, make sure the final result contains the full name.

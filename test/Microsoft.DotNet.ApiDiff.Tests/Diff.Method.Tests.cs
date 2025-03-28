@@ -8,7 +8,7 @@ public class DiffMethodTests : DiffBaseTests
     #region Methods
 
     [Fact]
-    public Task TestMethodAdd() => RunTestAsync(
+    public Task MethodAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -39,7 +39,7 @@ public class DiffMethodTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestMethodChange() => RunTestAsync(
+    public Task MethodChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -74,7 +74,7 @@ public class DiffMethodTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestMethodDelete() => RunTestAsync(
+    public Task MethodDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -105,7 +105,7 @@ public class DiffMethodTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestMethodReturnChange() =>
+    public Task MethodReturnChange() =>
         // The DocID remains the same, but the return type changes
         RunTestAsync(
                 beforeCode: """
@@ -143,7 +143,7 @@ public class DiffMethodTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestMethodParametersChange() => RunTestAsync(
+    public Task MethodParametersChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -183,7 +183,7 @@ public class DiffMethodTests : DiffBaseTests
 
     [Fact]
 
-    public Task TestExcludeModifiedMethod() => RunTestAsync(
+    public Task ExcludeModifiedMethod() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -207,7 +207,7 @@ public class DiffMethodTests : DiffBaseTests
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod1", "M:MyNamespace.MyClass.MyMethod2"]);
 
     [Fact]
-    public Task TestExcludeRemovedMethod() => RunTestAsync(
+    public Task ExcludeRemovedMethod() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

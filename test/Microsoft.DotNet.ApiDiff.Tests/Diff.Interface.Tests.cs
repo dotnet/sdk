@@ -8,7 +8,7 @@ public class DiffInterfaceTests : DiffBaseTests
     #region Interfaces
 
     [Fact]
-    public Task TestInterfaceAdd() => RunTestAsync(
+    public Task InterfaceAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -38,7 +38,7 @@ public class DiffInterfaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestInterfaceChange() => RunTestAsync(
+    public Task InterfaceChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -68,7 +68,7 @@ public class DiffInterfaceTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestInterfaceDelete() => RunTestAsync(
+    public Task InterfaceDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

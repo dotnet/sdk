@@ -81,7 +81,7 @@ public class DiffDiskTests
     /// The output goes to disk.
     /// </summary>
     [Fact]
-    public async Task Test_DiskRead_DiskWrite()
+    public async Task DiskRead_DiskWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
@@ -104,7 +104,7 @@ public class DiffDiskTests
 
     // Each assembly should have its own file. Confirm that namespaces spread throughout multiple assemblies does not accidentally overwrite any existing files.
     [Fact]
-    public async Task Test_DiskRead_DiskWrite_AssembliesWithRepeatedNamespaces()
+    public async Task DiskRead_DiskWrite_AssembliesWithRepeatedNamespaces()
     {
         string beforeAssembly1Code1 = """
         namespace MyNamespace
@@ -267,7 +267,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// The output is disk is simply the table of contents markdown file with no assembly list. No other files.
     /// </summary>
     [Fact]
-    public async Task Test_DiskRead_DiskWrite_ExcludeAssembly()
+    public async Task DiskRead_DiskWrite_ExcludeAssembly()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
@@ -292,7 +292,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     ///  Many namespaces belonging to a single assembly should go into the same output markdown file for that assembly.
     /// </summary>
     [Fact]
-    public async Task Test_DiskRead_DiskWrite_MultiNamespaces()
+    public async Task DiskRead_DiskWrite_MultiNamespaces()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
@@ -384,7 +384,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// The output is the Results dictionary.
     /// </summary>
     [Fact]
-    public async Task Test_DiskRead_MemoryWrite()
+    public async Task DiskRead_MemoryWrite()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();
@@ -418,7 +418,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     /// The output is an empty Results dictionary.
     /// </summary>
     [Fact]
-    public async Task Test_DiskRead_MemoryWrite_ExcludeAssembly()
+    public async Task DiskRead_MemoryWrite_ExcludeAssembly()
     {
         using TempDirectory inputFolderPath = new();
         using TempDirectory outputFolderPath = new();

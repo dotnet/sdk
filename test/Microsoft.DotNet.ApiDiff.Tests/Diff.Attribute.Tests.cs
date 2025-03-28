@@ -8,7 +8,7 @@ public class DiffAttributeTests : DiffBaseTests
     #region Type attributes
 
     [Fact]
-    public Task TestTypeAttributeAdd() => RunTestAsync(
+    public Task TypeAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -49,7 +49,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestTypeAttributeDeleteAndAdd() =>
+    public Task TypeAttributeDeleteAndAdd() =>
         // Added APIs always show up at the end.
         RunTestAsync(
                 beforeCode: """
@@ -105,7 +105,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestTypeAttributeSwitch() => RunTestAsync(
+    public Task TypeAttributeSwitch() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -159,7 +159,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestTypeChangeAndAttributeAdd() => RunTestAsync(
+    public Task TypeChangeAndAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -206,7 +206,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestTypeChangeButAttributeStays() => RunTestAsync(
+    public Task TypeChangeButAttributeStays() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -259,7 +259,7 @@ public class DiffAttributeTests : DiffBaseTests
     #region Member attributes
 
     [Fact]
-    public Task TestMemberAttributeAdd() => RunTestAsync(
+    public Task MemberAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -303,7 +303,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestMemberAttributeDeleteAndAdd() =>
+    public Task MemberAttributeDeleteAndAdd() =>
         // Added APIs always show up at the end.
         RunTestAsync(
                 beforeCode: """
@@ -361,7 +361,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestMemberAttributeSwitch() => RunTestAsync(
+    public Task MemberAttributeSwitch() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -419,7 +419,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestMemberChangeAndAttributeAdd() => RunTestAsync(
+    public Task MemberChangeAndAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -466,7 +466,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestMemberChangeButAttributeStays() => RunTestAsync(
+    public Task MemberChangeButAttributeStays() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -520,7 +520,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     //[Fact]
     [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
-    internal void TestParameterAttributeAdd() => RunTestAsync(
+    public Task ParameterAttributeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -571,7 +571,7 @@ public class DiffAttributeTests : DiffBaseTests
     #region Attribute list expansion
 
     [Fact]
-    public Task TestTypeAttributeListExpansion() => RunTestAsync(
+    public Task TypeAttributeListExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -623,7 +623,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestMethodAttributeListExpansion() => RunTestAsync(
+    public Task MethodAttributeListExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -679,7 +679,7 @@ public class DiffAttributeTests : DiffBaseTests
 
     //[Fact]
     [Fact(Skip = "Parameter attributes are not showing up in the syntax tree.")]
-    internal void TestParameterAttributeListNoExpansion() => RunTestAsync(
+    public Task ParameterAttributeListNoExpansion() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -740,7 +740,7 @@ public class DiffAttributeTests : DiffBaseTests
     #region Attribute exclusion
 
     [Fact]
-    public Task TestSuppressAllDefaultAttributes() =>
+    public Task SuppressAllDefaultAttributes() =>
         // The attributes that should get hidden in this test must all be part of
         // the DiffGeneratorFactory.DefaultAttributesToExclude list.
         RunTestAsync(
@@ -786,7 +786,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: null); // null forces using the default list
 
     [Fact]
-    public Task TestSuppressNone() => RunTestAsync(
+    public Task SuppressNone() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -833,7 +833,7 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: []);
 
     [Fact]
-    public Task TestSuppressOnlyCustom() => RunTestAsync(
+    public Task SuppressOnlyCustom() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -978,7 +978,7 @@ public class DiffAttributeTests : DiffBaseTests
     #region Attributes with arguments
 
     [Fact]
-    public Task TestAttributeWithArguments() => RunTestAsync(
+    public Task AttributeWithArguments() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
