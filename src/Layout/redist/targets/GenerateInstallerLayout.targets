@@ -89,7 +89,7 @@
        necessary for the msi/pkg to install correctly and put the content under that sub path. -->
   <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateSdkLayout">
     <PropertyGroup>
-      <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer'))</IntermediateSdkInstallerOutputPath>
+      <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer', '$(Configuration)'))</IntermediateSdkInstallerOutputPath>
     </PropertyGroup>
 
     <!-- Create "SDK Internal" layout. -->
