@@ -4,9 +4,5 @@
 
   <PropertyGroup>
     <DefineConstants>$(DefineConstants),NET_ANALYZERS</DefineConstants>
-    
-    <!-- Override the version prefix and label for NetAnalyzers projects -->
-    <VersionPrefix>$(NetAnalyzersVersionPrefix)</VersionPrefix>
-    <PreReleaseVersionLabel>$(NetAnalyzersPreReleaseVersionLabel)</PreReleaseVersionLabel>
   </PropertyGroup>
 </Project>

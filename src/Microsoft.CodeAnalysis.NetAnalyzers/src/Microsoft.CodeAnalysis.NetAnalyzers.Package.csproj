@@ -15,12 +15,8 @@
     <AnalyzerSarifFileDir>$(RepoRoot)src\NetAnalyzers</AnalyzerSarifFileDir>
     <PackageReadmeFile>documentation\readme.md</PackageReadmeFile>
     <IsShippingPackage>true</IsShippingPackage>
-
-    <!-- Override the version prefix and label for NetAnalyzers projects -->
-    <VersionPrefix>$(NetAnalyzersVersionPrefix)</VersionPrefix>
-    <PreReleaseVersionLabel>$(NetAnalyzersPreReleaseVersionLabel)</PreReleaseVersionLabel>
   </PropertyGroup>
-  
+
   <ItemGroup>
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.NetAnalyzers.dll" />
     <AnalyzerNupkgAssembly Include="Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll" />
@@ -30,7 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\NetAnalyzers\Core\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
-    <ProjectReference Include="..\..\src\NetAnalyzers\CSharp\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" /> 
+    <ProjectReference Include="..\..\src\NetAnalyzers\CSharp\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
     <ProjectReference Include="..\..\src\NetAnalyzers\VisualBasic\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
   </ItemGroup>
 </Project>

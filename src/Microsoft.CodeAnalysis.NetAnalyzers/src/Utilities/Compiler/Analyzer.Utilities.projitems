@@ -41,7 +41,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)CodeMetrics\CodeMetricsAnalysisContext.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\nuget\PerformanceSensitiveAnalyzers\PerformanceSensitiveAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AdditionalFileProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundedCacheWithFactory.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Debug.cs" />
@@ -88,6 +87,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)Options\Unit.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Options\ValueUsageInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PerformanceSensitiveAttribute.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObjects\PooledConcurrentSet.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObjects\PooledConcurrentDictionary.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObjects\PooledDictionary.cs" />
