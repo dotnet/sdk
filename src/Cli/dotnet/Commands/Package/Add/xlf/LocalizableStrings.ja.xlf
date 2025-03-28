@@ -13,8 +13,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
-        <source>$"Invalid version string: {0}."</source>
-        <target state="new">$"Invalid version string: {0}."</target>
+        <source>Failed to parse "{0}" as a semantic version.</source>
+        <target state="new">Failed to parse "{0}" as a semantic version.</target>
         <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageReference">
