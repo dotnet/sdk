@@ -1,0 +1,60 @@
+<Project>
+
+  <Target Name="GeneratePackagePruneData">
+
+    <GeneratePackagePruneDataDownloads
+          NETCoreAppTargetFrameworkVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)">
+       <Output TaskParameter="TargetingPackDownloads" ItemName="TargetingPackForPruneData" />
+    </GeneratePackagePruneDataDownloads>
+
+    <CollatePackageDownloads Packages="@(TargetingPackForPruneData)">
+      <Output TaskParameter="PackageDownloads" ItemName="TargetingPackForPruneDataCollated" />
+    </CollatePackageDownloads>
+
+    <!-- Can't run custom tasks in the build before NuGet restore, so create a separate project and restore that to download the packages -->
+    <PropertyGroup>
+      <PrunePackDownloadProjectContent>
+        <![CDATA[
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(TargetFramework)</TargetFramework>
+    <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+  </PropertyGroup>
+  <ItemGroup>
+    @(TargetingPackForPruneDataCollated->'<PackageDownload Include="%(Identity)" Version="%(Version)" />', '
+    ')
+  </ItemGroup>
+</Project>
+]]>
+      </PrunePackDownloadProjectContent>
+      <!-- Escape semicolons as %3B in order to avoid being interpreted as line splits in WriteLinesToFile -->
+      <PrunePackDownloadProjectContent>$(PrunePackDownloadProjectContent.Replace(';', '%3B'))</PrunePackDownloadProjectContent>
+      <PrunePackDownloadProjectDirectory>$(IntermediateOutputPath)PrunePackDownloader\</PrunePackDownloadProjectDirectory>
+      <PrunePackDownloadProjectPath>$(PrunePackDownloadProjectDirectory)PrunePackPackageDownloader.csproj</PrunePackDownloadProjectPath>
+    </PropertyGroup>
+
+    <MakeDir Directories="$(PrunePackDownloadProjectDirectory)" />
+    <WriteLinesToFile Lines="$(PrunePackDownloadProjectContent)"
+                      File="$(PrunePackDownloadProjectPath)"
+                      Overwrite="True" WriteOnlyWhenDifferent="True" />
+
+    <MSBuild Projects="$(PrunePackDownloadProjectPath)"
+             Targets="Restore" />
+
+    
+    <ItemGroup>
+      <PrunePackageCopyData Include="@(TargetingPackForPruneData)">
+        <Source>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(PackageVersion)/data/PackageOverrides.txt</Source>
+        <Destination>$(OutputPath)/PrunePackageData/%(TargetFrameworkVersion)/%(FrameworkName)/PackageOverrides.txt</Destination>
+      </PrunePackageCopyData>
+    </ItemGroup>
+
+    <Copy SourceFiles="%(PrunePackageCopyData.Source)"
+      DestinationFiles="%(Destination)"
+      SkipUnchangedFiles="true"
+      Condition="Exists(%(PrunePackageCopyData.Source))"
+          />
+
+  </Target>
+
+</Project>
