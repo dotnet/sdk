@@ -933,14 +933,15 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 #endif
     }
 
-    internal IEnumerable<StaticWebAssetResolvedRoute> ComputeRoutes()
+    internal void ComputeRoutes(List<StaticWebAssetResolvedRoute> routes)
     {
+        routes.Clear();
         var tokenResolver = StaticWebAssetTokenResolver.Instance;
         var pattern = StaticWebAssetPathPattern.Parse(RelativePath, Identity);
         foreach (var expandedPattern in pattern.ExpandPatternExpression())
         {
             var (path, tokens) = expandedPattern.ReplaceTokens(this, tokenResolver);
-            yield return new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens);
+            routes.Add(new StaticWebAssetResolvedRoute(pattern.ComputePatternLabel(), path, tokens));
         }
     }
 

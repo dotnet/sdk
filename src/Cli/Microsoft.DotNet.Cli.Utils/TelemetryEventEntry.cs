@@ -75,7 +75,7 @@ public class BlockFilter : ITelemetryFilter
 {
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object o)
     {
-        return new List<ApplicationInsightsEntryFormat>();
+        return [];
     }
 }
 

@@ -149,7 +149,7 @@ public class Telemetry : ITelemetry
             _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
 
             _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
-            _commonMeasurements = new Dictionary<string, double>();
+            _commonMeasurements = [];
         }
         catch (Exception e)
         {
