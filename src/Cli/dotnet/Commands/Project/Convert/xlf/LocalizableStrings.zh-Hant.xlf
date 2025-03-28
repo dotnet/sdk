@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="AppFullName">
+        <source>Convert a file-based program to a project-based program.</source>
+        <target state="new">Convert a file-based program to a project-based program.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdFileDescription">
+        <source>Path to the file-based program.</source>
+        <target state="new">Path to the file-based program.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DirectoryAlreadyExists">
+        <source>The target directory already exists: '{0}'</source>
+        <target state="new">The target directory already exists: '{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidFilePath">
+        <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
+        <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
+        <note>{Locked=".cs"}</note>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

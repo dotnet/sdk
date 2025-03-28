@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Installer.Windows.Security;
+using Microsoft.DotNet.Cli.Installer.Windows;
+using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {

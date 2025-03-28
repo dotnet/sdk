@@ -1,0 +1,30 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Import Project="RestoreLayout.targets" />
+  <Import Project="BundledManifests.targets" />
+
+  <ImportGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
+    <Import Project="BundledSdks.targets" />
+    <Import Project="BundledDotnetTools.targets" />
+    <Import Project="GenerateBundledVersions.targets" />
+    <Import Project="GeneratePackagePruneData.targets" />
+    <Import Project="GenerateLayout.targets" />
+
+    <Import Project="BundledTemplates.targets" />
+    <Import Project="Crossgen.targets" />
+    <Import Project="GenerateInstallerLayout.targets" />
+    <Import Project="GenerateArchives.targets" />
+
+    <Import Project="OverlaySdkOnLKG.targets" />
+  </ImportGroup>
+
+  <!-- Installers -->
+  <Import Project="GenerateMSIs.targets" Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'" />
+  <Import Project="GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true'" />
+
+</Project>
