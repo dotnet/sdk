@@ -58,8 +58,7 @@ internal class WorkloadHistoryRecorder
         {
             ManifestVersions = resolver.GetInstalledManifests().ToDictionary(manifest => manifest.Id.ToString(), manifest => $"{manifest.Version}/{manifest.ManifestFeatureBand}"),
             InstalledWorkloads = [.. _workloadInstaller.GetWorkloadInstallationRecordRepository()
-                                                   .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
-                                                   .Select(id => id.ToString())],
+                .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand())).Select(id => id.ToString())],
             WorkloadSetVersion = currentWorkloadVersion
         };
 
