@@ -4,7 +4,7 @@
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>$(Rid)</RuntimeIdentifier>
+    <RuntimeIdentifier>$(TargetRid)</RuntimeIdentifier>
     <GenerateInstallers>true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
