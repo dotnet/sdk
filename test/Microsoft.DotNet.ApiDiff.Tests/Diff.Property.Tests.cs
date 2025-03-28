@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 public class DiffPropertyTests : DiffBaseTests
 {
     [Fact]
-    public Task TestPropertyAdd() => RunTestAsync(
+    public Task PropertyAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -35,7 +35,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertyChange() => RunTestAsync(
+    public Task PropertyChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -66,7 +66,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertyDelete() => RunTestAsync(
+    public Task PropertyDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -95,7 +95,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertySetAdd() => RunTestAsync(
+    public Task PropertySetAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -126,7 +126,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertySetRemove() => RunTestAsync(
+    public Task PropertySetRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -157,7 +157,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertySetVisibilityProtected() => RunTestAsync(
+    public Task PropertySetVisibilityProtected() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -188,7 +188,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertySetVisibilityPrivate() => RunTestAsync(
+    public Task PropertySetVisibilityPrivate() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -219,7 +219,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertyReturnChange() => RunTestAsync(
+    public Task PropertyReturnChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -250,7 +250,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertyNullabilityAdd() => RunTestAsync(
+    public Task PropertyNullabilityAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -281,7 +281,7 @@ public class DiffPropertyTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestPropertyNullabilityRemove() => RunTestAsync(
+    public Task PropertyNullabilityRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -314,7 +314,7 @@ public class DiffPropertyTests : DiffBaseTests
     #region Exclusions
 
     [Fact]
-    public Task TestExcludeAddedProperty() => RunTestAsync(
+    public Task ExcludeAddedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -337,7 +337,7 @@ public class DiffPropertyTests : DiffBaseTests
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
 
     [Fact]
-    public Task TestExcludeModifiedProperty() => RunTestAsync(
+    public Task ExcludeModifiedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -361,7 +361,7 @@ public class DiffPropertyTests : DiffBaseTests
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty1", "P:MyNamespace.MyClass.MyProperty2"]);
 
     [Fact]
-    public Task TestExcludeRemovedProperty() => RunTestAsync(
+    public Task ExcludeRemovedProperty() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

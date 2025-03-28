@@ -8,7 +8,7 @@ public class DiffFieldTests : DiffBaseTests
     #region Fields
 
     [Fact]
-    public Task TestFieldAdd() => RunTestAsync(
+    public Task FieldAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -37,7 +37,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TesttFieldChange() => RunTestAsync(
+    public Task tFieldChange() => RunTestAsync(
                 // Test both change of type and change of name
                 beforeCode: """
                 namespace MyNamespace
@@ -73,7 +73,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TesttFieldDelete() => RunTestAsync(
+    public Task tFieldDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -106,7 +106,7 @@ public class DiffFieldTests : DiffBaseTests
     #region Field lists
 
     [Fact]
-    public Task TestFieldListAdd() => RunTestAsync(
+    public Task FieldListAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -136,7 +136,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFieldListDataTypeChange() => RunTestAsync(
+    public Task FieldListDataTypeChange() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -169,7 +169,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFieldListOrderChange() => RunTestAsync(
+    public Task FieldListOrderChange() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -191,7 +191,7 @@ public class DiffFieldTests : DiffBaseTests
             expectedCode: ""); // No change expected
 
     [Fact]
-    public Task TestFieldListNameChange() => RunTestAsync(
+    public Task FieldListNameChange() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -224,7 +224,7 @@ public class DiffFieldTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestFieldVisibilityChange() => RunTestAsync(
+    public Task FieldVisibilityChange() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {

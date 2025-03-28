@@ -8,7 +8,7 @@ public class DiffRecordTests : DiffBaseTests
     #region Records
 
     [Fact]
-    public Task TestRecordAdd() => RunTestAsync(
+    public Task RecordAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -50,7 +50,7 @@ public class DiffRecordTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestRecordChange() => RunTestAsync(
+    public Task RecordChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -107,7 +107,7 @@ public class DiffRecordTests : DiffBaseTests
                 """); // Note they get sorted
 
     [Fact]
-    public Task TestRecordDelete() => RunTestAsync(
+    public Task RecordDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

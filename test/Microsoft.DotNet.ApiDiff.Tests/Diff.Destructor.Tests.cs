@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.ApiDiff.Tests;
 public class DiffDestructorTests : DiffBaseTests
 {
     [Fact]
-    public Task TestDestructorAdd() => RunTestAsync(
+    public Task DestructorAdd() => RunTestAsync(
             beforeCode: """
                 namespace MyNamespace
                 {
@@ -37,7 +37,7 @@ public class DiffDestructorTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestDestructorDelete() => RunTestAsync(
+    public Task DestructorDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

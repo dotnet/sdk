@@ -8,7 +8,7 @@ public class DiffClassTests : DiffBaseTests
     #region Classes
 
     [Fact]
-    public Task TestClassAdd() => RunTestAsync(
+    public Task ClassAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -39,7 +39,7 @@ public class DiffClassTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestClassChange() => RunTestAsync(
+    public Task ClassChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -77,7 +77,7 @@ public class DiffClassTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestClassDelete() => RunTestAsync(
+    public Task ClassDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {

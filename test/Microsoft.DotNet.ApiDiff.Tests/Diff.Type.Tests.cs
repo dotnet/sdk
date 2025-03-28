@@ -8,7 +8,7 @@ public class DiffTypeTests : DiffBaseTests
     #region Nested types
 
     [Fact]
-    public Task TestNestedTypeAdd() => RunTestAsync(
+    public Task NestedTypeAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -42,7 +42,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestNestedTypeChange() => RunTestAsync(
+    public Task NestedTypeChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -83,7 +83,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestNestedTypeRemove() => RunTestAsync(
+    public Task NestedTypeRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -117,7 +117,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestNestedTypeMemberAdd() => RunTestAsync(
+    public Task NestedTypeMemberAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -155,7 +155,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestNestedTypeMemberChange() => RunTestAsync(
+    public Task NestedTypeMemberChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -195,7 +195,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestNestedTypeMemberRemove() => RunTestAsync(
+    public Task NestedTypeMemberRemove() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -237,7 +237,7 @@ public class DiffTypeTests : DiffBaseTests
     #region Exclusions
 
     [Fact]
-    public Task TestExcludeAddedType() => RunTestAsync(
+    public Task ExcludeAddedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -262,7 +262,7 @@ public class DiffTypeTests : DiffBaseTests
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
 
     [Fact]
-    public Task TestExcludeModifiedType() => RunTestAsync(
+    public Task ExcludeModifiedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -290,7 +290,7 @@ public class DiffTypeTests : DiffBaseTests
                 apisToExclude: ["T:MyNamespace.MyStruct1", "T:MyNamespace.MyStruct2"]);
 
     [Fact]
-    public Task TestExcludeRemovedType() => RunTestAsync(
+    public Task ExcludeRemovedType() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -313,7 +313,7 @@ public class DiffTypeTests : DiffBaseTests
     #region Other
 
     [Fact]
-    public Task TestTypeKindChange() =>
+    public Task TypeKindChange() =>
         // Name remains the same (as well as DocID), but the kind changes
         RunTestAsync(
                 beforeCode: """
@@ -346,7 +346,7 @@ public class DiffTypeTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestShowPartial() => RunTestAsync(
+    public Task ShowPartial() => RunTestAsync(
                 beforeCode: "",
                 afterCode: """
                 namespace MyNamespace

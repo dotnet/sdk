@@ -12,7 +12,7 @@ public class DiffConstructorTests : DiffBaseTests
     #region Constructors
 
     [Fact]
-    public Task TestConstructorAdd() => RunTestAsync(
+    public Task ConstructorAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -43,7 +43,7 @@ public class DiffConstructorTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestConstructorChange() => RunTestAsync(
+    public Task ConstructorChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -78,7 +78,7 @@ public class DiffConstructorTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestConstructorDelete() => RunTestAsync(
+    public Task ConstructorDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -113,7 +113,7 @@ public class DiffConstructorTests : DiffBaseTests
     #region Primary constructors
 
     [Fact]
-    public Task TestPrimaryConstructorAdd() => RunTestAsync(
+    public Task PrimaryConstructorAdd() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -143,7 +143,7 @@ public class DiffConstructorTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestPrimaryConstructorChange() => RunTestAsync(
+    public Task PrimaryConstructorChange() => RunTestAsync(
                 // This isn't really a modification, but a deletion and an addition, and since
                 // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
@@ -178,7 +178,7 @@ public class DiffConstructorTests : DiffBaseTests
                 """, hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestPrimaryConstructorDelete() => RunTestAsync(
+    public Task PrimaryConstructorDelete() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -212,7 +212,7 @@ public class DiffConstructorTests : DiffBaseTests
     #region Hide Default constructors
 
     [Fact]
-    public Task TestAddHideImplicitDefaultConstructors() => RunTestAsync(
+    public Task AddHideImplicitDefaultConstructors() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -246,7 +246,7 @@ public class DiffConstructorTests : DiffBaseTests
                 hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestChangeHideImplicitDefaultConstructors() => RunTestAsync(
+    public Task ChangeHideImplicitDefaultConstructors() => RunTestAsync(
                 // This isn't really a modification, but a deletion and an addition, and since
                 // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
@@ -293,7 +293,7 @@ public class DiffConstructorTests : DiffBaseTests
                 hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestNestedTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
+    public Task NestedTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -333,7 +333,7 @@ public class DiffConstructorTests : DiffBaseTests
                 hideImplicitDefaultConstructors: true);
 
     [Fact]
-    public Task TestNestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
+    public Task NestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
                 // This isn't really a modification, but a deletion and an addition, and since
                 // deletions show up before additions, that explains the order of the expected code.
                 beforeCode: """
@@ -393,7 +393,7 @@ public class DiffConstructorTests : DiffBaseTests
     #region Visibility
 
     [Fact]
-    public Task TestDefaultConstructorMakePrivate() => RunTestAsync(
+    public Task DefaultConstructorMakePrivate() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -427,7 +427,7 @@ public class DiffConstructorTests : DiffBaseTests
                 """);
 
     [Fact]
-    public Task TestDefaultConstructorMakePublic() => RunTestAsync(
+    public Task DefaultConstructorMakePublic() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
