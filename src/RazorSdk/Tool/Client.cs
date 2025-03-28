@@ -171,9 +171,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     try
                     {
                         ServerLogger.Log($"Before poking pipe {Identifier}.");
-#pragma warning disable CA2022 // Avoid inexact read
+#if NET
+                        await Stream.ReadExactlyAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
+#else
                         await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-#pragma warning restore CA2022
+#endif
                         ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)
