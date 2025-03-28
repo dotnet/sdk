@@ -118,6 +118,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 #endif
 
     private int _counter;
+    private bool _disableTestRunSummary;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TerminalTestReporter"/> class with custom terminal and manual refresh for testing.
@@ -188,12 +189,17 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
+    public void DisableTestRunSummary()
+    {
+        _disableTestRunSummary = true;
+    }
+
     public void TestExecutionCompleted(DateTimeOffset endTime)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
-        if (!_isHelp)
+        if (!_isHelp && !_disableTestRunSummary)
         {
             _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
         }
@@ -207,11 +213,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private void AppendTestRunSummary(ITerminal terminal)
     {
-        terminal.AppendLine();
-
         IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
+
         if (artifactGroups.Any())
         {
+            // Add extra empty line when we will be writing any artifacts, to split it from previous output.
             terminal.AppendLine();
         }
 
@@ -235,6 +241,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 terminal.AppendLine();
             }
         }
+
+        terminal.AppendLine();
 
         int totalTests = _assemblies.Values.Sum(a => a.TotalTests);
         int totalFailedTests = _assemblies.Values.Sum(a => a.FailedTests);
