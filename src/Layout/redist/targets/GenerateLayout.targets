@@ -527,6 +527,7 @@
                             PublishNetSdks;
                             PublishTestCli;
                             PublishFSharp;
+                            GeneratePackagePruneData;
                             PublishContainersSdk;
                             GenerateCliRuntimeConfigurationFiles;
                             MakeFscRunnableAndMoveToPublishDir;
