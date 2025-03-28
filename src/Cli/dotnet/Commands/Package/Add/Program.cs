@@ -7,12 +7,13 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Tools.Package.Add;
 
 internal class AddPackageReferenceCommand : CommandBase
 {
-    private readonly string _packageId;
+    private readonly PackageIdentity _packageId;
     private readonly string _fileOrDirectory;
 
     public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
@@ -104,17 +105,22 @@ internal class AddPackageReferenceCommand : CommandBase
         }
     }
 
-    private string[] TransformArgs(string packageId, string tempDgFilePath, string projectFilePath)
+    private string[] TransformArgs(PackageIdentity packageId, string tempDgFilePath, string projectFilePath)
     {
-        var args = new List<string>
-        {
+        List<string> args = [
             "package",
             "add",
             "--package",
-            packageId,
+            packageId.Id,
             "--project",
             projectFilePath
-        };
+        ];
+        
+        if (packageId.HasVersion)
+        {
+            args.Add("--version");
+            args.Add(packageId.Version.ToString());
+        }
 
         args.AddRange(_parseResult
             .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
