@@ -38,8 +38,7 @@ internal class MSBuildForwardingAppWithoutLogging
 
     private readonly Dictionary<string, string> _msbuildRequiredEnvironmentVariables = GetMSBuildRequiredEnvironmentVariables();
 
-    private readonly List<string> _msbuildRequiredParameters =
-        [ "-maxcpucount", "-verbosity:m" ];
+    private readonly List<string> _msbuildRequiredParameters = [ "-maxcpucount", "-verbosity:m" ];
 
     public MSBuildForwardingAppWithoutLogging(IEnumerable<string> argsToForward, string? msbuildPath = null, bool includeLogo = false)
     {
@@ -126,7 +125,7 @@ internal class MSBuildForwardingAppWithoutLogging
     public int ExecuteInProc(string[] arguments)
     {
         // Save current environment variables before overwriting them.
-        Dictionary<string, string?> savedEnvironmentVariables = new();
+        Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
             foreach (KeyValuePair<string, string> kvp in _msbuildRequiredEnvironmentVariables)
@@ -162,11 +161,8 @@ internal class MSBuildForwardingAppWithoutLogging
     }
 
     private static string Escape(string arg) =>
-            // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
-            IsRestoreSources(arg) ?
-            arg.Replace(";", "%3B")
-                .Replace("://", ":%2F%2F") :
-            arg;
+        // this is a workaround for https://github.com/Microsoft/msbuild/issues/1622
+        IsRestoreSources(arg) ? arg.Replace(";", "%3B").Replace("://", ":%2F%2F") : arg;
 
     private static string GetMSBuildExePath()
     {

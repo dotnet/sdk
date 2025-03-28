@@ -53,9 +53,9 @@ index ------------
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/
  ./sdk-manifests/x.y.z/microsoft.net.sdk.aspire/x.y.z/WorkloadManifest.Aspire.targets
 @@ ------------ @@
- ./sdk/x.y.z/Microsoft.Build.NuGetSdkResolver.dll
- ./sdk/x.y.z/Microsoft.Build.Tasks.Core.dll
  ./sdk/x.y.z/Microsoft.Build.Utilities.Core.dll
+ ./sdk/x.y.z/Microsoft.CodeAnalysis.CSharp.dll
+ ./sdk/x.y.z/Microsoft.CodeAnalysis.dll
 -./sdk/x.y.z/Microsoft.CodeCoverage.IO.dll
  ./sdk/x.y.z/Microsoft.Common.CrossTargeting.targets
  ./sdk/x.y.z/Microsoft.Common.CurrentVersion.targets

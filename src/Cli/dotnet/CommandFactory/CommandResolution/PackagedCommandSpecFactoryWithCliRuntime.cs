@@ -50,7 +50,7 @@ public class PackagedCommandSpecFactoryWithCliRuntime : PackagedCommandSpecFacto
 
     private static Version GetVersionWithoutPrerelease(string version)
     {
-        int dashOrPlusIndex = version.IndexOfAny(new char[] { '-', '+' });
+        int dashOrPlusIndex = version.IndexOfAny(['-', '+']);
 
         if (dashOrPlusIndex >= 0)
         {

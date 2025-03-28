@@ -31,8 +31,8 @@ internal static class CliConstants
     public const string RuntimeIdentifier = "RuntimeIdentifier";
     public const string TargetFramework = "TargetFramework";
 
-    public static readonly string[] ProjectExtensions = { ".proj", ".csproj", ".vbproj", ".fsproj" };
-    public static readonly string[] SolutionExtensions = { ".sln", ".slnx", ".slnf" };
+    public static readonly string[] ProjectExtensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
+    public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";
     public const string SolutionExtensionPattern = "*.sln";

@@ -104,8 +104,8 @@ internal static class TestCommandParser
             Description = LocalizableStrings.CmdBlameCrashDumpTypeDescription,
             HelpName = LocalizableStrings.CrashDumpTypeArgumentName,
         }
-        .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
-        result.AcceptOnlyFromAmong(new string[] { "full", "mini" });
+        .ForwardAsMany(o => ["-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}"]);
+        result.AcceptOnlyFromAmong(["full", "mini"]);
         return result;
     }
 
@@ -113,7 +113,7 @@ internal static class TestCommandParser
     {
         Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
+    }.ForwardAsMany(o => ["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly CliOption<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
     {
@@ -130,8 +130,8 @@ internal static class TestCommandParser
             Description = LocalizableStrings.CmdBlameHangDumpTypeDescription,
             HelpName = LocalizableStrings.HangDumpTypeArgumentName
         }
-        .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" });
-        result.AcceptOnlyFromAmong(new string[] { "full", "mini", "none" });
+        .ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}"]);
+        result.AcceptOnlyFromAmong(["full", "mini", "none"]);
         return result;
     }
 
@@ -139,7 +139,7 @@ internal static class TestCommandParser
     {
         Description = LocalizableStrings.CmdBlameHangTimeoutDescription,
         HelpName = LocalizableStrings.HangTimeoutArgumentName
-    }.ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}" });
+    }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {

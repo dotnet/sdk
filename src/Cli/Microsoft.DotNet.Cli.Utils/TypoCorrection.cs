@@ -127,7 +127,7 @@ public static class TypoCorrection
         // so just O(m) space. Initialize the current row.
 
         int curRow = 0, nextRow = 1;
-        int[][] rows = { new int[m + 1], new int[m + 1] };
+        int[][] rows = [new int[m + 1], new int[m + 1]];
 
         for (int j = 0; j <= m; ++j)
         {

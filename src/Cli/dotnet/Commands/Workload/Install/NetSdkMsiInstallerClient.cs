@@ -94,7 +94,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         IEnumerable<WorkloadDownload> msis = GetMsisForWorkloads(workloadIds);
         if (!includeInstalledItems)
         {
-            HashSet<(string id, string version)> installedItems = new(GetInstalledPacks(sdkFeatureBand).Select(t => (t.Id.ToString(), t.Version)));
+            HashSet<(string id, string version)> installedItems = [.. GetInstalledPacks(sdkFeatureBand).Select(t => (t.Id.ToString(), t.Version))];
             msis = msis.Where(m => !installedItems.Contains((m.Id, m.NuGetPackageVersion)));
         }
 
@@ -138,7 +138,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
             IEnumerable<SdkFeatureBand> installedFeatureBands = GetInstalledFeatureBands(Log);
 
-            List<WorkloadSetRecord> workloadSetsToRemove = new();
+            List<WorkloadSetRecord> workloadSetsToRemove = [];
             var installedWorkloadSets = GetWorkloadSetRecords();
             foreach (var workloadSetRecord in installedWorkloadSets)
             {
@@ -187,7 +187,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
             RemoveWorkloadSets(workloadSetsToRemove, offlineCache);
 
-            List<WorkloadManifestRecord> manifestsToRemove = new();
+            List<WorkloadManifestRecord> manifestsToRemove = [];
             var installedWorkloadManifests = GetWorkloadManifestRecords();
             foreach (var manifestRecord in installedWorkloadManifests)
             {
@@ -240,7 +240,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             //  If aliased, the pack records here are the resolved pack from the alias
             IEnumerable<WorkloadPackRecord> installedWorkloadPacks = GetWorkloadPackRecords();
 
-            List<WorkloadPackRecord> packsToRemove = new();
+            List<WorkloadPackRecord> packsToRemove = [];
 
             // We first need to clean up the dependents and then do a pass at removing them. Querying the installed packs
             // is effectively a table scan of the registry to make sure we have accurate information and there's a
@@ -971,7 +971,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     /// <returns>A List of all the installed SDK feature bands.</returns>
     private static IEnumerable<SdkFeatureBand> GetInstalledFeatureBands(ISetupLogger log = null)
     {
-        HashSet<SdkFeatureBand> installedFeatureBands = new();
+        HashSet<SdkFeatureBand> installedFeatureBands = [];
         foreach (string sdkVersion in GetInstalledSdkVersions())
         {
             try

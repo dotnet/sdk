@@ -33,13 +33,13 @@ internal class RazorServer(
         var command = _commandFactory
             .Create(
                 "exec",
-                new string[] {
+                [
                     PidFile.ServerPath.Value,
                     "shutdown",
                     "-w",   // Wait for exit
                     "-p",   // Pipe name
                     PidFile.PipeName
-                })
+                ])
             .CaptureStdOut()
             .CaptureStdErr();
 

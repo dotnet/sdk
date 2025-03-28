@@ -48,12 +48,12 @@ internal static class SlnArgumentValidator
 
             var projectArgs = string.Join(" ", _arguments.Where(path => !path.HasExtension(".sln") && !path.HasExtension(".slnx")));
             string command = commandType == CommandType.Add ? "add" : "remove";
-            throw new GracefulException(new string[]
-            {
+            throw new GracefulException(
+            [
                 string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
                 CommonLocalizableStrings.DidYouMean,
                 $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
-            });
+            ]);
         }
     }
 }

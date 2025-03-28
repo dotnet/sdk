@@ -68,26 +68,12 @@ internal class ToolUninstallGlobalOrToolPathCommand : CommandBase
             package = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();
             if (package == null)
             {
-                throw new GracefulException(
-                    messages: new[]
-                    {
-                        string.Format(
-                            LocalizableStrings.ToolNotInstalled,
-                            packageId),
-                    },
-                isUserError: false);
+                throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolNotInstalled, packageId)], isUserError: false);
             }
         }
         catch (InvalidOperationException)
         {
-            throw new GracefulException(
-                    messages: new[]
-                    {
-                        string.Format(
-                    LocalizableStrings.ToolHasMultipleVersionsInstalled,
-                    packageId),
-                    },
-                isUserError: false);
+            throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
         }
 
         try
@@ -114,7 +100,7 @@ internal class ToolUninstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 messages: ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId),
-                verboseMessages: new[] { ex.ToString() },
+                verboseMessages: [ex.ToString()],
                 isUserError: false);
         }
     }

@@ -79,10 +79,10 @@ internal class CliTransaction
 
     class TransactionContext : ITransactionContext
     {
-        public List<Action> RollbackActions { get; set; } = new List<Action>();
+        public List<Action> RollbackActions { get; set; } = [];
 
         //  Actions which will be run either when the transaction completes successfully, or after rollback actions have been run
-        public List<Action> CleanupActions { get; set; } = new List<Action>();
+        public List<Action> CleanupActions { get; set; } = [];
 
         public void AddRollbackAction(Action action)
         {

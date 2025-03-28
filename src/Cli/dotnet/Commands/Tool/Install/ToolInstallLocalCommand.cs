@@ -121,14 +121,14 @@ internal class ToolInstallLocalCommand : CommandBase
     {
         if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
         {
-            throw new GracefulException(new[]
-                {
+            throw new GracefulException(
+                [
                     string.Format(
                         Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
-                },
+                ],
                 isUserError: false);
         }
         else if (existingPackage.Version == toolDownloadedPackage.Version)
@@ -200,12 +200,9 @@ internal class ToolInstallLocalCommand : CommandBase
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException(new[]
-                {
-                    e.Message,
-                    LocalizableStrings.NoManifestGuide
-                },
-                verboseMessages: new[] { e.VerboseMessage },
+            throw new GracefulException(
+                [e.Message, LocalizableStrings.NoManifestGuide],
+                verboseMessages: [e.VerboseMessage],
                 isUserError: false);
         }
     }

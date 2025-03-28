@@ -45,7 +45,7 @@ internal static class LockFileTargetExtensions
         Dictionary<string, LockFileTargetLibrary> libraryLookup =
             runtimeLibraries.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
 
-        HashSet<string> allExclusionList = new();
+        HashSet<string> allExclusionList = [];
 
         if (lockFileTarget.IsPortable())
         {

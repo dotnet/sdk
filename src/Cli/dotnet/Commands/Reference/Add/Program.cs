@@ -72,9 +72,7 @@ internal class AddProjectToProjectReferenceCommand : CommandBase
             {
                 if (!@ref.CanWorkOnFramework(framework))
                 {
-                    Reporter.Error.Write(GetProjectNotCompatibleWithFrameworksDisplayString(
-                                             @ref,
-                                             new string[] { frameworkString }));
+                    Reporter.Error.Write(GetProjectNotCompatibleWithFrameworksDisplayString(@ref, [frameworkString]));
                     return 1;
                 }
             }
