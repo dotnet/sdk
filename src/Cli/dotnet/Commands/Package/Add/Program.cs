@@ -17,7 +17,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult) : CommandBase
     private readonly string _fileOrDirectory =
         parseResult.HasOption(PackageCommandParser.ProjectOption) ?
             parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);      
+            parseResult.GetValue(AddCommandParser.ProjectArgument);
 
     public override int Execute()
     {
