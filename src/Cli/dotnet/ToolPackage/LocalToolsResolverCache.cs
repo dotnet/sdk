@@ -87,7 +87,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
     private CacheRow[] GetCacheTable(string packageCacheFile)
     {
-        CacheRow[] cacheTable = Array.Empty<CacheRow>();
+        CacheRow[] cacheTable = [];
 
         try
         {
@@ -185,9 +185,9 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         out RestoredCommand restoredCommandList)
     {
         (RestoredCommandIdentifier restoredCommandIdentifier, RestoredCommand restoredCommand)[]
-            matchingRow = cacheTable
+            matchingRow = [.. cacheTable
                 .Select(c => Convert(restoredCommandIdentifier.PackageId, c))
-                .Where(candidate => candidate.restoredCommandIdentifier == restoredCommandIdentifier).ToArray();
+                .Where(candidate => candidate.restoredCommandIdentifier == restoredCommandIdentifier)];
 
         if (matchingRow.Length >= 2)
         {

@@ -41,20 +41,17 @@ internal class ListProjectsInSolutionCommand : CommandBase
         string[] paths;
         if (_displaySolutionFolders)
         {
-            paths = solution.SolutionFolders
+            paths = [.. solution.SolutionFolders
                 // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
-                .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))
-                .ToArray();
+                .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))];
         }
         else
         {
-            paths = solution.SolutionProjects
-                .Select(project => project.FilePath)
-                .ToArray();
+            paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CommandLocalizableStrings.NoProjectsFound);
         }
         else
         {

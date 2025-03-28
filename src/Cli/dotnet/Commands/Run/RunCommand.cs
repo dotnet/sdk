@@ -285,7 +285,7 @@ public partial class RunCommand
 
         args.AddRange(cliRestoreArgs);
 
-        return args.ToArray();
+        return [.. args];
     }
 
     private VerbosityOptions GetDefaultVerbosity()
@@ -372,7 +372,7 @@ public partial class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
+            if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out _))
             {
                 throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
@@ -389,7 +389,7 @@ public partial class RunCommand
         return thing!;
     }
 
-    static string ComputeRunArgumentsTarget = "ComputeRunArguments";
+    static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
     private static LoggerVerbosity ToLoggerVerbosity(VerbosityOptions? verbosity)
     {

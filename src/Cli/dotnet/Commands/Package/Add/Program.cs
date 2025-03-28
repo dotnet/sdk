@@ -25,8 +25,7 @@ internal class AddPackageReferenceCommand : CommandBase
 
     public override int Execute()
     {
-        var projectFilePath = string.Empty;
-
+        string projectFilePath;
         if (!File.Exists(_fileOrDirectory))
         {
             projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
@@ -65,7 +64,7 @@ internal class AddPackageReferenceCommand : CommandBase
         return result;
     }
 
-    private void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
+    private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
     {
         List<string> args =
         [
@@ -96,7 +95,7 @@ internal class AddPackageReferenceCommand : CommandBase
         }
     }
 
-    private void DisposeTemporaryFile(string filePath)
+    private static void DisposeTemporaryFile(string filePath)
     {
         if (File.Exists(filePath))
         {
@@ -130,6 +129,6 @@ internal class AddPackageReferenceCommand : CommandBase
             args.Add(tempDgFilePath);
         }
 
-        return args.ToArray();
+        return [.. args];
     }
 }

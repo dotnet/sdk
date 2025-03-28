@@ -19,7 +19,7 @@ public class FsiForwardingApp : ForwardingApp
         }
         else
         {
-            return args.Append($"--preferreduilang:{lang.Name}").ToArray();
+            return [.. args, $"--preferreduilang:{lang.Name}"];
         }
     }
     public FsiForwardingApp(string[] arguments) : base(GetFsiAppPath(), processArguments(arguments))

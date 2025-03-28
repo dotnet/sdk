@@ -17,7 +17,7 @@ internal class ToolListGlobalOrToolPathCommand : CommandBase
     public const string CommandDelimiter = ", ";
     private readonly IReporter _reporter;
     private readonly IReporter _errorReporter;
-    private CreateToolPackageStore _createToolPackageStore;
+    private readonly CreateToolPackageStore _createToolPackageStore;
 
     public ToolListGlobalOrToolPathCommand(
         ParseResult result,
@@ -77,10 +77,9 @@ internal class ToolListGlobalOrToolPathCommand : CommandBase
 
     public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
     {
-        return _createToolPackageStore(toolPath).EnumeratePackages()
+        return [.. _createToolPackageStore(toolPath).EnumeratePackages()
             .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
-            .OrderBy(p => p.Id)
-            .ToArray();
+            .OrderBy(p => p.Id)];
     }
 
     internal static bool PackageIdMatches(IToolPackage package, PackageId? packageId)
@@ -128,12 +127,12 @@ internal class ToolListGlobalOrToolPathCommand : CommandBase
     {
         var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
         {
-            Data = packageEnumerable.Select(p => new ToolListJsonContract
+            Data = [.. packageEnumerable.Select(p => new ToolListJsonContract
             {
                 PackageId = p.Id.ToString(),
                 Version = p.Version.ToNormalizedString(),
                 Commands = [p.Command.Name.Value]
-            }).ToArray()
+            })]
         };
         var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
         _reporter.WriteLine(jsonText);

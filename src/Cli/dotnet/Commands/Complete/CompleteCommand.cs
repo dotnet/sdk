@@ -61,8 +61,6 @@ public class CompleteCommand
 
         var result = Parser.Instance.Parse(input);
 
-        return result.GetCompletions(position)
-            .Distinct()
-            .ToArray();
+        return [.. result.GetCompletions(position).Distinct()];
     }
 }

@@ -54,7 +54,7 @@ internal class SdkInfoProvider : ISdkInfoProvider
             sdks =
                 Directory.Exists(sdkDir)
                     ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
-                    : Enumerable.Empty<string>();
+                    : [];
         }
         return Task.FromResult(sdks);
     }

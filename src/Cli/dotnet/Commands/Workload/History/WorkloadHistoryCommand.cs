@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Workloads.Workload.History;
 internal class WorkloadHistoryCommand : WorkloadCommandBase
 {
     private readonly IInstaller _workloadInstaller;
-    private IWorkloadResolver _workloadResolver;
+    private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly SdkFeatureBand _sdkFeatureBand;
 

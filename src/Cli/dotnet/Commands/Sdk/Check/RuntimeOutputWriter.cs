@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Sdk.Check;
 
 internal class RuntimeOutputWriter : BundleOutputWriter
 {
-    private IEnumerable<NetRuntimeInfo> _runtimeInfo;
+    private readonly IEnumerable<NetRuntimeInfo> _runtimeInfo;
 
     public RuntimeOutputWriter(
         IEnumerable<NetRuntimeInfo> runtimeInfo,

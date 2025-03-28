@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 [SupportedOSPlatform("windows")]
 internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 {
-    private INuGetPackageDownloader _nugetPackageDownloader;
+    private readonly INuGetPackageDownloader _nugetPackageDownloader;
 
     private SdkFeatureBand _sdkFeatureBand;
 
@@ -98,13 +98,13 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             msis = msis.Where(m => !installedItems.Contains((m.Id, m.NuGetPackageVersion)));
         }
 
-        return msis.ToList(); ;
+        return [.. msis]; ;
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
     private class SetupLogReporter : IReporter
     {
-        private ISetupLogger _setupLogger;
+        private readonly ISetupLogger _setupLogger;
 
         public SetupLogReporter(ISetupLogger setupLogger)
         {
@@ -726,7 +726,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
         else if (IsClient && Dispatcher != null && Dispatcher.IsConnected)
         {
-            InstallResponseMessage response = Dispatcher.SendShutdownRequest();
+            _ = Dispatcher.SendShutdownRequest();
         }
 
         Log?.LogMessage("Shutdown completed.");
@@ -747,7 +747,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private static object _msiAdminInstallLock = new();
+    private static readonly object _msiAdminInstallLock = new();
 
     public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
     {
@@ -1061,7 +1061,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         uint error = Error.SUCCESS;
 
-        Task<uint> installTask = Task.Run<uint>(installDelegate);
+        Task<uint> installTask = Task.Run(installDelegate);
         Reporter.Write($"{progressLabel}...");
 
         // This is just simple progress, a.k.a., a series of dots. Ideally we need to wire up the external

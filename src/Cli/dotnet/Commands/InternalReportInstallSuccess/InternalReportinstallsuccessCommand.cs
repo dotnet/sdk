@@ -41,7 +41,7 @@ public class InternalReportinstallsuccess
 
     internal class ThreadBlockingTelemetry : ITelemetry
     {
-        private Telemetry.Telemetry telemetry;
+        private readonly Telemetry.Telemetry telemetry;
 
         internal ThreadBlockingTelemetry()
         {

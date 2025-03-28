@@ -20,11 +20,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 internal class WorkloadGarbageCollector
 {
     SdkFeatureBand _sdkFeatureBand;
-    string _dotnetDir;
-    IEnumerable<WorkloadId> _installedWorkloads;
-    Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
-    Dictionary<string, string> _globalJsonWorkloadSetVersions;
-    IReporter _verboseReporter;
+    readonly string _dotnetDir;
+    readonly IEnumerable<WorkloadId> _installedWorkloads;
+    readonly Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
+    readonly Dictionary<string, string> _globalJsonWorkloadSetVersions;
+    readonly IReporter _verboseReporter;
 
     public HashSet<string> WorkloadSetsToKeep = [];
     public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = [];
@@ -38,7 +38,7 @@ internal class WorkloadGarbageCollector
     }
 
     Dictionary<string, GCAction> _workloadSets = [];
-    Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
+    readonly Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
 
     //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
     //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the

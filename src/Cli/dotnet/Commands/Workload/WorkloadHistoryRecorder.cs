@@ -11,9 +11,9 @@ internal class WorkloadHistoryRecorder
 {
     public WorkloadHistoryRecord HistoryRecord { get; set; } = new();
 
-    IWorkloadResolver _workloadResolver;
-    IInstaller _workloadInstaller;
-    Func<IWorkloadResolver> _workloadResolverFunc;
+    readonly IWorkloadResolver _workloadResolver;
+    readonly IInstaller _workloadInstaller;
+    readonly Func<IWorkloadResolver> _workloadResolverFunc;
 
     public WorkloadHistoryRecorder(IWorkloadResolver workloadResolver, IInstaller workloadInstaller, Func<IWorkloadResolver> workloadResolverFunc)
     {
@@ -57,10 +57,9 @@ internal class WorkloadHistoryRecorder
         return new WorkloadHistoryState()
         {
             ManifestVersions = resolver.GetInstalledManifests().ToDictionary(manifest => manifest.Id.ToString(), manifest => $"{manifest.Version}/{manifest.ManifestFeatureBand}"),
-            InstalledWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository()
+            InstalledWorkloads = [.. _workloadInstaller.GetWorkloadInstallationRecordRepository()
                                                    .GetInstalledWorkloads(new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand()))
-                                                   .Select(id => id.ToString())
-                                                   .ToList(),
+                                                   .Select(id => id.ToString())],
             WorkloadSetVersion = currentWorkloadVersion
         };
 

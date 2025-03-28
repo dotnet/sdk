@@ -88,7 +88,7 @@ internal abstract class InstallerBase
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
@@ -160,7 +160,7 @@ internal abstract class InstallerBase
     /// </summary>
     /// <param name="response">The response message to examine.</param>
     /// <exception cref="WorkloadException"/>
-    protected void ExitOnFailure(InstallResponseMessage response, string message)
+    protected static void ExitOnFailure(InstallResponseMessage response, string message)
     {
         if (response.HResult < 0)
         {

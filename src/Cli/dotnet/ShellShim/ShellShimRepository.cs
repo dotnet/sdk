@@ -172,10 +172,10 @@ internal class ShellShimRepository : IShellShimRepository
         if (packagedShims != null && packagedShims.Count > 0)
         {
             FilePath[] candidatepackagedShim =
-                packagedShims
+                [.. packagedShims
                     .Where(s => string.Equals(
                         Path.GetFileName(s.Value),
-                        Path.GetFileName(GetShimPath(commandName).Value))).ToArray();
+                        Path.GetFileName(GetShimPath(commandName).Value)))];
 
             if (candidatepackagedShim.Length > 1)
             {

@@ -181,7 +181,7 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
-            return RunProperties.FromProjectAndApplicationArguments(project, Array.Empty<string>(), fallbackToTargetPath: true);
+            return RunProperties.FromProjectAndApplicationArguments(project, [], fallbackToTargetPath: true);
         }
     }
 }

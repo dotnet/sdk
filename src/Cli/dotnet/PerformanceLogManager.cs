@@ -13,7 +13,7 @@ internal sealed class PerformanceLogManager
     private const string PerfLogRoot = "PerformanceLogs";
     private const int DefaultNumLogsToKeep = 10;
 
-    private IFileSystem _fileSystem;
+    private readonly IFileSystem _fileSystem;
     private string _perfLogRoot;
     private string _currentLogDir;
 

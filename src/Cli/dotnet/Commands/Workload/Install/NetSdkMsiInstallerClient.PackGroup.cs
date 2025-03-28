@@ -105,7 +105,7 @@ internal partial class NetSdkMsiInstallerClient
         return msisToInstall;
     }
 
-    WorkloadDownload GetWorkloadDownloadForPack(PackInfo packInfo)
+    static WorkloadDownload GetWorkloadDownloadForPack(PackInfo packInfo)
     {
         return new WorkloadDownload(packInfo.ResolvedPackageId, GetMsiPackageId(packInfo), packInfo.Version);
     }

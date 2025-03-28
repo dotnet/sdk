@@ -328,7 +328,7 @@ internal sealed class TestApplication : IDisposable
 
     public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
+        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
     }
 
     internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
@@ -337,7 +337,7 @@ internal sealed class TestApplication : IDisposable
         {
             ExecutionId = discoveredTestMessages.ExecutionId,
             InstanceId = discoveredTestMessages.InstanceId,
-            DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
+            DiscoveredTests = [.. discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName))]
         });
     }
 
@@ -347,8 +347,8 @@ internal sealed class TestApplication : IDisposable
         {
             ExecutionId = testResultMessage.ExecutionId,
             InstanceId = testResultMessage.InstanceId,
-            SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-            FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+            SuccessfulTestResults = [.. testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid))],
+            FailedTestResults = [.. testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, [.. message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace))], message.StandardOutput, message.ErrorOutput, message.SessionUid))]
         });
     }
 
@@ -358,7 +358,7 @@ internal sealed class TestApplication : IDisposable
         {
             ExecutionId = fileArtifactMessages.ExecutionId,
             InstanceId = fileArtifactMessages.InstanceId,
-            FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray()
+            FileArtifacts = [.. fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid))]
         });
     }
 

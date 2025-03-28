@@ -165,7 +165,7 @@ public static class Parser
                     .Select(x => x.Trim())
                     // Remove empty lines
                     .Where(line => line.Length > 0);
-            replacementTokens = trimmedLines.ToArray();
+            replacementTokens = [.. trimmedLines];
             errorMessage = null;
             return true;
         }
@@ -191,7 +191,7 @@ public static class Parser
             exception = exception.InnerException;
         }
 
-        if (exception is Utils.GracefulException)
+        if (exception is GracefulException)
         {
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
                 ? exception.ToString().Red().Bold()
@@ -257,7 +257,7 @@ public static class Parser
             builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CommonLocalizableStrings.ShortWorkloadSearchVersionDescription);
         }
 
-        public void additionalOption(HelpContext context)
+        public static void additionalOption(HelpContext context)
         {
             List<TwoColumnHelpRow> options = [];
             HashSet<CliOption> uniqueOptions = [];
@@ -310,14 +310,14 @@ public static class Parser
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
-                var argumetns = context.ParseResult.GetValue(FormatCommandParser.Arguments);
-                new DotnetFormatForwardingApp(argumetns.Concat(helpArgs).ToArray()).Execute();
+                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                new DotnetFormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-            else if (command is Microsoft.TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
+            else if (command is TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
             {
                 var blocks = helpCommand.CustomHelpLayout();
                 foreach (var block in blocks)

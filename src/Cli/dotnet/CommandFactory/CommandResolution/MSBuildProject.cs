@@ -13,11 +13,11 @@ internal class MSBuildProject : IProject
 {
     private static readonly NuGetFramework s_toolPackageFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
 
-    private Project _project;
+    private readonly Project _project;
 
-    private string _projectRoot;
+    private readonly string _projectRoot;
 
-    private string _msBuildExePath;
+    private readonly string _msBuildExePath;
 
     public string DepsJsonPath
     {
@@ -146,7 +146,7 @@ internal class MSBuildProject : IProject
         var tools = toolsReferences.Select(t => new SingleProjectInfo(
             t.EvaluatedInclude,
             t.GetMetadataValue("Version"),
-            Enumerable.Empty<ResourceAssemblyInfo>()));
+            []));
 
         return tools;
     }

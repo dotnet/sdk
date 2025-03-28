@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli;
 internal class PrintableTable<T>
 {
     public const string ColumnDelimiter = "      ";
-    private List<Column> _columns = [];
+    private readonly List<Column> _columns = [];
 
     private class Column
     {
@@ -96,7 +96,7 @@ internal class PrintableTable<T>
 
         return EnumerateLines(
             widths,
-            _columns.Select(c => new StringInfo(c.Header ?? "")).ToArray());
+            [.. _columns.Select(c => new StringInfo(c.Header ?? ""))]);
     }
 
     private IEnumerable<string> EnumerateRowLines(T row, int[] widths)
@@ -108,7 +108,7 @@ internal class PrintableTable<T>
 
         return EnumerateLines(
             widths,
-            _columns.Select(c => new StringInfo(c.GetContent(row) ?? "")).ToArray());
+            [.. _columns.Select(c => new StringInfo(c.GetContent(row) ?? ""))]);
     }
 
     private static IEnumerable<string> EnumerateLines(int[] widths, StringInfo[] contents)
@@ -178,7 +178,7 @@ internal class PrintableTable<T>
 
     private int[] CalculateColumnWidths(IEnumerable<T> rows)
     {
-        return _columns
+        return [.. _columns
             .Select(c =>
             {
                 var width = new StringInfo(c.Header ?? "").LengthInTextElements;
@@ -191,8 +191,7 @@ internal class PrintableTable<T>
                 }
 
                 return Math.Min(width, c.MaxWidth);
-            })
-            .ToArray();
+            })];
     }
 
     private static int CalculateTotalWidth(int[] widths)

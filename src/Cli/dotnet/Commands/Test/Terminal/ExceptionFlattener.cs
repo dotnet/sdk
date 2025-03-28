@@ -9,7 +9,7 @@ internal sealed class ExceptionFlattener
     {
         if (errorMessage is null && exception is null)
         {
-            return Array.Empty<FlatException>();
+            return [];
         }
 
         string? message = !String.IsNullOrWhiteSpace(errorMessage) ? errorMessage : exception?.Message;
@@ -42,7 +42,7 @@ internal sealed class ExceptionFlattener
             }
         }
 
-        return flatExceptions.ToArray();
+        return [.. flatExceptions];
     }
 }
 

@@ -15,8 +15,8 @@ internal class PackageLocation
     {
         NugetConfig = nugetConfig;
         RootConfigDirectory = rootConfigDirectory;
-        AdditionalFeeds = additionalFeeds ?? Array.Empty<string>();
-        SourceFeedOverrides = sourceFeedOverrides ?? Array.Empty<string>();
+        AdditionalFeeds = additionalFeeds ?? [];
+        SourceFeedOverrides = sourceFeedOverrides ?? [];
     }
 
     public FilePath? NugetConfig { get; }

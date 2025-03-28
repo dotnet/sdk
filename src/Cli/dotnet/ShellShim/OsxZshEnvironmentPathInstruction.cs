@@ -13,7 +13,6 @@ internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
     private readonly IEnvironmentProvider _environmentProvider;
     private readonly IReporter _reporter;
 
-
     public OsxZshEnvironmentPathInstruction(
         BashPathUnderHomeDirectory executablePath,
         IReporter reporter,

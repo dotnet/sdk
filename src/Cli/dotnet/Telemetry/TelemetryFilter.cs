@@ -68,7 +68,7 @@ internal class TelemetryFilter : ITelemetryFilter
             ));
         }
 
-        return result
+        return [.. result
             .Select(r =>
             {
                 if (r.EventName == ExceptionEventName)
@@ -79,7 +79,7 @@ internal class TelemetryFilter : ITelemetryFilter
                 {
                     return r.WithAppliedToPropertiesValue(_hash);
                 }
-            }).ToList();
+            })];
     }
 
     private static List<IParseResultLogRule> ParseResultLogRules =>
@@ -191,7 +191,7 @@ internal class TelemetryFilter : ITelemetryFilter
         return s;
     }
 
-    private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
     {
         if (measurements != null)
         {

@@ -103,7 +103,7 @@ public class HelpCommand(string[] helpArgs)
         }
     }
 
-    private bool TryGetDocsLink(string[] command, out string docsLink)
+    private static bool TryGetDocsLink(string[] command, out string docsLink)
     {
         var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
         if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)

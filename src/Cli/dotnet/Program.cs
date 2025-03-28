@@ -332,7 +332,7 @@ public class Program
     {
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
-        var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
+        _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
         var reporter = Reporter.Output;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(

@@ -8,11 +8,11 @@ namespace Microsoft.DotNet.Workloads.Workload;
 
 internal class GlobalJsonWorkloadSetsFile
 {
-    string _path;
+    readonly string _path;
 
     public string Path { get { return _path; } }
 
-    private static JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
@@ -98,7 +98,7 @@ internal class GlobalJsonWorkloadSetsFile
         }
     }
 
-    string GetWorkloadVersionFromGlobalJson(string globalJsonPath)
+    static string GetWorkloadVersionFromGlobalJson(string globalJsonPath)
     {
         try
         {

@@ -66,17 +66,14 @@ internal class ToolManifestEditor : IToolManifestEditor
                 nuGetVersion.ToNormalizedString()));
         }
 
-        if (deserializedManifest.Tools == null)
-        {
-            deserializedManifest.Tools = [];
-        }
+        deserializedManifest.Tools ??= [];
 
         deserializedManifest.Tools.Add(
             new SerializableLocalToolSinglePackage
             {
                 PackageId = packageId.ToString(),
                 Version = nuGetVersion.ToNormalizedString(),
-                Commands = toolCommandNames.Select(c => c.Value).ToArray(),
+                Commands = [.. toolCommandNames.Select(c => c.Value)],
                 RollForward = rollForward,
             });
 
@@ -105,7 +102,7 @@ internal class ToolManifestEditor : IToolManifestEditor
                 var toEdit = deserializedManifest.Tools.Single(t => new PackageId(t.PackageId).Equals(packageId));
 
                 toEdit.Version = newNuGetVersion.ToNormalizedString();
-                toEdit.Commands = newToolCommandNames.Select(c => c.Value).ToArray();
+                toEdit.Commands = [.. newToolCommandNames.Select(c => c.Value)];
             }
         }
         else
@@ -204,7 +201,7 @@ internal class ToolManifestEditor : IToolManifestEditor
                                 commands.Add(command.GetString());
                             }
 
-                            serializableLocalToolSinglePackage.Commands = commands.ToArray();
+                            serializableLocalToolSinglePackage.Commands = [.. commands];
                         }
 
                         if (toolJson.Value.TryGetBooleanValue(JsonPropertyRollForward, out var rollForwardJson))
@@ -227,7 +224,7 @@ internal class ToolManifestEditor : IToolManifestEditor
         }
     }
 
-    private List<ToolManifestPackage> GetToolManifestPackageFromOneManifestFile(
+    private static List<ToolManifestPackage> GetToolManifestPackageFromOneManifestFile(
         SerializableLocalToolsManifest deserializedManifest,
         FilePath path,
         DirectoryPath correspondingDirectory)
@@ -317,10 +314,7 @@ internal class ToolManifestEditor : IToolManifestEditor
                                         List<string> errors)
     {
         var deserializedManifestVersion = deserializedManifest.Version;
-        if (deserializedManifestVersion == null)
-        {
-            deserializedManifestVersion = DefaultToolManifestFileVersion;
-        }
+        deserializedManifestVersion ??= DefaultToolManifestFileVersion;
 
         if (deserializedManifestVersion == 0)
         {
@@ -435,9 +429,7 @@ internal class ToolManifestEditor : IToolManifestEditor
                 $"the package id can be found in {nameof(toolManifestPackages)}.");
         }
 
-        serializableLocalToolsManifest.Tools = serializableLocalToolsManifest.Tools
-            .Where(package => !package.PackageId.Equals(packageId.ToString(), StringComparison.Ordinal))
-            .ToList();
+        serializableLocalToolsManifest.Tools = [.. serializableLocalToolsManifest.Tools.Where(package => !package.PackageId.Equals(packageId.ToString(), StringComparison.Ordinal))];
 
         _fileSystem.File.WriteAllText(
                        manifest.Value,

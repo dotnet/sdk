@@ -154,7 +154,7 @@ internal class CapabilityExpressionEvaluator
         bool r = OrTerm();
         if (_tokenizer.Peek() != null)
         {
-            throw _tokenizer.CreateInvalidExpressionException(_tokenizer.Input.Length);
+            throw Tokenizer.CreateInvalidExpressionException(_tokenizer.Input.Length);
         }
 
         return r;
@@ -277,7 +277,7 @@ internal class CapabilityExpressionEvaluator
         /// </summary>
         /// <param name="position">The position in the expression where the error was detected.</param>
         /// <returns>An exception for diagnosing the invalid expression.</returns>
-        internal Exception CreateInvalidExpressionException(int position)
+        internal static Exception CreateInvalidExpressionException(int position)
         {
             return new ArgumentException(
                 string.Format(LocalizableStrings.CapabilityExpressionEvaluator_Exception_InvalidExpression, position),

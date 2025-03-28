@@ -63,7 +63,7 @@ internal class ToolListLocalCommand : CommandBase
              );
     }
 
-    private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
+    private static bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
     {
         return !packageId.HasValue || package.PackageId.Equals(packageId);
     }
@@ -90,13 +90,13 @@ internal class ToolListLocalCommand : CommandBase
     {
         var jsonData = new VersionedDataContract<LocalToolListJsonContract[]>()
         {
-            Data = packageEnumerable.Select(p => new LocalToolListJsonContract
+            Data = [.. packageEnumerable.Select(p => new LocalToolListJsonContract
             {
                 PackageId = p.toolManifestPackage.PackageId.ToString(),
                 Version = p.toolManifestPackage.Version.ToNormalizedString(),
-                Commands = p.toolManifestPackage.CommandNames.Select(c => c.Value).ToArray(),
+                Commands = [.. p.toolManifestPackage.CommandNames.Select(c => c.Value)],
                 Manifest = p.SourceManifest.Value
-            }).ToArray()
+            })]
         };
         var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
         _reporter.WriteLine(jsonText);

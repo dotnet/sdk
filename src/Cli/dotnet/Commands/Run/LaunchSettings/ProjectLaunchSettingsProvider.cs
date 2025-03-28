@@ -9,7 +9,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
 {
     public static readonly string CommandNameValue = "Project";
 
-    public string CommandName => CommandNameValue;
+    public static string CommandName => CommandNameValue;
 
     public LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model)
     {

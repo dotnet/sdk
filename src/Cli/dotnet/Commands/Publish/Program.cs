@@ -52,7 +52,7 @@ public class PublishCommand : RestoringCommand
          );
         msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
 
-        msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
+        msbuildArgs.AddRange(slnOrProjectArgs ?? []);
 
         bool noRestore = parseResult.HasOption(PublishCommandParser.NoRestoreOption)
                       || parseResult.HasOption(PublishCommandParser.NoBuildOption);

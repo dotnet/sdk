@@ -26,6 +26,6 @@ internal class PackageSearchCommand : CommandBase
         }
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageSearchCommandParser.GetCommand()));
-        return NuGetCommand.Run(args.ToArray());
+        return NuGetCommand.Run([.. args]);
     }
 }

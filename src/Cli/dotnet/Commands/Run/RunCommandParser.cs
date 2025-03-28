@@ -57,7 +57,7 @@ internal static class RunCommandParser
 
     public static readonly CliArgument<string[]> ApplicationArguments = new("applicationArguments")
     {
-        DefaultValueFactory = _ => Array.Empty<string>(),
+        DefaultValueFactory = _ => [],
         Description = "Arguments passed to the application that is being run."
     };
 
