@@ -87,7 +87,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            // TestProject produces 1 passed, 1 failed, and 1 skipped.
+            // OtherTestProject produces 1 passed and 1 skipped.
+            // We got 2 exit codes. Success and AtLeastOneTestFailed. So, we aggregate the final exit code to AtLeastOneTestFailed.
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
 

@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, configuration), result.StdOut);
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -532,7 +532,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                  .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -550,7 +550,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -568,7 +568,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             Assert.True(File.Exists(Path.Combine(testInstance.Path, traceFile)), "Trace file should exist after test execution.");
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }
