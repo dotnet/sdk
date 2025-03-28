@@ -607,6 +607,12 @@ RunSettings bağımsız değişkenleri:
         <target state="new">Standard output</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="new">Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code
+</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="new">Discovered {0} tests in {1} assemblies.</target>
@@ -616,6 +622,11 @@ RunSettings bağımsız değişkenleri:
         <source>Discovered {0} tests.</source>
         <target state="new">Discovered {0} tests.</target>
         <note>0 is number of tests</note>
+      </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="new">Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>

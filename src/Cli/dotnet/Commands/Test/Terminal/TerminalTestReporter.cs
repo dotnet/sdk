@@ -6,6 +6,7 @@ using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Tools.Test;
 using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
@@ -194,14 +195,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _disableTestRunSummary = true;
     }
 
-    public void TestExecutionCompleted(DateTimeOffset endTime)
+    public void TestExecutionCompleted(DateTimeOffset endTime, int exitCode)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
         if (!_isHelp && !_disableTestRunSummary)
         {
-            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+            if (_isDiscovery)
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestDiscoverySummary(terminal, exitCode));
+            }
+            else
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestRunSummary(terminal, exitCode));
+            }
         }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
@@ -211,7 +219,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = null;
     }
 
-    private void AppendTestRunSummary(ITerminal terminal)
+    private void AppendTestRunSummary(ITerminal terminal, int exitCode)
     {
         IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
 
@@ -369,6 +377,18 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(durationText);
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+    }
+
+    private void AppendExitCodeAndUrl(ITerminal terminal, int exitCode, bool isRun)
+    {
+        if (exitCode == 0)
+        {
+            return;
+        }
+
+        terminal.AppendLine(string.Format(isRun ? LocalizableStrings.TestRunExitCode : LocalizableStrings.TestDiscoveryExitCode, exitCode));
     }
 
     /// <summary>
@@ -785,22 +805,24 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
-            terminal.AppendLine();
         });
     }
 
     private static void AppendExecutableSummary(ITerminal terminal, int? exitCode, string? outputData, string? errorData)
     {
-        terminal.AppendLine();
         terminal.Append(LocalizableStrings.ExitCode);
         terminal.Append(": ");
         terminal.AppendLine(exitCode?.ToString(CultureInfo.CurrentCulture) ?? "<null>");
-        terminal.Append(LocalizableStrings.StandardOutput);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(outputData) ? string.Empty : outputData);
-        terminal.Append(LocalizableStrings.StandardError);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(errorData) ? string.Empty : errorData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardOutput, outputData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardError, errorData);
+
+        void AppendOutputWhenPresent(string description, string? output)
+        {
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
+            }
+        }
     }
 
     private static string? NormalizeSpecialCharacters(string? text)
@@ -955,7 +977,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void AppendTestDiscoverySummary(ITerminal terminal)
+    public void AppendTestDiscoverySummary(ITerminal terminal, int exitCode)
     {
         terminal.AppendLine();
 
@@ -1000,6 +1022,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(LocalizableStrings.Aborted);
             terminal.AppendLine();
         }
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>
