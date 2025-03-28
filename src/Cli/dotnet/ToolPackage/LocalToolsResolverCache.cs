@@ -184,8 +184,8 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         CacheRow[] cacheTable,
         out RestoredCommand restoredCommandList)
     {
-        (RestoredCommandIdentifier restoredCommandIdentifier, RestoredCommand restoredCommand)[]
-            matchingRow = [.. cacheTable
+        (RestoredCommandIdentifier restoredCommandIdentifier, RestoredCommand restoredCommand)[] matchingRow =
+            [.. cacheTable
                 .Select(c => Convert(restoredCommandIdentifier.PackageId, c))
                 .Where(candidate => candidate.restoredCommandIdentifier == restoredCommandIdentifier)];
 

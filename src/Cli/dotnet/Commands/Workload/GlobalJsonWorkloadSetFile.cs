@@ -8,9 +8,7 @@ namespace Microsoft.DotNet.Workloads.Workload;
 
 internal class GlobalJsonWorkloadSetsFile
 {
-    readonly string _path;
-
-    public string Path { get { return _path; } }
+    public string Path { get; }
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
     {
@@ -20,15 +18,15 @@ internal class GlobalJsonWorkloadSetsFile
 
     public GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string dotnetDir)
     {
-        _path = System.IO.Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
+        Path = System.IO.Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
     }
 
     public void RecordWorkloadSetInGlobalJson(string globalJsonPath, string workloadSetVersion)
     {
         //  Create install state folder if needed
-        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(_path));
+        Directory.CreateDirectory(System.IO.Path.GetDirectoryName(Path));
 
-        using (var fileStream = File.Open(_path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
+        using (var fileStream = File.Open(Path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None))
         {
             Dictionary<string, string> globalJsonWorkloadSetVersions;
             if (fileStream.Length > 0)
@@ -52,7 +50,7 @@ internal class GlobalJsonWorkloadSetsFile
         {
             try
             {
-                return File.Open(_path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
+                return File.Open(Path, FileMode.Open, FileAccess.ReadWrite, FileShare.None);
             }
             catch (FileNotFoundException)
             {
@@ -98,7 +96,7 @@ internal class GlobalJsonWorkloadSetsFile
         }
     }
 
-    static string GetWorkloadVersionFromGlobalJson(string globalJsonPath)
+    private static string GetWorkloadVersionFromGlobalJson(string globalJsonPath)
     {
         try
         {

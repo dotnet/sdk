@@ -14,9 +14,6 @@ internal class MSBuildProject : IProject
     private static readonly NuGetFramework s_toolPackageFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
 
     private readonly Project _project;
-
-    private readonly string _projectRoot;
-
     private readonly string _msBuildExePath;
 
     public string DepsJsonPath
@@ -52,13 +49,7 @@ internal class MSBuildProject : IProject
         }
     }
 
-    public string ProjectRoot
-    {
-        get
-        {
-            return _projectRoot;
-        }
-    }
+    public string ProjectRoot { get; }
 
     public NuGetFramework DotnetCliToolTargetFramework
     {
@@ -110,7 +101,7 @@ internal class MSBuildProject : IProject
         string outputPath,
         string msBuildExePath)
     {
-        _projectRoot = msBuildExePath;
+        ProjectRoot = msBuildExePath;
 
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -143,10 +134,7 @@ internal class MSBuildProject : IProject
     public IEnumerable<SingleProjectInfo> GetTools()
     {
         var toolsReferences = _project.AllEvaluatedItems.Where(i => i.ItemType.Equals("DotNetCliToolReference"));
-        var tools = toolsReferences.Select(t => new SingleProjectInfo(
-            t.EvaluatedInclude,
-            t.GetMetadataValue("Version"),
-            []));
+        var tools = toolsReferences.Select(t => new SingleProjectInfo(t.EvaluatedInclude, t.GetMetadataValue("Version"), []));
 
         return tools;
     }

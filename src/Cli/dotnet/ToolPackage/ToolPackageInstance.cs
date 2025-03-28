@@ -172,12 +172,8 @@ internal class ToolPackageInstance : IToolPackage
             [.. allAvailableShimRuntimeIdentifiers],
             out var mostFitRuntimeIdentifier))
         {
-            return library
-                       ?.ToolsAssemblies
-                       ?.Where(l =>
-                           LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
-                       .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray()
-                   ?? [];
+            return library?.ToolsAssemblies?.Where(l => LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
+                .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray() ?? [];
         }
         else
         {

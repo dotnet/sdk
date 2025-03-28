@@ -11,9 +11,9 @@ internal class WorkloadHistoryRecorder
 {
     public WorkloadHistoryRecord HistoryRecord { get; set; } = new();
 
-    readonly IWorkloadResolver _workloadResolver;
-    readonly IInstaller _workloadInstaller;
-    readonly Func<IWorkloadResolver> _workloadResolverFunc;
+    private readonly IWorkloadResolver _workloadResolver;
+    private readonly IInstaller _workloadInstaller;
+    private readonly Func<IWorkloadResolver> _workloadResolverFunc;
 
     public WorkloadHistoryRecorder(IWorkloadResolver workloadResolver, IInstaller workloadInstaller, Func<IWorkloadResolver> workloadResolverFunc)
     {

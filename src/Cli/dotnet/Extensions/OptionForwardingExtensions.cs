@@ -65,7 +65,6 @@ public static class OptionForwardingExtensions
             .Select(o => o.GetForwardingFunction())
             .SelectMany(f => f is not null ? f(parseResult) : []);
 
-
     public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias)
     {
         var func = command.Options?

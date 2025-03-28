@@ -51,10 +51,7 @@ internal class SdkInfoProvider : ISdkInfoProvider
         catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
         {
             string sdkDir = Path.Combine(dotnetDir, "sdk");
-            sdks =
-                Directory.Exists(sdkDir)
-                    ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
-                    : [];
+            sdks = Directory.Exists(sdkDir) ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion) : [];
         }
         return Task.FromResult(sdks);
     }

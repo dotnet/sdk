@@ -133,10 +133,9 @@ public static class ParseResultExtensions
         return
         [
             .. subargs
-                        .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
-                        .Skip(1)
-, // remove top level command (ex build or publish)
-            .. runArgs,
+                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1), // remove top level command (ex build or publish)
+            .. runArgs
         ];
     }
 

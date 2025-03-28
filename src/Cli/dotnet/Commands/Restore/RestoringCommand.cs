@@ -100,14 +100,11 @@ public class RestoringCommand : MSBuildForwardingApp
         "clp"
     ];
 
-    private static readonly List<string> FlagsToExcludeFromSeparateRestore =
-        [.. ComputeFlags(FlagsToExcludeFromRestore)];
+    private static readonly List<string> FlagsToExcludeFromSeparateRestore = [.. ComputeFlags(FlagsToExcludeFromRestore)];
 
-    private static readonly List<string> FlagsThatTriggerSilentSeparateRestore =
-        [.. ComputeFlags(FlagsThatTriggerSilentRestore)];
+    private static readonly List<string> FlagsThatTriggerSilentSeparateRestore = [.. ComputeFlags(FlagsThatTriggerSilentRestore)];
 
-    private static readonly List<string> PropertiesToExcludeFromSeparateRestore =
-        [.. ComputePropertySwitches(PropertiesToExcludeFromRestore)];
+    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [.. ComputePropertySwitches(PropertiesToExcludeFromRestore)];
 
     // We investigate the arguments we're about to send to a separate restore call and filter out
     // arguments that negatively influence the restore. In addition, some flags signal different modes of execution

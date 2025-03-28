@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using CommandLocalizableStrings = Microsoft.DotNet.Cli.CommonLocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Sln.List;
 
@@ -31,7 +30,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
         }
         catch (Exception ex)
         {
-            throw new GracefulException(CommandLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
         }
     }
 
@@ -51,7 +50,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommandLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
         }
         else
         {

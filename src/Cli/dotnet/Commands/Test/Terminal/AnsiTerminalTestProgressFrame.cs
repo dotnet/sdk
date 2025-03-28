@@ -319,9 +319,7 @@ internal sealed class AnsiTerminalTestProgressFrame
 
         foreach (int sortedItemIndex in sortedItemsIndices)
         {
-            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(
-                linesToDistribute / progressItems.Length)
-                ?? [];
+            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(linesToDistribute / progressItems.Length) ?? [];
         }
 
         for (int progressI = 0; progressI < progressItems.Length; progressI++)

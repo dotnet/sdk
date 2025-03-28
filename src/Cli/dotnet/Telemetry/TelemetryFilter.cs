@@ -68,18 +68,17 @@ internal class TelemetryFilter : ITelemetryFilter
             ));
         }
 
-        return [.. result
-            .Select(r =>
+        return [.. result.Select(r =>
+        {
+            if (r.EventName == ExceptionEventName)
             {
-                if (r.EventName == ExceptionEventName)
-                {
-                    return r;
-                }
-                else
-                {
-                    return r.WithAppliedToPropertiesValue(_hash);
-                }
-            })];
+                return r;
+            }
+            else
+            {
+                return r.WithAppliedToPropertiesValue(_hash);
+            }
+        })];
     }
 
     private static List<IParseResultLogRule> ParseResultLogRules =>

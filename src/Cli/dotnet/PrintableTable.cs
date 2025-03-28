@@ -94,9 +94,7 @@ internal class PrintableTable<T>
             throw new InvalidOperationException();
         }
 
-        return EnumerateLines(
-            widths,
-            [.. _columns.Select(c => new StringInfo(c.Header ?? ""))]);
+        return EnumerateLines(widths, [.. _columns.Select(c => new StringInfo(c.Header ?? ""))]);
     }
 
     private IEnumerable<string> EnumerateRowLines(T row, int[] widths)
@@ -106,9 +104,7 @@ internal class PrintableTable<T>
             throw new InvalidOperationException();
         }
 
-        return EnumerateLines(
-            widths,
-            [.. _columns.Select(c => new StringInfo(c.GetContent(row) ?? ""))]);
+        return EnumerateLines(widths, [.. _columns.Select(c => new StringInfo(c.GetContent(row) ?? ""))]);
     }
 
     private static IEnumerable<string> EnumerateLines(int[] widths, StringInfo[] contents)
@@ -178,20 +174,19 @@ internal class PrintableTable<T>
 
     private int[] CalculateColumnWidths(IEnumerable<T> rows)
     {
-        return [.. _columns
-            .Select(c =>
+        return [.. _columns.Select(c =>
+        {
+            var width = new StringInfo(c.Header ?? "").LengthInTextElements;
+
+            foreach (var row in rows)
             {
-                var width = new StringInfo(c.Header ?? "").LengthInTextElements;
+                width = Math.Max(
+                    width,
+                    new StringInfo(c.GetContent(row) ?? "").LengthInTextElements);
+            }
 
-                foreach (var row in rows)
-                {
-                    width = Math.Max(
-                        width,
-                        new StringInfo(c.GetContent(row) ?? "").LengthInTextElements);
-                }
-
-                return Math.Min(width, c.MaxWidth);
-            })];
+            return Math.Min(width, c.MaxWidth);
+        })];
     }
 
     private static int CalculateTotalWidth(int[] widths)
