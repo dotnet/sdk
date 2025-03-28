@@ -170,7 +170,7 @@
     <comment>{Locked="--version"}</comment>
   </data>
   <data name="InvalidSemVerVersionString" xml:space="preserve">
-    <value>$"Invalid version string: {0}."</value>
+    <value>Failed to parse "{0}" as a semantic version.</value>
     <comment>{0} is a version string that the user entered that was not parsed as a Semantic Version</comment>
   </data>
 </root>
