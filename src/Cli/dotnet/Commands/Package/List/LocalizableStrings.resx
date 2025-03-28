@@ -176,7 +176,7 @@
   </data>
   <data name="Error_restore" xml:space="preserve">
     <value>Restore failed. Run `dotnet restore` for more details on the issue.</value>
-    <comment>Do not translate `dotnet restore`</comment>
+    <comment>{Locked="dotnet restore"}</comment>
   </data>
   <data name="CmdNoRestoreDescription" xml:space="preserve">
     <value>Do not restore before running the command.</value>
