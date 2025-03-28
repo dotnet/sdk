@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tests
         [WindowsOnlyFact]
         public void It_builds_a_simple_desktop_app()
         {
-            var targetFramework = "net45";
+            var targetFramework = "net462";
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorldFS")
                 .WithSource()
