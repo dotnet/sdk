@@ -16,9 +16,14 @@ internal class AddPackageReferenceCommand : CommandBase
     private readonly PackageIdentity _packageId;
     private readonly string _fileOrDirectory;
 
-    public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
+    /// <param name="parseResult"></param>
+    /// <param name="fileOrDirectory">
+    /// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+    /// It's cleaner for the separate callsites to know this instead of pushing that logic here.
+    /// </param>
+    public AddPackageReferenceCommand(ParseResult parseResult, string fileOrDirectory) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(PackageCommandParser.ProjectOption);
+        _fileOrDirectory = fileOrDirectory;
         _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
     }
 
