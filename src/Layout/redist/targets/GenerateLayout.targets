@@ -406,6 +406,78 @@
                                    AssetPath="%(NuPkgContentForMSBuildExtensionsRelativePaths.Identity)" />
   </Target>
 
+  <Target Name="PublishDotnetWatchToRedist">
+    <ItemGroup>
+      <_DotnetWatchBuildOutput Include="$(ArtifactsBinDir)dotnet-watch\$(Configuration)\$(SdkTargetFramework)\**"/>
+
+      <!--
+        To reduce the size of the SDK, we use the compiler dependencies that are located in the `Roslyn/bincore` location
+        instead of shipping our own copies in the dotnet-watch tool. These assemblies will be resolved by path in the
+        dotnet-watch executable.
+
+        We make an exception for the Microsoft.CodeAnalysis binaries deployed with the MSBuildWorkspace BuildHosts, since those don't
+        have any logic to pick up Roslyn from another location. Those can be addressed a different way which tracked in
+        https://github.com/dotnet/roslyn/issues/70945.
+      -->
+      <_DotnetWatchInputFile Include="@(_DotnetWatchBuildOutput)"
+                             Condition="('%(Filename)' != 'Microsoft.CodeAnalysis' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.resources' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp' and
+                                         '%(Filename)' != 'Microsoft.CodeAnalysis.CSharp.resources') or
+                                        $([MSBuild]::ValueOrDefault('%(FullPath)', '').Contains('BuildHost'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_DotnetWatchInputFile)"
+          DestinationFiles="@(_DotnetWatchInputFile->'$(OutputPath)\DotnetTools\dotnet-watch\$(Version)\tools\$(SdkTargetFramework)\any\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true">
+      <Output TaskParameter="CopiedFiles" ItemName="FileWrites" />
+    </Copy>
+  </Target>
+
+  <Target Name="CopyKnownWorkloadManifestFile">
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
+    </ItemGroup>
+
+    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
+
+    <ItemGroup>
+      <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(OutputPath)KnownWorkloadManifests.txt"
+                      Lines="@(WorkloadManifestFilesContent)"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="LayoutAppHostTemplate">
+    <PropertyGroup>
+      <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
+      <AppHostRestorePath>$(NuGetPackageRoot)$(NETCoreAppHostPackageName.ToLowerInvariant())\$(MicrosoftNETCoreAppHostPackageVersion)\</AppHostRestorePath>
+      <AppHostTemplatePath>$(OutputPath)AppHostTemplate</AppHostTemplatePath>
+      <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <AllFileOfRestoredAppHostPackage Include="$(AppHostRestorePath)\**\*.*" />
+      <NativeRestoredAppHostNETCore Include="@(AllFileOfRestoredAppHostPackage)"
+          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'" />
+    </ItemGroup>
+
+    <Error Condition="@(NativeRestoredAppHostNETCore->Distinct()->Count()) != 1"
+           Text="Failed to determine the $(NETCoreAppHostPackageName) executable in @(AllFileOfRestoredAppHostPackage)" />
+
+    <Copy SourceFiles="@(NativeRestoredAppHostNETCore)" DestinationFolder="$(AppHostTemplatePath)" />
+
+    <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)." Importance="High" />
+  </Target>
+
+  <Target Name="GenerateVersionFile">
+    <WriteLinesToFile File="$(OutputPath).version"
+                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
+                      Overwrite="true" />
+  </Target>
+
   <Target Name="ChmodPublishDir"
           DependsOnTargets="GenerateCliRuntimeConfigurationFiles"
           Condition="'$(OSName)' != 'win'">
@@ -424,24 +496,20 @@
   </Target>
 
   <Target Name="RetargetTools">
-    <PropertyGroup>
-      <ReplacementPattern>"version": ".*"</ReplacementPattern>
-      <ReplacementString>"version": "$(MicrosoftNETCoreAppRuntimePackageVersion)"</ReplacementString>
-    </PropertyGroup>
     <ItemGroup>
-      <!-- Exclude F# from retargeting: https://github.com/dotnet/toolset/issues/2866 -->
       <!-- Exclude testhost from retargeting: https://github.com/dotnet/sdk/issues/24769 -->
-      <ToolRuntimeConfigPath Include="$(OutputPath)/**/*.runtimeconfig.json"
-                             Exclude="$(OutputPath)/**/fsc.runtimeconfig.json;$(OutputPath)/**/fsi.runtimeconfig.json;$(OutputPath)/**/testhost-*.runtimeconfig.json"/>
-
-      <MSBuild15Items Include="$(OutputPath)/15.0/**/*" />
+      <ToolRuntimeConfigPath Include="$(OutputPath)**\*.runtimeconfig.json" Exclude="$(OutputPath)**\testhost-*.runtimeconfig.json" />
     </ItemGroup>
 
-    <ReplaceFileContents
-      InputFiles="@(ToolRuntimeConfigPath)"
-      DestinationFiles="@(ToolRuntimeConfigPath)"
-      ReplacementPatterns="$(ReplacementPattern)"
-      ReplacementStrings="$(ReplacementString)" />
+    <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the version redistributed. -->
+    <UpdateRuntimeConfig
+      RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
+      MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+
+    <ItemGroup>
+      <MSBuild15Items Include="$(OutputPath)/15.0/**/*" />
+    </ItemGroup>
 
     <Move
       SourceFiles="@(MSBuild15Items)"
@@ -450,7 +518,8 @@
     <RemoveDir Directories="$(OutputPath)/15.0" />
   </Target>
 
-  <Target Name="GenerateLayout"
+  <!-- Anything that goes into the sdk/$(Version) directory. -->
+  <Target Name="GenerateSdkLayout"
           DependsOnTargets="PublishPortableRuntimeIdentifierGraph;
                             PublishVersionFile;
                             PublishRoslyn;
@@ -458,27 +527,23 @@
                             PublishNetSdks;
                             PublishTestCli;
                             PublishFSharp;
+                            GeneratePackagePruneData;
                             PublishContainersSdk;
                             GenerateCliRuntimeConfigurationFiles;
                             MakeFscRunnableAndMoveToPublishDir;
                             RemoveFscFilesAfterPublish;
                             PublishTargetExtensions;
                             PublishSdks;
-                            ChmodPublishDir;
+                            PublishDotnetWatchToRedist;
+                            GenerateBundledVersions;
+                            GenerateVersionFile;
+                            CopyKnownWorkloadManifestFile;
+                            LayoutAppHostTemplate;
+                            LayoutBundledTools;
                             DeleteSymbolsFromPublishDir;
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;
-                            GetDotnetWatchRedistOutputDirectory"
-          AfterTargets="Build">
-    <ItemGroup>
-      <ToolsetLayoutInput Include="$(OutputPath)/**/*" />
-      <!-- Include redist outputs published by dotnet-watch.csproj build. -->
-      <ToolsetLayoutInput Include="$(DotnetWatchRedistOutputDirectory)/**/*" LayoutSubdirectory="DotnetTools\dotnet-watch\"/>
-    </ItemGroup>
-
-    <Copy SourceFiles="@(ToolsetLayoutInput)"
-          DestinationFiles="@(ToolsetLayoutInput->'$(SdkLayoutOutputDirectory)\%(LayoutSubdirectory)%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true" />
-  </Target>
+                            ChmodPublishDir"
+          AfterTargets="Build" />
 
 </Project>

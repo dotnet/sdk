@@ -29,18 +29,11 @@ internal static class StoreCommandParser
 
         if (o.Count() == 1)
         {
-            return new[]
-            {
-                materializedString
-            };
+            return [materializedString];
         }
         else
         {
-            return new[]
-            {
-                materializedString,
-                $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"
-            };
+            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
         }
     }).AllowSingleArgPerToken();
 

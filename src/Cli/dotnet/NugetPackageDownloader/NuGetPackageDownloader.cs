@@ -363,7 +363,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
-        List<PackageSource> defaultSources = new();
+        List<PackageSource> defaultSources = [];
         string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
         ISettings settings;
         if (packageSourceLocation?.NugetConfig != null)

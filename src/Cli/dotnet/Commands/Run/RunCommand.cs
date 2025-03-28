@@ -110,7 +110,7 @@ public partial class RunCommand
             projectFactory = new VirtualProjectBuildingCommand
             {
                 EntryPointFileFullPath = EntryPointFileFullPath,
-            }.CreateProjectInstance;
+            }.PrepareProjectInstance().CreateProjectInstance;
         }
 
         try
@@ -276,10 +276,7 @@ public partial class RunCommand
 
     private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
     {
-        List<string> args = new()
-        {
-            "-nologo"
-        };
+        List<string> args = ["-nologo"];
 
         if (Verbosity is null)
         {
