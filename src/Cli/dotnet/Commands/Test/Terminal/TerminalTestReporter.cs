@@ -1022,6 +1022,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(LocalizableStrings.Aborted);
             terminal.AppendLine();
         }
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>
