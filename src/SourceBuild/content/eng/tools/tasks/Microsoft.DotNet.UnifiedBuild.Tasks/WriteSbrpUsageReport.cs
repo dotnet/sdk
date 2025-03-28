@@ -173,12 +173,12 @@ public class WriteSbrpUsageReport : Task
 
             foreach (DownloadDependency downloadDep in lockFile.PackageSpec.TargetFrameworks.SelectMany(fx => fx.DownloadDependencies))
             {
-                TrackPackageReference(lockFile.Path, downloadDep.Name, downloadDep.VersionRange.MinVersion?.ToString(), null);
+                TrackPackageReference(lockFile.Path, downloadDep.Name, downloadDep.VersionRange.MinVersion?.ToString(), Enumerable.Empty<string>());
             }
         }
     }
 
-    private void TrackPackageReference(string lockFilePath, string? name, string? version, IEnumerable<string>? tfms)
+    private void TrackPackageReference(string lockFilePath, string? name, string? version, IEnumerable<string> tfms)
     {
         string id = PackageInfo.GetId(name, version);
         if (!_sbrpPackages.TryGetValue(id, out PackageInfo? info))
@@ -192,12 +192,9 @@ public class WriteSbrpUsageReport : Task
             info.References.Add(lockFilePath, referencedTfms);
         }
 
-        if (tfms != null)
+        foreach (string tfm in tfms)
         {
-            foreach (string tfm in tfms)
-            {
-                referencedTfms!.Add(tfm);
-            }
+            referencedTfms!.Add(tfm);
         }
     }
 
