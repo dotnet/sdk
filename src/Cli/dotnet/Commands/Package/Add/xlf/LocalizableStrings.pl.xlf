@@ -68,8 +68,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add.</source>
-        <target state="translated">Odwołanie do pakietu do dodania.</target>
+        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
+        <target state="needs-review-translation">Odwołanie do pakietu do dodania.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackage">
