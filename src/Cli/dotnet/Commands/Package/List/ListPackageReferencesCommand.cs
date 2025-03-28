@@ -66,7 +66,12 @@ internal class ListPackageReferencesCommand : CommandBase
         {
             args.Add("-interactive:true");
         }
-            MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
+        else
+        {
+            args.Add("-interactive:false");
+        }
+
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
 
         int exitCode = 0;
 
