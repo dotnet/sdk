@@ -18,9 +18,7 @@ internal class AddPackageReferenceCommand : CommandBase
 
     public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);
+        _fileOrDirectory = parseResult.GetValue(PackageCommandParser.ProjectOption);
         _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
     }
 
