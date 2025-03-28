@@ -2,11 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using DiffPlex.DiffBuilder;
 using DiffPlex.DiffBuilder.Model;
 using Microsoft.CodeAnalysis;
@@ -305,7 +302,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         return sb.ToString();
     }
 
-    private static ConcurrentDictionary<string, MemberDeclarationSyntax> CollectChildrenNodes(SyntaxNode? parentNode, SemanticModel? model)
+    private ConcurrentDictionary<string, MemberDeclarationSyntax> CollectChildrenNodes(SyntaxNode? parentNode, SemanticModel? model)
     {
         if (parentNode == null)
         {
@@ -521,7 +518,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                     continue;
                 }
                 var realAttributeNode = attributeNode.WithArgumentList(attributeNode.ArgumentList);
-                if (!dictionary.TryAdd(realAttributeNode.ToFullString(), realAttributeNode))
+                if (!dictionary.TryAdd(GetAttributeDocId(realAttributeNode, model), realAttributeNode))
                 {
                     _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, realAttributeNode.ToFullString(), GetDocId(memberNode, model)));
                 }
@@ -650,7 +647,33 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         .Where(n => n is T m && IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(m))
         .Cast<T>();
 
-    private static string GetDocId(SyntaxNode node, SemanticModel model)
+    private string GetAttributeDocId(AttributeSyntax attribute, SemanticModel model)
+    {
+        string? attributeDocId = null;
+        if (attribute.ArgumentList is AttributeArgumentListSyntax list && list.Arguments.Any())
+        {
+            // Workaround to ensure that repeated attributes with different arguments are all included
+            attributeDocId = attribute.ToFullString();
+        }
+        else if (model.GetSymbolInfo(attribute).Symbol is IMethodSymbol constructor)
+        {
+            try
+            {
+                attributeDocId = constructor.ContainingType.GetDocumentationCommentId();
+            }
+            catch (Exception e)
+            {
+                _log.LogWarning(e.Message);
+            }
+        }
+        // Workaround because some rare cases of attributes in WinForms like System.Windows.Markup.ContentPropertyAttribute
+        // cannot be found in the current model.
+        attributeDocId ??= attribute.ToFullString();
+
+        return attributeDocId;
+    }
+
+    private string GetDocId(SyntaxNode node, SemanticModel model)
     {
         ISymbol? symbol = node switch
         {
@@ -660,7 +683,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
             PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
             _ => model.GetDeclaredSymbol(node)
-        };
+        }; 
 
         if (symbol?.GetDocumentationCommentId() is string docId)
         {

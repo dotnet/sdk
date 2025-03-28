@@ -879,7 +879,74 @@ public class DiffAttributeTests : DiffBaseTests
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Overrides the default list
 
     [Fact]
-    public Task TestSuppressTypeAndAttributeUsage() => RunTestAsync(
+    public Task SuppressChangedAttribute() => RunTestAsync(
+                // Includes dummy property addition so that something else shows up in the diff, but not the attribute change.
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Original text")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.Diagnostics.CodeAnalysis.RequiresUnreferencedCode("Changed text")]
+                    public class MyClass
+                    {
+                        public int X { get; }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                      public class MyClass
+                      {
+                +         public int X { get; }
+                      }
+                  }
+                """,
+                attributesToExclude: ["T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"]); // Overrides the default list
+
+    [Fact]
+    public Task AttributesRepeatedWithDifferentArguments() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System;
+                namespace MyNamespace
+                {
+                    [System.Runtime.Versioning.UnsupportedOSPlatformAttribute("tvos")]
+                    [System.Runtime.Versioning.UnsupportedOSPlatformAttribute("linux")]
+                    public class MyClass
+                    {
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     [System.Runtime.Versioning.UnsupportedOSPlatformAttribute("tvos")]
+                +     [System.Runtime.Versioning.UnsupportedOSPlatformAttribute("linux")]
+                      public class MyClass
+                      {
+                      }
+                  }
+                """,
+                attributesToExclude: null); // null forces using the default list
+
+    [Fact]
+    public Task SuppressTypeAndAttributeUsage() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
