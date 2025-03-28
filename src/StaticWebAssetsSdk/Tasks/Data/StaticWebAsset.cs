@@ -370,42 +370,91 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
-    internal static bool ValidateAssetGroup(string path, IReadOnlyList<StaticWebAsset> group, out string reason)
+    internal static bool ValidateAssetGroup(string path, (StaticWebAsset First, StaticWebAsset Second, IReadOnlyList<StaticWebAsset> Others) group, out string reason)
     {
-        StaticWebAsset prototypeItem = null;
+        var prototypeItem = group.First;
         StaticWebAsset build = null;
         StaticWebAsset publish = null;
         StaticWebAsset all = null;
-        foreach (var item in group)
+
+        if (group.Second == null)
         {
-            prototypeItem ??= item;
+            // Most common case, only one asset for the given path
+            reason = null;
+            return true;
+        }
+
+        // Check First against Second for source ID conflict
+        if (!prototypeItem.HasSourceId(group.Second.SourceId))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For assets '{prototypeItem}' and '{group.Second}' from different projects.";
+            return false;
+        }
+
+        // Process First
+        build = group.First.IsBuildOnly() ? group.First : build;
+        publish = group.First.IsPublishOnly() ? group.First : publish;
+        all = group.First.IsBuildAndPublish() ? group.First : all;
+
+        // Process Second
+        if (build != null && group.Second.IsBuildOnly() && !ReferenceEquals(build, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'Build' assets '{build}' and '{group.Second}'.";
+            return false;
+        }
+        build ??= group.Second.IsBuildOnly() ? group.Second : build;
+
+        if (publish != null && group.Second.IsPublishOnly() && !ReferenceEquals(publish, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'Publish' assets '{publish}' and '{group.Second}'.";
+            return false;
+        }
+        publish ??= group.Second.IsPublishOnly() ? group.Second : publish;
+
+        if (all != null && group.Second.IsBuildAndPublish() && !ReferenceEquals(all, group.Second))
+        {
+            reason = $"Conflicting assets with the same target path '{path}'. For 'All' assets '{all}' and '{group.Second}'.";
+            return false;
+        }
+        all ??= group.Second.IsBuildAndPublish() ? group.Second : all;
+
+        if (group.Others == null || group.Others.Count == 0)
+        {
+            reason = null;
+            return true;
+        }
+
+        // Process rest of the items
+        foreach (var item in group.Others)
+        {
             if (!prototypeItem.HasSourceId(item.SourceId))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For assets '{prototypeItem}' and '{item}' from different projects.";
                 return false;
             }
 
-            build ??= item.IsBuildOnly() ? item : build;
             if (build != null && item.IsBuildOnly() && !ReferenceEquals(build, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'Build' assets '{build}' and '{item}'.";
                 return false;
             }
+            build ??= item.IsBuildOnly() ? item : build;
 
-            publish ??= item.IsPublishOnly() ? item : publish;
             if (publish != null && item.IsPublishOnly() && !ReferenceEquals(publish, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'Publish' assets '{publish}' and '{item}'.";
                 return false;
             }
+            publish ??= item.IsPublishOnly() ? item : publish;
 
-            all ??= item.IsBuildAndPublish() ? item : all;
             if (all != null && item.IsBuildAndPublish() && !ReferenceEquals(all, item))
             {
                 reason = $"Conflicting assets with the same target path '{path}'. For 'All' assets '{all}' and '{item}'.";
                 return false;
             }
+            all ??= item.IsBuildAndPublish() ? item : all;
         }
+
         reason = null;
         return true;
     }
