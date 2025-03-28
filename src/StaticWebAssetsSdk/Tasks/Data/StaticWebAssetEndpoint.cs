@@ -3,15 +3,15 @@
 
 #nullable disable
 
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>
+public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, IComparable<StaticWebAssetEndpoint>, ITaskItem2
 {
     private ITaskItem _originalItem;
     private StaticWebAssetEndpointProperty[] _endpointProperties;
@@ -26,6 +26,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
     private bool _responseHeadersModified;
     private string _endpointPropertiesString;
     private bool _endpointPropertiesModified;
+    private Dictionary<string, string> _additionalCustomMetadata;
 
     // Route as it should be registered in the routing table.
     public string Route
@@ -196,35 +197,8 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
             return _originalItem;
         }
 
-        var item = new TaskItem(Route);
-        item.SetMetadata(nameof(AssetFile), AssetFile);
-        if(!_selectorsModified)
-        {
-            item.SetMetadata(nameof(Selectors), SelectorsString);
-        }
-        else
-        {
-            item.SetMetadata(nameof(Selectors), StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
-        }
-
-        if (!_responseHeadersModified)
-        {
-            item.SetMetadata(nameof(ResponseHeaders), ResponseHeadersString);
-        }
-        else
-        {
-            item.SetMetadata(nameof(ResponseHeaders), StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
-        }
-
-        if (!_endpointPropertiesModified)
-        {
-            item.SetMetadata(nameof(EndpointProperties), EndpointPropertiesString);
-        }
-        else
-        {
-            item.SetMetadata(nameof(EndpointProperties), StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
-        }
-        return item;
+        // If we're implementing ITaskItem2, we can just return this instance
+        return this;
     }
 
     public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpoint);
@@ -413,4 +387,168 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 #endif
         }
     }
+
+    #region ITaskItem2 implementation
+
+    string ITaskItem2.EvaluatedIncludeEscaped { get => Route; set => Route = value; }
+    string ITaskItem.ItemSpec { get => Route; set => Route = value; }
+
+    private static readonly string[] _defaultPropertyNames = [
+        nameof(AssetFile),
+        nameof(Selectors),
+        nameof(ResponseHeaders),
+        nameof(EndpointProperties)
+    ];
+
+    ICollection ITaskItem.MetadataNames
+    {
+        get
+        {
+            if (_additionalCustomMetadata == null)
+            {
+                return _defaultPropertyNames;
+            }
+
+            var result = new List<string>(_defaultPropertyNames.Length + _additionalCustomMetadata.Count);
+            result.AddRange(_defaultPropertyNames);
+
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                result.Add(kvp.Key);
+            }
+
+            return result;
+        }
+    }
+
+    int ITaskItem.MetadataCount => _defaultPropertyNames.Length + (_additionalCustomMetadata?.Count ?? 0);
+
+    string ITaskItem2.GetMetadataValueEscaped(string metadataName)
+    {
+        return metadataName switch
+        {
+            nameof(AssetFile) => AssetFile ?? "",
+            nameof(Selectors) => !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors),
+            nameof(ResponseHeaders) => !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders),
+            nameof(EndpointProperties) => !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties),
+            _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : "",
+        };
+    }
+
+    void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue)
+    {
+        metadataValue ??= "";
+        switch (metadataName)
+        {
+            case nameof(AssetFile):
+                AssetFile = metadataValue;
+                break;
+            case nameof(Selectors):
+                _selectorsString = metadataValue;
+                _selectors = null;
+                _selectorsModified = false;
+                break;
+            case nameof(ResponseHeaders):
+                _responseHeadersString = metadataValue;
+                _responseHeaders = null;
+                _responseHeadersModified = false;
+                break;
+            case nameof(EndpointProperties):
+                _endpointPropertiesString = metadataValue;
+                _endpointProperties = null;
+                _endpointPropertiesModified = false;
+                break;
+            default:
+                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                _additionalCustomMetadata[metadataName] = metadataValue;
+                break;
+        }
+        _modified = true;
+    }
+
+    IDictionary ITaskItem2.CloneCustomMetadataEscaped()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { nameof(AssetFile), AssetFile ?? "" },
+            { nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors) },
+            { nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders) },
+            { nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties) }
+        };
+
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                result[kvp.Key] = kvp.Value;
+            }
+        }
+
+        return result;
+    }
+
+    string ITaskItem.GetMetadata(string metadataName) => metadataName switch
+    {
+        nameof(AssetFile) => AssetFile ?? "",
+        nameof(Selectors) => !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors),
+        nameof(ResponseHeaders) => !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders),
+        nameof(EndpointProperties) => !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties),
+        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : ""
+    };
+
+    void ITaskItem.SetMetadata(string metadataName, string metadataValue)
+    {
+        metadataValue ??= "";
+        switch (metadataName)
+        {
+            case nameof(AssetFile):
+                AssetFile = metadataValue;
+                break;
+            case nameof(Selectors):
+                _selectorsString = metadataValue;
+                _selectors = null;  // Force re-evaluation
+                _selectorsModified = false;
+                break;
+            case nameof(ResponseHeaders):
+                _responseHeadersString = metadataValue;
+                _responseHeaders = null;  // Force re-evaluation
+                _responseHeadersModified = false;
+                break;
+            case nameof(EndpointProperties):
+                _endpointPropertiesString = metadataValue;
+                _endpointProperties = null;  // Force re-evaluation
+                _endpointPropertiesModified = false;
+                break;
+            default:
+                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                _additionalCustomMetadata[metadataName] = metadataValue;
+                break;
+        }
+        _modified = true;
+    }
+
+    void ITaskItem.RemoveMetadata(string metadataName)
+    {
+        _additionalCustomMetadata?.Remove(metadataName);
+    }
+
+    void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
+    {
+        destinationItem.SetMetadata(nameof(AssetFile), AssetFile ?? "");
+        destinationItem.SetMetadata(nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors));
+        destinationItem.SetMetadata(nameof(ResponseHeaders), !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders));
+        destinationItem.SetMetadata(nameof(EndpointProperties), !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties));
+
+        if (_additionalCustomMetadata != null)
+        {
+            foreach (var kvp in _additionalCustomMetadata)
+            {
+                destinationItem.SetMetadata(kvp.Key, kvp.Value ?? "");
+            }
+        }
+    }
+
+    IDictionary ITaskItem.CloneCustomMetadata() => ((ITaskItem2)this).CloneCustomMetadataEscaped();
+
+    #endregion
 }
