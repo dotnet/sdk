@@ -91,7 +91,7 @@ public class GenerateStaticWebAssetsManifest : Task
         return !Log.HasLoggedErrors;
     }
 
-    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(StaticWebAsset[] assets)
     {
         // Only include endpoints for assets that are going to be available in production. We do the filtering
         // inside the manifest because its cumbersome to do it in MSBuild directly.
