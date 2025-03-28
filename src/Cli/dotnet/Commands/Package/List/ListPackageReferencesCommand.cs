@@ -51,9 +51,8 @@ internal class ListPackageReferencesCommand : CommandBase
         {
             "package",
             "list",
+            GetProjectOrSolution()
         };
-
-        args.Add(GetProjectOrSolution());
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 

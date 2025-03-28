@@ -14,23 +14,11 @@ internal static class ToolUninstallCommandLowLevelErrorConverter
         string[] userFacingMessages = null;
         if (ex is ToolPackageException)
         {
-            userFacingMessages = new[]
-            {
-                string.Format(
-                    CommonLocalizableStrings.FailedToUninstallToolPackage,
-                    packageId,
-                    ex.Message),
-            };
+            userFacingMessages = [string.Format(CommonLocalizableStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
         }
         else if (ex is ToolConfigurationException || ex is ShellShimException)
         {
-            userFacingMessages = new[]
-            {
-                string.Format(
-                    LocalizableStrings.FailedToUninstallTool,
-                    packageId,
-                    ex.Message)
-            };
+            userFacingMessages = [string.Format(LocalizableStrings.FailedToUninstallTool, packageId, ex.Message)];
         }
 
         return userFacingMessages;

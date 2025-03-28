@@ -183,15 +183,14 @@ Directives `sdk`, `package`, and `property` are translated into `<Project Sdk=".
 Other directives result in a warning, reserving them for future use.
 
 ```cs
-#:sdk      Microsoft.NET.Sdk.Web
-#:property TargetFramework=net11.0
-#:property LangVersion=preview
-#:package  System.CommandLine=2.0.0-*
+#:sdk Microsoft.NET.Sdk.Web
+#:property TargetFramework net11.0
+#:property LangVersion preview
+#:package System.CommandLine 2.0.0-*
 ```
 
 The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
-Any value can optionally have two parts separated by `=` or `/`
-(the former is consistent with how properties are usually passed, e.g., `/p:Prop=Value`, and the latter is what the `<Project Sdk="Name/Version">` attribute uses).
+Any value can optionally have two parts separated by a space (more whitespace characters could be allowed in the future).
 The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
 and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
 It is an error if the first part (name) is empty (the version is allowed to be empty, but that results in empty `Version=""`).

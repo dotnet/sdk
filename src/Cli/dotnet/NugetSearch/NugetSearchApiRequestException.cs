@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 internal class NugetSearchApiRequestException : GracefulException
 {
     public NugetSearchApiRequestException(string message)
-        : base(new[] { message }, null, false)
+        : base([message], null, false)
     {
     }
 }
