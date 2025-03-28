@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Tasks
 {
     internal static class PackageReferenceConverter
     {
-        public static IEnumerable<string> GetPackageIds(ITaskItem[] packageReferences)
+        public static IEnumerable<string> GetPackageIds(IEnumerable<ITaskItem> packageReferences)
         {
             if (packageReferences == null)
             {
