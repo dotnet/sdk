@@ -14,21 +14,14 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Restore;
 
-internal class WorkloadRestoreCommand : WorkloadCommandBase
+internal class WorkloadRestoreCommand(
+    ParseResult result,
+    IFileSystem fileSystem = null,
+    IReporter reporter = null) : WorkloadCommandBase(result, reporter: reporter)
 {
-    private readonly ParseResult _result;
-    private readonly IEnumerable<string> _slnOrProjectArgument;
-
-    public WorkloadRestoreCommand(
-        ParseResult result,
-        IFileSystem fileSystem = null,
-        IReporter reporter = null)
-        : base(result, reporter: reporter)
-    {
-        _result = result;
-        _slnOrProjectArgument =
+    private readonly ParseResult _result = result;
+    private readonly IEnumerable<string> _slnOrProjectArgument =
             result.GetValue(RestoreCommandParser.SlnOrProjectArgument);
-    }
 
     public override int Execute()
     {

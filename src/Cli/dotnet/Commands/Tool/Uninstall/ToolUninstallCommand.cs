@@ -8,31 +8,20 @@ using Microsoft.DotNet.Tools.Tool.Common;
 
 namespace Microsoft.DotNet.Tools.Tool.Uninstall;
 
-internal class ToolUninstallCommand : CommandBase
+internal class ToolUninstallCommand(
+    ParseResult result,
+    IReporter reporter = null,
+    ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null,
+    ToolUninstallLocalCommand toolUninstallLocalCommand = null) : CommandBase(result)
 {
-    private readonly ToolUninstallLocalCommand _toolUninstallLocalCommand;
-    private readonly ToolUninstallGlobalOrToolPathCommand _toolUninstallGlobalOrToolPathCommand;
-    private readonly bool _global;
-    private readonly string _toolPath;
-
-    public ToolUninstallCommand(
-        ParseResult result,
-        IReporter reporter = null,
-        ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null,
-        ToolUninstallLocalCommand toolUninstallLocalCommand = null)
-        : base(result)
-    {
-        _toolUninstallLocalCommand
+    private readonly ToolUninstallLocalCommand _toolUninstallLocalCommand
             = toolUninstallLocalCommand ??
               new ToolUninstallLocalCommand(result);
-
-        _toolUninstallGlobalOrToolPathCommand =
+    private readonly ToolUninstallGlobalOrToolPathCommand _toolUninstallGlobalOrToolPathCommand =
             toolUninstallGlobalOrToolPathCommand
             ?? new ToolUninstallGlobalOrToolPathCommand(result);
-
-        _global = result.GetValue(ToolUninstallCommandParser.GlobalOption);
-        _toolPath = result.GetValue(ToolUninstallCommandParser.ToolPathOption);
-    }
+    private readonly bool _global = result.GetValue(ToolUninstallCommandParser.GlobalOption);
+    private readonly string _toolPath = result.GetValue(ToolUninstallCommandParser.ToolPathOption);
 
     public override int Execute()
     {

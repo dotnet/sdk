@@ -6,26 +6,18 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
+internal class OsxZshEnvironmentPathInstruction(
+    BashPathUnderHomeDirectory executablePath,
+    IReporter reporter,
+    IEnvironmentProvider environmentProvider
+    ) : IEnvironmentPathInstruction
 {
     private const string PathName = "PATH";
-    private readonly BashPathUnderHomeDirectory _packageExecutablePath;
-    private readonly IEnvironmentProvider _environmentProvider;
-    private readonly IReporter _reporter;
-
-
-    public OsxZshEnvironmentPathInstruction(
-        BashPathUnderHomeDirectory executablePath,
-        IReporter reporter,
-        IEnvironmentProvider environmentProvider
-    )
-    {
-        _packageExecutablePath = executablePath;
-        _environmentProvider
+    private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
+    private readonly IEnvironmentProvider _environmentProvider
             = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-        _reporter
+    private readonly IReporter _reporter
             = reporter ?? throw new ArgumentNullException(nameof(reporter));
-    }
 
     private bool PackageExecutablePathExists()
     {

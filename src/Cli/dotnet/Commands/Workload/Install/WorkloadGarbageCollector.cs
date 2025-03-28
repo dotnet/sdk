@@ -17,14 +17,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 /// for the current feature band for items not specified in ManifestsToKeep and PacksToKeep.  Then, if an item
 /// has no reference counts left, it can actually be deleted / uninstalled.
 /// </summary>
-internal class WorkloadGarbageCollector
+internal class WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+    Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
 {
-    SdkFeatureBand _sdkFeatureBand;
-    string _dotnetDir;
-    IEnumerable<WorkloadId> _installedWorkloads;
-    Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
-    Dictionary<string, string> _globalJsonWorkloadSetVersions;
-    IReporter _verboseReporter;
+    SdkFeatureBand _sdkFeatureBand = sdkFeatureBand;
+    string _dotnetDir = dotnetDir;
+    IEnumerable<WorkloadId> _installedWorkloads = installedWorkloads;
+    Func<string, IWorkloadResolver> _getResolverForWorkloadSet = getResolverForWorkloadSet;
+    Dictionary<string, string> _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
+    IReporter _verboseReporter = verboseReporter ?? Reporter.NullReporter;
 
     public HashSet<string> WorkloadSetsToKeep = [];
     public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = [];
@@ -39,21 +40,6 @@ internal class WorkloadGarbageCollector
 
     Dictionary<string, GCAction> _workloadSets = [];
     Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
-
-    //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
-    //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
-    //  file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
-    //  set version).
-    public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
-        Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
-    {
-        _dotnetDir = dotnetDir;
-        _sdkFeatureBand = sdkFeatureBand;
-        _installedWorkloads = installedWorkloads;
-        _getResolverForWorkloadSet = getResolverForWorkloadSet;
-        _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
-        _verboseReporter = verboseReporter ?? Reporter.NullReporter;
-    }
 
     public void Collect()
     {

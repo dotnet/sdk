@@ -8,18 +8,13 @@ using Microsoft.DotNet.NativeWrapper;
 
 namespace Microsoft.DotNet.Tools.Sdk.Check;
 
-internal class RuntimeOutputWriter : BundleOutputWriter
+internal class RuntimeOutputWriter(
+    IEnumerable<NetRuntimeInfo> runtimeInfo,
+    ProductCollection productCollection,
+    IProductCollectionProvider productCollectionProvider,
+    IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetRuntimeInfo> _runtimeInfo;
-
-    public RuntimeOutputWriter(
-        IEnumerable<NetRuntimeInfo> runtimeInfo,
-        ProductCollection productCollection,
-        IProductCollectionProvider productCollectionProvider,
-        IReporter reporter) : base(productCollection, productCollectionProvider, reporter)
-    {
-        _runtimeInfo = runtimeInfo;
-    }
+    private IEnumerable<NetRuntimeInfo> _runtimeInfo = runtimeInfo;
 
     public void PrintRuntimeInfo()
     {
