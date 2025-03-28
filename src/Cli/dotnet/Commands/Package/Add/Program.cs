@@ -11,25 +11,26 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Tools.Package.Add;
 
-internal class AddPackageReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
+/// <param name="parseResult"></param>
+/// <param name="fileOrDirectory">
+/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+/// It's cleaner for the separate callsites to know this instead of pushing that logic here.
+/// </param>
+internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOrDirectory) : CommandBase(parseResult)
 {
     private readonly PackageIdentity _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
-    private readonly string _fileOrDirectory =
-        parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);
 
     public override int Execute()
     {
         var projectFilePath = string.Empty;
 
-        if (!File.Exists(_fileOrDirectory))
+        if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
         }
         else
         {
-            projectFilePath = _fileOrDirectory;
+            projectFilePath = fileOrDirectory;
         }
 
         var tempDgFilePath = string.Empty;

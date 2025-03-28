@@ -41,7 +41,7 @@ internal static class PackageAddCommandParser
             }
             else
             {
-                throw new ArgumentException($"Invalid version string: {versionString}.");
+                throw new ArgumentException(string.Format(LocalizableStrings.InvalidSemVerVersionString, versionString));
             }
         };
     }
@@ -135,7 +135,7 @@ internal static class PackageAddCommandParser
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
 
         return command;
     }
@@ -144,7 +144,7 @@ internal static class PackageAddCommandParser
     {
         if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
         {
-            result.AddError("Cannot specify --version when the package argument already has a version.");
+            result.AddError(LocalizableStrings.ValidationFailedDuplicateVersion);
         }
     }
 

@@ -12,6 +12,11 @@
         <target state="translated">Commande permettant d'ajouter une référence de package</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidSemVerVersionString">
+        <source>$"Invalid version string: {0}."</source>
+        <target state="new">$"Invalid version string: {0}."</target>
+        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
+      </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageReference">
         <source>Specify one package reference to add.</source>
         <target state="translated">Spécifiez une seule référence de package à ajouter.</target>
@@ -81,6 +86,11 @@
         <source>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</source>
         <target state="translated">Impossible de générer un fichier temporaire pour le projet '{0}'. Impossible d'ajouter une référence de package. Effacez le répertoire temporaire et réessayez.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ValidationFailedDuplicateVersion">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
     </body>
   </file>

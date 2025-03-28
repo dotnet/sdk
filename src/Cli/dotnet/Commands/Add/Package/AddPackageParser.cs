@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Package.Add;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 
@@ -30,7 +31,18 @@ internal static class AddPackageParser
         command.Options.Add(PackageAddCommandParser.PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => {
+            // this command can be called with an argument or an option for the project path - we prefer the option.
+            // if the option is not present, we use the argument value instead.
+            if (parseResult.HasOption(PackageCommandParser.ProjectOption))
+            {
+                new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute();
+            }
+            else
+            {
+                new AddPackageReferenceCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
+            }
+        });
 
         return command;
     }
