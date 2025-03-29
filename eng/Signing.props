@@ -65,7 +65,6 @@
     <FileSignInfo Include="xunit.performance.metrics.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
 
-    <!- Explicitly notarize the outer sdk pkgs -->
     <!-- Additionally, we need to notarize any .pkg files -->
     <MacOSPkg Include="$(ArtifactsShippingPackagesDir)**/dotnet-sdk*.pkg" Exclude="$(ArtifactsShippingPackagesDir)**/dotnet-sdk-internal*.pkg" />
     <FileSignInfo Include="@(MacOSPkg->'%(Filename)%(Extension)')" CertificateName="MacDeveloperWithNotarization" />
