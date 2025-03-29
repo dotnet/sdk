@@ -14,10 +14,8 @@ internal class OsxZshEnvironmentPathInstruction(
 {
     private const string PathName = "PATH";
     private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
-    private readonly IEnvironmentProvider _environmentProvider
-            = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-    private readonly IReporter _reporter
-            = reporter ?? throw new ArgumentNullException(nameof(reporter));
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
     private bool PackageExecutablePathExists()
     {
@@ -27,9 +25,7 @@ internal class OsxZshEnvironmentPathInstruction(
             return false;
         }
 
-        return value
-            .Split(':')
-            .Any(p => p == _packageExecutablePath.Path);
+        return value.Split(':').Any(p => p == _packageExecutablePath.Path);
     }
 
     public void PrintAddPathInstructionIfPathDoesNotExist()

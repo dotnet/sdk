@@ -16,6 +16,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 /// and manifests for each feature band.  When it runs garbage collection, it should remove those reference counts
 /// for the current feature band for items not specified in ManifestsToKeep and PacksToKeep.  Then, if an item
 /// has no reference counts left, it can actually be deleted / uninstalled.
+///
+/// globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
+/// should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
+/// file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
+/// set version).
 /// </summary>
 internal class WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
     Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)

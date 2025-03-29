@@ -39,6 +39,8 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
 
     private readonly IConsole _console = console;
     private readonly string? _baseDirectory = baseDirectory ?? Directory.GetCurrentDirectory();
+    // Output ansi code to get spinner on top of a terminal, to indicate in-progress task.
+    // https://github.com/dotnet/msbuild/issues/8958: iTerm2 treats ;9 code to post a notification instead, so disable progress reporting on Mac.
     private readonly bool _useBusyIndicator = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private readonly StringBuilder _stringBuilder = new();
     private bool _isBatching;

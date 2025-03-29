@@ -17,14 +17,10 @@ internal class OsxBashEnvironmentPath(
     private const string PathName = "PATH";
     private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
     private readonly IFile _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-    private readonly IEnvironmentProvider _environmentProvider
-            = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-    private readonly IReporter _reporter
-            = reporter ?? throw new ArgumentNullException(nameof(reporter));
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
-    internal static readonly string DotnetCliToolsPathsDPath
-        = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH")
-          ?? @"/etc/paths.d/dotnet-cli-tools";
+    internal static readonly string DotnetCliToolsPathsDPath = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH") ?? @"/etc/paths.d/dotnet-cli-tools";
 
     public void AddPackageExecutablePathToUserPath()
     {

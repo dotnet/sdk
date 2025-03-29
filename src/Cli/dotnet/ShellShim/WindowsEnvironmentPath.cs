@@ -14,24 +14,20 @@ internal class WindowsEnvironmentPath(string packageExecutablePath,
 {
     private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
     private const string PathName = "PATH";
-    private readonly string _expandedPackageExecutablePath =
-            packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
-    private readonly string _nonExpandedPackageExecutablePath = nonExpandedPackageExecutablePath ??
-                                            throw new ArgumentNullException(nameof(packageExecutablePath));
+    private readonly string _expandedPackageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+    private readonly string _nonExpandedPackageExecutablePath = nonExpandedPackageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
 
     /// <summary>
     /// This will read cached and expanded environment variable. We use this
     /// to check if the expanded tool shim path exists. Since this is ultimately how shell will invoke command
     /// </summary>
-    private readonly IEnvironmentProvider _expandedEnvironmentReader =
-            expandedEnvironmentReader ?? throw new ArgumentNullException(nameof(expandedEnvironmentReader));
+    private readonly IEnvironmentProvider _expandedEnvironmentReader = expandedEnvironmentReader ?? throw new ArgumentNullException(nameof(expandedEnvironmentReader));
 
     /// <summary>
     /// This will read from registry with non expanded environment like %USERPROFILE%\AppData\Local\Microsoft\WindowsApps
     /// when append tool shim PATH. Use to read and write to avoid edit existing PATH.
     /// </summary>
-    private readonly IWindowsRegistryEnvironmentPathEditor _environmentPathEditor =
-            environmentPathEditor ?? throw new ArgumentNullException(nameof(environmentPathEditor));
+    private readonly IWindowsRegistryEnvironmentPathEditor _environmentPathEditor = environmentPathEditor ?? throw new ArgumentNullException(nameof(environmentPathEditor));
 
     public void AddPackageExecutablePathToUserPath()
     {
