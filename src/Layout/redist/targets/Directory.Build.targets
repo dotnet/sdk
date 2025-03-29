@@ -18,7 +18,7 @@
     <Import Project="BundledTemplates.targets" />
     <Import Project="Crossgen.targets" />
     <Import Project="GenerateInstallerLayout.targets" />
-    <Import Project="GenerateArchives.targets" />
+    <Import Project="GenerateArchives.targets" Condition="'$(SkipBuildingInstallers)' != 'true'" />
 
     <Import Project="OverlaySdkOnLKG.targets" />
   </ImportGroup>
