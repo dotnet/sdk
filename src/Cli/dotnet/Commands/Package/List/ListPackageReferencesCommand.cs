@@ -6,6 +6,8 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.NuGet;
+using System.Globalization;
+using Microsoft.DotNet.Tools.MSBuild;
 
 namespace Microsoft.DotNet.Tools.Package.List;
 
@@ -30,7 +32,78 @@ internal class ListPackageReferencesCommand : CommandBase
 
     public override int Execute()
     {
-        return NuGetCommand.Run(TransformArgs());
+        string projectFile = GetProjectOrSolution();
+        bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+        int restoreExitCode = 0;
+
+        if (!noRestore)
+        {
+            ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            bool interactive = _parseResult.GetValue((CliOption<bool>)PackageListCommandParser.InteractiveOption);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive);
+        }
+
+        return restoreExitCode == 0
+            ? NuGetCommand.Run(TransformArgs(projectFile))
+            : restoreExitCode;
+    }
+
+    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
+    {
+        List<string> args = ["-target:Restore", projectOrSolution];
+
+        if (formatOption == ReportOutputFormat.json)
+        {
+            args.Add("-noConsoleLogger");
+        }
+        else
+        {
+            args.Add("-consoleLoggerParameters:NoSummary");
+            args.Add("-verbosity:minimal");
+        }
+
+        if (interactive)
+        {
+            args.Add("-interactive:true");
+        }
+        else
+        {
+            args.Add("-interactive:false");
+        }
+
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
+
+        int exitCode = 0;
+
+        try
+        {
+            exitCode = restoringCommand.Execute();
+        }
+        catch (Exception)
+        {
+            exitCode = 1;
+        }
+
+        if (exitCode != 0)
+        {
+            if (formatOption == ReportOutputFormat.json)
+            {
+                string jsonError = $$"""
+{
+   "version": 1,
+   "problems": [
+      {
+         "text": "{{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}}",
+         "level": "error"
+      }
+   ]
+}
+""";
+                Console.WriteLine(jsonError);
+            }
+        }
+
+        return exitCode;
     }
 
     internal static void EnforceOptionRules(ParseResult parseResult)
@@ -45,13 +118,13 @@ internal class ListPackageReferencesCommand : CommandBase
         }
     }
 
-    private string[] TransformArgs()
+    private string[] TransformArgs(string projectOrSolution)
     {
         var args = new List<string>
         {
             "package",
             "list",
-            GetProjectOrSolution()
+            projectOrSolution
         };
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
