@@ -1,0 +1,71 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.CLI" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.Tasks" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.Templates" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Core" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Core.Contracts" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.IDE" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Samples" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.TemplateLocalizer.Core" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.TestTemplates" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Package Id="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Abstractions.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Authoring.CLI.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Authoring.Tasks.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Authoring.Templates.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Authoring.TemplateVerifier.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Core.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Core.Contracts.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Edge.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.IDE.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Mocks.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Orchestrator.RunnableProjects.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Samples.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.TemplateLocalizer.Core.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.TestHelper.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.TestTemplates.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateEngine.Utils.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateSearch.Common.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.TemplateSearch.TemplateDiscovery.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Abstractions\net10.0\Microsoft.TemplateEngine.Abstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Abstractions\net481\Microsoft.TemplateEngine.Abstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Abstractions\netstandard2.0\Microsoft.TemplateEngine.Abstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.CLI\net10.0\Microsoft.TemplateEngine.Authoring.CLI.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.Tasks\net10.0\Microsoft.TemplateEngine.Authoring.Tasks.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.Tasks\net472\Microsoft.TemplateEngine.Authoring.Tasks.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.TemplateApiVerifier\net10.0\Microsoft.TemplateEngine.Authoring.TemplateApiVerifier.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.Templates\net10.0\Microsoft.TemplateEngine.Authoring.Templates.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Authoring.TemplateVerifier\net10.0\Microsoft.TemplateEngine.Authoring.TemplateVerifier.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core.Contracts\net10.0\Microsoft.TemplateEngine.Core.Contracts.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core.Contracts\net481\Microsoft.TemplateEngine.Core.Contracts.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core.Contracts\netstandard2.0\Microsoft.TemplateEngine.Core.Contracts.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core\net10.0\Microsoft.TemplateEngine.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core\net481\Microsoft.TemplateEngine.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Core\netstandard2.0\Microsoft.TemplateEngine.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Edge\net10.0\Microsoft.TemplateEngine.Edge.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Edge\net481\Microsoft.TemplateEngine.Edge.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Edge\netstandard2.0\Microsoft.TemplateEngine.Edge.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.IDE\net10.0\Microsoft.TemplateEngine.IDE.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.IDE\net481\Microsoft.TemplateEngine.IDE.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.IDE\netstandard2.0\Microsoft.TemplateEngine.IDE.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects\net10.0\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects\net481\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Orchestrator.RunnableProjects\netstandard2.0\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Samples\net10.0\Microsoft.TemplateEngine.Samples.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.TemplateLocalizer.Core\net10.0\Microsoft.TemplateEngine.TemplateLocalizer.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.TemplateLocalizer.Core\net481\Microsoft.TemplateEngine.TemplateLocalizer.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.TemplateLocalizer.Core\netstandard2.0\Microsoft.TemplateEngine.TemplateLocalizer.Core.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Utils\net10.0\Microsoft.TemplateEngine.Utils.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Utils\net481\Microsoft.TemplateEngine.Utils.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateEngine.Utils\netstandard2.0\Microsoft.TemplateEngine.Utils.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateSearch.Common\net10.0\Microsoft.TemplateSearch.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+  <Pdb Id="Microsoft.TemplateSearch.Common\net481\Microsoft.TemplateSearch.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="templating" Visibility="External" />
+</Build>

@@ -2,17 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-using Microsoft.Build.Utilities;
+using Microsoft.Arcade.Common;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Build.Manifest;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {
-    public class MergeAssetManifests : Task
+    public class MergeAssetManifests : MSBuildTaskBase
     {
         /// <summary>
         /// AssetManifest paths
@@ -27,96 +31,66 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         public required string MergedAssetManifestOutputPath { get; init; }
 
         /// <summary>
-        /// Azure DevOps build number
-        /// </summary>
-        public string VmrBuildNumber { get; set; } = string.Empty;
-
-        /// <summary>
         /// Vmr Vertical Name, e.g. "Android_Shortstack_arm". Allowed to be empty for non official builds.
         /// </summary>
         public string VerticalName { get; set; } = string.Empty;
 
-        private static readonly string _buildIdAttribute = "BuildId";
         private static readonly string _verticalNameAttribute = "VerticalName";
-        private static readonly string _azureDevOpsBuildNumberAttribute = "AzureDevOpsBuildNumber";
-        private static readonly string[] _ignoredAttributes = [
-            _buildIdAttribute,
-            _azureDevOpsBuildNumberAttribute,
-            "IsReleaseOnlyPackageVersion",
-            "IsStable"
-            ];
 
-        public override bool Execute()
+        private IBuildModelFactory? _buildModelFactory;
+        private IFileSystem? _fileSystem;
+
+        public override void ConfigureServices(IServiceCollection collection)
         {
-            List<XDocument> assetManifestXmls = AssetManifest.Select(xmlPath => XDocument.Load(xmlPath.ItemSpec)).ToList();
+            collection.TryAddSingleton<IBuildModelFactory, BuildModelFactory>();
+            collection.TryAddSingleton<IBlobArtifactModelFactory, BlobArtifactModelFactory>();
+            collection.TryAddSingleton<IPdbArtifactModelFactory, PdbArtifactModelFactory>();
+            collection.TryAddSingleton<IPackageArtifactModelFactory, PackageArtifactModelFactory>();
+            collection.TryAddSingleton<INupkgInfoFactory, NupkgInfoFactory>();
+            collection.TryAddSingleton<IPackageArchiveReaderFactory, PackageArchiveReaderFactory>();
+            collection.TryAddSingleton<IFileSystem, FileSystem>();
+            collection.TryAddSingleton(Log);
+        }
 
-            VerifyAssetManifests(assetManifestXmls);
+        public bool ExecuteTask(IBuildModelFactory buildModelFactory,
+                                IFileSystem fileSystem)
+        {
+            _buildModelFactory = buildModelFactory;
+            _fileSystem = fileSystem;
 
-            XElement mergedManifestRoot = assetManifestXmls.First().Root
-                ?? throw new ArgumentException("The root element of the asset manifest is null.");
-
-            // Set the BuildId and AzureDevOpsBuildNumber attributes to the value of VmrBuildNumber
-            mergedManifestRoot.SetAttributeValue(_buildIdAttribute, VmrBuildNumber);
-            mergedManifestRoot.SetAttributeValue(_azureDevOpsBuildNumberAttribute, VmrBuildNumber);
-            mergedManifestRoot.SetAttributeValue(_verticalNameAttribute, VerticalName);
-
-            List<XElement> packageElements = new();
-            List<XElement> blobElements = new();
-
-            foreach (var assetManifestXml in assetManifestXmls)
-            {
-                // We may encounter assets here with "Vertical", "Internal", or "External" visibility here.
-                // We filter out "Vertical" visibility assets here, as they are not needed in the merged manifest.
-                // We leave in "Internal" assets so they can be used in later build passes.
-                // We leave in "External" assets as we will eventually ship them.
-                packageElements.AddRange(assetManifestXml.Descendants("Package").Where(package => package.Attribute("Visibility")?.Value != "Vertical"));
-                blobElements.AddRange(assetManifestXml.Descendants("Blob").Where(blob => blob.Attribute("Visibility")?.Value != "Vertical"));
-            }
-
-            packageElements = packageElements.OrderBy(packageElement => packageElement.Attribute("Id")?.Value).ToList();
-            blobElements = blobElements.OrderBy(blobElement => blobElement.Attribute("Id")?.Value).ToList();
-
-            XDocument verticalManifest = new(new XElement(mergedManifestRoot.Name, mergedManifestRoot.Attributes(), packageElements, blobElements));
-
-            FileInfo outputFileInfo = new(MergedAssetManifestOutputPath);
-            outputFileInfo.Directory!.Create();
-            File.WriteAllText(outputFileInfo.FullName, verticalManifest.ToString());
-
-            Log.LogMessage(MessageImportance.High, $"Merged asset manifest written to {MergedAssetManifestOutputPath}");
-
+            MergeManifests();
             return !Log.HasLoggedErrors;
         }
 
-        private static void VerifyAssetManifests(IReadOnlyList<XDocument> assetManifestXmls)
+        public void MergeManifests()
         {
-            if (assetManifestXmls.Count == 0)
+            if (_buildModelFactory == null)
             {
-                throw new ArgumentException("No asset manifests were provided.");
+                throw new InvalidOperationException("BuildModelFactory is not initialized.");
             }
 
-            HashSet<string> rootAttributes = assetManifestXmls
-                .First()
-                .Root?
-                .Attributes()
-                .Select(attribute => attribute.ToString())
-                .ToHashSet()
-                ?? throw new ArgumentException("The root element of the asset manifest is null.");
-
-            if (assetManifestXmls.Skip(1).Any(manifest => manifest.Root?.Attributes().Count() != rootAttributes.Count))
+            if (_fileSystem == null)
             {
-                throw new ArgumentException("The asset manifests do not have the same number of root attributes.");
+                throw new InvalidOperationException("FileSystem is not initialized.");
             }
 
-            if (assetManifestXmls.Skip(1).Any(assetManifestXml =>
-                    !assetManifestXml.Root?.Attributes().Select(attribute => attribute.ToString())
-                        .All(attribute =>
-                            // Ignore BuildId and AzureDevOpsBuildNumber attributes, they're different for different repos,
-                            // TODO this should be fixed with https://github.com/dotnet/source-build/issues/3934
-                            _ignoredAttributes.Any(ignoredAttribute => attribute.StartsWith(ignoredAttribute)) || rootAttributes.Contains(attribute))
-                        ?? false))
-            {
-                throw new ArgumentException("The asset manifests do not have the same root attributes.");
-            }
+            var assetManifestModels = AssetManifest.Select(xmlPath => _buildModelFactory.ManifestFileToModel(xmlPath.ItemSpec))
+                .ToList();
+
+            // We may encounter assets here with "Vertical", "Internal", or "External" visibility here.
+            // We filter out "Vertical" visibility assets here, as they are not needed in the merged manifest.
+            // We leave in "Internal" assets so they can be used in later build passes.
+            // We leave in "External" assets as we will eventually ship them.
+
+            var mergedManifest = _buildModelFactory.CreateMergedModel(assetManifestModels, ArtifactVisibility.Internal | ArtifactVisibility.External);
+
+            // Add a vertical name in the merged model's build identity
+            mergedManifest.Identity.Attributes.Add(_verticalNameAttribute, VerticalName);
+
+            _fileSystem.CreateDirectory(_fileSystem.GetDirectoryName(MergedAssetManifestOutputPath)!);
+            _fileSystem.WriteToFile(MergedAssetManifestOutputPath, mergedManifest.ToXml().ToString());
+
+            Log.LogMessage(MessageImportance.High, $"Merged asset manifest written to {MergedAssetManifestOutputPath}");
         }
     }
 }

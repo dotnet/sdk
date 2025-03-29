@@ -1,0 +1,25 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.Windows.Compatibility" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Package Id="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Package Id="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Package Id="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Package Id="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Windows.Compatibility.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.WindowsDesktop.App.Ref.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.WindowsDesktop.App.Runtime.win-x64.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-productVersion.txt" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.exe" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.exe.sha512" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.exe.wixpack.zip" NonShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.msi" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.msi.sha512" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.msi.wixpack.zip" NonShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.zip" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-runtime-10.0.0-preview.3.25168.115-win-x64.zip.sha512" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-targeting-pack-10.0.0-preview.3.25168.115-win-x64.msi" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-targeting-pack-10.0.0-preview.3.25168.115-win-x64.msi.sha512" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-targeting-pack-10.0.0-preview.3.25168.115-win-x64.msi.wixpack.zip" NonShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-targeting-pack-10.0.0-preview.3.25168.115-win-x64.zip" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+  <Blob Id="WindowsDesktop/10.0.0-preview.3.25168.115/windowsdesktop-targeting-pack-10.0.0-preview.3.25168.115-win-x64.zip.sha512" DotNetReleaseShipping="true" RepoOrigin="windowsdesktop" Visibility="Vertical" />
+</Build>
