@@ -13,15 +13,17 @@
             DependsOnTargets="ResolveProjectReferences"
             BeforeTargets="Build">
       <Error Condition="'$(ArtifactDownloadDirectory)' == ''" Text="ArtifactDownloadDirectory is not set." />
+      <Error Condition="'$(SourceBranch)' == ''" Text="SourceBranch is not set." />
       <Error Condition="'$(DotNetRootDirectory)' == ''" Text="DotNetRootDirectory is not set." />
       <Error Condition="'$(MergedManifest)' == ''" Text="MergedManifest is not set." />
       <Error Condition="'$(OutputLogsDirectory)' == ''" Text="OutputLogsDirectory is not set." />
 
       <Microsoft.DotNet.UnifiedBuild.Tasks.SigningValidation
+        ArtifactDownloadDirectory="$(ArtifactDownloadDirectory)"
+        SourceBranch="$(SourceBranch)"
         DotNetRootDirectory="$(DotNetRootDirectory)"
         MergedManifest="$(MergedManifest)"
-        OutputLogsDirectory="$(OutputLogsDirectory)"
-        ArtifactDownloadDirectory="$(ArtifactDownloadDirectory)" />
+        OutputLogsDirectory="$(OutputLogsDirectory)" />
     </Target>
 
   </Project>

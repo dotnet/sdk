@@ -69,6 +69,7 @@ steps:
         MSBuild -restore ${{ parameters.engDirectory}}/signing-validation.proj `
         /t:SigningValidation `
         /p:ArtifactDownloadDirectory=${{ parameters.signCheckFilesDirectory }} `
+        /p:SourceBranch='$(Build.SourceBranch)' `
         /p:DotNetRootDirectory=$(Build.SourcesDirectory) `
         /p:MergedManifest=${{ parameters.assetManifests }}/MergedManifest.xml `
         /p:OutputLogsDirectory=${{ parameters.outputDirectory }}
@@ -86,6 +87,7 @@ steps:
         MSBuild -restore ${{ parameters.engDirectory}}/signing-validation.proj \
         /t:SigningValidation \
         /p:ArtifactDownloadDirectory=${{ parameters.signCheckFilesDirectory }} \
+        /p:SourceBranch='$(Build.SourceBranch)' \
         /p:DotNetRootDirectory=$(Build.SourcesDirectory) \
         /p:MergedManifest=${{ parameters.assetManifests }}/MergedManifest.xml \
         /p:OutputLogsDirectory=${{ parameters.outputDirectory }}

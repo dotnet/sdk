@@ -11,6 +11,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Xml.Linq;
 using Task = System.Threading.Tasks.Task;
@@ -24,6 +25,12 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     /// </summary>
     [Required]
     public required string ArtifactDownloadDirectory { get; init; }
+
+    /// <summary>
+    /// Branch that the task is running on
+    /// </summary>
+    [Required]
+    public required string SourceBranch { get; init; }
 
     /// <summary>
     /// Path to the dotnet root directory
@@ -43,8 +50,22 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     [Required]
     public required string OutputLogsDirectory { get; init; }
 
-    private readonly string _signCheckFilesDirectory = Path.Combine(Path.GetTempPath(), "SignCheckFiles");
+    /// <summary>
+    /// Files that are signed during DAC signing.
+    /// These files are excluded from SignCheck on non-release branches.
+    /// </summary>
+    private static readonly string[] _dacSignedFiles = new[]
+    {
+        "mscordaccore.dll",
+        "mscordbi.dll"
+    };
 
+    /// <summary>
+    /// Directory where the sign check files are copied to
+    /// </summary>
+    private static readonly string _signCheckFilesDirectory = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), "SignCheckFiles");
+
+    private const string _signCheckExclusionsFileName = "SignCheckExclusionsFile.txt";
     private const string _signCheckStdoutLogFileName = "signcheck.log";
     private const string _signCheckStderrLogFileName = "signcheck.error.log";
     private const string _signCheckResultsXmlFileName = "signcheck.xml";
@@ -248,7 +269,7 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
             $"/p:SignCheckLog='{GetLogPath(_signCheckStdoutLogFileName)}' " +
             $"/p:SignCheckErrorLog='{GetLogPath(_signCheckStderrLogFileName)}' " +
             $"/p:SignCheckResultsXmlFile='{GetLogPath(_signCheckResultsXmlFileName)}' " +
-            $"/p:SignCheckExclusionsFile='{exclusionsFile}' " +
+            $"/p:SignCheckExclusionsFile='{GetSignCheckExclusionsFile()}' " +
             $"$additionalArgs$";
 
         string command = string.Empty;
@@ -293,6 +314,36 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     /// </summary>
     private string GetLogPath(string fileName)
         => Path.Combine(OutputLogsDirectory, fileName);
+
+    /// <summary>
+    /// Gets the SignCheckExclusionsFile path.
+    /// Adds exclusions to the file and writes it to a temporary location.
+    /// </summary>
+    private string GetSignCheckExclusionsFile()
+    {
+        string exclusionsFile = Path.Combine(DotNetRootDirectory, "eng", _signCheckExclusionsFileName);
+        
+        var releaseBranchRegex = new Regex(@"^refs/heads/(internal/)?release/.*$");
+        if (!releaseBranchRegex.IsMatch(SourceBranch))
+        {
+            // We need to exclude DAC signed files from SignCheck on non-release branches
+            // because DAC signing is done only on release branches.
+
+            // Write the updated exclusions file to the log directory for debugging purposes.
+            string updatedExclusionsFile = GetLogPath(_signCheckExclusionsFileName);
+            File.Copy(exclusionsFile, updatedExclusionsFile, true);
+
+            string dacExclusionTemplate = "{0};;DAC_SIGNED_FILE, DAC signing is done only on release branches";
+            foreach (string file in _dacSignedFiles)
+            {
+                string exclusion = string.Format(dacExclusionTemplate, file);
+                File.AppendAllText(updatedExclusionsFile, exclusion + Environment.NewLine);
+            }
+            return updatedExclusionsFile;
+        }
+
+        return exclusionsFile;
+    }
 
     /// <summary>
     /// Checks if the element has the "DotNetReleaseShipping" attribute set to "true".
