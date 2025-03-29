@@ -44,7 +44,8 @@ public class GenerateStaticWebAssetsManifest : Task
     {
         try
         {
-            var assets = Assets.OrderBy(a => a.GetMetadata("FullPath")).Select(StaticWebAsset.FromTaskItem).ToArray();
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets, validate: true);
+            Array.Sort(assets, (l, r) => string.CompareOrdinal(l.Identity, r.Identity));
 
             var endpoints = FilterPublishEndpointsIfNeeded(assets)
                 .OrderBy(a => a.Route)
@@ -90,7 +91,7 @@ public class GenerateStaticWebAssetsManifest : Task
         return !Log.HasLoggedErrors;
     }
 
-    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(IEnumerable<StaticWebAsset> assets)
+    private IEnumerable<StaticWebAssetEndpoint> FilterPublishEndpointsIfNeeded(StaticWebAsset[] assets)
     {
         // Only include endpoints for assets that are going to be available in production. We do the filtering
         // inside the manifest because its cumbersome to do it in MSBuild directly.

@@ -37,7 +37,8 @@ public class GenerateStaticWebAssetEndpointsManifest : Task
         try
         {
             // Get the list of the asset that need to be part of the manifest (this is similar to GenerateStaticWebAssetsDevelopmentManifest)
-            var manifestAssets = ComputeManifestAssets(Assets.Select(StaticWebAsset.FromTaskItem), ManifestType)
+            var assets = StaticWebAsset.FromTaskItemGroup(Assets);
+            var manifestAssets = ComputeManifestAssets(assets, ManifestType)
                 .ToDictionary(a => a.ResolvedAsset.Identity, a => a, OSPath.PathComparer);
 
             // Filter out the endpoints to those that point to the assets that are part of the manifest
