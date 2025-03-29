@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Sdk.Check;
 
 internal class SdkOutputWriter : BundleOutputWriter
 {
-    private IEnumerable<NetSdkInfo> _sdkInfo;
+    private readonly IEnumerable<NetSdkInfo> _sdkInfo;
 
     public SdkOutputWriter(
         IEnumerable<NetSdkInfo> sdkInfo,

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 [SupportedOSPlatform("windows")]
 internal class PipeStreamSetupLogger : SetupLoggerBase, ISetupLogger
 {
-    private PipeStreamMessageDispatcherBase _dispatcher;
+    private readonly PipeStreamMessageDispatcherBase _dispatcher;
 
     /// <summary>
     /// Queue to track log requests issued before the pipestream is connected.

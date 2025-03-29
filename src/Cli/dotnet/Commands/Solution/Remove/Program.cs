@@ -19,7 +19,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
+        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
 
         SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
     }
@@ -55,7 +55,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
         }
     }
 
-    private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    private static async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
         SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;

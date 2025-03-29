@@ -16,8 +16,8 @@ namespace Microsoft.DotNet.Tools.Sln.Add;
 
 internal class AddProjectToSolutionCommand : CommandBase
 {
-    private static string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
-    private static string[] _defaultBuildTypes = ["Debug", "Release"];
+    private static readonly string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
+    private static readonly string[] _defaultBuildTypes = ["Debug", "Release"];
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
     private readonly IReadOnlyCollection<string> _projects;
@@ -107,7 +107,7 @@ internal class AddProjectToSolutionCommand : CommandBase
             {
                 if (relativeSolutionFolder.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativePath))
                 {
-                    relativeSolutionFolder = Path.Combine(relativeSolutionFolder.Split(Path.DirectorySeparatorChar).SkipLast(1).ToArray());
+                    relativeSolutionFolder = Path.Combine([.. relativeSolutionFolder.Split(Path.DirectorySeparatorChar).SkipLast(1)]);
                 }
                 if (!string.IsNullOrEmpty(relativeSolutionFolder))
                 {
@@ -131,7 +131,7 @@ internal class AddProjectToSolutionCommand : CommandBase
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder, ISolutionSerializer serializer = null)
+    private static void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder, ISolutionSerializer serializer = null)
     {
         // Open project instance to see if it is a valid project
         ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);

@@ -32,7 +32,7 @@ public class CleanCommand : MSBuildForwardingApp
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+        msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? []);
 
         msbuildArgs.Add("-target:Clean");
 

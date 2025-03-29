@@ -138,17 +138,17 @@ public sealed class MSBuildLogger : INodeLogger
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
+                    toBeHashed: [],
                     toBeMeasured: ["FileLoggersCount"]);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
                     toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"],
-                    toBeMeasured: Array.Empty<string>());
+                    toBeMeasured: []);
                 break;
             case BuildcheckRunEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
+                    toBeHashed: [],
                     toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             case BuildcheckRuleStatsEventName:
@@ -164,7 +164,7 @@ public sealed class MSBuildLogger : INodeLogger
             case SdkContainerPublishBaseImageInferenceEventName:
             case SdkContainerPublishSuccessEventName:
             case SdkContainerPublishErrorEventName:
-                TrackEvent(telemetry, args.EventName, args.Properties, Array.Empty<string>(), Array.Empty<string>());
+                TrackEvent(telemetry, args.EventName, args.Properties, [], []);
                 break;
             default:
                 // Ignore unknown events

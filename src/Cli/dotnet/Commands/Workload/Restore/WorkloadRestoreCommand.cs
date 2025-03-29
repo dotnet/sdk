@@ -71,7 +71,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
         return 0;
     }
 
-    private static string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
+    private static readonly string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
 
     private List<WorkloadId> RunTargetToGetWorkloadIds(IEnumerable<string> allProjects)
     {
@@ -93,7 +93,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
                 loggers: [
                     new ConsoleLogger(Verbosity.ToLoggerVerbosity())
                 ],
-                remoteLoggers: Enumerable.Empty<ForwardingLoggerRecord>(),
+                remoteLoggers: [],
                 targetOutputs: out var targetOutputs);
 
             if (buildResult == false)
@@ -109,7 +109,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
             allWorkloadId.AddRange(targetResult.Items.Select(item => new WorkloadId(item.ItemSpec)));
         }
 
-        allWorkloadId = allWorkloadId.Distinct().ToList();
+        allWorkloadId = [.. allWorkloadId.Distinct()];
         return allWorkloadId;
     }
 
@@ -121,17 +121,17 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false).ToList();
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
         {
-            slnFiles = slnOrProjectArgument
+            slnFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetFullPath).ToList();
-            projectFiles = slnOrProjectArgument
+                .Select(Path.GetFullPath)];
+            projectFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetFullPath).ToList();
+                .Select(Path.GetFullPath)];
         }
 
         foreach (string solutionFilePath in slnFiles)

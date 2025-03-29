@@ -12,7 +12,7 @@ internal partial class TestingPlatformCommand
 {
     private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
-    private static string Indent = "  ";
+    private static readonly string Indent = "  ";
 
     public IEnumerable<Action<HelpContext>> CustomHelpLayout()
     {
@@ -38,7 +38,7 @@ internal partial class TestingPlatformCommand
         };
     }
 
-    private void WriteHelpOptions(HelpContext context)
+    private static void WriteHelpOptions(HelpContext context)
     {
         HelpBuilder.Default.SynopsisSection()(context);
         context.Output.WriteLine();

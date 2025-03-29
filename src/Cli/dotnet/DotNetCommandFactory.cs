@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli;
 
 public class DotNetCommandFactory : ICommandFactory
 {
-    private bool _alwaysRunOutOfProc;
+    private readonly bool _alwaysRunOutOfProc;
     private readonly string _currentWorkingDirectory;
 
     public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
@@ -37,7 +37,7 @@ public class DotNetCommandFactory : ICommandFactory
         return CommandFactoryUsingResolver.CreateDotNet(commandName, args, framework, configuration, _currentWorkingDirectory);
     }
 
-    private bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
+    private static bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
     {
         var command = Parser.GetBuiltInCommand(commandName);
         if (command?.Action is AsynchronousCliAction action)

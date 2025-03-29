@@ -22,14 +22,14 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <summary>
     /// Track messages that should never be reported more than once.
     /// </summary>
-    private HashSet<string> _reportedMessages = [];
+    private readonly HashSet<string> _reportedMessages = [];
 
     /// <summary>
     /// Backing field for the install location of .NET
     /// </summary>
     private string _dotNetHome;
 
-    private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
@@ -60,7 +60,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <summary>
     /// Determines whether the parent process is still active.
     /// </summary>
-    protected bool IsParentProcessRunning => Process.GetProcessById(ParentProcess.Id) != null;
+    protected static bool IsParentProcessRunning => Process.GetProcessById(ParentProcess.Id) != null;
 
     /// <summary>
     /// Provides access to the underlying MSI cache.
@@ -154,7 +154,6 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <param name="logFile">The path of the log file.</param>
     protected void ConfigureInstall(string logFile)
     {
-        uint error = Error.SUCCESS;
 
         // Turn off the MSI UI.
         _ = WindowsInstaller.SetInternalUI(InstallUILevel.None);
@@ -163,7 +162,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         // against it.
         FileStream logFileStream = File.Create(logFile);
         logFileStream.Close();
-        error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
+        uint error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
 
         // We can report issues with the log file creation, but shouldn't fail the workload operation.
         LogError(error, $"Failed to configure log file: {logFile}");
@@ -381,7 +380,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
     }
 
-    internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
+    protected internal static string GetWorkloadHistoryDirectory(string sdkFeatureBand)
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dotnet", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureBand.ToString(), "history");
     }
@@ -478,7 +477,7 @@ internal abstract class MsiInstallerBase : InstallerBase
 
         if (hklm32 == null)
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         using RegistryKey installedSdkVersionsKey = hklm32.OpenSubKey(@$"SOFTWARE\dotnet\Setup\InstalledVersions\{HostArchitecture}\sdk");
@@ -613,7 +612,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         }
     }
 
-    private void CreateSecureFileInDirectory(string path, string contents)
+    private static void CreateSecureFileInDirectory(string path, string contents)
     {
         SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path, contents);

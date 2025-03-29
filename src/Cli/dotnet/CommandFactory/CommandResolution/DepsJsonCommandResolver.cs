@@ -16,8 +16,8 @@ public class DepsJsonCommandResolver : ICommandResolver
         ".dll"
     ];
 
-    private string _nugetPackageRoot;
-    private Muxer _muxer;
+    private readonly string _nugetPackageRoot;
+    private readonly Muxer _muxer;
 
     public DepsJsonCommandResolver(string nugetPackageRoot)
         : this(new Muxer(), nugetPackageRoot) { }
@@ -127,7 +127,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return commandCandidates;
     }
 
-    private IEnumerable<CommandCandidate> GetCommandCandidatesFromRuntimeAssetGroups(
+    private static IEnumerable<CommandCandidate> GetCommandCandidatesFromRuntimeAssetGroups(
         string commandName,
         IEnumerable<RuntimeAssetGroup> runtimeAssetGroups,
         string PackageName,
@@ -160,7 +160,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return commandCandidates;
     }
 
-    private CommandCandidate ChooseCommandCandidate(IEnumerable<CommandCandidate> commandCandidates)
+    private static CommandCandidate ChooseCommandCandidate(IEnumerable<CommandCandidate> commandCandidates)
     {
         foreach (var extension in s_extensionPreferenceOrder)
         {
@@ -198,7 +198,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return new CommandSpec(_muxer.MuxerPath, escapedArgString);
     }
 
-    private bool IsPortableApp(string commandPath)
+    private static bool IsPortableApp(string commandPath)
     {
         var commandDir = Path.GetDirectoryName(commandPath);
 
@@ -215,7 +215,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         return runtimeConfig.IsPortable;
     }
 
-    private IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
+    private static IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
     {
         return ["--depsfile", depsJsonFile];
     }

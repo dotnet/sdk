@@ -167,7 +167,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                     AddProjectCapabilities(capabilities, tfmBasedEvaluation);
                 }
             }
-            return capabilities.ToArray();
+            return [.. capabilities];
 
             static void AddProjectCapabilities(HashSet<string> collection, Project? evaluatedProject)
             {

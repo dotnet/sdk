@@ -85,7 +85,7 @@ public class VSTestArgumentConverter
     /// </summary>
     /// <param name="args">original arguments</param>
     /// <param name="ignoredArgs">arguments ignored by the converter</param>
-    /// <returns>list of args which can be passsed to vstest</returns>
+    /// <returns>list of args which can be passed to vstest</returns>
     public List<string> Convert(string[] args, out List<string> ignoredArgs)
     {
         var newArgList = new List<string>();

@@ -31,7 +31,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 {
     private readonly IEnvironmentPathInstruction _environmentPathInstruction;
     private readonly IReporter _reporter;
-    private CreateShellShimRepository _createShellShimRepository;
+    private readonly CreateShellShimRepository _createShellShimRepository;
     private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
     private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
     private readonly IToolPackageStoreQuery _store;
@@ -45,7 +45,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     private readonly VerbosityOptions _verbosity;
     private readonly string _toolPath;
     private readonly string _architectureOption;
-    private IEnumerable<string> _forwardRestoreArguments;
+    private readonly IEnumerable<string> _forwardRestoreArguments;
     private readonly bool _allowRollForward;
     private readonly bool _allowPackageDowngrade;
     private readonly bool _updateAll;
@@ -278,7 +278,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         }
     }
 
-    private void RunWithHandlingInstallError(Action installAction, PackageId packageId)
+    private static void RunWithHandlingInstallError(Action installAction, PackageId packageId)
     {
         try
         {
@@ -302,7 +302,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         }
     }
 
-    private void RunWithHandlingUninstallError(Action uninstallAction, PackageId packageId)
+    private static void RunWithHandlingUninstallError(Action uninstallAction, PackageId packageId)
     {
         try
         {
@@ -336,7 +336,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         return configFile;
     }
 
-    private IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
+    private static IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
     {
         IToolPackage oldPackageNullable;
         try

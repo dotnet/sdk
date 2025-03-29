@@ -72,7 +72,7 @@ public static class ExponentialRetry
         int maxRetryCount = 3,
         Func<IEnumerable<Task>>? timer = null)
     {
-        timer = timer == null ? () => Timer(Intervals) : timer;
+        timer = timer ?? (() => Timer(Intervals));
         return await ExecuteAsyncWithRetry(action, result => result != null && !result.Equals(default), maxRetryCount, timer);
     }
 

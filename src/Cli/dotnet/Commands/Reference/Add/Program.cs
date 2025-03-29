@@ -35,10 +35,7 @@ internal class AddProjectToProjectReferenceCommand : CommandBase
         var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-        List<MsbuildProject> refs =
-            arguments
-                .Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))
-                .ToList();
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {

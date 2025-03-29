@@ -21,7 +21,7 @@ internal class MsiPackageCache : InstallerBase
     /// <summary>
     /// Determines whether revocation checks can go online.
     /// </summary>
-    private bool _allowOnlineRevocationChecks;
+    private readonly bool _allowOnlineRevocationChecks;
 
     /// <summary>
     /// The root directory of the package cache where MSI workload packs are stored.

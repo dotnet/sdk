@@ -22,7 +22,7 @@ internal static class MuxerCommandSpecMaker
             throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
         }
 
-        var rollForwardArgument = (commandArguments ?? Enumerable.Empty<string>()).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
+        var rollForwardArgument = (commandArguments ?? []).Where(arg => arg.Equals("--allow-roll-forward", StringComparison.OrdinalIgnoreCase));
 
         if (rollForwardArgument.Any())
         {

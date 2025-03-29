@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 public class CompositeCommandResolver : ICommandResolver
 {
     private const string CommandResolveEvent = "commandresolution/commandresolved";
-    private IList<ICommandResolver> _orderedCommandResolvers;
+    private readonly IList<ICommandResolver> _orderedCommandResolvers;
 
     public IEnumerable<ICommandResolver> OrderedCommandResolvers
     {

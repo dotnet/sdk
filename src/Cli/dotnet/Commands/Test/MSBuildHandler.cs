@@ -146,7 +146,7 @@ internal sealed class MSBuildHandler : IDisposable
         return (projects, isBuiltOrRestored);
     }
 
-    private void LogProjectProperties(IEnumerable<TestModule> modules)
+    private static void LogProjectProperties(IEnumerable<TestModule> modules)
     {
         if (!Logger.TraceEnabled)
         {

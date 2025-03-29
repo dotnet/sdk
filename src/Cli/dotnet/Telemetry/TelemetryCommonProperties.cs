@@ -30,11 +30,11 @@ internal class TelemetryCommonProperties
 
     private readonly IDockerContainerDetector _dockerContainerDetector;
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector;
-    private Func<string> _getCurrentDirectory;
-    private Func<string, string> _hasher;
-    private Func<string> _getMACAddress;
-    private Func<string> _getDeviceId;
-    private IUserLevelCacheWriter _userLevelCacheWriter;
+    private readonly Func<string> _getCurrentDirectory;
+    private readonly Func<string, string> _hasher;
+    private readonly Func<string> _getMACAddress;
+    private readonly Func<string> _getDeviceId;
+    private readonly IUserLevelCacheWriter _userLevelCacheWriter;
     private const string OSVersion = "OS Version";
     private const string OSPlatform = "OS Platform";
     private const string OSArchitecture = "OS Architecture";

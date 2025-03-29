@@ -68,18 +68,17 @@ internal class TelemetryFilter : ITelemetryFilter
             ));
         }
 
-        return result
-            .Select(r =>
+        return [.. result.Select(r =>
+        {
+            if (r.EventName == ExceptionEventName)
             {
-                if (r.EventName == ExceptionEventName)
-                {
-                    return r;
-                }
-                else
-                {
-                    return r.WithAppliedToPropertiesValue(_hash);
-                }
-            }).ToList();
+                return r;
+            }
+            else
+            {
+                return r.WithAppliedToPropertiesValue(_hash);
+            }
+        })];
     }
 
     private static List<IParseResultLogRule> ParseResultLogRules =>
@@ -191,7 +190,7 @@ internal class TelemetryFilter : ITelemetryFilter
         return s;
     }
 
-    private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
     {
         if (measurements != null)
         {

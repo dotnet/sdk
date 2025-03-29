@@ -93,7 +93,7 @@ internal sealed class BuiltInTemplatePackageProvider : ITemplatePackageProvider
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
-        Version sdkVersion = typeof(Microsoft.DotNet.Cli.NewCommandParser).Assembly.GetName().Version;
+        Version sdkVersion = typeof(Cli.NewCommandParser).Assembly.GetName().Version;
         foreach (KeyValuePair<string, SemanticVersion> dirInfo in versionDirInfo)
         {
             var majorMinorDirVersion = new Version(dirInfo.Value.Major, dirInfo.Value.Minor);
@@ -109,6 +109,6 @@ internal sealed class BuiltInTemplatePackageProvider : ITemplatePackageProvider
             }
         }
 
-        return bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path).ToList();
+        return [.. bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path)];
     }
 }

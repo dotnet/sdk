@@ -33,8 +33,7 @@ internal class RemovePackageReferenceCommand : CommandBase
 
     public override int Execute()
     {
-        var projectFilePath = string.Empty;
-
+        string projectFilePath;
         if (!File.Exists(_fileOrDirectory))
         {
             projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
@@ -66,6 +65,6 @@ internal class RemovePackageReferenceCommand : CommandBase
             .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
             .SelectMany(a => a.Split(' ')));
 
-        return args.ToArray();
+        return [.. args];
     }
 }

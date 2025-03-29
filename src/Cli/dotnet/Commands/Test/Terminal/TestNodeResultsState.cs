@@ -47,7 +47,7 @@ internal sealed class TestNodeResultsState
                     ? string.Format(CultureInfo.CurrentCulture, LocalizableStrings.ActiveTestsRunning_FullTestsCount, sortedDetails.Count)
                     // If itemsToTake is larger, then we show the project summary, active tests, and the number of active tests that are not shown.
                     : $"... {string.Format(CultureInfo.CurrentCulture, LocalizableStrings.ActiveTestsRunning_MoreTestsCount, sortedDetails.Count - itemsToTake)}";
-            sortedDetails = sortedDetails.Take(itemsToTake).ToList();
+            sortedDetails = [.. sortedDetails.Take(itemsToTake)];
         }
 
         foreach (TestDetailState? detail in sortedDetails)

@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal struct PackageId : IEquatable<PackageId>, IComparable<PackageId>
 {
-    private string _id;
+    private readonly string _id;
 
     public PackageId(string id)
     {

@@ -14,7 +14,7 @@ public class MSBuildForwardingApp
 {
     internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
 
-    private MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
+    private readonly MSBuildForwardingAppWithoutLogging _forwardingAppWithoutLogging;
 
     private static IEnumerable<string> ConcatTelemetryLogger(IEnumerable<string> argsToForward)
     {

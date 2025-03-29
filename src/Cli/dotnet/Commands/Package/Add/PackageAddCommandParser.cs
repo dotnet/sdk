@@ -42,7 +42,7 @@ internal static class PackageAddCommandParser
             }
             else
             {
-                return Enumerable.Empty<CompletionItem>();
+                return [];
             }
         });
 
@@ -114,7 +114,7 @@ internal static class PackageAddCommandParser
         }
         catch (Exception)
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
     }
 
@@ -128,7 +128,7 @@ internal static class PackageAddCommandParser
         }
         catch (Exception)
         {
-            return Enumerable.Empty<NuGetVersion>();
+            return [];
         }
     }
 }

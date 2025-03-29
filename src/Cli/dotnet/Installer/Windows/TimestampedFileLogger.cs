@@ -38,7 +38,7 @@ internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchroniz
         get;
     }
 
-    private Thread LogWriter;
+    private readonly Thread LogWriter;
 
     /// <summary>
     /// The locale-neutral timestamp prefix.
