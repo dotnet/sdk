@@ -3,14 +3,12 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tool.Common;
 
 namespace Microsoft.DotNet.Tools.Tool.Uninstall;
 
 internal class ToolUninstallCommand(
     ParseResult result,
-    IReporter reporter = null,
     ToolUninstallGlobalOrToolPathCommand toolUninstallGlobalOrToolPathCommand = null,
     ToolUninstallLocalCommand toolUninstallLocalCommand = null) : CommandBase(result)
 {

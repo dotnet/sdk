@@ -9,14 +9,12 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Restore;
 
 internal class WorkloadRestoreCommand(
     ParseResult result,
-    IFileSystem fileSystem = null,
     IReporter reporter = null) : WorkloadCommandBase(result, reporter: reporter)
 {
     private readonly ParseResult _result = result;
