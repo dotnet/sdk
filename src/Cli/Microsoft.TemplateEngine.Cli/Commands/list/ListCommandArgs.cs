@@ -29,6 +29,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Language = GetFilterValue(FilterOptionDefinition.LanguageFilter);
             }
             IgnoreConstraints = parseResult.GetValue(BaseListCommand.IgnoreConstraintsOption);
+            FormatOptions = ParseResult.GetValue(BaseListCommand.FormatOption);
         }
 
         public bool DisplayAllColumns { get; }
@@ -40,5 +41,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal string? Language { get; }
 
         internal bool IgnoreConstraints { get; }
+
+        internal FormatOptions FormatOptions { get; }
     }
 }
