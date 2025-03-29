@@ -49,7 +49,7 @@
        sdk_commit="%commit%" sdk_version="%version%"
     -->
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
       Encoding="ASCII" />
@@ -67,7 +67,7 @@
     </PropertyGroup>
 
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).json"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
       Encoding="ASCII" />

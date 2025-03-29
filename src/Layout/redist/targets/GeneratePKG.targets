@@ -5,14 +5,14 @@
       <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
 
       <!-- Properties for pkg build -->
-      <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.$(Architecture)</SharedHostComponentId>
-      <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.$(Architecture)</HostFxrComponentId>
-      <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppPackageVersion).component.osx.$(Architecture)</SharedFrameworkComponentId>
-      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppRefPackageVersion).component.osx.$(Architecture)</NetCoreAppTargetingPackComponentId>
-      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(MicrosoftNETCoreAppHostPackageVersion).component.osx.$(Architecture)</NetCoreAppHostPackComponentId>
-      <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.$(Architecture)</NetStandardTargetingPackComponentId>
-      <SdkComponentId>com.microsoft.dotnet.dev.$(Version).component.osx.$(Architecture)</SdkComponentId>
-      <SdkProductArchiveId>com.microsoft.dotnet.dev.$(Version).osx.$(Architecture)</SdkProductArchiveId>
+      <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.$(TargetArchitecture)</SharedHostComponentId>
+      <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.$(TargetArchitecture)</HostFxrComponentId>
+      <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppPackageVersion).component.osx.$(TargetArchitecture)</SharedFrameworkComponentId>
+      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppRefPackageVersion).component.osx.$(TargetArchitecture)</NetCoreAppTargetingPackComponentId>
+      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(MicrosoftNETCoreAppHostPackageVersion).component.osx.$(TargetArchitecture)</NetCoreAppHostPackComponentId>
+      <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.$(TargetArchitecture)</NetStandardTargetingPackComponentId>
+      <SdkComponentId>com.microsoft.dotnet.dev.$(Version).component.osx.$(TargetArchitecture)</SdkComponentId>
+      <SdkProductArchiveId>com.microsoft.dotnet.dev.$(Version).osx.$(TargetArchitecture)</SdkProductArchiveId>
 
       <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
       <x64EmulationPkgInstallDirectory>/usr/local/share/dotnet/x64</x64EmulationPkgInstallDirectory>
@@ -24,8 +24,8 @@
       <SdkPkgScriptFile>$(SdkPkgDestinationScriptsDirectory)/postinstall</SdkPkgScriptFile>
       <SdkProductArchiveResourcesDirectory>$(PkgIntermediateDirectory)/resources</SdkProductArchiveResourcesDirectory>
 
-      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' != 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
-      <SdkProductArchiveDistributionTemplateFile Condition="'$(Architecture)' == 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(TargetArchitecture)' != 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(TargetArchitecture)' == 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
       <SdkProductArchiveDistributionFile>$(PkgIntermediateDirectory)/CLI-SDK-Formatted-Distribution-Template.xml</SdkProductArchiveDistributionFile>
 
       <SdkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SdkComponentId).pkg</SdkPkgIntermediatePath>
@@ -89,11 +89,11 @@
         <ReplacementString>$(HostFxrBrandName)</ReplacementString>
       </DistributionTemplateReplacement>
       <DistributionTemplateReplacement Include="{arch}">
-        <ReplacementString>$(Architecture)</ReplacementString>
+        <ReplacementString>$(TargetArchitecture)</ReplacementString>
       </DistributionTemplateReplacement>
       <DistributionTemplateReplacement Include="{hostArchitectures}">
-        <ReplacementString>$(Architecture)</ReplacementString>
-        <ReplacementString Condition="'$(Architecture)' == 'x64'" >x86_64</ReplacementString>
+        <ReplacementString>$(TargetArchitecture)</ReplacementString>
+        <ReplacementString Condition="'$(TargetArchitecture)' == 'x64'">x86_64</ReplacementString>
       </DistributionTemplateReplacement>
       <DistributionTemplateReplacement Include="{minOsVersion}">
         <!-- keep in sync with SetOSTargetMinVersions in the root Directory.Build.props in dotnet/runtime -->
