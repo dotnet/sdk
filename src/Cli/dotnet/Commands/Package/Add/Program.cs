@@ -10,18 +10,12 @@ using Microsoft.DotNet.Tools.NuGet;
 
 namespace Microsoft.DotNet.Tools.Package.Add;
 
-internal class AddPackageReferenceCommand : CommandBase
+internal class AddPackageReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _packageId;
-    private readonly string _fileOrDirectory;
-
-    public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+    private readonly string _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
+    private readonly string _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
             parseResult.GetValue(PackageCommandParser.ProjectOption) :
             parseResult.GetValue(AddCommandParser.ProjectArgument);
-        _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
-    }
 
     public override int Execute()
     {

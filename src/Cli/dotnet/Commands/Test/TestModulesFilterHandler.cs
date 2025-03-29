@@ -9,16 +9,10 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli;
 
-internal sealed class TestModulesFilterHandler
+internal sealed class TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
 {
-    private readonly TestApplicationActionQueue _actionQueue;
-    private readonly TerminalTestReporter _output;
-
-    public TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
-    {
-        _actionQueue = actionQueue;
-        _output = output;
-    }
+    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
+    private readonly TerminalTestReporter _output = output;
 
     public bool RunWithTestModulesFilter(ParseResult parseResult, BuildOptions buildOptions)
     {

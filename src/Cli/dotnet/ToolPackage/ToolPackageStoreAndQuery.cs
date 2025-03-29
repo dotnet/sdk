@@ -6,16 +6,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageStore
+internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQuery, IToolPackageStore
 {
     public const string StagingDirectory = ".stage";
 
-    public ToolPackageStoreAndQuery(DirectoryPath root)
-    {
-        Root = new DirectoryPath(Path.GetFullPath(root.Value));
-    }
-
-    public DirectoryPath Root { get; private set; }
+    public DirectoryPath Root { get; private set; } = new DirectoryPath(Path.GetFullPath(root.Value));
 
     public DirectoryPath GetRandomStagingDirectory()
     {

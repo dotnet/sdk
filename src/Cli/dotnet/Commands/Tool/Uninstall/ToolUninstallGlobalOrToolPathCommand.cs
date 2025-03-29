@@ -15,27 +15,17 @@ namespace Microsoft.DotNet.Tools.Tool.Uninstall;
 
 internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
 internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageUninstaller) CreateToolPackageStoresAndUninstaller(DirectoryPath? nonGlobalLocation = null);
-internal class ToolUninstallGlobalOrToolPathCommand : CommandBase
+internal class ToolUninstallGlobalOrToolPathCommand(
+    ParseResult result,
+    CreateToolPackageStoresAndUninstaller createToolPackageStoreAndUninstaller = null,
+    CreateShellShimRepository createShellShimRepository = null,
+    IReporter reporter = null) : CommandBase(result)
 {
-    private readonly IReporter _reporter;
-    private readonly IReporter _errorReporter;
-    private CreateShellShimRepository _createShellShimRepository;
-    private CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller;
-
-    public ToolUninstallGlobalOrToolPathCommand(
-        ParseResult result,
-        CreateToolPackageStoresAndUninstaller createToolPackageStoreAndUninstaller = null,
-        CreateShellShimRepository createShellShimRepository = null,
-        IReporter reporter = null)
-        : base(result)
-    {
-        _reporter = reporter ?? Reporter.Output;
-        _errorReporter = reporter ?? Reporter.Error;
-
-        _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
-        _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
+    private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
+    private CreateShellShimRepository _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
+    private CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
-    }
 
     public override int Execute()
     {

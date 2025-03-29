@@ -13,8 +13,14 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// <summary>
 /// Base class for Windows installer components.
 /// </summary>
+/// <remarks>
+/// Creates a new <see cref="InstallerBase"/> instance using the specified elevation context and logger.
+/// </remarks>
+/// <param name="elevationContext"></param>
+/// <param name="logger"></param>
+/// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
 [SupportedOSPlatform("windows")]
-internal abstract class InstallerBase
+internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
 {
     /// <summary>
     /// The current process.
@@ -38,7 +44,7 @@ internal abstract class InstallerBase
     protected InstallElevationContextBase ElevationContext
     {
         get;
-    }
+    } = elevationContext;
 
     /// <summary>
     /// Returns true if the current process is 64-bit.
@@ -59,7 +65,7 @@ internal abstract class InstallerBase
     /// <summary>
     /// Provides access to the underlying setup log.
     /// </summary>
-    protected readonly ISetupLogger Log;
+    protected readonly ISetupLogger Log = logger;
 
     /// <summary>
     /// The parent process of this process.
@@ -96,20 +102,7 @@ internal abstract class InstallerBase
     protected bool VerifySignatures
     {
         get;
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="InstallerBase"/> instance using the specified elevation context and logger.
-    /// </summary>
-    /// <param name="elevationContext"></param>
-    /// <param name="logger"></param>
-    /// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
-    protected InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
-    {
-        ElevationContext = elevationContext;
-        Log = logger;
-        VerifySignatures = verifySignatures;
-    }
+    } = verifySignatures;
 
     /// <summary>
     /// Starts an elevated process to perform privileged operations.

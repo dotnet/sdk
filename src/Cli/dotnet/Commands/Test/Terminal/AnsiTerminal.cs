@@ -11,7 +11,7 @@ namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 /// Terminal writer that is used when writing ANSI is allowed. It is capable of batching as many updates as possible and writing them at the end,
 /// because the terminal is responsible for rendering the colors and control codes.
 /// </summary>
-internal sealed class AnsiTerminal : ITerminal
+internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : ITerminal
 {
     /// <summary>
     /// File extensions that we will link to directly, all other files
@@ -37,22 +37,14 @@ internal sealed class AnsiTerminal : ITerminal
         ".xunit",
     ];
 
-    private readonly IConsole _console;
-    private readonly string? _baseDirectory;
-    private readonly bool _useBusyIndicator;
+    private readonly IConsole _console = console;
+    private readonly string? _baseDirectory = baseDirectory ?? Directory.GetCurrentDirectory();
+    // Output ansi code to get spinner on top of a terminal, to indicate in-progress task.
+    // https://github.com/dotnet/msbuild/issues/8958: iTerm2 treats ;9 code to post a notification instead, so disable progress reporting on Mac.
+    private readonly bool _useBusyIndicator = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private readonly StringBuilder _stringBuilder = new();
     private bool _isBatching;
     private AnsiTerminalTestProgressFrame _currentFrame = new(0, 0);
-
-    public AnsiTerminal(IConsole console, string? baseDirectory)
-    {
-        _console = console;
-        _baseDirectory = baseDirectory ?? Directory.GetCurrentDirectory();
-
-        // Output ansi code to get spinner on top of a terminal, to indicate in-progress task.
-        // https://github.com/dotnet/msbuild/issues/8958: iTerm2 treats ;9 code to post a notification instead, so disable progress reporting on Mac.
-        _useBusyIndicator = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-    }
 
     public int Width
         => _console.IsOutputRedirected ? int.MaxValue : _console.BufferWidth;

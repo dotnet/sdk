@@ -9,16 +9,10 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
 
-public class DotNetCommandFactory : ICommandFactory
+public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null) : ICommandFactory
 {
-    private bool _alwaysRunOutOfProc;
-    private readonly string _currentWorkingDirectory;
-
-    public DotNetCommandFactory(bool alwaysRunOutOfProc = false, string currentWorkingDirectory = null)
-    {
-        _alwaysRunOutOfProc = alwaysRunOutOfProc;
-        _currentWorkingDirectory = currentWorkingDirectory;
-    }
+    private bool _alwaysRunOutOfProc = alwaysRunOutOfProc;
+    private readonly string _currentWorkingDirectory = currentWorkingDirectory;
 
     public ICommand Create(
         string commandName,

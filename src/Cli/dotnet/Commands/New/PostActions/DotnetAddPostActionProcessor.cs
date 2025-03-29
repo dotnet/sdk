@@ -9,18 +9,12 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
 
-internal class DotnetAddPostActionProcessor : PostActionProcessorBase
+internal class DotnetAddPostActionProcessor(
+    Func<string, string, string?, bool>? addPackageReferenceCallback = null,
+    Func<string, string, bool>? addProjectReferenceCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback;
-    private readonly Func<string, string, bool> _addProjectReferenceCallback;
-
-    public DotnetAddPostActionProcessor(
-        Func<string, string, string?, bool>? addPackageReferenceCallback = null,
-        Func<string, string, bool>? addProjectReferenceCallback = null)
-    {
-        _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
-        _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
-    }
+    private readonly Func<string, string, string?, bool> _addPackageReferenceCallback = addPackageReferenceCallback ?? DotnetCommandCallbacks.AddPackageReference;
+    private readonly Func<string, string, bool> _addProjectReferenceCallback = addProjectReferenceCallback ?? DotnetCommandCallbacks.AddProjectReference;
 
     public override Guid Id => ActionProcessorId;
 

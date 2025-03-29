@@ -8,20 +8,13 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Tool.Search;
 
-internal class ToolSearchCommand : CommandBase
+internal class ToolSearchCommand(
+    ParseResult result,
+    INugetToolSearchApiRequest nugetToolSearchApiRequest = null
+    ) : CommandBase(result)
 {
-    private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest;
-    private readonly SearchResultPrinter _searchResultPrinter;
-
-    public ToolSearchCommand(
-        ParseResult result,
-        INugetToolSearchApiRequest nugetToolSearchApiRequest = null
-    )
-        : base(result)
-    {
-        _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
-        _searchResultPrinter = new SearchResultPrinter(Reporter.Output);
-    }
+    private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
+    private readonly SearchResultPrinter _searchResultPrinter = new SearchResultPrinter(Reporter.Output);
 
     public override int Execute()
     {

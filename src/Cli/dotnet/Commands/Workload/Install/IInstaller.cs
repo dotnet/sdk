@@ -72,21 +72,14 @@ internal interface IWorkloadManifestInstaller
     Task ExtractManifestAsync(string nupkgPath, string targetPath);
 }
 
-public class WorkloadDownload
+public class WorkloadDownload(string id, string nuGetPackageId, string nuGetPackageVersion)
 {
     /// <summary>
     /// The ID of the workload pack or manifest to be downloaded (not necessarily the same as the <see cref="NuGetPackageId"/>)
     /// </summary>
-    public string Id { get; }
+    public string Id { get; } = id;
 
-    public string NuGetPackageId { get; }
+    public string NuGetPackageId { get; } = nuGetPackageId;
 
-    public string NuGetPackageVersion { get; }
-
-    public WorkloadDownload(string id, string nuGetPackageId, string nuGetPackageVersion)
-    {
-        Id = id;
-        NuGetPackageId = nuGetPackageId;
-        NuGetPackageVersion = nuGetPackageVersion;
-    }
+    public string NuGetPackageVersion { get; } = nuGetPackageVersion;
 }

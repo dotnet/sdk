@@ -5,27 +5,17 @@ using Microsoft.Testing.Platform.Helpers;
 
 namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-internal sealed class TestProgressState
+internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
 {
-    public TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
-    {
-        Id = id;
-        Assembly = assembly;
-        TargetFramework = targetFramework;
-        Architecture = architecture;
-        Stopwatch = stopwatch;
-        AssemblyName = Path.GetFileName(assembly)!;
-    }
+    public string Assembly { get; } = assembly;
 
-    public string Assembly { get; }
+    public string AssemblyName { get; } = Path.GetFileName(assembly)!;
 
-    public string AssemblyName { get; }
+    public string? TargetFramework { get; } = targetFramework;
 
-    public string? TargetFramework { get; }
+    public string? Architecture { get; } = architecture;
 
-    public string? Architecture { get; }
-
-    public IStopwatch Stopwatch { get; }
+    public IStopwatch Stopwatch { get; } = stopwatch;
 
     public List<string> Attachments { get; } = [];
 
@@ -43,7 +33,7 @@ internal sealed class TestProgressState
 
     public int SlotIndex { get; internal set; }
 
-    public long Id { get; internal set; }
+    public long Id { get; internal set; } = id;
 
     public long Version { get; internal set; }
 

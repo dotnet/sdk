@@ -7,14 +7,9 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
 
-internal class DotnetRestorePostActionProcessor : PostActionProcessorBase
+internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, bool> _restoreCallback;
-
-    public DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null)
-    {
-        _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
-    }
+    private readonly Func<string, bool> _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
 
     public override Guid Id => ActionProcessorId;
 

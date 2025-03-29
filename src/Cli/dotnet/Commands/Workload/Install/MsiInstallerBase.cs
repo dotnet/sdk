@@ -16,8 +16,15 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
 namespace Microsoft.DotNet.Installer.Windows;
 
+/// <summary>
+/// Creates a new <see cref="MsiInstallerBase"/> instance.
+/// </summary>
+/// <param name="dispatcher">The command dispatcher used for sending and receiving commands.</param>
+/// <param name="logger"></param>
+/// <param name="reporter"></param>
 [SupportedOSPlatform("windows")]
-internal abstract class MsiInstallerBase : InstallerBase
+internal abstract class MsiInstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger,
+    bool verifySignatures, IReporter reporter = null) : InstallerBase(elevationContext, logger, verifySignatures)
 {
     /// <summary>
     /// Track messages that should never be reported more than once.
@@ -69,7 +76,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     {
         get;
         private set;
-    }
+    } = new MsiPackageCache(elevationContext, logger, verifySignatures);
 
     /// <summary>
     /// The install location of the .NET based on the host and OS architecture as stored in the registry. If
@@ -88,32 +95,17 @@ internal abstract class MsiInstallerBase : InstallerBase
         }
     }
 
-    protected readonly IReporter Reporter;
+    protected readonly IReporter Reporter = reporter;
 
     /// <summary>
     /// A service controller representing the Windows Update agent (wuaserv).
     /// </summary>
-    protected readonly WindowsUpdateAgent UpdateAgent;
+    protected readonly WindowsUpdateAgent UpdateAgent = new WindowsUpdateAgent(logger);
 
     /// <summary>
     /// Provides access to workload installation records in the registry.
     /// </summary>
-    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository;
-
-    /// <summary>
-    /// Creates a new <see cref="MsiInstallerBase"/> instance.
-    /// </summary>
-    /// <param name="dispatcher">The command dispatcher used for sending and receiving commands.</param>
-    /// <param name="logger"></param>
-    /// <param name="reporter"></param>
-    public MsiInstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger,
-        bool verifySignatures, IReporter reporter = null) : base(elevationContext, logger, verifySignatures)
-    {
-        Cache = new MsiPackageCache(elevationContext, logger, verifySignatures);
-        RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
-        UpdateAgent = new WindowsUpdateAgent(logger);
-        Reporter = reporter;
-    }
+    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
 
     /// <summary>
     /// Determines the per-machine install location for .NET. This is similar to the logic in the standalone installers.

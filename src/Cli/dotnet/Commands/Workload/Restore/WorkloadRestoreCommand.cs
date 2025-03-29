@@ -9,26 +9,17 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Update;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Restore;
 
-internal class WorkloadRestoreCommand : WorkloadCommandBase
+internal class WorkloadRestoreCommand(
+    ParseResult result,
+    IReporter reporter = null) : WorkloadCommandBase(result, reporter: reporter)
 {
-    private readonly ParseResult _result;
-    private readonly IEnumerable<string> _slnOrProjectArgument;
-
-    public WorkloadRestoreCommand(
-        ParseResult result,
-        IFileSystem fileSystem = null,
-        IReporter reporter = null)
-        : base(result, reporter: reporter)
-    {
-        _result = result;
-        _slnOrProjectArgument =
+    private readonly ParseResult _result = result;
+    private readonly IEnumerable<string> _slnOrProjectArgument =
             result.GetValue(RestoreCommandParser.SlnOrProjectArgument);
-    }
 
     public override int Execute()
     {

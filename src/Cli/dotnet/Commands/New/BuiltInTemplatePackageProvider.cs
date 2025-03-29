@@ -10,17 +10,11 @@ namespace Microsoft.DotNet.Tools.New;
 /// <summary>
 /// Returns list of *.nupkg files from C:\Program Files\dotnet\templates\x.x.x.x\ (on Windows) to be installed.
 /// </summary>
-internal sealed class BuiltInTemplatePackageProvider : ITemplatePackageProvider
+internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings) : ITemplatePackageProvider
 {
-    private readonly IEngineEnvironmentSettings _environmentSettings;
+    private readonly IEngineEnvironmentSettings _environmentSettings = settings;
 
-    public BuiltInTemplatePackageProvider(BuiltInTemplatePackageProviderFactory factory, IEngineEnvironmentSettings settings)
-    {
-        Factory = factory;
-        _environmentSettings = settings;
-    }
-
-    public ITemplatePackageProviderFactory Factory { get; }
+    public ITemplatePackageProviderFactory Factory { get; } = factory;
 
 #pragma warning disable CS0067
     /// <summary>

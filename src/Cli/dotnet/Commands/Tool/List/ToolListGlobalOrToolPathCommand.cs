@@ -12,23 +12,15 @@ namespace Microsoft.DotNet.Tools.Tool.List;
 
 internal delegate IToolPackageStoreQuery CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
 
-internal class ToolListGlobalOrToolPathCommand : CommandBase
+internal class ToolListGlobalOrToolPathCommand(
+    ParseResult result,
+    CreateToolPackageStore createToolPackageStore = null,
+    IReporter reporter = null) : CommandBase(result)
 {
     public const string CommandDelimiter = ", ";
-    private readonly IReporter _reporter;
-    private readonly IReporter _errorReporter;
-    private CreateToolPackageStore _createToolPackageStore;
-
-    public ToolListGlobalOrToolPathCommand(
-        ParseResult result,
-        CreateToolPackageStore createToolPackageStore = null,
-        IReporter reporter = null)
-        : base(result)
-    {
-        _reporter = reporter ?? Reporter.Output;
-        _errorReporter = reporter ?? Reporter.Error;
-        _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
-    }
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
+    private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
+    private CreateToolPackageStore _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
 
     public override int Execute()
     {
