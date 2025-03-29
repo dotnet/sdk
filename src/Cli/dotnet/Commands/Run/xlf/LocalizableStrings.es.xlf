@@ -67,9 +67,9 @@ Defina nombres de perfiles distintos.</target>
         <note>{0} is the file path and line number. {1} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
-        <note>{0} is the file path and line number. {Locked="="}</note>
+        <source>The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</source>
+        <target state="new">The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</target>
+        <note>{0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
