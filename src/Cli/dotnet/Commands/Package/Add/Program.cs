@@ -7,19 +7,23 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.MSBuild;
 using Microsoft.DotNet.Tools.NuGet;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Tools.Package.Add;
 
 internal class AddPackageReferenceCommand : CommandBase
 {
-    private readonly string _packageId;
+    private readonly PackageIdentity _packageId;
     private readonly string _fileOrDirectory;
 
-    public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
+    /// <param name="parseResult"></param>
+    /// <param name="fileOrDirectory">
+    /// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+    /// It's cleaner for the separate callsites to know this instead of pushing that logic here.
+    /// </param>
+    public AddPackageReferenceCommand(ParseResult parseResult, string fileOrDirectory) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);
+        _fileOrDirectory = fileOrDirectory;
         _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
     }
 
@@ -104,17 +108,22 @@ internal class AddPackageReferenceCommand : CommandBase
         }
     }
 
-    private string[] TransformArgs(string packageId, string tempDgFilePath, string projectFilePath)
+    private string[] TransformArgs(PackageIdentity packageId, string tempDgFilePath, string projectFilePath)
     {
-        var args = new List<string>
-        {
+        List<string> args = [
             "package",
             "add",
             "--package",
-            packageId,
+            packageId.Id,
             "--project",
             projectFilePath
-        };
+        ];
+        
+        if (packageId.HasVersion)
+        {
+            args.Add("--version");
+            args.Add(packageId.Version.ToString());
+        }
 
         args.AddRange(_parseResult
             .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
