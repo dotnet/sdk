@@ -31,16 +31,17 @@ internal static class AddPackageParser
         command.Options.Add(PackageAddCommandParser.PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => {
+        command.SetAction((parseResult) =>
+        {
             // this command can be called with an argument or an option for the project path - we prefer the option.
             // if the option is not present, we use the argument value instead.
             if (parseResult.HasOption(PackageCommandParser.ProjectOption))
             {
-                new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute();
+                return new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute();
             }
             else
             {
-                new AddPackageReferenceCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
+                return new AddPackageReferenceCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
             }
         });
 
