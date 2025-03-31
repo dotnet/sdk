@@ -44,7 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <IncludeBuildOutput Condition=" '$(PackAsTool)' == 'true' ">false</IncludeBuildOutput>
-    <PackageType Condition=" '$(PackAsTool)' == 'true' ">DotnetTool</PackageType>
+    <PackageType Condition=" '$(PackageType)' == '' and '$(PackAsTool)' == 'true' ">DotnetTool</PackageType>
     <RuntimeIdentifiers Condition=" '$(PackAsTool)' == 'true' ">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
   </PropertyGroup>
 
