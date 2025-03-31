@@ -8,15 +8,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class AllowListToSendVerbSecondVerbFirstArgument : IParseResultLogRule
+internal class AllowListToSendVerbSecondVerbFirstArgument(
+    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
-    public AllowListToSendVerbSecondVerbFirstArgument(
-        HashSet<string> topLevelCommandNameAllowList)
-    {
-        TopLevelCommandNameAllowList = topLevelCommandNameAllowList;
-    }
-
-    private HashSet<string> TopLevelCommandNameAllowList { get; }
+    private HashSet<string> TopLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {

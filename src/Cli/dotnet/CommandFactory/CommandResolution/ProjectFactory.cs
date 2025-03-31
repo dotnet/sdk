@@ -8,16 +8,11 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-internal class ProjectFactory
+internal class ProjectFactory(IEnvironmentProvider environment)
 {
     private const string ProjectFactoryName = "projectfactory";
 
-    private IEnvironmentProvider _environment;
-
-    public ProjectFactory(IEnvironmentProvider environment)
-    {
-        _environment = environment;
-    }
+    private IEnvironmentProvider _environment = environment;
 
     public IProject GetProject(
         string projectDirectory,
