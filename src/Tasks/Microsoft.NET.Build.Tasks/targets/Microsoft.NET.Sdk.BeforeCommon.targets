@@ -299,4 +299,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IsNetCoreAppTargetingLatestTFM Condition="'$(IsNetCoreAppTargetingLatestTFM)' == '' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(_TargetFrameworkVersionWithoutV)' == '$(NETCoreAppMaximumVersion)'">true</IsNetCoreAppTargetingLatestTFM>
   </PropertyGroup>
 
+  <!--
+    Use Roslyn deployed with SDK for builds of SDK-style projects (regardless of whether the initiator is `dotnet` or `msbuild`).
+    See https://github.com/dotnet/sdk/blob/main/documentation/general/decouple-vs-and-net-sdk.md.
+  -->
+  <PropertyGroup>
+    <RoslynUseSdkCompiler Condition="'$(RoslynUseSdkCompiler)' == '' and
+      '$(RoslynUseMSBuildCompiler)' != 'true' and
+      '$(BuildWithNetFrameworkHostedCompiler)' != 'true' and
+      ('$(DOTNET_HOST_PATH)' != '' or '$(DOTNET_EXPERIMENTAL_HOST_PATH)' != '')">true</RoslynUseSdkCompiler>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(RoslynUseSdkCompiler)' == 'true'">
+    <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn</RoslynTargetsPath>
+    <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
+    <RoslynToolsDirectory Condition="'$(MSBuildRuntimeType)' != 'Core'">..\bincore</RoslynToolsDirectory>
+    <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>
+    <VisualBasicCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.VisualBasic.Core.targets</VisualBasicCoreTargetsPath>
+  </PropertyGroup>
+
 </Project>

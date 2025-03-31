@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.TestFramework.Commands
@@ -82,6 +83,13 @@ namespace Microsoft.NET.TestFramework.Commands
 
             string output = Path.Combine(ProjectRootPath, "bin", platform, configuration, targetFramework, runtimeIdentifier);
             return new DirectoryInfo(output);
+        }
+
+        public FileInfo GetOutputFile()
+        {
+            Debug.Assert(TestAsset?.TestProject?.Name != null);
+            var extension = TestAsset.TestProject.IsExe ? ".exe" : ".dll";
+            return GetOutputDirectory().File(TestAsset.TestProject.Name + extension);
         }
 
         public virtual DirectoryInfo GetIntermediateDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null)
