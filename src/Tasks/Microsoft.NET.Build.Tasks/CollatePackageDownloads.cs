@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tasks
         [Output]
         public ITaskItem [] PackageDownloads { get; set; }
 
-        public override bool Execute()
+        protected override void ExecuteCore()
         {
             PackageDownloads = Packages.GroupBy(p => p.ItemSpec)
                 .Select(g =>
@@ -26,8 +26,6 @@ namespace Microsoft.NET.Build.Tasks
                         g.Select(p => "[" + p.GetMetadata("Version") + "]")));
                     return packageDownloadItem;
                 }).ToArray();
-
-            return true;
         }
     }
 }
