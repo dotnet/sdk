@@ -1,11 +1,11 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.DotNet.Build.Tasks
+namespace Microsoft.NET.Build.Tasks
 {
-    //  Multiple PackageDownload items for the same package are not supported.  Rather, to download multiple versions of the same
+    //  Multiple PackageDownload items for the same package are not supported. Rather, to download multiple versions of the same
     //  package, the PackageDownload items can have a semicolon-separated list of versions (each in brackets) as the Version metadata.
-    //  So this task groups a list of items with PackageVersion metadata into a list of items which can be used as PackageDownloads
+    //  So this task groups a list of items with Version metadata into a list of items which can be used as PackageDownloads.
     public class CollatePackageDownloads : Task
     {
         [Required]
@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 {
                     var packageDownloadItem = new TaskItem(g.Key);
                     packageDownloadItem.SetMetadata("Version", string.Join(";",
-                        g.Select(p => "[" + p.GetMetadata("PackageVersion") + "]")));
+                        g.Select(p => "[" + p.GetMetadata("Version") + "]")));
                     return packageDownloadItem;
                 }).ToArray();
 
