@@ -5,8 +5,7 @@
 
 using System.CommandLine;
 using ManifestReaderTests;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using ListStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 

@@ -3,14 +3,14 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.CommandLine;
-using System.IO;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
+using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Project.Convert;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 internal sealed class ProjectConvertCommand : CommandBase
 {

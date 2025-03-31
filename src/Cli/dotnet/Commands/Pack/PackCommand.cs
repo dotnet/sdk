@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using Parser = Microsoft.DotNet.Cli.Parser;
 
-namespace Microsoft.DotNet.Tools.Pack;
+namespace Microsoft.DotNet.Cli.Commands.Pack;
 
 public class PackCommand : RestoringCommand
 {

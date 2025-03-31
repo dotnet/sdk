@@ -3,15 +3,16 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Installer.Windows;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Clean.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Clean;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
 internal class WorkloadCleanCommand : WorkloadCommandBase
 {
@@ -36,7 +37,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();
@@ -94,7 +95,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
                     if (!Path.Exists(bandedDotnetPath))
                     {
-                        Reporter.WriteLine(AnsiExtensions.Yellow(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath)));
+                        Reporter.WriteLine(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
                         continue;
                     }
 
@@ -114,8 +115,8 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
                     // Limitation: We don't know the dotnetPath of the other feature bands when making the manifestProvider and resolvers.
                     // This can cause the manifest resolver to fail as it may look for manifests in an invalid path.
                     // It can theoretically be customized, but that is not currently supported for workloads with VS.
-                    Reporter.WriteLine(AnsiExtensions.Yellow(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath)));
-                    Cli.Utils.Reporter.Verbose.WriteLine(ex.Message);
+                    Reporter.WriteLine(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
+                    Utils.Reporter.Verbose.WriteLine(ex.Message);
                 }
             }
 

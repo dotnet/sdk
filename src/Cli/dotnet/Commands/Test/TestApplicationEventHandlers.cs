@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.Platform.OutputDevice;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplicationsEventHandlers : IDisposable
 {
@@ -87,7 +86,7 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: testResult.Exceptions.Select(fe => new Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
+                exceptions: testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,

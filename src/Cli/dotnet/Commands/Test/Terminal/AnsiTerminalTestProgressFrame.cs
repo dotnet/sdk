@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Captures <see cref="TestProgressState"/> that was rendered to screen, so we can only partially update the screen on next update.
@@ -96,7 +96,7 @@ internal sealed class AnsiTerminalTestProgressFrame
 
             lengthNeeded++; // for ')'
 
-            if ((charsTaken + lengthNeeded) < nonReservedWidth)
+            if (charsTaken + lengthNeeded < nonReservedWidth)
             {
                 terminal.Append(" (");
                 if (progress.TargetFramework != null)

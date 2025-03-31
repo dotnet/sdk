@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.Search;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 internal class ToolSearchCommand : CommandBase
 {

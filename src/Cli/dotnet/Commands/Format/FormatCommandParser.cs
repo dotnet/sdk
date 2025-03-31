@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 
-namespace Microsoft.DotNet.Tools.Format;
+namespace Microsoft.DotNet.Cli.Commands.Format;
 
 internal static partial class FormatCommandParser
 {
@@ -25,7 +24,7 @@ internal static partial class FormatCommandParser
         {
             Arguments
         };
-        formatCommand.SetAction((ParseResult parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
+        formatCommand.SetAction((parseResult) => FormatCommand.Run(parseResult.GetValue(Arguments)));
         return formatCommand;
     }
 }

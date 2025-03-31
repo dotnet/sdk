@@ -5,14 +5,20 @@ using System.CommandLine;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Restore;
 using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Restore.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Restore;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
 internal class WorkloadRestoreCommand : WorkloadCommandBase
 {

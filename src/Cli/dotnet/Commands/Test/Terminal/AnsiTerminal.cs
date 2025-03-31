@@ -2,10 +2,9 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Globalization;
-using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Terminal writer that is used when writing ANSI is allowed. It is capable of batching as many updates as possible and writing them at the end,
@@ -177,7 +176,7 @@ internal sealed class AnsiTerminal : ITerminal
 
     public void AppendLink(string? path, int? lineNumber)
     {
-        if (String.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
         {
             return;
         }
@@ -185,7 +184,7 @@ internal sealed class AnsiTerminal : ITerminal
         // For non code files, point to the directory, so we don't end up running the
         // exe by clicking at the link.
         string? extension = Path.GetExtension(path);
-        bool linkToFile = !String.IsNullOrWhiteSpace(extension) && KnownFileExtensions.Contains(extension);
+        bool linkToFile = !string.IsNullOrWhiteSpace(extension) && KnownFileExtensions.Contains(extension);
 
         bool knownNonExistingFile = path.StartsWith("/_/", ignoreCase: false, CultureInfo.CurrentCulture);
 

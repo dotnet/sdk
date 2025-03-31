@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Tools.New;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal class WorkloadsInfoProvider : IWorkloadsInfoProvider
 {

@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.MSBuild;
 
-namespace Microsoft.DotNet.Tools.Clean;
+namespace Microsoft.DotNet.Cli.Commands.Clean;
 
 public class CleanCommand : MSBuildForwardingApp
 {

@@ -3,14 +3,13 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.History.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.History;
+namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
 internal class WorkloadHistoryCommand : WorkloadCommandBase
 {

@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Commands.Test;
 
 #nullable enable
 
@@ -24,7 +25,7 @@ public static class OptionForwardingExtensions
     /// </summary>
     /// <param name="option">The command line option</param>
     /// <param name="outputPropertyName">The property name for the output path (such as OutputPath or PublishDir)</param>
-    /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the provious behavior of "dotnet test"</param>
+    /// <param name="surroundWithDoubleQuotes">Whether the path should be surrounded with double quotes.  This may not be necessary but preserves the previous behavior of "dotnet test"</param>
     /// <returns>The option</returns>
     public static ForwardedOption<string> ForwardAsOutputPath(this ForwardedOption<string> option, string outputPropertyName, bool surroundWithDoubleQuotes = false)
     {

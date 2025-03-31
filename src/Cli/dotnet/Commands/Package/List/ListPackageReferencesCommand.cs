@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.List;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.NuGet;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Package.List;
+namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
 internal class ListPackageReferencesCommand : CommandBase
 {

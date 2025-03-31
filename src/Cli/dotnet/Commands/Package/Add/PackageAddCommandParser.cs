@@ -6,10 +6,9 @@ using System.CommandLine.Completions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using Microsoft.DotNet.Tools.Package.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {

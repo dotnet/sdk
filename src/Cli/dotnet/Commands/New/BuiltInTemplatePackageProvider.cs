@@ -5,7 +5,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 /// <summary>
 /// Returns list of *.nupkg files from C:\Program Files\dotnet\templates\x.x.x.x\ (on Windows) to be installed.
@@ -48,7 +48,7 @@ internal sealed class BuiltInTemplatePackageProvider : ITemplatePackageProvider
     {
         var templateFoldersToInstall = new List<string>();
 
-        var sdkDirectory = Path.GetDirectoryName(typeof(Cli.Utils.DotnetFiles).Assembly.Location);
+        var sdkDirectory = Path.GetDirectoryName(typeof(Utils.DotnetFiles).Assembly.Location);
         var dotnetRootPath = Path.GetDirectoryName(Path.GetDirectoryName(sdkDirectory));
 
         // First grab templates from dotnet\templates\M.m folders, in ascending order, up to our version
@@ -93,7 +93,7 @@ internal sealed class BuiltInTemplatePackageProvider : ITemplatePackageProvider
     {
         IDictionary<string, (string path, SemanticVersion version)> bestVersionsByBucket = new Dictionary<string, (string path, SemanticVersion version)>();
 
-        Version sdkVersion = typeof(Microsoft.DotNet.Cli.NewCommandParser).Assembly.GetName().Version;
+        Version sdkVersion = typeof(NewCommandParser).Assembly.GetName().Version;
         foreach (KeyValuePair<string, SemanticVersion> dirInfo in versionDirInfo)
         {
             var majorMinorDirVersion = new Version(dirInfo.Value.Major, dirInfo.Value.Minor);

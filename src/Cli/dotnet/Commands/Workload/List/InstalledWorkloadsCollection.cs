@@ -3,7 +3,7 @@
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.List;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal class InstalledWorkloadsCollection
 {
@@ -37,7 +37,7 @@ internal class InstalledWorkloadsCollection
     /// Adds a new workload ID and installation source. If the ID already exists, the source is appended.
     /// </summary>
     /// <param name="workloadId">The ID of the workload to update.</param>
-    /// <param name="installationSource">A string describing the installation soruce of the workload.</param>
+    /// <param name="installationSource">A string describing the installation source of the workload.</param>
     public void Add(string workloadId, string installationSource)
     {
         if (!_workloads.ContainsKey(workloadId))

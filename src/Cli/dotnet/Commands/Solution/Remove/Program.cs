@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
-namespace Microsoft.DotNet.Tools.Sln.Remove;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
 internal class RemoveProjectFromSolutionCommand : CommandBase
 {

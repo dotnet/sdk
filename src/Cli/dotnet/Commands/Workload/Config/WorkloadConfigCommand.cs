@@ -3,14 +3,14 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Config.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Config;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
 internal class WorkloadConfigCommand : WorkloadCommandBase
 {

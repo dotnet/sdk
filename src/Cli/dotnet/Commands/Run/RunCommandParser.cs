@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Tools.Run;
 using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal static class RunCommandParser
 {

@@ -4,7 +4,7 @@
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory)
 {

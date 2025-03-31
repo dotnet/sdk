@@ -4,8 +4,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;

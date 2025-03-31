@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Sdk.Check;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.DotNet.Tools.Sdk.Check;
 

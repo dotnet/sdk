@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Search;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal class WorkloadSearchCommand : WorkloadCommandBase
 {
@@ -25,7 +25,7 @@ internal class WorkloadSearchCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();
