@@ -1,0 +1,16 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="System.CommandLine" Version="2.0.0-beta4.25168.115" CouldBeStable="false" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Package Id="System.CommandLine.DragonFruit" Version="0.4.0-alpha.25168.115" CouldBeStable="false" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Package Id="System.CommandLine.NamingConventionBinder" Version="2.0.0-beta4.25168.115" CouldBeStable="false" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Package Id="System.CommandLine.Rendering" Version="0.4.0-alpha.25168.115" CouldBeStable="false" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.CommandLine.2.0.0-beta4.25168.115.symbols.nupkg" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.CommandLine.DragonFruit.0.4.0-alpha.25168.115.symbols.nupkg" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.CommandLine.NamingConventionBinder.2.0.0-beta4.25168.115.symbols.nupkg" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//System.CommandLine.Rendering.0.4.0-alpha.25168.115.symbols.nupkg" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine.DragonFruit\netstandard2.0\System.CommandLine.DragonFruit.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine.NamingConventionBinder\net8.0\System.CommandLine.NamingConventionBinder.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine.NamingConventionBinder\netstandard2.0\System.CommandLine.NamingConventionBinder.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine.Rendering\netstandard2.0\System.CommandLine.Rendering.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine\net8.0\System.CommandLine.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+  <Pdb Id="System.CommandLine\netstandard2.0\System.CommandLine.pdb" RepoOrigin="command-line-api" Visibility="Vertical" />
+</Build>

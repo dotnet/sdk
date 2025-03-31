@@ -11,6 +11,8 @@
     <PackageReference Include="NuGet.Protocol" IncludeAssets="compile" />
     <PackageReference Include="NuGet.ProjectModel" IncludeAssets="compile" />
     <PackageReference Include="Newtonsoft.Json" IncludeAssets="compile" />
+    <PackageReference Include="Microsoft.DotNet.Build.Manifest" />
+	<PackageReference Include="Microsoft.Arcade.Common" />
   </ItemGroup>
 
 </Project>

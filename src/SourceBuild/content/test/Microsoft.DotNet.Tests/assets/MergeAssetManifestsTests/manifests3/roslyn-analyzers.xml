@@ -1,0 +1,63 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.CodeAnalysis.Analyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.AnalyzerUtilities" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.BannedApiAnalyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.Metrics" Version="4.0.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.ResxSourceGenerator" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Microsoft.CodeAnalysis.RulesetToEditorconfigConverter" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Roslyn.Diagnostics.Analyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Package Id="Text.Analyzers" Version="3.12.0-beta1.25168.115" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Analyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.AnalyzerUtilities.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.BannedApiAnalyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Metrics.4.0.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.NetAnalyzers.10.0.0-preview.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.PublicApiAnalyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ResxSourceGenerator.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.RulesetToEditorconfigConverter.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Roslyn.Diagnostics.Analyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Text.Analyzers.3.12.0-beta1.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="CommonPerfUtilities\net6.0\CommonPerfUtilities.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="CSharpPerfUtilities\net6.0\CSharpPerfUtilities.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="GenerateAnalyzerNuspec\net10.0\GenerateAnalyzerNuspec.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="GenerateDocumentationAndConfigFilesForBrokenRuntime\net10.0\GenerateDocumentationAndConfigFilesForBrokenRuntime.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="GenerateDocumentationAndConfigFiles\net10.0\GenerateDocumentationAndConfigFiles.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Metrics.Legacy\net472\Metrics.Legacy.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Metrics\net472\Metrics.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.Analyzers\netstandard2.0\Microsoft.CodeAnalysis.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.AnalyzerUtilities\netstandard2.0\Microsoft.CodeAnalysis.AnalyzerUtilities.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.BannedApiAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.BannedApiAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.CSharp.Analyzers\netstandard2.0\Microsoft.CodeAnalysis.CSharp.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.CSharp.BannedApiAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.CSharp.BannedApiAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.CSharp.NetAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.CodeFixes\netstandard2.0\Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.CodeFixes.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.CSharp.PerformanceSensitiveAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.NetAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.NetAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.PerformanceSensitiveAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.PublicApiAnalyzers.CodeFixes\netstandard2.0\Microsoft.CodeAnalysis.PublicApiAnalyzers.CodeFixes.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.PublicApiAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.PublicApiAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp\netstandard2.0\Microsoft.CodeAnalysis.ResxSourceGenerator.CSharp.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic\netstandard2.0\Microsoft.CodeAnalysis.ResxSourceGenerator.VisualBasic.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.ResxSourceGenerator\netstandard2.0\Microsoft.CodeAnalysis.ResxSourceGenerator.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.VisualBasic.Analyzers\netstandard2.0\Microsoft.CodeAnalysis.VisualBasic.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.VisualBasic.BannedApiAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.VisualBasic.BannedApiAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\netstandard2.0\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="PerfDiff\net10.0\PerfDiff.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="PerformanceTests\net6.0\PerformanceTests.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="ReferenceAssemblies\net6.0\ReferenceAssemblies.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="ReleaseNotesUtil\net10.0\ReleaseNotesUtil.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Roslyn.Diagnostics.Analyzers\netstandard2.0\Roslyn.Diagnostics.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Roslyn.Diagnostics.CSharp.Analyzers\netstandard2.0\Roslyn.Diagnostics.CSharp.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Roslyn.Diagnostics.VisualBasic.Analyzers\netstandard2.0\Roslyn.Diagnostics.VisualBasic.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="RulesetToEditorconfigConverter\net472\RulesetToEditorconfigConverter.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="TestReferenceAssembly\net46\TestReferenceAssembly.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="TestReferenceAssembly\netstandard2.0\TestReferenceAssembly.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Text.Analyzers\netstandard2.0\Text.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Text.CSharp.Analyzers\netstandard2.0\Text.CSharp.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="Text.VisualBasic.Analyzers\netstandard2.0\Text.VisualBasic.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+  <Pdb Id="VisualBasicPerfUtilities\net6.0\VisualBasicPerfUtilities.pdb" DotNetReleaseShipping="true" RepoOrigin="roslyn-analyzers" Visibility="External" />
+</Build>

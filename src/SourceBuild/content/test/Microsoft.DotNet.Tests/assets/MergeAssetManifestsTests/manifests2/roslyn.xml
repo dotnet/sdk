@@ -1,0 +1,176 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="csc.ARM64.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="csc.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="csi.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="InteractiveHost32.x86.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="InteractiveHost64.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Build.Tasks" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CodeStyle.Fixes.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CodeStyle.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Collections" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Common" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Compiler.Test.Resources" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Compilers" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Contracts" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.CodeStyle" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.CodeStyle.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.EditorFeatures" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Features" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Debugging" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Common" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.EditorFeatures.Wpf" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.FunctionResolver.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Apex" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.AspNetCore" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.CompilerDeveloperSDK" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Copilot" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Debugger" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.EditorConfigGenerator" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.FSharp" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.OmniSharp" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CSharp" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Razor" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.VisualDiagnostics" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.ExternalAccess.Xaml" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Features" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.InteractiveHost" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.ExternalAccess.Copilot" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.neutral" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.Protocol" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.win-x64" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Lsif.Generator" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.PooledObjects" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.ServiceHub" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Remote.Workspaces" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Scripting" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Scripting.Common" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Test.Utilities" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Threading" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.EditorFeatures" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ExpressionCompiler.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ResultProvider.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.Features" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.Desktop" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.MSBuild" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.CommonLanguageServerProtocol.Framework" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.Net.Compilers.Toolset.Arm64" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.Net.Compilers.Toolset.Framework" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.CSharp.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.DevKit" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.ExternalAccess.Copilot" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.Implementation.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.LiveShare" Version="4.14.0-3.25168.115" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.VisualBasic.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="Microsoft.VisualStudio.LanguageServices.Xaml.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="vbc.ARM64.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="vbc.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="VBCSCompiler.ARM64.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Package Id="VBCSCompiler.Symbols" Version="4.14.0-3.25168.115" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//csc.ARM64.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//csc.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//csi.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//InteractiveHost32.x86.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//InteractiveHost64.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Build.Tasks.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CodeStyle.Fixes.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CodeStyle.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Collections.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Common.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Compiler.Test.Resources.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Compilers.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Contracts.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.CodeStyle.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.CodeStyle.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.EditorFeatures.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.Features.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.Scripting.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.CSharp.Workspaces.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Debugging.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.EditorFeatures.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.EditorFeatures.Common.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.EditorFeatures.Text.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.EditorFeatures.Wpf.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExpressionEvaluator.FunctionResolver.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.Apex.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.AspNetCore.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.CompilerDeveloperSDK.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.Copilot.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.Debugger.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.EditorConfigGenerator.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.FSharp.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.OmniSharp.CSharp.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.Razor.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.RazorCompiler.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.VisualDiagnostics.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.ExternalAccess.Xaml.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Features.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.InteractiveHost.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.LanguageServer.ExternalAccess.Copilot.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.LanguageServer.neutral.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.LanguageServer.Protocol.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.LanguageServer.win-x64.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Lsif.Generator.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.PooledObjects.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Remote.ServiceHub.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Remote.Workspaces.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Scripting.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Scripting.Common.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Test.Utilities.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Threading.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.CodeStyle.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.CodeStyle.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.EditorFeatures.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ExpressionCompiler.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.ExpressionEvaluator.ResultProvider.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.Features.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.VisualBasic.Workspaces.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Workspaces.Common.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Workspaces.Desktop.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Workspaces.MSBuild.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CodeAnalysis.Workspaces.MSBuild.BuildHost.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.CommonLanguageServerProtocol.Framework.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Net.Compilers.Toolset.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Net.Compilers.Toolset.Arm64.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Net.Compilers.Toolset.Framework.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.CSharp.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.DevKit.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.ExternalAccess.Copilot.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.Implementation.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.LiveShare.4.14.0-3.25168.115.symbols.nupkg" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.VisualBasic.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.VisualStudio.LanguageServices.Xaml.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//vbc.ARM64.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//vbc.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//VBCSCompiler.ARM64.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//VBCSCompiler.Symbols.4.14.0-3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="roslyn" Visibility="Vertical" />
+</Build>
