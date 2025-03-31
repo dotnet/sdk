@@ -312,34 +312,33 @@ namespace Microsoft.NET.Build.Tasks
              *      libraryCandidatesForRemoval if it isn't already there
              * Repeat 3 until libraryCandidatesForRemoval is empty
              */
-            var references = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
+            var libraries = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
             foreach (var reference in runtimeLibraries)
             {
                 foreach (var dependency in reference.Library.Dependencies)
                 {
-                    if (references.TryGetValue(dependency.Name, out var dep))
+                    if (libraries.TryGetValue(dependency.Name, out var dep))
                     {
                         dep.Dependents.Add(reference.Library.Name);
                     }
                 }
             }
 
-            var unprocessedReferences = runtimeLibraries.ToHashSet();
-            HashSet<ModifiableRuntimeLibrary> temp = new();
-            while (unprocessedReferences.Any())
+            var unprocessedLibraries = runtimeLibraries.ToHashSet();
+            while (unprocessedLibraries.Any())
             {
-                var lib = unprocessedReferences.First();
-                unprocessedReferences.Remove(lib);
+                var lib = unprocessedLibraries.First();
+                unprocessedLibraries.Remove(lib);
 
                 if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
                 {
-                    if (lib.Library.Dependencies.All(d => !references.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
+                    if (lib.Library.Dependencies.All(d => !libraries.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
                     {
                         runtimeLibraries.Remove(lib);
-                        references.Remove(lib.Library.Name);
+                        libraries.Remove(lib.Library.Name);
                         foreach (var dependency in lib.Library.Dependencies)
                         {
-                            if (references.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary? value))
+                            if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary? value))
                             {
                                 value.Dependents.Remove(lib.Library.Name);
                             }
@@ -347,18 +346,12 @@ namespace Microsoft.NET.Build.Tasks
 
                         foreach (var dependent in lib.Dependents)
                         {
-                            if (references.TryGetValue(dependent, out var dep))
+                            if (libraries.TryGetValue(dependent, out var dep))
                             {
-                                temp.Add(dep);
+                                unprocessedLibraries.Add(dep);
                             }
                         }
                     }
-                }
-
-                if (!unprocessedReferences.Any())
-                {
-                    unprocessedReferences = temp;
-                    temp = new();
                 }
             }
 
@@ -947,13 +940,14 @@ namespace Microsoft.NET.Build.Tasks
 
         private class ModifiableRuntimeLibrary
         {
-            public RuntimeLibrary Library { get; set; }
+            // Dependents are assemblies that depend on this library, as opposed to dependencies which are libraries that this one depends on
             public HashSet<string> Dependents { get; set; }
+            public RuntimeLibrary Library { get; set; }
 
             public ModifiableRuntimeLibrary(RuntimeLibrary library)
             {
-                this.Library = library;
                 this.Dependents = new();
+                this.Library = library;
             }
         }
     }
