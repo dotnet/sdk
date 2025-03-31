@@ -7,12 +7,8 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Format;
 
-public class FormatCommand : DotnetFormatForwardingApp
+public class FormatCommand(IEnumerable<string> argsToForward) : DotnetFormatForwardingApp(argsToForward)
 {
-    public FormatCommand(IEnumerable<string> argsToForward) : base(argsToForward)
-    {
-    }
-
     public static FormatCommand FromArgs(string[] args)
     {
         var parser = Parser.Instance;

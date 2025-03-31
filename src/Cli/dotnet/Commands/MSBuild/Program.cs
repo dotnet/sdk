@@ -6,16 +6,10 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-public class MSBuildCommand : MSBuildForwardingApp
+public class MSBuildCommand(IEnumerable<string> msbuildArgs,
+    string msbuildPath = null
+        ) : MSBuildForwardingApp(msbuildArgs, msbuildPath, includeLogo: true)
 {
-    public MSBuildCommand
-        (IEnumerable<string> msbuildArgs,
-        string msbuildPath = null
-        )
-         : base(msbuildArgs, msbuildPath, includeLogo: true)
-    {
-    }
-
     public static MSBuildCommand FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;

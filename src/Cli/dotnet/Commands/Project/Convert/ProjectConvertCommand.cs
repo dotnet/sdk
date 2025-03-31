@@ -12,16 +12,10 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStr
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand : CommandBase
+internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _file;
-    private readonly string? _outputDirectory;
-
-    public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
-        _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    }
+    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
+    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
 
     public override int Execute()
     {

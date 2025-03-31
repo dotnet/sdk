@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 /// <summary>
 /// Terminal that updates the progress in place when progress reporting is enabled.
 /// </summary>
-internal sealed partial class TestProgressStateAwareTerminal : IDisposable
+internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal, Func<bool?> showProgress, bool writeProgressImmediatelyAfterOutput, int updateEvery) : IDisposable
 {
     /// <summary>
     /// A cancellation token to signal the rendering thread that it should exit.
@@ -18,10 +18,10 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
     /// </summary>
     private readonly object _lock = Console.Out;
 
-    private readonly ITerminal _terminal;
-    private readonly Func<bool?> _showProgress;
-    private readonly bool _writeProgressImmediatelyAfterOutput;
-    private readonly int _updateEvery;
+    private readonly ITerminal _terminal = terminal;
+    private readonly Func<bool?> _showProgress = showProgress;
+    private readonly bool _writeProgressImmediatelyAfterOutput = writeProgressImmediatelyAfterOutput;
+    private readonly int _updateEvery = updateEvery;
     private TestProgressState?[] _progressItems = [];
     private bool? _showProgressCached;
 
@@ -66,14 +66,6 @@ internal sealed partial class TestProgressStateAwareTerminal : IDisposable
         }
 
         _terminal.EraseProgress();
-    }
-
-    public TestProgressStateAwareTerminal(ITerminal terminal, Func<bool?> showProgress, bool writeProgressImmediatelyAfterOutput, int updateEvery)
-    {
-        _terminal = terminal;
-        _showProgress = showProgress;
-        _writeProgressImmediatelyAfterOutput = writeProgressImmediatelyAfterOutput;
-        _updateEvery = updateEvery;
     }
 
     public int AddWorker(TestProgressState testWorker)

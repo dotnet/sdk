@@ -7,14 +7,9 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-internal class SearchResultPrinter
+internal class SearchResultPrinter(IReporter reporter)
 {
-    private readonly IReporter _reporter;
-
-    public SearchResultPrinter(IReporter reporter)
-    {
-        _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
-    }
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
     public void Print(bool isDetailed, IReadOnlyCollection<SearchResultPackage> searchResultPackages)
     {

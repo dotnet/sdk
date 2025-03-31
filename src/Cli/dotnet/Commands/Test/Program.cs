@@ -12,16 +12,11 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-public class TestCommand : RestoringCommand
+public class TestCommand(
+    IEnumerable<string> msbuildArgs,
+    bool noRestore,
+    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public TestCommand(
-        IEnumerable<string> msbuildArgs,
-        bool noRestore,
-        string msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
-    {
-    }
-
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();

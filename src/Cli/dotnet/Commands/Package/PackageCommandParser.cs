@@ -14,9 +14,11 @@ internal class PackageCommandParser
 {
     private const string DocsLink = "https://aka.ms/dotnet-package";
 
-    public static readonly CliOption<string> ProjectOption = new("--project")
+    public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
     {
-        Recursive = true
+        Recursive = true,
+        DefaultValueFactory = _ => Environment.CurrentDirectory,
+        Description = CommonLocalizableStrings.ProjectArgumentDescription
     };
 
     public static CliCommand GetCommand()

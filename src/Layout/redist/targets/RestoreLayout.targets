@@ -4,8 +4,8 @@
     <!-- Only the runtime OSX .pkgs have a `-internal` suffix -->
     <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
     <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
-    <InstallerTargetArchitecture>$(Architecture)</InstallerTargetArchitecture>
-    <InstallerTargetArchitecture Condition="'$(IsRPMBasedDistro)' == 'true' and '$(Architecture)' == 'Arm64'">aarch64</InstallerTargetArchitecture>
+    <InstallerTargetArchitecture>$(TargetArchitecture)</InstallerTargetArchitecture>
+    <InstallerTargetArchitecture Condition="'$(IsRPMBasedDistro)' == 'true' and '$(TargetArchitecture)' == 'Arm64'">aarch64</InstallerTargetArchitecture>
 
     <SharedFrameworkInstallerFileRid>$(NetRuntimeRid)</SharedFrameworkInstallerFileRid>
     <SharedFrameworkInstallerFileRid Condition="'$(IsDebianBaseDistro)' == 'true' OR '$(IsRPMBasedDistro)' == 'true'">$(InstallerTargetArchitecture)</SharedFrameworkInstallerFileRid>
@@ -18,8 +18,8 @@
     <WindowsDesktopBlobVersion Condition="'$(DotNetBuildOrchestrator)' == 'true'">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</WindowsDesktopBlobVersion>
     <NETStandardTargetingPackBlobVersion>3.0.0</NETStandardTargetingPackBlobVersion>
 
-    <AlternateArchitecture Condition="'$(Architecture)' == 'x86'">x64</AlternateArchitecture>
-    <AlternateArchitecture Condition="'$(Architecture)' == 'x64'">x86</AlternateArchitecture>
+    <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x86'">x64</AlternateArchitecture>
+    <AlternateArchitecture Condition="'$(TargetArchitecture)' == 'x64'">x86</AlternateArchitecture>
     <DownloadedSharedHostInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-host$(InstallerStartSuffix)-$(SharedHostVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedHostInstallerFileName>
     <DownloadedHostFxrInstallerFileName Condition="'$(InstallerExtension)' != ''">dotnet-hostfxr$(InstallerStartSuffix)-$(HostFxrVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedHostFxrInstallerFileName>
     <DownloadedSharedFrameworkInstallerFileName Condition="'$(InstallerExtension)' != '' and '$(PgoInstrument)' != 'true'">dotnet-runtime$(InstallerStartSuffix)-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkInstallerFileRid)$(InstallerExtension)</DownloadedSharedFrameworkInstallerFileName>
@@ -45,8 +45,8 @@
 
     <AspNetCoreInstallerRid Condition="'$(AspNetCoreInstallerRid)' == ''">$(SharedFrameworkRid)</AspNetCoreInstallerRid>
     <AspNetCoreArchiveRid>$(AspNetCoreInstallerRid)</AspNetCoreArchiveRid>
-    <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(Architecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
-    <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(Architecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
+    <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(TargetArchitecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
+    <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(TargetArchitecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
 
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX'))">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
@@ -160,7 +160,7 @@
     <!-- The AspNet does not provide native MacOS PKG installers at this time; we use AspNet archives.
           https://github.com/aspnet/AspNetCore/issues/8806 -->
     <BundledLayoutComponent Include="DownloadedAspNetTargetingPackArchiveFile"
-                            Condition="'$(IncludeAspNetCoreRuntime)' != 'false' and '$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
+                            Condition="'$(IncludeAspNetCoreRuntime)' != 'false' and '$(InstallerExtension)' == '.pkg' And '$(SkipBuildingInstallers)' != 'true' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(AspNetTargetingPackArchiveFileName)</DownloadFileName>
       <RelativeLayoutPath></RelativeLayoutPath>
@@ -178,52 +178,52 @@
   <!-- BEGIN: Bundled installer components -->
   <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true'">
     <BundledInstallerComponent Include="DownloadedSharedFrameworkInstallerFile"
-                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedSharedFrameworkInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedSharedHostInstallerFile"
-                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedSharedHostInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedHostFxrInstallerFile"
-                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedHostFxrInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedNetCoreAppTargetingPackInstallerFile"
-                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetCoreAppTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <!-- TODO: Should we somehow obtain a .NET Standard ARM64 package? -->
     <BundledInstallerComponent Include="DownloadedNetStandardTargetingPackInstallerFile"
-                          Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'osx-arm64')">
+                          Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetStandardTargetingPackRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetStandardTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedNetCoreAppHostPackInstallerFile"
-                    Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                    Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedNetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <!-- These are apphosts from a different vertical which require a join in the VMR. -->
     <BundledInstallerComponent Include="DownloadedAlternateNetCoreAppHostPackInstallerFile"
-                                Condition="'$(InstallerExtension)' == '.msi' and !$(Architecture.StartsWith('arm')) and ('$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true')">
+                                Condition="'$(InstallerExtension)' == '.msi' and !$(TargetArchitecture.StartsWith('arm')) and ('$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <!-- These are apphosts from a different vertical which require a join in the VMR. -->
     <BundledInstallerComponent Include="DownloadedArm64NetCoreAppHostPackInstallerFile"
-                                Condition="'$(InstallerExtension)' == '.msi' And !$(Architecture.StartsWith('arm'))  and ('$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true')">
+                                Condition="'$(InstallerExtension)' == '.msi' And !$(TargetArchitecture.StartsWith('arm'))  and ('$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true')">
       <BaseUrl>$(NetRuntimeRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedArm64NetCoreAppHostPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
@@ -237,13 +237,13 @@
 
   <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true' and '$(IncludeAspNetCoreRuntime)' != 'false'">
     <BundledInstallerComponent Include="DownloadedAspNetTargetingPackInstallerFile"
-                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetTargetingPackInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
 
     <BundledInstallerComponent Include="DownloadedAspNetCoreSharedFxInstallerFile"
-                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64')">
+                                Condition="'$(InstallerExtension)' != '.pkg' And '$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64')">
       <BaseUrl>$(AspNetCoreSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedAspNetCoreSharedFxInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>
@@ -251,7 +251,7 @@
 
   <ItemGroup Condition="'$(SkipBuildingInstallers)' != 'true' and '$(IncludeWpfAndWinForms)' != 'false'">
     <BundledInstallerComponent Include="DownloadedWinFormsAndWpfSharedFrameworkInstallerFile"
-                                Condition="'$(InstallerExtension)' != '' And (!$(Architecture.StartsWith('arm')) or '$(Rid)' == 'win-arm64' or '$(Rid)' == 'osx-arm64')">
+                                Condition="'$(InstallerExtension)' != '' And (!$(TargetArchitecture.StartsWith('arm')) or '$(TargetRid)' == 'win-arm64' or '$(TargetRid)' == 'osx-arm64')">
       <BaseUrl>$(WinFormsAndWpfSharedFxRootUrl)</BaseUrl>
       <DownloadFileName>$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)</DownloadFileName>
     </BundledInstallerComponent>

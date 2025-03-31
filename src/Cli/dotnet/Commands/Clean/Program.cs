@@ -7,13 +7,8 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-public class CleanCommand : MSBuildForwardingApp
+public class CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
 {
-    public CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-        : base(msbuildArgs, msbuildPath)
-    {
-    }
-
     public static CleanCommand FromArgs(string[] args, string msbuildPath = null)
     {
 

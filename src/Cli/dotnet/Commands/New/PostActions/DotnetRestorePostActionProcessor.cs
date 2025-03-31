@@ -8,14 +8,9 @@ using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
-internal class DotnetRestorePostActionProcessor : PostActionProcessorBase
+internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, bool> _restoreCallback;
-
-    public DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null)
-    {
-        _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
-    }
+    private readonly Func<string, bool> _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
 
     public override Guid Id => ActionProcessorId;
 

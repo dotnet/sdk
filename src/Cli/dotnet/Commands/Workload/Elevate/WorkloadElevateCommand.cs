@@ -8,13 +8,9 @@ using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.Localizab
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
-internal class WorkloadElevateCommand : WorkloadCommandBase
+internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
 {
     private NetSdkMsiInstallerServer _server;
-
-    public WorkloadElevateCommand(ParseResult parseResult) : base(parseResult)
-    {
-    }
 
     public override int Execute()
     {

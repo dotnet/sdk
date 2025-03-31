@@ -3,7 +3,10 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Format;
 
-public class DotnetFormatForwardingApp : ForwardingApp
+public class DotnetFormatForwardingApp(IEnumerable<string> argsToForward) : ForwardingApp(forwardApplicationPath: GetForwardApplicationPath(),
+        argsToForward: argsToForward,
+        depsFile: GetDepsFilePath(),
+        runtimeConfig: GetRuntimeConfigPath())
 {
     private static string GetForwardApplicationPath()
         => Path.Combine(AppContext.BaseDirectory, "DotnetTools/dotnet-format/dotnet-format.dll");
@@ -13,12 +16,4 @@ public class DotnetFormatForwardingApp : ForwardingApp
 
     private static string GetRuntimeConfigPath()
         => Path.Combine(AppContext.BaseDirectory, "DotnetTools/dotnet-format/dotnet-format.runtimeconfig.json");
-
-    public DotnetFormatForwardingApp(IEnumerable<string> argsToForward)
-        : base(forwardApplicationPath: GetForwardApplicationPath(),
-            argsToForward: argsToForward,
-            depsFile: GetDepsFilePath(),
-            runtimeConfig: GetRuntimeConfigPath())
-    {
-    }
 }

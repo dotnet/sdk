@@ -7,17 +7,11 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-internal sealed class TestNodeResultsState
+internal sealed class TestNodeResultsState(long id)
 {
-    public TestNodeResultsState(long id)
-    {
-        Id = id;
-        _summaryDetail = new(id, stopwatch: null, text: string.Empty);
-    }
+    public long Id { get; } = id;
 
-    public long Id { get; }
-
-    private readonly TestDetailState _summaryDetail;
+    private readonly TestDetailState _summaryDetail = new(id, stopwatch: null, text: string.Empty);
     private readonly ConcurrentDictionary<string, TestDetailState> _testNodeProgressStates = new();
 
     public int Count => _testNodeProgressStates.Count;

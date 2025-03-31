@@ -262,5 +262,9 @@ public static class ParseResultExtensions
         }
     }
 
-    public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is not null;
+    /// <summary>
+    /// Checks if the option is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
 }

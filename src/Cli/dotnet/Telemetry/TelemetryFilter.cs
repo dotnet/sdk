@@ -15,15 +15,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryFilter : ITelemetryFilter
+internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
 {
     private const string ExceptionEventName = "mainCatchException/exception";
-    private readonly Func<string, string> _hash;
-
-    public TelemetryFilter(Func<string, string> hash)
-    {
-        _hash = hash ?? throw new ArgumentNullException(nameof(hash));
-    }
+    private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
 
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
     {

@@ -7,15 +7,50 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.Extensions;
+using System.CommandLine.Parsing;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {
-    public static readonly CliArgument<string> CmdPackageArgument = new DynamicArgument<string>(LocalizableStrings.CmdPackage)
+    public static NuGet.Packaging.Core.PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
+    {
+        // per the Arity of the CmdPackageArgument's Arity, we should have exactly one token - 
+        // this is a safety net for if we change the Arity in the future and forget to update this parser.
+        if (packageArgResult.Tokens.Count != 1)
+        {
+            throw new ArgumentException($"Expected exactly one token, but got {packageArgResult.Tokens.Count}.");
+        }
+        var token = packageArgResult.Tokens[0].Value;
+        var indexOfAt = token.IndexOf('@');
+        if (indexOfAt == -1)
+        {
+            // no version specified, so we just return the package id
+            return new NuGet.Packaging.Core.PackageIdentity(token, null);
+        }
+        // we have a version specified, so we need to split the token into id and version
+        else
+        {
+            var id = token[0..indexOfAt];
+            var versionString = token[(indexOfAt + 1)..];
+            if (NuGet.Versioning.SemanticVersion.TryParse(versionString, out var version))
+            {
+                return new NuGet.Packaging.Core.PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
+            }
+            else
+            {
+                throw new ArgumentException(string.Format(LocalizableStrings.InvalidSemVerVersionString, versionString));
+            }
+        };
+    }
+
+    public static readonly CliArgument<NuGet.Packaging.Core.PackageIdentity> CmdPackageArgument = new DynamicArgument<NuGet.Packaging.Core.PackageIdentity>(LocalizableStrings.CmdPackage)
     {
         Description = LocalizableStrings.CmdPackageDescription,
-        Arity = ArgumentArity.ExactlyOne
+        Arity = ArgumentArity.ExactlyOne,
+        CustomParser = ParsePackageIdentity,
+
     }.AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
@@ -31,11 +66,11 @@ internal static class PackageAddCommandParser
         .AddCompletions((context) =>
         {
             // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is string packageId)
+            if (context.ParseResult.GetValue(CmdPackageArgument) is NuGet.Packaging.Core.PackageIdentity packageId && !packageId.HasVersion)
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
-                return QueryVersionsForPackage(packageId, context.WordToComplete, allowPrerelease, CancellationToken.None)
+                return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
                     .Result
                     .Select(version => new CompletionItem(version.ToNormalizedString()));
             }
@@ -88,6 +123,7 @@ internal static class PackageAddCommandParser
     {
         CliCommand command = new("add", LocalizableStrings.AppFullName);
 
+        VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(VersionOption);
         command.Options.Add(FrameworkOption);
@@ -98,9 +134,17 @@ internal static class PackageAddCommandParser
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
 
         return command;
+    }
+
+    private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
+    {
+        if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
+        {
+            result.AddError(LocalizableStrings.ValidationFailedDuplicateVersion);
+        }
     }
 
     public static async Task<IEnumerable<string>> QueryNuGet(string packageStem, bool allowPrerelease, CancellationToken cancellationToken)

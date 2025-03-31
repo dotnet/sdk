@@ -7,10 +7,8 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
-internal class PackageSearchCommand : CommandBase
+internal class PackageSearchCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    public PackageSearchCommand(ParseResult parseResult) : base(parseResult) { }
-
     public override int Execute()
     {
         var args = new List<string>

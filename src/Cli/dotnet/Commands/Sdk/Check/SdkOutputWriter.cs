@@ -8,18 +8,13 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.Check.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
-internal class SdkOutputWriter : BundleOutputWriter
+internal class SdkOutputWriter(
+    IEnumerable<NetSdkInfo> sdkInfo,
+    ProductCollection productCollection,
+    IProductCollectionProvider productCollectionProvider,
+    IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetSdkInfo> _sdkInfo;
-
-    public SdkOutputWriter(
-        IEnumerable<NetSdkInfo> sdkInfo,
-        ProductCollection productCollection,
-        IProductCollectionProvider productCollectionProvider,
-        IReporter reporter) : base(productCollection, productCollectionProvider, reporter)
-    {
-        _sdkInfo = sdkInfo;
-    }
+    private IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
 
     public void PrintSdkInfo()
     {

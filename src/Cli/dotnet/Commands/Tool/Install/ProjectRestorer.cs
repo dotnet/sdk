@@ -9,21 +9,13 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableString
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-internal class ProjectRestorer : IProjectRestorer
+internal class ProjectRestorer(IReporter reporter = null,
+    IEnumerable<string> additionalRestoreArguments = null) : IProjectRestorer
 {
-    private readonly IReporter _reporter;
-    private readonly IReporter _errorReporter;
-    private readonly bool _forceOutputRedirection;
-    private readonly IEnumerable<string> _additionalRestoreArguments;
-
-    public ProjectRestorer(IReporter reporter = null,
-        IEnumerable<string> additionalRestoreArguments = null)
-    {
-        _additionalRestoreArguments = additionalRestoreArguments;
-        _reporter = reporter ?? Reporter.Output;
-        _errorReporter = reporter ?? Reporter.Error;
-        _forceOutputRedirection = reporter != null;
-    }
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
+    private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
+    private readonly bool _forceOutputRedirection = reporter != null;
+    private readonly IEnumerable<string> _additionalRestoreArguments = additionalRestoreArguments;
 
     public void Restore(FilePath project,
         PackageLocation packageLocation,

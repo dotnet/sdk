@@ -103,14 +103,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
-    private class SetupLogReporter : IReporter
+    private class SetupLogReporter(ISetupLogger setupLogger) : IReporter
     {
-        private ISetupLogger _setupLogger;
-
-        public SetupLogReporter(ISetupLogger setupLogger)
-        {
-            _setupLogger = setupLogger;
-        }
+        private ISetupLogger _setupLogger = setupLogger;
 
         //  SetupLogger doesn't have a way of writing a message that shouldn't include a newline.  So if this method is used a message may be split across multiple lines,
         //  but that's probably better than not writing a message at all or throwing an exception

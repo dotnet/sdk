@@ -7,15 +7,10 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplicationsEventHandlers : IDisposable
+internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output) : IDisposable
 {
     private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
-    private readonly TerminalTestReporter _output;
-
-    public TestApplicationsEventHandlers(TerminalTestReporter output)
-    {
-        _output = output;
-    }
+    private readonly TerminalTestReporter _output = output;
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {

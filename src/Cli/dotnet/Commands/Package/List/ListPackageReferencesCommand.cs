@@ -10,19 +10,14 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableString
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal class ListPackageReferencesCommand : CommandBase
+internal class ListPackageReferencesCommand(
+    ParseResult parseResult) : CommandBase(parseResult)
 {
     //The file or directory passed down by the command
-    private readonly string _fileOrDirectory;
-
-    public ListPackageReferencesCommand(
-        ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
+    private readonly string _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
             parseResult.HasOption(PackageCommandParser.ProjectOption) ?
             parseResult.GetValue(PackageCommandParser.ProjectOption) :
             parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
-    }
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {

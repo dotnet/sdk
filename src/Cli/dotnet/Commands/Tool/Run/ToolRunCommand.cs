@@ -11,26 +11,16 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
-internal class ToolRunCommand : CommandBase
+internal class ToolRunCommand(
+    ParseResult result,
+    LocalToolsCommandResolver localToolsCommandResolver = null,
+    ToolManifestFinder toolManifest = null) : CommandBase(result)
 {
-    private readonly string _toolCommandName;
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver;
-    private readonly IEnumerable<string> _forwardArgument;
-    public bool _allowRollForward;
-    private readonly ToolManifestFinder _toolManifest;
-
-    public ToolRunCommand(
-        ParseResult result,
-        LocalToolsCommandResolver localToolsCommandResolver = null,
-        ToolManifestFinder toolManifest = null)
-        : base(result)
-    {
-        _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-        _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
-        _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
-        _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
-        _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
-    }
+    private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
+    private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
+    public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
 
     public override int Execute()
     {

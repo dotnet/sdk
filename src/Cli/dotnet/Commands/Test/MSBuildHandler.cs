@@ -9,21 +9,14 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler : IDisposable
+internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output) : IDisposable
 {
-    private readonly BuildOptions _buildOptions;
-    private readonly TestApplicationActionQueue _actionQueue;
-    private readonly TerminalTestReporter _output;
+    private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
+    private readonly TerminalTestReporter _output = output;
 
     private readonly ConcurrentBag<TestApplication> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
-
-    public MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
-    {
-        _buildOptions = buildOptions;
-        _actionQueue = actionQueue;
-        _output = output;
-    }
 
     public bool RunMSBuild()
     {

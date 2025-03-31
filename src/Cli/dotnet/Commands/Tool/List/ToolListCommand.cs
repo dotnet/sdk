@@ -7,23 +7,16 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
-internal class ToolListCommand : CommandBase
+internal class ToolListCommand(
+    ParseResult result,
+    ToolListGlobalOrToolPathCommand toolListGlobalOrToolPathCommand = null,
+    ToolListLocalCommand toolListLocalCommand = null
+    ) : CommandBase(result)
 {
-    private readonly ToolListGlobalOrToolPathCommand _toolListGlobalOrToolPathCommand;
-    private readonly ToolListLocalCommand _toolListLocalCommand;
-
-    public ToolListCommand(
-        ParseResult result,
-        ToolListGlobalOrToolPathCommand toolListGlobalOrToolPathCommand = null,
-        ToolListLocalCommand toolListLocalCommand = null
-    )
-        : base(result)
-    {
-        _toolListGlobalOrToolPathCommand
+    private readonly ToolListGlobalOrToolPathCommand _toolListGlobalOrToolPathCommand
             = toolListGlobalOrToolPathCommand ?? new ToolListGlobalOrToolPathCommand(result);
-        _toolListLocalCommand
+    private readonly ToolListLocalCommand _toolListLocalCommand
             = toolListLocalCommand ?? new ToolListLocalCommand(result);
-    }
 
     public override int Execute()
     {
