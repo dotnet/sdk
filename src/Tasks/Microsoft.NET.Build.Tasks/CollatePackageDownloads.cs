@@ -6,7 +6,7 @@ namespace Microsoft.NET.Build.Tasks
     //  Multiple PackageDownload items for the same package are not supported. Rather, to download multiple versions of the same
     //  package, the PackageDownload items can have a semicolon-separated list of versions (each in brackets) as the Version metadata.
     //  So this task groups a list of items with Version metadata into a list of items which can be used as PackageDownloads.
-    public class CollatePackageDownloads : Task
+    public class CollatePackageDownloads : TaskBase
     {
         [Required]
         public ITaskItem[] Packages { get; set; }
