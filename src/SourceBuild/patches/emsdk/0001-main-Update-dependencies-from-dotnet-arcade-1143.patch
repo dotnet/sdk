@@ -1,0 +1,28 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "dotnet-maestro[bot]"
+ <42748379+dotnet-maestro[bot]@users.noreply.github.com>
+Date: Mon, 24 Mar 2025 11:40:11 +0000
+Subject: [PATCH] [main] Update dependencies from dotnet/arcade (#1143)
+
+[main] Update dependencies from dotnet/arcade
+
+
+ - Remove duplicate .msi FileExtensionSignInfo
+
+ Backport: https://github.com/dotnet/emsdk/pull/1143
+---
+ eng/Signing.props | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index 4b41e98..47e1832 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -1,7 +1,6 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <Project>
+   <ItemGroup>
+-    <FileExtensionSignInfo Include=".msi" CertificateName="MicrosoftDotNet500" />
+     <FileExtensionSignInfo Include=".pyd" CertificateName="MicrosoftDotNet500" />
+     <FileExtensionSignInfo Include=".cat" CertificateName="MicrosoftDotNet500" />
+ 
