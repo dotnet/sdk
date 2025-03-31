@@ -17,6 +17,11 @@ namespace Microsoft.DotNet.Watch
             var questionMark = suppressEmojis ? "?" : "❔";
             while (true)
             {
+                // Start listening to the key before printing the prompt to avoid race condition
+                // in tests that wait for the prompt before sending the key press.
+                var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
+                console.KeyPressed += KeyPressed;
+
                 WriteLine($"  {questionMark} {prompt}");
 
                 lock (_writeLock)
@@ -26,8 +31,6 @@ namespace Microsoft.DotNet.Watch
                     console.ResetColor();
                 }
 
-                var tcs = new TaskCompletionSource<ConsoleKey>(TaskCreationOptions.RunContinuationsAsynchronously);
-                console.KeyPressed += KeyPressed;
                 try
                 {
                     return await tcs.Task.WaitAsync(cancellationToken);

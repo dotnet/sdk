@@ -1,0 +1,122 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="zh-Hans" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="AdManifestOnlyOptionDescription">
+        <source>Only update advertising manifests.</source>
+        <target state="translated">仅更新广告清单。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">不能同时使用 {0} 和 {1} 选项。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandDescription">
+        <source>Update all installed workloads.</source>
+        <target state="translated">更新所有已安装的工作负载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="translated">将工作负载更新为参数指定的以前版本。使用 "dotnet workload history" 查看可用的工作负载历史记录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromPreviousSdkOptionDescription">
+        <source>Include workloads installed with earlier SDK versions in update.</source>
+        <target state="translated">包括更新期间使用更早的 SDK 版本安装的工作负荷。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FromRollbackDefinitionOptionDescription">
+        <source>Update workloads based on specified rollback definition file.</source>
+        <target state="translated">基于指定的回滚定义文件更新工作负载。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="translated">更新到历史记录中指定的工作负载版本，而不更改安装的工作负载。当前安装的工作负载将更新为与指定的历史记录版本匹配。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadHistoryRecords">
+        <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
+        <target state="translated">运行修改工作负载(如更新或安装)的操作时，将创建工作负载历史记录。在工作负载历史记录存在之前，无法从历史记录更新。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">找不到工作负载更新。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadsToUpdate">
+        <source>No workloads installed for this feature band. To update workloads installed with earlier SDK versions, include the --from-previous-sdk option.</source>
+        <target state="translated">没有为此功能带安装工作负载。若要使用更早的 SDK 版本更新已安装的工作负载，请包括“the --from-previous-sdk”选项。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="translated">安装回滚失败: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="translated">工作负载安装失败。正在回滚已安装的包...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion">
+        <source>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</source>
+        <target state="new">'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion">
+        <source>'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</source>
+        <target state="new">'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFailed">
+        <source>Workload '{0}' failed to update due to the following:</source>
+        <target state="translated">工作负载“{0}”因以下原因而未能更新:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">更新回退文件与工作负载集不兼容。安装和更新现在会使用松散清单。若要更新到特定工作负载版本，请使用 --version。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateSucceeded">
+        <source>Successfully updated workload(s): {0}.</source>
+        <target state="translated">已成功更新工作负载: {0}。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadCacheDownloadFailed">
+        <source>Failed to download workload update packages to cache: {0}</source>
+        <target state="translated">未能将工作负载更新程序包下载到缓存: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
+        <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
+        <target state="translated">工作负载历史记录的 ID 应介于 1 和工作负载历史记录数(含)之间。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="translated">dotnet 工作负载更新的 --mode 参数的参数“{0}”无效。仅支持“workloadset”、“loosemanifest”和“auto”模式。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateAdManifestsSucceeded">
+        <source>Successfully updated advertising manifests.</source>
+        <target state="translated">成功更新广告清单。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateFailed">
+        <source>Workload update failed: {0}</source>
+        <target state="translated">工作负载更新失败: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">找不到工作负载版本 {0}。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

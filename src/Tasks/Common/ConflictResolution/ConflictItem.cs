@@ -23,15 +23,15 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
     internal interface IConflictItem
     {
-        Version AssemblyVersion { get; }
+        Version? AssemblyVersion { get; }
         ConflictItemType ItemType { get; }
         bool Exists { get; }
-        string FileName { get; }
-        Version FileVersion { get; }
-        string PackageId { get; }
-        string DisplayName { get; }
+        string? FileName { get; }
+        Version? FileVersion { get; }
+        string? PackageId { get; }
+        string? DisplayName { get; }
 
-        ConflictVersion PackageVersion { get; }
+        ConflictVersion? PackageVersion { get; }
     }
 
     // Wraps an ITask item and adds lazy evaluated properties used by Conflict resolution.
@@ -43,7 +43,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             ItemType = itemType;
         }
 
-        public ConflictItem(string fileName, string packageId, Version assemblyVersion, Version fileVersion)
+        public ConflictItem(string fileName, string packageId, Version? assemblyVersion, Version? fileVersion)
         {
             OriginalItem = null;
             ItemType = ConflictItemType.Platform;
@@ -55,8 +55,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasAssemblyVersion;
-        private Version _assemblyVersion;
-        public Version AssemblyVersion
+        private Version? _assemblyVersion;
+        public Version? AssemblyVersion
         {
             get
             {
@@ -72,7 +72,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     }
                     else
                     {
-                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath);
+                        _assemblyVersion = FileUtilities.TryGetAssemblyVersion(SourcePath ?? string.Empty);
                     }
 
                     // assemblyVersion may be null but don't try to recalculate it
@@ -104,8 +104,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
         }
 
-        private string _fileName;
-        public string FileName
+        private string? _fileName;
+        public string? FileName
         {
             get
             {
@@ -119,8 +119,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasFileVersion;
-        private Version _fileVersion;
-        public Version FileVersion
+        private Version? _fileVersion;
+        public Version? FileVersion
         {
             get
             {
@@ -152,10 +152,10 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
         }
 
-        public ITaskItem OriginalItem { get; }
+        public ITaskItem? OriginalItem { get; }
 
-        private string _packageId;
-        public string PackageId
+        private string? _packageId;
+        public string? PackageId
         {
             get
             {
@@ -176,8 +176,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         }
 
         private bool _hasPackageVersion;
-        private ConflictVersion _packageVersion;
-        public ConflictVersion PackageVersion
+        private ConflictVersion? _packageVersion;
+        public ConflictVersion? PackageVersion
         {
             get
             {
@@ -200,8 +200,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             }
         }
 
-        private string _sourcePath;
-        public string SourcePath
+        private string? _sourcePath;
+        public string? SourcePath
         {
             get
             {
@@ -215,8 +215,8 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
             private set { _sourcePath = value; }
         }
 
-        private string _displayName;
-        public string DisplayName
+        private string? _displayName;
+        public string? DisplayName
         {
             get
             {

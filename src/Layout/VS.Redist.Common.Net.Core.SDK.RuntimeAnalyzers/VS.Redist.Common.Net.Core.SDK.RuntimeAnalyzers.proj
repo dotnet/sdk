@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true'">true</IsPackable>
+    <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
+    <PackageDescription>Analyzers and generators from the runtime and SDK for VS insertion</PackageDescription>
+    <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <IsShippingPackage>false</IsShippingPackage>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepoRoot)src\Microsoft.Net.Sdk.AnalyzerRedirecting\Microsoft.Net.Sdk.AnalyzerRedirecting.csproj" />
+    <ProjectReference Include="..\redist\redist.csproj" />
+  </ItemGroup>
+
+  <!-- Shared infra to build and use the sdk-tasks -->
+  <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+
+  <Target Name="GenerateLayout" Condition="'$(IsPackable)' == 'true'" DependsOnTargets="ResolveProjectReferences">
+    <PropertyGroup>
+      <SdkRuntimeAnalyzersSwrFile>$(ArtifactsNonShippingPackagesDir)VS.Redist.Common.Net.Core.SDK.RuntimeAnalyzers.swr</SdkRuntimeAnalyzersSwrFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RuntimeAnalyzersContent Include="$(ArtifactsBinDir)Microsoft.Net.Sdk.AnalyzerRedirecting\$(Configuration)\net472\**\*.*" DeploymentSubpath="AnalyzerRedirecting" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.NetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="NetCoreAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.WindowsDesktop.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="WindowsDesktopAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)packs\Microsoft.AspNetCore.App.Ref\*\analyzers\**\*.*" DeploymentSubpath="AspNetCoreAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk\analyzers\**\*.*" DeploymentSubpath="SDKAnalyzers" />
+      <RuntimeAnalyzersContent Include="$(RedistInstallerLayoutPath)sdk\*\Sdks\Microsoft.NET.Sdk.Web\analyzers\**\*.*" DeploymentSubpath="WebSDKAnalyzers" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(RuntimeAnalyzersContent)"
+          DestinationFiles="@(RuntimeAnalyzersContent->'$(OutputPath)\%(DeploymentSubpath)\%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardlinksIfPossible="true" />
+
+    <GenerateRuntimeAnalyzersSWR RuntimeAnalyzersLayoutDirectory="$(OutputPath)"
+                                 OutputFile="$(SdkRuntimeAnalyzersSwrFile)" />
+
+    <ItemGroup>
+      <!-- Include the swr file in the nuget package for VS authoring -->
+      <Content Include="$(SdkRuntimeAnalyzersSwrFile)" PackagePath="/" />
+      <Content Include="@(RuntimeAnalyzersContent)" PackagePath="/%(RuntimeAnalyzersContent.DeploymentSubpath)/%(RecursiveDir)%(Filename)%(Extension)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

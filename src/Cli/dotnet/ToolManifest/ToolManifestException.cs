@@ -3,13 +3,12 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.ToolManifest
-{
-    internal class ToolManifestException : GracefulException
-    {
-        public ToolManifestException(string message) : base(new[] { message }, null, false)
-        {
+namespace Microsoft.DotNet.Cli.ToolManifest;
 
-        }
+internal class ToolManifestException : GracefulException
+{
+    public ToolManifestException(string message) : base([message], null, false)
+    {
+
     }
 }

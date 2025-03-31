@@ -3,15 +3,14 @@
 
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+public class AspNetCoreCertificateGenerator : IAspNetCoreCertificateGenerator
 {
-    public class AspNetCoreCertificateGenerator : IAspNetCoreCertificateGenerator
+    public void GenerateAspNetCoreDevelopmentCertificate()
     {
-        public void GenerateAspNetCoreDevelopmentCertificate()
-        {
 #if !EXCLUDE_ASPNETCORE
-            AspNetCore.DeveloperCertificates.XPlat.CertificateGenerator.GenerateAspNetHttpsCertificate();
+        AspNetCore.DeveloperCertificates.XPlat.CertificateGenerator.GenerateAspNetHttpsCertificate();
 #endif
-        }
     }
 }

@@ -1,0 +1,232 @@
+<Project>
+
+  <Target Name="SetupPKGProps">
+    <PropertyGroup>
+      <PkgIntermediateDirectory>$(IntermediateOutputPath)pkgs/$(Version)</PkgIntermediateDirectory>
+
+      <!-- Properties for pkg build -->
+      <SharedHostComponentId>com.microsoft.dotnet.sharedhost.$(SharedHostVersion).component.osx.$(TargetArchitecture)</SharedHostComponentId>
+      <HostFxrComponentId>com.microsoft.dotnet.hostfxr.$(HostFxrVersion).component.osx.$(TargetArchitecture)</HostFxrComponentId>
+      <SharedFrameworkComponentId>com.microsoft.dotnet.sharedframework.$(SharedFrameworkNugetName).$(MicrosoftNETCoreAppPackageVersion).component.osx.$(TargetArchitecture)</SharedFrameworkComponentId>
+      <NetCoreAppTargetingPackComponentId>com.microsoft.dotnet.pack.targeting.$(MicrosoftNETCoreAppRefPackageVersion).component.osx.$(TargetArchitecture)</NetCoreAppTargetingPackComponentId>
+      <NetCoreAppHostPackComponentId>com.microsoft.dotnet.pack.apphost.$(MicrosoftNETCoreAppHostPackageVersion).component.osx.$(TargetArchitecture)</NetCoreAppHostPackComponentId>
+      <NetStandardTargetingPackComponentId>com.microsoft.standard.pack.targeting.$(NETStandardLibraryRefPackageVersion).component.osx.$(TargetArchitecture)</NetStandardTargetingPackComponentId>
+      <SdkComponentId>com.microsoft.dotnet.dev.$(Version).component.osx.$(TargetArchitecture)</SdkComponentId>
+      <SdkProductArchiveId>com.microsoft.dotnet.dev.$(Version).osx.$(TargetArchitecture)</SdkProductArchiveId>
+
+      <PkgInstallDirectory>/usr/local/share/dotnet</PkgInstallDirectory>
+      <x64EmulationPkgInstallDirectory>/usr/local/share/dotnet/x64</x64EmulationPkgInstallDirectory>
+
+      <SdkPkgSourcesOSXDirectory>$(SdkPkgSourcesRootDirectory)osx</SdkPkgSourcesOSXDirectory>
+      <SdkPkgScriptsDirectory>$(SdkPkgSourcesOSXDirectory)/scripts</SdkPkgScriptsDirectory>
+      <SdkPkgScriptTemplateFile>$(SdkPkgScriptsDirectory)/postinstall</SdkPkgScriptTemplateFile>
+      <SdkPkgDestinationScriptsDirectory>$(PkgIntermediateDirectory)/scripts</SdkPkgDestinationScriptsDirectory>
+      <SdkPkgScriptFile>$(SdkPkgDestinationScriptsDirectory)/postinstall</SdkPkgScriptFile>
+      <SdkProductArchiveResourcesDirectory>$(PkgIntermediateDirectory)/resources</SdkProductArchiveResourcesDirectory>
+
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(TargetArchitecture)' != 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionTemplateFile Condition="'$(TargetArchitecture)' == 'x64'">$(SdkPkgSourcesOSXDirectory)/Distribution-Template-x64</SdkProductArchiveDistributionTemplateFile>
+      <SdkProductArchiveDistributionFile>$(PkgIntermediateDirectory)/CLI-SDK-Formatted-Distribution-Template.xml</SdkProductArchiveDistributionFile>
+
+      <SdkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SdkComponentId).pkg</SdkPkgIntermediatePath>
+      <SharedFrameworkPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SharedFrameworkComponentId).pkg</SharedFrameworkPkgIntermediatePath>
+      <NetCoreAppTargetingPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetCoreAppTargetingPackComponentId).pkg</NetCoreAppTargetingPackPkgIntermediatePath>
+      <NetCoreAppHostPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetCoreAppHostPackComponentId).pkg</NetCoreAppHostPackPkgIntermediatePath>
+      <NetStandardTargetingPackPkgIntermediatePath>$(PkgIntermediateDirectory)/$(NetStandardTargetingPackComponentId).pkg</NetStandardTargetingPackPkgIntermediatePath>
+      <SharedHostPkgIntermediatePath>$(PkgIntermediateDirectory)/$(SharedHostComponentId).pkg</SharedHostPkgIntermediatePath>
+      <HostFxrPkgIntermediatePath>$(PkgIntermediateDirectory)/$(HostFxrComponentId).pkg</HostFxrPkgIntermediatePath>
+
+      <SdkPKGInstallerFile>$(ArtifactsNonShippingPackagesDir)$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkPKGInstallerFile>
+      <CombinedFrameworkSdkHostPKGInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostPKGInstallerFile>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="SetupPkgInputsOutputs" DependsOnTargets="SetupPKGProps">
+    <ItemGroup>
+      <DistributionTemplateReplacement Include="{SharedFxComponentId}">
+        <ReplacementString>$(SharedFrameworkComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetCoreAppTargetingPackComponentId}">
+        <ReplacementString>$(NetCoreAppTargetingPackComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetStandardTargetingPackComponentId}">
+        <ReplacementString>$(NetStandardTargetingPackComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetCoreAppHostPackComponentId}">
+        <ReplacementString>$(NetCoreAppHostPackComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{SharedHostComponentId}">
+        <ReplacementString>$(SharedHostComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{HostFxrComponentId}">
+        <ReplacementString>$(HostFxrComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{CLISdkComponentId}">
+        <ReplacementString>$(SdkComponentId)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{CLISdkNugetVersion}">
+        <ReplacementString>$(Version)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{CLISdkBrandName}">
+        <ReplacementString>$(SdkBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{SharedFxBrandName}">
+        <ReplacementString>$(SharedFrameworkBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetCoreAppTargetingPackBrandName}">
+        <ReplacementString>$(NetCoreAppTargetingPackBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetCoreAppHostPackBrandName}">
+        <ReplacementString>$(NetCoreAppHostPackBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{NetStandardTargetingPackBrandName}">
+        <ReplacementString>$(NetStandardTargetingPackBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{SharedHostBrandName}">
+        <ReplacementString>$(SharedHostBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{HostFxrBrandName}">
+        <ReplacementString>$(HostFxrBrandName)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{arch}">
+        <ReplacementString>$(TargetArchitecture)</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{hostArchitectures}">
+        <ReplacementString>$(TargetArchitecture)</ReplacementString>
+        <ReplacementString Condition="'$(TargetArchitecture)' == 'x64'">x86_64</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{minOsVersion}">
+        <!-- keep in sync with SetOSTargetMinVersions in the root Directory.Build.props in dotnet/runtime -->
+        <ReplacementString>12.0</ReplacementString>
+      </DistributionTemplateReplacement>
+      <DistributionTemplateReplacement Include="{x64EmulationPkgInstallDirectory}">
+        <ReplacementString>$(x64EmulationPkgInstallDirectory)</ReplacementString>
+      </DistributionTemplateReplacement>
+
+      <PostInstallScriptReplacement Include="%SDK_VERSION%">
+        <ReplacementString>$(Version)</ReplacementString>
+      </PostInstallScriptReplacement>
+
+      <ResourcesReplacement Include="{DOTNETSDKVERSION}">
+        <ReplacementString>$(Version)</ReplacementString>
+      </ResourcesReplacement>
+      <ResourcesReplacement Include="{DOTNETRUNTIMEVERSION}">
+        <ReplacementString>$(MicrosoftNETCoreAppRuntimePackageVersion)</ReplacementString>
+      </ResourcesReplacement>
+      <ResourcesReplacement Include="{ASPNETCOREVERSION}">
+        <ReplacementString>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</ReplacementString>
+      </ResourcesReplacement>
+    </ItemGroup>
+
+    <ItemGroup>
+      <SdkProductArchiveResourcesTemplateFiles Include="$(SdkPkgSourcesRootDirectory)/resources/**/*" />
+
+      <GenerateSdkPkgInputs Include="$(OutputPath)**/*" />
+      <GenerateSdkPkgInputs Include="$(SdkPkgScriptsDirectory)/**/*" />
+
+      <GenerateSdkProductArchiveInputs Include="$(SdkPKGInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedSharedFrameworkInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedNetCoreAppTargetingPackInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedNetCoreAppHostPackInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedNetStandardTargetingPackInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedHostFxrInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(DownloadedSharedHostInstallerFile)" />
+      <GenerateSdkProductArchiveInputs Include="$(SdkProductArchiveDistributionTemplateFile)" />
+      <GenerateSdkProductArchiveInputs Include="@(SdkProductArchiveResourcesTemplateFiles)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateSdkPkg"
+          Inputs="@(GenerateSdkPkgInputs)"
+          Outputs="$(SdkPKGInstallerFile)"
+          DependsOnTargets="GenerateInstallerLayout;SetupPkgInputsOutputs;PrepareIntermediateSdkInstallerOutput">
+    <!-- Copy ASP.NET runtime and targeting pack to the sdk layout, as we currently don't chain that in with a pkg dependency -->
+    <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetCoreSharedFxArchiveFileName)"
+                               DestinationDirectory="$(IntermediateSdkInstallerOutputPath)"
+                               DirectoriesToCopy="shared/Microsoft.AspNetCore.App" />
+    <ExtractArchiveToDirectory SourceArchive="$(DownloadsFolder)$(AspNetTargetingPackArchiveFileName)"
+                               DestinationDirectory="$(IntermediateSdkInstallerOutputPath)" />
+
+    <ItemGroup>
+      <TemplateFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
+      <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(TemplateFiles)"
+          DestinationFiles="@(TemplateFiles->'$(IntermediateSdkInstallerOutputPath)templates/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="@(ManifestFiles)"
+          DestinationFiles="@(ManifestFiles->'$(IntermediateSdkInstallerOutputPath)sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
+
+    <ReplaceFileContents
+      InputFiles="$(SdkPkgScriptTemplateFile)"
+      DestinationFiles="$(SdkPkgScriptFile)"
+      ReplacementPatterns="@(PostInstallScriptReplacement -> '%(Identity)')"
+      ReplacementStrings="@(PostInstallScriptReplacement -> '%(ReplacementString)')" />
+
+    <ReplaceFileContents 
+      InputFiles="@(SdkProductArchiveResourcesTemplateFiles)"
+      DestinationFiles="@(SdkProductArchiveResourcesTemplateFiles -> '$(SdkProductArchiveResourcesDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
+      ReplacementPatterns="@(ResourcesReplacement -> '%(Identity)')"
+      ReplacementStrings="@(ResourcesReplacement -> '%(ReplacementString)')" />
+
+    <Exec Command="chmod ugo+x $(SdkPkgScriptFile)" />
+
+    <Exec Command="pkgbuild \
+                    --root '$(IntermediateSdkInstallerOutputPath)' \
+                    --identifier '$(SdkComponentId)' \
+                    --version '$(Version)' \
+                    --install-location '$(PkgInstallDirectory)' \
+                    --scripts '$(SdkPkgDestinationScriptsDirectory)' \
+                    '$(SdkPKGInstallerFile)'" />
+  </Target>
+
+  <Target Name="GenerateSdkProductArchive"
+          Inputs="@(GenerateSdkProductArchiveInputs)"
+          Outputs="$(CombinedFrameworkSdkHostPKGInstallerFile)"
+          DependsOnTargets="GenerateSdkPkg">
+    <ItemGroup>
+      <PkgComponentsSourceFiles Include="$(SdkPKGInstallerFile);
+                              $(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName);
+                              $(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName);
+                              $(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName);
+                              $(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName);
+                              $(DownloadsFolder)$(DownloadedHostFxrInstallerFileName);
+                              $(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)" />
+      <PkgComponentsDestinationFiles Include="$(SdkPkgIntermediatePath);
+                                              $(SharedFrameworkPkgIntermediatePath);
+                                              $(NetCoreAppTargetingPackPkgIntermediatePath);
+                                              $(NetCoreAppHostPackPkgIntermediatePath);
+                                              $(NetStandardTargetingPackPkgIntermediatePath);
+                                              $(HostFxrPkgIntermediatePath);
+                                              $(SharedHostPkgIntermediatePath)" />
+    </ItemGroup>
+
+    <!-- Move ProductArchive pkg components into place with component ids in the filenames -->
+    <Copy SourceFiles="@(PkgComponentsSourceFiles)" DestinationFiles="@(PkgComponentsDestinationFiles)" />
+
+    <!-- Fill out parameters in the Distribution Template -->
+    <ReplaceFileContents
+      InputFiles="$(SdkProductArchiveDistributionTemplateFile)"
+      DestinationFiles="$(SdkProductArchiveDistributionFile)"
+      ReplacementPatterns="@(DistributionTemplateReplacement -> '%(Identity)')"
+      ReplacementStrings="@(DistributionTemplateReplacement -> '%(ReplacementString)')" />
+
+    <Exec Command="productbuild \
+                    --version '$(Version)' \
+                    --identifier '$(SdkProductArchiveId)' \
+                    --package-path '$(PkgIntermediateDirectory)' \
+                    --resources '$(SdkProductArchiveResourcesDirectory)' \
+                    --distribution '$(SdkProductArchiveDistributionFile)' \
+                    '$(CombinedFrameworkSdkHostPKGInstallerFile)'" />
+  </Target>
+
+  <Target Name="GeneratePkgs"
+          AfterTargets="Build"
+          DependsOnTargets="GenerateSdkPkg;GenerateSdkProductArchive" />
+
+</Project>

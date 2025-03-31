@@ -671,8 +671,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     BeforeTargets="AssignTargetPaths"
     DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
+    <PropertyGroup>
+      <_ResolveProjectStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets
-      CandidateAssets="@(Content)"
+      CandidateAssets="@(Content->Distinct())"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
@@ -680,15 +684,14 @@ Copyright (c) .NET Foundation. All rights reserved.
       SourceId="$(PackageId)"
       ContentRoot="$(MSBuildProjectDirectory)\wwwroot\"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      CacheManifestPath="$(_ResolveProjectStaticWebAssetsCachePath)">
         <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-        <Output TaskParameter="AssetDetails" ItemName="_ResolveProjectStaticWebAssetsDetails" />
+        <Output TaskParameter="Assets" ItemName="_CurrentProjectStaticWebAsset" />
     </DefineStaticWebAssets>
 
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(StaticWebAsset)"
-      AssetFileDetails="@(_ResolveProjectStaticWebAssetsDetails)"
-      ExistingEndpoints="@(StaticWebAssetEndpoint)"
+      CandidateAssets="@(_CurrentProjectStaticWebAsset)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
@@ -737,5 +740,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Compression.targets" Condition="'$(CompressionEnabled)' == 'true'" />
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
+
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlImportMap.targets" Condition="'$(WriteImportMapToHtml)' == 'true'" />
 
 </Project>

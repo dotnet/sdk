@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
@@ -817,12 +819,23 @@ namespace Microsoft.NET.Publish.Tests
                 });
             }
             // windows-only COM warnings
-            if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                expectedWarnings.AddRange(new string[] {
-                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
-                    "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible."
-                });
+                if (Net9Plus.Any(tfm => (string)tfm[0] == targetFramework))
+                {
+                    expectedWarnings.AddRange(new string[] {
+                        "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
+                        "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible."
+                    });
+                }
+                if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework))
+                {
+                    expectedWarnings.AddRange(new string[] {
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                        "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
+                    });
+                }
             }
 
             var testProject = CreateTestProjectForILLinkTesting(_testAssetsManager, targetFramework, projectName);
@@ -904,6 +917,15 @@ namespace Microsoft.NET.Publish.Tests
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.TypeDescriptor.NodeFor(Object, Boolean): Using member 'System.ComponentModel.TypeDescriptor.ComObjectType.get' which has 'RequiresUnreferencedCodeAttribute' can break functionality when trimming application code. COM type descriptors are not trim-compatible.",
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.AmbientValueAttribute.AmbientValueAttribute(Type, String): Using member",
                     "ILLink : Trim analysis warning IL2026: System.ComponentModel.DefaultValueAttribute.DefaultValueAttribute(Type, String): Using member"
+                });
+            }
+            // windows-only COM warnings
+            if (Net10Plus.Any(tfm => (string)tfm[0] == targetFramework) && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                expectedWarnings.AddRange(new string[] {
+                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances).",
+                    "ILLink : Trim analysis warning IL2045: Internal.Runtime.InteropServices.ComActivator.BasicClassFactory.CreateValidatedInterfaceType(Type, Guid&, Object): Attribute 'System.Runtime.InteropServices.ClassInterfaceAttribute' is being referenced in code but the trimmer was instructed to remove all instances of this attribute. If the attribute instances are necessary make sure to either remove the trimmer attribute XML portion which removes the attribute instances, or override the removal by using the trimmer XML descriptor to keep the attribute type (which in turn keeps all of its instances)."
                 });
             }
 
