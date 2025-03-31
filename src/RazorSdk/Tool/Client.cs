@@ -171,11 +171,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     try
                     {
                         ServerLogger.Log($"Before poking pipe {Identifier}.");
-#if NET
-                        await Stream.ReadExactlyAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-#else
-                        await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
-#endif
+                        await ReadExactlyAsync(Stream, Array.Empty<byte>(), 0, 0, cancellationToken);
                         ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
                     catch (OperationCanceledException)
@@ -197,6 +193,28 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     Stream.Dispose();
                 }
             }
+
+#if NET
+            private async Task ReadExactlyAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                await stream.ReadExactlyAsync(buffer, offset, count, cancellationToken);
+            }
+#else
+            private async Task ReadExactlyAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                while(count >= 0)
+                {
+                    int read = await stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+
+                    if(read <= 0)
+                    {
+                        throw new EndOfStreamException();
+                    }
+                    offset += read;
+                    count -= read;
+                }
+            }
+#endif
         }
     }
 }
