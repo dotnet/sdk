@@ -126,7 +126,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: Official
-              buildArchitecture: x86
+              targetArchitecture: x86
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -134,7 +134,7 @@ extends:
               variables:
                 _SignType: real
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -152,7 +152,7 @@ extends:
                 _SignType: real
             - categoryName: PGO
               pgoInstrument: true
-              buildArchitecture: x86
+              targetArchitecture: x86
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -161,7 +161,7 @@ extends:
                 _SignType: real
             - categoryName: PGO
               pgoInstrument: true
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -192,14 +192,14 @@ extends:
               osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm
+              targetArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -213,7 +213,7 @@ extends:
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
@@ -229,7 +229,7 @@ extends:
               runTests: false
             - categoryName: Portable
               container: centosStream9
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
@@ -249,14 +249,14 @@ extends:
               runTests: false
             - categoryName: Musl
               container: mariner20CrossArm
-              buildArchitecture: arm
+              targetArchitecture: arm
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
             - categoryName: Musl
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -271,7 +271,7 @@ extends:
               runTests: false
             - categoryName: PGO
               pgoInstrument: true
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -300,7 +300,7 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               runTests: false
             - categoryName: Official
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -316,7 +316,7 @@ extends:
             helixTargetQueue: osx.15.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
-              buildArchitecture: arm64
+              targetArchitecture: arm64
               runtimeIdentifier: osx-arm64
 
       ############### DOTNET-FORMAT ###############
