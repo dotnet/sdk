@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
+using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Add.Package;
