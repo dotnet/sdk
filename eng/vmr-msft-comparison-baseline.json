@@ -430,5 +430,10 @@
     "issueType": "PackageDependencies",
     "idMatch": "Microsoft.Build.Runtime",
     "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "assets/symbols/Microsoft.CodeAnalysis.Remote.ServiceHub.CoreComponents",
+    "justification": "These are a dependency of roslyn's VS insertion packages and not interesting to the VMR build"
   }
 ]

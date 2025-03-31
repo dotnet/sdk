@@ -4,8 +4,8 @@
     <TargetFramework>net472</TargetFramework>
     <IsPackable Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'">true</IsPackable>
     <BeforePack>$(BeforePack);GenerateLayout</BeforePack>
-    <PackageId>VS.Redist.Common.NetCore.Toolset.$(Architecture).$(MajorMinorVersion)</PackageId>
-    <PackageDescription>.NET $(MajorMinorVersion) SDK Toolset ($(Architecture)) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</PackageDescription>
+    <PackageId>VS.Redist.Common.NetCore.Toolset.$(TargetArchitecture).$(MajorMinorVersion)</PackageId>
+    <PackageDescription>.NET $(MajorMinorVersion) SDK Toolset ($(TargetArchitecture)) Windows Installer MSI as a .nupkg for internal Visual Studio build consumption</PackageDescription>
     <NoWarn>$(NoWarn);NU5100;NU5109;NU5123</NoWarn>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <IsShippingPackage>false</IsShippingPackage>

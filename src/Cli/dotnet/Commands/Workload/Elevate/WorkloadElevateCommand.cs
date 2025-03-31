@@ -7,13 +7,9 @@ using Microsoft.DotNet.Workloads.Workload.Install;
 
 namespace Microsoft.DotNet.Workloads.Workload.Elevate;
 
-internal class WorkloadElevateCommand : WorkloadCommandBase
+internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
 {
     private NetSdkMsiInstallerServer _server;
-
-    public WorkloadElevateCommand(ParseResult parseResult) : base(parseResult)
-    {
-    }
 
     public override int Execute()
     {

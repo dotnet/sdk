@@ -1,5 +1,7 @@
-﻿using Microsoft.DotNet.VersionTools.BuildManifest;
+﻿using Microsoft.DotNet.VersionTools.Automation;
+using Microsoft.DotNet.VersionTools.BuildManifest;
 using NuGet.Packaging;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Formats.Tar;
@@ -983,6 +985,9 @@ public class Program
         return assetMappings;
     }
 
+    private NupkgInfoFactory _nupkgInfoFactory = new NupkgInfoFactory(new PackageArchiveReaderFactory());
+    private ConcurrentDictionary<string, string> _symbolNupkgBlobVersionHelper = new ConcurrentDictionary<string, string>();
+
     private AssetMapping MapBlob(XDocument diffMergedManifestContent, XElement baseElement, string basePath, string diffPath)
     {
         string baseBlobId = baseElement.Attribute("Id")?.Value;
@@ -1001,7 +1006,18 @@ public class Program
         // in the target manifest. Use the version identifier on the full ID because it's
         // smarter in some cases using that.
 
-        string baseVersion = VersionIdentifier.GetVersion(baseBlobId);
+        string baseVersion;
+        // Special case for symbols packages, since we can open them. There are some blobs where we have trouble
+        // identifying the version by a string parse because it doesn't have a proper pre-release label. e.g. assets/symbols/csc.ARM64.Symbols.4.14.0-3.25174.10.symbols.nupkg
+        if (baseFilePath != null && baseBlobId.EndsWith(".symbols.nupkg"))
+        {
+            baseVersion = _nupkgInfoFactory.CreateNupkgInfo(baseFilePath).Version;
+        }
+        else
+        {
+            baseVersion = VersionIdentifier.GetVersion(baseBlobId);
+        }
+
         string strippedBaseBlobFileName = baseBlobFileName;
         if (baseVersion != null)
         {
@@ -1013,7 +1029,24 @@ public class Program
             {
                 string diffBlobId = p.Attribute("Id")?.Value;
                 string diffBlobFileName = Path.GetFileName(diffBlobId);
-                string diffVersion = VersionIdentifier.GetVersion(diffBlobId);
+                string diffFilePath = Path.Combine(diffPath, "BlobArtifacts", diffBlobFileName);
+
+                // Because the version identifier isn't perfect, we special case a couple artifacts where it's easier to
+                // just open a nupkg and get the version from it.
+                string diffVersion = null;
+                if (diffFilePath.EndsWith(".symbols.nupkg"))
+                {
+                    if (!_symbolNupkgBlobVersionHelper.TryGetValue(diffBlobId, out diffVersion) && File.Exists(diffFilePath))
+                    {
+                        diffVersion = _nupkgInfoFactory.CreateNupkgInfo(diffFilePath).Version;
+                        _symbolNupkgBlobVersionHelper.TryAdd(diffBlobId, diffVersion);
+                    }
+                }
+
+                if (diffVersion == null)
+                {
+                    diffVersion = VersionIdentifier.GetVersion(diffBlobId);
+                }
                 string strippedDiffBlobFileName = diffBlobFileName;
                 if (diffVersion != null)
                 {
