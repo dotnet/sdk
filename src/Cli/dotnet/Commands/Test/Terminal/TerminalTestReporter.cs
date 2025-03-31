@@ -195,7 +195,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _disableTestRunSummary = true;
     }
 
-    public void TestExecutionCompleted(DateTimeOffset endTime, int exitCode)
+    public void TestExecutionCompleted(DateTimeOffset endTime, int? exitCode)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
@@ -219,7 +219,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = null;
     }
 
-    private void AppendTestRunSummary(ITerminal terminal, int exitCode)
+    private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
         IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
 
@@ -381,9 +381,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
     }
 
-    private void AppendExitCodeAndUrl(ITerminal terminal, int exitCode, bool isRun)
+    private void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
     {
-        if (exitCode == 0)
+        // When we crash with exception we don't have any predetermined exit code, and won't write our helper message to point users to exit code overview.
+        // When we succeed we also don't point users to exit code overview.
+        if (exitCode == null || exitCode == 0)
         {
             return;
         }
@@ -977,7 +979,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void AppendTestDiscoverySummary(ITerminal terminal, int exitCode)
+    public void AppendTestDiscoverySummary(ITerminal terminal, int? exitCode)
     {
         terminal.AppendLine();
 

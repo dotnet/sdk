@@ -26,18 +26,10 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
     public int Run(ParseResult parseResult)
     {
-        int exitCode = ExitCode.Success;
+        int? exitCode = null;
         try
         {
             exitCode = RunInternal(parseResult);
-        }
-        catch
-        {
-            // Make sure we don't return success when we caught error, but also don't overwrite existing error state.
-            if (exitCode == ExitCode.Success)
-            {
-                exitCode = ExitCode.GenericFailure;
-            }
         }
         finally
         {
@@ -45,7 +37,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             CleanUp();
         }
 
-        return exitCode;
+        return exitCode ?? ExitCode.GenericFailure;
     }
 
     private int RunInternal(ParseResult parseResult)
@@ -119,7 +111,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         Console.CancelKeyPress += (s, e) =>
         {
             _output?.StartCancelling();
-            CompleteRun(exitCode: 3);
+            CompleteRun(exitCode: ExitCode.Aborted);
         };
     }
 
@@ -191,7 +183,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         return args.Contains(TestingPlatformOptions.ListTestsOption.Name);
     }
 
-    private void CompleteRun(int exitCode)
+    private void CompleteRun(int? exitCode)
     {
         if (Interlocked.CompareExchange(ref _cancelled, 1, 0) == 0)
         {
