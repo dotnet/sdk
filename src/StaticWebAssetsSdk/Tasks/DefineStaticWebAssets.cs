@@ -96,7 +96,7 @@ public partial class DefineStaticWebAssets : Task
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathFilter).Build() :
                 null;
 
-            var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
+            var assetsByRelativePath = new Dictionary<string, (ITaskItem First, ITaskItem Second)>(CandidateAssets.Length);
             var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
             foreach (var kvp in assetsCache.OutOfDateInputs())
@@ -428,7 +428,9 @@ public partial class DefineStaticWebAssets : Task
         }
     }
 
-    private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
+    private void UpdateAssetKindIfNecessary(
+        Dictionary<string, (ITaskItem First, ITaskItem Second)> assetsByRelativePath,
+        string candidateRelativePath, ITaskItem asset)
     {
         // We want to support content items in the form of
         // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
@@ -439,14 +441,13 @@ public partial class DefineStaticWebAssets : Task
         // As a result, assets by default have an asset kind 'All' when there is only one asset for the target path and 'Build' or 'Publish' when there are two of them.
         if (!assetsByRelativePath.TryGetValue(candidateRelativePath, out var existing))
         {
-            assetsByRelativePath.Add(candidateRelativePath, [asset]);
+            assetsByRelativePath.Add(candidateRelativePath, (asset, null));
         }
         else
         {
-            if (existing.Count == 2)
+            var (first, second) = existing;
+            if (first != null && second != null)
             {
-                var first = existing[0];
-                var second = existing[1];
                 var errorMessage = "More than two assets are targeting the same path: " + Environment.NewLine +
                     "'{0}' with kind '{1}'" + Environment.NewLine +
                     "'{2}' with kind '{3}'" + Environment.NewLine +
@@ -462,9 +463,9 @@ public partial class DefineStaticWebAssets : Task
 
                 return;
             }
-            else if (existing.Count == 1)
+            else if (first != null && second == null)
             {
-                var existingAsset = existing[0];
+                var existingAsset = first;
                 switch ((asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))))
                 {
                     case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
@@ -484,7 +485,7 @@ public partial class DefineStaticWebAssets : Task
                         break;
 
                     case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
-                        existing.Add(asset);
+                        existing.Second = asset;
                         asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
                         existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                         Log.LogMessage(MessageImportance.Low,
@@ -504,7 +505,7 @@ public partial class DefineStaticWebAssets : Task
                         break;
 
                     case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
-                        existing.Add(asset);
+                        existing.Second = asset;
                         asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                         existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
                         Log.LogMessage(MessageImportance.Low,
