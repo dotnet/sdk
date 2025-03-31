@@ -148,7 +148,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 #else
             private async Task ReadExactlyAsync(Stream stream, byte[] buffer, int offset, int count, CancellationToken cancellationToken)
             {
-                while(count >= 0)
+                while(count > 0)
                 {
                     int read = await stream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
 
