@@ -27,7 +27,7 @@
          in that build mode analyzer assemblies always target the live compiler API. -->
     <UsingToolMicrosoftNetCompilers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</UsingToolMicrosoftNetCompilers>
     <UsingToolVSSDK>true</UsingToolVSSDK>
-    <MicrosoftIORedistPackageVersion>6.0.1</MicrosoftIORedistPackageVersion>
+    <MicrosoftIORedistPackageVersion>6.1.0</MicrosoftIORedistPackageVersion>
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
     <MicrosoftTestingPlatformVersion>1.7.0-preview.25165.3</MicrosoftTestingPlatformVersion>
