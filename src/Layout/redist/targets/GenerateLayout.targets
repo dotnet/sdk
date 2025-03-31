@@ -20,21 +20,20 @@
   </Target>
 
   <Target Name="PublishVersionFile">
-    <WriteLinesToFile File="$(OutputPath)/.toolsetversion"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid)"
+    <WriteLinesToFile File="$(OutputPath).toolsetversion"
+                      Lines="$(SourceRevisionId);$(Version);$(TargetRid)"
                       Overwrite="true" />
 
-    <!-- The .version file in the final product will be the .NET Core SDK version.  But
-         for the layout we produce here, use the toolset information, so that we don't
-         just always use the stage 0 version. -->
-    <WriteLinesToFile File="$(OutputPath)/.version"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid)"
+    <WriteLinesToFile File="$(OutputPath).version"
+                      Lines="$(SourceRevisionId);$(Version);$(TargetRid);$(FullNugetVersion);$(SdkFeatureBand)"
                       Overwrite="true" />
 
-	<!-- Development env and CI loads DotnetFiles type from the following location
-	      The resolution of the product version (https://github.com/dotnet/sdk/blob/main/src/Cli/Microsoft.DotNet.Cli.Utils/DotnetFiles.cs#L21)
-		  then need the version file there as well. -->
-    <Copy SourceFiles="$(OutputPath)/.version" DestinationFiles="$(BaseOutputPath)$(Configuration)/.version" SkipUnchangedFiles="true" />
+    <!-- Development env and CI loads DotnetFiles type from the following location
+         The resolution of the product version (https://github.com/dotnet/sdk/blob/main/src/Cli/Microsoft.DotNet.Cli.Utils/DotnetFiles.cs#L21)
+         then need the version file there as well. -->
+    <Copy SourceFiles="$(OutputPath).version"
+          DestinationFiles="$(BaseOutputPath)$(Configuration)/.version"
+          SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="PublishRoslyn">
@@ -472,12 +471,6 @@
     <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)." Importance="High" />
   </Target>
 
-  <Target Name="GenerateVersionFile">
-    <WriteLinesToFile File="$(OutputPath).version"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
-                      Overwrite="true" />
-  </Target>
-
   <Target Name="ChmodPublishDir"
           DependsOnTargets="GenerateCliRuntimeConfigurationFiles"
           Condition="'$(OSName)' != 'win'">
@@ -536,7 +529,6 @@
                             PublishSdks;
                             PublishDotnetWatchToRedist;
                             GenerateBundledVersions;
-                            GenerateVersionFile;
                             CopyKnownWorkloadManifestFile;
                             LayoutAppHostTemplate;
                             LayoutBundledTools;
