@@ -25,7 +25,7 @@ public partial class DefineStaticWebAssets : Task
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
-    public ITaskItem[] PropertyOverrides { get; set; }
+    public string[] PropertyOverrides { get; set; }
 
     public string SourceId { get; set; }
 
@@ -73,8 +73,11 @@ public partial class DefineStaticWebAssets : Task
 
     public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
 
+    private HashSet<string> _overrides;
+
     public override bool Execute()
     {
+        _overrides = new HashSet<string>(PropertyOverrides ?? [], StringComparer.OrdinalIgnoreCase);
         var assetsCache = GetOrCreateAssetsCache();
 
         if (assetsCache.IsUpToDate())
@@ -356,7 +359,7 @@ public partial class DefineStaticWebAssets : Task
 
     private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
     {
-        if (PropertyOverrides != null && PropertyOverrides.Any(a => string.Equals(a.ItemSpec, metadataName, StringComparison.OrdinalIgnoreCase)))
+        if (_overrides.Contains(metadataName))
         {
             return propertyValue;
         }
