@@ -75,6 +75,8 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     {
         try
         {
+            ForceDirectory(OutputLogsDirectory);
+
             PrepareFilesToSignCheck();
 
             RunSignCheck();
@@ -189,8 +191,6 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
             process.ErrorDataReceived += (sender, args) => { };
 
             Log.LogMessage(MessageImportance.High, $"Running SignCheck...");
-
-            ForceDirectory(OutputLogsDirectory);
 
             process.Start();
             process.BeginOutputReadLine();
