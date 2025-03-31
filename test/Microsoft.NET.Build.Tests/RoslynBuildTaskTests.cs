@@ -87,7 +87,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         buildCommand.WithWorkingDirectory(testAsset.Path)
             .Execute("-bl").Should().Pass();
 
-        Run(buildCommand.GetOutputFile());
+        Run(buildCommand.GetOutputDirectory().File(testAsset.TestProject!.GetOutputFileName()));
 
         return buildCommand;
     }
@@ -97,7 +97,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         var buildCommand = new DotnetBuildCommand(testAsset);
         buildCommand.Execute("-bl").Should().Pass();
 
-        Run(buildCommand.GetOutputFile());
+        Run(buildCommand.GetOutputDirectory().File(testAsset.TestProject!.GetOutputFileName()));
 
         return buildCommand;
     }

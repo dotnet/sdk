@@ -36,12 +36,5 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(OutputPathCalculator.FromProject(projectPath, TestAsset)
                 .GetOutputDirectory(targetFramework, configuration, runtimeIdentifier, platform));
         }
-
-        public FileInfo GetOutputFile()
-        {
-            Debug.Assert(TestAsset?.TestProject?.Name != null);
-            var extension = TestAsset.TestProject.IsExe ? ".exe" : ".dll";
-            return GetOutputDirectory().File(TestAsset.TestProject.Name + extension);
-        }
     }
 }
