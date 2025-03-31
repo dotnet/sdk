@@ -17,7 +17,12 @@
   },
   {
     "issueType": "MissingShipping",
-    "descriptionMatch": "Aspire.*",
+    "idMatch": "Aspire.*",
+    "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "aspire/.*\\.zip",
     "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
   },
   {
@@ -435,5 +440,11 @@
     "issueType": "MissingNonShipping",
     "idMatch": "assets/symbols/Microsoft.CodeAnalysis.Remote.ServiceHub.CoreComponents",
     "justification": "These are a dependency of roslyn's VS insertion packages and not interesting to the VMR build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "idMatch": "Microsoft.TestPlatform.CLI",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Testplatform varies build to build."
   }
 ]
