@@ -18,6 +18,7 @@
       <TargetingPackForPruneData Include="Microsoft.NETCore.App"  />
       <TargetingPackForPruneData Include="Microsoft.AspNetCore.App" />
       <TargetingPackForPruneData Include="Microsoft.WindowsDesktop.App" />
+
       <!-- Add metadata for downloading and binplacing -->
       <TargetingPackForPruneData Version="$(TargetingPackPruneVersion).0.0" TargetFrameworkVersion="$(TargetingPackPruneVersion).0" PackageName="%(Identity).Ref" />
     </ItemGroup>
