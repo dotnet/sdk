@@ -216,7 +216,7 @@ extends:
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
               runTests: false
@@ -232,7 +232,7 @@ extends:
               buildArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
-              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false /p:CLIBUILD_SKIP_TESTS=true
+              publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
               runTests: false
