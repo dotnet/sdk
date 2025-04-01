@@ -127,7 +127,7 @@ public static class ParseResultExtensions
         // Don't remove any arguments that are being passed to the app in dotnet run
         var dashDashIndex = subargs.IndexOf("--");
 
-        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : new List<string>(0);
+        var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
         subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
 
         return subargs
@@ -261,5 +261,9 @@ public static class ParseResultExtensions
         }
     }
 
-    public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is not null;
+    /// <summary>
+    /// Checks if the option is present and not implicit (i.e. not set by default).
+    /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
+    /// </summary>
+    public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
 }

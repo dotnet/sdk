@@ -118,7 +118,7 @@ public class Program
 
     internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
     {
-        Dictionary<string, double> performanceData = new();
+        Dictionary<string, double> performanceData = [];
 
         PerformanceLogEventSource.Log.BuiltInCommandParserStart();
         ParseResult parseResult;

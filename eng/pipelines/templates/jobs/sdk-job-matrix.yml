@@ -23,7 +23,7 @@ parameters:
   - categoryName: TestBuild
     osProperties: $(linuxOsPortableProperties)
   - categoryName: TestBuild
-    buildArchitecture: arm64
+    targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsPortableProperties)
     # Don't run the tests on arm64. Only perform the build itself.

@@ -292,7 +292,7 @@ Options:
 
         }
 
-        [Theory(Skip = "Having projects with the same name in different paths is allowed.")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47859")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)

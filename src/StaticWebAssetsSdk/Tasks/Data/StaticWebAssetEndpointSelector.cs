@@ -10,7 +10,7 @@ using System.Text.Json.Serialization.Metadata;
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
-public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
+public struct StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointSelector>, IComparable<StaticWebAssetEndpointSelector>
 {
     private static readonly JsonTypeInfo<StaticWebAssetEndpointSelector[]> _jsonTypeInfo =
         StaticWebAssetsJsonSerializerContext.Default.StaticWebAssetEndpointSelectorArray;
@@ -23,22 +23,20 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
 
     public static StaticWebAssetEndpointSelector[] FromMetadataValue(string value) => string.IsNullOrEmpty(value) ? [] : JsonSerializer.Deserialize(value, _jsonTypeInfo);
 
-    public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors) => JsonSerializer.Serialize(selectors ?? []);
+    public static string ToMetadataValue(StaticWebAssetEndpointSelector[] selectors) =>
+        JsonSerializer.Serialize(
+            selectors ?? [],
+            _jsonTypeInfo);
 
     public int CompareTo(StaticWebAssetEndpointSelector other)
     {
-        if (other is null)
-        {
-            return 1;
-        }
-
-        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
+        var nameComparison = string.CompareOrdinal(Name, other.Name);
         if (nameComparison != 0)
         {
             return nameComparison;
         }
 
-        var valueComparison = string.Compare(Value, other.Value, StringComparison.Ordinal);
+        var valueComparison = string.CompareOrdinal(Value, other.Value);
         if (valueComparison != 0)
         {
             return valueComparison;
@@ -47,9 +45,12 @@ public class StaticWebAssetEndpointSelector : IEquatable<StaticWebAssetEndpointS
         return 0;
     }
 
-    public override bool Equals(object obj) => Equals(obj as StaticWebAssetEndpointSelector);
+    public override bool Equals(object obj) => obj is StaticWebAssetEndpointSelector endpointSelector &&
+        Equals(endpointSelector);
 
-    public bool Equals(StaticWebAssetEndpointSelector other) => other is not null && Name == other.Name && Value == other.Value && Quality == other.Quality;
+    public bool Equals(StaticWebAssetEndpointSelector other) =>
+        string.Equals(Name, other.Name, StringComparison.Ordinal) &&
+        string.Equals(Value, other.Value, StringComparison.Ordinal);
 
     public override int GetHashCode()
     {

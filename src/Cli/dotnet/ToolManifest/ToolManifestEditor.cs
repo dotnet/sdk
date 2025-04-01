@@ -10,10 +10,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
 
-internal class ToolManifestEditor : IToolManifestEditor
+internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null) : IToolManifestEditor
 {
-    private readonly IDangerousFileDetector _dangerousFileDetector;
-    private readonly IFileSystem _fileSystem;
+    private readonly IDangerousFileDetector _dangerousFileDetector = dangerousFileDetector ?? new DangerousFileDetector();
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
 
     private const int SupportedToolManifestFileVersion = 1;
     private const int DefaultToolManifestFileVersion = 1;
@@ -22,12 +22,6 @@ internal class ToolManifestEditor : IToolManifestEditor
     private const string JsonPropertyCommands = "commands";
     private const string JsonPropertyTools = "tools";
     private const string JsonPropertyRollForward = "rollForward";
-
-    public ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null)
-    {
-        _dangerousFileDetector = dangerousFileDetector ?? new DangerousFileDetector();
-        _fileSystem = fileSystem ?? new FileSystemWrapper();
-    }
 
     public void Add(
         FilePath manifest,
@@ -68,7 +62,7 @@ internal class ToolManifestEditor : IToolManifestEditor
 
         if (deserializedManifest.Tools == null)
         {
-            deserializedManifest.Tools = new List<SerializableLocalToolSinglePackage>();
+            deserializedManifest.Tools = [];
         }
 
         deserializedManifest.Tools.Add(
@@ -159,8 +153,7 @@ internal class ToolManifestEditor : IToolManifestEditor
 
                 if (root.TryGetProperty(JsonPropertyTools, out var tools))
                 {
-                    serializableLocalToolsManifest.Tools =
-                        new List<SerializableLocalToolSinglePackage>();
+                    serializableLocalToolsManifest.Tools = [];
 
                     if (tools.ValueKind != JsonValueKind.Object)
                     {
@@ -233,7 +226,7 @@ internal class ToolManifestEditor : IToolManifestEditor
         FilePath path,
         DirectoryPath correspondingDirectory)
     {
-        List<ToolManifestPackage> result = new();
+        List<ToolManifestPackage> result = [];
         var errors = new List<string>();
 
         ValidateVersion(deserializedManifest, errors);
@@ -257,7 +250,7 @@ internal class ToolManifestEditor : IToolManifestEditor
         }
 
         foreach (var tools
-            in deserializedManifest.Tools ?? new List<SerializableLocalToolSinglePackage>())
+            in deserializedManifest.Tools ?? [])
         {
             var packageLevelErrors = new List<string>();
             var packageIdString = tools.PackageId;
