@@ -41,7 +41,7 @@ public partial class DefineStaticWebAssets : Task
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
         var fingerprintPatternsHash = HashingUtils.ComputeHash(memoryStream, FingerprintPatterns ?? [], patternMetadata);
 
-        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides);
+        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides ?? []);
 
 #if NET9_0_OR_GREATER
         Span<string> candidateAssetMetadata = [
