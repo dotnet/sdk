@@ -98,7 +98,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             msis = msis.Where(m => !installedItems.Contains((m.Id, m.NuGetPackageVersion)));
         }
 
-        return [.. msis]; ;
+        return [.. msis];
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
