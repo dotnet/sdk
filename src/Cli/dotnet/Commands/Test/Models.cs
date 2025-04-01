@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Tools.Run.LaunchSettings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, bool IsTestProject);
+internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, bool IsTestProject, ProjectLaunchSettingsModel? LaunchSettings);
 
 internal sealed record Handshake(Dictionary<byte, string>? Properties);
 

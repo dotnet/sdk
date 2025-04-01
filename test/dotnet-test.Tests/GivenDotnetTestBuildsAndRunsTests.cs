@@ -93,6 +93,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
+        public void RunTestProjectWithTestsAndLaunchSettings_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(TestingPlatformOptions.ConfigurationOption.Name, configuration);
+
+            if (!TestContext.IsLocalized())
+            {
+                result.StdOut
+                    .Should().Contain("Test run summary: Passed!")
+                    .And.Contain("skipped Test1")
+                    .And.Contain("total: 2")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [InlineData(TestingConstants.Debug)]
+        [InlineData(TestingConstants.Release)]
+        [Theory]
         public void RunMultipleTestProjectsWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())

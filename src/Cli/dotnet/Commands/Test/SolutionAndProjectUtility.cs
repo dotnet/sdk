@@ -7,6 +7,9 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Tools.Run.LaunchSettings;
+using Microsoft.DotNet.Tools.Test;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -164,7 +167,9 @@ internal static class SolutionAndProjectUtility
         RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject);
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder));
+
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
@@ -183,5 +188,16 @@ internal static class SolutionAndProjectUtility
 
             return RunProperties.FromProjectAndApplicationArguments(project, [], fallbackToTargetPath: true);
         }
+    }
+
+    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder)
+    {
+        var launchSettingsPath = Path.Combine(projectDirectory, appDesignerFolder, "launchSettings.json");
+        if (!File.Exists(launchSettingsPath))
+        {
+            return null;
+        }
+
+        return LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath)).LaunchSettings;
     }
 }
