@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class DepsJsonCommandResolver : ICommandResolver
+public class DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot) : ICommandResolver
 {
     private static readonly string[] s_extensionPreferenceOrder =
     [
@@ -16,17 +16,11 @@ public class DepsJsonCommandResolver : ICommandResolver
         ".dll"
     ];
 
-    private readonly string _nugetPackageRoot;
-    private readonly Muxer _muxer;
+    private readonly string _nugetPackageRoot = nugetPackageRoot;
+    private readonly Muxer _muxer = muxer;
 
     public DepsJsonCommandResolver(string nugetPackageRoot)
         : this(new Muxer(), nugetPackageRoot) { }
-
-    public DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot)
-    {
-        _muxer = muxer;
-        _nugetPackageRoot = nugetPackageRoot;
-    }
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {

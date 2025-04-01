@@ -10,10 +10,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
 
-internal class ToolManifestEditor : IToolManifestEditor
+internal class ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null) : IToolManifestEditor
 {
-    private readonly IDangerousFileDetector _dangerousFileDetector;
-    private readonly IFileSystem _fileSystem;
+    private readonly IDangerousFileDetector _dangerousFileDetector = dangerousFileDetector ?? new DangerousFileDetector();
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
 
     private const int SupportedToolManifestFileVersion = 1;
     private const int DefaultToolManifestFileVersion = 1;
@@ -22,12 +22,6 @@ internal class ToolManifestEditor : IToolManifestEditor
     private const string JsonPropertyCommands = "commands";
     private const string JsonPropertyTools = "tools";
     private const string JsonPropertyRollForward = "rollForward";
-
-    public ToolManifestEditor(IFileSystem fileSystem = null, IDangerousFileDetector dangerousFileDetector = null)
-    {
-        _dangerousFileDetector = dangerousFileDetector ?? new DangerousFileDetector();
-        _fileSystem = fileSystem ?? new FileSystemWrapper();
-    }
 
     public void Add(
         FilePath manifest,

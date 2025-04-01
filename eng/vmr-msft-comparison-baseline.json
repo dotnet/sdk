@@ -17,14 +17,19 @@
   },
   {
     "issueType": "MissingShipping",
-    "descriptionMatch": "Aspire.*",
+    "idMatch": "Aspire.*",
+    "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "aspire/.*\\.zip",
     "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
   },
   {
     "issueType": "AssemblyVersionMismatch",
-    "descriptionMatch": "Microsoft\\.CodeAnalysis.*\\.dll",
+    "descriptionMatch": "Microsoft\\.CodeAnalysis.*\\.(dll|exe)",
     "allowRevisionOnlyVariance": true,
-    "justification": "CodeAnalysis dlls vary build to build with patch number."
+    "justification": "CodeAnalysis dlls and exes vary build to build with patch number."
   },
   {
     "issueType": "AssemblyVersionMismatch",
@@ -106,12 +111,12 @@
     "justification": "Deployment-tools does a minimal build in the VMR"
   },
   {
-    "issueType": "MissingShipping",
+    "issueType": "MissingNonShipping",
     "idMatch": "VS\\.Redist\\.Common\\.NetCore\\.Launcher",
     "justification": "Deployment-tools does a minimal build in the VMR"
   },
   {
-    "issueType": "MissingShipping",
+    "issueType": "MissingNonShipping",
     "idMatch": "VS\\.Redist\\.Common\\.NETCoreCheck\\..*",
     "justification": "Deployment-tools does a minimal build in the VMR"
   },
@@ -148,6 +153,11 @@
   {
     "issueType": "MissingShipping",
     "idMatch": "dotnet-symbol",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-trace",
     "justification": "Diagnostics does a minimal build in the VMR"
   },
   {
@@ -381,8 +391,14 @@
     "justification": "Very old version of xliff tasks. To be removed."
   },
   {
-    "issueType": "ExtraPackageContent",
+    "issueType": "MissingPackageContent",
     "idMatch": "Microsoft.DotNet.XliffTask",
+    "justification": "Very old version of xliff tasks. To be removed."
+  },
+  {
+    "issueType": "PackageMetadataDifference",
+    "idMatch": "Microsoft.DotNet.XliffTask",
+    "descriptionMatch": "ProjectUrl",
     "justification": "Very old version of xliff tasks. To be removed."
   },
   {
@@ -430,5 +446,22 @@
     "issueType": "PackageDependencies",
     "idMatch": "Microsoft.Build.Runtime",
     "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "assets/symbols/Microsoft.CodeAnalysis.Remote.ServiceHub.CoreComponents",
+    "justification": "These are a dependency of roslyn's VS insertion packages and not interesting to the VMR build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "idMatch": "Microsoft.TestPlatform.CLI",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Testplatform varies build to build."
+  },
+  {
+    "issueType": "PackageMetadataDifference",
+    "idMatch": "VS\\.Redist\\..*",
+    "descriptionMatch": "ProjectUrl",
+    "justification": "VS redist packages do not ship and should have their project url set to the VMR to identify where they came from."
   }
 ]

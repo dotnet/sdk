@@ -7,16 +7,11 @@ using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Tools.Build;
 
-public class BuildCommand : RestoringCommand
+public class BuildCommand(
+    IEnumerable<string> msbuildArgs,
+    bool noRestore,
+    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public BuildCommand(
-        IEnumerable<string> msbuildArgs,
-        bool noRestore,
-        string msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
-    {
-    }
-
     public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;

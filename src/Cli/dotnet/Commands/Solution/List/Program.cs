@@ -8,17 +8,11 @@ using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Tools.Sln.List;
 
-internal class ListProjectsInSolutionCommand : CommandBase
+internal class ListProjectsInSolutionCommand(
+    ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory;
-    private readonly bool _displaySolutionFolders;
-
-    public ListProjectsInSolutionCommand(
-        ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-        _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
-    }
+    private readonly string _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+    private readonly bool _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
 
     public override int Execute()
     {

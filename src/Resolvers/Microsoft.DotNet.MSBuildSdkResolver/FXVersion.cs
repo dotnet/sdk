@@ -5,22 +5,13 @@ namespace Microsoft.DotNet.MSBuildSdkResolver;
 
 // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
 // See the original version of this code here: https://github.com/dotnet/core-setup/blob/master/src/corehost/cli/fxr/fx_ver.cpp
-internal sealed class FXVersion
+internal sealed class FXVersion(int major, int minor, int patch, string pre = "", string build = "")
 {
-    public int Major { get; }
-    public int Minor { get; }
-    public int Patch { get; }
-    public string Pre { get; }
-    public string Build { get; }
-
-    public FXVersion(int major, int minor, int patch, string pre = "", string build = "")
-    {
-        Major = major;
-        Minor = minor;
-        Patch = patch;
-        Pre = pre;
-        Build = build;
-    }
+    public int Major { get; } = major;
+    public int Minor { get; } = minor;
+    public int Patch { get; } = patch;
+    public string Pre { get; } = pre;
+    public string Build { get; } = build;
 
     private static string GetId(string ids, int idStart)
     {

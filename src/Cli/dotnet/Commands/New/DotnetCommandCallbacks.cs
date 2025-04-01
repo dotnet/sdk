@@ -20,7 +20,7 @@ internal static class DotnetCommandCallbacks
         {
             commandArgs = commandArgs.Append(PackageAddCommandParser.VersionOption.Name).Append(version);
         }
-        var addPackageReferenceCommand = new AddPackageReferenceCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
+        var addPackageReferenceCommand = new AddPackageReferenceCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]), projectPath);
         return addPackageReferenceCommand.Execute() == 0;
     }
 

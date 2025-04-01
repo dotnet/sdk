@@ -3,14 +3,8 @@
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-internal class ResourceAssemblyInfo
+internal class ResourceAssemblyInfo(string culture, string relativePath)
 {
-    public string Culture { get; }
-    public string RelativePath { get; }
-
-    public ResourceAssemblyInfo(string culture, string relativePath)
-    {
-        Culture = culture;
-        RelativePath = relativePath;
-    }
+    public string Culture { get; } = culture;
+    public string RelativePath { get; } = relativePath;
 }

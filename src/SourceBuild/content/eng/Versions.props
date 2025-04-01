@@ -23,8 +23,8 @@
       of a .NET major or minor release, prebuilts may be needed. When the release is mature, prebuilts
       are not necessary, and this property is removed from the file.
     -->
-    <PrivateSourceBuiltSdkVersion>10.0.100-preview.2.25164.1</PrivateSourceBuiltSdkVersion>
-    <PrivateSourceBuiltArtifactsVersion>10.0.100-preview.2.25164.1</PrivateSourceBuiltArtifactsVersion>
+    <PrivateSourceBuiltSdkVersion>10.0.100-preview.4.25178.1</PrivateSourceBuiltSdkVersion>
+    <PrivateSourceBuiltArtifactsVersion>10.0.100-preview.4.25178.1</PrivateSourceBuiltArtifactsVersion>
     <!-- arcade dependencies -->
     <MicrosoftDotNetVersionToolsVersion>10.0.0-beta.25110.3</MicrosoftDotNetVersionToolsVersion>
     <!-- command-line-api dependencies -->
@@ -32,8 +32,8 @@
     <!-- msbuild dependencies -->
     <MicrosoftBuildVersion>17.12.6</MicrosoftBuildVersion>
     <!-- nuget dependencies -->
-    <NuGetProtocolVersion>6.12.1</NuGetProtocolVersion>
-    <NuGetProjectModelVersion>6.12.1</NuGetProjectModelVersion>
+    <NuGetProtocolVersion>6.13.1</NuGetProtocolVersion>
+    <NuGetProjectModelVersion>6.13.1</NuGetProjectModelVersion>
     <!-- runtime dependencies -->
     <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.0</MicrosoftExtensionsLoggingConsoleVersion>

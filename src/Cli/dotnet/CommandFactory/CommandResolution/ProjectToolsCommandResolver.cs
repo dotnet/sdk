@@ -10,24 +10,16 @@ using ConcurrencyUtilities = NuGet.Common.ConcurrencyUtilities;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class ProjectToolsCommandResolver : ICommandResolver
+public class ProjectToolsCommandResolver(
+    IPackagedCommandSpecFactory packagedCommandSpecFactory,
+    IEnvironmentProvider environment) : ICommandResolver
 {
     private const string ProjectToolsCommandResolverName = "projecttoolscommandresolver";
 
-    private readonly List<string> _allowedCommandExtensions;
-    private readonly IPackagedCommandSpecFactory _packagedCommandSpecFactory;
+    private readonly List<string> _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
+    private readonly IPackagedCommandSpecFactory _packagedCommandSpecFactory = packagedCommandSpecFactory;
 
-    private readonly IEnvironmentProvider _environment;
-
-    public ProjectToolsCommandResolver(
-        IPackagedCommandSpecFactory packagedCommandSpecFactory,
-        IEnvironmentProvider environment)
-    {
-        _packagedCommandSpecFactory = packagedCommandSpecFactory;
-        _environment = environment;
-
-        _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
-    }
+    private readonly IEnvironmentProvider _environment = environment;
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {

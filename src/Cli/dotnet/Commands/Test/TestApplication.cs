@@ -8,9 +8,10 @@ using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli;
 
-internal sealed class TestApplication : IDisposable
+internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
 {
     private readonly BuildOptions _buildOptions;
+    private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -29,13 +30,7 @@ internal sealed class TestApplication : IDisposable
     public event EventHandler<ErrorEventArgs> ErrorReceived;
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
-    public TestModule Module { get; }
-
-    public TestApplication(TestModule module, BuildOptions buildOptions)
-    {
-        Module = module;
-        _buildOptions = buildOptions;
-    }
+    public TestModule Module { get; } = module;
 
     public async Task<int> RunAsync(TestOptions testOptions)
     {
