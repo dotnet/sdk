@@ -9,10 +9,11 @@ using Microsoft.DotNet.Tools.NuGet;
 
 namespace Microsoft.DotNet.Tools.Package.Remove;
 
-internal class RemovePackageReferenceCommand : CommandBase
+internal class RemovePackageReferenceCommand : CommandBase, IDeprecated
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
+    public bool IsDeprecated { get; set; } = false;
 
     public RemovePackageReferenceCommand(
         ParseResult parseResult) : base(parseResult)

@@ -134,6 +134,8 @@ public class Program
         }
         PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
+        DeprecatedCheck(parseResult);
+
         using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
             new FirstTimeUseNoticeSentinel())
         {
@@ -304,6 +306,39 @@ public class Program
         }
 
         return exitCode;
+    }
+
+    private static void DeprecatedCheck(ParseResult parseResult)
+    {
+        if (parseResult.Errors.Any())
+        {
+            // There are errors anyway; don't worry about deprecation
+            return;
+        }
+
+        var command = parseResult.CommandResult;
+        if (command.Command is IDeprecated)
+        {
+            // Doesn't work because what we want is for the Command's Action's output to be deprecated (or not)
+            // And what about parents?
+        }
+
+        foreach (var entry in IDeprecated.DeprecatedArguments)
+        {
+            if (parseResult.GetArguments().Any(a => entry.Key.Name.Equals(a)))
+            {
+                // Doesn't work because this is the value, not the key, of the argument
+            }
+        }
+
+        foreach (var entry in IDeprecated.DeprecatedOptions)
+        {
+            if (parseResult.HasOption(entry.Key))
+            {
+                // Finally works!
+                IDeprecated.WarnIfNecessary(Reporter.ConsoleOutReporter, entry.Value.messageToShow, entry.Value.errorLevel);
+            }
+        }
     }
 
     private static void ReportDotnetHomeUsage(IEnvironmentProvider provider)
