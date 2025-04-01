@@ -46,7 +46,7 @@ public partial class WriteImportMapToHtml : Task
 
     private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
-    private static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""\s*[/]?>");
+    private static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\id=""(?<group>[^""]+)"")?\s*[/]?>");
 
     public override bool Execute()
     {
@@ -81,7 +81,7 @@ public partial class WriteImportMapToHtml : Task
                 outputContent = _preloadRegex.Replace(outputContent, e =>
                 {
                     Log.LogMessage("Writing preload links to '{0}'", item.ItemSpec);
-                    return GeneratePreloadLinks(resources);
+                    return GeneratePreloadLinks(resources, e.Groups["group"]?.Value);
                 });
 
                 // Fingerprint all assets used in html
@@ -114,7 +114,7 @@ public partial class WriteImportMapToHtml : Task
         return true;
     }
 
-    private static string GeneratePreloadLinks(List<ResourceAsset> assets)
+    private static string GeneratePreloadLinks(List<ResourceAsset> assets, string? group)
     {
         var links = new List<(string? Order, string Value)>();
         foreach (var asset in assets)
@@ -124,26 +124,32 @@ public partial class WriteImportMapToHtml : Task
                 continue;
             }
 
-            string link = $"<link href=\"{asset.Url}\" rel=\"{asset.PreloadRel}\"";
+            if (group != null && asset.PreloadGroup != group)
+            {
+                continue;
+            }
+
+            var link = new StringBuilder();
+            link.Append($"<link href=\"{asset.Url}\" rel=\"{asset.PreloadRel}\"");
             if (!string.IsNullOrEmpty(asset.PreloadAs))
             {
-                link = String.Concat(link, " as=\"", asset.PreloadAs, "\"");
+                link.Append(" as=\"").Append(asset.PreloadAs).Append("\"");
             }
             if (!string.IsNullOrEmpty(asset.PreloadPriority))
             {
-                link = String.Concat(link, " fetchpriority=\"", asset.PreloadPriority, "\"");
+                link.Append(" fetchpriority=\"").Append(asset.PreloadPriority).Append("\"");
             }
             if (!string.IsNullOrEmpty(asset.PreloadCrossorigin))
             {
-                link = String.Concat(link, " crossorigin=\"", asset.PreloadCrossorigin, "\"");
+                link.Append(" crossorigin=\"").Append(asset.PreloadCrossorigin).Append("\"");
             }
             if (!string.IsNullOrEmpty(asset.Integrity))
             {
-                link = String.Concat(link, " integrity=\"", asset.Integrity, "\"");
+                link.Append(" integrity=\"").Append(asset.Integrity).Append("\"");
             }
 
-            link += " />";
-            links.Add((asset.PreloadOrder, link));
+            link.Append(" />");
+            links.Add((asset.PreloadOrder, link.ToString()));
         }
 
         links.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
@@ -184,6 +190,10 @@ public partial class WriteImportMapToHtml : Task
                     else if (property.Name.Equals("integrity", StringComparison.OrdinalIgnoreCase))
                     {
                         resourceAsset.Integrity = property.Value;
+                    }
+                    else if (property.Name.Equals("preloadgroup", StringComparison.OrdinalIgnoreCase))
+                    {
+                        resourceAsset.PreloadGroup = property.Value;
                     }
                     else if (property.Name.Equals("preloadrel", StringComparison.OrdinalIgnoreCase))
                     {
@@ -274,6 +284,7 @@ internal sealed class ResourceAsset(string url)
     public string Url { get; } = url;
     public string? Label { get; set; }
     public string? Integrity { get; set; }
+    public string? PreloadGroup { get; set; }
     public string? PreloadRel { get; set; }
     public string? PreloadAs { get; set; }
     public string? PreloadPriority { get; set; }
