@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -11,6 +9,7 @@ using System.Text.Json;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.LibraryModel;
 using NuGet.ProjectModel;
 
 namespace Microsoft.DotNet.UnifiedBuild.Tasks;
@@ -33,10 +32,12 @@ public class WriteSbrpUsageReport : Task
     public required string SbrpRepoSrcPath { get; set; }
 
     /// <summary>
-    /// Path to the VMR src directory.
+    /// Paths to the project.assets.json files produced by the build.
+    ///
+    /// %(Identity): project.assets.json file path.
     /// </summary>
     [Required]
-    public required string SrcPath { get; set; }
+    public required ITaskItem[] ProjectAssetsJsons { get; set; }
 
     /// <summary>
     /// Path to the usage report to.
@@ -48,8 +49,9 @@ public class WriteSbrpUsageReport : Task
     {
         Log.LogMessage($"Scanning for SBRP Package Usage...");
 
-        ReadSbrpPackages("referencePackages", trackTfms: true);
-        ReadSbrpPackages("textOnlyPackages", trackTfms: false);
+        ReadSbrpPackages(Path.Combine("referencePackages", "src"), trackTfms: true);
+        ReadSbrpPackages(Path.Combine("targetPacks", "ILsrc"), trackTfms: false);
+        ReadSbrpPackages(Path.Combine("textOnlyPackages", "src"), trackTfms: false);
 
         ScanProjectReferences();
 
@@ -63,6 +65,12 @@ public class WriteSbrpUsageReport : Task
         PackageInfo[] existingSbrps = [.. _sbrpPackages.Values.OrderBy(pkg => pkg.Id)];
         PurgeNonReferencedReferences();
         IEnumerable<string> unreferencedSbrps = GetUnreferencedSbrps().Select(pkg => pkg.Path).OrderBy(id => id);
+
+        if (unreferencedSbrps.Count() == existingSbrps.Length)
+        {
+            Log.LogError("No SBRP packages are detected as being referenced.");
+        }
+
         Report report = new(existingSbrps, unreferencedSbrps);
 
         string reportFilePath = Path.Combine(OutputPath, "sbrpPackageUsage.json");
@@ -104,11 +112,10 @@ public class WriteSbrpUsageReport : Task
     private IEnumerable<PackageInfo> GetUnreferencedSbrps() =>
         _sbrpPackages.Values.Where(pkg => pkg.References.Count == 0);
 
-    private string GetSbrpPackagesPath(string packageType) => Path.Combine(SbrpRepoSrcPath, packageType, "src");
-
-    private void ReadSbrpPackages(string packageType, bool trackTfms)
+    private void ReadSbrpPackages(string packageSrcRelativePath, bool trackTfms)
     {
-        foreach (string projectPath in Directory.GetFiles(GetSbrpPackagesPath(packageType), "*.csproj", SearchOption.AllDirectories))
+        string packageSrcPath = Path.Combine(SbrpRepoSrcPath, packageSrcRelativePath);
+        foreach (string projectPath in Directory.GetFiles(packageSrcPath, "*.csproj", SearchOption.AllDirectories))
         {
             DirectoryInfo? directory = Directory.GetParent(projectPath);
             string version = directory!.Name;
@@ -146,30 +153,48 @@ public class WriteSbrpUsageReport : Task
 
     private void ScanProjectReferences()
     {
-        foreach (string projectJsonFile in Directory.GetFiles(SrcPath, "project.assets.json", SearchOption.AllDirectories))
+        if (ProjectAssetsJsons.Length == 0)
+        {
+            Log.LogError($"No project.assets.json files were specified.");
+            return;
+        }
+
+        foreach (string projectJsonFile in ProjectAssetsJsons.Select(item => item.GetMetadata("Identity")))
         {
             LockFile lockFile = new LockFileFormat().Read(projectJsonFile);
             foreach (LockFileTargetLibrary lib in lockFile.Targets.SelectMany(t => t.Libraries))
             {
-                if (!_sbrpPackages.TryGetValue(PackageInfo.GetId(lib.Name, lib.Version?.ToString()), out PackageInfo? info))
-                {
-                    continue;
-                }
-
-                if (!info.References.TryGetValue(lockFile.Path, out HashSet<string>? referencedTfms))
-                {
-                    referencedTfms = [];
-                    info.References.Add(lockFile.Path, referencedTfms);
-                }
-
                 IEnumerable<string> tfms = lib.CompileTimeAssemblies
                     .Where(asm => asm.Path.StartsWith("lib") || asm.Path.StartsWith("ref"))
                     .Select(asm => asm.Path.Split('/')[1]);
-                foreach (string tfm in tfms)
-                {
-                    referencedTfms.Add(tfm);
-                }
+
+                TrackPackageReference(lockFile.Path, lib.Name, lib.Version?.ToString(), tfms);
             }
+
+            foreach (DownloadDependency downloadDep in lockFile.PackageSpec.TargetFrameworks.SelectMany(fx => fx.DownloadDependencies))
+            {
+                TrackPackageReference(lockFile.Path, downloadDep.Name, downloadDep.VersionRange.MinVersion?.ToString(), Enumerable.Empty<string>());
+            }
+        }
+    }
+
+    private void TrackPackageReference(string lockFilePath, string? name, string? version, IEnumerable<string> tfms)
+    {
+        string id = PackageInfo.GetId(name, version);
+        if (!_sbrpPackages.TryGetValue(id, out PackageInfo? info))
+        {
+            return;
+        }
+
+        if (!info.References.TryGetValue(lockFilePath, out HashSet<string>? referencedTfms))
+        {
+            referencedTfms = [];
+            info.References.Add(lockFilePath, referencedTfms);
+        }
+
+        foreach (string tfm in tfms)
+        {
+            referencedTfms!.Add(tfm);
         }
     }
 

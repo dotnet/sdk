@@ -6,78 +6,72 @@ using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
 
-namespace Microsoft.DotNet.Installer.Windows
+namespace Microsoft.DotNet.Cli.Installer.Windows;
+
+/// <summary>
+/// Encapsulates information about elevation to support workload installations.
+/// </summary>
+[SupportedOSPlatform("windows")]
+internal sealed class InstallClientElevationContext(ISynchronizingLogger logger) : InstallElevationContextBase
 {
+    private ISynchronizingLogger _log = logger;
+
+    private Process _serverProcess;
+
+    public override bool IsClient => true;
+
     /// <summary>
-    /// Encapsulates information about elevation to support workload installations.
+    /// Starts the elevated install server.
     /// </summary>
-    [SupportedOSPlatform("windows")]
-    internal sealed class InstallClientElevationContext : InstallElevationContextBase
+    public override void Elevate()
     {
-        private ISynchronizingLogger _log;
-
-        private Process _serverProcess;
-
-        public override bool IsClient => true;
-
-        public InstallClientElevationContext(ISynchronizingLogger logger)
+        if (!IsElevated && !HasElevated)
         {
-            _log = logger;
-        }
-
-        /// <summary>
-        /// Starts the elevated install server.
-        /// </summary>
-        public override void Elevate()
-        {
-            if (!IsElevated && !HasElevated)
+            // Use the path of the current host, otherwise we risk resolving against the wrong SDK version.
+            // To trigger UAC, UseShellExecute must be true and Verb must be "runas".
+            ProcessStartInfo startInfo = new($@"""{Environment.ProcessPath}""",
+                    $@"""{Assembly.GetExecutingAssembly().Location}"" workload elevate")
             {
-                // Use the path of the current host, otherwise we risk resolving against the wrong SDK version.
-                // To trigger UAC, UseShellExecute must be true and Verb must be "runas".
-                ProcessStartInfo startInfo = new($@"""{Environment.ProcessPath}""",
-                        $@"""{Assembly.GetExecutingAssembly().Location}"" workload elevate")
-                {
-                    Verb = "runas",
-                    UseShellExecute = true,
-                    CreateNoWindow = true,
-                    WindowStyle = ProcessWindowStyle.Hidden,
-                };
+                Verb = "runas",
+                UseShellExecute = true,
+                CreateNoWindow = true,
+                WindowStyle = ProcessWindowStyle.Hidden,
+            };
 
-                _log?.LogMessage($"Attempting to start the elevated command instance. {startInfo.FileName} {startInfo.Arguments}.");
+            _log?.LogMessage($"Attempting to start the elevated command instance. {startInfo.FileName} {startInfo.Arguments}.");
 
-                _serverProcess = new Process
-                {
-                    StartInfo = startInfo,
-                    EnableRaisingEvents = true,
-                };
+            _serverProcess = new Process
+            {
+                StartInfo = startInfo,
+                EnableRaisingEvents = true,
+            };
 
-                _serverProcess.Exited += ServerExited;
+            _serverProcess.Exited += ServerExited;
 
-                if (_serverProcess.Start())
-                {
-                    InitializeDispatcher(new NamedPipeClientStream(".", WindowsUtils.CreatePipeName(_serverProcess.Id), PipeDirection.InOut));
-                    Dispatcher.Connect();
+            if (_serverProcess.Start())
+            {
+                InitializeDispatcher(new NamedPipeClientStream(".", WindowsUtils.CreatePipeName(_serverProcess.Id), PipeDirection.InOut));
+                Dispatcher.Connect();
 
-                    // Add a pipe to the logger to allow the server to send log requests. This avoids having an elevated process writing
-                    // to a less privileged location. It also simplifies troubleshooting because log events will be chronologically
-                    // ordered in a single file.
-                    _log.AddNamedPipe(WindowsUtils.CreatePipeName(_serverProcess.Id, "log"));
+                // Add a pipe to the logger to allow the server to send log requests. This avoids having an elevated process writing
+                // to a less privileged location. It also simplifies troubleshooting because log events will be chronologically
+                // ordered in a single file.
+                _log.AddNamedPipe(WindowsUtils.CreatePipeName(_serverProcess.Id, "log"));
 
-                    HasElevated = true;
+                HasElevated = true;
 
-                    _log.LogMessage("Elevated command instance started.");
-                }
-                else
-                {
-                    _log?.LogMessage($"Failed to start the elevated command instance.");
-                    throw new Exception("Failed to start the elevated command instance.");
-                }
+                _log.LogMessage("Elevated command instance started.");
+            }
+            else
+            {
+                _log?.LogMessage($"Failed to start the elevated command instance.");
+                throw new Exception("Failed to start the elevated command instance.");
             }
         }
+    }
 
-        private void ServerExited(object sender, EventArgs e)
-        {
-            _log?.LogMessage($"Elevated command instance has exited.");
-        }
+    private void ServerExited(object sender, EventArgs e)
+    {
+        _log?.LogMessage($"Elevated command instance has exited.");
     }
 }

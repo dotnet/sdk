@@ -3,17 +3,16 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.ToolManifest
-{
-    internal class ToolManifestCannotBeFoundException : GracefulException
-    {
-        public ToolManifestCannotBeFoundException(string message) : base(new[] { message }, null, false)
-        {
-        }
+namespace Microsoft.DotNet.Cli.ToolManifest;
 
-        public ToolManifestCannotBeFoundException(string message, string optionalMessage)
-            : base(new[] { message }, new[] { optionalMessage }, false)
-        {
-        }
+internal class ToolManifestCannotBeFoundException : GracefulException
+{
+    public ToolManifestCannotBeFoundException(string message) : base([message], null, false)
+    {
+    }
+
+    public ToolManifestCannotBeFoundException(string message, string optionalMessage)
+        : base([message], [optionalMessage], false)
+    {
     }
 }

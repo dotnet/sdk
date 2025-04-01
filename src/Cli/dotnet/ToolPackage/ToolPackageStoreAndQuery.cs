@@ -1,120 +1,113 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQuery, IToolPackageStore
 {
-    internal class ToolPackageStoreAndQuery : IToolPackageStoreQuery, IToolPackageStore
+    public const string StagingDirectory = ".stage";
+
+    public DirectoryPath Root { get; private set; } = new DirectoryPath(Path.GetFullPath(root.Value));
+
+    public DirectoryPath GetRandomStagingDirectory()
     {
-        public const string StagingDirectory = ".stage";
+        return Root.WithSubDirectories(StagingDirectory, Path.GetRandomFileName());
+    }
 
-        public ToolPackageStoreAndQuery(DirectoryPath root)
+    public NuGetVersion GetStagedPackageVersion(DirectoryPath stagingDirectory, PackageId packageId)
+    {
+        if (NuGetVersion.TryParse(
+            Path.GetFileName(
+                Directory.EnumerateDirectories(
+                    stagingDirectory.WithSubDirectories(packageId.ToString()).Value).FirstOrDefault()),
+            out var version))
         {
-            Root = new DirectoryPath(Path.GetFullPath(root.Value));
+            return version;
         }
 
-        public DirectoryPath Root { get; private set; }
+        throw new ToolPackageException(
+            string.Format(
+                CommonLocalizableStrings.FailedToFindStagedToolPackage,
+                packageId));
+    }
 
-        public DirectoryPath GetRandomStagingDirectory()
+    public DirectoryPath GetRootPackageDirectory(PackageId packageId)
+    {
+        return Root.WithSubDirectories(packageId.ToString());
+    }
+
+    public DirectoryPath GetPackageDirectory(PackageId packageId, NuGetVersion version)
+    {
+        if (version == null)
         {
-            return Root.WithSubDirectories(StagingDirectory, Path.GetRandomFileName());
+            throw new ArgumentNullException(nameof(version));
         }
 
-        public NuGetVersion GetStagedPackageVersion(DirectoryPath stagingDirectory, PackageId packageId)
-        {
-            if (NuGetVersion.TryParse(
-                Path.GetFileName(
-                    Directory.EnumerateDirectories(
-                        stagingDirectory.WithSubDirectories(packageId.ToString()).Value).FirstOrDefault()),
-                out var version))
-            {
-                return version;
-            }
+        return GetRootPackageDirectory(packageId)
+            .WithSubDirectories(version.ToNormalizedString().ToLowerInvariant());
+    }
 
-            throw new ToolPackageException(
-                string.Format(
-                    CommonLocalizableStrings.FailedToFindStagedToolPackage,
-                    packageId));
+    public IEnumerable<IToolPackage> EnumeratePackages()
+    {
+        if (!Directory.Exists(Root.Value))
+        {
+            yield break;
         }
 
-        public DirectoryPath GetRootPackageDirectory(PackageId packageId)
+        foreach (var subdirectory in Directory.EnumerateDirectories(Root.Value))
         {
-            return Root.WithSubDirectories(packageId.ToString());
-        }
+            var name = Path.GetFileName(subdirectory);
+            var packageId = new PackageId(name);
 
-        public DirectoryPath GetPackageDirectory(PackageId packageId, NuGetVersion version)
-        {
-            if (version == null)
+            // Ignore the staging directory and any directory that isn't the same as the package id
+            if (name == StagingDirectory || name != packageId.ToString())
             {
-                throw new ArgumentNullException(nameof(version));
+                continue;
             }
 
-            return GetRootPackageDirectory(packageId)
-                .WithSubDirectories(version.ToNormalizedString().ToLowerInvariant());
-        }
-
-        public IEnumerable<IToolPackage> EnumeratePackages()
-        {
-            if (!Directory.Exists(Root.Value))
+            foreach (var package in EnumeratePackageVersions(packageId))
             {
-                yield break;
-            }
-
-            foreach (var subdirectory in Directory.EnumerateDirectories(Root.Value))
-            {
-                var name = Path.GetFileName(subdirectory);
-                var packageId = new PackageId(name);
-
-                // Ignore the staging directory and any directory that isn't the same as the package id
-                if (name == StagingDirectory || name != packageId.ToString())
-                {
-                    continue;
-                }
-
-                foreach (var package in EnumeratePackageVersions(packageId))
-                {
-                    yield return package;
-                }
+                yield return package;
             }
         }
+    }
 
-        public IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId)
+    public IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId)
+    {
+        var packageRootDirectory = Root.WithSubDirectories(packageId.ToString());
+        if (!Directory.Exists(packageRootDirectory.Value))
         {
-            var packageRootDirectory = Root.WithSubDirectories(packageId.ToString());
-            if (!Directory.Exists(packageRootDirectory.Value))
-            {
-                yield break;
-            }
-
-            foreach (var subdirectory in Directory.EnumerateDirectories(packageRootDirectory.Value))
-            {
-                yield return new ToolPackageInstance(id: packageId,
-                    version: NuGetVersion.Parse(Path.GetFileName(subdirectory)),
-                    packageDirectory: new DirectoryPath(subdirectory),
-                    assetsJsonParentDirectory: new DirectoryPath(subdirectory));
-            }
+            yield break;
         }
 
-        public IToolPackage GetPackage(PackageId packageId, NuGetVersion version)
+        foreach (var subdirectory in Directory.EnumerateDirectories(packageRootDirectory.Value))
         {
-            if (version == null)
-            {
-                throw new ArgumentNullException(nameof(version));
-            }
-
-            var directory = GetPackageDirectory(packageId, version);
-            if (!Directory.Exists(directory.Value))
-            {
-                return null;
-            }
-
-            return new ToolPackageInstance(id: packageId,
-                version: version,
-                packageDirectory: directory,
-                assetsJsonParentDirectory: directory);
+            yield return new ToolPackageInstance(id: packageId,
+                version: NuGetVersion.Parse(Path.GetFileName(subdirectory)),
+                packageDirectory: new DirectoryPath(subdirectory),
+                assetsJsonParentDirectory: new DirectoryPath(subdirectory));
         }
+    }
+
+    public IToolPackage GetPackage(PackageId packageId, NuGetVersion version)
+    {
+        if (version == null)
+        {
+            throw new ArgumentNullException(nameof(version));
+        }
+
+        var directory = GetPackageDirectory(packageId, version);
+        if (!Directory.Exists(directory.Value))
+        {
+            return null;
+        }
+
+        return new ToolPackageInstance(id: packageId,
+            version: version,
+            packageDirectory: directory,
+            assetsJsonParentDirectory: directory);
     }
 }

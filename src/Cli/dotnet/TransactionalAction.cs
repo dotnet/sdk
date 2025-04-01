@@ -5,125 +5,118 @@ using System.Reflection;
 using System.Transactions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli
+namespace Microsoft.DotNet.Cli;
+
+public sealed class TransactionalAction
 {
-    public sealed class TransactionalAction
+    static TransactionalAction()
     {
-        static TransactionalAction()
+        DisableTransactionTimeoutUpperLimit();
+    }
+
+    private class EnlistmentNotification(Action commit, Action rollback) : IEnlistmentNotification
+    {
+        private Action _commit = commit;
+        private Action _rollback = rollback;
+
+        public void Commit(Enlistment enlistment)
         {
-            DisableTransactionTimeoutUpperLimit();
+            if (_commit != null)
+            {
+                _commit();
+                _commit = null;
+            }
+
+            enlistment.Done();
         }
 
-        private class EnlistmentNotification : IEnlistmentNotification
+        public void InDoubt(Enlistment enlistment)
         {
-            private Action _commit;
-            private Action _rollback;
-
-            public EnlistmentNotification(Action commit, Action rollback)
-            {
-                _commit = commit;
-                _rollback = rollback;
-            }
-
-            public void Commit(Enlistment enlistment)
-            {
-                if (_commit != null)
-                {
-                    _commit();
-                    _commit = null;
-                }
-
-                enlistment.Done();
-            }
-
-            public void InDoubt(Enlistment enlistment)
-            {
-                Rollback(enlistment);
-            }
-
-            public void Prepare(PreparingEnlistment enlistment)
-            {
-                enlistment.Prepared();
-            }
-
-            public void Rollback(Enlistment enlistment)
-            {
-                if (_rollback != null)
-                {
-                    _rollback();
-                    _rollback = null;
-                }
-
-                enlistment.Done();
-            }
+            Rollback(enlistment);
         }
 
-        public static T Run<T>(
-            Func<T> action,
-            Action commit = null,
-            Action rollback = null)
+        public void Prepare(PreparingEnlistment enlistment)
         {
-            if (action == null)
+            enlistment.Prepared();
+        }
+
+        public void Rollback(Enlistment enlistment)
+        {
+            if (_rollback != null)
             {
-                throw new ArgumentNullException(nameof(action));
+                _rollback();
+                _rollback = null;
             }
 
-            // This automatically inherits any ambient transaction
-            // If a transaction is inherited, completing this scope will be a no-op
-            T result = default(T);
-            try
+            enlistment.Done();
+        }
+    }
+
+    public static T Run<T>(
+        Func<T> action,
+        Action commit = null,
+        Action rollback = null)
+    {
+        if (action == null)
+        {
+            throw new ArgumentNullException(nameof(action));
+        }
+
+        // This automatically inherits any ambient transaction
+        // If a transaction is inherited, completing this scope will be a no-op
+        T result = default(T);
+        try
+        {
+            using (var scope = new TransactionScope(
+                TransactionScopeOption.Required,
+                TimeSpan.Zero))
             {
-                using (var scope = new TransactionScope(
-                    TransactionScopeOption.Required,
-                    TimeSpan.Zero))
-                {
-                    Transaction.Current.EnlistVolatile(
-                        new EnlistmentNotification(commit, rollback),
-                        EnlistmentOptions.None);
+                Transaction.Current.EnlistVolatile(
+                    new EnlistmentNotification(commit, rollback),
+                    EnlistmentOptions.None);
 
-                    result = action();
+                result = action();
 
-                    scope.Complete();
-                }
-
-                return result;
+                scope.Complete();
             }
-            catch (TransactionAbortedException ex)
+
+            return result;
+        }
+        catch (TransactionAbortedException ex)
+        {
+            Reporter.Verbose.WriteLine(string.Format("TransactionAbortedException Message: {0}", ex.Message));
+            Reporter.Verbose.WriteLine(
+                $"Inner Exception Message: {ex?.InnerException?.Message + "---" + ex?.InnerException}");
+            throw;
+        }
+    }
+
+    private static void SetTransactionManagerField(string fieldName, object value)
+    {
+        typeof(TransactionManager).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static)
+            .SetValue(null, value);
+    }
+
+    // https://github.com/dotnet/sdk/issues/21101
+    // we should use the proper API once it is available
+    public static void DisableTransactionTimeoutUpperLimit()
+    {
+        SetTransactionManagerField("s_cachedMaxTimeout", true);
+        SetTransactionManagerField("s_maximumTimeout", TimeSpan.Zero);
+    }
+
+    public static void Run(
+        Action action,
+        Action commit = null,
+        Action rollback = null)
+    {
+        Run<object>(
+            action: () =>
             {
-                Reporter.Verbose.WriteLine(string.Format("TransactionAbortedException Message: {0}", ex.Message));
-                Reporter.Verbose.WriteLine(
-                    $"Inner Exception Message: {ex?.InnerException?.Message + "---" + ex?.InnerException}");
-                throw;
-            }
-        }
-
-        private static void SetTransactionManagerField(string fieldName, object value)
-        {
-            typeof(TransactionManager).GetField(fieldName, BindingFlags.NonPublic | BindingFlags.Static)
-                .SetValue(null, value);
-        }
-
-        // https://github.com/dotnet/sdk/issues/21101
-        // we should use the proper API once it is available
-        public static void DisableTransactionTimeoutUpperLimit()
-        {
-            SetTransactionManagerField("s_cachedMaxTimeout", true);
-            SetTransactionManagerField("s_maximumTimeout", TimeSpan.Zero);
-        }
-
-        public static void Run(
-            Action action,
-            Action commit = null,
-            Action rollback = null)
-        {
-            Run<object>(
-                action: () =>
-                {
-                    action();
-                    return null;
-                },
-                commit: commit,
-                rollback: rollback);
-        }
+                action();
+                return null;
+            },
+            commit: commit,
+            rollback: rollback);
     }
 }

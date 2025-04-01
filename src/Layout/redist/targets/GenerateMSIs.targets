@@ -1,0 +1,353 @@
+<Project>
+
+  <PropertyGroup>
+    <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">
+      GenerateSdkMsi;
+      GenerateTemplatesMsis;
+      GenerateSdkPlaceholderMsi
+    </GenerateMsisDependsOn>
+    <GenerateMsisDependsOn>$(GenerateMsisDependsOn);GenerateSdkBundle</GenerateMsisDependsOn>
+
+    <GenerateSdkBundleDependsOn>
+      DownloadBundledComponents;
+      AcquireWix;
+      MsiTargetsSetupInputOutputs;
+      GenerateWorkloadManifestsWxs
+    </GenerateSdkBundleDependsOn>
+    <!-- When building the sdk bundle only, the sdk and template msis are acquired via DownloadBundledComponents. -->
+    <GenerateSdkBundleDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">$(GenerateSdkBundleDependsOn);GenerateSdkMsi;GenerateTemplatesMsis</GenerateSdkBundleDependsOn>
+  </PropertyGroup>
+
+  <!-- AcquireWix Properties -->
+  <PropertyGroup>
+    <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
+    <WixRoot>$(ArtifactsDir)Tools/WixTools/$(MicrosoftSignedWixVersion)</WixRoot>
+    <WixDestinationPath>$(WixRoot)/WixTools.$(MicrosoftSignedWixVersion).zip</WixDestinationPath>
+    <WixDownloadSentinel>$(WixRoot)/WixDownload.$(MicrosoftSignedWixVersion).sentinel</WixDownloadSentinel>
+  </PropertyGroup>
+
+  <!-- Generate MSI/Bundle Properties -->
+  <PropertyGroup>
+    <SdkPkgSourcesWindowsDirectory>$(SdkPkgSourcesRootDirectory)windows</SdkPkgSourcesWindowsDirectory>
+    <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatemsi.ps1</SdkGenerateMsiPowershellScript>
+    <SdkPlaceholderGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatesdkplaceholdermsi.ps1</SdkPlaceholderGenerateMsiPowershellScript>
+    <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesWindowsDirectory)\stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
+    <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatebundle.ps1</SdkGenerateBundlePowershellScript>
+
+    <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(TargetArchitecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
+
+    <!-- Temp directory for light command layouts -->
+    <LightCommandObjDir>$(ArtifactsObjDir)LightCommandPackages</LightCommandObjDir>
+    <!-- Directory for the zipped up light command package -->
+    <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SdkDependencyKeyName>Dotnet_CLI</SdkDependencyKeyName>
+    <SdkPlaceholderDependencyKeyName>NetCore_SdkPlaceholder</SdkPlaceholderDependencyKeyName>
+    <CombinedFrameworkSdkHostMSIInstallerFile>$(ArtifactsShippingPackagesDir)$(ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk)$(BundleExtension)</CombinedFrameworkSdkHostMSIInstallerFile>
+
+    <!-- Warning: Changing the value "SdkBundleInstallerOutputGuidString" can only occur on a product-band boundary [CliProductBandVersion],
+                  Changing "SdkBundleInstallerOutputGuidString" mid-product-band will break the upgradability of the SDK bundle installer. -->
+    <SdkBundleInstallerOutputGuidString>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</SdkBundleInstallerOutputGuidString>
+  </PropertyGroup>
+
+  <Target Name="MsiTargetsSetupInputOutputs" DependsOnTargets="GetAssemblyVersion">
+    <PropertyGroup>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
+           Fallback to 0 when patch number is not set. This happens only during CI. -->
+      <CombinedBuildNumberAndRevision>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</CombinedBuildNumberAndRevision>
+
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
+      <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
+    </PropertyGroup>
+
+    <GenerateMsiVersion BuildNumber="$(CombinedBuildNumberAndRevision)"
+                        Major="$(VersionMajor)"
+                        Minor="$(VersionMinor)"
+                        Patch="$(VersionFeature)">
+      <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
+    </GenerateMsiVersion>
+  </Target>
+
+  <Target Name="AcquireWix"
+          DependsOnTargets="MsiTargetsSetupInputOutputs"
+          Inputs="$(WixDownloadSentinel)"
+          Outputs="$(WixDestinationPath)">
+    <!-- Setup sentinel to take advantage of incrementality -->
+    <MakeDir Directories="$(WixRoot)" />
+    <WriteLinesToFile
+        File="$(WixDownloadSentinel)"
+        Lines="$(MicrosoftSignedWixVersion)"
+        Overwrite="true"
+        Encoding="Unicode" />
+
+    <DownloadFile
+        Uri="$(WixDownloadUrl)"
+        DestinationPath="$(WixDestinationPath)"
+        Overwrite="false" />
+
+    <ExtractArchiveToDirectory
+        SourceArchive="$(WixDestinationPath)"
+        DestinationDirectory="$(WixRoot)" />
+  </Target>
+
+  <Target Name="GenerateSdkMsi"
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareIntermediateSdkInstallerOutput"
+          Inputs="$(IntermediateSdkInstallerOutputPath)**/*;
+                  $(SdkGenerateMsiPowershellScript)"
+          Outputs="$(SdkMSIInstallerFile)">
+    <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
+      <Output TaskParameter="GeneratedGuid" PropertyName="SdkInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
+                      '$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))' ^
+                      '$(SdkMSIInstallerFile)' ^
+                      '$(WixRoot)' ^
+                      '$(ToolsetBrandName)' ^
+                      '$(CliProductBandVersion)00' ^
+                      '$(MsiVersion)' ^
+                      '$(SDKBundleVersion)' ^
+                      '$(Version)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
+                      '$(SdkInstallerUpgradeCode)' ^
+                      '$(SdkDependencyKeyName)' ^
+                      '$(TargetArchitecture)' ^
+                      '$(SdkStableFileIdForApphostTransform)' ^
+                      -InformationAction Continue" />
+
+    <ItemGroup>
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnet.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\registrykeys.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
+        <SdkMsiWixSrcFiles Include="$(WixRoot)\install-files.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory)"
+      NoLogo="true"
+      Cultures="en-us"
+      InstallerFile="$(SdkMSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(SdkMsiWixSrcFiles)">
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+  </Target>
+
+  <Target Name="GenerateSdkPlaceholderMsi"
+          DependsOnTargets="AcquireWix;MsiTargetsSetupInputOutputs"
+          Inputs="$(SdkPlaceholderGenerateMsiPowershellScript)"
+          Outputs="$(SdkPlaceholderMSIInstallerFile)">
+    <GenerateGuidFromName Name="$(SdkPlaceholderMSIInstallerFile)">
+      <Output TaskParameter="GeneratedGuid" PropertyName="SdkPlaceholderInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(SdkPlaceholderGenerateMsiPowershellScript) ^
+                      '$(SdkPlaceholderMSIInstallerFile)' ^
+                      '$(WixRoot)' ^
+                      '$(SdkBrandName)' ^
+                      '$(MsiVersion)' ^
+                      '$(SDKBundleVersion)' ^
+                      '$(Version)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
+                      '$(SdkPlaceholderInstallerUpgradeCode)' ^
+                      '$(SdkPlaceholderDependencyKeyName)' ^
+                      '$(TargetArchitecture)' ^
+                      -InformationAction Continue" />
+
+    <ItemGroup>
+      <SdkPlaceholdMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+      <SdkPlaceholdMsiWixSrcFiles Include="$(WixRoot)\sdkplaceholder.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      InstallerFile="$(SdkPlaceholderMSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(SdkPlaceholdMsiWixSrcFiles)"
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory)">
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+  </Target>
+
+  <Target Name="GenerateTemplatesMsis"
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetupTemplatesMsis"
+          Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
+          Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
+    <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
+                      '%(TemplatesMsiComponent.LayoutPath)' ^
+                      '%(TemplatesMsiComponent.MSIInstallerFile)' ^
+                      '$(WixRoot)' ^
+                      '%(TemplatesMsiComponent.BrandName)' ^
+                      '%(TemplatesMsiComponent.MsiVersion)' ^
+                      '%(TemplatesMsiComponent.MsiVersion)' ^
+                      '$(FullNugetVersion)' ^
+                      '$(VersionMajor)' ^
+                      '$(VersionMinor)' ^
+                      '%(TemplatesMsiComponent.UpgradeCode)' ^
+                      '%(TemplatesMsiComponent.DependencyKeyName)' ^
+                      '$(TargetArchitecture)' ^
+                      -InformationAction Continue" />
+
+    <ItemGroup>
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\templates.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
+        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      InstallerFile="%(TemplatesMsiComponent.MSIInstallerFile)"
+      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
+      WixSrcFiles="@(TemplatesMsiWixSrcFiles)">
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+  </Target>
+
+  <Target Name="SetupTemplatesMsis" DependsOnTargets="CalculateTemplatesVersions">
+    <PropertyGroup>
+      <TemplatesGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <TemplatesMsiComponent Include="@(TemplatesComponents)">
+        <LayoutPath>$(IntermediateOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
+        <BrandName>%(TemplatesComponents.BrandNameWithoutVersion) $(Version)</BrandName>
+        <MsiVersion>%(TemplatesComponents.MSIVersion)</MsiVersion>
+        <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>
+        <DependencyKeyName>NetCore_Templates_%(TemplatesComponents.TemplatesMajorMinorVersion)</DependencyKeyName>
+      </TemplatesMsiComponent>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GenerateWorkloadManifestsWxs">
+    <ItemGroup>
+      <_Manifests Include="@(BundledManifests)">
+        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
+      </_Manifests>
+    </ItemGroup>
+    <PropertyGroup>
+      <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
+      <WorkloadManifestsWxsContent>
+<![CDATA[
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <PackageGroup Id="PG_WorkloadManifests">
+            @(_Manifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
+                <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
+            </MsiPackage>', '
+            ')
+        </PackageGroup>
+    </Fragment>
+</Wix>
+]]>
+      </WorkloadManifestsWxsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(WorkloadManifestsWxsPath)"
+                      Lines="$(WorkloadManifestsWxsContent)"
+                      WriteOnlyWhenDifferent="true"
+                      Overwrite="true" />
+  </Target>
+
+  <Target Name="GenerateSdkBundle"
+          DependsOnTargets="$(GenerateSdkBundleDependsOn)"
+          Condition="'$(DotNetBuild)' != 'true' or '$(GenerateSdkBundleOnly)' == 'true'"
+          Inputs="$(SdkMSIInstallerFile);
+                  $(DownloadedSharedFrameworkInstallerFile);
+                  $(DownloadedHostFxrInstallerFile);
+                  $(DownloadedSharedHostInstallerFile);
+                  $(SdkGenerateBundlePowershellScript)"
+          Outputs="$(CombinedFrameworkSdkHostMSIInstallerFile)">
+    <!-- Choose "latest" template MSI to go in bundle. -->
+    <ItemGroup>
+      <LatestTemplateInstallerComponent Include="@(TemplatesMsiComponent)" Condition="'%(TemplatesMajorMinorVersion)' == '$(MajorMinorVersion)'"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <LatestTemplateMsiInstallerFile>@(LatestTemplateInstallerComponent->'%(MSIInstallerFile)')</LatestTemplateMsiInstallerFile>
+      <!-- When building the sdk bundle only, the template msi is acquired via DownloadBundledComponents. -->
+      <LatestTemplateMsiInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkTemplatesMSIInstallerFileName)</LatestTemplateMsiInstallerFile>
+
+      <UpgradePoliciesSrcPath>$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle\upgradePolicies.wxs</UpgradePoliciesSrcPath>
+    </PropertyGroup>
+
+    <GenerateGuidFromName Name="$(SdkBundleInstallerOutputGuidString)">
+      <Output TaskParameter="GeneratedGuid" PropertyName="CombinedFrameworkSDKHostInstallerUpgradeCode" />
+    </GenerateGuidFromName>
+
+    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateBundlePowershellScript) ^
+                      -UpgradePoliciesWxsFile '$(UpgradePoliciesSrcPath)' ^
+                      -WorkloadManifestWxsFile '$(WorkloadManifestsWxsPath)' ^
+                      -CLISDKMSIFile '$(SdkMSIInstallerFile)' ^
+                      -ASPNETRuntimeMSIFile '$(DownloadsFolder)$(DownloadedAspNetCoreSharedFxInstallerFileName)' ^
+                      -SharedFxMSIFile '$(DownloadsFolder)$(DownloadedSharedFrameworkInstallerFileName)' ^
+                      -HostFxrMSIFile '$(DownloadsFolder)$(DownloadedHostFxrInstallerFileName)' ^
+                      -SharedHostMSIFile '$(DownloadsFolder)$(DownloadedSharedHostInstallerFileName)' ^
+                      -WinFormsAndWpfMSIFile '$(DownloadsFolder)$(DownloadedWinFormsAndWpfSharedFrameworkInstallerFileName)' ^
+                      -NetCoreAppTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedNetCoreAppTargetingPackInstallerFileName)' ^
+                      -NetStandardTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedNetStandardTargetingPackInstallerFileName)' ^
+                      -NetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedNetCoreAppHostPackInstallerFileName)' ^
+                      -AlternateNetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedAlternateNetCoreAppHostPackInstallerFileName)' ^
+                      -Arm64NetCoreAppHostPackMSIFile '$(DownloadsFolder)$(DownloadedArm64NetCoreAppHostPackInstallerFileName)' ^
+                      -AspNetTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedAspNetTargetingPackInstallerFileName)' ^
+                      -WindowsDesktopTargetingPackMSIFile '$(DownloadsFolder)$(DownloadedWindowsDesktopTargetingPackInstallerFileName)' ^
+                      -FinalizerExe '$(FinalizerExe)' ^
+                      -TemplatesMSIFile '$(LatestTemplateMsiInstallerFile)' ^
+                      -DotnetBundleOutput '$(CombinedFrameworkSdkHostMSIInstallerFile)' ^
+                      -WixRoot '$(WixRoot)' ^
+                      -ProductMoniker '$(SdkBrandName)' ^
+                      -DotnetMSIVersion '$(MsiVersion)' ^
+                      -SDKBundleVersion '$(SDKBundleVersion)' ^
+                      -DotnetCLINugetVersion '$(Version)' ^
+                      -VersionMajor '$(VersionMajor)' ^
+                      -VersionMinor '$(VersionMinor)' ^
+                      -MinimumVSVersion '$(MinimumVSVersion)' ^
+                      -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
+                      -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
+                      -DependencyKeyName '$(SdkDependencyKeyName)' ^
+                      -Architecture '$(TargetArchitecture)' ^
+                      -DotNetRuntimeVersion '$(MicrosoftNETCoreAppRuntimePackageVersion)' ^
+                      -AspNetCoreVersion '$(MicrosoftAspNetCoreAppRuntimePackageVersion)' ^
+                      -SDKProductBandVersion '$(CliProductBandVersion)' ^
+                      -InformationAction Continue " />
+
+    <ItemGroup>
+      <BundleMsiWixSrcFiles Include="$(WixRoot)\bundle.wixobj" />
+      <BundleMsiWixSrcFiles Include="$(WixRoot)\WorkloadManifests.wixobj" />
+      <BundleMsiWixSrcFiles Include="$(WixRoot)\upgradePolicies.wixobj" />
+    </ItemGroup>
+
+    <CreateLightCommandPackageDrop
+      LightCommandWorkingDir="$(LightCommandObjDir)"
+      OutputFolder="$(LightCommandPackagesDir)"
+      NoLogo="true"
+      Cultures="en-us"
+      InstallerFile="$(CombinedFrameworkSdkHostMSIInstallerFile)"
+      WixExtensions="WixBalExtension;WixUtilExtension;WixTagExtension"
+      WixSrcFiles="@(BundleMsiWixSrcFiles)"
+      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory);$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix\bundle">
+      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
+    </CreateLightCommandPackageDrop>
+  </Target>
+
+  <Target Name="GenerateMsis"
+          AfterTargets="Build"
+          DependsOnTargets="$(GenerateMsisDependsOn)" />
+
+</Project>

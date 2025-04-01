@@ -3,25 +3,16 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ToolPackage
-{
-    internal class PackageLocation
-    {
-        public PackageLocation(
-            FilePath? nugetConfig = null,
-            DirectoryPath? rootConfigDirectory = null,
-            string[] additionalFeeds = null,
-            string[] sourceFeedOverrides = null)
-        {
-            NugetConfig = nugetConfig;
-            RootConfigDirectory = rootConfigDirectory;
-            AdditionalFeeds = additionalFeeds ?? Array.Empty<string>();
-            SourceFeedOverrides = sourceFeedOverrides ?? Array.Empty<string>();
-        }
+namespace Microsoft.DotNet.Cli.ToolPackage;
 
-        public FilePath? NugetConfig { get; }
-        public DirectoryPath? RootConfigDirectory { get; }
-        public string[] AdditionalFeeds { get; }
-        public string[] SourceFeedOverrides { get; }
-    }
+internal class PackageLocation(
+    FilePath? nugetConfig = null,
+    DirectoryPath? rootConfigDirectory = null,
+    string[] additionalFeeds = null,
+    string[] sourceFeedOverrides = null)
+{
+    public FilePath? NugetConfig { get; } = nugetConfig;
+    public DirectoryPath? RootConfigDirectory { get; } = rootConfigDirectory;
+    public string[] AdditionalFeeds { get; } = additionalFeeds ?? Array.Empty<string>();
+    public string[] SourceFeedOverrides { get; } = sourceFeedOverrides ?? Array.Empty<string>();
 }

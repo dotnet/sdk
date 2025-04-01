@@ -5,96 +5,90 @@ using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class ToolPathCalculator(string packagesDirectory)
 {
-    public class ToolPathCalculator
+    private readonly string _packagesDirectory = packagesDirectory;
+
+    public string GetBestLockFilePath(string packageId, VersionRange versionRange, NuGetFramework framework)
     {
-        private readonly string _packagesDirectory;
-
-        public ToolPathCalculator(string packagesDirectory)
+        if (versionRange == null)
         {
-            _packagesDirectory = packagesDirectory;
+            throw new ArgumentNullException(nameof(versionRange));
         }
 
-        public string GetBestLockFilePath(string packageId, VersionRange versionRange, NuGetFramework framework)
+        if (framework == null)
         {
-            if (versionRange == null)
-            {
-                throw new ArgumentNullException(nameof(versionRange));
-            }
-
-            if (framework == null)
-            {
-                throw new ArgumentNullException(nameof(framework));
-            }
-
-            var availableToolVersions = GetAvailableToolVersions(packageId);
-
-            var bestVersion = versionRange.FindBestMatch(availableToolVersions);
-            if (bestVersion == null)
-            {
-                throw new GracefulException(string.Format(
-                    LocalizableStrings.VersionForPackageCouldNotBeResolved,
-                    packageId));
-            }
-
-            return GetLockFilePath(packageId, bestVersion, framework);
+            throw new ArgumentNullException(nameof(framework));
         }
 
-        public string GetLockFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
+        var availableToolVersions = GetAvailableToolVersions(packageId);
+
+        var bestVersion = versionRange.FindBestMatch(availableToolVersions);
+        if (bestVersion == null)
         {
-            if (version == null)
-            {
-                throw new ArgumentNullException(nameof(version));
-            }
-
-            if (framework == null)
-            {
-                throw new ArgumentNullException(nameof(framework));
-            }
-
-            return Path.Combine(
-                GetBaseToolPath(packageId),
-                version.ToNormalizedString().ToLowerInvariant(),
-                framework.GetShortFolderName(),
-                "project.assets.json");
+            throw new GracefulException(string.Format(
+                LocalizableStrings.VersionForPackageCouldNotBeResolved,
+                packageId));
         }
 
-        private string GetBaseToolPath(string packageId)
-        {
-            return Path.Combine(
-                _packagesDirectory,
-                ".tools",
-                packageId.ToLowerInvariant());
-        }
-
-        private IEnumerable<NuGetVersion> GetAvailableToolVersions(string packageId)
-        {
-            var availableVersions = new List<NuGetVersion>();
-
-            var toolBase = GetBaseToolPath(packageId);
-            if (!Directory.Exists(toolBase))
-            {
-                return Enumerable.Empty<NuGetVersion>();
-            }
-
-            var versionDirectories = Directory.EnumerateDirectories(toolBase);
-
-            foreach (var versionDirectory in versionDirectories)
-            {
-                var version = Path.GetFileName(versionDirectory);
-
-                NuGetVersion nugetVersion = null;
-                NuGetVersion.TryParse(version, out nugetVersion);
-
-                if (nugetVersion != null)
-                {
-                    availableVersions.Add(nugetVersion);
-                }
-            }
-
-            return availableVersions;
-        }
-
+        return GetLockFilePath(packageId, bestVersion, framework);
     }
+
+    public string GetLockFilePath(string packageId, NuGetVersion version, NuGetFramework framework)
+    {
+        if (version == null)
+        {
+            throw new ArgumentNullException(nameof(version));
+        }
+
+        if (framework == null)
+        {
+            throw new ArgumentNullException(nameof(framework));
+        }
+
+        return Path.Combine(
+            GetBaseToolPath(packageId),
+            version.ToNormalizedString().ToLowerInvariant(),
+            framework.GetShortFolderName(),
+            "project.assets.json");
+    }
+
+    private string GetBaseToolPath(string packageId)
+    {
+        return Path.Combine(
+            _packagesDirectory,
+            ".tools",
+            packageId.ToLowerInvariant());
+    }
+
+    private IEnumerable<NuGetVersion> GetAvailableToolVersions(string packageId)
+    {
+        var availableVersions = new List<NuGetVersion>();
+
+        var toolBase = GetBaseToolPath(packageId);
+        if (!Directory.Exists(toolBase))
+        {
+            return Enumerable.Empty<NuGetVersion>();
+        }
+
+        var versionDirectories = Directory.EnumerateDirectories(toolBase);
+
+        foreach (var versionDirectory in versionDirectories)
+        {
+            var version = Path.GetFileName(versionDirectory);
+
+            NuGetVersion nugetVersion = null;
+            NuGetVersion.TryParse(version, out nugetVersion);
+
+            if (nugetVersion != null)
+            {
+                availableVersions.Add(nugetVersion);
+            }
+        }
+
+        return availableVersions;
+    }
+
 }

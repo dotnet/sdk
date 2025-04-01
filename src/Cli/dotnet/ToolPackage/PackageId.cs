@@ -1,40 +1,34 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal struct PackageId(string id) : IEquatable<PackageId>, IComparable<PackageId>
 {
-    internal struct PackageId : IEquatable<PackageId>, IComparable<PackageId>
+    private string _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
+
+    public bool Equals(PackageId other)
     {
-        private string _id;
+        return ToString() == other.ToString();
+    }
 
-        public PackageId(string id)
-        {
-            _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
-        }
+    public int CompareTo(PackageId other)
+    {
+        return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
+    }
 
-        public bool Equals(PackageId other)
-        {
-            return ToString() == other.ToString();
-        }
+    public override bool Equals(object obj)
+    {
+        return obj is PackageId id && Equals(id);
+    }
 
-        public int CompareTo(PackageId other)
-        {
-            return string.Compare(ToString(), other.ToString(), StringComparison.Ordinal);
-        }
+    public override int GetHashCode()
+    {
+        return ToString().GetHashCode();
+    }
 
-        public override bool Equals(object obj)
-        {
-            return obj is PackageId id && Equals(id);
-        }
-
-        public override int GetHashCode()
-        {
-            return ToString().GetHashCode();
-        }
-
-        public override string ToString()
-        {
-            return _id ?? "";
-        }
+    public override string ToString()
+    {
+        return _id ?? "";
     }
 }

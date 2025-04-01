@@ -8,6 +8,11 @@ pr:
     - main
     - release/*
     - internal/release/*
+  paths:
+    exclude:
+    - documentation/*
+    - README.md
+    - CODEOWNERS
 
 parameters:
 - name: enableArm64Job
@@ -75,18 +80,8 @@ stages:
         helixTargetQueue: osx.15.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
-          buildArchitecture: arm64
+          targetArchitecture: arm64
           runtimeIdentifier: osx-arm64
-
-  ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      enableInternalSources: true
-      platform:
-        name: Managed
-        container: centosStream9
-        jobProperties:
-          timeoutInMinutes: 30
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
