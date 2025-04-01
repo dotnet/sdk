@@ -8,13 +8,8 @@ using Microsoft.DotNet.Tools.MSBuild;
 
 namespace Microsoft.DotNet.Tools.Clean;
 
-public class CleanCommand : MSBuildForwardingApp
+public class CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
 {
-    public CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-        : base(msbuildArgs, msbuildPath)
-    {
-    }
-
     public static CleanCommand FromArgs(string[] args, string msbuildPath = null)
     {
 
