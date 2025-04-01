@@ -110,7 +110,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         atString = atString == null || atString == atResourceName ? "at" : atString;
         inString = inString == null || inString == inResourceName ? "in {0}:line {1}" : inString;
 
-        string inPattern = string.Format(CultureInfo.InvariantCulture, inString, "(?<file>.+)", @"et(?<line>\d+)");
+        string inPattern = string.Format(CultureInfo.InvariantCulture, inString, "(?<file>.+)", @"(?<line>\d+)");
 
         // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
         // thread suspends, so the regex gets blamed incorrectly.
@@ -441,12 +441,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
         var attempt = asm.Tries.Count;
 
-        // TestNodeUid can be non-unique in the run for folded data tests.
-        var uniqueTestId = GetUniqueTestNodeId(testNodeUid, instanceId);
-
         if (_options.ShowActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(uniqueTestId);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
         }
 
         switch (outcome)
@@ -1060,15 +1057,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), GetUniqueTestNodeId(testNodeUid, instanceId), displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
-    }
-
-    private string GetUniqueTestNodeId(string testNodeUid, string instanceId)
-    {
-        return $"{testNodeUid}-{instanceId}";
     }
 
     public void WritePlatformAndExtensionOptions(HelpContext context,
