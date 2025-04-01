@@ -2,18 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using Microsoft.DotNet.Cli.Commands.Tool.Search;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Tools.Tool.Install;
+using Microsoft.DotNet.Workloads.Workload;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = new("packageId")
     {
-        HelpName = CliCommandStrings.ToolInstallPackageIdArgumentName,
-        Description = CliCommandStrings.ToolInstallPackageIdArgumentDescription
+        HelpName = LocalizableStrings.PackageIdArgumentName,
+        Description = LocalizableStrings.PackageIdArgumentDescription,
+        CustomParser = (argumentResult) => ParseToolIdentity(argumentResult)
     };
 
     public static readonly CliOption<string> VersionOption = new("--version")
@@ -83,6 +87,27 @@ internal static class ToolInstallCommandParser
     public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
     private static readonly CliCommand Command = ConstructCommand();
+
+    public static (string PackageId, string Version) ParseToolIdentity(ArgumentResult argumentResult)
+    {
+        if (argumentResult.Tokens.Count != 1)
+        {
+            throw new ArgumentException("Expected exactly one token for packageId.");
+        }
+        var token = argumentResult.Tokens[0].Value;
+        var versionSeparatorIndex = token.IndexOf('@');
+        if (versionSeparatorIndex == -1)
+        {
+            return (token, null);
+        }
+        var packageId = token.Substring(0, versionSeparatorIndex);
+        var version = token.Substring(versionSeparatorIndex + 1);
+        if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(version))
+        {
+            throw new ArgumentException("PackageId and version cannot be empty.");
+        }
+        return (packageId, version);
+    }
 
     public static CliCommand GetCommand()
     {

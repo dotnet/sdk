@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool uninstall -g console.test.app");
 
-            var packageId = result.GetValue<string>(ToolUninstallCommandParser.PackageIdArgument);
+            var packageId = result.GetValue(ToolUninstallCommandParser.PackageIdArgument).PackageId;
 
             packageId.Should().Be("console.test.app");
         }
