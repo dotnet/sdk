@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System.Text.Encodings.Web;
 using System.Text.Json.Serialization;
 using System.Text.Json;
-using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -42,11 +42,11 @@ public partial class WriteImportMapToHtml : Task
     // 2.group = fingerprint placeholder
     // 3.group = file extension
     // wrapped in quotes
-    private static readonly Regex _assetsRegex = new Regex(@"""([^""]+)(#\[\.{fingerprint}\])([^""]+)""");
+    internal static readonly Regex _assetsRegex = new Regex(@"""([^""]+)(#\[\.{fingerprint}\])([^""]+)""");
 
-    private static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
+    internal static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
-    private static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\id=""(?<group>[^""]+)"")?\s*[/]?>");
+    internal static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\sid=""(?<group>[^""]+)"")?\s*[/]?>");
 
     public override bool Execute()
     {
@@ -130,22 +130,22 @@ public partial class WriteImportMapToHtml : Task
             }
 
             var link = new StringBuilder();
-            link.Append($"<link href=\"{asset.Url}\" rel=\"{asset.PreloadRel}\"");
+            link.Append($"<link href=\"").Append(asset.Url).Append("\" rel=\"").Append(asset.PreloadRel).Append('"');
             if (!string.IsNullOrEmpty(asset.PreloadAs))
             {
-                link.Append(" as=\"").Append(asset.PreloadAs).Append("\"");
+                link.Append(" as=\"").Append(asset.PreloadAs).Append('"');
             }
             if (!string.IsNullOrEmpty(asset.PreloadPriority))
             {
-                link.Append(" fetchpriority=\"").Append(asset.PreloadPriority).Append("\"");
+                link.Append(" fetchpriority=\"").Append(asset.PreloadPriority).Append('"');
             }
             if (!string.IsNullOrEmpty(asset.PreloadCrossorigin))
             {
-                link.Append(" crossorigin=\"").Append(asset.PreloadCrossorigin).Append("\"");
+                link.Append(" crossorigin=\"").Append(asset.PreloadCrossorigin).Append('"');
             }
             if (!string.IsNullOrEmpty(asset.Integrity))
             {
-                link.Append(" integrity=\"").Append(asset.Integrity).Append("\"");
+                link.Append(" integrity=\"").Append(asset.Integrity).Append('"');
             }
 
             link.Append(" />");
