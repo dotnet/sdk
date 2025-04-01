@@ -199,7 +199,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return result;
     }
 
-    public static ITaskItem[] ToTaskItems(IList<StaticWebAssetEndpoint> endpoints)
+    public static ITaskItem[] ToTaskItems(ICollection<StaticWebAssetEndpoint> endpoints)
     {
         if (endpoints == null || endpoints.Count == 0)
         {
@@ -207,9 +207,10 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
 
         var endpointItems = new ITaskItem[endpoints.Count];
-        for (var i = 0; i < endpoints.Count; i++)
+        var i = 0;
+        foreach (var endpoint in endpoints)
         {
-            endpointItems[i] = endpoints[i].ToTaskItem();
+            endpointItems[i++] = endpoint.ToTaskItem();
         }
 
         return endpointItems;

@@ -1251,26 +1251,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
-    internal static IDictionary<string, List<StaticWebAssetEndpoint>> ToAssetFileDictionary(ITaskItem[] candidateEndpoints)
-    {
-        var result = new Dictionary<string, List<StaticWebAssetEndpoint>>(candidateEndpoints.Length / 2);
-
-        foreach (var candidate in candidateEndpoints)
-        {
-            var endpoint = FromTaskItem(candidate);
-            var assetFile = endpoint.AssetFile;
-            if (!result.TryGetValue(assetFile, out var endpoints))
-            {
-                endpoints = new List<StaticWebAssetEndpoint>(5);
-                result[assetFile] = endpoints;
-            }
-            endpoints.Add(endpoint);
-        }
-
-        return result;
-    }
-
-
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
     {
         // We return either the selected asset or a list with all the candidates that were found to be ambiguous
