@@ -57,7 +57,7 @@
 
     <!-- URLs -->
     <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
-    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://builds.dotnet.microsoft.com/internal/</InternalBaseURL>
+    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://ci.dot.net/internal/</InternalBaseURL>
     <!-- Base url for official releases. Used to obtain some assets from older releases when necessary. -->
     <OfficialBaseURL>https://builds.dotnet.microsoft.com/dotnet/</OfficialBaseURL>
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">$(OfficialBaseURL)</PublicBaseURL>
