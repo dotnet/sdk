@@ -108,7 +108,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         atString = atString == null || atString == atResourceName ? "at" : atString;
         inString = inString == null || inString == inResourceName ? "in {0}:line {1}" : inString;
 
-        string inPattern = string.Format(CultureInfo.InvariantCulture, inString, "(?<file>.+)", @"(?<line>\d+)");
+        string inPattern = string.Format(CultureInfo.InvariantCulture, inString, "(?<file>.+)", @"et(?<line>\d+)");
 
         // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
         // thread suspends, so the regex gets blamed incorrectly.
@@ -305,6 +305,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
+        int retried = _assemblies.Values.Sum(t => t.RetriedTests);
         int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
@@ -318,6 +319,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
+        string retriedText = $"{SingleIndentation}retried: {retried}";
         string durationText = $"{SingleIndentation}duration: ";
 
         if (error > 0)
@@ -366,6 +368,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.ResetColor();
         }
 
+        if (retried > 0)
+        {
+            terminal.AppendLine(retriedText);
+        }
+
         terminal.Append(durationText);
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
@@ -410,6 +417,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
        string? architecture,
        string? executionId,
        string testNodeUid,
+       string instanceId,
        string displayName,
        TestOutcome outcome,
        TimeSpan duration,
@@ -427,6 +435,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             architecture,
             executionId,
             testNodeUid,
+            instanceId,
             displayName,
             outcome,
             duration,
@@ -443,6 +452,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? architecture,
         string? executionId,
         string testNodeUid,
+        string instanceId,
         string displayName,
         TestOutcome outcome,
         TimeSpan duration,
@@ -453,10 +463,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? errorOutput)
     {
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        
+        // TestNodeUid can be non-unique in the run for folded data tests.
+        var uniqueTestId = GetUniqueTestNodeId(testNodeUid, instanceId);
 
         if (_options.ShowActiveTests)
         {
-            asm.TestNodeResultsState?.RemoveRunningTestNode(testNodeUid);
+            asm.TestNodeResultsState?.RemoveRunningTestNode(uniqueTestId);
         }
 
         switch (outcome)
@@ -477,6 +490,22 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 asm.TotalTests++;
                 break;
         }
+
+        if (asm.PreviousTestInstanceIds.TryGet(testNodeUid, out var previousRuns))
+        {
+            if (previousRuns.TryGet(instanceId, out var previousRun))
+            {
+                // This is a retried test, fix the counts.
+                // Previous test failed because we are retrying.
+                // We don't need to be atomic, because the update is done below
+                // where we update the worker to make it re-render.
+                asm.FailedTests--;
+                asm.RetriedTests++;    
+            }
+            
+        }
+
+                asm.PreviousTestInstanceIds.Add(testNodeUid, instanceId);
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
@@ -1032,6 +1061,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string testNodeUid,
+        string instanceId,
         string displayName,
         string? executionId)
     {
@@ -1041,10 +1071,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             asm.TestNodeResultsState ??= new(Interlocked.Increment(ref _counter));
             asm.TestNodeResultsState.AddRunningTestNode(
-                Interlocked.Increment(ref _counter), testNodeUid, displayName, CreateStopwatch());
+                Interlocked.Increment(ref _counter), GetUniqueTestNodeId(testNodeUid, instanceId), displayName, CreateStopwatch());
         }
 
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
+    }
+
+    private string GetUniqueTestNodeId(string testNodeUid, string instanceId)
+    {
+        return $"{testNodeUid}-{instanceId}";
     }
 
     public void WritePlatformAndExtensionOptions(HelpContext context,
