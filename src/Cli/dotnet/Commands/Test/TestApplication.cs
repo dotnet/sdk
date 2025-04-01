@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.Cli;
 
 internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
 {
-    private readonly BuildOptions _buildOptions;
     private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly List<string> _outputData = [];
