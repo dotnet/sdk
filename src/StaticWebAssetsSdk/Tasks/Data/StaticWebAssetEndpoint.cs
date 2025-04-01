@@ -80,6 +80,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
         set
         {
+            Array.Sort(value);
             _selectors = value;
             _selectorsModified = true;
             _modified = true;
@@ -105,6 +106,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
         set
         {
+            Array.Sort(value);
             _responseHeaders = value;
             _responseHeadersModified = true;
             _modified = true;
@@ -130,6 +132,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
         set
         {
+            Array.Sort(value);
             _endpointProperties = value;
             _endpointPropertiesModified = true;
             _modified = true;
@@ -144,9 +147,6 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         for (var i = 0; i < endpoints.Length; i++)
         {
             result[i] = FromTaskItem(endpoints[i]);
-            Array.Sort(result[i].ResponseHeaders);
-            Array.Sort(result[i].Selectors);
-            Array.Sort(result[i].EndpointProperties);
         }
 
         Array.Sort(result, (a, b) => (a.Route, b.Route) switch
