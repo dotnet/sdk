@@ -191,7 +191,6 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
         string pipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id);
         NamedPipeServerStream serverPipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message,
             PipeOptions.None, 65535, 65535, pipeSecurity);
-        _ = new InstallMessageDispatcher(serverPipe);
 
         // The client process will generate the actual log file. The server will log messages through a separate pipe.
         string logPipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id, "log");
