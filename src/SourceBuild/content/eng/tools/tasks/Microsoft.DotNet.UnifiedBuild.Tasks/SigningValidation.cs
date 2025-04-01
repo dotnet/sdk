@@ -187,20 +187,19 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
 
             // SignCheck writes console output to log files and the output stream.
             // To avoid cluttering the console, redirect the output to empty handlers.
-            process.OutputDataReceived += (sender, args) => {  };
+            process.OutputDataReceived += (sender, args) => { };
             process.ErrorDataReceived += (sender, args) => { };
 
             Log.LogMessage(MessageImportance.High, $"Running SignCheck...");
 
             process.Start();
+
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
-            process.WaitForExit(_signCheckTimeout);
 
-            if (!process.HasExited)
+            bool hasExited = process.WaitForExit(_signCheckTimeout);
+            if (!hasExited)
             {
-                process.Kill();
-                process.WaitForExit();
                 throw new TimeoutException($"SignCheck timed out after {_signCheckTimeout / 1000} seconds.");
             }
 
@@ -257,7 +256,6 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     /// </summary>
     private (string command, string arguments) GetSignCheckCommandAndArguments()
     {
-        string exclusionsFile = Path.Combine(DotNetRootDirectory, "eng", "SignCheckExclusionsFile.txt");
         string sdkTaskScript = Path.Combine(DotNetRootDirectory, "eng", "common", "sdk-task");
 
         string argumentsTemplate =
