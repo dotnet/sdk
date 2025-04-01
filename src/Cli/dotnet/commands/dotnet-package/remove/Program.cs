@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -34,6 +35,11 @@ internal class RemovePackageReferenceCommand : CommandBase, IDeprecated
 
     public override int Execute()
     {
+        if (IsDeprecated)
+        {
+            IDeprecated.WarnIfNecessary(Reporter.ConsoleOutReporter, "wrong verb order", new ReleaseVersion(10, 0, 100));
+        }
+
         var projectFilePath = string.Empty;
 
         if (!File.Exists(_fileOrDirectory))
