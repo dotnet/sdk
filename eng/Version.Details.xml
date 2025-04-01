@@ -83,14 +83,14 @@
       <Sha>ae13ed0906680da0cb73ad11b31003cd93386d35</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25176.3">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25181.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>46011b970a6b3337596d66f168992051dd134565</Sha>
+      <Sha>e165bbea9e27ceb4c8b91c22bd0c564ff1dc8b25</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25176.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25181.1">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>46011b970a6b3337596d66f168992051dd134565</Sha>
+      <Sha>e165bbea9e27ceb4c8b91c22bd0c564ff1dc8b25</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25179.1">
@@ -208,22 +208,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>c4b26195ee5a77e70b2ea5fd50db87d6a9194c24</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25175-02">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25181-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>782a46231902762286f6958631437d635bfdd249</Sha>
+      <Sha>c9a26cb2dd73ecfd1be3cf8f90fb43172646fcb3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25175-02">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25181-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>782a46231902762286f6958631437d635bfdd249</Sha>
+      <Sha>c9a26cb2dd73ecfd1be3cf8f90fb43172646fcb3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25175-02">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25181-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>782a46231902762286f6958631437d635bfdd249</Sha>
+      <Sha>c9a26cb2dd73ecfd1be3cf8f90fb43172646fcb3</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.0-preview-25175-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.0-preview-25181-02">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>782a46231902762286f6958631437d635bfdd249</Sha>
+      <Sha>c9a26cb2dd73ecfd1be3cf8f90fb43172646fcb3</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="9.0.3">
@@ -321,22 +321,22 @@
       <Sha>b96167fbfe8bd45d94e4dcda42c7d09eb5745459</Sha>
       <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25180.1">
+    <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="9.0.0-preview.25181.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>08ad141ceaa515aca312999f9cf142b84fb6cdcb</Sha>
+      <Sha>616caa5a5b34ccdff2ab31219940d2d4cc0c59ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25180.1">
+    <Dependency Name="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="9.0.0-preview.25181.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>08ad141ceaa515aca312999f9cf142b84fb6cdcb</Sha>
+      <Sha>616caa5a5b34ccdff2ab31219940d2d4cc0c59ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25180.1">
+    <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="9.0.0-preview.25181.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>08ad141ceaa515aca312999f9cf142b84fb6cdcb</Sha>
+      <Sha>616caa5a5b34ccdff2ab31219940d2d4cc0c59ad</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25180.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="9.0.0-preview.25181.5">
       <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>08ad141ceaa515aca312999f9cf142b84fb6cdcb</Sha>
+      <Sha>616caa5a5b34ccdff2ab31219940d2d4cc0c59ad</Sha>
       <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.3">
