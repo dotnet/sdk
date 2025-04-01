@@ -6,20 +6,14 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class PublishedPathCommandResolver : ICommandResolver
+public class PublishedPathCommandResolver(
+    IEnvironmentProvider environment,
+    IPublishedPathCommandSpecFactory commandSpecFactory) : ICommandResolver
 {
     private const string PublishedPathCommandResolverName = "PublishedPathCommandResolver";
 
-    private readonly IEnvironmentProvider _environment;
-    private readonly IPublishedPathCommandSpecFactory _commandSpecFactory;
-
-    public PublishedPathCommandResolver(
-        IEnvironmentProvider environment,
-        IPublishedPathCommandSpecFactory commandSpecFactory)
-    {
-        _environment = environment;
-        _commandSpecFactory = commandSpecFactory;
-    }
+    private readonly IEnvironmentProvider _environment = environment;
+    private readonly IPublishedPathCommandSpecFactory _commandSpecFactory = commandSpecFactory;
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {

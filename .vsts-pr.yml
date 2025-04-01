@@ -80,7 +80,7 @@ stages:
         helixTargetQueue: osx.15.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
-          buildArchitecture: arm64
+          targetArchitecture: arm64
           runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
