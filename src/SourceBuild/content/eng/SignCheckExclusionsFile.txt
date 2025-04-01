@@ -19,6 +19,7 @@ dotnet-*-internal-*-osx-*.pkg;*.pkg;; https://github.com/dotnet/source-build/iss
 Valleysoft.DockerCredsProvider.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
 ILVerify.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
 ILCompiler.Build.Tasks.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
+*.mibc;; IGNORE-STRONG-NAME, .mibc files are not strong-named
 
 ;; ## DAC Signed Files ##
 ;; Exclusions for these files are added dynamically when running the VMR Signing Validation task on a non-release branch.
