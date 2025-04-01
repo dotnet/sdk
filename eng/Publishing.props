@@ -16,14 +16,18 @@
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
 
-    <!-- We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones. -->
-    <ShouldPublishFSharpPackages Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">true</ShouldPublishFSharpPackages>
+    <!--
+      We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones.
+      Add these packages as "Vertical" visibility when we're only publishing RID-specific packages so we don't publish this one.
+    -->
+    <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
+    <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
-  <ItemGroup Condition="'$(ShouldPublishFSharpPackages)' == 'true'">
-    <Artifact Include="$(NuGetPackageRoot)microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
-                       $(NuGetPackageRoot)microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+    <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
+                       $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
               Kind="Package"
-              Visibility="External" />
+              Visibility="$(FSharpArtifactVisibility)" />
   </ItemGroup>
 
   <!-- The PGO sdk should always have External visibility, even if someone changes the default artifact visibility -->
