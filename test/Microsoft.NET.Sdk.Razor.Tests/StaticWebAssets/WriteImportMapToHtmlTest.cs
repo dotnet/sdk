@@ -1,0 +1,238 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
+
+using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using System.Text.RegularExpressions;
+
+namespace Microsoft.AspNetCore.Razor.Tasks;
+
+public class WriteImportMapToHtmlTest
+{
+    [Theory]
+    [InlineData(
+        """
+        <script src="main#[.{fingerprint}].js"></script>
+        """,
+        true,
+        "main.js"
+    )]
+    [InlineData(
+        """
+        <script src="main#[.{fingerprint}].js">
+        </script>
+        """,
+        true,
+        "main.js"
+    )]
+    [InlineData(
+        """
+        <script    src="main#[.{fingerprint}].js"   >   </script>
+        """,
+        true,
+        "main.js"
+    )]
+    [InlineData(
+        """
+        <script src="./main#[.{fingerprint}].js"></script>
+        """,
+        true,
+        "./main.js"
+    )]
+    [InlineData(
+        """
+        <script src="./folder/folder/file.name.something#[.{fingerprint}].js"></script>
+        """,
+        true,
+        "./folder/folder/file.name.something.js"
+    )]
+    [InlineData(
+        """
+        <script src="main#[.{fingerprint}].suffix.js"></script>
+        """,
+        true,
+        "main.suffix.js"
+    )]
+    [InlineData(
+        """
+        <script src="main.js"></script>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <script src='main#[.{fingerprint}].js'></script>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <script src=main#[.{fingerprint}].js></script>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link href="main#[.{fingerprint}].js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous">
+        """,
+        true,
+        "main.js"
+    )]
+    public void ValidateAssetsRegex(string input, bool shouldMatch, string fileName = null)
+    {
+        var match = WriteImportMapToHtml._assetsRegex.Match(input);
+        Assert.Equal(shouldMatch, match.Success);
+
+        if (fileName != null)
+        {
+            Assert.Equal(fileName, match.Groups[1].Value + match.Groups[3].Value);
+        }
+    }
+
+    [Theory]
+    [InlineData(
+        """
+        <script type="importmap"></script>
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <script   type="importmap"   >   </script>
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <script type="importmap">
+        </script>
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <script type="importmap">
+        {
+            "imports": {
+            }
+        }
+        </script>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <script type=importmap></script>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <script type='importmap'></script>
+        """,
+        false
+    )]
+    public void ValidateImportMapRegex(string input, bool shouldMatch)
+    {
+        Assert.Equal(shouldMatch, WriteImportMapToHtml._importMapRegex.Match(input).Success);
+    }
+
+    [Theory]
+    [InlineData(
+        """
+        <link rel="preload"/>
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <link   rel="preload"    />
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <link    rel="preload">
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <link rel=preload />
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link rel='preload' />
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link rel="preload"
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link />"
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link>"
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link rel="preload" href="file.png" />
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link rel="preload" id="webassembly" />
+        """,
+        true,
+        "webassembly"
+    )]
+    [InlineData(
+        """
+        <link rel="preload" id="webassembly">
+        """,
+        true,
+        "webassembly"
+    )]
+    [InlineData(
+        """
+        <link rel="preload" id='webassembly'>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link rel="preload"id="webassembly" />
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <link id="webassembly" rel="preload" />
+        """,
+        false
+    )]
+    public void ValidatePreloadRegex(string input, bool shouldMatch, string group = null)
+    {
+        var match = WriteImportMapToHtml._preloadRegex.Match(input);
+        Assert.Equal(shouldMatch, match.Success);
+
+        if (group != null)
+        {
+            Assert.Equal(group, match.Groups["group"]?.Value);
+        }
+    }
+}
