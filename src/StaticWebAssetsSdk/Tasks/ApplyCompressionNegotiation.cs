@@ -23,18 +23,25 @@ public class ApplyCompressionNegotiation : Task
     {
         var assetsById = StaticWebAsset.ToAssetDictionary(CandidateAssets);
 
-        var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
-            .GroupBy(e => e.AssetFile)
-            .ToDictionary(g => g.Key, g => g.ToList());
+        var endpointsByAsset = StaticWebAssetEndpoint.ToAssetFileDictionary(CandidateEndpoints);
 
-        var compressedAssets = assetsById.Values.Where(a => a.AssetTraitName == "Content-Encoding").ToList();
-        var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(StaticWebAssetEndpoint.RouteAndAssetComparer);
+        var updatedEndpoints = new HashSet<StaticWebAssetEndpoint>(CandidateEndpoints.Length, StaticWebAssetEndpoint.RouteAndAssetComparer);
 
-        var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>();
+        var preservedEndpoints = new Dictionary<(string, string), StaticWebAssetEndpoint>(CandidateEndpoints.Length);
+
+        var compressionHeadersByContentEncoding = new Dictionary<string, StaticWebAssetEndpointResponseHeader[]>(2);
 
         // Add response headers to compressed endpoints
-        foreach (var compressedAsset in compressedAssets)
+        foreach (var kvp in assetsById)
         {
+            var key = kvp.Key;
+            var compressedAsset = kvp.Value;
+
+            if (!string.Equals(compressedAsset.AssetTraitName, "Content-Encoding", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
             if (!assetsById.TryGetValue(compressedAsset.RelatedAsset, out var relatedAsset))
             {
                 Log.LogWarning("Related asset not found for compressed asset: {0}", compressedAsset.Identity);
@@ -54,18 +61,22 @@ public class ApplyCompressionNegotiation : Task
             }
 
             Log.LogMessage("Processing compressed asset: {0}", compressedAsset.Identity);
-            StaticWebAssetEndpointResponseHeader[] compressionHeaders = [
-                new()
-                {
-                    Name = "Content-Encoding",
-                    Value = compressedAsset.AssetTraitValue
-                },
-                new()
-                {
-                    Name = "Vary",
-                    Value = "Content-Encoding"
-                }
-            ];
+            if (compressionHeadersByContentEncoding.TryGetValue(compressedAsset.AssetTraitValue, out var compressionHeaders))
+            {
+                compressionHeaders = [
+                    new()
+                    {
+                        Name = "Content-Encoding",
+                        Value = compressedAsset.AssetTraitValue
+                    },
+                    new()
+                    {
+                        Name = "Vary",
+                        Value = "Content-Encoding"
+                    }
+                ];
+                compressionHeadersByContentEncoding.Add(compressedAsset.AssetTraitValue, compressionHeaders);
+            }
 
             var quality = ResolveQuality(compressedAsset);
             foreach (var compressedEndpoint in compressedEndpoints)
@@ -87,6 +98,7 @@ public class ApplyCompressionNegotiation : Task
                 Log.LogMessage(MessageImportance.Low, "  Updated endpoint '{0}' with Content-Encoding and Vary headers", compressedEndpoint.Route);
                 updatedEndpoints.Add(compressedEndpoint);
 
+                var compressedHeaders = GetCompressedHeaders(compressedEndpoint);
                 foreach (var relatedEndpointCandidate in relatedAssetEndpoints)
                 {
                     if (!IsCompatible(compressedEndpoint, relatedEndpointCandidate))
@@ -109,11 +121,12 @@ public class ApplyCompressionNegotiation : Task
                             ..relatedEndpointCandidate.Selectors,
                             encodingSelector
                         ],
-                        EndpointProperties = [.. relatedEndpointCandidate.EndpointProperties]
+                        // Endpoint properties are never modified as part of this step, so we can just copy them and avoid extra work
+                        EndpointProperties = relatedEndpointCandidate.EndpointProperties
                     };
 
-                    var headers = new List<StaticWebAssetEndpointResponseHeader>();
-                    var compressedHeaders = new HashSet<string>(compressedEndpoint.ResponseHeaders.Select(h => h.Name), StringComparer.Ordinal);
+                    var headers = new List<StaticWebAssetEndpointResponseHeader>(7);
+
                     ApplyCompressedEndpointHeaders(headers, compressedEndpoint, relatedEndpointCandidate.Route);
                     ApplyRelatedEndpointCandidateHeaders(headers, relatedEndpointCandidate, compressedHeaders);
                     endpointCopy.ResponseHeaders = [.. headers];
@@ -192,6 +205,16 @@ public class ApplyCompressionNegotiation : Task
         UpdatedEndpoints = updatedEndpoints.Distinct().Select(e => e.ToTaskItem()).ToArray();
 
         return true;
+    }
+
+    private static HashSet<string> GetCompressedHeaders(StaticWebAssetEndpoint compressedEndpoint)
+    {
+        var result = new HashSet<string>(compressedEndpoint.Selectors.Length, StringComparer.Ordinal);
+        for (var i = 0; i < compressedEndpoint.ResponseHeaders.Length; i++)
+        {
+            result.Add(compressedEndpoint.ResponseHeaders[i].Name);
+        }
+        return result;
     }
 
     private static string ResolveQuality(StaticWebAsset compressedAsset) =>

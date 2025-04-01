@@ -147,6 +147,25 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = new RouteAndAssetEqualityComparer();
 
+    internal static IDictionary<string, List<StaticWebAssetEndpoint>> ToAssetFileDictionary(ITaskItem[] candidateEndpoints)
+    {
+        var result = new Dictionary<string, List<StaticWebAssetEndpoint>>(candidateEndpoints.Length / 2);
+
+        foreach (var candidate in candidateEndpoints)
+        {
+            var endpoint = FromTaskItem(candidate);
+            var assetFile = endpoint.AssetFile;
+            if (!result.TryGetValue(assetFile, out var endpoints))
+            {
+                endpoints = new List<StaticWebAssetEndpoint>(5);
+                result[assetFile] = endpoints;
+            }
+            endpoints.Add(endpoint);
+        }
+
+        return result;
+    }
+
     public static StaticWebAssetEndpoint[] FromItemGroup(ITaskItem[] endpoints)
     {
         var result = new StaticWebAssetEndpoint[endpoints.Length];
