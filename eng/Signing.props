@@ -43,6 +43,10 @@
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
     <FileExtensionSignInfo Remove=".js" />
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
+    
+    <!-- Ensure that azl files get the mariner cert -->
+    <AzureLinuxRPM Include="$(ArtifactsPackagesDir)**/*-azl-*.rpm" />
+    <FileSignInfo Include="@(AzureLinuxRPM->'%(Filename)%(Extension)')" CertificateName="LinuxSignMariner" />
   </ItemGroup>
 
   <!--
