@@ -149,9 +149,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-preview.4.25181.2</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-preview.4.25181.2</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.4.25181.2</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-preview.4.25181.3</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-preview.4.25181.3</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.4.25181.3</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -258,8 +258,8 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
-    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-preview.4.25181.1</MicrosoftNETSdkWindowsDesktopPackageVersion>
-    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-preview.4.25181.1</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
+    <MicrosoftNETSdkWindowsDesktopPackageVersion>10.0.0-preview.4.25181.3</MicrosoftNETSdkWindowsDesktopPackageVersion>
+    <MicrosoftDotNetWpfProjectTemplatesPackageVersion>10.0.0-preview.4.25181.3</MicrosoftDotNetWpfProjectTemplatesPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Infrastructure and test only dependencies">
     <VersionToolsVersion>2.2.0-beta.19072.10</VersionToolsVersion>
