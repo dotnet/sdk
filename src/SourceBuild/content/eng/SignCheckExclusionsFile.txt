@@ -11,8 +11,14 @@
 ;dotnet-sdk-pgo-*.tar.gz; PGO builds are unsigned
 ;dotnet-sdk-pgo-*.zip; PGO builds are unsigned
 
+;; ## PKG ##
+com.microsoft.*.component.osx.*.pkg;*.pkg;; https://github.com/dotnet/source-build/issues/4889
+dotnet-*-internal-*-osx-*.pkg;*.pkg;; https://github.com/dotnet/source-build/issues/4889
+
 ;; ## Non Strong-Named ##
 Valleysoft.DockerCredsProvider.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
+ILVerify.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
+ILCompiler.Build.Tasks.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/source-build/issues/4985
 
 ;; ## DAC Signed Files ##
 ;; Exclusions for these files are added dynamically when running the VMR Signing Validation task on a non-release branch.
