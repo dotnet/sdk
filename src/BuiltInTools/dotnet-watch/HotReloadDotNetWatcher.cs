@@ -407,19 +407,22 @@ namespace Microsoft.DotNet.Watch
                             var changedFiles = NormalizePathChanges(changedPaths)
                                 .Select(changedPath =>
                                 {
+                                    // On macOS may report Update followed by Add when a new file is created or just updated.
+                                    // We normalize Update + Add to just Add and Update + Add + Delete to Update above.
+                                    // To distinguish between an addition and an update we check if the file exists.
+
                                     if (evaluationResult.Files.TryGetValue(changedPath.Path, out var existingFileItem))
                                     {
-                                        // On macOS may report Update followed by Add when a new file is created or just updated.
-                                        // We normalize Update + Add to just Add above.
-                                        // To distinguish between an addition and an update we check if the file exists.
                                         var changeKind = changedPath.Kind == ChangeKind.Add ? ChangeKind.Update : changedPath.Kind;
 
                                         return new ChangedFile(existingFileItem, changeKind);
                                     }
 
+                                    // Do not assume the change is an addition, even if the file doesn't exist in the evaluation result.
+                                    // The file could have been deleted and Add + Delete sequence could have been normalized to Update. 
                                     return new ChangedFile(
                                         new FileItem() { FilePath = changedPath.Path, ContainingProjectPaths = [] },
-                                        ChangeKind.Add);
+                                        changedPath.Kind);
                                 })
                                 .ToImmutableList();
 

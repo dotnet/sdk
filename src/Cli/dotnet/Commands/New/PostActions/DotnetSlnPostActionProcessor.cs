@@ -10,14 +10,9 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
 
-internal class DotnetSlnPostActionProcessor : PostActionProcessorBase
+internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, bool>? addProjToSolutionCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, IReadOnlyList<string>, string?, bool?, bool> _addProjToSolutionCallback;
-
-    public DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, bool>? addProjToSolutionCallback = null)
-    {
-        _addProjToSolutionCallback = addProjToSolutionCallback ?? DotnetCommandCallbacks.AddProjectsToSolution;
-    }
+    private readonly Func<string, IReadOnlyList<string>, string?, bool?, bool> _addProjToSolutionCallback = addProjToSolutionCallback ?? DotnetCommandCallbacks.AddProjectsToSolution;
 
     public override Guid Id => ActionProcessorId;
 

@@ -1,8 +1,4 @@
 parameters:
-- name: continueOnError
-  type: boolean
-  default: false
-
 - name: targetArchitecture
   type: string
   default: ''
@@ -52,7 +48,6 @@ steps:
       $extraBuildProperties
     displayName: Validate installer packages
     workingDirectory: $(Build.SourcesDirectory)
-    continueOnError: ${{ parameters.continueOnError }}
 
   - task: PublishTestResults@2
     displayName: Publish Test Results

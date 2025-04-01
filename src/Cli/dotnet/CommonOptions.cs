@@ -360,12 +360,10 @@ public enum VerbosityOptions
     diag
 }
 
-public class DynamicOption<T> : CliOption<T>, IDynamicOption
+public class DynamicOption<T>(string name, params string[] aliases) : CliOption<T>(name, aliases), IDynamicOption
 {
-    public DynamicOption(string name, params string[] aliases) : base(name, aliases) { }
 }
 
-public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
+public class DynamicArgument<T>(string name) : CliArgument<T>(name), IDynamicArgument
 {
-    public DynamicArgument(string name) : base(name) { }
 }
