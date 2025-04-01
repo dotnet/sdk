@@ -94,7 +94,7 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 		{
 			Uid = "Test6 id",
 			DisplayName = "Test6",
-			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK"), new FileArtifactProperty(context.Request.Session.SessionUid, new FileInfo("testNodeFile.txt"), "testNodeFile", "description")),
+			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK"), new FileArtifactProperty(new FileInfo("testNodeFile.txt"), "testNodeFile", "description")),
 		}));
 
 		context.Complete();
