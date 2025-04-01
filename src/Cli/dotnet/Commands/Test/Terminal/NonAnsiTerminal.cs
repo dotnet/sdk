@@ -178,6 +178,7 @@ internal sealed class NonAnsiTerminal : ITerminal
             int passed = p.PassedTests;
             int failed = p.FailedTests;
             int skipped = p.SkippedTests;
+            int retried = p.RetriedTests;
 
             // Use just ascii here, so we don't put too many restrictions on fonts needing to
             // properly show unicode, or logs being saved in particular encoding.
@@ -200,6 +201,15 @@ internal sealed class NonAnsiTerminal : ITerminal
             Append('?');
             Append(skipped.ToString(CultureInfo.CurrentCulture));
             ResetColor();
+
+            if (retried > 0)
+            {
+                SetColor(TerminalColor.Gray);
+                Append('r');
+                Append(retried.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
+            }
+
             Append(']');
 
             Append(' ');

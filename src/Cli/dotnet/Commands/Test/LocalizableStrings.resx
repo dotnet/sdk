@@ -534,4 +534,8 @@ dotnet.config is a name don't translate.</comment>
   <data name="CmdNumberName" xml:space="preserve">
     <value>NUMBER</value>
   </data>
+  <data name="Try" xml:space="preserve">
+    <value>try {0}</value>
+    <comment>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</comment>
+  </data>
 </root>

@@ -35,6 +35,7 @@ internal sealed class AnsiTerminalTestProgressFrame
         int passed = progress.PassedTests;
         int failed = progress.FailedTests;
         int skipped = progress.SkippedTests;
+        int retried = progress.RetriedTests;
         int charsTaken = 0;
 
         terminal.Append('[');
@@ -68,6 +69,20 @@ internal sealed class AnsiTerminalTestProgressFrame
         terminal.Append(skippedText);
         charsTaken += skippedText.Length;
         terminal.ResetColor();
+
+        if (retried > 0)
+        {
+            terminal.Append('/');
+            charsTaken++;
+            terminal.SetColor(TerminalColor.Gray);
+            terminal.Append('r');
+            charsTaken++;
+            string retriedText = retried.ToString(CultureInfo.CurrentCulture);
+            terminal.Append(retriedText);
+            charsTaken += retriedText.Length;
+            terminal.ResetColor();
+        }
+
         terminal.Append(']');
         charsTaken++;
 

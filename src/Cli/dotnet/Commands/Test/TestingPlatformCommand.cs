@@ -18,6 +18,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
     private byte _cancelled;
     private bool _isDiscovery;
+    private bool _isRetry;
 
     public TestingPlatformCommand(string name, string description = null) : base(name, description)
     {
@@ -87,6 +88,9 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         testOptions = GetTestOptions(parseResult, filterModeEnabled, isHelp: ContainsHelpOption(arguments));
 
         _isDiscovery = ContainsListTestsOption(arguments);
+
+        // This is ugly, and we need to replace it by passing out some info from testing platform to inform us that some process level retry plugin is active.
+        _isRetry = arguments.Contains("--retry-failed-tests");
     }
 
     private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
@@ -125,7 +129,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
             ShowAssemblyStartAndComplete = true,
         });
 
-        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp);
+        _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
     }
 
     private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)

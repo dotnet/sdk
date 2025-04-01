@@ -37,6 +37,10 @@ internal sealed class TestProgressState
 
     public int SkippedTests { get; internal set; }
 
+    public int RetriedTests { get; internal set; }
+
+    public Dictionary<string, List<string>> PreviousTestInstanceIds { get; } = new ();
+
     public int TotalTests { get; internal set; }
 
     public TestNodeResultsState? TestNodeResultsState { get; internal set; }
@@ -50,6 +54,8 @@ internal sealed class TestProgressState
     public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = [];
     public int? ExitCode { get; internal set; }
     public bool Success { get; internal set; }
+
+    public List<string> Tries { get; } = [];
 
     internal void AddError(string text)
         => Messages.Add(new ErrorMessage(text));
