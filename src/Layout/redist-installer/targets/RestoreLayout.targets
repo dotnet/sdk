@@ -302,10 +302,10 @@
     <!-- If building in product source build mode, there is no need to attempt the external URIs. These are not desired,
             and won't work anyway because the source build file URI doesn't use the same structure as the storage accounts.
             For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
-            would end up 'https://dotnetbuilds.blob.core.windows.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
+            would end up 'https://ci.dot.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
             missing the runtime version number directory. -->
     <ItemGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
-      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)"
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://ci.dot.net/public/'))/%(ComponentToDownload.DownloadFileName)"
                       Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>
