@@ -10,6 +10,9 @@ internal static class CliConstants
 
     public const string ServerOptionValue = "dotnettestcli";
 
+    public const string SemiColon = ";";
+
+
     public const string VSTest = "VSTest";
     public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
