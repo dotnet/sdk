@@ -457,5 +457,11 @@
     "idMatch": "Microsoft.TestPlatform.CLI",
     "allowRevisionOnlyVariance": true,
     "justification": "Testplatform varies build to build."
+  },
+  {
+    "issueType": "PackageMetadataDifference",
+    "idMatch": "VS\\.Redist\\..*",
+    "descriptionMatch": "ProjectUrl",
+    "justification": "VS redist packages do not ship and should have their project url set to the VMR to identify where they came from."
   }
 ]
