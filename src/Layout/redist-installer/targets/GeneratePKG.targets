@@ -141,11 +141,11 @@
           Outputs="$(SdkPKGInstallerFile)"
           DependsOnTargets="GenerateLayout;SetupPkgInputsOutputs">
     <ItemGroup>
-      <TemplateFiles Include="$(RedistLayoutPath)templates/**/*" />
+      <TemplateFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
     </ItemGroup>
 
     <ItemGroup>
-      <ManifestFiles Include="$(RedistLayoutPath)sdk-manifests/**/*" />
+      <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
     </ItemGroup>
     
     <!-- Copy ASP.NET runtime and targeting pack to internal layout, as we don't currently chain that in with a pkg dependency -->
