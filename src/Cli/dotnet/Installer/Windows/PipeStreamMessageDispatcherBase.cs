@@ -9,8 +9,14 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// <summary>
 /// Base class used for dispatching messages (<see cref="PipeTransmissionMode.Message"/>) over a named pipe.
 /// </summary>
+/// <remarks>
+/// Creates a new <see cref="PipeStreamMessageDispatcherBase"/> instance.
+/// </remarks>
+/// <param name="pipeStream">The pipe stream to use for reading and writing messages. The pipe must be configured
+/// to use <see cref="PipeTransmissionMode.Message"/>.</param>
+/// <exception cref="ArgumentNullException" />
 [SupportedOSPlatform("windows")]
-internal class PipeStreamMessageDispatcherBase
+internal class PipeStreamMessageDispatcherBase(PipeStream pipeStream)
 {
     /// <summary>
     /// The maxmimum length of a message.
@@ -20,7 +26,7 @@ internal class PipeStreamMessageDispatcherBase
     /// <summary>
     /// The backing stream used for reading & writing messages.
     /// </summary>
-    private PipeStream _pipeStream;
+    private PipeStream _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
 
     /// <summary>
     /// The number of milliseconds to wait for a pipe connection to be established. See <see cref="Connect"/>.
@@ -36,17 +42,6 @@ internal class PipeStreamMessageDispatcherBase
     /// Gets whether the underlying stream is connected.
     /// </summary>
     public bool IsConnected => _pipeStream.IsConnected;
-
-    /// <summary>
-    /// Creates a new <see cref="PipeStreamMessageDispatcherBase"/> instance.
-    /// </summary>
-    /// <param name="pipeStream">The pipe stream to use for reading and writing messages. The pipe must be configured
-    /// to use <see cref="PipeTransmissionMode.Message"/>.</param>
-    /// <exception cref="ArgumentNullException" />
-    public PipeStreamMessageDispatcherBase(PipeStream pipeStream)
-    {
-        _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
-    }
 
     /// <summary>
     /// Waits for the underlying <see cref="PipeStream"/> to establish a connection. If the stream is a 

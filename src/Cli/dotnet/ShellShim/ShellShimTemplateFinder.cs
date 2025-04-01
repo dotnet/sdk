@@ -11,21 +11,14 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableString
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class ShellShimTemplateFinder
+internal class ShellShimTemplateFinder(
+    INuGetPackageDownloader nugetPackageDownloader,
+    DirectoryPath tempDir,
+    PackageSourceLocation packageSourceLocation)
 {
-    private readonly DirectoryPath _tempDir;
-    private readonly INuGetPackageDownloader _nugetPackageDownloader;
-    private readonly PackageSourceLocation _packageSourceLocation;
-
-    public ShellShimTemplateFinder(
-        INuGetPackageDownloader nugetPackageDownloader,
-        DirectoryPath tempDir,
-        PackageSourceLocation packageSourceLocation)
-    {
-        _tempDir = tempDir;
-        _nugetPackageDownloader = nugetPackageDownloader;
-        _packageSourceLocation = packageSourceLocation;
-    }
+    private readonly DirectoryPath _tempDir = tempDir;
+    private readonly INuGetPackageDownloader _nugetPackageDownloader = nugetPackageDownloader;
+    private readonly PackageSourceLocation _packageSourceLocation = packageSourceLocation;
 
     public async Task<string> ResolveAppHostSourceDirectoryAsync(string archOption, NuGetFramework targetFramework, Architecture arch)
     {

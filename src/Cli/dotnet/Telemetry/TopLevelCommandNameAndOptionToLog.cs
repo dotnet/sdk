@@ -9,18 +9,12 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TopLevelCommandNameAndOptionToLog : IParseResultLogRule
+internal class TopLevelCommandNameAndOptionToLog(
+    HashSet<string> topLevelCommandName,
+    HashSet<CliOption> optionsToLog) : IParseResultLogRule
 {
-    public TopLevelCommandNameAndOptionToLog(
-        HashSet<string> topLevelCommandName,
-        HashSet<CliOption> optionsToLog)
-    {
-        _topLevelCommandName = topLevelCommandName;
-        _optionsToLog = optionsToLog;
-    }
-
-    private HashSet<string> _topLevelCommandName { get; }
-    private HashSet<CliOption> _optionsToLog { get; }
+    private HashSet<string> _topLevelCommandName { get; } = topLevelCommandName;
+    private HashSet<CliOption> _optionsToLog { get; } = optionsToLog;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {

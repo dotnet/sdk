@@ -6,9 +6,9 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload;
 
-internal class GlobalJsonWorkloadSetsFile
+internal class GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string dotnetDir)
 {
-    string _path;
+    string _path = System.IO.Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
 
     public string Path { get { return _path; } }
 
@@ -17,11 +17,6 @@ internal class GlobalJsonWorkloadSetsFile
         WriteIndented = true,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
     };
-
-    public GlobalJsonWorkloadSetsFile(SdkFeatureBand sdkFeatureBand, string dotnetDir)
-    {
-        _path = System.IO.Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "globaljsonworkloadsets.json");
-    }
 
     public void RecordWorkloadSetInGlobalJson(string globalJsonPath, string workloadSetVersion)
     {
