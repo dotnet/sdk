@@ -12,11 +12,439 @@
   {
     "issueType": "AssemblyVersionMismatch",
     "descriptionMatch": ".resources.dll",
+    "allowRevisionOnlyVariance": true,
     "justification": "Resource dlls get per-build versioning but this doesn't matter."
   },
   {
     "issueType": "MissingShipping",
-    "descriptionMatch": "Aspire.*",
+    "idMatch": "Aspire.*",
     "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "aspire/.*\\.zip",
+    "justification": "Aspire to be removed from the VMR. Also .NET does not ship these packages."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.CodeAnalysis.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.Build\\.CodeAnalysis.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.Build.*\\.CodeAnalysis\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "CodeAnalysis dlls vary build to build with patch number."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Metrics.*\\.exe",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Analyzers vary build to build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.NET\\..*\\.Tasks\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Allow build-build patch variance"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "NuGet\\..*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Nuget DLLs vary build to build."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "Microsoft\\.DotNet\\..*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Arcade binaries vary build to build."
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "analyzers/dotnet/.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Analyzers vary build to build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "tools/.*/Microsoft.TemplateEngine.*\\.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Template engine assembly versions vary build to build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "descriptionMatch": "tools/.*/ILLink.Tasks.dll",
+    "allowRevisionOnlyVariance": true,
+    "justification": "ILLink versions vary build to build"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "Microsoft\\.Extensions\\.ServiceDiscovery.*",
+    "justification": "Aspire's packages are not produced in build"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "aspnet/.*",
+    "justification": "Aspire's packages are not produced in build"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*BuildAfterTargetingPack.*",
+    "justification": "Intentional non-build"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "Microsoft.DotNet.Mage",
+    "justification": "Deployment-tools does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "Microsoft\\.NET\\.Tools\\.NETCoreCheck.*",
+    "justification": "Deployment-tools does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "VS\\.Redist\\.Common\\.NetCore\\.Launcher",
+    "justification": "Deployment-tools does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "VS\\.Redist\\.Common\\.NETCoreCheck\\..*",
+    "justification": "Deployment-tools does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-counters",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-dsrouter",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-dump",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-gcdump",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-sos",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-stack",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "dotnet-symbol",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "Microsoft.Diagnostics\\..*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "Microsoft.Diagnostics\\..*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "Microsoft\\.FileFormats",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "Microsoft\\.NETCore\\.SOS.*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "Microsoft\\.SymbolManifestGenerator",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "Microsoft\\.SymbolStore",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "SOS\\.InstallHelper",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "SOS\\.InstallHelper",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "assets/symbols/dotnet-diagnostics/.*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "assets/symbols/dotnet-diagnostics/.*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "diagnostics/bundledtools/.*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": "diagnostics/bundledtools/.*",
+    "justification": "Diagnostics does a minimal build in the VMR"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*VS\\.ExternalAPIs\\.MSBuild.*",
+    "justification": "Not produced in msbuild VMR build"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*VS\\.ExternalAPIs\\.MSBuild.*",
+    "justification": "Not produced in msbuild VMR build"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": ".*NuGet\\..*",
+    "justification": "NuGet does not build in VMR right now"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": ".*Microsoft.Build.NuGetSdkResolver.*",
+    "justification": "NuGet does not build in VMR right now"
+  },
+  {
+    "issueType": "MissingShipping",
+    "idMatch": ".*Microsoft.Internal.NuGet.Testing.SignedPackages.*",
+    "justification": "NuGet does not build in VMR right now"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-runtime-pgo.*",
+    "justification": "PGO blobs for runtime are not required. Only SDK"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*containerize.UnitTests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-format.UnitTests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-msbuild.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-new.IntegrationTests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-sln.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*dotnet-watch.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.AspNetCore.Watch.BrowserRefresh.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.DotNet.Cli.Utils.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.DotNet.GenAPI.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.Extensions.DotNetDeltaApplier.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.NET.Build.Containers.UnitTests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.TemplateEngine.Cli.UnitTests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*Microsoft.WebTools.AspireService.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*msbuild.Integration.Tests.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkBlazorWasm.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkBlazorWasmAoT.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkBuild.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkClean.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkPack.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkPublish.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkRazor.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkRazorTool.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkRebuild.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkRestore.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkToolPack.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": ".*testSdkWeb.*",
+    "justification": "sdk non-shipping test packages are not published"
+  },
+  {
+    "issueType": "MisclassifiedAsset",
+    "idMatch": ".*Microsoft.DotNet.XliffTasks.*",
+    "justification": "Classified correctly in the VMR"
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": "Microsoft.DotNet.XliffTask",
+    "justification": "Very old version of xliff tasks. To be removed."
+  },
+  {
+    "issueType": "ExtraPackageContent",
+    "idMatch": "Microsoft.DotNet.XliffTask",
+    "justification": "Very old version of xliff tasks. To be removed."
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "descriptionMatch": "sdk/DotnetTools/dotnet-watch/tools/net10.0/any/.*(Microsoft.Extensions|System).*",
+    "justification": "Tearing in non-VMR builds can introduce extra shared framework binaries into dotnet-watch"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": ".*Razor\\.*",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.CodeAnalysis",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": "Microsoft.AspNetCore.Components.WebAssembly.DevServer",
+    "descriptionMatch": "aspnetcorev2_inprocess.dll",
+    "justification": "Expected missing content"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "rzls.*",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "csc.Symbols|csi.Symbols|InteractiveHost64.Symbols|vbc.Symbols|VBCSCompiler.Symbols",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.VisualStudio.LanguageServices.CodeLens.Symbols",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.VisualStudio.LanguageServices.DevKit",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "PackageDependencies",
+    "idMatch": "Microsoft.Build.Runtime",
+    "justification": "Effect of better package pruning in net10"
+  },
+  {
+    "issueType": "MissingNonShipping",
+    "idMatch": "assets/symbols/Microsoft.CodeAnalysis.Remote.ServiceHub.CoreComponents",
+    "justification": "These are a dependency of roslyn's VS insertion packages and not interesting to the VMR build"
+  },
+  {
+    "issueType": "AssemblyVersionMismatch",
+    "idMatch": "Microsoft.TestPlatform.CLI",
+    "allowRevisionOnlyVariance": true,
+    "justification": "Testplatform varies build to build."
   }
 ]

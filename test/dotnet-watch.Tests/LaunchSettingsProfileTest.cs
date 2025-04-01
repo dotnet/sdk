@@ -60,18 +60,34 @@ public class LaunchSettingsProfileTest
         Assert.NotNull(expected);
     }
 
+    [Fact]
+    public void DefaultLaunchProfileWithoutProjectCommand()
+    {
+        var project = _testAssets.CreateTestProject(new TestProject("Project1")
+        {
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+        });
+
+        WriteFile(project, Path.Combine("Properties", "launchSettings.json"),
+        """
+        {
+          "profiles": {
+            "profile": {
+              "applicationUrl": "http://localhost:5000"
+            }
+          }
+        }
+        """);
+
+        var projectDirectory = Path.Combine(project.TestRoot, "Project1");
+
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectDirectory, launchProfileName: null, _reporter);
+        Assert.Null(expected);
+    }
+
     private static string WriteFile(TestAsset testAsset, string name, string contents = "")
     {
         var path = Path.Combine(GetTestProjectDirectory(testAsset), name);
-        Directory.CreateDirectory(Path.GetDirectoryName(path));
-        File.WriteAllText(path, contents);
-
-        return path;
-    }
-
-    private static string WriteFile(TestDirectory testAsset, string name, string contents = "")
-    {
-        var path = Path.Combine(testAsset.Path, name);
         Directory.CreateDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path, contents);
 

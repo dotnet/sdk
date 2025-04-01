@@ -54,22 +54,15 @@ public class WebScenarioTests : SdkTests
 
         Assert.True(restoredPackageFiles is not null, "Failed to parse project.nuget.cache");
 
-        string[] allowedPackages = [
-            // Temporarily allowed due to https://github.com/dotnet/sdk/issues/46165
-            // TODO: Remove this once the issue is resolved
-            "Microsoft.AspNetCore.App.Internal.Assets"
-        ];
-
         string packagesDirectory = Path.Combine(Environment.CurrentDirectory, "packages");
 
-        IEnumerable<string> packages = restoredPackageFiles
+        IEnumerable<string> packages = restoredPackageFiles.GetValues<string>()
+            .Where(file => file is not null)
             .Select(file =>
             {
-                string path = file.ToString();
-                path = path.Substring(packagesDirectory.Length + 1); // trim the leading path up to the package name directory
+                string path = file.Substring(packagesDirectory.Length + 1); // trim the leading path up to the package name directory
                 return path.Substring(0, path.IndexOf('/')); // trim the rest of the path
-            })
-            .Except(allowedPackages, StringComparer.OrdinalIgnoreCase);
+            });
 
         if (packages.Any())
         {

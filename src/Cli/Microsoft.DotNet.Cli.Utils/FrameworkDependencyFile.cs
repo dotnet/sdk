@@ -87,8 +87,7 @@ internal class FrameworkDependencyFile
 
         RuntimeFallbacks runtimeFallbacks = runtimeFallbacksCandidates[0];
 
-        var runtimeFallbacksIncludesRuntime = new List<string?>();
-        runtimeFallbacksIncludesRuntime.Add(runtimeFallbacks.Runtime);
+        List<string?> runtimeFallbacksIncludesRuntime = [runtimeFallbacks.Runtime];
         runtimeFallbacksIncludesRuntime.AddRange(runtimeFallbacks.Fallbacks);
 
         var candidateMap = candidateRuntimeIdentifiers

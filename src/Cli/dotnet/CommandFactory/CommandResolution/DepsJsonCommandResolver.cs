@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class DepsJsonCommandResolver : ICommandResolver
+public class DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot) : ICommandResolver
 {
     private static readonly string[] s_extensionPreferenceOrder =
     [
@@ -16,17 +16,11 @@ public class DepsJsonCommandResolver : ICommandResolver
         ".dll"
     ];
 
-    private string _nugetPackageRoot;
-    private Muxer _muxer;
+    private string _nugetPackageRoot = nugetPackageRoot;
+    private Muxer _muxer = muxer;
 
     public DepsJsonCommandResolver(string nugetPackageRoot)
         : this(new Muxer(), nugetPackageRoot) { }
-
-    public DepsJsonCommandResolver(Muxer muxer, string nugetPackageRoot)
-    {
-        _muxer = muxer;
-        _nugetPackageRoot = nugetPackageRoot;
-    }
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
@@ -187,8 +181,7 @@ public class DepsJsonCommandResolver : ICommandResolver
         var depsFileArguments = GetDepsFileArguments(depsJsonFile);
         var additionalProbingPathArguments = GetAdditionalProbingPathArguments();
 
-        var muxerArgs = new List<string>();
-        muxerArgs.Add("exec");
+        List<string> muxerArgs = ["exec"];
         muxerArgs.AddRange(depsFileArguments);
         muxerArgs.AddRange(additionalProbingPathArguments);
         muxerArgs.Add(commandPath);
@@ -218,12 +211,12 @@ public class DepsJsonCommandResolver : ICommandResolver
 
     private IEnumerable<string> GetDepsFileArguments(string depsJsonFile)
     {
-        return new[] { "--depsfile", depsJsonFile };
+        return ["--depsfile", depsJsonFile];
     }
 
     private IEnumerable<string> GetAdditionalProbingPathArguments()
     {
-        return new[] { "--additionalProbingPath", _nugetPackageRoot };
+        return ["--additionalProbingPath", _nugetPackageRoot];
     }
 
     private class CommandCandidate

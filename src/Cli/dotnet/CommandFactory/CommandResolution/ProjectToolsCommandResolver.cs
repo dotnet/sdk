@@ -10,27 +10,16 @@ using ConcurrencyUtilities = NuGet.Common.ConcurrencyUtilities;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class ProjectToolsCommandResolver : ICommandResolver
+public class ProjectToolsCommandResolver(
+    IPackagedCommandSpecFactory packagedCommandSpecFactory,
+    IEnvironmentProvider environment) : ICommandResolver
 {
     private const string ProjectToolsCommandResolverName = "projecttoolscommandresolver";
 
-    private List<string> _allowedCommandExtensions;
-    private IPackagedCommandSpecFactory _packagedCommandSpecFactory;
+    private List<string> _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
+    private IPackagedCommandSpecFactory _packagedCommandSpecFactory = packagedCommandSpecFactory;
 
-    private IEnvironmentProvider _environment;
-
-    public ProjectToolsCommandResolver(
-        IPackagedCommandSpecFactory packagedCommandSpecFactory,
-        IEnvironmentProvider environment)
-    {
-        _packagedCommandSpecFactory = packagedCommandSpecFactory;
-        _environment = environment;
-
-        _allowedCommandExtensions = new List<string>()
-        {
-            FileNameSuffixes.DotNet.DynamicLib
-        };
-    }
+    private IEnvironmentProvider _environment = environment;
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
@@ -124,8 +113,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             ProjectToolsCommandResolverName,
             string.Join(Environment.NewLine, possiblePackageRoots.Select((p) => $"- {p}"))));
 
-        List<NuGetFramework> toolFrameworksToCheck = new();
-        toolFrameworksToCheck.Add(project.DotnetCliToolTargetFramework);
+        List<NuGetFramework> toolFrameworksToCheck = [project.DotnetCliToolTargetFramework];
 
         //  NuGet restore in Visual Studio may restore for netcoreapp1.0.  So if that happens, fall back to
         //  looking for a netcoreapp1.0 or netcoreapp1.1 tool restore.
@@ -340,12 +328,13 @@ public class ProjectToolsCommandResolver : ICommandResolver
 
         var tempDepsFile = Path.Combine(PathUtilities.CreateTempSubdirectory(), Path.GetRandomFileName());
 
-        var args = new List<string>();
-
-        args.Add(toolDepsJsonGeneratorProject);
-        args.Add($"-property:ProjectAssetsFile=\"{toolLockFile.Path}\"");
-        args.Add($"-property:ToolName={toolLibrary.Name}");
-        args.Add($"-property:ProjectDepsFilePath={tempDepsFile}");
+        List<string> args =
+        [
+            toolDepsJsonGeneratorProject,
+            $"-property:ProjectAssetsFile=\"{toolLockFile.Path}\"",
+            $"-property:ToolName={toolLibrary.Name}",
+            $"-property:ProjectDepsFilePath={tempDepsFile}"
+        ];
 
         var toolTargetFramework = toolLockFile.Targets.First().TargetFramework.GetShortFolderName();
         args.Add($"-property:TargetFramework={toolTargetFramework}");
