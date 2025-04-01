@@ -28,7 +28,6 @@
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
-
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
       DependencyName="Microsoft.WindowsDesktop.App.Ref">
@@ -50,7 +49,7 @@
        sdk_commit="%commit%" sdk_version="%version%"
     -->
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
       Encoding="ASCII" />
@@ -68,7 +67,7 @@
     </PropertyGroup>
 
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).json"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
       Encoding="ASCII" />
@@ -531,6 +530,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
+    <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>

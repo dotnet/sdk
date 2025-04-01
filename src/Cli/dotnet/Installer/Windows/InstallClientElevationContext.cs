@@ -12,18 +12,13 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// Encapsulates information about elevation to support workload installations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class InstallClientElevationContext : InstallElevationContextBase
+internal sealed class InstallClientElevationContext(ISynchronizingLogger logger) : InstallElevationContextBase
 {
-    private ISynchronizingLogger _log;
+    private ISynchronizingLogger _log = logger;
 
     private Process _serverProcess;
 
     public override bool IsClient => true;
-
-    public InstallClientElevationContext(ISynchronizingLogger logger)
-    {
-        _log = logger;
-    }
 
     /// <summary>
     /// Starts the elevated install server.
