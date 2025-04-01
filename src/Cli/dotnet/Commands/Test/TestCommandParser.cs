@@ -174,14 +174,14 @@ internal static class TestCommandParser
         builder.AddIniFile(dotnetConfigPath);
 
         IConfigurationRoot config = builder.Build();
-        var testSection = config.GetSection("dotnet.test");
+        var testSection = config.GetSection("dotnet.test.runner");
 
         if (!testSection.Exists())
         {
             return CliConstants.VSTest;
         }
 
-        string runnerNameSection = testSection["runner:name"];
+        string runnerNameSection = testSection["name"];
 
         if (string.IsNullOrEmpty(runnerNameSection))
         {
