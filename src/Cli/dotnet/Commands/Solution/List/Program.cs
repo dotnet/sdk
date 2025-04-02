@@ -44,7 +44,7 @@ internal class ListProjectsInSolutionCommand(
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommandLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
         }
         else
         {
