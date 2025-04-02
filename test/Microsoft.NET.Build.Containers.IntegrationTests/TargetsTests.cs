@@ -421,7 +421,7 @@ public class TargetsTests
     [InlineData("linux-musl-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-alpine")]
     [InlineData("linux-x64", "mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled")]
     [Theory]
-    public void AOTAppsGetAOTImages(string rid, string expectedImage)
+    public void AOTAppsGetExpectedImages(string rid, string expectedImage)
     {
         var (project, logger, d) = ProjectInitializer.InitProject(new()
         {
