@@ -7,14 +7,9 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class ToolPathCalculator
+public class ToolPathCalculator(string packagesDirectory)
 {
-    private readonly string _packagesDirectory;
-
-    public ToolPathCalculator(string packagesDirectory)
-    {
-        _packagesDirectory = packagesDirectory;
-    }
+    private readonly string _packagesDirectory = packagesDirectory;
 
     public string GetBestLockFilePath(string packageId, VersionRange versionRange, NuGetFramework framework)
     {

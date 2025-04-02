@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal sealed class VersionedDataContract<TContract>
 {

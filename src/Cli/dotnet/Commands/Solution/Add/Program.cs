@@ -5,14 +5,13 @@ using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
-namespace Microsoft.DotNet.Tools.Sln.Add;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
 internal class AddProjectToSolutionCommand : CommandBase
 {
@@ -92,7 +91,7 @@ internal class AddProjectToSolutionCommand : CommandBase
             }
         }
 
-        SolutionFolderModel? solutionFolder = (!_inRoot && !string.IsNullOrEmpty(_solutionFolderPath))
+        SolutionFolderModel? solutionFolder = !_inRoot && !string.IsNullOrEmpty(_solutionFolderPath)
             ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
             : null;
 

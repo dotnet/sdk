@@ -4,13 +4,14 @@
 using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -102,14 +103,9 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
-    private class SetupLogReporter : IReporter
+    private class SetupLogReporter(ISetupLogger setupLogger) : IReporter
     {
-        private ISetupLogger _setupLogger;
-
-        public SetupLogReporter(ISetupLogger setupLogger)
-        {
-            _setupLogger = setupLogger;
-        }
+        private ISetupLogger _setupLogger = setupLogger;
 
         //  SetupLogger doesn't have a way of writing a message that shouldn't include a newline.  So if this method is used a message may be split across multiple lines,
         //  but that's probably better than not writing a message at all or throwing an exception

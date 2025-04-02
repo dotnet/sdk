@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Test;
+
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
     public class TestCommandParserTests

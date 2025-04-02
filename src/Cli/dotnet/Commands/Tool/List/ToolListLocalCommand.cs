@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal class ToolListLocalCommand : CommandBase
 {
@@ -22,7 +22,7 @@ internal class ToolListLocalCommand : CommandBase
         IReporter reporter = null)
         : base(parseResult)
     {
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         _toolManifestInspector = toolManifestInspector ??
                                  new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));

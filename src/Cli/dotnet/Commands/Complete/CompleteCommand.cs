@@ -6,7 +6,7 @@ using System.CommandLine.Completions;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Complete;
 
 public class CompleteCommand
 {

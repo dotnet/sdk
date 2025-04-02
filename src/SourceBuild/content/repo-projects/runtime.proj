@@ -6,7 +6,12 @@
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
+    <!-- Pass TargetArchitecture in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetArchitecture>true</SkipSetTargetArchitecture>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+
+    <!-- Pass TargetOS in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetOS>true</SkipSetTargetOS>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
 
     <IsSpecialFlavorBuild Condition="'$(PgoInstrument)' == 'true'">true</IsSpecialFlavorBuild>

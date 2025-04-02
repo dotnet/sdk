@@ -5,9 +5,10 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using BuildCommand = Microsoft.DotNet.Tools.Build.BuildCommand;
-using PublishCommand = Microsoft.DotNet.Tools.Publish.PublishCommand;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Tests.CommandLineParserTests
 {

@@ -6,12 +6,12 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplication : IDisposable
+internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
 {
-    private readonly TestModule _module;
-    private readonly BuildOptions _buildOptions;
+    private readonly TestModule _module = module;
+    private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly List<string> _outputData = [];
     private readonly List<string> _errorData = [];
@@ -31,12 +31,6 @@ internal sealed class TestApplication : IDisposable
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
     public TestModule Module => _module;
-
-    public TestApplication(TestModule module, BuildOptions buildOptions)
-    {
-        _module = module;
-        _buildOptions = buildOptions;
-    }
 
     public async Task<int> RunAsync(TestOptions testOptions)
     {

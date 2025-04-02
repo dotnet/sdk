@@ -3,27 +3,21 @@
 
 using System.Threading.Channels;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal class TestApplicationActionQueue
 {
     private readonly Channel<TestApplication> _channel;
     private readonly List<Task> _readers;
 
-    private bool _hasFailed;
-    private int? _firstExitCode;
-    private bool _allSameExitCode;
+    private int? _aggregateExitCode;
 
     private static readonly Lock _lock = new();
 
     public TestApplicationActionQueue(int degreeOfParallelism, Func<TestApplication, Task<int>> action)
     {
         _channel = Channel.CreateUnbounded<TestApplication>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
-
         _readers = [];
-        _hasFailed = false;
-        _firstExitCode = null;
-        _allSameExitCode = true;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -43,12 +37,9 @@ internal class TestApplicationActionQueue
     {
         Task.WaitAll([.. _readers]);
 
-        if (_allSameExitCode && _firstExitCode.HasValue)
-        {
-            return _firstExitCode.Value;
-        }
-
-        return _hasFailed ? ExitCode.GenericFailure : ExitCode.Success;
+        // If _aggregateExitCode is null, that means we didn't get any results.
+        // So, we exit with "zero tests".
+        return _aggregateExitCode ?? ExitCode.ZeroTests;
     }
 
     public void EnqueueCompleted()
@@ -65,18 +56,30 @@ internal class TestApplicationActionQueue
 
             lock (_lock)
             {
-                if (_firstExitCode == null)
+                if (_aggregateExitCode is null)
                 {
-                    _firstExitCode = result;
+                    // This is the first result we are getting.
+                    // So we assign the exit code, regardless of whether it's failure or success.
+                    _aggregateExitCode = result;
                 }
-                else if (_firstExitCode != result)
+                else if (_aggregateExitCode.Value != result)
                 {
-                    _allSameExitCode = false;
-                }
-
-                if (result != ExitCode.Success)
-                {
-                    _hasFailed = true;
+                    if (_aggregateExitCode == ExitCode.Success)
+                    {
+                        // The current result we are dealing with is the first failure after previous Success.
+                        // So we assign the current failure.
+                        _aggregateExitCode = result;
+                    }
+                    else if (result != ExitCode.Success)
+                    {
+                        // If we get a new failure result, which is different from a previous failure, we use GenericFailure.
+                        _aggregateExitCode = ExitCode.GenericFailure;
+                    }
+                    else
+                    {
+                        // The current result is a success, but we already have a failure.
+                        // So, we keep the failure exit code.
+                    }
                 }
             }
         }

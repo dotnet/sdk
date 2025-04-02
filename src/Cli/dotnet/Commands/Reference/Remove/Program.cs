@@ -3,11 +3,11 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Reference.Remove;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal class RemoveProjectToProjectReferenceCommand : CommandBase
 {

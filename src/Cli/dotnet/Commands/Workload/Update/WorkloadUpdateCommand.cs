@@ -3,17 +3,17 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Update.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Update;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 {
@@ -83,7 +83,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         }
         else if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
                 filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),

@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 
 public class InternalReportinstallsuccess
 {
@@ -67,12 +67,7 @@ public class InternalReportinstallsuccess
     }
 }
 
-internal class InstallerSuccessReport
+internal class InstallerSuccessReport(string exeName)
 {
-    public string ExeName { get; }
-
-    public InstallerSuccessReport(string exeName)
-    {
-        ExeName = exeName ?? throw new ArgumentNullException(nameof(exeName));
-    }
+    public string ExeName { get; } = exeName ?? throw new ArgumentNullException(nameof(exeName));
 }

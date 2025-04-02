@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Sln.Remove;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
 public static class SlnRemoveParser
 {

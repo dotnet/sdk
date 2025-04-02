@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.DotNet.Tools.Run;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings;
+namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
 internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
 {

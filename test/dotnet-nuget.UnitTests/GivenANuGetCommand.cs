@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.NuGet;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Moq;
 
 namespace Microsoft.DotNet.Tools.Run.Tests

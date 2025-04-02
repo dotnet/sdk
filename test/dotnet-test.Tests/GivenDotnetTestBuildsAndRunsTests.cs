@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]

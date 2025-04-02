@@ -17,7 +17,7 @@ parameters:
   testFullMSBuild: false
   runAoTTests: false
   ### MSBUILD ###
-  buildArchitecture: x64
+  targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
   runTestsAsTool: false
@@ -34,11 +34,11 @@ jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
   parameters:
     ${{ if eq(parameters.container, '') }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})'
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }})'
     ${{ else }}:
-      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
-      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]'
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.targetArchitecture }}_${{ parameters.container }}
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.targetArchitecture }}) [${{ parameters.container }}]'
     pool: ${{ parameters.pool }}
     container: ${{ parameters.container }}
     strategy: ${{ parameters.strategy }}
@@ -82,7 +82,7 @@ jobs:
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
-          /p:Architecture=${{ parameters.buildArchitecture }}
+          /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
           ${{ parameters.runtimeSourceProperties }}
@@ -104,10 +104,10 @@ jobs:
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
-          /p:Architecture=${{ parameters.buildArchitecture }} \
+          /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
-          /p:Rid=${{ parameters.runtimeIdentifier }} \
+          /p:TargetRid=${{ parameters.runtimeIdentifier }} \
           ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
@@ -128,7 +128,7 @@ jobs:
             -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
             /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
-            /p:Architecture=${{ parameters.buildArchitecture }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
@@ -148,8 +148,8 @@ jobs:
             -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
             '/p:Projects="${{ parameters.testProjects }}"'
-            /p:Architecture=${{ parameters.buildArchitecture }}
-            /p:Rid=${{ parameters.runtimeIdentifier }}
+            /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+            /p:TargetRid=${{ parameters.runtimeIdentifier }}
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
@@ -171,7 +171,7 @@ jobs:
           testResultsFormat: xUnit
           testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.xml
           testRunTitle: $(System.PhaseName)
-          buildPlatform: ${{ parameters.buildArchitecture }}
+          buildPlatform: ${{ parameters.targetArchitecture }}
           buildConfiguration: $(buildConfiguration)
         continueOnError: true
         condition: always()

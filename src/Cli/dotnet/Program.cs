@@ -10,11 +10,11 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Commands.Workload;
 
 namespace Microsoft.DotNet.Cli;
 

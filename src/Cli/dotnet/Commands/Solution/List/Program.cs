@@ -2,24 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using CommandLocalizableStrings = Microsoft.DotNet.Cli.CommonLocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sln.List;
+namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-internal class ListProjectsInSolutionCommand : CommandBase
+internal class ListProjectsInSolutionCommand(
+    ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory;
-    private readonly bool _displaySolutionFolders;
-
-    public ListProjectsInSolutionCommand(
-        ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-        _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
-    }
+    private readonly string _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+    private readonly bool _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
 
     public override int Execute()
     {
@@ -54,7 +48,7 @@ internal class ListProjectsInSolutionCommand : CommandBase
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CommandLocalizableStrings.NoProjectsFound);
         }
         else
         {

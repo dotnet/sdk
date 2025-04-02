@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Elevate;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
 internal static class WorkloadElevateCommandParser
 {

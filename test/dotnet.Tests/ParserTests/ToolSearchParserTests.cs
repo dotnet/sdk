@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Search;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests

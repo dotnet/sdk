@@ -4,23 +4,19 @@
 using System.CommandLine;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-public class TestCommand : RestoringCommand
+public class TestCommand(
+    IEnumerable<string> msbuildArgs,
+    bool noRestore,
+    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public TestCommand(
-        IEnumerable<string> msbuildArgs,
-        bool noRestore,
-        string msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
-    {
-    }
-
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
@@ -544,7 +540,7 @@ public class TerminalLoggerDetector
 
         internal static (bool AcceptAnsiColorCodes, bool OutputIsScreen, uint? OriginalConsoleMode) QueryIsScreenAndTryEnableAnsiColorCodes(StreamHandleType handleType = StreamHandleType.StdOut)
         {
-            if (System.Console.IsOutputRedirected)
+            if (Console.IsOutputRedirected)
             {
                 // There's no ANSI terminal support if console output is redirected.
                 return (AcceptAnsiColorCodes: false, OutputIsScreen: false, OriginalConsoleMode: null);
@@ -662,7 +658,7 @@ public class TerminalLoggerDetector
         ];
 
         public static bool IsAnsiSupported(string termType)
-            => !String.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
+            => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
     }
 
     private record class Switch(string Name, string Value);

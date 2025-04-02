@@ -11,10 +11,12 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Run.LaunchSettings;
 
 namespace Microsoft.DotNet.Tools.Run;
 

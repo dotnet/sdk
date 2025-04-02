@@ -1,14 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.Package.Add;
+using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Solution;
+using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Package.Add;
-using Microsoft.DotNet.Tools.Reference.Add;
-using Microsoft.DotNet.Tools.Restore;
-using Microsoft.DotNet.Tools.Sln.Add;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class DotnetCommandCallbacks
 {
@@ -20,7 +21,7 @@ internal static class DotnetCommandCallbacks
         {
             commandArgs = commandArgs.Append(PackageAddCommandParser.VersionOption.Name).Append(version);
         }
-        var addPackageReferenceCommand = new AddPackageReferenceCommand(AddCommandParser.GetCommand().Parse(commandArgs.ToArray()));
+        var addPackageReferenceCommand = new AddPackageReferenceCommand(AddCommandParser.GetCommand().Parse(commandArgs.ToArray()), projectPath);
         return addPackageReferenceCommand.Execute() == 0;
     }
 

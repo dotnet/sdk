@@ -2,10 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
+using Microsoft.DotNet.Cli.Commands.Tool.Restore;
+using Microsoft.DotNet.Cli.Commands.Tool.Run;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
+using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Tool;
 
 internal static class ToolCommandParser
 {

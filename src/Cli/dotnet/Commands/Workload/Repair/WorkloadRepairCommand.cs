@@ -3,14 +3,14 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Repair;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
 internal class WorkloadRepairCommand : WorkloadCommandBase
 {
@@ -40,7 +40,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();

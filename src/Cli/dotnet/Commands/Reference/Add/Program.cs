@@ -3,23 +3,18 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Reference.Add;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal class AddProjectToProjectReferenceCommand : CommandBase
+internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory;
-
-    public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
             parseResult.GetValue(AddCommandParser.ProjectArgument);
-    }
 
     public override int Execute()
     {

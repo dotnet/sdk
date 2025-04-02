@@ -1,12 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.Restore;
-using Microsoft.DotNet.Workloads.Workload.Install;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public class RestoringCommand : MSBuildForwardingApp
 {

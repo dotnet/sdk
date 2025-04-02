@@ -3,7 +3,7 @@
 
 using System.Collections.Immutable;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 /// <summary>
 /// Converts the given arguments to vstest parsable arguments.

@@ -5,7 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
 internal static class PackageSearchCommandParser
 {

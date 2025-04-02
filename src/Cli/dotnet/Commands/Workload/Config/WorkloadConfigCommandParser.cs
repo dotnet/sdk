@@ -4,7 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Workloads.Workload.Config;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
 internal static class WorkloadConfigCommandParser
 {

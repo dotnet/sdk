@@ -32,8 +32,8 @@
     <!-- msbuild dependencies -->
     <MicrosoftBuildVersion>17.12.6</MicrosoftBuildVersion>
     <!-- nuget dependencies -->
-    <NuGetProtocolVersion>6.12.1</NuGetProtocolVersion>
-    <NuGetProjectModelVersion>6.12.1</NuGetProjectModelVersion>
+    <NuGetProtocolVersion>6.13.1</NuGetProtocolVersion>
+    <NuGetProjectModelVersion>6.13.1</NuGetProjectModelVersion>
     <!-- runtime dependencies -->
     <MicrosoftExtensionsFileSystemGlobbingVersion>9.0.0</MicrosoftExtensionsFileSystemGlobbingVersion>
     <MicrosoftExtensionsLoggingConsoleVersion>9.0.0</MicrosoftExtensionsLoggingConsoleVersion>

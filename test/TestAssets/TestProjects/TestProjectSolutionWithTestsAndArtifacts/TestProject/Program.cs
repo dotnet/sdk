@@ -34,7 +34,6 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 	public Type[] DataTypesProduced => new[] {
 		typeof(TestNodeUpdateMessage),
 		typeof(SessionFileArtifact),
-		typeof(TestNodeFileArtifact),
 		typeof(FileArtifact), };
 
 	public Task<CreateTestSessionResult> CreateTestSessionAsync(CreateTestSessionContext context)
@@ -91,12 +90,12 @@ public class DummyTestAdapter : ITestFramework, IDataProducer
 
 		await context.MessageBus.PublishAsync(this, new SessionFileArtifact(context.Request.Session.SessionUid, new FileInfo("sessionFile.txt"), "sessionFile", "description"));
 
-		await context.MessageBus.PublishAsync(this, new TestNodeFileArtifact(context.Request.Session.SessionUid, new TestNode()
+		await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
 		{
 			Uid = "Test6 id",
 			DisplayName = "Test6",
-			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
-		}, new FileInfo("testNodeFile.txt"), "testNodeFile", "description"));
+			Properties = new PropertyBag(new PassedTestNodeStateProperty("OK"), new FileArtifactProperty(new FileInfo("testNodeFile.txt"), "testNodeFile", "description")),
+		}));
 
 		context.Complete();
 	}

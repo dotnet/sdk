@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
@@ -12,8 +11,9 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.Restore;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
 internal class ToolRestoreCommand : CommandBase
 {
@@ -274,7 +274,7 @@ internal class ToolRestoreCommand : CommandBase
     private void EnsureNoCommandNameCollision(Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
     {
         string[] errors = dictionary
-            .Select(pair => (PackageId: pair.Key.PackageId, CommandName: pair.Key.CommandName))
+            .Select(pair => (pair.Key.PackageId, pair.Key.CommandName))
             .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
             .Where(grouped => grouped.Count() > 1)
             .Select(nonUniquePackageIdAndCommandNames =>

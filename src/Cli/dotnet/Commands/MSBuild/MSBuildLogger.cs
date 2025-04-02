@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Tools.MSBuild;
+namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
@@ -61,7 +61,7 @@ public sealed class MSBuildLogger : INodeLogger
                 // When senders in different process running at the same
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
-                _telemetry = new Telemetry(
+                _telemetry = new Telemetry.Telemetry(
                     _sentinel,
                     sessionId,
                     senderCount: 0);

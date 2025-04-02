@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 

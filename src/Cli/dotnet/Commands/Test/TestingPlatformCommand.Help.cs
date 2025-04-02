@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.CommandLine.Help;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli;

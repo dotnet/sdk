@@ -4,17 +4,13 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
+namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
-internal class DotnetRestorePostActionProcessor : PostActionProcessorBase
+internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null) : PostActionProcessorBase
 {
-    private readonly Func<string, bool> _restoreCallback;
-
-    public DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null)
-    {
-        _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
-    }
+    private readonly Func<string, bool> _restoreCallback = restoreCallback ?? DotnetCommandCallbacks.RestoreProject;
 
     public override Guid Id => ActionProcessorId;
 

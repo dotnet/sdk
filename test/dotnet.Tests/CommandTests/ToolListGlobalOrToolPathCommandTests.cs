@@ -4,10 +4,10 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
 using NuGet.Versioning;

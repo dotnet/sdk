@@ -4,14 +4,9 @@
 #nullable disable
 
 using System.CommandLine;
-using System.CommandLine.Parsing;
-using System.IO;
-using FluentAssertions;
-using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Restore;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -19,10 +14,10 @@ using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 using Microsoft.DotNet.Cli.ToolPackage;
-using System.Reflection;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
