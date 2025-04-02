@@ -111,7 +111,7 @@ public partial class OverrideHtmlAssetPlaceholders : Task
 
     private static string GeneratePreloadLinks(List<ResourceAsset> assets, string? group)
     {
-        var links = new List<(string? Order, string Value)>();
+        var links = new List<(int Order, string Value)>();
         foreach (var asset in assets)
         {
             if (asset.PreloadRel == null)
@@ -147,7 +147,7 @@ public partial class OverrideHtmlAssetPlaceholders : Task
             links.Add((asset.PreloadOrder, link.ToString()));
         }
 
-        links.Sort((a, b) => string.Compare(a.Order, b.Order, StringComparison.InvariantCulture));
+        links.Sort((a, b) => a.Order.CompareTo(b.Order));
         return String.Join(Environment.NewLine, links.Select(l => l.Value));
     }
 
