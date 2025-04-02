@@ -249,7 +249,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
     {
         if (SemanticVersion.TryParse(TargetFrameworkVersion, out var tfm) && tfm.Major < FirstVersionWithNewTaggingScheme)
         {
-            // < 8 TFMs don't support and -extras images
+            // < 8 TFMs don't support the -extras images
             return ($"{tfm.Major}.{tfm.Minor}", tfm, false);
         }
         else if (SemanticVersion.TryParse(SdkVersion, out var version))
