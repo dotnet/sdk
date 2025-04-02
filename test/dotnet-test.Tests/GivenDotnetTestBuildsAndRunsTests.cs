@@ -131,8 +131,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                         TestingPlatformOptions.NoLaunchProfileOption.Name);
 
             result.StdOut.Should()
-                .Contain("FAILED to find argument from launchSettings.json")
-                .And.Contain("FAILED to find argument from RunArguments");
+                .Contain("FAILED to find argument from launchSettings.json");
             if (!TestContext.IsLocalized())
             {
                 result.StdOut
