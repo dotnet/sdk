@@ -62,6 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag.
           This is done in Common.targets so that it applies to ApiCompat which uses RoslynTargetsPath in the outer build. -->
     <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
+                                                    and '$(RoslynUseSdkCompiler)' != 'true'
                                                     and '$(_IsDisjointMSBuildVersion)' == 'true'
                                                     and ('$(Language)' == 'C#'
                                                     or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
