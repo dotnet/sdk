@@ -1,9 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Testing.Platform.Helpers;
-
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
 {

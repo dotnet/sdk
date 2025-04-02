@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.Check.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 internal class RuntimeOutputWriter(
     IEnumerable<NetRuntimeInfo> runtimeInfo,
@@ -14,7 +14,7 @@ internal class RuntimeOutputWriter(
     IProductCollectionProvider productCollectionProvider,
     IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetRuntimeInfo> _runtimeInfo = runtimeInfo;
+    private readonly IEnumerable<NetRuntimeInfo> _runtimeInfo = runtimeInfo;
 
     public void PrintRuntimeInfo()
     {

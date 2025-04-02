@@ -26,7 +26,7 @@ internal class PipeStreamMessageDispatcherBase(PipeStream pipeStream)
     /// <summary>
     /// The backing stream used for reading & writing messages.
     /// </summary>
-    private PipeStream _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
+    private readonly PipeStream _pipeStream = pipeStream ?? throw new ArgumentNullException(nameof(pipeStream));
 
     /// <summary>
     /// The number of milliseconds to wait for a pipe connection to be established. See <see cref="Connect"/>.
@@ -80,7 +80,7 @@ internal class PipeStreamMessageDispatcherBase(PipeStream pipeStream)
     public byte[] ReadMessage()
     {
         byte[] message = new byte[2048];
-        int bytesRead = _pipeStream.Read(message, 0, message.Length);
+        _ = _pipeStream.Read(message, 0, message.Length);
         int messageLength = BitConverter.ToInt32(message, 0);
         byte[] messageBytes = new byte[messageLength];
         Array.Copy(message, 4, messageBytes, 0, messageLength);
@@ -95,7 +95,7 @@ internal class PipeStreamMessageDispatcherBase(PipeStream pipeStream)
     public void WriteMessage(byte[] messageBytes)
     {
         byte[] messageLengthBytes = BitConverter.GetBytes(messageBytes.Length);
-        byte[] msg = messageLengthBytes.Concat(messageBytes).ToArray();
+        byte[] msg = [.. messageLengthBytes, .. messageBytes];
 
         if (msg.Length > MaxMessageSize)
         {

@@ -2,16 +2,26 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Clean;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Elevate;
+using Microsoft.DotNet.Cli.Commands.Workload.History;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.Repair;
+using Microsoft.DotNet.Cli.Commands.Workload.Restore;
+using Microsoft.DotNet.Cli.Commands.Workload.Search;
+using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadCommandParser
 {
@@ -51,7 +61,7 @@ internal static class WorkloadCommandParser
     internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
-        reporter ??= Utils.Reporter.Output;
+        reporter ??= Reporter.Output;
         var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
         void WriteUpdateModeAndAnyError(string indent = "")
@@ -112,7 +122,7 @@ internal static class WorkloadCommandParser
                     reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
 
                     reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
+                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Product.Version), dotnetPath).ToString(),align}"
                     );
                     reporter.WriteLine("");
                 }

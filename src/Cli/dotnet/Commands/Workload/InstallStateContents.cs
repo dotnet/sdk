@@ -40,7 +40,7 @@ internal class InstallStateContents
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize<InstallStateContents>(this, s_options);
+        return JsonSerializer.Serialize(this, s_options);
     }
 
     public bool ShouldUseWorkloadSets() => UseWorkloadSets ?? true;

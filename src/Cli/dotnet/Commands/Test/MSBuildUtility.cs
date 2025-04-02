@@ -5,11 +5,13 @@ using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {

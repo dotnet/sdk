@@ -2,14 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 /// <summary>
 /// Base class for workload related commands.
@@ -100,18 +101,18 @@ internal abstract class WorkloadCommandBase : CommandBase
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
-        Reporter = reporter ?? Cli.Utils.Reporter.Output;
+        Reporter = reporter ?? Utils.Reporter.Output;
 
         TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
             ? tempDirPath
-            : (!string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
+            : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
                 ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
-                : PathUtilities.CreateTempSubdirectory());
+                : PathUtilities.CreateTempSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
         IsPackageDownloaderProvided = nugetPackageDownloader != null;
-        PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader(TempPackagesDirectory,
+        PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(TempPackagesDirectory,
             filePermissionSetter: null,
             new FirstPartyNuGetPackageSigningVerifier(),
             nugetLogger,

@@ -3,22 +3,23 @@
 
 using System.Collections.Concurrent;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using Microsoft.DotNet.Workloads.Workload.History;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal class FileBasedInstaller : IInstaller
 {
@@ -59,7 +60,7 @@ internal class FileBasedInstaller : IInstaller
         ILogger logger = verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
         _restoreActionConfig = restoreActionConfig;
         _nugetPackageDownloader = nugetPackageDownloader ??
-                                  new NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
+                                  new NuGetPackageDownloader.NuGetPackageDownloader(_tempPackagesDir, filePermissionSetter: null,
                                       new FirstPartyNuGetPackageSigningVerifier(), logger,
                                       restoreActionConfig: _restoreActionConfig,
                                       verbosityOptions: nugetPackageDownloaderVerbosity);
@@ -385,7 +386,7 @@ internal class FileBasedInstaller : IInstaller
             packs = packs.Where(p => !PackIsInstalled(p));
         }
 
-        return packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version)).ToList();
+        return [.. packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version))];
     }
 
     public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
@@ -579,7 +580,7 @@ internal class FileBasedInstaller : IInstaller
     {
         UpdateInstallState(sdkFeatureBand, contents => contents.UseWorkloadSets = newMode);
 
-        var newModeString = newMode == null ? "<null>" : (newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests);
+        var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
         _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
     }
 
@@ -903,5 +904,5 @@ internal class FileBasedInstaller : IInstaller
         return Directory.Exists(packInstallRecordDir) && Directory.GetFiles(packInstallRecordDir).Any();
     }
 
-    private bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
+    private static bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
 }

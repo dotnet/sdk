@@ -7,11 +7,12 @@ using System.CommandLine;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests

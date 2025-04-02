@@ -3,12 +3,11 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output) : IDisposable
 {
@@ -139,7 +138,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return (projects, isBuiltOrRestored);
     }
 
-    private void LogProjectProperties(IEnumerable<TestModule> modules)
+    private static void LogProjectProperties(IEnumerable<TestModule> modules)
     {
         if (!Logger.TraceEnabled)
         {

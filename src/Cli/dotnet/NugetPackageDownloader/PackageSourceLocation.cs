@@ -26,7 +26,7 @@ internal class PackageSourceLocation
     public string[] SourceFeedOverrides { get; private set; }
     public string[] AdditionalSourceFeed { get; private set; }
 
-    private string[] ExpandLocalFeed(string[] sourceFeedOverrides)
+    private static string[] ExpandLocalFeed(string[] sourceFeedOverrides)
     {
         if (sourceFeedOverrides != null)
         {
@@ -48,7 +48,7 @@ internal class PackageSourceLocation
         }
         else
         {
-            return Array.Empty<string>();
+            return [];
         }
     }
 }
