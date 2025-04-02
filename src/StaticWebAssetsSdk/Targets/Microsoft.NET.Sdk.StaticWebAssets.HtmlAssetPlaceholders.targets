@@ -15,6 +15,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.AspNetCore.StaticWebAssets.Tasks.OverrideHtmlAssetPlaceholders" AssemblyFile="$(StaticWebAssetsSdkBuildTasksAssembly)" />
 
   <PropertyGroup>
+    <!-- Workaround until we update runtime -->
+    <WriteImportMapToHtml>true</WriteImportMapToHtml>
+  </PropertyGroup>
+
+  <PropertyGroup>
 
     <!--
         ResolveBuildRelatedStaticWebAssets
