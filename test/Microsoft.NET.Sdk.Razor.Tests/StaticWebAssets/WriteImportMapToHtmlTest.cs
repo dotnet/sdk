@@ -86,7 +86,7 @@ public class WriteImportMapToHtmlTest
 
         if (fileName != null)
         {
-            Assert.Equal(fileName, match.Groups[1].Value + match.Groups[3].Value);
+            Assert.Equal(fileName, match.Groups["fileName"].Value + match.Groups["fileExtension"].Value);
         }
     }
 

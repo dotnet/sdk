@@ -37,12 +37,7 @@ public partial class WriteImportMapToHtml : Task
     [Output]
     public string[] FileWrites { get; set; } = [];
 
-    // "([^"]+)(#\[\.{fingerprint}\])([^"]+)"
-    // 1.group = file name
-    // 2.group = fingerprint placeholder
-    // 3.group = file extension
-    // wrapped in quotes
-    internal static readonly Regex _assetsRegex = new Regex(@"""([^""]+)(#\[\.{fingerprint}\])([^""]+)""");
+    internal static readonly Regex _assetsRegex = new Regex(@"""(?<fileName>[^""]+)#\[\.{fingerprint}\](?<fileExtension>[^""]+)""");
 
     internal static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
@@ -87,7 +82,7 @@ public partial class WriteImportMapToHtml : Task
                 // Fingerprint all assets used in html
                 outputContent = _assetsRegex.Replace(outputContent, e =>
                 {
-                    string assetPath = e.Groups[1].Value + e.Groups[3].Value;
+                    string assetPath = e.Groups["fileName"].Value + e.Groups["fileExtension"].Value;
                     string fingerprintedAssetPath = GetFingerprintedAssetPath(urlMappings, assetPath);
                     Log.LogMessage("Replacing asset '{0}' with fingerprinted version '{1}'", assetPath, fingerprintedAssetPath);
                     return "\"" + fingerprintedAssetPath + "\"";
