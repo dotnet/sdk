@@ -178,16 +178,22 @@ namespace Microsoft.DotNet.Cli
 
             if (exception is Utils.GracefulException)
             {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
             else if (exception is CommandParsingException)
             {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
                 parseResult.ShowHelp();
+            }
+            else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+            {
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
             else
             {
