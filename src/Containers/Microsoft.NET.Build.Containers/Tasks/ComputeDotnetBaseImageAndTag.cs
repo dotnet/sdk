@@ -225,7 +225,7 @@ public sealed class ComputeDotnetBaseImageAndTag : Microsoft.Build.Utilities.Tas
                     };
 
                     // now choose the variant, if any - if globalization then -extra
-                    // Starting .NET 10, the -aot tag is no longer used, and for .NET 8 and 9, the -aot tag is mappeed to non-aot
+                    // as of March 2025, the -aot tag is no longer used, and for .NET 8 and 9 the nightly/runtime-deps images with aot tags point at the regular runtime-deps images 
                     tag += (IsAotPublished, IsTrimmed, UsesInvariantGlobalization) switch
                     {
                         (true, _, false) => "-extra",
