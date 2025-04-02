@@ -96,6 +96,11 @@ internal static class MSBuildUtility
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
+        if (buildOptions.HasNoBuild)
+        {
+            return true;
+        }
+
         List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
 
         if (buildOptions.Verbosity is null)
@@ -106,7 +111,7 @@ internal static class MSBuildUtility
         msbuildArgs.Add(filePath);
         msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
 
-        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore || buildOptions.HasNoBuild).Execute();
+        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore).Execute();
 
         return result == (int)BuildResultCode.Success;
     }
