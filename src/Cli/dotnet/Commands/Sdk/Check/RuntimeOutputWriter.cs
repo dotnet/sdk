@@ -14,7 +14,7 @@ internal class RuntimeOutputWriter(
     IProductCollectionProvider productCollectionProvider,
     IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetRuntimeInfo> _runtimeInfo = runtimeInfo;
+    private readonly IEnumerable<NetRuntimeInfo> _runtimeInfo = runtimeInfo;
 
     public void PrintRuntimeInfo()
     {

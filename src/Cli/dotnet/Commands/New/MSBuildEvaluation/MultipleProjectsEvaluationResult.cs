@@ -9,7 +9,7 @@ internal class MultipleProjectsEvaluationResult : MSBuildEvaluationResult
 {
     private MultipleProjectsEvaluationResult() : base(EvalStatus.MultipleProjectFound) { }
 
-    internal IReadOnlyList<string> ProjectPaths { get; private set; } = Array.Empty<string>();
+    internal IReadOnlyList<string> ProjectPaths { get; private set; } = [];
 
     internal static MultipleProjectsEvaluationResult Create(IReadOnlyList<string> projectPaths)
     {

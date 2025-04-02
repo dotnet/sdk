@@ -11,7 +11,7 @@ public class RestoringCommand : MSBuildForwardingApp
 {
     public RestoreCommand SeparateRestoreCommand { get; }
 
-    private bool AdvertiseWorkloadUpdates;
+    private readonly bool AdvertiseWorkloadUpdates;
 
     public RestoringCommand(
         IEnumerable<string> msbuildArgs,
@@ -99,14 +99,11 @@ public class RestoringCommand : MSBuildForwardingApp
         "clp"
     ];
 
-    private static List<string> FlagsToExcludeFromSeparateRestore =
-        ComputeFlags(FlagsToExcludeFromRestore).ToList();
+    private static readonly List<string> FlagsToExcludeFromSeparateRestore = [.. ComputeFlags(FlagsToExcludeFromRestore)];
 
-    private static List<string> FlagsThatTriggerSilentSeparateRestore =
-        ComputeFlags(FlagsThatTriggerSilentRestore).ToList();
+    private static readonly List<string> FlagsThatTriggerSilentSeparateRestore = [.. ComputeFlags(FlagsThatTriggerSilentRestore)];
 
-    private static List<string> PropertiesToExcludeFromSeparateRestore =
-        ComputePropertySwitches(PropertiesToExcludeFromRestore).ToList();
+    private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [.. ComputePropertySwitches(PropertiesToExcludeFromRestore)];
 
     // We investigate the arguments we're about to send to a separate restore call and filter out
     // arguments that negatively influence the restore. In addition, some flags signal different modes of execution
@@ -117,7 +114,7 @@ public class RestoringCommand : MSBuildForwardingApp
         HashSet<string> newArgumentsToAdd = ["-tlp:verbosity=quiet"];
         List<string> existingArgumentsToForward = [];
 
-        foreach (var argument in forwardedArguments ?? Enumerable.Empty<string>())
+        foreach (var argument in forwardedArguments ?? [])
         {
             if (!IsExcludedFromSeparateRestore(argument) && !IsExcludedFromRestore(argument))
             {

@@ -54,7 +54,7 @@ internal static class CommonOptions
             HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
         }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
+    private static readonly string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
     {
         if (GetArchFromRid(rid) == "amd64")
@@ -263,7 +263,7 @@ internal static class CommonOptions
         if (parseResult.BothArchAndOsOptionsSpecified())
         {
             // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
-            return Array.Empty<string>();
+            return [];
         }
 
         return ResolveRidShorthandOptions(null, arg);
@@ -304,7 +304,7 @@ internal static class CommonOptions
         string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?
             Path.Combine(Directory.GetDirectories(Path.Combine(dotnetRootPath, "sdk"))[0], ridFileName) :
             Path.Combine(dotnetRootPath, "sdk", Product.Version, ridFileName);
-        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() : [];
+        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {
             throw new GracefulException(CommonLocalizableStrings.CannotResolveRuntimeIdentifier);

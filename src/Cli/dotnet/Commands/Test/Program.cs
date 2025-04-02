@@ -40,9 +40,9 @@ public class TestCommand(
         }
 
         // settings parameters are after -- (including --), these should not be considered by the parser
-        string[] settings = args.SkipWhile(a => a != "--").ToArray();
+        string[] settings = [.. args.SkipWhile(a => a != "--")];
         // all parameters before --
-        args = args.TakeWhile(a => a != "--").ToArray();
+        args = [.. args.TakeWhile(a => a != "--")];
 
         // Fix for https://github.com/Microsoft/vstest/issues/1453
         // Run dll/exe directly using the VSTestForwardingApp
@@ -73,7 +73,7 @@ public class TestCommand(
             {
                 // TL option is invalid we want terminal logger to fail in its own way and don't want to disable it.
                 // Do noting.
-                additionalBuildProperties = Array.Empty<string>();
+                additionalBuildProperties = [];
             }
             else if (forceLegacyOutput)
             {
@@ -92,7 +92,7 @@ public class TestCommand(
                 else
                 {
                     // the property is already present don't add it.
-                    additionalBuildProperties = Array.Empty<string>();
+                    additionalBuildProperties = [];
                 }
             }
             else
@@ -157,13 +157,13 @@ public class TestCommand(
         var parseResult = parser.ParseFrom("dotnet test", args);
 
         // settings parameters are after -- (including --), these should not be considered by the parser
-        string[] settings = args.SkipWhile(a => a != "--").ToArray();
+        string[] settings = [.. args.SkipWhile(a => a != "--")];
         if (string.IsNullOrEmpty(testSessionCorrelationId))
         {
             testSessionCorrelationId = $"{Environment.ProcessId}_{Guid.NewGuid()}";
         }
 
-        return FromParseResult(parseResult, settings, testSessionCorrelationId, Array.Empty<string>(), msbuildPath);
+        return FromParseResult(parseResult, settings, testSessionCorrelationId, [], msbuildPath);
     }
 
     private static TestCommand FromParseResult(ParseResult result, string[] settings, string testSessionCorrelationId, string[] additionalBuildProperties, string msbuildPath = null)
@@ -195,7 +195,7 @@ public class TestCommand(
         if (settings.Any())
         {
             // skip '--' and escape every \ to be \\ and every " to be \" to survive the next hop
-            string[] escaped = settings.Skip(1).Select(s => s.Replace("\\", "\\\\").Replace("\"", "\\\"")).ToArray();
+            string[] escaped = [.. settings.Skip(1).Select(s => s.Replace("\\", "\\\\").Replace("\"", "\\\""))];
 
             string runSettingsArg = string.Join(";", escaped);
             msbuildArgs.Add($"-property:VSTestCLIRunSettings=\"{runSettingsArg}\"");
@@ -343,7 +343,7 @@ public class TerminalLoggerDetector
 {
     public static TerminalLoggerMode ProcessTerminalLoggerConfiguration(ParseResult parseResult)
     {
-        string terminalLoggerArg = null;
+        string terminalLoggerArg;
         if (!TryFromCommandLine(parseResult.UnmatchedTokens, out terminalLoggerArg) && !TryFromEnvironmentVariables(out terminalLoggerArg))
         {
             terminalLoggerArg = FindDefaultValue(parseResult.UnmatchedTokens) ?? "auto";
@@ -351,7 +351,7 @@ public class TerminalLoggerDetector
 
         terminalLoggerArg = NormalizeIntoBooleanValues(terminalLoggerArg!);
 
-        TerminalLoggerMode useTerminalLogger = TerminalLoggerMode.Off;
+        TerminalLoggerMode useTerminalLogger;
         if (bool.TryParse(terminalLoggerArg, out bool boolOption))
         {
             // When true, terminal logger will be forced, when false it won't be used.

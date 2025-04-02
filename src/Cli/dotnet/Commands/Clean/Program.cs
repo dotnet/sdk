@@ -26,7 +26,7 @@ public class CleanCommand(IEnumerable<string> msbuildArgs, string msbuildPath = 
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+        msbuildArgs.AddRange(result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? []);
 
         msbuildArgs.Add("-target:Clean");
 

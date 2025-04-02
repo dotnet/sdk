@@ -63,7 +63,7 @@ public class BuiltInCommand : ICommand
                 var taskOut = _stdOut.BeginRead(new StreamReader(outStream));
                 var taskErr = _stdErr.BeginRead(new StreamReader(errorStream));
 
-                int exitCode = _builtInCommand(_commandArgs.ToArray());
+                int exitCode = _builtInCommand([.. _commandArgs]);
 
                 outStream.DoneWriting();
                 errorStream.DoneWriting();

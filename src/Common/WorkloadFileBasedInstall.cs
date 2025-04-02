@@ -49,7 +49,7 @@ static class WorkloadFileBasedInstall
     {
         if (!Directory.Exists(workloadHistoryDirectory))
         {
-            return Enumerable.Empty<WorkloadHistoryRecord>();
+            return [];
         }
 
         List<WorkloadHistoryRecord> historyRecords = [];

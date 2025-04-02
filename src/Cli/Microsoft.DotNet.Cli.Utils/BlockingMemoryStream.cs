@@ -29,8 +29,7 @@ public sealed class BlockingMemoryStream : Stream
 
         if (_remaining.Count == 0)
         {
-            byte[]? tmp;
-            if (!_buffers.TryTake(out tmp, Timeout.Infinite) || tmp.Length == 0)
+            if (!_buffers.TryTake(out byte[]? tmp, Timeout.Infinite) || tmp.Length == 0)
             {
                 return 0;
             }

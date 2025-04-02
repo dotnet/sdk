@@ -131,11 +131,13 @@ public static class ParseResultExtensions
         var runArgs = dashDashIndex > -1 ? subargs.GetRange(dashDashIndex, subargs.Count() - dashDashIndex) : [];
         subargs = dashDashIndex > -1 ? subargs.GetRange(0, dashDashIndex) : subargs;
 
-        return subargs
-            .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
-            .Skip(1) // remove top level command (ex build or publish)
-            .Concat(runArgs)
-            .ToArray();
+        return
+        [
+            .. subargs
+                .SkipWhile(arg => DiagOption.Name.Equals(arg) || DiagOption.Aliases.Contains(arg) || arg.Equals("dotnet"))
+                .Skip(1), // remove top level command (ex build or publish)
+            .. runArgs
+        ];
     }
 
     public static bool DiagOptionPrecedesSubcommand(this string[] args, string subCommand)

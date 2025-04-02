@@ -50,6 +50,6 @@ public class VSTestCommand
             args = loggerArgs.Concat(args);
         }
 
-        return args.ToArray();
+        return [.. args];
     }
 }

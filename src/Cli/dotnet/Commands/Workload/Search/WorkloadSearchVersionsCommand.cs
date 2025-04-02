@@ -163,10 +163,9 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
-        return packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
+        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
-            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
-            .ToList();
+            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()

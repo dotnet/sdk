@@ -9,8 +9,7 @@ internal static class MSBuildProjectExtensions
 {
     public static bool IsConditionalOnFramework(this ProjectElement el, string framework)
     {
-        string? conditionStr;
-        if (!TryGetFrameworkConditionString(framework, out conditionStr))
+        if (!TryGetFrameworkConditionString(framework, out string? conditionStr))
         {
             return el.ConditionChain().Count == 0;
         }
@@ -54,8 +53,7 @@ internal static class MSBuildProjectExtensions
         }
 
         ProjectItemGroupElement ret = root.CreateItemGroupElement();
-        string? condStr;
-        if (TryGetFrameworkConditionString(framework, out condStr))
+        if (TryGetFrameworkConditionString(framework, out string? condStr))
         {
             ret.Condition = condStr;
         }

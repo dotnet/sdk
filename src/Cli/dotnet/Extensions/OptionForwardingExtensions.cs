@@ -64,8 +64,7 @@ public static class OptionForwardingExtensions
         command.Options
             .OfType<IForwardedOption>()
             .Select(o => o.GetForwardingFunction())
-            .SelectMany(f => f is not null ? f(parseResult) : Array.Empty<string>());
-
+            .SelectMany(f => f is not null ? f(parseResult) : []);
 
     public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias)
     {
@@ -153,7 +152,7 @@ public class ForwardedOption<T> : CliOption<T>, IForwardedOption
     {
         ForwardingFunction = (ParseResult parseResult) =>
         {
-            if (parseResult.GetResult(this) is OptionResult argresult && argresult.GetValue<T>(this) is T validValue)
+            if (parseResult.GetResult(this) is OptionResult argresult && argresult.GetValue(this) is T validValue)
             {
                 return func(validValue, parseResult) ?? [];
             }
@@ -167,7 +166,7 @@ public class ForwardedOption<T> : CliOption<T>, IForwardedOption
 
     public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T?, IEnumerable<string>> func)
     {
-        return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue<T>(this)) : Array.Empty<string>();
+        return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue(this)) : [];
     }
 
     public Func<ParseResult, IEnumerable<string>> GetForwardingFunction()

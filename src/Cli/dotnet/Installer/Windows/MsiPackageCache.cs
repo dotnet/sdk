@@ -22,7 +22,7 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
     /// <summary>
     /// Determines whether revocation checks can go online.
     /// </summary>
-    private bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
+    private readonly bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
 
     /// <summary>
     /// The root directory of the package cache where MSI workload packs are stored.

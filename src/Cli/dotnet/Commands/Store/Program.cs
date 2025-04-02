@@ -38,7 +38,7 @@ public class StoreCommand : MSBuildForwardingApp
 
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
 
-        msbuildArgs.AddRange(result.GetValue(StoreCommandParser.Argument) ?? Array.Empty<string>());
+        msbuildArgs.AddRange(result.GetValue(StoreCommandParser.Argument) ?? []);
 
         return new StoreCommand(msbuildArgs, msbuildPath);
     }

@@ -14,7 +14,7 @@ internal class SdkOutputWriter(
     IProductCollectionProvider productCollectionProvider,
     IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
+    private readonly IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
 
     public void PrintSdkInfo()
     {

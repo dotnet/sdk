@@ -13,7 +13,7 @@ internal class LaunchSettingsManager
     private const string ProfilesKey = "profiles";
     private const string CommandNameKey = "commandName";
     private const string DefaultProfileCommandName = "Project";
-    private static IReadOnlyDictionary<string, ILaunchSettingsProvider> _providers;
+    private static readonly IReadOnlyDictionary<string, ILaunchSettingsProvider> _providers;
 
     static LaunchSettingsManager()
     {
@@ -52,10 +52,9 @@ internal class LaunchSettingsManager
                 }
                 else // Find a profile match for the given profileName
                 {
-                    IEnumerable<JsonProperty> caseInsensitiveProfileMatches = profilesObject
+                    IEnumerable<JsonProperty> caseInsensitiveProfileMatches = [.. profilesObject
                         .EnumerateObject() // p.Name shouldn't fail, as profileObject enumerables here are only created from an existing JsonObject
-                        .Where(p => string.Equals(p.Name, profileName, StringComparison.OrdinalIgnoreCase))
-                        .ToList();
+                        .Where(p => string.Equals(p.Name, profileName, StringComparison.OrdinalIgnoreCase))];
 
                     if (caseInsensitiveProfileMatches.Count() > 1)
                     {

@@ -81,7 +81,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
+                exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,
