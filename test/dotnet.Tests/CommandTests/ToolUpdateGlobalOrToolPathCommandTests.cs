@@ -1,19 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ShellShim;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
-using Microsoft.DotNet.InternalAbstractions;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
+using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
             var toolUpdateCommand = new ToolUpdateGlobalOrToolPathCommand(parseResult);
-            toolUpdateCommand._toolInstallGlobalOrToolPathCommand._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -381,7 +381,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Clear();
 
             ParseResult result = Parser.Instance.Parse("dotnet tool update " + $"-g {_packageId}");
-            
+
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
                 (location, forwardArguments, currentWorkingDirectory) => (_store, _store,
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             string options = $"-g {_packageId}";
             ParseResult result = Parser.Instance.Parse("dotnet tool update " + options);
-            
+
             var command = new ToolUpdateGlobalOrToolPathCommand(
                 result,
                 (_, _, _) => (_store, _store, new ToolPackageDownloaderMock(

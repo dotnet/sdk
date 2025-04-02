@@ -1,17 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
-using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
-using Microsoft.TemplateEngine.Edge.Constraints;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -59,7 +56,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write workload install record for 6.0.300
             var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", sdkVersions[1], "InstalledWorkloads");
             Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build")).Close();
 
             installer.GarbageCollect(getResolver);
 
@@ -130,7 +127,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write workload install record for xamarin-android-build workload for 6.0.300
             var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
             Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build")).Close();
 
             //  These packs are referenced by xamarin-android-build from the 3.0 manifest, which is the latest one and therefore the one that will be kept
             var packsToKeep = new PackInfo[]
@@ -210,7 +207,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write workload install record for xamarin-android-build workload for 6.0.300
             var workloadsRecordPath = Path.Combine(_dotnetRoot, "metadata", "workloads", "6.0.300", "InstalledWorkloads");
             Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build"));
+            File.Create(Path.Combine(workloadsRecordPath, "xamarin-android-build")).Close();
 
             //  These packs are referenced by xamarin-android-build from the 2.0 manifest, which is the one that should be kept due to the install state
             var packsToKeep = new PackInfo[]

@@ -1,9 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools.Common;
+using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.Reference.Add;
+using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -38,12 +39,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
-        public void AddReferenceDoesNotHaveInteractiveFlagByDefault()
+        public void AddReferenceDoesHaveInteractiveFlagByDefault()
         {
             var result = Parser.Instance.Parse("dotnet add reference my.csproj");
 
             result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
-                .Should().BeFalse();
+                .Should().BeTrue();
         }
 
         [Fact]
@@ -51,11 +52,11 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet add reference");
 
-            result
-                .Errors
-                .Select(e => e.Message)
-                .Should()
-                .BeEquivalentTo(string.Format(LocalizableStrings.RequiredArgumentMissingForCommand, "'reference'."));
+            result.Errors.Should().NotBeEmpty();
+
+            var argument = (result.Errors.SingleOrDefault()?.SymbolResult as ArgumentResult)?.Argument;
+
+            argument.Should().Be(ReferenceAddCommandParser.ProjectPathArgument);
         }
     }
 }

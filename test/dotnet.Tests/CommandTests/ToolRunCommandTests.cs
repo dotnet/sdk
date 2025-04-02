@@ -2,13 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Tool.Run;
+using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
-using Microsoft.DotNet.InternalAbstractions;
-using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Run;
-using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -39,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             {
                 CommandName = "dotnet-a",
                 CommandArguments = testForwardArgument
-            }, toolRunCommand._allowRollForward); 
+            }, toolRunCommand._allowRollForward);
 
             result.Should().NotBeNull();
             result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);

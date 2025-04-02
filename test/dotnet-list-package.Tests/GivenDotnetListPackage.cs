@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Package.List;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
@@ -177,6 +179,10 @@ class Program
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", "9.0.1"));
+
+            //  Disable package pruning so that there are still transitive dependencies to test the command
+            testProject.AdditionalProperties["RestoreEnablePackagePruning"] = "false";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
             var projectDirectory = Path.Combine(testAsset.Path, testProject.Name);
 

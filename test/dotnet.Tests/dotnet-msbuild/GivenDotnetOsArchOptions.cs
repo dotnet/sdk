@@ -3,8 +3,7 @@
 
 using System.Globalization;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using BuildCommand = Microsoft.DotNet.Tools.Build.BuildCommand;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -14,7 +13,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
         }
 
-        const string ExpectedPrefix = "-maxcpucount -verbosity:m -tlp:default=auto -nologo";
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+        private const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
+        private static readonly string[] DefaultArgs = ["-restore", "-consoleloggerparameters:Summary", NugetInteractiveProperty];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
@@ -25,11 +26,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(new string[] { "--os", "os" }, msbuildPath);
+                var command = BuildCommand.FromArgs(["--os", "os"], msbuildPath);
                 var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
-                command.GetArgumentsToMSBuild()
+
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-{expectedArch}");
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}"]);
             });
         }
 
@@ -39,7 +41,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(new string[] { "--arch", "arch" }, msbuildPath);
+                var command = BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
                 var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
@@ -49,9 +51,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     // Not a supported OS for running test
                     return;
                 }
-                command.GetArgumentsToMSBuild()
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier={expectedOs}-arch");
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch"]);
             });
         }
 
@@ -61,10 +63,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(new string[] { "--arch", "arch", "--os", "os" }, msbuildPath);
-                command.GetArgumentsToMSBuild()
+                var command = BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath);
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-arch");
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-arch"]);
             });
         }
 
@@ -74,10 +76,17 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(new string[] { "--arch", "arch", "--os", "os", "--self-contained" }, msbuildPath);
-                command.GetArgumentsToMSBuild()
+                var command = BuildCommand.FromArgs(["--arch", "arch", "--os", "os", "--self-contained"], msbuildPath);
+                string[] expectedArgs = [
+                    .. ExpectedPrefix,
+                    .. DefaultArgs,
+                    "-property:SelfContained=True",
+                    "-property:_CommandLineDefinedSelfContained=true",
+                    "-property:RuntimeIdentifier=os-arch"
+                ];
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:SelfContained=True -property:_CommandLineDefinedSelfContained=true -property:RuntimeIdentifier=os-arch");
+                    .BeEquivalentTo(expectedArgs);
             });
         }
 
@@ -87,7 +96,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(new string[] { "--os", "os", "--runtime", "rid" }, msbuildPath));
+                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--os", "os", "--runtime", "rid"], msbuildPath));
                 exceptionThrown.Message.Should().Be(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
             });
         }
@@ -98,7 +107,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(new string[] { "--arch", "arch", "--runtime", "rid" }, msbuildPath));
+                var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--arch", "arch", "--runtime", "rid"], msbuildPath));
                 exceptionThrown.Message.Should().Be(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndArchOptions);
             });
         }
@@ -143,10 +152,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(new string[] { "--arch", "amd64", "--os", "os" }, msbuildPath);
-                command.GetArgumentsToMSBuild()
+                var command = BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath);
+                command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-x64");
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-x64"]);
             });
         }
 
@@ -160,11 +169,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = BuildCommand.FromArgs(new string[] { "--os", "os" }, msbuildPath);
+                    var command = BuildCommand.FromArgs(["--os", "os"], msbuildPath);
                     var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
-                    command.GetArgumentsToMSBuild()
+                    command.GetArgumentTokensToMSBuild()
                         .Should()
-                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier=os-{expectedArch}");
+                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}"]);
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
@@ -180,7 +189,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = BuildCommand.FromArgs(new string[] { "--arch", "arch" }, msbuildPath);
+                    var command = BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
                     var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
@@ -190,9 +199,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                         // Not a supported OS for running test
                         return;
                     }
-                    command.GetArgumentsToMSBuild()
+                    command.GetArgumentTokensToMSBuild()
                         .Should()
-                        .StartWith($"{ExpectedPrefix} -restore -consoleloggerparameters:Summary -property:RuntimeIdentifier={expectedOs}-arch");
+                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch"]);
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }

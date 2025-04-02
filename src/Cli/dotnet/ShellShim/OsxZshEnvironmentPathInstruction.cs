@@ -3,54 +3,40 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools;
 
-namespace Microsoft.DotNet.ShellShim
+namespace Microsoft.DotNet.Cli.ShellShim;
+
+internal class OsxZshEnvironmentPathInstruction(
+    BashPathUnderHomeDirectory executablePath,
+    IReporter reporter,
+    IEnvironmentProvider environmentProvider
+    ) : IEnvironmentPathInstruction
 {
-    internal class OsxZshEnvironmentPathInstruction : IEnvironmentPathInstruction
+    private const string PathName = "PATH";
+    private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
+
+    private bool PackageExecutablePathExists()
     {
-        private const string PathName = "PATH";
-        private readonly BashPathUnderHomeDirectory _packageExecutablePath;
-        private readonly IEnvironmentProvider _environmentProvider;
-        private readonly IReporter _reporter;
-
-
-        public OsxZshEnvironmentPathInstruction(
-            BashPathUnderHomeDirectory executablePath,
-            IReporter reporter,
-            IEnvironmentProvider environmentProvider
-        )
+        string value = _environmentProvider.GetEnvironmentVariable(PathName);
+        if (value == null)
         {
-            _packageExecutablePath = executablePath;
-            _environmentProvider
-                = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-            _reporter
-                = reporter ?? throw new ArgumentNullException(nameof(reporter));
+            return false;
         }
 
-        private bool PackageExecutablePathExists()
-        {
-            string value = _environmentProvider.GetEnvironmentVariable(PathName);
-            if (value == null)
-            {
-                return false;
-            }
+        return value.Split(':').Any(p => p == _packageExecutablePath.Path);
+    }
 
-            return value
-                .Split(':')
-                .Any(p => p == _packageExecutablePath.Path);
-        }
-
-        public void PrintAddPathInstructionIfPathDoesNotExist()
+    public void PrintAddPathInstructionIfPathDoesNotExist()
+    {
+        if (!PackageExecutablePathExists())
         {
-            if (!PackageExecutablePathExists())
-            {
-                // similar to https://code.visualstudio.com/docs/setup/mac
-                _reporter.WriteLine(
-                    string.Format(
-                        CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
-                        _packageExecutablePath.Path));
-            }
+            // similar to https://code.visualstudio.com/docs/setup/mac
+            _reporter.WriteLine(
+                string.Format(
+                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    _packageExecutablePath.Path));
         }
     }
 }

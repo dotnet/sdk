@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .ExitWith(127)
                 .And.HaveStdErrContaining("Required argument missing for option: '-v'")
-                .And.HaveStdOutContaining(dotnetNewHelpOutput.StdOut);
+                .And.HaveStdOutContaining(dotnetNewHelpOutput.StdOut ?? string.Empty);
         }
     }
 }

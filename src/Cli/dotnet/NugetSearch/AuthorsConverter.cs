@@ -3,35 +3,35 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.NugetSearch.NugetSearchApiSerializable;
 
-namespace Microsoft.DotNet.NugetSearch
+namespace Microsoft.DotNet.Cli.NugetSearch;
+
+/// <summary>
+/// Author field could be a string or a string array
+/// </summary>
+internal class AuthorsConverter : JsonConverter<NugetSearchApiAuthorsSerializable>
 {
-    /// <summary>
-    /// Author field could be a string or a string array
-    /// </summary>
-    internal class AuthorsConverter : JsonConverter<NugetSearchApiAuthorsSerializable>
+    public override NugetSearchApiAuthorsSerializable Read(ref Utf8JsonReader reader, Type typeToConvert,
+        JsonSerializerOptions options)
     {
-        public override NugetSearchApiAuthorsSerializable Read(ref Utf8JsonReader reader, Type typeToConvert,
-            JsonSerializerOptions options)
+        if (reader.TokenType == JsonTokenType.StartArray)
         {
-            if (reader.TokenType == JsonTokenType.StartArray)
-            {
-                var doc = JsonDocument.ParseValue(ref reader);
-                var resultAuthors = doc.RootElement.EnumerateArray().Select(author => author.GetString()).ToArray();
-                return new NugetSearchApiAuthorsSerializable() { Authors = resultAuthors };
-            }
-            else
-            {
-                var s = reader.GetString();
-                return new NugetSearchApiAuthorsSerializable() { Authors = new string[] { s } };
-            }
+            var doc = JsonDocument.ParseValue(ref reader);
+            var resultAuthors = doc.RootElement.EnumerateArray().Select(author => author.GetString()).ToArray();
+            return new NugetSearchApiAuthorsSerializable() { Authors = resultAuthors };
         }
+        else
+        {
+            var s = reader.GetString();
+            return new NugetSearchApiAuthorsSerializable() { Authors = [s] };
+        }
+    }
 
-        public override void Write(Utf8JsonWriter writer, NugetSearchApiAuthorsSerializable value,
-            JsonSerializerOptions options)
-        {
-            // only deserialize is used
-            throw new NotImplementedException();
-        }
+    public override void Write(Utf8JsonWriter writer, NugetSearchApiAuthorsSerializable value,
+        JsonSerializerOptions options)
+    {
+        // only deserialize is used
+        throw new NotImplementedException();
     }
 }

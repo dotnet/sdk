@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Complete;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 
 namespace Microsoft.DotNet.Tests.Commands
@@ -30,6 +30,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "build",
                 "build-server",
                 "clean",
+                "completions",
                 "format",
                 "sdk",
                 "fsi",
@@ -39,6 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 "nuget",
                 "pack",
                 "package",
+                "project",
                 "publish",
                 "reference",
                 "restore",
