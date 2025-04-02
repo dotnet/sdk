@@ -431,7 +431,7 @@ public class TargetsTests
             [KnownStrings.Properties.PublishSelfContained] = true.ToString(),
             [KnownStrings.Properties.PublishAot] = true.ToString(),
             [KnownStrings.Properties.InvariantGlobalization] = true.ToString(),
-        }, projectName: $"{nameof(AOTAppsGetAOTImages)}_{rid}_{expectedImage}");
+        }, projectName: $"{nameof(AOTAppsGetExpectedImages)}_{rid}_{expectedImage}");
         using var _ = d;
         var instance = project.CreateProjectInstance(global::Microsoft.Build.Execution.ProjectInstanceSettings.None);
         instance.Build(new[] { ComputeContainerBaseImage }, null, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
