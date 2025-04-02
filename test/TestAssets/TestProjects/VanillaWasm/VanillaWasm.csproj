@@ -29,6 +29,11 @@
         <Name>PreloadCrossorigin</Name>
         <Value>anonymous</Value>
       </_AppendPreloadCrossoriginAnonymousProperty>
+      <_AppendPreloadGroupWebAssemblyProperty Include="Append">
+        <UpdateTarget>Property</UpdateTarget>
+        <Name>PreloadGroup</Name>
+        <Value>webassembly</Value>
+      </_AppendPreloadGroupWebAssemblyProperty>
     </ItemGroup>
   </Target>
   <Target Name="_AddAppPreloadProperties" DependsOnTargets="_AppConfigurePreload;_AddWasmStaticWebAssets" BeforeTargets="GenerateStaticWebAssetsManifest">
@@ -47,7 +52,7 @@
     <UpdateStaticWebAssetEndpoints
       EndpointsToUpdate="@(_AppPreloadScriptAssetEndpoint)"
       AllEndpoints="@(_AppPreloadScriptAssetEndpoint)"
-      Operations="@(_AppendPreloadRelPreloadProperty);@(_AppendPreloadAsScriptProperty);@(_AppendPreloadPriorityHighProperty);@(_AppendPreloadCrossoriginAnonymousProperty)"
+      Operations="@(_AppendPreloadRelPreloadProperty);@(_AppendPreloadAsScriptProperty);@(_AppendPreloadPriorityHighProperty);@(_AppendPreloadCrossoriginAnonymousProperty);@(_AppendPreloadGroupWebAssemblyProperty)"
     >
       <Output TaskParameter="UpdatedEndpoints" ItemName="_UpdatedAppStaticWebAssetEndpoint" />
     </UpdateStaticWebAssetEndpoints>
