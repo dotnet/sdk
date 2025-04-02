@@ -46,7 +46,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         AssertBuildAssets(manifest1, outputPath, intermediateOutputPath);
     }
 
-    public static TheoryData<string, string, string, bool, bool> WriteImportMapToHtmlData => new TheoryData<string, string, string, bool, bool>
+    public static TheoryData<string, string, string, bool, bool> OverrideHtmlAssetPlaceholdersData => new TheoryData<string, string, string, bool, bool>
     {
         { "VanillaWasm", "main.js", "main#[.{fingerprint}].js", true, true },
         { "VanillaWasm", "main.js", null, false, false },
@@ -54,15 +54,15 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
     };
 
     [Theory]
-    [MemberData(nameof(WriteImportMapToHtmlData))]
-    public void Build_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
+    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    public void Build_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
         FingerprintUserJavascriptAssets(fingerprintUserJavascriptAssets);
 
         var build = CreateBuildCommand(ProjectDirectory);
-        ExecuteCommand(build, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
+        ExecuteCommand(build, "-p:OverrideHtmlAssetPlaceholders=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "importmaphtml", "build"), "*.html").Single();
@@ -72,8 +72,8 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
     }
 
     [Theory]
-    [MemberData(nameof(WriteImportMapToHtmlData))]
-    public void Publish_WriteImportMapToHtml(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
+    [MemberData(nameof(OverrideHtmlAssetPlaceholdersData))]
+    public void Publish_OverrideHtmlAssetPlaceholders(string testAsset, string scriptPath, string scriptPathWithFingerprintPattern, bool fingerprintUserJavascriptAssets, bool expectFingerprintOnScript)
     {
         ProjectDirectory = CreateAspNetSdkTestAsset(testAsset, identifier: $"{testAsset}_{fingerprintUserJavascriptAssets}_{expectFingerprintOnScript}");
         ReplaceStringInIndexHtml(ProjectDirectory, scriptPath, scriptPathWithFingerprintPattern);
@@ -82,7 +82,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         var projectName = Path.GetFileNameWithoutExtension(Directory.EnumerateFiles(ProjectDirectory.TestRoot, "*.csproj").Single());
 
         var publish = CreatePublishCommand(ProjectDirectory);
-        ExecuteCommand(publish, "-p:WriteImportMapToHtml=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
+        ExecuteCommand(publish, "-p:OverrideHtmlAssetPlaceholders=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
         var outputPath = publish.GetOutputDirectory(DefaultTfm, "Debug").ToString();
         var indexHtmlOutputPath = Path.Combine(outputPath, "wwwroot", "index.html");

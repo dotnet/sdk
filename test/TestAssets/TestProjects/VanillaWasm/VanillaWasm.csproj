@@ -2,10 +2,10 @@
   <PropertyGroup>
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateHtmlImportMapBuildStaticWebAssetsDependsOn>
+    <GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
       _AddAppPreloadProperties;
-      $(GenerateHtmlImportMapBuildStaticWebAssetsDependsOn)
-    </GenerateHtmlImportMapBuildStaticWebAssetsDependsOn>
+      $(GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn)
+    </GenerateHtmlAssetPlaceholdersBuildStaticWebAssetsDependsOn>
   </PropertyGroup>
   <Target Name="_AppConfigurePreload">
     <ItemGroup>

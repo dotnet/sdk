@@ -76,10 +76,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveHtmlAssetPlaceholdersBuildConfiguration">
     <PropertyGroup>
-      <_BuildImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'importmaphtml', 'build'))</_BuildImportMapHtmlPath>
+      <_BuildHtmlAssetPlaceholdersPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'htmlassetplaceholders', 'build'))</_BuildHtmlAssetPlaceholdersPath>
     </PropertyGroup>
 
-    <MakeDir Directories="$(_BuildImportMapHtmlPath)"/>
+    <MakeDir Directories="$(_BuildHtmlAssetPlaceholdersPath)"/>
 
     <ItemGroup>
       <_HtmlStaticWebAssets Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish' and '%(Extension)' == '.html'" />
@@ -101,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Endpoints="@(_EsModuleCandidateEndpoints)"
       IncludeOnlyHardFingerprintedModules="false"
       HtmlFiles="@(_HtmlStaticWebAssets)"
-      OutputPath="$(_BuildImportMapHtmlPath)">
+      OutputPath="$(_BuildHtmlAssetPlaceholdersPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlCandidates" />
       <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlFilesToRemove" />
       <Output TaskParameter="FileWrites" ItemName="FileWrites" />
@@ -113,7 +113,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HtmlCandidatesNoMetadata
         Include="@(_HtmlCandidates)"
         RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
-      <_HtmlCandidatesNoMetadata ContentRoot="$(_BuildImportMapHtmlPath)" />
+      <_HtmlCandidatesNoMetadata ContentRoot="$(_BuildHtmlAssetPlaceholdersPath)" />
     </ItemGroup>
     <DefineStaticWebAssets CandidateAssets="@(_HtmlCandidatesNoMetadata)"
       SourceType="Computed"
@@ -147,10 +147,10 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="ResolveHtmlAssetPlaceholdersPublishConfiguration">
     <PropertyGroup>
-      <_PublishImportMapHtmlPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'importmaphtml', 'publish'))</_PublishImportMapHtmlPath>
+      <_PublishHtmlAssetPlaceholdersPath>$([MSBuild]::NormalizeDirectory($(_StaticWebAssetsIntermediateOutputPath), 'htmlassetplaceholders', 'publish'))</_PublishHtmlAssetPlaceholdersPath>
     </PropertyGroup>
 
-    <MakeDir Directories="$(_PublishImportMapHtmlPath)"/>
+    <MakeDir Directories="$(_PublishHtmlAssetPlaceholdersPath)"/>
 
     <ItemGroup>
       <_EsModuleCandidateForPublish Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Build'" />
@@ -171,7 +171,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       Endpoints="@(_EsModuleCandidateForPublishEndpoints)"
       IncludeOnlyHardFingerprintedModules="true"
       HtmlFiles="@(_HtmlStaticWebAssets)"
-      OutputPath="$(_PublishImportMapHtmlPath)">
+      OutputPath="$(_PublishHtmlAssetPlaceholdersPath)">
       <Output TaskParameter="HtmlCandidates" ItemName="_HtmlPublishCandidates" />
       <Output TaskParameter="HtmlFilesToRemove" ItemName="_HtmlPublishFilesToRemove" />
       <Output TaskParameter="FileWrites" ItemName="FileWrites" />
@@ -183,7 +183,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_HtmlPublishCandidatesNoMetadata
         Include="@(_HtmlPublishCandidates)"
         RemoveMetadata="SourceType;AssetKind;Integrity;Fingerprint" />
-      <_HtmlPublishCandidatesNoMetadata ContentRoot="$(_PublishImportMapHtmlPath)" />
+      <_HtmlPublishCandidatesNoMetadata ContentRoot="$(_PublishHtmlAssetPlaceholdersPath)" />
     </ItemGroup>
     <DefineStaticWebAssets CandidateAssets="@(_HtmlPublishCandidatesNoMetadata)"
       SourceType="Computed"
