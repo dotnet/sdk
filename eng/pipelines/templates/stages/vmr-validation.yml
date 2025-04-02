@@ -74,6 +74,10 @@ stages:
       parameters:
         targetArchitecture: x64
         OS: Linux
+        reuseBuildArtifactsFrom:
+        # Scenario-tests package is built/published by Windows_x64 job
+        - Windows_x64
+        - AzureLinux_x64_Cross_x64
   - job: ValidateInstallers_Linux_arm64
     displayName: Validate Installers - Linux arm64
     pool: ${{ parameters.pool_LinuxArm64 }}
@@ -83,6 +87,10 @@ stages:
       parameters:
         targetArchitecture: arm64
         OS: Linux
+        reuseBuildArtifactsFrom:
+        # Scenario-tests package is built/published by Windows_x64 job
+        - Windows_x64
+        - AzureLinux_x64_Cross_arm64
   - ${{ if eq(variables.signEnabled, 'true') }}:
     - job: ValidateSigning_Windows
       displayName: Validate Signing - Windows
