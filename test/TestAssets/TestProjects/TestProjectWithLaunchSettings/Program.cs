@@ -13,6 +13,8 @@ if (!args.Contains("--from-run-arguments"))
 	throw new Exception("FAILED to find argument from RunArguments");
 }
 
+args = args.Where(arg => arg != "--from-launch-settings" && arg != "--from-run-arguments").ToArray();
+
 var testApplicationBuilder = await TestApplication.CreateBuilderAsync(args);
 
 testApplicationBuilder.RegisterTestFramework(_ => new TestFrameworkCapabilities(), (_, __) => new DummyTestAdapter());
