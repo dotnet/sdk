@@ -28,6 +28,8 @@ internal class ToolUninstallCommand(
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
+        CommonArguments.EnsureNoConflictPackageIdentityVersionOption(_parseResult);
+
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
             return _toolUninstallGlobalOrToolPathCommand.Execute();

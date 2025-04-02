@@ -94,6 +94,8 @@ internal class ToolUpdateCommand : CommandBase
             _parseResult,
             CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
 
+        CommonArguments.EnsureNoConflictPackageIdentityVersionOption(_parseResult);
+
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
             return _toolUpdateGlobalOrToolPathCommand.Execute();

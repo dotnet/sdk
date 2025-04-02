@@ -15,12 +15,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = new("packageId")
-    {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription,
-        CustomParser = (argumentResult) => ParseToolIdentity(argumentResult)
-    };
+    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = CommonArguments.PackageIdentityArgument;
 
     public static readonly CliOption<string> VersionOption = new("--version")
     {
@@ -89,27 +84,6 @@ internal static class ToolInstallCommandParser
     public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
     private static readonly CliCommand Command = ConstructCommand();
-
-    public static (string PackageId, string Version) ParseToolIdentity(ArgumentResult argumentResult)
-    {
-        if (argumentResult.Tokens.Count != 1)
-        {
-            throw new ArgumentException("Expected exactly one token for packageId.");
-        }
-        var token = argumentResult.Tokens[0].Value;
-        var versionSeparatorIndex = token.IndexOf('@');
-        if (versionSeparatorIndex == -1)
-        {
-            return (token, null);
-        }
-        var packageId = token.Substring(0, versionSeparatorIndex);
-        var version = token.Substring(versionSeparatorIndex + 1);
-        if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(version))
-        {
-            throw new ArgumentException("PackageId and version cannot be empty.");
-        }
-        return (packageId, version);
-    }
 
     public static CliCommand GetCommand()
     {

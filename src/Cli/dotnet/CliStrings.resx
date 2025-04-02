@@ -784,4 +784,7 @@ For a list of locations searched, specify the "-d" option before the tool name.<
     <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
+  <data name="PackageIdentityArgumentDescription" xml:space="preserve">
+    <value>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3</value>
+  </data>
 </root>
