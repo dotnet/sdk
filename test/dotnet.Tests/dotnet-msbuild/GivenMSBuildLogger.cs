@@ -4,7 +4,7 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.DotNet.Tools.MSBuild;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

@@ -53,10 +53,7 @@ internal class MsiPayload(string manifestPath, string msiPath)
     {
         get
         {
-            if (_relatedProducts == null)
-            {
-                _relatedProducts = Manifest.RelatedProducts ?? Enumerable.Empty<RelatedProduct>();
-            }
+            _relatedProducts ??= Manifest.RelatedProducts ?? Enumerable.Empty<RelatedProduct>();
 
             return _relatedProducts;
         }
@@ -69,10 +66,7 @@ internal class MsiPayload(string manifestPath, string msiPath)
     {
         get
         {
-            if (_manifest == null)
-            {
-                _manifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(ManifestPath));
-            }
+            _manifest ??= JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(ManifestPath));
 
             return _manifest;
         }

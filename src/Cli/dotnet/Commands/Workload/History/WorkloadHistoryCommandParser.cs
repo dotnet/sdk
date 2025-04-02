@@ -4,7 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Workloads.Workload.History;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
 internal static class WorkloadHistoryCommandParser
 {

@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal delegate IToolPackageStoreQuery CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
 
@@ -20,7 +20,7 @@ internal class ToolListGlobalOrToolPathCommand(
     public const string CommandDelimiter = ", ";
     private readonly IReporter _reporter = reporter ?? Reporter.Output;
     private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
-    private CreateToolPackageStore _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
+    private readonly CreateToolPackageStore _createToolPackageStore = createToolPackageStore ?? ToolPackageFactory.CreateToolPackageStoreQuery;
 
     public override int Execute()
     {
@@ -69,10 +69,9 @@ internal class ToolListGlobalOrToolPathCommand(
 
     public IEnumerable<IToolPackage> GetPackages(DirectoryPath? toolPath, PackageId? packageId)
     {
-        return _createToolPackageStore(toolPath).EnumeratePackages()
+        return [.. _createToolPackageStore(toolPath).EnumeratePackages()
             .Where((p) => PackageHasCommand(p) && PackageIdMatches(p, packageId))
-            .OrderBy(p => p.Id)
-            .ToArray();
+            .OrderBy(p => p.Id)];
     }
 
     internal static bool PackageIdMatches(IToolPackage package, PackageId? packageId)
@@ -120,12 +119,12 @@ internal class ToolListGlobalOrToolPathCommand(
     {
         var jsonData = new VersionedDataContract<ToolListJsonContract[]>()
         {
-            Data = packageEnumerable.Select(p => new ToolListJsonContract
+            Data = [.. packageEnumerable.Select(p => new ToolListJsonContract
             {
                 PackageId = p.Id.ToString(),
                 Version = p.Version.ToNormalizedString(),
                 Commands = [p.Command.Name.Value]
-            }).ToArray()
+            })]
         };
         var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
         _reporter.WriteLine(jsonText);

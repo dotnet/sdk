@@ -1,10 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Evaluation;
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
+using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
-namespace Microsoft.TemplateEngine.MSBuildEvaluation;
+namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 /// <summary>
 /// Represents MSBuild evaluation result. 
@@ -42,7 +42,7 @@ internal class MSBuildEvaluationResult
 
     internal string? ProjectPath { get; }
 
-    public Project? EvaluatedProject { get; protected set; }
+    public MSBuildProject? EvaluatedProject { get; protected set; }
 
     public string? ErrorMessage { get; protected set; }
 
