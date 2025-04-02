@@ -6,25 +6,17 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class ShellShimRepository : IShellShimRepository
+internal class ShellShimRepository(
+    DirectoryPath shimsDirectory,
+    string appHostSourceDirectory,
+    IFileSystem fileSystem = null,
+    IAppHostShellShimMaker appHostShellShimMaker = null,
+    IFilePermissionSetter filePermissionSetter = null) : IShellShimRepository
 {
-    private readonly DirectoryPath _shimsDirectory;
-    private readonly IFileSystem _fileSystem;
-    private readonly IAppHostShellShimMaker _appHostShellShimMaker;
-    private readonly IFilePermissionSetter _filePermissionSetter;
-
-    public ShellShimRepository(
-        DirectoryPath shimsDirectory,
-        string appHostSourceDirectory,
-        IFileSystem fileSystem = null,
-        IAppHostShellShimMaker appHostShellShimMaker = null,
-        IFilePermissionSetter filePermissionSetter = null)
-    {
-        _shimsDirectory = shimsDirectory;
-        _fileSystem = fileSystem ?? new FileSystemWrapper();
-        _appHostShellShimMaker = appHostShellShimMaker ?? new AppHostShellShimMaker(appHostSourceDirectory: appHostSourceDirectory);
-        _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
-    }
+    private readonly DirectoryPath _shimsDirectory = shimsDirectory;
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
+    private readonly IAppHostShellShimMaker _appHostShellShimMaker = appHostShellShimMaker ?? new AppHostShellShimMaker(appHostSourceDirectory: appHostSourceDirectory);
+    private readonly IFilePermissionSetter _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
 
     public void CreateShim(FilePath targetExecutablePath, ToolCommandName commandName, IReadOnlyList<FilePath> packagedShims = null)
     {
@@ -171,11 +163,7 @@ internal class ShellShimRepository : IShellShimRepository
 
         if (packagedShims != null && packagedShims.Count > 0)
         {
-            FilePath[] candidatepackagedShim =
-                packagedShims
-                    .Where(s => string.Equals(
-                        Path.GetFileName(s.Value),
-                        Path.GetFileName(GetShimPath(commandName).Value))).ToArray();
+            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetShimPath(commandName).Value)))];
 
             if (candidatepackagedShim.Length > 1)
             {

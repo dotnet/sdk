@@ -3,25 +3,19 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.CommandLine;
-using System.IO;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
+using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Project.Convert;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand : CommandBase
+internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _file;
-    private readonly string? _outputDirectory;
-
-    public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
-        _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    }
+    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
+    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
 
     public override int Execute()
     {

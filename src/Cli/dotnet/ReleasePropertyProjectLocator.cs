@@ -20,7 +20,7 @@ internal class ReleasePropertyProjectLocator
 {
     public struct DependentCommandOptions
     {
-        public IEnumerable<string> SlnOrProjectArgs = Enumerable.Empty<string>();
+        public IEnumerable<string> SlnOrProjectArgs = [];
         public string? FrameworkOption;
         public string? ConfigurationOption;
 
@@ -28,15 +28,15 @@ internal class ReleasePropertyProjectLocator
         => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs, configOption, frameworkOption);
     }
 
-    private ParseResult _parseResult;
-    private string _propertyToCheck;
+    private readonly ParseResult _parseResult;
+    private readonly string _propertyToCheck;
     DependentCommandOptions _options;
 
-    private IEnumerable<string> _slnOrProjectArgs;
+    private readonly IEnumerable<string> _slnOrProjectArgs;
     private bool _isHandlingSolution = false;
 
-    private static string solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
-    private static string sharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
+    private static readonly string solutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
+    private static readonly string sharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
 
     // <summary>
     /// <param name="propertyToCheck">The boolean property to check the project for. Ex: PublishRelease, PackRelease.</param>
@@ -240,7 +240,7 @@ internal class ReleasePropertyProjectLocator
     }
 
     /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
-    private ProjectInstance? TryGetProjectInstance(string projectPath, Dictionary<string, string> globalProperties)
+    private static ProjectInstance? TryGetProjectInstance(string projectPath, Dictionary<string, string> globalProperties)
     {
         try
         {
@@ -254,13 +254,13 @@ internal class ReleasePropertyProjectLocator
     }
 
     /// <returns>Returns true if the path exists and is a project file type.</returns>
-    private bool IsValidProjectFilePath(string path)
+    private static bool IsValidProjectFilePath(string path)
     {
         return File.Exists(path) && Path.GetExtension(path).EndsWith("proj");
     }
 
     /// <returns>Returns true if the path exists and is a sln file type.</returns>
-    private bool IsValidSlnFilePath(string path)
+    private static bool IsValidSlnFilePath(string path)
     {
         return File.Exists(path) && (Path.GetExtension(path).Equals(".sln")|| Path.GetExtension(path).Equals(".slnx"));
     }

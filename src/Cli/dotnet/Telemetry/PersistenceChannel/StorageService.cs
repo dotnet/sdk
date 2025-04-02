@@ -287,7 +287,7 @@ internal sealed class StorageService : BaseStorageService
             PersistenceChannelDebugLog.WriteException(e, "Peek failed while get files from storage.");
         }
 
-        return Enumerable.Empty<string>();
+        return [];
     }
 
     /// <summary>

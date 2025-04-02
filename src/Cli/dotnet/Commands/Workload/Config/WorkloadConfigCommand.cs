@@ -3,23 +3,23 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Config.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Config;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
 internal class WorkloadConfigCommand : WorkloadCommandBase
 {
-    private bool _hasUpdateMode;
-    private string? _updateMode;
+    private readonly bool _hasUpdateMode;
+    private readonly string? _updateMode;
     private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
-    private string _dotnetPath;
-    private string _userProfileDir;
+    private readonly string _dotnetPath;
+    private readonly string _userProfileDir;
     private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly SdkFeatureBand _sdkFeatureBand;

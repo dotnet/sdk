@@ -5,15 +5,10 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 
-internal class FileBasedInstallationRecordRepository : IWorkloadInstallationRecordRepository
+internal class FileBasedInstallationRecordRepository(string workloadMetadataDir) : IWorkloadInstallationRecordRepository
 {
-    private readonly string _workloadMetadataDir;
+    private readonly string _workloadMetadataDir = workloadMetadataDir;
     private const string InstalledWorkloadDir = "InstalledWorkloads";
-
-    public FileBasedInstallationRecordRepository(string workloadMetadataDir)
-    {
-        _workloadMetadataDir = workloadMetadataDir;
-    }
 
     public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords()
     {

@@ -7,32 +7,20 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class OsxBashEnvironmentPath : IEnvironmentPath
+internal class OsxBashEnvironmentPath(
+    BashPathUnderHomeDirectory executablePath,
+    IReporter reporter,
+    IEnvironmentProvider environmentProvider,
+    IFile fileSystem
+    ) : IEnvironmentPath
 {
     private const string PathName = "PATH";
-    private readonly BashPathUnderHomeDirectory _packageExecutablePath;
-    private readonly IFile _fileSystem;
-    private readonly IEnvironmentProvider _environmentProvider;
-    private readonly IReporter _reporter;
+    private readonly BashPathUnderHomeDirectory _packageExecutablePath = executablePath;
+    private readonly IFile _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+    private readonly IEnvironmentProvider _environmentProvider = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
-    internal static readonly string DotnetCliToolsPathsDPath
-        = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH")
-          ?? @"/etc/paths.d/dotnet-cli-tools";
-
-    public OsxBashEnvironmentPath(
-        BashPathUnderHomeDirectory executablePath,
-        IReporter reporter,
-        IEnvironmentProvider environmentProvider,
-        IFile fileSystem
-    )
-    {
-        _packageExecutablePath = executablePath;
-        _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-        _environmentProvider
-            = environmentProvider ?? throw new ArgumentNullException(nameof(environmentProvider));
-        _reporter
-            = reporter ?? throw new ArgumentNullException(nameof(reporter));
-    }
+    internal static readonly string DotnetCliToolsPathsDPath = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH") ?? @"/etc/paths.d/dotnet-cli-tools";
 
     public void AddPackageExecutablePathToUserPath()
     {

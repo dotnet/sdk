@@ -1,20 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings;
+namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class LaunchSettingsApplyResult
+public class LaunchSettingsApplyResult(bool success, string? failureReason, ProjectLaunchSettingsModel launchSettings = null)
 {
-    public LaunchSettingsApplyResult(bool success, string? failureReason, ProjectLaunchSettingsModel launchSettings = null)
-    {
-        Success = success;
-        FailureReason = failureReason;
-        LaunchSettings = launchSettings;
-    }
+    public bool Success { get; } = success;
 
-    public bool Success { get; }
+    public string FailureReason { get; } = failureReason;
 
-    public string FailureReason { get; }
-
-    public ProjectLaunchSettingsModel LaunchSettings { get; }
+    public ProjectLaunchSettingsModel LaunchSettings { get; } = launchSettings;
 }

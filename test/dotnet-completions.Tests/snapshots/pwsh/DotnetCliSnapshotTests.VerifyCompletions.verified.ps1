@@ -605,7 +605,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--package-directory', '--package-directory', [CompletionResultType]::ParameterName, "The directory to restore packages to.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Allows prerelease packages to be installed.")
-                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -636,7 +636,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "Specifies the output format type for the list packages command.")
                 [CompletionResult]::new('--output-version', '--output-version', [CompletionResultType]::ParameterName, "Specifies the version of machine-readable output. Requires the `'--format json`' option.")
-                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -646,7 +646,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;package;remove' {
             $staticCompletions = @(
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
-                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "--project")
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

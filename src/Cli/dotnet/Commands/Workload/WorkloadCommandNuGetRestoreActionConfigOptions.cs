@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadCommandNuGetRestoreActionConfigOptions
 {
