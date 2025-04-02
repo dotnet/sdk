@@ -65,17 +65,17 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             processStartInfo.WorkingDirectory = Module.RunProperties.RunWorkingDirectory;
         }
 
-        if (_module.LaunchSettings is not null)
+        if (Module.LaunchSettings is not null)
         {
-            foreach (var entry in _module.LaunchSettings.EnvironmentVariables)
+            foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
             {
                 string value = Environment.ExpandEnvironmentVariables(entry.Value);
                 processStartInfo.EnvironmentVariables[entry.Key] = value;
             }
 
-            if (!string.IsNullOrEmpty(_module.LaunchSettings.CommandLineArgs))
+            if (!string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
-                processStartInfo.Arguments = $"{processStartInfo.Arguments} {_module.LaunchSettings.CommandLineArgs}";
+                processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
         }
 
