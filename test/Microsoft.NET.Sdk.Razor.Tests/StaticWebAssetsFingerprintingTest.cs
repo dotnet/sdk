@@ -65,7 +65,7 @@ public class StaticWebAssetsContentFingerprintingIntegrationTest(ITestOutputHelp
         ExecuteCommand(build, "-p:OverrideHtmlAssetPlaceholders=true", $"-p:FingerprintUserJavascriptAssets={fingerprintUserJavascriptAssets.ToString().ToLower()}").Should().Pass();
 
         var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
-        var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "importmaphtml", "build"), "*.html").Single();
+        var indexHtmlPath = Directory.EnumerateFiles(Path.Combine(intermediateOutputPath, "staticwebassets", "htmlassetplaceholders", "build"), "*.html").Single();
         var endpointsManifestPath = Path.Combine(intermediateOutputPath, $"staticwebassets.build.endpoints.json");
 
         AssertImportMapInHtml(indexHtmlPath, endpointsManifestPath, scriptPath, expectFingerprintOnScript: expectFingerprintOnScript, expectPreloadElement: testAsset == "VanillaWasm");
