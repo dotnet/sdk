@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Tools.Run.LaunchSettings;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
