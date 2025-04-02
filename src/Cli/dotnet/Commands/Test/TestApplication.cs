@@ -78,7 +78,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         }
 
         // If we reach here, that means we have a test project that doesn't produce an executable.
-        throw new InvalidOperationException($"A Microsoft.Testing.Platform test project should produce an executable. The file '{_module.RunProperties.RunCommand}' is dll.");
+        throw new InvalidOperationException($"A Microsoft.Testing.Platform test project should produce an executable. The file '{Module.RunProperties.RunCommand}' is dll.");
     }
 
     private static bool IsArchitectureSpecified(TestOptions testOptions)
