@@ -44,7 +44,6 @@
   <Target Name="PublishRoslyn">
     <PropertyGroup>
       <RoslynPackagePath>$(NuGetPackageRoot)microsoft.net.compilers.toolset\$(MicrosoftNetCompilersToolsetVersion)\tasks\netcore\</RoslynPackagePath>
-      <RoslynDirectory>$(OutputPath)Roslyn</RoslynDirectory>
     </PropertyGroup>
 
     <ItemGroup>
@@ -52,13 +51,12 @@
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
                                Exclude="$(RoslynPackagePath)runtimes\**\System.IO.Pipes.AccessControl.dll"/>
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
-
     </ItemGroup>
 
     <Error Condition="'@(RoslynFile)' == ''" Text="Something moved around in Roslyn package, adjust code here accordingly. TFM change?" />
     <Copy SourceFiles="@(RoslynFile)"
-          DestinationFiles="@(RoslynFile->'$(RoslynDirectory)/%(RecursiveDir)%(Filename)%(Extension)')"
-          SkipUnchangedFiles="true"/>
+          DestinationFiles="@(RoslynFile->'$(OutputPath)Roslyn\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="PublishNETAnalyzers">
