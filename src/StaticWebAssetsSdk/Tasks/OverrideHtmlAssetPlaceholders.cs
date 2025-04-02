@@ -208,7 +208,12 @@ public partial class OverrideHtmlAssetPlaceholders : Task
                     }
                     else if (property.Name.Equals("preloadorder", StringComparison.OrdinalIgnoreCase))
                     {
-                        resourceAsset.PreloadOrder = property.Value;
+                        if (!int.TryParse(property.Value, out int order))
+                        {
+                            order = 0;
+                        }
+
+                        resourceAsset.PreloadOrder = order;
                     }
                 }
 
@@ -284,7 +289,7 @@ internal sealed class ResourceAsset(string url)
     public string? PreloadAs { get; set; }
     public string? PreloadPriority { get; set; }
     public string? PreloadCrossorigin { get; set; }
-    public string? PreloadOrder { get; set; }
+    public int PreloadOrder { get; set; }
     public bool IsHardFingerprinted { get; set; } = true;
 }
 
