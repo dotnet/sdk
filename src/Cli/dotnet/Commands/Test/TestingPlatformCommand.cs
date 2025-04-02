@@ -31,14 +31,13 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         try
         {
             exitCode = RunInternal(parseResult);
+            return exitCode.Value;
         }
         finally
         {
             CompleteRun(exitCode);
             CleanUp();
         }
-
-        return exitCode ?? ExitCode.GenericFailure;
     }
 
     private int RunInternal(ParseResult parseResult)
@@ -112,7 +111,8 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         Console.CancelKeyPress += (s, e) =>
         {
             _output?.StartCancelling();
-            CompleteRun(exitCode: ExitCode.Aborted);
+            // We are not sure what the exit code will be, there might be an exception.
+            CompleteRun(exitCode: null);
         };
     }
 

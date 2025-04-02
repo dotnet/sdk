@@ -11,6 +11,5 @@ internal static class ExitCode
     // Values here should align with: https://aka.ms/testingplatform/exitcodes.
     public const int Success = 0;
     public const int GenericFailure = 1;
-    public const int Aborted = 3;
     public const int ZeroTests = 8;
 }
