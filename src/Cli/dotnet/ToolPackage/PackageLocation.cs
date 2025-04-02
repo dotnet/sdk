@@ -13,6 +13,6 @@ internal class PackageLocation(
 {
     public FilePath? NugetConfig { get; } = nugetConfig;
     public DirectoryPath? RootConfigDirectory { get; } = rootConfigDirectory;
-    public string[] AdditionalFeeds { get; } = additionalFeeds ?? Array.Empty<string>();
-    public string[] SourceFeedOverrides { get; } = sourceFeedOverrides ?? Array.Empty<string>();
+    public string[] AdditionalFeeds { get; } = additionalFeeds ?? [];
+    public string[] SourceFeedOverrides { get; } = sourceFeedOverrides ?? [];
 }

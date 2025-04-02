@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Tools.Tool.Search;
 

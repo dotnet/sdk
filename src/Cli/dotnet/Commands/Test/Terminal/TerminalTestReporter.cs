@@ -5,9 +5,9 @@ using System.Collections.Concurrent;
 using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.Platform.Helpers;
+using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using FlatException = Microsoft.DotNet.Cli.Commands.Test.Terminal.FlatException;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.Testing.Platform.OutputDevice.Terminal;

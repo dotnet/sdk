@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 

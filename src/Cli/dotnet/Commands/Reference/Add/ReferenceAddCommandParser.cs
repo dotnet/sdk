@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Reference.Add;
 using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal static class ReferenceAddCommandParser
 {
@@ -26,7 +25,7 @@ internal static class ReferenceAddCommandParser
         Description = LocalizableStrings.CmdFrameworkDescription,
         HelpName = CommonLocalizableStrings.CmdFramework
 
-    }.AddCompletions(Complete.TargetFrameworksFromProjectFile);
+    }.AddCompletions(Complete.Complete.TargetFrameworksFromProjectFile);
 
     public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
 

@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {

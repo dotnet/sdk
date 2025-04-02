@@ -4,7 +4,9 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Commands.Tool;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests

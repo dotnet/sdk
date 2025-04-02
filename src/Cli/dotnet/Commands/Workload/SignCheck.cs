@@ -9,7 +9,7 @@ using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 using Microsoft.Win32;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class SignCheck
 {
@@ -31,7 +31,7 @@ internal static class SignCheck
 #if !DOT_NET_BUILD_FROM_SOURCE
             // API is only available on XP and Server 2003 or later versions. .NET requires Win7 minimum.
 #pragma warning disable CA1416
-            // We don't care about trust in this case, only whether or not the file has a signatue as that determines
+            // We don't care about trust in this case, only whether or not the file has a signature as that determines
             // whether we'll trigger sign verification for workload operations.
             return Signature.IsAuthenticodeSigned(s_dotnet, AllowOnlineRevocationChecks()) == 0;
 #pragma warning restore CA1416
