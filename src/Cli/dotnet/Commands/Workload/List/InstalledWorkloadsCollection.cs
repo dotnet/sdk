@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal class InstalledWorkloadsCollection
 {
-    private Dictionary<string, string> _workloads;
+    private readonly Dictionary<string, string> _workloads;
 
     /// <summary>
     /// Gets the number of workloads in the collection.

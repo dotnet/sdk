@@ -17,7 +17,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
     private readonly PackageSourceLocation _packageSourceLocation;
     private readonly IInstaller _workloadInstaller;
     protected readonly IWorkloadResolverFactory _workloadResolverFactory;
-    private IWorkloadResolver _workloadResolver;
+    private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly string _dotnetPath;
     private readonly string _userProfileDir;

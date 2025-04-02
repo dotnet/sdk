@@ -18,8 +18,8 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 {
     private readonly bool _cleanAll;
 
-    private string _dotnetPath;
-    private string _userProfileDir;
+    private readonly string _dotnetPath;
+    private readonly string _userProfileDir;
 
     private readonly ReleaseVersion _sdkVersion;
     private readonly IInstaller _workloadInstaller;

@@ -20,7 +20,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
     private readonly bool _adManifestOnlyOption;
     private readonly bool _printRollbackDefinitionOnly;
     private readonly bool _fromPreviousSdk;
-    private WorkloadHistoryRecorder _recorder;
+    private readonly WorkloadHistoryRecorder _recorder;
     private readonly bool _isRestoring;
     private readonly bool _shouldShutdownInstaller;
     public WorkloadUpdateCommand(

@@ -80,7 +80,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
         string projectPath;
         if (string.IsNullOrEmpty(_projectFullPath))
         {
-            IReadOnlyList<string> foundFiles = Array.Empty<string>();
+            IReadOnlyList<string> foundFiles = [];
             try
             {
                 foundFiles = FileFindHelpers.FindFilesAtOrAbovePath(engineEnvironmentSettings.Host.FileSystem, _outputDirectory, "*.*proj");
@@ -128,7 +128,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             _logger?.LogDebug("SDK-style project: {0}", IsSdkStyleProject);
 
             targetFrameworks = evaluatedProject.GetProperty("TargetFrameworks")?.EvaluatedValue?.Split(";");
-            _logger?.LogDebug("Target frameworks: {0}", string.Join("; ", targetFrameworks ?? Array.Empty<string>()));
+            _logger?.LogDebug("Target frameworks: {0}", string.Join("; ", targetFrameworks ?? []));
             targetFramework = evaluatedProject.GetProperty("TargetFramework")?.EvaluatedValue;
             _logger?.LogDebug("Target framework: {0}", targetFramework ?? "<null>");
 

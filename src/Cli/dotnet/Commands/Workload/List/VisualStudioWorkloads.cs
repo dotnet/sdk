@@ -193,7 +193,7 @@ internal static class VisualStudioWorkloads
 
                 ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
 
-                return workloadsWithExistingInstallRecords.Concat(workloadsToWriteRecordsFor).ToList();
+                return [.. workloadsWithExistingInstallRecords, .. workloadsToWriteRecordsFor];
             }
         }
 

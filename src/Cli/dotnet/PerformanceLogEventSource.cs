@@ -335,7 +335,7 @@ internal class PerformanceLogStartupInformation
         }
 
         Stopwatch stopWatch = Stopwatch.StartNew();
-        Assembly assembly = null;
+        Assembly assembly;
         try
         {
             assembly = Assembly.Load(assemblyName);

@@ -33,7 +33,7 @@ public class RestoreCommand : MSBuildForwardingApp
 
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()));
 
-        msbuildArgs.AddRange(result.GetValue(RestoreCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>());
+        msbuildArgs.AddRange(result.GetValue(RestoreCommandParser.SlnOrProjectArgument) ?? []);
 
         return new RestoreCommand(msbuildArgs, msbuildPath);
     }

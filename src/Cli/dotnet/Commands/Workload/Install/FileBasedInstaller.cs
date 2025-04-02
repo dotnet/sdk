@@ -386,7 +386,7 @@ internal class FileBasedInstaller : IInstaller
             packs = packs.Where(p => !PackIsInstalled(p));
         }
 
-        return packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version)).ToList();
+        return [.. packs.Select(p => new WorkloadDownload(p.Id, p.ResolvedPackageId, p.Version))];
     }
 
     public void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false)
@@ -904,5 +904,5 @@ internal class FileBasedInstaller : IInstaller
         return Directory.Exists(packInstallRecordDir) && Directory.GetFiles(packInstallRecordDir).Any();
     }
 
-    private bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
+    private static bool IsSingleFilePack(PackInfo packInfo) => packInfo.Kind.Equals(WorkloadPackKind.Library) || packInfo.Kind.Equals(WorkloadPackKind.Template);
 }

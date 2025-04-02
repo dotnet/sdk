@@ -54,7 +54,7 @@ internal class ListPackageReferencesCommand(
 
         EnforceOptionRules(_parseResult);
 
-        return args.ToArray();
+        return [.. args];
     }
 
     /// <summary>

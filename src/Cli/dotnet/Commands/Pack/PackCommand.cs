@@ -41,7 +41,7 @@ public class PackCommand(
         );
         msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
 
-        msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
+        msbuildArgs.AddRange(slnOrProjectArgs ?? []);
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
 

@@ -24,8 +24,8 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 {
     private readonly IReporter _reporter = reporter ?? Reporter.Output;
     private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
-    private CreateShellShimRepository _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
-    private CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
+    private readonly CreateShellShimRepository _createShellShimRepository = createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
+    private readonly CreateToolPackageStoresAndUninstaller _createToolPackageStoresAndUninstaller = createToolPackageStoreAndUninstaller ??
                                                 ToolPackageFactory.CreateToolPackageStoresAndUninstaller;
 
     public override int Execute()
@@ -53,7 +53,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
         var packageId = new PackageId(_parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
-        IToolPackage package = null;
+        IToolPackage package;
         try
         {
             package = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();

@@ -14,12 +14,12 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
 internal class WorkloadConfigCommand : WorkloadCommandBase
 {
-    private bool _hasUpdateMode;
-    private string? _updateMode;
+    private readonly bool _hasUpdateMode;
+    private readonly string? _updateMode;
     private readonly IWorkloadResolverFactory _workloadResolverFactory;
 
-    private string _dotnetPath;
-    private string _userProfileDir;
+    private readonly string _dotnetPath;
+    private readonly string _userProfileDir;
     private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly SdkFeatureBand _sdkFeatureBand;

@@ -37,7 +37,7 @@ public class BuildCommand(
         {
             msbuildArgs.Add("-target:Rebuild");
         }
-        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
+        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? [];
 
         msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
 

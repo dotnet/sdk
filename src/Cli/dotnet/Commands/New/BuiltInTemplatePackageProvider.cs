@@ -103,6 +103,6 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
             }
         }
 
-        return bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path).ToList();
+        return [.. bestVersionsByBucket.OrderBy(x => x.Key).Select(x => x.Value.path)];
     }
 }

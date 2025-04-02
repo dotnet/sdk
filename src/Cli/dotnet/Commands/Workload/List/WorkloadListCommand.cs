@@ -69,7 +69,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
 
             var updateAvailable = GetUpdateAvailable(installedList);
             var installed = installedList.Select(id => id.ToString()).ToArray();
-            ListOutput listOutput = new(installed, updateAvailable.ToArray());
+            ListOutput listOutput = new(installed, [.. updateAvailable]);
 
             Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }

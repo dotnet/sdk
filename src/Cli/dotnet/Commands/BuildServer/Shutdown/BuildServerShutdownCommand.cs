@@ -64,7 +64,7 @@ internal class BuildServerShutdownCommand : CommandBase
         bool success = true;
         while (tasks.Count > 0)
         {
-            var index = WaitForResult(tasks.Select(t => t.Item2).ToArray());
+            var index = WaitForResult([.. tasks.Select(t => t.Item2)]);
             var (server, task) = tasks[index];
 
             if (task.IsFaulted)
