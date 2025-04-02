@@ -26,7 +26,6 @@ function Print-Usage() {
   Write-Host "if it is set, will be used."
 }
 
-function Global:prompt {"(dogfood) PS $PWD> "} 
 
 if ($help -or (($command -ne $null) -and ($command.Contains("/help") -or $command.Contains("/?")))) {
   Print-Usage
@@ -38,10 +37,10 @@ try {
   . $PSScriptroot\restore-toolset.ps1
 
   $env:SDK_REPO_ROOT = $RepoRoot
-
   $TestDotnetRoot = Join-Path $ArtifactsDir "bin\redist\$configuration\dotnet"
-
   $testDotnetVersion = (Get-Childitem -Directory "$TestDotnetRoot\sdk")[-1].Name
+
+  $env:TestDotnetSdkHash = Get-Content -Path (Join-Path $TestDotnetRoot "sdk\$testDotnetVersion\.version") -TotalCount 1
   $env:DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = Join-Path $TestDotnetRoot "sdk\$testDotnetVersion\Sdks"
   $env:MicrosoftNETBuildExtensionsTargets = Join-Path $ArtifactsDir "bin\$configuration\Sdks\Microsoft.NET.Build.Extensions\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets"
 
@@ -52,13 +51,25 @@ try {
   # Locally built SDK package version is Major.Minor.0-dev, which won't be available.
   $env:BuildWithNetFrameworkHostedCompiler = $false
 
+  # Prompt
+  function global:prompt { 
+    # Run command agains $env:SDK_REPO_ROOT to see if there are any changes
+    $testDotnetSdkCurrentHash = git -C $env:SDK_REPO_ROOT rev-parse HEAD 
+    $hasGitChanges = (git status -C $env:SDK_REPO_ROOT --porcelain) -ne "" -or $testDotnetSdkCurrentHash -ne $env:TestDotnetSdkHash
+    if ($hasGitChanges) {
+      "$([char]0x1b)[0;35m(dotnet dogfood *)$([char]0x1b)[0m $PWD > "
+    } else {
+      "$([char]0x1b)[0;35m(dotnet dogfood)$([char]0x1b)[0m $PWD > "
+    }
+  }
+
   if ($command -eq $null -and $env:DOTNET_SDK_DOGFOOD_SHELL -ne $null) {
     $command = , $env:DOTNET_SDK_DOGFOOD_SHELL
   }
 
   if ($command -ne $null) {
     $Host.UI.RawUI.WindowTitle = "SDK Test ($RepoRoot) ($configuration)"
-    & $command[0] $command[1..($command.Length-1)]
+    & $command[0] $command[1..($command.Length-1)] 
   }
 }
 catch {

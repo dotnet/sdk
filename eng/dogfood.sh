@@ -21,8 +21,19 @@ export SDK_REPO_ROOT="$repo_root"
 testDotnetRoot="$artifacts_dir/bin/redist/$configuration/dotnet"
 testDotnetVersion=$(ls $testDotnetRoot/sdk)
 export DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR="$testDotnetRoot/sdk/$testDotnetVersion/Sdks"
+export TestDotnetSdkHash=$(head -1 "$testDotnetRoot/sdk/$testDotnetVersion/.version")
 export MicrosoftNETBuildExtensionsTargets="$artifacts_dir/bin/$configuration/Sdks/Microsoft.NET.Build.Extensions/msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/Microsoft.NET.Build.Extensions.targets"
 
 export PATH=$testDotnetRoot:$PATH
 export DOTNET_ROOT=$testDotnetRoot
-export PS1="(dogfood) $PS1"
+
+testDotnetSdkCurrentHash = git -c $SDK_REPO_ROOT rev-parse HEAD
+hasGitChanges = $(git -c $SDK_REPO_ROOT status --porcelain) != "" or $testDotnetSdkCurrentHash != $TestDotnetSdkHash
+
+if [$hasGitChanges]; then
+  export PS1="\x1b[0;35m(dotnet dogfood*)\x1b[0m $PS1"
+else
+  export PS1="\x1b[0;35m(dotnet dogfood)\x1b[0m $PS1"
+fi
+
+
