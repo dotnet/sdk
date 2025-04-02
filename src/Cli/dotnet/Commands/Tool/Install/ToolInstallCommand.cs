@@ -28,6 +28,9 @@ internal class ToolInstallCommand(
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
 
+        CommonArguments.EnsureNoConflictPackageIdentityVersionOption(
+            _parseResult);
+
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
             return (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult)).Execute();

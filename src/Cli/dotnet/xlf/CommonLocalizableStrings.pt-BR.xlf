@@ -185,6 +185,11 @@ export PATH="$PATH:{0}"
         <target state="translated">O sistema operacional de destino.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageIdentityArgumentDescription">
+        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3</source>
+        <target state="new">The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectAlreadyHasAreference">
         <source>Project already has a reference to `{0}`.</source>
         <target state="translated">O projeto já tem uma referência a ‘{0}’.</target>
