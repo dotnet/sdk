@@ -8,33 +8,22 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryCommonProperties
+internal class TelemetryCommonProperties(
+    Func<string> getCurrentDirectory = null,
+    Func<string, string> hasher = null,
+    Func<string> getMACAddress = null,
+    Func<string> getDeviceId = null,
+    IDockerContainerDetector dockerContainerDetector = null,
+    IUserLevelCacheWriter userLevelCacheWriter = null,
+    ICIEnvironmentDetector ciEnvironmentDetector = null)
 {
-    public TelemetryCommonProperties(
-        Func<string> getCurrentDirectory = null,
-        Func<string, string> hasher = null,
-        Func<string> getMACAddress = null,
-        Func<string> getDeviceId = null,
-        IDockerContainerDetector dockerContainerDetector = null,
-        IUserLevelCacheWriter userLevelCacheWriter = null,
-        ICIEnvironmentDetector ciEnvironmentDetector = null)
-    {
-        _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
-        _hasher = hasher ?? Sha256Hasher.Hash;
-        _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
-        _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
-        _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
-        _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
-        _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
-    }
-
-    private readonly IDockerContainerDetector _dockerContainerDetector;
-    private readonly ICIEnvironmentDetector _ciEnvironmentDetector;
-    private Func<string> _getCurrentDirectory;
-    private Func<string, string> _hasher;
-    private Func<string> _getMACAddress;
-    private Func<string> _getDeviceId;
-    private IUserLevelCacheWriter _userLevelCacheWriter;
+    private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
+    private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
+    private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
+    private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
+    private readonly Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+    private readonly Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
+    private readonly IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
     private const string OSVersion = "OS Version";
     private const string OSPlatform = "OS Platform";
     private const string OSArchitecture = "OS Architecture";

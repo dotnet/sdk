@@ -8,7 +8,7 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class ValidationUtility
 {

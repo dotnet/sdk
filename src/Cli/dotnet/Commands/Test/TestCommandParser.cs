@@ -3,11 +3,10 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestCommandParser
 {
@@ -174,14 +173,14 @@ internal static class TestCommandParser
         builder.AddIniFile(dotnetConfigPath);
 
         IConfigurationRoot config = builder.Build();
-        var testSection = config.GetSection("dotnet.test");
+        var testSection = config.GetSection("dotnet.test.runner");
 
         if (!testSection.Exists())
         {
             return CliConstants.VSTest;
         }
 
-        string runnerNameSection = testSection["runner:name"];
+        string runnerNameSection = testSection["name"];
 
         if (string.IsNullOrEmpty(runnerNameSection))
         {

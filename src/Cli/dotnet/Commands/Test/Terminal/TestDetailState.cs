@@ -1,26 +1,17 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Testing.Platform.Helpers;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
-
-internal sealed class TestDetailState
+internal sealed class TestDetailState(long id, IStopwatch? stopwatch, string text)
 {
-    private string _text;
+    private string _text = text;
 
-    public TestDetailState(long id, IStopwatch? stopwatch, string text)
-    {
-        Id = id;
-        Stopwatch = stopwatch;
-        _text = text;
-    }
-
-    public long Id { get; }
+    public long Id { get; } = id;
 
     public long Version { get; set; }
 
-    public IStopwatch? Stopwatch { get; }
+    public IStopwatch? Stopwatch { get; } = stopwatch;
 
     public string Text
     {

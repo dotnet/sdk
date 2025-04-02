@@ -2,16 +2,15 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Globalization;
-using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Terminal writer that is used when writing ANSI is allowed. It is capable of batching as many updates as possible and writing them at the end,
 /// because the terminal is responsible for rendering the colors and control codes.
 /// </summary>
-internal sealed class AnsiTerminal : ITerminal
+internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : ITerminal
 {
     /// <summary>
     /// File extensions that we will link to directly, all other files
@@ -37,22 +36,14 @@ internal sealed class AnsiTerminal : ITerminal
         ".xunit",
     ];
 
-    private readonly IConsole _console;
-    private readonly string? _baseDirectory;
-    private readonly bool _useBusyIndicator;
+    private readonly IConsole _console = console;
+    private readonly string? _baseDirectory = baseDirectory ?? Directory.GetCurrentDirectory();
+    // Output ansi code to get spinner on top of a terminal, to indicate in-progress task.
+    // https://github.com/dotnet/msbuild/issues/8958: iTerm2 treats ;9 code to post a notification instead, so disable progress reporting on Mac.
+    private readonly bool _useBusyIndicator = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
     private readonly StringBuilder _stringBuilder = new();
     private bool _isBatching;
     private AnsiTerminalTestProgressFrame _currentFrame = new(0, 0);
-
-    public AnsiTerminal(IConsole console, string? baseDirectory)
-    {
-        _console = console;
-        _baseDirectory = baseDirectory ?? Directory.GetCurrentDirectory();
-
-        // Output ansi code to get spinner on top of a terminal, to indicate in-progress task.
-        // https://github.com/dotnet/msbuild/issues/8958: iTerm2 treats ;9 code to post a notification instead, so disable progress reporting on Mac.
-        _useBusyIndicator = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
-    }
 
     public int Width
         => _console.IsOutputRedirected ? int.MaxValue : _console.BufferWidth;
@@ -177,7 +168,7 @@ internal sealed class AnsiTerminal : ITerminal
 
     public void AppendLink(string? path, int? lineNumber)
     {
-        if (String.IsNullOrWhiteSpace(path))
+        if (string.IsNullOrWhiteSpace(path))
         {
             return;
         }
@@ -185,7 +176,7 @@ internal sealed class AnsiTerminal : ITerminal
         // For non code files, point to the directory, so we don't end up running the
         // exe by clicking at the link.
         string? extension = Path.GetExtension(path);
-        bool linkToFile = !String.IsNullOrWhiteSpace(extension) && KnownFileExtensions.Contains(extension);
+        bool linkToFile = !string.IsNullOrWhiteSpace(extension) && KnownFileExtensions.Contains(extension);
 
         bool knownNonExistingFile = path.StartsWith("/_/", ignoreCase: false, CultureInfo.CurrentCulture);
 

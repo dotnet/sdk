@@ -2,21 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Tools.Build;
+namespace Microsoft.DotNet.Cli.Commands.Build;
 
-public class BuildCommand : RestoringCommand
+public class BuildCommand(
+    IEnumerable<string> msbuildArgs,
+    bool noRestore,
+    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public BuildCommand(
-        IEnumerable<string> msbuildArgs,
-        bool noRestore,
-        string msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
-    {
-    }
-
     public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;
@@ -42,7 +37,7 @@ public class BuildCommand : RestoringCommand
         {
             msbuildArgs.Add("-target:Rebuild");
         }
-        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? Array.Empty<string>();
+        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? [];
 
         msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
 

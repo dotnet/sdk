@@ -12,7 +12,7 @@ public static class DebugHelper
     {
         if (args.Length > 0 && string.Equals("--debug", args[0], StringComparison.OrdinalIgnoreCase))
         {
-            args = args.Skip(1).ToArray();
+            args = [.. args.Skip(1)];
             WaitForDebugger();
         }
     }

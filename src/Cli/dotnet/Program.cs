@@ -10,11 +10,11 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Commands.Workload;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -332,7 +332,7 @@ public class Program
     {
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
         var environmentPath = EnvironmentPathFactory.CreateEnvironmentPath(isDotnetBeingInvokedFromNativeInstaller, environmentProvider);
-        var commandFactory = new DotNetCommandFactory(alwaysRunOutOfProc: true);
+        _ = new DotNetCommandFactory(alwaysRunOutOfProc: true);
         var aspnetCertificateGenerator = new AspNetCoreCertificateGenerator();
         var reporter = Reporter.Output;
         var dotnetConfigurer = new DotnetFirstTimeUseConfigurer(

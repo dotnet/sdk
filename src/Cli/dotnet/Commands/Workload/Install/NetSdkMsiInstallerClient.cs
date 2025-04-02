@@ -4,13 +4,14 @@
 using System.Globalization;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -24,7 +25,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 [SupportedOSPlatform("windows")]
 internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 {
-    private INuGetPackageDownloader _nugetPackageDownloader;
+    private readonly INuGetPackageDownloader _nugetPackageDownloader;
 
     private SdkFeatureBand _sdkFeatureBand;
 
@@ -98,18 +99,13 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
             msis = msis.Where(m => !installedItems.Contains((m.Id, m.NuGetPackageVersion)));
         }
 
-        return msis.ToList(); ;
+        return [.. msis];
     }
 
     //  Wrap the setup logger in an IReporter so it can be passed to the garbage collector
-    private class SetupLogReporter : IReporter
+    private class SetupLogReporter(ISetupLogger setupLogger) : IReporter
     {
-        private ISetupLogger _setupLogger;
-
-        public SetupLogReporter(ISetupLogger setupLogger)
-        {
-            _setupLogger = setupLogger;
-        }
+        private readonly ISetupLogger _setupLogger = setupLogger;
 
         //  SetupLogger doesn't have a way of writing a message that shouldn't include a newline.  So if this method is used a message may be split across multiple lines,
         //  but that's probably better than not writing a message at all or throwing an exception
@@ -726,7 +722,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
         else if (IsClient && Dispatcher != null && Dispatcher.IsConnected)
         {
-            InstallResponseMessage response = Dispatcher.SendShutdownRequest();
+            _ = Dispatcher.SendShutdownRequest();
         }
 
         Log?.LogMessage("Shutdown completed.");
@@ -747,7 +743,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         }
     }
 
-    private static object _msiAdminInstallLock = new();
+    private static readonly object _msiAdminInstallLock = new();
 
     public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
     {
@@ -1061,7 +1057,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         uint error = Error.SUCCESS;
 
-        Task<uint> installTask = Task.Run<uint>(installDelegate);
+        Task<uint> installTask = Task.Run(installDelegate);
         Reporter.Write($"{progressLabel}...");
 
         // This is just simple progress, a.k.a., a series of dots. Ideally we need to wire up the external

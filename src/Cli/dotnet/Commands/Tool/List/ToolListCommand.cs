@@ -2,28 +2,21 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
-internal class ToolListCommand : CommandBase
+internal class ToolListCommand(
+    ParseResult result,
+    ToolListGlobalOrToolPathCommand toolListGlobalOrToolPathCommand = null,
+    ToolListLocalCommand toolListLocalCommand = null
+    ) : CommandBase(result)
 {
-    private readonly ToolListGlobalOrToolPathCommand _toolListGlobalOrToolPathCommand;
-    private readonly ToolListLocalCommand _toolListLocalCommand;
-
-    public ToolListCommand(
-        ParseResult result,
-        ToolListGlobalOrToolPathCommand toolListGlobalOrToolPathCommand = null,
-        ToolListLocalCommand toolListLocalCommand = null
-    )
-        : base(result)
-    {
-        _toolListGlobalOrToolPathCommand
+    private readonly ToolListGlobalOrToolPathCommand _toolListGlobalOrToolPathCommand
             = toolListGlobalOrToolPathCommand ?? new ToolListGlobalOrToolPathCommand(result);
-        _toolListLocalCommand
+    private readonly ToolListLocalCommand _toolListLocalCommand
             = toolListLocalCommand ?? new ToolListLocalCommand(result);
-    }
 
     public override int Execute()
     {

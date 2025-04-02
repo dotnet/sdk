@@ -73,7 +73,6 @@ stages:
     - template: ../steps/vmr-validate-installers.yml
       parameters:
         targetArchitecture: x64
-        continueOnError: true
         OS: Linux
   - job: ValidateInstallers_Linux_arm64
     displayName: Validate Installers - Linux arm64
@@ -83,7 +82,6 @@ stages:
     - template: ../steps/vmr-validate-installers.yml
       parameters:
         targetArchitecture: arm64
-        continueOnError: true
         OS: Linux
   - ${{ if eq(variables.signEnabled, 'true') }}:
     - job: ValidateSigning_Windows

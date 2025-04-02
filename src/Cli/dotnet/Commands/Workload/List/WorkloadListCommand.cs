@@ -3,18 +3,18 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.List;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal class WorkloadListCommand : WorkloadCommandBase
 {
@@ -69,7 +69,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
 
             var updateAvailable = GetUpdateAvailable(installedList);
             var installed = installedList.Select(id => id.ToString()).ToArray();
-            ListOutput listOutput = new(installed, updateAvailable.ToArray());
+            ListOutput listOutput = new(installed, [.. updateAvailable]);
 
             Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
         }

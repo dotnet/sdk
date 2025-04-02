@@ -2,26 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.List;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.NuGet;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Package.List;
+namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal class ListPackageReferencesCommand : CommandBase
+internal class ListPackageReferencesCommand(
+    ParseResult parseResult) : CommandBase(parseResult)
 {
     //The file or directory passed down by the command
-    private readonly string _fileOrDirectory;
-
-    public ListPackageReferencesCommand(
-        ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
+    private readonly string _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
             parseResult.HasOption(PackageCommandParser.ProjectOption) ?
             parseResult.GetValue(PackageCommandParser.ProjectOption) :
             parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ?? "");
-    }
 
     private static string GetAbsolutePath(string currentDirectory, string relativePath)
     {
@@ -58,7 +54,7 @@ internal class ListPackageReferencesCommand : CommandBase
 
         EnforceOptionRules(_parseResult);
 
-        return args.ToArray();
+        return [.. args];
     }
 
     /// <summary>

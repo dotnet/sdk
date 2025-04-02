@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Fsi;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
 internal static class FsiCommandParser
 {
@@ -23,7 +22,7 @@ internal static class FsiCommandParser
     {
         DocumentedCommand command = new("fsi", DocsLink) { Arguments };
 
-        command.SetAction((ParseResult parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
+        command.SetAction((parseResult) => FsiCommand.Run(parseResult.GetValue(Arguments)));
 
         return command;
     }

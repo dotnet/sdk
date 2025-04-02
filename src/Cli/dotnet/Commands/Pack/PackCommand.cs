@@ -2,22 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using Parser = Microsoft.DotNet.Cli.Parser;
 
-namespace Microsoft.DotNet.Tools.Pack;
+namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-public class PackCommand : RestoringCommand
+public class PackCommand(
+    IEnumerable<string> msbuildArgs,
+    bool noRestore,
+    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
-    public PackCommand(
-        IEnumerable<string> msbuildArgs,
-        bool noRestore,
-        string msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
-    {
-    }
-
     public static PackCommand FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;
@@ -47,7 +41,7 @@ public class PackCommand : RestoringCommand
         );
         msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
 
-        msbuildArgs.AddRange(slnOrProjectArgs ?? Array.Empty<string>());
+        msbuildArgs.AddRange(slnOrProjectArgs ?? []);
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
 

@@ -3,26 +3,20 @@
 
 using System.Globalization;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Captures <see cref="TestProgressState"/> that was rendered to screen, so we can only partially update the screen on next update.
 /// </summary>
-internal sealed class AnsiTerminalTestProgressFrame
+internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 {
     private const int MaxColumn = 250;
 
-    public int Width { get; }
+    public int Width { get; } = Math.Min(width, MaxColumn);
 
-    public int Height { get; }
+    public int Height { get; } = height;
 
     public List<RenderedProgressItem>? RenderedLines { get; set; }
-
-    public AnsiTerminalTestProgressFrame(int width, int height)
-    {
-        Width = Math.Min(width, MaxColumn);
-        Height = height;
-    }
 
     public void AppendTestWorkerProgress(TestProgressState progress, RenderedProgressItem currentLine, AnsiTerminal terminal)
     {
@@ -96,7 +90,7 @@ internal sealed class AnsiTerminalTestProgressFrame
 
             lengthNeeded++; // for ')'
 
-            if ((charsTaken + lengthNeeded) < nonReservedWidth)
+            if (charsTaken + lengthNeeded < nonReservedWidth)
             {
                 terminal.Append(" (");
                 if (progress.TargetFramework != null)
@@ -312,16 +306,14 @@ internal sealed class AnsiTerminalTestProgressFrame
         // Note: We want to render the list of active tests, but this can easily fill up the full screen.
         // As such, we should balance the number of active tests shown per project.
         // We do this by distributing the remaining lines for each projects.
-        TestProgressState[] progressItems = progress.OfType<TestProgressState>().ToArray();
+        TestProgressState[] progressItems = [.. progress.OfType<TestProgressState>()];
         int linesToDistribute = (int)(Height * 0.7) - 1 - progressItems.Length;
         var detailItems = new IEnumerable<TestDetailState>[progressItems.Length];
         IEnumerable<int> sortedItemsIndices = Enumerable.Range(0, progressItems.Length).OrderBy(i => progressItems[i].TestNodeResultsState?.Count ?? 0);
 
         foreach (int sortedItemIndex in sortedItemsIndices)
         {
-            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(
-                linesToDistribute / progressItems.Length)
-                ?? Array.Empty<TestDetailState>();
+            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(linesToDistribute / progressItems.Length) ?? [];
         }
 
         for (int progressI = 0; progressI < progressItems.Length; progressI++)
@@ -335,17 +327,11 @@ internal sealed class AnsiTerminalTestProgressFrame
 
     public void Clear() => RenderedLines?.Clear();
 
-    internal sealed class RenderedProgressItem
+    internal sealed class RenderedProgressItem(long id, long version)
     {
-        public RenderedProgressItem(long id, long version)
-        {
-            ProgressId = id;
-            ProgressVersion = version;
-        }
+        public long ProgressId { get; } = id;
 
-        public long ProgressId { get; }
-
-        public long ProgressVersion { get; }
+        public long ProgressVersion { get; } = version;
 
         public int RenderedHeight { get; set; }
 

@@ -3,23 +3,18 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Reference.Add;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-internal class AddProjectToProjectReferenceCommand : CommandBase
+internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory;
-
-    public AddProjectToProjectReferenceCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
+    private readonly string _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
             parseResult.GetValue(AddCommandParser.ProjectArgument);
-    }
 
     public override int Execute()
     {
@@ -35,10 +30,7 @@ internal class AddProjectToProjectReferenceCommand : CommandBase
         var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
             CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-        List<MsbuildProject> refs =
-            arguments
-                .Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))
-                .ToList();
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {
