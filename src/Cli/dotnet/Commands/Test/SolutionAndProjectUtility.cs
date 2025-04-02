@@ -167,7 +167,8 @@ internal static class SolutionAndProjectUtility
         RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile);
+        // TODO: Support --launch-profile and pass it here.
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings);
 
@@ -190,7 +191,7 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder, bool noLaunchProfile)
+    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder, bool noLaunchProfile, string? profileName)
     {
         if (noLaunchProfile)
         {
@@ -203,6 +204,13 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        return LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath)).LaunchSettings;
+        var result = LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath), profileName);
+        if (!result.Success)
+        {
+            Reporter.Error.WriteLine(string.Format(Tools.Run.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
+            return null;
+        }
+
+        return result.LaunchSettings;
     }
 }

@@ -73,6 +73,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 processStartInfo.EnvironmentVariables[entry.Key] = value;
             }
 
+            // TODO: Support --no-launch-profile-arguments
             if (!string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
