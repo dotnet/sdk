@@ -2,12 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Testing.Platform.OutputDevice;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
 {
@@ -62,6 +63,6 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
         Matcher matcher = new();
         matcher.AddIncludePatterns(testModulePatterns);
 
-        return MatcherExtensions.GetResultsInFullPath(matcher, rootDirectory);
+        return matcher.GetResultsInFullPath(rootDirectory);
     }
 }

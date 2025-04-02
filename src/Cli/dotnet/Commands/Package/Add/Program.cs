@@ -2,14 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.NuGet;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 using NuGet.Packaging.Core;
 
-namespace Microsoft.DotNet.Tools.Package.Add;
+namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 /// <param name="parseResult"></param>
 /// <param name="fileOrDirectory">
@@ -22,8 +23,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
 
     public override int Execute()
     {
-        var projectFilePath = string.Empty;
-
+        string projectFilePath;
         if (!File.Exists(fileOrDirectory))
         {
             projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
@@ -62,7 +62,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
         return result;
     }
 
-    private void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
+    private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
     {
         List<string> args =
         [
@@ -93,7 +93,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
         }
     }
 
-    private void DisposeTemporaryFile(string filePath)
+    private static void DisposeTemporaryFile(string filePath)
     {
         if (File.Exists(filePath))
         {
@@ -132,6 +132,6 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
             args.Add(tempDgFilePath);
         }
 
-        return args.ToArray();
+        return [.. args];
     }
 }

@@ -6,11 +6,10 @@ using System.IO.Pipes;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplication(TestModule module, BuildOptions buildOptions) : IDisposable
 {
-    private readonly TestModule _module = module;
     private readonly BuildOptions _buildOptions = buildOptions;
 
     private readonly List<string> _outputData = [];
@@ -30,7 +29,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     public event EventHandler<ErrorEventArgs> ErrorReceived;
     public event EventHandler<TestProcessExitEventArgs> TestProcessExited;
 
-    public TestModule Module => _module;
+    public TestModule Module { get; } = module;
 
     public async Task<int> RunAsync(TestOptions testOptions)
     {
@@ -39,7 +38,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             return ExitCode.GenericFailure;
         }
 
-        bool isDll = _module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
+        bool isDll = Module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
         var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
@@ -60,16 +59,16 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             RedirectStandardError = true
         };
 
-        if (!string.IsNullOrEmpty(_module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
         {
-            processStartInfo.WorkingDirectory = _module.RunProperties.RunWorkingDirectory;
+            processStartInfo.WorkingDirectory = Module.RunProperties.RunWorkingDirectory;
         }
 
         return processStartInfo;
     }
 
     private string GetFileName(TestOptions testOptions, bool isDll)
-        => isDll ? Environment.ProcessPath : _module.RunProperties.RunCommand;
+        => isDll ? Environment.ProcessPath : Module.RunProperties.RunCommand;
 
     private string GetArguments(TestOptions testOptions, bool isDll)
     {
@@ -250,9 +249,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     private bool ModulePathExists()
     {
-        if (!File.Exists(_module.RunProperties.RunCommand))
+        if (!File.Exists(Module.RunProperties.RunCommand))
         {
-            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{_module.RunProperties.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
+            ErrorReceived.Invoke(this, new ErrorEventArgs { ErrorMessage = $"Test module '{Module.RunProperties.RunCommand}' not found. Build the test application before or run 'dotnet test'." });
             return false;
         }
         return true;
@@ -264,7 +263,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
         if (isDll)
         {
-            builder.Append($"exec {_module.RunProperties.RunCommand} ");
+            builder.Append($"exec {Module.RunProperties.RunCommand} ");
         }
 
         AppendCommonArgs(builder, testOptions);
@@ -284,7 +283,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             ? args.Aggregate((a, b) => $"{a} {b}")
             : string.Empty);
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {_module.RunProperties.RunArguments}");
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {_pipeNameDescription.Name} {Module.RunProperties.RunArguments}");
     }
 
     public void OnHandshakeMessage(HandshakeMessage handshakeMessage)
@@ -294,7 +293,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
     public void OnCommandLineOptionMessages(CommandLineOptionMessages commandLineOptionMessages)
     {
-        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn)).ToArray() });
+        HelpRequested?.Invoke(this, new HelpEventArgs { ModulePath = commandLineOptionMessages.ModulePath, CommandLineOptions = [.. commandLineOptionMessages.CommandLineOptionMessageList.Select(message => new CommandLineOption(message.Name, message.Description, message.IsHidden, message.IsBuiltIn))] });
     }
 
     internal void OnDiscoveredTestMessages(DiscoveredTestMessages discoveredTestMessages)
@@ -303,7 +302,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             ExecutionId = discoveredTestMessages.ExecutionId,
             InstanceId = discoveredTestMessages.InstanceId,
-            DiscoveredTests = discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName)).ToArray()
+            DiscoveredTests = [.. discoveredTestMessages.DiscoveredMessages.Select(message => new DiscoveredTest(message.Uid, message.DisplayName))]
         });
     }
 
@@ -313,8 +312,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             ExecutionId = testResultMessage.ExecutionId,
             InstanceId = testResultMessage.InstanceId,
-            SuccessfulTestResults = testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray(),
-            FailedTestResults = testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace)).ToArray(), message.StandardOutput, message.ErrorOutput, message.SessionUid)).ToArray()
+            SuccessfulTestResults = [.. testResultMessage.SuccessfulTestMessages.Select(message => new SuccessfulTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, message.StandardOutput, message.ErrorOutput, message.SessionUid))],
+            FailedTestResults = [.. testResultMessage.FailedTestMessages.Select(message => new FailedTestResult(message.Uid, message.DisplayName, message.State, message.Duration, message.Reason, [.. message.Exceptions.Select(e => new FlatException(e.ErrorMessage, e.ErrorType, e.StackTrace))], message.StandardOutput, message.ErrorOutput, message.SessionUid))]
         });
     }
 
@@ -324,7 +323,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             ExecutionId = fileArtifactMessages.ExecutionId,
             InstanceId = fileArtifactMessages.InstanceId,
-            FileArtifacts = fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid)).ToArray()
+            FileArtifacts = [.. fileArtifactMessages.FileArtifacts.Select(message => new FileArtifact(message.FullPath, message.DisplayName, message.Description, message.TestUid, message.TestDisplayName, message.SessionUid))]
         });
     }
 
@@ -337,29 +336,29 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         StringBuilder builder = new();
 
-        if (!string.IsNullOrEmpty(_module.RunProperties.RunCommand))
+        if (!string.IsNullOrEmpty(Module.RunProperties.RunCommand))
         {
-            builder.Append($"{ProjectProperties.RunCommand}: {_module.RunProperties.RunCommand}");
+            builder.Append($"{ProjectProperties.RunCommand}: {Module.RunProperties.RunCommand}");
         }
 
-        if (!string.IsNullOrEmpty(_module.RunProperties.RunArguments))
+        if (!string.IsNullOrEmpty(Module.RunProperties.RunArguments))
         {
-            builder.Append($"{ProjectProperties.RunArguments}: {_module.RunProperties.RunArguments}");
+            builder.Append($"{ProjectProperties.RunArguments}: {Module.RunProperties.RunArguments}");
         }
 
-        if (!string.IsNullOrEmpty(_module.RunProperties.RunWorkingDirectory))
+        if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
         {
-            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {_module.RunProperties.RunWorkingDirectory}");
+            builder.Append($"{ProjectProperties.RunWorkingDirectory}: {Module.RunProperties.RunWorkingDirectory}");
         }
 
-        if (!string.IsNullOrEmpty(_module.ProjectFullPath))
+        if (!string.IsNullOrEmpty(Module.ProjectFullPath))
         {
-            builder.Append($"{ProjectProperties.ProjectFullPath}: {_module.ProjectFullPath}");
+            builder.Append($"{ProjectProperties.ProjectFullPath}: {Module.ProjectFullPath}");
         }
 
-        if (!string.IsNullOrEmpty(_module.TargetFramework))
+        if (!string.IsNullOrEmpty(Module.TargetFramework))
         {
-            builder.Append($"{ProjectProperties.TargetFramework} : {_module.TargetFramework}");
+            builder.Append($"{ProjectProperties.TargetFramework} : {Module.TargetFramework}");
         }
 
         return builder.ToString();

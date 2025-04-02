@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {

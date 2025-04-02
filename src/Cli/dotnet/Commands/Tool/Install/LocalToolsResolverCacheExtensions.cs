@@ -5,7 +5,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class LocalToolsResolverCacheExtensions
 {

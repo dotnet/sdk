@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 
 public class InternalReportinstallsuccess
 {
@@ -41,7 +41,7 @@ public class InternalReportinstallsuccess
 
     internal class ThreadBlockingTelemetry : ITelemetry
     {
-        private Telemetry.Telemetry telemetry;
+        private readonly Telemetry.Telemetry telemetry;
 
         internal ThreadBlockingTelemetry()
         {

@@ -19,11 +19,11 @@ internal class TelemetryCommonProperties(
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
-    private Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
-    private Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
-    private Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
-    private Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
-    private IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
+    private readonly Func<string> _getCurrentDirectory = getCurrentDirectory ?? Directory.GetCurrentDirectory;
+    private readonly Func<string, string> _hasher = hasher ?? Sha256Hasher.Hash;
+    private readonly Func<string> _getMACAddress = getMACAddress ?? MacAddressGetter.GetMacAddress;
+    private readonly Func<string> _getDeviceId = getDeviceId ?? DeviceIdGetter.GetDeviceId;
+    private readonly IUserLevelCacheWriter _userLevelCacheWriter = userLevelCacheWriter ?? new UserLevelCacheWriter();
     private const string OSVersion = "OS Version";
     private const string OSPlatform = "OS Platform";
     private const string OSArchitecture = "OS Architecture";

@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using PublishCommand = Microsoft.DotNet.Tools.Publish.PublishCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

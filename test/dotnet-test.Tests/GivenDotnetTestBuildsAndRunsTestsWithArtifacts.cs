@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
@@ -36,8 +37,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 6")
-                    .And.Contain("succeeded: 1")
+                    .And.Contain("total: 7")
+                    .And.Contain("succeeded: 2")
                     .And.Contain("failed: 4")
                     .And.Contain("skipped: 1");
             }

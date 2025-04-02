@@ -3,18 +3,19 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal class WorkloadInstallCommand : InstallingWorkloadCommand
 {
@@ -87,7 +88,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
                 filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
@@ -137,7 +138,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndVersion,
                 WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
         }
-        else if ((_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson) &&
+        else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson &&
             !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
                                 //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
         {
