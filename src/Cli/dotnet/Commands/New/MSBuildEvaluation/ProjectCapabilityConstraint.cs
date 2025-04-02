@@ -8,8 +8,9 @@ using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Newtonsoft.Json.Linq;
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
+using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
-namespace Microsoft.TemplateEngine.MSBuildEvaluation;
+namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
 {
@@ -108,7 +109,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.MultipleProjectFound)
             {
-                string foundProjects = string.Join("; ", (_evaluationResult as MultipleProjectsEvaluationResult)?.ProjectPaths ?? (IReadOnlyList<string?>)[_evaluationResult.ProjectPath]);
+                string foundProjects = string.Join("; ", (_evaluationResult as MultipleProjectsEvaluationResult)?.ProjectPaths ?? [_evaluationResult.ProjectPath]);
                 _logger.LogDebug("Multiple projects found: {0}, specify the project to use.", foundProjects);
                 return TemplateConstraintResult.CreateRestricted(
                     this,
@@ -162,14 +163,14 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             //in case of multi-target project, consider project capabilities for all target frameworks
             if (result is MultiTargetEvaluationResult multiTargetResult)
             {
-                foreach (Project? tfmBasedEvaluation in multiTargetResult.EvaluatedProjects.Values)
+                foreach (MSBuildProject? tfmBasedEvaluation in multiTargetResult.EvaluatedProjects.Values)
                 {
                     AddProjectCapabilities(capabilities, tfmBasedEvaluation);
                 }
             }
             return [.. capabilities];
 
-            static void AddProjectCapabilities(HashSet<string> collection, Project? evaluatedProject)
+            static void AddProjectCapabilities(HashSet<string> collection, MSBuildProject? evaluatedProject)
             {
                 if (evaluatedProject == null)
                 {

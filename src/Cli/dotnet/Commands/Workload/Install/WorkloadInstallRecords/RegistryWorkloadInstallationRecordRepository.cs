@@ -3,10 +3,11 @@
 
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Installer.Windows;
+using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 
 /// <summary>
 /// Provides support for reading and writing workload installation records in the registry

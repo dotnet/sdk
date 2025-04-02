@@ -4,18 +4,19 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 
 using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Search;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 {
@@ -40,7 +41,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();
@@ -91,7 +92,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             }
             catch (NuGetPackageNotFoundException)
             {
-                Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
+                Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
                 return 0;
             }
 
@@ -159,7 +160,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver)
     {
-        installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
         return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
@@ -174,7 +175,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
     {
-        installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
         List<string> versions;
         try
         {
@@ -183,7 +184,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         }
         catch (NuGetPackageNotFoundException)
         {
-            Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
+            Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
             return null;
         }
 

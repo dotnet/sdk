@@ -3,7 +3,7 @@
 
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.TemplateEngine.MSBuildEvaluation;
+namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 /// <remarks>
 /// As implemented in: https://docs.microsoft.com/en-us/dotnet/api/microsoft.visualstudio.shell.interop.vsprojectcapabilityexpressionmatcher?
@@ -131,13 +131,13 @@ internal class CapabilityExpressionEvaluator
                 throw _tokenizer.CreateInvalidExpressionException();
             }
             _tokenizer.Next();
-            return (notCount % 2 == 0) ? r : !r;
+            return notCount % 2 == 0 ? r : !r;
         }
         else if (_tokenizer.Peek() != null && IsSymbolCharacter(_tokenizer.Peek()![0]))
         {
             string? ident = _tokenizer.Next();
             bool isPresent = _presentTerms.Contains(ident, StringComparer.OrdinalIgnoreCase);
-            return (notCount % 2 == 0) ? isPresent : !isPresent;
+            return notCount % 2 == 0 ? isPresent : !isPresent;
         }
         else
         {

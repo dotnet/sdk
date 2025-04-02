@@ -1,9 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
-
-namespace Microsoft.DotNet.Tools.RestoreProjectJson;
+namespace Microsoft.DotNet.Cli.Commands.RestoreProjectJson;
 
 internal static class NuGet3
 {
@@ -17,7 +15,7 @@ internal static class NuGet3
         }
         prefixArgs.Add("restore");
 
-        var nugetApp = new NuGetForwardingApp(Enumerable.Concat(prefixArgs, args));
+        var nugetApp = new NuGetForwardingApp(prefixArgs.Concat(args));
 
         // setting NUGET_XPROJ_WRITE_TARGETS will tell nuget restore to install .props and .targets files
         // coming from NuGet packages

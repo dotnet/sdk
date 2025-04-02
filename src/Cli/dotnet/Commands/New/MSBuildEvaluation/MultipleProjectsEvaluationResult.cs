@@ -3,7 +3,7 @@
 
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.TemplateEngine.MSBuildEvaluation;
+namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 internal class MultipleProjectsEvaluationResult : MSBuildEvaluationResult
 {

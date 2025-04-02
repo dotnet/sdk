@@ -57,9 +57,9 @@
 
     <!-- URLs -->
     <InternalBuild Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">true</InternalBuild>
-    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://dotnetbuilds.blob.core.windows.net/internal/</InternalBaseURL>
+    <InternalBaseURL Condition="$(SYSTEM_TEAMPROJECT) == 'internal'">https://ci.dot.net/internal/</InternalBaseURL>
     <!-- Base url for official releases. Used to obtain some assets from older releases when necessary. -->
-    <OfficialBaseURL>https://dotnetcli.blob.core.windows.net/dotnet/</OfficialBaseURL>
+    <OfficialBaseURL>https://builds.dotnet.microsoft.com/dotnet/</OfficialBaseURL>
     <PublicBaseURL Condition="'$(PublicBaseURL)' == ''">$(OfficialBaseURL)</PublicBaseURL>
     <!-- MSBuild removes the '//' slashes when passing PublicBaseURL from the outer to the inner build. -->
     <PublicBaseURL Condition="$(PublicBaseURL.StartsWith('file:')) and '$(OS)' != 'Windows_NT'">$([System.Text.RegularExpressions.Regex]::Replace('$(PublicBaseURL)', '%28file:\/{1,}%29%28.+%29', 'file:///%242'))</PublicBaseURL>
@@ -302,10 +302,10 @@
     <!-- If building in product source build mode, there is no need to attempt the external URIs. These are not desired,
             and won't work anyway because the source build file URI doesn't use the same structure as the storage accounts.
             For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
-            would end up 'https://dotnetbuilds.blob.core.windows.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
+            would end up 'https://ci.dot.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
             missing the runtime version number directory. -->
     <ItemGroup Condition="'$(DotNetBuildOrchestrator)' != 'true'">
-      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://dotnetbuilds.blob.core.windows.net/public/'))/%(ComponentToDownload.DownloadFileName)"
+      <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://ci.dot.net/public/'))/%(ComponentToDownload.DownloadFileName)"
                       Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>
         <DownloadDestination>%(ComponentToDownload.DownloadDestination)</DownloadDestination>

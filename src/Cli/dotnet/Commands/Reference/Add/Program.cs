@@ -3,12 +3,12 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Reference.Add;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
 {

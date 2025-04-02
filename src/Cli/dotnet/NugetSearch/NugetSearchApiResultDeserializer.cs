@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.NugetSearch.NugetSearchApiSerializable;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Search;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
 

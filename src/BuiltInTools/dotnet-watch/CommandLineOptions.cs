@@ -5,11 +5,9 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Data;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Run;
-using NuGet.Common;
 
 namespace Microsoft.DotNet.Watch;
 
