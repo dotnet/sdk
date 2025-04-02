@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.RestoreProjectJson;
+namespace Microsoft.DotNet.Cli.Commands.RestoreProjectJson;
 
 public partial class RestoreProjectJsonCommand
 {

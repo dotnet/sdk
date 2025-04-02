@@ -28,7 +28,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
-            var bc = Tools.Build.BuildCommand.FromParseResult(parseResult);
+            var bc = Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
             var tokenized = new[] {
                 "build",
                 "a b",

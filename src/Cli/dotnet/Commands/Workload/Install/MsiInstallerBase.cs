@@ -4,17 +4,16 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.History;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
-namespace Microsoft.DotNet.Installer.Windows;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 /// <summary>
 /// Creates a new <see cref="MsiInstallerBase"/> instance.
@@ -228,8 +227,8 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
         var installStateContents = InstallStateContents.FromPath(path);
-        if ((installStateContents.WorkloadVersion == null && workloadVersion == null) ||
-            (installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion)))
+        if (installStateContents.WorkloadVersion == null && workloadVersion == null ||
+            installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion))
         {
             return;
         }
@@ -383,7 +382,7 @@ internal abstract class MsiInstallerBase(InstallElevationContextBase elevationCo
         var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
         string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
         Directory.CreateDirectory(historyDirectory);
-        File.WriteAllText(logFile, (JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true })));
+        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
     }
 
     /// <summary>

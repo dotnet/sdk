@@ -4,8 +4,9 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
+using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings;
+namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
 internal class LaunchSettingsManager
 {

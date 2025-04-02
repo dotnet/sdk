@@ -4,12 +4,16 @@
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Workloads.Workload.Uninstall;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Uninstall.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Uninstall;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 
 internal class WorkloadUninstallCommand : WorkloadCommandBase
 {
@@ -35,7 +39,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();

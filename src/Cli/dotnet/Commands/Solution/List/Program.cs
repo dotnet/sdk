@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using CommandLocalizableStrings = Microsoft.DotNet.Cli.CommonLocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sln.List;
+namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
 internal class ListProjectsInSolutionCommand(
     ParseResult parseResult) : CommandBase(parseResult)
@@ -48,7 +48,7 @@ internal class ListProjectsInSolutionCommand(
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CommandLocalizableStrings.NoProjectsFound);
         }
         else
         {

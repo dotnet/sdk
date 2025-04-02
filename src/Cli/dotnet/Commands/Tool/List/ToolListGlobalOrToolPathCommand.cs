@@ -2,13 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal delegate IToolPackageStoreQuery CreateToolPackageStore(DirectoryPath? nonGlobalLocation = null);
 

@@ -3,10 +3,9 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using Microsoft.Testing.Platform.Helpers;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TestNodeResultsState(long id)
 {
