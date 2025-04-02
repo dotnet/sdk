@@ -9,12 +9,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
-    {
-        HelpName = CliCommandStrings.ToolUpdatePackageIdArgumentName,
-        Description = CliCommandStrings.ToolUpdatePackageIdArgumentDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    };
+    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = ToolInstallCommandParser.PackageIdArgument;
 
     public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 
