@@ -56,6 +56,13 @@ public class WriteImportMapToHtmlTest
     )]
     [InlineData(
         """
+        <script src="/root/main#[.{fingerprint}].suffix.js"></script>
+        """,
+        true,
+        "/root/main.suffix.js"
+    )]
+    [InlineData(
+        """
         <script src="main.js"></script>
         """,
         false
