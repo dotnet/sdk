@@ -55,7 +55,7 @@ try {
   function global:prompt { 
     # Run command agains $env:SDK_REPO_ROOT to see if there are any changes
     $testDotnetSdkCurrentHash = git -C $env:SDK_REPO_ROOT rev-parse HEAD 
-    $hasGitChanges = (git status -C $env:SDK_REPO_ROOT --porcelain) -ne "" -or $testDotnetSdkCurrentHash -ne $env:TestDotnetSdkHash
+    $hasGitChanges = $testDotnetSdkCurrentHash -ne $env:TestDotnetSdkHash
     if ($hasGitChanges) {
       "$([char]0x1b)[0;35m(dotnet dogfood *)$([char]0x1b)[0m $PWD > "
     } else {

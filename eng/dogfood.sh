@@ -28,7 +28,7 @@ export PATH=$testDotnetRoot:$PATH
 export DOTNET_ROOT=$testDotnetRoot
 
 testDotnetSdkCurrentHash = git -c $SDK_REPO_ROOT rev-parse HEAD
-hasGitChanges = $(git -c $SDK_REPO_ROOT status --porcelain) != "" or $testDotnetSdkCurrentHash != $TestDotnetSdkHash
+hasGitChanges = $testDotnetSdkCurrentHash != $TestDotnetSdkHash
 
 if [$hasGitChanges]; then
   export PS1="\x1b[0;35m(dotnet dogfood*)\x1b[0m $PS1"
