@@ -168,6 +168,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
         assemblyRun.Tries.Add(instanceId);
 
+        if (_isRetry)
+        {
+            // When we are retrying the new assembly run should ignore all previously failed tests and
+            // clear all errors. We restarted the run and will retry all failed tests.
+            //
+            // In case of folded dynamic data tests we do not know how many tests we will get in each run,
+            // if more or less, or the same amount as before,and we also will rerun tests that passed previously
+            // because we are unable to run just a single test from that dynamic data source.
+            // This will cause the total number of tests to differ between runs, and there is nothing we can do about it.
+            assemblyRun.TotalTests -= assemblyRun.FailedTests;
+            assemblyRun.RetriedFailedTests += assemblyRun.FailedTests;
+            assemblyRun.FailedTests = 0;
+            assemblyRun.ClearAllMessages();
+        }
+
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal =>
@@ -317,7 +332,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
-        int retried = _assemblies.Values.Sum(t => t.RetriedTests);
+        int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
         int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
@@ -328,10 +343,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         string errorText = $"{SingleIndentation}error: {error}";
         string totalText = $"{SingleIndentation}total: {total}";
+        string retriedText = $" (+{retried} retried)";
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
-        string retriedText = $"{SingleIndentation}retried: {retried}";
         string durationText = $"{SingleIndentation}duration: ";
 
         if (error > 0)
@@ -343,7 +358,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         terminal.ResetColor();
-        terminal.AppendLine(totalText);
+        terminal.Append(totalText);
+        if (retried > 0)
+        {
+            terminal.SetColor(TerminalColor.DarkGray);
+            terminal.Append(retriedText);
+            terminal.ResetColor();
+        }
+        terminal.AppendLine();
+
         if (colorizeFailed)
         {
             terminal.SetColor(TerminalColor.Red);
@@ -378,11 +401,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         if (colorizeSkipped)
         {
             terminal.ResetColor();
-        }
-
-        if (retried > 0)
-        {
-            terminal.AppendLine(retriedText);
         }
 
         terminal.Append(durationText);
@@ -466,27 +484,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
-        if (asm.PreviousTestInstanceIds.TryGetValue(testNodeUid, out var previousRuns))
+        if (_isRetry && asm.Tries.Count > 1 && outcome == TestOutcome.Passed)
         {
-            // Different InstanceId means that we are running in a new process instance but in the
-            // same executionId, so the test is being retried via the Retry extension.
-            if (previousRuns.Count > 0 && !previousRuns.Contains(instanceId))
-            {
-                // This is a retried test, fix the counts.
-                // Previous test failed because we are retrying.
-                // We don't need to be atomic, because the update is done below
-                // where we update the worker to make it re-render.
-                asm.FailedTests--;
-                asm.RetriedTests++;
-            }
-
-            previousRuns.Add(instanceId);
+            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
+            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
+            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
+            asm.FlakyTests.Add(testNodeUid);
+            
         }
-        else
-        {
-            asm.PreviousTestInstanceIds.Add(testNodeUid, new List<string> { instanceId });
-        }
-
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {

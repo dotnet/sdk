@@ -29,7 +29,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         int passed = progress.PassedTests;
         int failed = progress.FailedTests;
         int skipped = progress.SkippedTests;
-        int retried = progress.RetriedTests;
+        int retried = progress.RetriedFailedTests;
         int charsTaken = 0;
 
         terminal.Append('[');

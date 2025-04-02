@@ -177,7 +177,7 @@ internal sealed class NonAnsiTerminal : ITerminal
             int passed = p.PassedTests;
             int failed = p.FailedTests;
             int skipped = p.SkippedTests;
-            int retried = p.RetriedTests;
+            int retried = p.RetriedFailedTests;
 
             // Use just ascii here, so we don't put too many restrictions on fonts needing to
             // properly show unicode, or logs being saved in particular encoding.
