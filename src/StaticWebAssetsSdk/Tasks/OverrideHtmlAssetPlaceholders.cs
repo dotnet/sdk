@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public partial class WriteImportMapToHtml : Task
+public partial class OverrideHtmlAssetPlaceholders : Task
 {
     [Required]
     public ITaskItem[] Assets { get; set; } = [];

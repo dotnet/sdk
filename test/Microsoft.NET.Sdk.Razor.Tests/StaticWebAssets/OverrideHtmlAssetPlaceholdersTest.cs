@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-public class WriteImportMapToHtmlTest
+public class OverrideHtmlAssetPlaceholdersTest
 {
     [Theory]
     [InlineData(
@@ -88,7 +88,7 @@ public class WriteImportMapToHtmlTest
     )]
     public void ValidateAssetsRegex(string input, bool shouldMatch, string fileName = null)
     {
-        var match = WriteImportMapToHtml._assetsRegex.Match(input);
+        var match = OverrideHtmlAssetPlaceholders._assetsRegex.Match(input);
         Assert.Equal(shouldMatch, match.Success);
 
         if (fileName != null)
@@ -142,7 +142,7 @@ public class WriteImportMapToHtmlTest
     )]
     public void ValidateImportMapRegex(string input, bool shouldMatch)
     {
-        Assert.Equal(shouldMatch, WriteImportMapToHtml._importMapRegex.Match(input).Success);
+        Assert.Equal(shouldMatch, OverrideHtmlAssetPlaceholders._importMapRegex.Match(input).Success);
     }
 
     [Theory]
@@ -234,7 +234,7 @@ public class WriteImportMapToHtmlTest
     )]
     public void ValidatePreloadRegex(string input, bool shouldMatch, string group = null)
     {
-        var match = WriteImportMapToHtml._preloadRegex.Match(input);
+        var match = OverrideHtmlAssetPlaceholders._preloadRegex.Match(input);
         Assert.Equal(shouldMatch, match.Success);
 
         if (group != null)
