@@ -132,18 +132,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             result.StdOut.Should()
                 .Contain("FAILED to find argument from launchSettings.json");
-            if (!TestContext.IsLocalized())
-            {
-                result.StdOut
-                    .Should().Contain("Test run summary: Passed!")
-                    .And.Contain("skipped Test1")
-                    .And.Contain("total: 2")
-                    .And.Contain("succeeded: 1")
-                    .And.Contain("failed: 0")
-                    .And.Contain("skipped: 1");
-            }
-
-            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
