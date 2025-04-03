@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using LocalizableStrings = Microsoft.DotNet.Tools.Build.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.MSBuild;
+namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 internal static class MSBuildCommandParser
 {

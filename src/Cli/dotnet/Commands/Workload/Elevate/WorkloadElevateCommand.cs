@@ -2,18 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Elevate;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
-internal class WorkloadElevateCommand : WorkloadCommandBase
+internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
 {
     private NetSdkMsiInstallerServer _server;
-
-    public WorkloadElevateCommand(ParseResult parseResult) : base(parseResult)
-    {
-    }
 
     public override int Execute()
     {

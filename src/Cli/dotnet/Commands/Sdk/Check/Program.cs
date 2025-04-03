@@ -3,12 +3,12 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.Check.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 public class SdkCheckCommand : CommandBase
 {
@@ -65,10 +65,10 @@ public class SdkCheckCommand : CommandBase
                 switch (hostfxrResolutionException)
                 {
                     case HostFxrRuntimePropertyNotSetException:
-                        throw new GracefulException(new[] { LocalizableStrings.RuntimePropertyNotFound }, new string[] { }, isUserError: false);
+                        throw new GracefulException([LocalizableStrings.RuntimePropertyNotFound], [], isUserError: false);
 
                     case HostFxrNotFoundException hostFxrNotFoundException:
-                        throw new GracefulException(new[] { LocalizableStrings.HostFxrCouldNotBeLoaded }, new string[] { hostFxrNotFoundException.Message }, isUserError: false);
+                        throw new GracefulException([LocalizableStrings.HostFxrCouldNotBeLoaded], [hostFxrNotFoundException.Message], isUserError: false);
                 }
             }
         }

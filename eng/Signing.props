@@ -83,7 +83,7 @@
   </ItemGroup>
 
   <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
-  <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(Architecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+  <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
     <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" />
   </ItemGroup>

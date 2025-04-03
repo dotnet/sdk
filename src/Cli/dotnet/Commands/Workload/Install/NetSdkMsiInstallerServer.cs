@@ -7,10 +7,12 @@ using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Installer.Windows;
-using Microsoft.DotNet.Installer.Windows;
+using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
+using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 [SupportedOSPlatform("windows")]
 internal class NetSdkMsiInstallerServer : MsiInstallerBase
@@ -167,7 +169,7 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
         }
 
         // Best effort to verify that the server was not started indirectly or being spoofed.
-        if ((ParentProcess == null) || (ParentProcess.StartTime > CurrentProcess.StartTime) ||
+        if (ParentProcess == null || ParentProcess.StartTime > CurrentProcess.StartTime ||
             !string.Equals(ParentProcess.MainModule.FileName, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
         {
             throw new SecurityException(string.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
@@ -191,7 +193,6 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
         string pipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id);
         NamedPipeServerStream serverPipe = NamedPipeServerStreamAcl.Create(pipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Message,
             PipeOptions.None, 65535, 65535, pipeSecurity);
-        InstallMessageDispatcher dispatcher = new(serverPipe);
 
         // The client process will generate the actual log file. The server will log messages through a separate pipe.
         string logPipeName = WindowsUtils.CreatePipeName(CurrentProcess.Id, "log");

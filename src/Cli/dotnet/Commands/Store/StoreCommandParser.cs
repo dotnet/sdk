@@ -3,10 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Store;
 using LocalizableStrings = Microsoft.DotNet.Tools.Store.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Store;
 
 internal static class StoreCommandParser
 {
@@ -29,18 +28,11 @@ internal static class StoreCommandParser
 
         if (o.Count() == 1)
         {
-            return new[]
-            {
-                materializedString
-            };
+            return [materializedString];
         }
         else
         {
-            return new[]
-            {
-                materializedString,
-                $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"
-            };
+            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
         }
     }).AllowSingleArgPerToken();
 

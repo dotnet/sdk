@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Restore;
 using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 internal static class RestoreCommandParser
 {
@@ -89,7 +89,7 @@ internal static class RestoreCommandParser
     private static string GetArchFromRid(string rid) => rid.Substring(rid.LastIndexOf("-", StringComparison.InvariantCulture) + 1, rid.Length - rid.LastIndexOf("-", StringComparison.InvariantCulture) - 1);
     public static string RestoreRuntimeArgFunc(IEnumerable<string> rids)
     {
-        List<string> convertedRids = new();
+        List<string> convertedRids = [];
         foreach (string rid in rids)
         {
             if (GetArchFromRid(rid.ToString()) == "amd64")
@@ -195,7 +195,7 @@ internal static class RestoreCommandParser
                 Hidden = !showHelp,
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
              .AllowSingleArgPerToken()
-             .AddCompletions(Complete.RunTimesFromProjectFile);
+             .AddCompletions(Complete.Complete.RunTimesFromProjectFile);
 
             if (useShortOptions)
             {

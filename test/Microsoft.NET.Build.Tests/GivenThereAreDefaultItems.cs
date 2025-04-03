@@ -471,7 +471,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.5");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",

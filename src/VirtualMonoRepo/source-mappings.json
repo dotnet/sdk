@@ -14,6 +14,8 @@
 
     "sourceMappingsPath": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
 
+    "thirdPartyNoticesTemplatePath": "src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt",
+
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
     "additionalMappings": [

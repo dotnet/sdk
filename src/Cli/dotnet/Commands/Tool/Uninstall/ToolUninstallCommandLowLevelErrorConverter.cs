@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.Uninstall;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal static class ToolUninstallCommandLowLevelErrorConverter
 {
@@ -14,23 +14,11 @@ internal static class ToolUninstallCommandLowLevelErrorConverter
         string[] userFacingMessages = null;
         if (ex is ToolPackageException)
         {
-            userFacingMessages = new[]
-            {
-                string.Format(
-                    CommonLocalizableStrings.FailedToUninstallToolPackage,
-                    packageId,
-                    ex.Message),
-            };
+            userFacingMessages = [string.Format(CommonLocalizableStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
         }
         else if (ex is ToolConfigurationException || ex is ShellShimException)
         {
-            userFacingMessages = new[]
-            {
-                string.Format(
-                    LocalizableStrings.FailedToUninstallTool,
-                    packageId,
-                    ex.Message)
-            };
+            userFacingMessages = [string.Format(LocalizableStrings.FailedToUninstallTool, packageId, ex.Message)];
         }
 
         return userFacingMessages;

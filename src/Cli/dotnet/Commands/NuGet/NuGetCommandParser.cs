@@ -3,9 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.NuGet;
+using NuGetWhyCommand = NuGet.CommandLine.XPlat.Commands.Why.WhyCommand;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
 // This parser is used for completion and telemetry.
 // See https://github.com/NuGet/NuGet.Client for the actual implementation.
@@ -40,7 +40,7 @@ internal static class NuGetCommandParser
         command.Subcommands.Add(GetVerifyCommand());
         command.Subcommands.Add(GetTrustCommand());
         command.Subcommands.Add(GetSignCommand());
-        NuGet.CommandLine.XPlat.Commands.Why.WhyCommand.GetWhyCommand(command);
+        NuGetWhyCommand.GetWhyCommand(command);
 
         command.SetAction(NuGetCommand.Run);
 
@@ -77,7 +77,7 @@ internal static class NuGetCommandParser
         CliCommand localsCommand = new("locals");
 
         CliArgument<string> foldersArgument = new("folders");
-        foldersArgument.AcceptOnlyFromAmong(new string[] { "all", "http-cache", "global-packages", "plugins-cache", "temp" });
+        foldersArgument.AcceptOnlyFromAmong(["all", "http-cache", "global-packages", "plugins-cache", "temp"]);
 
         localsCommand.Arguments.Add(foldersArgument);
 

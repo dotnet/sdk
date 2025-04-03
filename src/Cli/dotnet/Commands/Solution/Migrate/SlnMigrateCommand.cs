@@ -7,20 +7,14 @@ using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
-internal class SlnMigrateCommand : CommandBase
+internal class SlnMigrateCommand(
+    ParseResult parseResult,
+    IReporter reporter = null) : CommandBase(parseResult)
 {
-    private readonly string _slnFileOrDirectory;
-    private readonly IReporter _reporter;
-    public SlnMigrateCommand(
-        ParseResult parseResult,
-        IReporter reporter = null)
-        : base(parseResult)
-    {
-        _slnFileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-        _reporter = reporter ?? Reporter.Output;
-    }
+    private readonly string _slnFileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
 
     public override int Execute()
     {

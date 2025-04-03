@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Package.List;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
 internal static class PackageListCommandParser
 {
@@ -63,7 +62,7 @@ internal static class PackageListCommandParser
     {
         Description = LocalizableStrings.CmdConfigDescription,
         HelpName = LocalizableStrings.CmdConfig
-    }.ForwardAsMany(o => new[] { "--config", o });
+    }.ForwardAsMany(o => ["--config", o]);
 
     public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {

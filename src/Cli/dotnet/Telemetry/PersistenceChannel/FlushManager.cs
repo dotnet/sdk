@@ -42,7 +42,7 @@ internal class FlushManager
     {
         if (telemetryItem != null)
         {
-            byte[] data = JsonSerializer.Serialize(new[] { telemetryItem });
+            byte[] data = JsonSerializer.Serialize([telemetryItem]);
             Transmission transmission = new(
                 EndpointAddress,
                 data,

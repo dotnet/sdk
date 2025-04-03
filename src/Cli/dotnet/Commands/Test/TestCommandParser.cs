@@ -3,11 +3,10 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 using Microsoft.Extensions.Configuration;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestCommandParser
 {
@@ -104,8 +103,8 @@ internal static class TestCommandParser
             Description = LocalizableStrings.CmdBlameCrashDumpTypeDescription,
             HelpName = LocalizableStrings.CrashDumpTypeArgumentName,
         }
-        .ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}" });
-        result.AcceptOnlyFromAmong(new string[] { "full", "mini" });
+        .ForwardAsMany(o => ["-property:VSTestBlameCrash=true", $"-property:VSTestBlameCrashDumpType={o}"]);
+        result.AcceptOnlyFromAmong(["full", "mini"]);
         return result;
     }
 
@@ -113,7 +112,7 @@ internal static class TestCommandParser
     {
         Description = LocalizableStrings.CmdBlameCrashCollectAlwaysDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAsMany(o => new[] { "-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true" });
+    }.ForwardAsMany(o => ["-property:VSTestBlameCrash=true", "-property:VSTestBlameCrashCollectAlways=true"]);
 
     public static readonly CliOption<bool> BlameHangOption = new ForwardedOption<bool>("--blame-hang")
     {
@@ -130,8 +129,8 @@ internal static class TestCommandParser
             Description = LocalizableStrings.CmdBlameHangDumpTypeDescription,
             HelpName = LocalizableStrings.HangDumpTypeArgumentName
         }
-        .ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}" });
-        result.AcceptOnlyFromAmong(new string[] { "full", "mini", "none" });
+        .ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangDumpType={o}"]);
+        result.AcceptOnlyFromAmong(["full", "mini", "none"]);
         return result;
     }
 
@@ -139,7 +138,7 @@ internal static class TestCommandParser
     {
         Description = LocalizableStrings.CmdBlameHangTimeoutDescription,
         HelpName = LocalizableStrings.HangTimeoutArgumentName
-    }.ForwardAsMany(o => new[] { "-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}" });
+    }.ForwardAsMany(o => ["-property:VSTestBlameHang=true", $"-property:VSTestBlameHangTimeout={o}"]);
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
@@ -174,14 +173,14 @@ internal static class TestCommandParser
         builder.AddIniFile(dotnetConfigPath);
 
         IConfigurationRoot config = builder.Build();
-        var testSection = config.GetSection("dotnet.test");
+        var testSection = config.GetSection("dotnet.test.runner");
 
         if (!testSection.Exists())
         {
             return CliConstants.VSTest;
         }
 
-        string runnerNameSection = testSection["runner:name"];
+        string runnerNameSection = testSection["name"];
 
         if (string.IsNullOrEmpty(runnerNameSection))
         {

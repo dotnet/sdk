@@ -4,7 +4,7 @@
 using System.CommandLine;
 using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
 public static class SlnMigrateCommandParser
 {

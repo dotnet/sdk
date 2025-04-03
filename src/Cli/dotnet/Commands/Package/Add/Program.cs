@@ -2,38 +2,35 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.NuGet;
+using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
+using NuGet.Packaging.Core;
 
-namespace Microsoft.DotNet.Tools.Package.Add;
+namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
-internal class AddPackageReferenceCommand : CommandBase
+/// <param name="parseResult"></param>
+/// <param name="fileOrDirectory">
+/// Since this command is invoked via both 'package add' and 'add package', different symbols will control what the project path to search is. 
+/// It's cleaner for the separate callsites to know this instead of pushing that logic here.
+/// </param>
+internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOrDirectory) : CommandBase(parseResult)
 {
-    private readonly string _packageId;
-    private readonly string _fileOrDirectory;
-
-    public AddPackageReferenceCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?
-            parseResult.GetValue(PackageCommandParser.ProjectOption) :
-            parseResult.GetValue(AddCommandParser.ProjectArgument);
-        _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
-    }
+    private readonly PackageIdentity _packageId = parseResult.GetValue(PackageAddCommandParser.CmdPackageArgument);
 
     public override int Execute()
     {
-        var projectFilePath = string.Empty;
-
-        if (!File.Exists(_fileOrDirectory))
+        string projectFilePath;
+        if (!File.Exists(fileOrDirectory))
         {
-            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
+            projectFilePath = MsbuildProject.GetProjectFileFromDirectory(fileOrDirectory).FullName;
         }
         else
         {
-            projectFilePath = _fileOrDirectory;
+            projectFilePath = fileOrDirectory;
         }
 
         var tempDgFilePath = string.Empty;
@@ -65,27 +62,28 @@ internal class AddPackageReferenceCommand : CommandBase
         return result;
     }
 
-    private void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
+    private static void GetProjectDependencyGraph(string projectFilePath, string dgFilePath)
     {
-        var args = new List<string>();
+        List<string> args =
+        [
+            // Pass the project file path
+            projectFilePath,
 
-        // Pass the project file path
-        args.Add(projectFilePath);
+            // Pass the task as generate restore Dependency Graph file
+            "-target:GenerateRestoreGraphFile",
 
-        // Pass the task as generate restore Dependency Graph file
-        args.Add("-target:GenerateRestoreGraphFile");
+            // Pass Dependency Graph file output path
+            $"-property:RestoreGraphOutputPath=\"{dgFilePath}\"",
 
-        // Pass Dependency Graph file output path
-        args.Add($"-property:RestoreGraphOutputPath=\"{dgFilePath}\"");
+            // Turn off recursive restore
+            $"-property:RestoreRecursive=false",
 
-        // Turn off recursive restore
-        args.Add($"-property:RestoreRecursive=false");
+            // Turn off restore for Dotnet cli tool references so that we do not generate extra dg specs
+            $"-property:RestoreDotnetCliToolReferences=false",
 
-        // Turn off restore for Dotnet cli tool references so that we do not generate extra dg specs
-        args.Add($"-property:RestoreDotnetCliToolReferences=false");
-
-        // Output should not include MSBuild version header
-        args.Add("-nologo");
+            // Output should not include MSBuild version header
+            "-nologo"
+        ];
 
         var result = new MSBuildForwardingApp(args).Execute();
 
@@ -95,7 +93,7 @@ internal class AddPackageReferenceCommand : CommandBase
         }
     }
 
-    private void DisposeTemporaryFile(string filePath)
+    private static void DisposeTemporaryFile(string filePath)
     {
         if (File.Exists(filePath))
         {
@@ -103,17 +101,22 @@ internal class AddPackageReferenceCommand : CommandBase
         }
     }
 
-    private string[] TransformArgs(string packageId, string tempDgFilePath, string projectFilePath)
+    private string[] TransformArgs(PackageIdentity packageId, string tempDgFilePath, string projectFilePath)
     {
-        var args = new List<string>
-        {
+        List<string> args = [
             "package",
             "add",
             "--package",
-            packageId,
+            packageId.Id,
             "--project",
             projectFilePath
-        };
+        ];
+        
+        if (packageId.HasVersion)
+        {
+            args.Add("--version");
+            args.Add(packageId.Version.ToString());
+        }
 
         args.AddRange(_parseResult
             .OptionValuesToBeForwarded(PackageAddCommandParser.GetCommand())
@@ -129,6 +132,6 @@ internal class AddPackageReferenceCommand : CommandBase
             args.Add(tempDgFilePath);
         }
 
-        return args.ToArray();
+        return [.. args];
     }
 }

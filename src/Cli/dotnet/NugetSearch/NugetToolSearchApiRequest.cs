@@ -53,7 +53,7 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         query["packageType"] = "dotnettool";
 
         // This is a field for internal nuget back
-        // compactabiliy should be "2.0.0" for all new API usage
+        // compatibility should be "2.0.0" for all new API usage
         query["semVerLevel"] = "2.0.0";
 
         if (skip.HasValue)

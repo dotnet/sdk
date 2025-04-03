@@ -1,10 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Utils;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sln;
+namespace Microsoft.DotNet.Cli.Commands.Solution;
 
 internal static class SlnArgumentValidator
 {
@@ -48,12 +49,12 @@ internal static class SlnArgumentValidator
 
             var projectArgs = string.Join(" ", _arguments.Where(path => !path.HasExtension(".sln") && !path.HasExtension(".slnx")));
             string command = commandType == CommandType.Add ? "add" : "remove";
-            throw new GracefulException(new string[]
-            {
+            throw new GracefulException(
+            [
                 string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
                 CommonLocalizableStrings.DidYouMean,
                 $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
-            });
+            ]);
         }
     }
 }

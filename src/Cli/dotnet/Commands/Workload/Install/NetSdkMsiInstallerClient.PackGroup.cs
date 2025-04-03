@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
@@ -10,24 +11,24 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 
 internal partial class NetSdkMsiInstallerClient
 {
-    class WorkloadPackGroupJson
+    private class WorkloadPackGroupJson
     {
         public string GroupPackageId { get; set; }
         public string GroupPackageVersion { get; set; }
 
-        public List<WorkloadPackJson> Packs { get; set; } = new List<WorkloadPackJson>();
+        public List<WorkloadPackJson> Packs { get; set; } = [];
     }
 
-    class WorkloadPackJson
+    private class WorkloadPackJson
     {
         public string PackId { get; set; }
 
         public string PackVersion { get; set; }
     }
 
-    Dictionary<(string packId, string packVersion), List<WorkloadPackGroupJson>> GetWorkloadPackGroups()
+    private Dictionary<(string packId, string packVersion), List<WorkloadPackGroupJson>> GetWorkloadPackGroups()
     {
-        Dictionary<(string packId, string packVersion), List<WorkloadPackGroupJson>> ret = new();
+        Dictionary<(string packId, string packVersion), List<WorkloadPackGroupJson>> ret = [];
 
         if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_DISABLE_PACK_GROUPS)))
         {
@@ -49,7 +50,7 @@ internal partial class NetSdkMsiInstallerClient
                         var pack = (packId: packJson.PackId, packVersion: packJson.PackVersion);
                         if (!ret.TryGetValue(pack, out var groupsWithPack))
                         {
-                            groupsWithPack = new();
+                            groupsWithPack = [];
                             ret[pack] = groupsWithPack;
                         }
                         groupsWithPack.Add(packGroup);
@@ -60,7 +61,8 @@ internal partial class NetSdkMsiInstallerClient
 
         return ret;
     }
-    List<WorkloadDownload> GetMsisForWorkloads(IEnumerable<WorkloadId> workloads)
+
+    private List<WorkloadDownload> GetMsisForWorkloads(IEnumerable<WorkloadId> workloads)
     {
         var packs = workloads
             .SelectMany(workloadId => _workloadResolver.GetPacksInWorkload(workloadId))
@@ -71,11 +73,10 @@ internal partial class NetSdkMsiInstallerClient
         return GetMsisForPacks(packs);
     }
 
-
-    List<WorkloadDownload> GetMsisForPacks(IEnumerable<PackInfo> packInfos)
+    private List<WorkloadDownload> GetMsisForPacks(IEnumerable<PackInfo> packInfos)
     {
-        List<WorkloadDownload> msisToInstall = new();
-        HashSet<(string packId, string packVersion)> packsProcessed = new();
+        List<WorkloadDownload> msisToInstall = [];
+        HashSet<(string packId, string packVersion)> packsProcessed = [];
 
         var groupsForPacks = GetWorkloadPackGroups();
 
@@ -105,7 +106,7 @@ internal partial class NetSdkMsiInstallerClient
         return msisToInstall;
     }
 
-    WorkloadDownload GetWorkloadDownloadForPack(PackInfo packInfo)
+    private static WorkloadDownload GetWorkloadDownloadForPack(PackInfo packInfo)
     {
         return new WorkloadDownload(packInfo.ResolvedPackageId, GetMsiPackageId(packInfo), packInfo.Version);
     }

@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
+
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed record TestModule(RunProperties RunProperties, string? ProjectFullPath, string? TargetFramework, bool IsTestingPlatformApplication, bool IsTestProject);
 

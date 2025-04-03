@@ -5,25 +5,18 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
-internal class BundleOutputWriter
+internal class BundleOutputWriter(
+    ProductCollection productCollection,
+    IProductCollectionProvider productCollectionProvider,
+    IReporter reporter)
 {
-    protected ProductCollection _productCollection;
+    protected ProductCollection _productCollection = productCollection;
 
-    protected readonly IProductCollectionProvider _productCollectionProvider;
+    protected readonly IProductCollectionProvider _productCollectionProvider = productCollectionProvider;
 
-    protected readonly IReporter _reporter;
-
-    public BundleOutputWriter(
-        ProductCollection productCollection,
-        IProductCollectionProvider productCollectionProvider,
-        IReporter reporter)
-    {
-        _productCollection = productCollection;
-        _productCollectionProvider = productCollectionProvider;
-        _reporter = reporter;
-    }
+    protected readonly IReporter _reporter = reporter;
 
     protected bool? BundleIsMaintenance(INetBundleInfo bundle)
     {

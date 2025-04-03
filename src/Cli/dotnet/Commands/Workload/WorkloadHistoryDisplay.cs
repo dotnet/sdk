@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Workloads.Workload.History;
-
-namespace Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadHistoryDisplay
 {
@@ -20,7 +18,7 @@ internal static class WorkloadHistoryDisplay
 
     public static List<DisplayRecord> ProcessWorkloadHistoryRecords(IEnumerable<WorkloadHistoryRecord> historyRecords, out bool unknownRecordsPresent)
     {
-        List<DisplayRecord> displayRecords = new();
+        List<DisplayRecord> displayRecords = [];
         unknownRecordsPresent = false;
 
         int currentId = 2;

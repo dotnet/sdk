@@ -30,11 +30,11 @@
     <ExeExtension>.exe</ExeExtension>
     <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
 
-    <Rid>$(OSName)-$(Architecture)</Rid>
-    <ProductMonikerRid>$(Rid)</ProductMonikerRid>
+    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
+    <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
 
     <PortableOSName Condition="'$(PortableOSName)' == ''">$(OSName)</PortableOSName>
-    <PortableRid>$(PortableOSName)-$(Architecture)</PortableRid>
+    <PortableRid>$(PortableOSName)-$(TargetArchitecture)</PortableRid>
     <PortableProductMonikerRid>$(PortableRid)</PortableProductMonikerRid>
   </PropertyGroup>
 
@@ -43,9 +43,9 @@
     <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
     <SkipBuildingInstallers Condition="
       (
-       $(Rid.StartsWith('freebsd')) or
-       $(Rid.StartsWith('illumos')) or
-       $(Rid.StartsWith('linux-musl'))
+       $(TargetRid.StartsWith('freebsd')) or
+       $(TargetRid.StartsWith('illumos')) or
+       $(TargetRid.StartsWith('linux-musl'))
       )">true</SkipBuildingInstallers>
   </PropertyGroup>
 
@@ -55,18 +55,18 @@
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
 
     <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
-    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' and '$(IsLinux)' == 'true' and !$(Rid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
+    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' and '$(IsLinux)' == 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
     <HighEntropyVA>true</HighEntropyVA>
   </PropertyGroup>
 
   <PropertyGroup>
     <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
-    <NetRuntimeRid Condition="('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true'">$(OSName)-$(Architecture)</NetRuntimeRid>
+    <NetRuntimeRid Condition="('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true'">$(OSName)-$(TargetArchitecture)</NetRuntimeRid>
     <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
 
     <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
     <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
-    <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(Architecture)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(TargetArchitecture)</SharedFrameworkRid>
   </PropertyGroup>
 
   <PropertyGroup>

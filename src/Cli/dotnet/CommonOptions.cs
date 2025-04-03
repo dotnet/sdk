@@ -5,6 +5,7 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
+using Microsoft.DotNet.Cli.Commands.Complete;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -53,14 +54,14 @@ internal static class CommonOptions
             HelpName = CommonLocalizableStrings.ArtifactsPathArgumentName
         }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    private static string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
+    private static readonly string RuntimeArgName = CommonLocalizableStrings.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
     {
         if (GetArchFromRid(rid) == "amd64")
         {
             rid = GetOsFromRid(rid) + "-x64";
         }
-        return new string[] { $"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true" };
+        return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
     public static CliOption<string> RuntimeOption =
@@ -262,7 +263,7 @@ internal static class CommonOptions
         if (parseResult.BothArchAndOsOptionsSpecified())
         {
             // ResolveOsOptionToRuntimeIdentifier handles resolving the RID when both arch and os are specified
-            return Array.Empty<string>();
+            return [];
         }
 
         return ResolveRidShorthandOptions(null, arg);
@@ -280,7 +281,7 @@ internal static class CommonOptions
     }
 
     private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
-        new string[] { $"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}" };
+        [$"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
 
     internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
     {
@@ -303,9 +304,7 @@ internal static class CommonOptions
         string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?
             Path.Combine(Directory.GetDirectories(Path.Combine(dotnetRootPath, "sdk"))[0], ridFileName) :
             Path.Combine(dotnetRootPath, "sdk", Product.Version, ridFileName);
-        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
-            File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
-            new string[] { };
+        string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {
             throw new GracefulException(CommonLocalizableStrings.CannotResolveRuntimeIdentifier);
@@ -319,7 +318,7 @@ internal static class CommonOptions
 
     private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
     {
-        IEnumerable<string> selfContainedProperties = new string[] { $"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true" };
+        IEnumerable<string> selfContainedProperties = [$"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true"];
         return selfContainedProperties;
     }
 
@@ -362,12 +361,10 @@ public enum VerbosityOptions
     diag
 }
 
-public class DynamicOption<T> : CliOption<T>, IDynamicOption
+public class DynamicOption<T>(string name, params string[] aliases) : CliOption<T>(name, aliases), IDynamicOption
 {
-    public DynamicOption(string name, params string[] aliases) : base(name, aliases) { }
 }
 
-public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
+public class DynamicArgument<T>(string name) : CliArgument<T>(name), IDynamicArgument
 {
-    public DynamicArgument(string name) : base(name) { }
 }

@@ -1,35 +1,23 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using Microsoft.Testing.Platform.Helpers;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
-
-internal sealed class TestProgressState
+internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
 {
-    public TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
-    {
-        Id = id;
-        Assembly = assembly;
-        TargetFramework = targetFramework;
-        Architecture = architecture;
-        Stopwatch = stopwatch;
-        AssemblyName = Path.GetFileName(assembly)!;
-    }
+    public string Assembly { get; } = assembly;
 
-    public string Assembly { get; }
+    public string AssemblyName { get; } = Path.GetFileName(assembly)!;
 
-    public string AssemblyName { get; }
+    public string? TargetFramework { get; } = targetFramework;
 
-    public string? TargetFramework { get; }
+    public string? Architecture { get; } = architecture;
 
-    public string? Architecture { get; }
+    public IStopwatch Stopwatch { get; } = stopwatch;
 
-    public IStopwatch Stopwatch { get; }
+    public List<string> Attachments { get; } = [];
 
-    public List<string> Attachments { get; } = new();
-
-    public List<IProgressMessage> Messages { get; } = new();
+    public List<IProgressMessage> Messages { get; } = [];
 
     public int FailedTests { get; internal set; }
 
@@ -39,21 +27,31 @@ internal sealed class TestProgressState
 
     public int TotalTests { get; internal set; }
 
+    public int RetriedFailedTests { get; internal set; }
+
     public TestNodeResultsState? TestNodeResultsState { get; internal set; }
 
     public int SlotIndex { get; internal set; }
 
-    public long Id { get; internal set; }
+    public long Id { get; internal set; } = id;
 
     public long Version { get; internal set; }
 
-    public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = new();
+    public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = [];
     public int? ExitCode { get; internal set; }
     public bool Success { get; internal set; }
+
+    public List<string> Tries { get; } = [];
+    public HashSet<string> FlakyTests { get; } = [];
 
     internal void AddError(string text)
         => Messages.Add(new ErrorMessage(text));
 
     internal void AddWarning(string text)
         => Messages.Add(new WarningMessage(text));
+
+    internal void ClearAllMessages()
+    {
+        Messages.Clear();
+    }
 }

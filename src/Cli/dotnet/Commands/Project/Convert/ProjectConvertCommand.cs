@@ -4,22 +4,18 @@
 #nullable enable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
+using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Project.Convert;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand : CommandBase
+internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _file;
-    private readonly string? _outputDirectory;
-
-    public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
-        _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-    }
+    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
+    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
 
     public override int Execute()
     {
@@ -35,13 +31,29 @@ internal sealed class ProjectConvertCommand : CommandBase
             throw new GracefulException(LocalizableStrings.DirectoryAlreadyExists, targetDirectory);
         }
 
+        // Find directives (this can fail, so do this before creating the target directory).
+        var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile);
+
         Directory.CreateDirectory(targetDirectory);
 
-        string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
-        string projectFileText = VirtualProjectBuildingCommand.GetNonVirtualProjectFileText();
-        File.WriteAllText(path: projectFile, contents: projectFileText);
+        var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
-        File.Move(file, Path.Join(targetDirectory, Path.GetFileName(file)));
+        // If there were any directives, remove them from the file.
+        if (directives.Length != 0)
+        {
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
+            File.Delete(file);
+        }
+        else
+        {
+            File.Move(file, targetFile);
+        }
+
+        string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
+        using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
+        using var writer = new StreamWriter(stream, Encoding.UTF8);
+        VirtualProjectBuildingCommand.WriteProjectFile(writer, directives);
 
         return 0;
     }

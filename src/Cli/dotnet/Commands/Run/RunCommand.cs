@@ -11,10 +11,12 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Run.LaunchSettings;
 
 namespace Microsoft.DotNet.Tools.Run;
 
@@ -110,7 +112,7 @@ public partial class RunCommand
             projectFactory = new VirtualProjectBuildingCommand
             {
                 EntryPointFileFullPath = EntryPointFileFullPath,
-            }.CreateProjectInstance;
+            }.PrepareProjectInstance().CreateProjectInstance;
         }
 
         try
@@ -276,10 +278,7 @@ public partial class RunCommand
 
     private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
     {
-        List<string> args = new()
-        {
-            "-nologo"
-        };
+        List<string> args = ["-nologo"];
 
         if (Verbosity is null)
         {
@@ -288,7 +287,7 @@ public partial class RunCommand
 
         args.AddRange(cliRestoreArgs);
 
-        return args.ToArray();
+        return [.. args];
     }
 
     private VerbosityOptions GetDefaultVerbosity()
@@ -375,7 +374,7 @@ public partial class RunCommand
                 loggersForBuild.Add(binaryLogger);
             }
 
-            if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out var _targetOutputs))
+            if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out _))
             {
                 throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
@@ -392,7 +391,7 @@ public partial class RunCommand
         return thing!;
     }
 
-    static string ComputeRunArgumentsTarget = "ComputeRunArguments";
+    static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
 
     private static LoggerVerbosity ToLoggerVerbosity(VerbosityOptions? verbosity)
     {

@@ -11,7 +11,7 @@ internal sealed class HandshakeMessageSerializer : BaseSerializer, INamedPipeSer
 
     public object Deserialize(Stream stream)
     {
-        Dictionary<byte, string> properties = new();
+        Dictionary<byte, string> properties = [];
 
         ushort fieldCount = ReadShort(stream);
 

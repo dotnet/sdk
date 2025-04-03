@@ -1,20 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Tools.New;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
-internal class WorkloadsInfoProvider : IWorkloadsInfoProvider
+internal class WorkloadsInfoProvider(Lazy<IWorkloadsRepositoryEnumerator> workloadsRepositoryEnumerator) : IWorkloadsInfoProvider
 {
-    private readonly Lazy<IWorkloadsRepositoryEnumerator> _workloadsRepositoryEnumerator;
+    private readonly Lazy<IWorkloadsRepositoryEnumerator> _workloadsRepositoryEnumerator = workloadsRepositoryEnumerator;
     public Guid Id { get; } = Guid.Parse("{F8BA5B13-7BD6-47C8-838C-66626526817B}");
-
-    public WorkloadsInfoProvider(Lazy<IWorkloadsRepositoryEnumerator> workloadsRepositoryEnumerator)
-    {
-        _workloadsRepositoryEnumerator = workloadsRepositoryEnumerator;
-    }
 
     public Task<IEnumerable<WorkloadInfo>> GetInstalledWorkloadsAsync(CancellationToken cancellationToken)
     {

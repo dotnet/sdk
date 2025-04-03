@@ -32,9 +32,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
     public IReadOnlyCollection<ToolManifestPackage> Find(FilePath? filePath = null)
     {
         IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests =
-            filePath != null
-                ? new[] { (filePath.Value, filePath.Value.GetDirectoryPath()) }
-                : EnumerateDefaultAllPossibleManifests();
+            filePath != null ? [(filePath.Value, filePath.Value.GetDirectoryPath())] : EnumerateDefaultAllPossibleManifests();
 
         var findAnyManifest =
             TryFindToolManifestPackages(allPossibleManifests, out var toolManifestPackageAndSource);
@@ -47,25 +45,21 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
                     string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
         }
 
-        return toolManifestPackageAndSource.Select(t => t.toolManifestPackage).ToArray();
+        return [.. toolManifestPackageAndSource.Select(t => t.toolManifestPackage)];
     }
 
     public IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
         FilePath? filePath = null)
     {
         IEnumerable<(FilePath manifestfile, DirectoryPath _)> allPossibleManifests =
-            filePath != null
-                ? new[] { (filePath.Value, filePath.Value.GetDirectoryPath()) }
-                : EnumerateDefaultAllPossibleManifests();
-
+            filePath != null ? [(filePath.Value, filePath.Value.GetDirectoryPath())] : EnumerateDefaultAllPossibleManifests();
 
         if (!TryFindToolManifestPackages(allPossibleManifests, out var toolManifestPackageAndSource))
         {
-            toolManifestPackageAndSource =
-                new List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+            toolManifestPackageAndSource = [];
         }
 
-        return toolManifestPackageAndSource.ToArray();
+        return [.. toolManifestPackageAndSource];
     }
 
     private bool TryFindToolManifestPackages(
@@ -73,8 +67,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         out List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> toolManifestPackageAndSource)
     {
         bool findAnyManifest = false;
-        toolManifestPackageAndSource
-            = new List<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+        toolManifestPackageAndSource = [];
         foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in allPossibleManifests)
         {
             if (!_fileSystem.File.Exists(possibleManifest.Value))

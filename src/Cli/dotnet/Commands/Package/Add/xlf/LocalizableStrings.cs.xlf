@@ -12,6 +12,11 @@
         <target state="translated">Příkaz pro přidání odkazu na balíček</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidSemVerVersionString">
+        <source>Failed to parse "{0}" as a semantic version.</source>
+        <target state="new">Failed to parse "{0}" as a semantic version.</target>
+        <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
+      </trans-unit>
       <trans-unit id="SpecifyExactlyOnePackageReference">
         <source>Specify one package reference to add.</source>
         <target state="translated">Zadejte jeden odkaz na balíček, který chcete přidat.</target>
@@ -68,8 +73,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDescription">
-        <source>The package reference to add.</source>
-        <target state="translated">Odkaz na balíček, který se má přidat</target>
+        <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
+        <target state="needs-review-translation">Odkaz na balíček, který se má přidat</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackage">
@@ -81,6 +86,11 @@
         <source>Unable to generate a temporary file for project '{0}'. Cannot add package reference. Clear the temp directory and try again.</source>
         <target state="translated">Nejde generovat dočasný soubor pro projekt {0}. Není možné přidat odkaz na balíček. Vyprázdněte dočasný adresář a zkuste to znovu.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ValidationFailedDuplicateVersion">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
     </body>
   </file>
