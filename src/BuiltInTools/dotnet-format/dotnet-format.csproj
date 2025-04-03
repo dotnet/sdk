@@ -23,7 +23,7 @@
       These identifiers are for generating the shim'd core executables for signing. Not all options
       from $(RoslynPortableRuntimeIdentifiers) work or make sense in this context.
     -->
-    <PackAsToolShimRuntimeIdentifiers>win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
+    <PackAsToolShimRuntimeIdentifiers Condition="'$(DotNetBuild)' != 'true' OR '$(TargetOsName)' == 'win'">win-x64;win-x86;osx-x64</PackAsToolShimRuntimeIdentifiers>
 
     <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
     <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
