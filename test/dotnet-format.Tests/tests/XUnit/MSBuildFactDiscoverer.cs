@@ -2,8 +2,6 @@
 
 using Xunit.Sdk;
 
-#nullable enable
-
 namespace Microsoft.CodeAnalysis.Tools.Tests.XUnit
 {
 

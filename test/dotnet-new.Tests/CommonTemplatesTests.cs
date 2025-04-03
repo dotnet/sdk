@@ -3,8 +3,8 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
                 DoNotPrependTemplateNameToScenarioName = true,
                 UniqueFor = expectedTemplateName.Equals("NuGet Config") ? UniqueForOption.OsPlatform : null,
             }
@@ -166,6 +166,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             // template framework needs to be hardcoded here during the major version transition.
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
+            // string currentDefaultFramework = "net10.0";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{language}");
             string outputDir = "MyProject";
@@ -204,7 +205,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 DoNotAppendTemplateArgsToScenarioName = true,
                 ScenarioName = language.Replace('#', 's').ToLower(),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(
@@ -334,8 +335,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             bool supportsImplicitUsings,
             bool supportsFileScopedNs)
         {
-            // Templates have not been updated to net9.0 yet "net8.0";
-            // string currentDefaultFramework = "net8.0";
+            // string currentDefaultFramework = "net10.0";
             string currentDefaultFramework = $"net{Environment.Version.Major}.{Environment.Version.Minor}";
 
             string workingDir = CreateTemporaryFolder(folderName: $"{name}-{langVersion ?? "null"}-{framework ?? "null"}");
@@ -403,7 +403,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                     + '#' + (language == null ? "cs" : language.Replace('#', 's').ToLower())
                     + (langVersion == null ? "#NoLangVer" : (langVersionUnsupported ? "#UnsuportedLangVer" : null)),
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
-                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest.DotNetHostPath,
+                DotnetExecutablePath = TestContext.Current.ToolsetUnderTest?.DotNetHostPath,
             }
             .WithCustomEnvironment(environmentUnderTest)
             .WithCustomScrubbers(

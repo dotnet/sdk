@@ -1,0 +1,690 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="Aborted">
+        <source>Aborted</source>
+        <target state="new">Aborted</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ActiveTestsRunning_FullTestsCount">
+        <source>{0} tests running</source>
+        <target state="new">{0} tests running</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ActiveTestsRunning_MoreTestsCount">
+        <source>and {0} more</source>
+        <target state="new">and {0} more</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Actual">
+        <source>Actual</source>
+        <target state="new">Actual</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppFullName">
+        <source>.NET Test Driver</source>
+        <target state="translated">Драйвер тестов .NET</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppDescription">
+        <source>Test Driver for the .NET Platform</source>
+        <target state="translated">Драйвер тестов для платформы .NET</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancelledLowercase">
+        <source>canceled</source>
+        <target state="new">canceled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CancellingTestSession">
+        <source>Canceling the test session...</source>
+        <target state="new">Canceling the test session...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="translated">Дополнительные передаваемые параметры msbuild.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdArchitectureDescription">
+        <source>The target architecture '{0}' on which tests will run.</source>
+        <target state="new">The target architecture '{0}' on which tests will run.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
+        <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
+        <target state="translated">Включает сбор аварийного дампа при ожидаемом и неожиданном завершении работы узла тестирования.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDescription">
+        <source>Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+  
+For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+
+Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+
+The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+  
+To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+
+Implies --blame.</source>
+        <target state="translated">Запускает тесты в режиме обвинения и собирает аварийный дамп при неожиданном завершении работы узла тестирования. Этот параметр зависит от используемой версии .NET, от типа ошибки и от операционной системы.
+  
+Для исключений в управляемом коде сбор дампа автоматически производится в .NET 5.0 и более поздних версиях. Создается дамп для узла тестирования и всех дочерних процессов, также работавших под управлением .NET 5.0, где произошел сбой. При возникновении сбоев в собственном коде дамп не создается. Этот параметр действует в Windows, macOS и Linux.
+
+Собирать аварийные дампы в собственном коде, а также при работе с .NET Framework или .NET Core 3.1 и более ранних версий можно только в Windows с помощью Procdump. Папка, в которой находятся файлы procdump.exe и procdump64.exe, должна быть указана в переменной среды PATH или PROCDUMP_PATH.
+
+Эти инструменты можно скачать здесь: https://docs.microsoft.com/sysinternals/downloads/procdump
+  
+Чтобы собрать аварийный дамп для собственного приложения, работающего с .NET 5.0 или более поздней версии, можно принудительно включить использование Procdump. Для этого необходимо установить для переменной среды VSTEST_DUMP_FORCEPROCDUMP значение 1.
+
+Подразумевается использование параметра --blame.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameCrashDumpTypeDescription">
+        <source>The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.</source>
+        <target state="translated">Тип собираемого аварийного дампа. Поддерживаемые значения: "full" (по умолчанию) и "mini". Подразумевается использование параметра --blame-crash.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDescription">
+        <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
+        <target state="translated">Выполнение тестов в режиме обвинения и включение сбора дампа зависания при превышении заданного времени ожидания для теста.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangDumpTypeDescription">
+        <source>The type of crash dump to be collected. The supported values are full (default), mini, and none. When 'none' is used then test host is terminated on timeout, but no dump is collected. Implies --blame-hang.</source>
+        <target state="translated">Тип собираемого аварийного дампа. Поддерживаемые значения: "full" (по умолчанию), "mini" и "none". Если задано значение "none", то узел тестирования завершает работу после истечения времени ожидания, но сбор дампа не выполняется. Подразумевается использование параметра --blame-hang.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameHangTimeoutDescription">
+        <source>Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
+The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
+When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
+For MSTest before 2.2.4, the timeout is used for all testcases.</source>
+        <target state="translated">Время ожидания каждого теста, по истечении которого выполняется сбор дампа зависания и процесс узла тестирования завершается. Значение по умолчанию: 1 час. 
+Значение времени ожидания указывается в следующем формате: 1.5h / 90m / 5400s / 5400000ms. Если единица измерения не указана (например, 5400000), предполагается, что время задано в миллисекундах.
+При использовании вместе с тестами под управлением данных время ожидания зависит от используемого адаптера теста. Для xUnit, NUnit и MSTest версии 2.2.4 и более поздних версий отсчет времени ожидания начинается заново для каждого тестового случая.
+Для MSTest версии ниже 2.2.4 время ожидания подсчитывается суммарно для всех тестовых случаев.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdConfigurationDescription">
+        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
+        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDirectoryDescription">
+        <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDirectoryPathName">
+        <source>DIRECTORY_PATH</source>
+        <target state="new">DIRECTORY_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdExpressionName">
+        <source>EXPRESSION</source>
+        <target state="new">EXPRESSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdHelpUsageTitle">
+        <source>Usage:</source>
+        <target state="new">Usage:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
+        <source>The provided project file has an invalid extension: {0}.</source>
+        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
+        <source>The provided solution file has an invalid extension: {0}.</source>
+        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdInvalidTestMessageStateException">
+        <source>Invalid test message state '{0}'</source>
+        <target state="new">Invalid test message state '{0}'</target>
+        <note>{0} - test message state</note>
+      </trans-unit>
+      <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
+        <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
+        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="translated">Максимальное число тестовых модулей, которые могут выполняться параллельно.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
+        <source>Specify either the project, solution, directory, or test modules option.</source>
+        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
+        <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
+        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoAnsiDescription">
+        <source>Disable ANSI output.</source>
+        <target state="new">Disable ANSI output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoLogo">
+        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
+        <target state="translated">Запуск тестов без отображения баннера Testplatform Майкрософт</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProgressDescription">
+        <source>Disable progress reporting.</source>
+        <target state="new">Disable progress reporting.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
+        <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
+        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoTestModulesErrorDescription">
+        <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
+        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentDirectoryErrorDescription">
+        <source>The provided directory path does not exist: {0}.</source>
+        <target state="new">The provided directory path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentFileErrorDescription">
+        <source>The provided file path does not exist: {0}.</source>
+        <target state="new">The provided file path does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
+        <source>The provided root directory does not exist: {0}.</source>
+        <target state="new">The provided root directory does not exist: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNumberName">
+        <source>NUMBER</source>
+        <target state="new">NUMBER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
+        <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
+        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectDescription">
+        <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdProjectPathName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdRootPathName">
+        <source>ROOT_PATH</source>
+        <target state="new">ROOT_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSettingsFile">
+        <source>SETTINGS_FILE</source>
+        <target state="translated">SETTINGS_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSettingsDescription">
+        <source>The settings file to use when running tests.</source>
+        <target state="translated">Файл параметров, используемый при выполнении тестов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdListTestsDescription">
+        <source>List the discovered tests instead of running the tests.</source>
+        <target state="translated">Вывод списка обнаруженных тестов вместо выполнения тестов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionDescription">
+        <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
+        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdSolutionPathName">
+        <source>SOLUTION_PATH</source>
+        <target state="new">SOLUTION_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestCaseFilterExpression">
+        <source>EXPRESSION</source>
+        <target state="translated">EXPRESSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestCaseFilterDescription">
+        <source>Run tests that match the given expression.
+                                        Examples:
+                                        Run tests with priority set to 1: --filter "Priority = 1"
+                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
+                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+                                        </source>
+        <target state="translated">Выполнение тестов, соответствующих данному выражению.
+                                        Примеры
+                                        Запуск тестов с приоритетом 1: --filter "Priority = 1"
+                                        Запуск теста с указанным полным именем: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Запуск тестов, содержащих указанное имя: --filter "FullyQualifiedName~Namespace.Class"
+                                        Дополнительные сведения о поддержке фильтрации: https://aka.ms/vstest-filtering.
+                                        </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestAdapterPathDescription">
+        <source>The path to the custom adapters to use for the test run.</source>
+        <target state="translated">Путь к пользовательским адаптерам, используемым для выполнения тестов.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLoggerOption">
+        <source>LOGGER</source>
+        <target state="translated">LOGGER</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdLoggerDescription">
+        <source>The logger to use for test results.
+                                        Examples:
+                                        Log in trx format using a unique file name: --logger trx
+                                        Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
+                                        See https://aka.ms/vstest-report for more information on logger arguments.</source>
+        <target state="translated">Средство ведения журнала для результатов теста.
+                                        Примеры:
+                                        Журнал в формате TRX с использованием уникального имени файла: --logger trx
+                                        Журнал в формате TRX с использованием заданного имени файла: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
+                                        Дополнительные сведения об аргументах средства ведения журнала см. в https://aka.ms/vstest-report.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="translated">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOutputDescription">
+        <source>The output directory to place built artifacts in.</source>
+        <target state="translated">Выходной каталог для размещения артефактов сборки.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathToLogFile">
+        <source>LOG_FILE</source>
+        <target state="translated">LOG_FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathTologFileDescription">
+        <source>Enable verbose logging to the specified file.</source>
+        <target state="translated">Включить подробное ведение журнала в указанном файле.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoBuildDescription">
+        <source>Do not build the project before testing. Implies --no-restore.</source>
+        <target state="translated">Сборка проекта перед тестированием не выполняется. Подразумевает --no-restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestAdapterPath">
+        <source>ADAPTER_PATH</source>
+        <target state="translated">ADAPTER_PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryDescription">
+        <source>The directory where the test results will be placed.
+The specified directory will be created if it does not exist.</source>
+        <target state="translated">Каталог, в котором будут размещены результаты тестов.
+Если указанного каталога не существует, он будет создан.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdPathToResultsDirectory">
+        <source>RESULTS_DIR</source>
+        <target state="translated">RESULTS_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesDescription">
+        <source>Run tests for the specified test modules.</source>
+        <target state="new">Run tests for the specified test modules.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestModulesRootDirectoryDescription">
+        <source>The test modules have the specified root directory.</source>
+        <target state="new">The test modules have the specified root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestOutputDescription">
+        <source>Verbosity of test output.</source>
+        <target state="new">Verbosity of test output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedMessageRequestTypeException">
+        <source>Message Request type '{0}' is unsupported.</source>
+        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <note>{0} - message request type</note>
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedTestRunnerDescription">
+        <source>Test runner '{0}' is not supported.</source>
+        <target state="new">Test runner '{0}' is not supported.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
+        <source>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
+{0}
+
+See https://aka.ms/dotnet-test/mtp for more information.</source>
+        <target state="new">dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
+The following test projects are using VSTest test runner:
+{0}
+
+See https://aka.ms/dotnet-test/mtp for more information.</target>
+        <note>{0} is one or more project names. 
+Microsoft.Testing.Platform is a name, don't translate.
+dotnet.config is a name don't translate.</note>
+      </trans-unit>
+      <trans-unit id="ConsoleIsAlreadyInBatchingMode">
+        <source>Console is already in batching mode.</source>
+        <target state="new">Console is already in batching mode.</target>
+        <note>Exception that is thrown when console is already collecting input into a batch (into a string builder), and code asks to enable batching mode again.</note>
+      </trans-unit>
+      <trans-unit id="CrashDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="translated">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DiscoveredTestsInAssembly">
+        <source>Discovered {0} tests in assembly</source>
+        <target state="new">Discovered {0} tests in assembly</target>
+        <note>0 is count, the sentence is followed by the path of the assebly</note>
+      </trans-unit>
+      <trans-unit id="DiscoveringTestsFrom">
+        <source>Discovering tests from</source>
+        <target state="new">Discovering tests from</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DotnetTestCommand">
+        <source>.NET Test Command</source>
+        <target state="new">.NET Test Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ExitCode">
+        <source>Exit code</source>
+        <target state="new">Exit code</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Expected">
+        <source>Expected</source>
+        <target state="new">Expected</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Failed">
+        <source>Failed</source>
+        <target state="new">Failed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedLowercase">
+        <source>failed</source>
+        <target state="new">failed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedWithErrors">
+        <source>failed with {0} error(s)</source>
+        <target state="new">failed with {0} error(s)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedWithErrorsAndWarnings">
+        <source>failed with {0} error(s) and {1} warning(s)</source>
+        <target state="new">failed with {0} error(s) and {1} warning(s)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FailedWithWarnings">
+        <source>failed with {0} warning(s)</source>
+        <target state="new">failed with {0} warning(s)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ForTest">
+        <source>For test</source>
+        <target state="new">For test</target>
+        <note>is followed by test name</note>
+      </trans-unit>
+      <trans-unit id="FromFile">
+        <source>from</source>
+        <target state="new">from</target>
+        <note>from followed by a file name to point to the file from which test is originating</note>
+      </trans-unit>
+      <trans-unit id="HangDumpTypeArgumentName">
+        <source>DUMP_TYPE</source>
+        <target state="translated">DUMP_TYPE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HangTimeoutArgumentName">
+        <source>TIMESPAN</source>
+        <target state="translated">TIMESPAN</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpExtensionOptions">
+        <source>Extension Options:</source>
+        <target state="new">Extension Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionBelow">
+        <source>{0} is missing the option below</source>
+        <target state="new">{0} is missing the option below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
+        <source>{0} is missing the options below</source>
+        <target state="new">{0} is missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the options</note>
+      </trans-unit>
+      <trans-unit id="HelpModulesAreMissingTheOptionBelow">
+        <source>{0} are missing the option below</source>
+        <target state="new">{0} are missing the option below</target>
+        <note>0 is name of the module, this string is followed by lined that list the option</note>
+      </trans-unit>
+      <trans-unit id="HelpModulesAreMissingTheOptionsBelow">
+        <source>{0} are missing the options below</source>
+        <target state="new">{0} are missing the options below</target>
+        <note>0 is name of the module, this string is followed by lined that list the options</note>
+      </trans-unit>
+      <trans-unit id="HelpOptions">
+        <source>Options:</source>
+        <target state="new">Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpPlatformOptions">
+        <source>Platform Options:</source>
+        <target state="new">Platform Options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableExtensionOptions">
+        <source>Unavailable extension options:</source>
+        <target state="new">Unavailable extension options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpUnavailableOptions">
+        <source>Unavailable options:</source>
+        <target state="new">Unavailable options:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpWaitingForOptionsAndExtensions">
+        <source>Waiting for options and extensions...</source>
+        <target state="new">Waiting for options and extensions...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="IgnoredArgumentsMessage">
+        <source>The following arguments have been ignored : "{0}"</source>
+        <target state="translated">Следующие аргументы пропущены: "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InProcessArtifactsProduced">
+        <source>In process file artifacts produced:</source>
+        <target state="new">In process file artifacts produced:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MinimumExpectedTestsPolicyViolation">
+        <source>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</source>
+        <target state="new">Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</target>
+        <note>{0}, {1} number of tests</note>
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="translated">Не зарегистрирован сериализатор с ИД "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="translated">Не зарегистрирован сериализатор с типом "{0}"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="OutOfProcessArtifactsProduced">
+        <source>Out of process file artifacts produced:</source>
+        <target state="new">Out of process file artifacts produced:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Passed">
+        <source>Passed</source>
+        <target state="new">Passed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PassedLowercase">
+        <source>passed</source>
+        <target state="new">passed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunSettingsArgumentsDescription">
+        <source>
+
+RunSettings arguments:
+  Arguments to pass as RunSettings configurations. Arguments are specified as '[name]=[value]' pairs after "-- " (note the space after --). 
+  Use a space to separate multiple '[name]=[value]' pairs.
+  See https://aka.ms/vstest-runsettings-arguments for more information on RunSettings arguments.
+  Example: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</source>
+        <target state="translated">
+
+Аргументы RunSettings:
+  Аргументы для передачи конфигураций runsettings. Аргументы могут быть указаны как пары "[имя]=[значение]" после "-- " (обратите внимание на пробел после --). 
+  Используйте пробел для разделения нескольких пар "[имя]=[значение]".
+  Дополнительные сведения об аргументах RunSettings: https://aka.ms/vstest-runsettings-arguments.
+  Пример: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunningTestsFrom">
+        <source>Running tests from</source>
+        <target state="new">Running tests from</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SkippedLowercase">
+        <source>skipped</source>
+        <target state="new">skipped</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StackFrameAt">
+        <source>at</source>
+        <target state="new">at</target>
+        <note>at that is used for a stack frame location in a stack trace, is followed by a class and method name</note>
+      </trans-unit>
+      <trans-unit id="StackFrameIn">
+        <source>in</source>
+        <target state="new">in</target>
+        <note>in that is used in stack frame it is followed by file name</note>
+      </trans-unit>
+      <trans-unit id="StandardError">
+        <source>Error output</source>
+        <target state="new">Error output</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StandardOutput">
+        <source>Standard output</source>
+        <target state="new">Standard output</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestDiscoverySummary">
+        <source>Discovered {0} tests in {1} assemblies.</source>
+        <target state="new">Discovered {0} tests in {1} assemblies.</target>
+        <note>0 is number of tests, 1 is count of assemblies</note>
+      </trans-unit>
+      <trans-unit id="TestDiscoverySummarySingular">
+        <source>Discovered {0} tests.</source>
+        <target state="new">Discovered {0} tests.</target>
+        <note>0 is number of tests</note>
+      </trans-unit>
+      <trans-unit id="TestRunSummary">
+        <source>Test run summary:</source>
+        <target state="new">Test run summary:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ZeroTestsRan">
+        <source>Zero tests ran</source>
+        <target state="new">Zero tests ran</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdCollectFriendlyName">
+        <source>DATA_COLLECTOR_NAME</source>
+        <target state="translated">DATA_COLLECTOR_NAME</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="cmdCollectDescription">
+        <source>The friendly name of the data collector to use for the test run.
+                                        More info here: https://aka.ms/vstest-collect</source>
+        <target state="translated">Понятное имя сборщика данных для тестового запуска.
+                                        Дополнительные сведения: https://aka.ms/vstest-collect.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdBlameDescription">
+        <source>Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default. 
+
+When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+
+Based on the additional settings, hang dump or crash dump can also be collected.
+
+Example: 
+  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly. 
+  (Crash dumps require additional setup, see below.)
+  dotnet test --blame-hang --blame-crash
+Example: 
+  Timeout the test run when a test takes more than 20 minutes and collect hang dump. 
+  dotnet test --blame-hang-timeout 20min
+</source>
+        <target state="translated">Запускает тесты в режиме обвинения. Этот параметр удобно использовать для изоляции проблемных тестов, которые приводят к сбою или зависанию узла тестирования, но при этом по умолчанию не создается дамп памяти. 
+
+При обнаружении сбоя создается файл последовательности TestResults/guid/guid_Sequence.xml с указанием порядка тестов, которые были выполнены до возникновения сбоя.
+
+На основе дополнительных параметров также можно выполнить сбор дампа зависания или аварийного дампа.
+
+Пример. 
+Прервать выполнение теста из-за истечения времени ожидания, когда время выполнения теста превышает время ожидания по умолчанию, равное 1 часу, и собрать аварийный дамп при неожиданном завершении работы узла тестирования. 
+  (Для сбора аварийного дампа необходимо задать дополнительные параметры, см. ниже).
+  dotnet test --blame-hang --blame-crash
+Пример. 
+  Прервать выполнение теста из-за истечения времени ожидания, когда время выполнения теста превышает 20 минут, и собрать дамп зависания. 
+  dotnet test --blame-hang-timeout 20min
+</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkOptionDescription">
+        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
+        <target state="translated">Целевая платформа для выполнения тестов. Целевая платформа также должна быть указана в файле проекта.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationOptionDescription">
+        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
+        <target state="translated">Конфигурация для выполнения тестов. По умолчанию для большинства проектов используется "Debug".</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimeOptionDescription">
+        <source>The target runtime to test for.</source>
+        <target state="translated">Целевая среда выполнения для тестирования.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

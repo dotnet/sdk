@@ -61,7 +61,7 @@ namespace Microsoft.NET.TestFramework
 
                 foreach (var dependency in netStandardDependencies.Elements("dependency"))
                 {
-                    yield return Tuple.Create(dependency.Attribute("id").Value, dependency.Attribute("version").Value);
+                    yield return Tuple.Create(dependency.Attribute("id")?.Value ?? string.Empty, dependency.Attribute("version")?.Value ?? string.Empty);
                 }
 
                 yield return Tuple.Create("System.Diagnostics.TraceSource", "4.0.0");

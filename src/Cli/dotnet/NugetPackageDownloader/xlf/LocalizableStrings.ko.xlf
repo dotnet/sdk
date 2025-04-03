@@ -74,11 +74,6 @@
         <target state="translated">{0}보다 낮은 버전의 패키지 {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
-        <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
-        <target state="translated">NuGet 패키지 서명 유효성 검사를 건너뜁니다. NuGet 서명 유효성 검사는 Linux 또는 macOS https://aka.ms/workloadskippackagevalidation에서 사용할 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VerifyingNuGetPackageSignature">
         <source>Verified that the NuGet package "{0}" has a valid signature.</source>
         <target state="translated">NuGet 패키지 "{0}"에 유효한 서명이 있음을 확인했습니다.</target>

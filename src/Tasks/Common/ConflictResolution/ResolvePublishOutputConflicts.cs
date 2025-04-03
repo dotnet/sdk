@@ -8,20 +8,20 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     public class ResolveOverlappingItemGroupConflicts : TaskBase
     {
         [Required]
-        public ITaskItem[] ItemGroup1 { get; set; }
+        public ITaskItem[]? ItemGroup1 { get; set; }
 
         [Required]
-        public ITaskItem[] ItemGroup2 { get; set; }
+        public ITaskItem[]? ItemGroup2 { get; set; }
 
-        public string[] PreferredPackages { get; set; }
+        public string[]? PreferredPackages { get; set; }
 
-        public ITaskItem[] PackageOverrides { get; set; }
-
-        [Output]
-        public ITaskItem[] RemovedItemGroup1 { get; set; }
+        public ITaskItem[]? PackageOverrides { get; set; }
 
         [Output]
-        public ITaskItem[] RemovedItemGroup2 { get; set; }
+        public ITaskItem?[]? RemovedItemGroup1 { get; set; }
+
+        [Output]
+        public ITaskItem?[]? RemovedItemGroup2 { get; set; }
 
         protected override void ExecuteCore()
         {
@@ -40,12 +40,12 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
                     (ConflictItem winner, ConflictItem loser) => { conflicts.Add(loser); });
 
                 var conflictItems = conflicts.Select(i => i.OriginalItem);
-                RemovedItemGroup1 = ItemGroup1.Intersect(conflictItems).ToArray();
-                RemovedItemGroup2 = ItemGroup2.Intersect(conflictItems).ToArray();
+                RemovedItemGroup1 = ItemGroup1?.Intersect(conflictItems).ToArray();
+                RemovedItemGroup2 = ItemGroup2?.Intersect(conflictItems).ToArray();
             }
         }
 
-        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[] items, ConflictItemType itemType)
+        private IEnumerable<ConflictItem> GetConflictTaskItems(ITaskItem[]? items, ConflictItemType itemType)
         {
             return (items != null) ? items.Select(i => new ConflictItem(i, itemType)) : Enumerable.Empty<ConflictItem>();
         }
