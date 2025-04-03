@@ -622,6 +622,11 @@ RunSettings 引數:
         <target state="new">Test run summary:</target>
         <note />
       </trans-unit>
+      <trans-unit id="Try">
+        <source>try {0}</source>
+        <target state="new">try {0}</target>
+        <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
+      </trans-unit>
       <trans-unit id="ZeroTestsRan">
         <source>Zero tests ran</source>
         <target state="new">Zero tests ran</target>
