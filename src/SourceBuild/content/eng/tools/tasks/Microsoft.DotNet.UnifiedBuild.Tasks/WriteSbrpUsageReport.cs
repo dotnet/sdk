@@ -175,6 +175,30 @@ public class WriteSbrpUsageReport : Task
             {
                 TrackPackageReference(lockFile.Path, downloadDep.Name, downloadDep.VersionRange.MinVersion?.ToString(), Enumerable.Empty<string>());
             }
+
+            if (lockFile.PackageSpec.RestoreMetadata.ProjectPath.Contains(SbrpRepoName))
+            {
+                // For SBRP projects, we need to track the project references as well. While project references are included in the targets
+                // which were processed above, only the resolved version is included in the cases when the dependency graph contains multiple
+                // versions. All project references must be tracked as dependencies because they are required to build SBRP.
+                foreach (ProjectRestoreMetadataFrameworkInfo targetFx in lockFile.PackageSpec.RestoreMetadata.TargetFrameworks)
+                {
+                    foreach (ProjectRestoreReference projectRef in targetFx.ProjectReferences)
+                    {
+                        if (projectRef.ProjectPath.Contains(SbrpRepoName))
+                        {
+                            string[] pathSegments = projectRef.ProjectPath.Split('/');
+                            string projName = pathSegments[pathSegments.Length - 3];
+                            string projVersion = pathSegments[pathSegments.Length - 2];
+                            TrackPackageReference(lockFile.Path, projName, projVersion, new[] { targetFx.TargetAlias });
+                        }
+                        else
+                        {
+                            Log.LogMessage($"Unexpected non-SBRP project reference detected: {projectRef.ProjectPath}");
+                        }
+                    }
+                }
+            }
         }
     }
 
