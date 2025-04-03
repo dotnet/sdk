@@ -6,9 +6,9 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
-public static class ContainerBuilder
+internal static class ContainerBuilder
 {
-    public static async Task<int> ContainerizeAsync(
+    internal static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
         string baseRegistry,
@@ -31,6 +31,8 @@ public static class ContainerBuilder
         string localRegistry,
         string? containerUser,
         string? archiveOutputPath,
+        bool generateLabels,
+        bool generateDigestLabel,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -60,11 +62,12 @@ public static class ContainerBuilder
         {
             try
             {
+                var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
                     baseImageTag,
                     containerRuntimeIdentifier,
-                    ridGraphPath,
+                    ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)
@@ -124,11 +127,20 @@ public static class ContainerBuilder
         }
         imageBuilder.SetEntrypointAndCmd(imageEntrypoint, imageCmd);
 
-        foreach (KeyValuePair<string, string> label in labels)
+        if (generateLabels)
         {
-            // labels are validated by System.CommandLine API
-            imageBuilder.AddLabel(label.Key, label.Value);
+            foreach (KeyValuePair<string, string> label in labels)
+            {
+                // labels are validated by System.CommandLine API
+                imageBuilder.AddLabel(label.Key, label.Value);
+            }
+
+            if (generateDigestLabel)
+            {
+                imageBuilder.AddBaseImageDigestLabel();
+            }
         }
+
         foreach (KeyValuePair<string, string> envVar in envVars)
         {
             imageBuilder.AddEnvironmentVariable(envVar.Key, envVar.Value);

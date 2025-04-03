@@ -48,7 +48,7 @@ namespace ManifestReaderTests
                     {
                     ""ios"": ""11.0.2/8.0.100"",
                     ""android"": ""33.0.2-rc.1/8.0.200"",
-                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2"",
+                    ""maui"": ""15.0.1-rc.456/8.0.200-rc.2""
                     }
                 ");
             }
@@ -494,7 +494,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -536,7 +536,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
@@ -552,7 +552,8 @@ namespace ManifestReaderTests
 }
 """);
 
-            var ex = Assert.Throws<FileNotFoundException>(() => new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath));
+            var manifestProvider = new SdkDirectoryWorkloadManifestProvider(sdkRootPath: _fakeDotnetRootDirectory, sdkVersion: "8.0.200", userProfileDir: null, globalJsonPath: globalJsonPath);
+            var ex = Assert.Throws<FileNotFoundException>(() => manifestProvider.GetManifests());
             ex.Message.Should().Be(string.Format(Strings.WorkloadVersionFromGlobalJsonNotFound, "8.0.201", globalJsonPath));
         }
 
@@ -565,7 +566,7 @@ namespace ManifestReaderTests
             File.WriteAllText(globalJsonPath, """
             {
                 "sdk": {
-                    "workloadversion": [ "8.0.202" ]
+                    "workloadVersion": [ "8.0.202" ]
                 }
             }
             """);
@@ -862,7 +863,7 @@ namespace ManifestReaderTests
                 """
                 {
                     "manifests": {
-                        "ios": "12.0.1/8.0.200",
+                        "ios": "12.0.1/8.0.200"
                     }
                 }
                 """);
@@ -885,7 +886,7 @@ namespace ManifestReaderTests
             {
                 "sdk": {
                     "version": "8.0.200",
-                    "workloadversion": "8.0.201"
+                    "workloadVersion": "8.0.201"
                 },
                 "msbuild-sdks": {
                     "Microsoft.DotNet.Arcade.Sdk": "7.0.0-beta.23254.2",
