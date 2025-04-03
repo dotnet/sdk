@@ -1376,7 +1376,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         return metadataName switch
         {
-            nameof(Identity) => Identity ?? "",
+            "FullPath" => Identity ?? "",
             nameof(SourceId) => SourceId ?? "",
             nameof(SourceType) => SourceType ?? "",
             nameof(ContentRoot) => ContentRoot ?? "",
