@@ -1,13 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.BuildServer;
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.BuildServer;
+using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
-using CommandLocalizableStrings = Microsoft.DotNet.BuildServer.LocalizableStrings;
+using CommandLocalizableStrings = Microsoft.DotNet.Cli.BuildServer.LocalizableStrings;
 using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -191,14 +194,14 @@ namespace Microsoft.DotNet.Tests.Commands
                         pidFile.ProcessId));
         }
 
-        private Tools.BuildServer.Shutdown.BuildServerShutdownCommand CreateCommand(
+        private BuildServerShutdownCommand CreateCommand(
             string options = "",
             IBuildServerProvider serverProvider = null,
             IEnumerable<IBuildServer> buildServers = null,
             ServerEnumerationFlags expectedFlags = ServerEnumerationFlags.None)
         {
             ParseResult result = Parser.Instance.Parse($"dotnet build-server shutdown {options}".Trim());
-            return new Tools.BuildServer.Shutdown.BuildServerShutdownCommand(
+            return new BuildServerShutdownCommand(
                 result: result,
                 serverProvider: serverProvider,
                 useOrderedWait: true,

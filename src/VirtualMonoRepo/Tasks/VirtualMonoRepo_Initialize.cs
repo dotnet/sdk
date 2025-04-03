@@ -42,8 +42,6 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
 
     public string SdkPath { get; set; }
 
-    public string ComponentTemplatePath { get; set; }
-
     public string TpnTemplatePath { get; set; }
 
     public bool Recursive { get; set; }
@@ -72,7 +70,7 @@ public class VirtualMonoRepo_Initialize : Build.Utilities.Task, ICancelableTask
             Recursive,
             new NativePath(SourceMappingsPath),
             additionalRemotes,
-            ComponentTemplatePath,
+            null,
             TpnTemplatePath,
             generateCodeowners: false,
             discardPatches: true,

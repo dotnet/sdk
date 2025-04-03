@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
+#nullable disable
+
 using System.Composition;
 using System.Composition.Hosting.Core;
 using System.Reflection;

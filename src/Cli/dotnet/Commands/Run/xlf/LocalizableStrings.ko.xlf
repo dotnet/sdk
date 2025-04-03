@@ -1,0 +1,235 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="AppFullName">
+        <source>.NET Run Command</source>
+        <target state="translated">.NET 실행 명령</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AppDescription">
+        <source>Command used to run .NET apps</source>
+        <target state="translated">.NET 앱을 실행하는 데 사용하는 명령입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionFrameworkDescription">
+        <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
+        <target state="translated">지정된 프레임워크를 사용하여 앱을 빌드 및 실행합니다. 프로젝트 파일에서 프레임워크를 지정해야 합니다. </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">시작 프로필에 지정된 인수를 사용하여 애플리케이션을 실행하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionProjectDescription">
+        <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
+        <target state="translated">실행할 프로젝트 파일의 경로입니다(프로젝트가 하나만 있는 경우 현재 디렉터리로 기본 설정됨).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotConvertToBoolean">
+        <source>Could not convert the value of property '{0}' to a boolean.</source>
+        <target state="translated">'{0}' 속성 값을 부울로 변환할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CouldNotConvertToString">
+        <source>Could not convert the value of property '{0}' to a string.</source>
+        <target state="translated">'{0}' 속성 값을 문자열로 변환할 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DuplicateCaseInsensitiveLaunchProfileNames">
+        <source>There are several launch profiles with case-sensitive names, which isn't permitted:
+{0}
+Make the profile names distinct.</source>
+        <target state="translated">대/소문자를 구분하는 이름을 가진 여러 시작 프로필이 있으며 이는 허용되지 않습니다.
+{0}
+고유한 프로필 이름을 사용하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LaunchProfileDoesNotExist">
+        <source>A launch profile with the name '{0}' doesn't exist.</source>
+        <target state="translated">이름이 '{0}'인 시작 프로필이 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="MissingDirectiveName">
+        <source>Missing name of '{0}' at {1}.</source>
+        <target state="new">Missing name of '{0}' at {1}.</target>
+        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="OnlyOneProjectAllowed">
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="translated">-p 옵션을 사용하여 한 번에 하나의 프로젝트만 지정할 수 있습니다.</target>
+        <note>{Locked="-p"}</note>
+      </trans-unit>
+      <trans-unit id="PropertyDirectiveInvalidName">
+        <source>Invalid property name at {0}. {1}</source>
+        <target state="new">Invalid property name at {0}. {1}</target>
+        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+      </trans-unit>
+      <trans-unit id="PropertyDirectiveMissingParts">
+        <source>The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</source>
+        <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
+        <note>{0} is the file path and line number. {Locked="="}</note>
+      </trans-unit>
+      <trans-unit id="PropertyOptionDescription">
+        <source>Properties to be passed to MSBuild.</source>
+        <target state="translated">MSBuild에 전달할 속성입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandBuilding">
+        <source>Building...</source>
+        <target state="translated">빌드하는 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
+        <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
+        <target state="translated">이 프로젝트에 대해 실행 명령을 검색하기 위해 {0} 대상을 실행하지 못했습니다. 오류 및 경고를 수정하고 다시 실행합니다.</target>
+        <note>{0} is the name of an MSBuild target</note>
+      </trans-unit>
+      <trans-unit id="RunCommandException">
+        <source>The build failed. Fix the build errors and run again.</source>
+        <target state="translated">빌드하지 못했습니다. 빌드 오류를 수정하고 다시 실행하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandAdditionalArgsHelpText">
+        <source>Arguments passed to the application that is being run.</source>
+        <target state="translated">실행 중인 애플리케이션에 전달되는 인수입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoBuildDescription">
+        <source>Do not build the project before running. Implies --no-restore.</source>
+        <target state="translated">실행하기 전에 프로젝트를 빌드하지 않습니다. --no-restore 의미합니다.</target>
+        <note>{Locked="--no-restore"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRunSpecifyFramework">
+        <source>Unable to run your project
+Your project targets multiple frameworks. Specify which framework to run using '{0}'.</source>
+        <target state="translated">프로젝트를 실행할 수 없습니다.
+프로젝트에서 여러 프레임워크를 대상으로 합니다. '{0}'을(를) 사용하여 실행할 프레임워크를 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionUnableToRun">
+        <source>Unable to run your project.
+Ensure you have a runnable project type and ensure '{0}' supports this project.
+A runnable project should target a runnable TFM (for instance, net5.0) and have OutputType 'Exe'.
+The current {1} is '{2}'.</source>
+        <target state="translated">프로젝트를 실행할 수 없습니다.
+실행 가능한 프로젝트 형식이 있고 '{0}'에서 이 프로젝트를 지원하는지 확인하세요.
+실행 가능한 프로젝트는 실행 가능한 TFM(예: net5.0)을 대상으로 하고 OutputType 'Exe'가 있어야 합니다.
+현재 {1}은(는) '{2}'입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionNoProjects">
+        <source>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</source>
+        <target state="translated">실행할 프로젝트를 찾을 수 없습니다. 프로젝트가 {0}에 존재하는지 확인하거나 {1}을(를) 사용하여 프로젝트에 경로를 전달하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionMultipleProjects">
+        <source>Specify which project file to use because {0} contains more than one project file.</source>
+        <target state="translated">{0}에 둘 이상의 프로젝트 파일이 포함되어 있으므로 사용할 프로젝트 파일을 지정하세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionLaunchProfileDescription">
+        <source>The name of the launch profile (if any) to use when launching the application.</source>
+        <target state="translated">애플리케이션을 시작할 때 사용하는 시작 프로필(있는 경우)의 이름입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileDescription">
+        <source>Do not attempt to use launchSettings.json to configure the application.</source>
+        <target state="translated">launchSettings.json을 사용하여 애플리케이션을 구성하지 마세요.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionCouldNotLocateALaunchSettingsFile">
+        <source>The specified launch profile '{0}' could not be located.</source>
+        <target state="translated">지정한 '{0}' 시작 프로필을 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandExceptionCouldNotApplyLaunchSettings">
+        <source>The launch profile "{0}" could not be applied.
+{1}</source>
+        <target state="translated">시작 프로필 "{0}"을(를) 적용할 수 없습니다.
+{1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DefaultLaunchProfileDisplayName">
+        <source>(Default)</source>
+        <target state="translated">(기본값)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunCommandProjectAbbreviationDeprecated">
+        <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
+        <target state="translated">경고 NETSDK1174: --project에 대한 약어 -p는 더 이상 사용되지 않습니다. --project를 사용하세요.</target>
+        <note>{Locked="--project"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandSpecifiedFileIsNotAValidProject">
+        <source>'{0}' is not a valid project file.</source>
+        <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedDirective">
+        <source>Unrecognized directive '{0}' at {1}.</source>
+        <target state="new">Unrecognized directive '{0}' at {1}.</target>
+        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      </trans-unit>
+      <trans-unit id="UsingLaunchSettingsFromMessage">
+        <source>Using launch settings from {0}...</source>
+        <target state="translated">{0}의 시작 설정을 사용하는 중...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LaunchProfileIsNotAJsonObject">
+        <source>A profile with the specified name isn't a valid JSON object.</source>
+        <target state="translated">지정된 이름의 프로필은 유효한 JSON 개체가 아닙니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LaunchProfileHandlerCannotBeLocated">
+        <source>The launch profile type '{0}' is not supported.</source>
+        <target state="translated">시작 프로필 형식 '{0}'은(는) 지원되지 않습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UsableLaunchProfileCannotBeLocated">
+        <source>A usable launch profile could not be located.</source>
+        <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
+        <source>An unexpected exception occurred while processing launch settings:
+{0}</source>
+        <target state="translated">시작 설정을 처리하는 동안 예기치 않은 예외가 발생했습니다.
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">
+        <source>The 'profiles' property of the launch settings document is not a JSON object.</source>
+        <target state="translated">시작 설정 문서의 '프로필' 속성이 JSON 개체가 아닙니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DeserializationExceptionMessage">
+        <source>An error was encountered when reading launchSettings.json.
+{0}</source>
+        <target state="translated">launchSettings.json을 읽는 동안 오류가 발생했습니다.
+{0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfigurationOptionDescription">
+        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
+        <target state="translated">실행할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FrameworkOptionDescription">
+        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
+        <target state="translated">실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RuntimeOptionDescription">
+        <source>The target runtime to run for.</source>
+        <target state="translated">실행할 대상 런타임입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ValueMustBeAnObject">
+        <source>The property '{0}' must be an object if it is specified.</source>
+        <target state="translated">'{0}' 속성이 지정된 경우 개체여야 합니다.</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

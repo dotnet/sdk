@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
@@ -8,15 +10,15 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Workload.Search.Tests;
-using Microsoft.DotNet.Workloads.Workload.History;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -211,6 +213,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             var sdkFeatureVersion = "6.0.100";
             var installingWorkload = "simple-workload";
 
+            //  Mock up a 5.0.1xx SDK install so that the installation records for that feature band won't be deleted
+            string dotnetDllPath = Path.Combine(dotnetRoot, "sdk", "5.0.110", "dotnet.dll");
+            Directory.CreateDirectory(Path.GetDirectoryName(dotnetDllPath));
+            File.Create(dotnetDllPath).Close();
+
             string installRoot = userLocal ? userProfileDir : dotnetRoot;
             if (userLocal)
             {
@@ -230,14 +237,15 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             foreach (var pack in workloadPacks)
             {
                 Directory.CreateDirectory(Path.Combine(packRecordDir, pack.Id, pack.Version));
-                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand));
+                File.Create(Path.Combine(packRecordDir, pack.Id, pack.Version, oldFeatureBand)).Close();
             }
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads"));
             Directory.CreateDirectory(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads"));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload));
-            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload));
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", oldFeatureBand, "InstalledWorkloads", installingWorkload)).Close();
+            File.Create(Path.Combine(installRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads", installingWorkload)).Close();
 
             // Update workload (without installing any workloads to this feature band)
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]), workloadResolverFactory: workloadResolverFactory).Execute().Should().Be(0);
             var updateParseResult = Parser.Instance.Parse(new string[] { "dotnet", "workload", "update", "--from-previous-sdk" });
             var updateCommand = new WorkloadUpdateCommand(updateParseResult, reporter: _reporter, workloadResolverFactory, nugetPackageDownloader: nugetDownloader,
                 workloadManifestUpdater: manifestUpdater, tempDirPath: testDirectory);
@@ -249,6 +257,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             };
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, oldInstallState.ToString());
+            new WorkloadConfigCommand(Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"])).Execute().Should().Be(0);
             updateCommand.Execute();
             var newInstallState = InstallStateContents.FromPath(installStatePath);
             newInstallState.Manifests.Should().BeNull();
@@ -282,9 +291,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void UpdateViaWorkloadSet(bool upgrade)
+        [InlineData(true, true, null)]
+        [InlineData(false, true, null)]
+        [InlineData(true, true, false)]
+        [InlineData(true, false, true)]
+        public void UpdateViaWorkloadSet(bool upgrade, bool? installStateUseWorkloadSet, bool? globalJsonValue)
         {
             var testDir = _testAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
             string dotnetDir = Path.Combine(testDir.Path, "dotnet");
@@ -313,11 +324,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 ],
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
-            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater, shouldUseWorkloadSetsFromGlobalJson: globalJsonValue);
 
             var installStatePath = Path.Combine(dotnetDir, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkVersion, "InstallState", "default.json");
             var contents = new InstallStateContents();
-            contents.UseWorkloadSets = true;
+            contents.UseWorkloadSets = installStateUseWorkloadSet;
 
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, contents.ToString());
@@ -325,6 +336,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             workloadInstaller.InstalledManifests.Count.Should().Be(1);
             workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+
+            // This splits between whether installation occurred via workload set or loose manifests. (The previous test incorrectly assumed that
+            // only if the upgrade were via workload sets would the manifest be updated like that, but the MockWorkloadManifestUpdater actually
+            // doesn't really care).
+            workloadManifestUpdater.CalculateManifestUpdatesCallCount.Should().Be(globalJsonValue ?? installStateUseWorkloadSet ?? true ? 0 : 1);
         }
 
         [Fact]
@@ -525,6 +541,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                     };
             (var dotnetPath, var updateCommand, var packInstaller, _, _, _) = GetTestInstallers(parseResult, manifestUpdates: manifestsToUpdate, sdkVersion: "6.0.300", identifier: existingSdkFeatureBand + newSdkFeatureBand, installedFeatureBand: existingSdkFeatureBand);
 
+            parseResult = Parser.Instance.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]);
+            WorkloadConfigCommand configCommand = new(parseResult);
+            configCommand.Execute().Should().Be(0);
             updateCommand.Execute()
                 .Should().Be(0);
 

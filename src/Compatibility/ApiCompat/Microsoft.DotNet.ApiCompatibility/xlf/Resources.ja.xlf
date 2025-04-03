@@ -122,9 +122,9 @@
         <target state="translated">'{2}' の型パラメーター '{1}' の制約 '{0}' を削除できません。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">メンバー '{0}' から仮想キーワードを削除できません。</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">{0} インデックスは、0 から {1} の範囲内である必要があります。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">任意の検索ディレクトリ '{0}' に一致するアセンブリが見つかりませんでした。</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

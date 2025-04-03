@@ -3,17 +3,16 @@
 
 using Microsoft.Build.Execution;
 
-namespace Microsoft.DotNet.BuildServer
+namespace Microsoft.DotNet.Cli.BuildServer;
+
+internal class MSBuildServer : IBuildServer
 {
-    internal class MSBuildServer : IBuildServer
+    public int ProcessId => 0; // Not yet used
+
+    public string Name => LocalizableStrings.MSBuildServer;
+
+    public void Shutdown()
     {
-        public int ProcessId => 0; // Not yet used
-
-        public string Name => LocalizableStrings.MSBuildServer;
-
-        public void Shutdown()
-        {
-            BuildManager.DefaultBuildManager.ShutdownAllNodes();
-        }
+        BuildManager.DefaultBuildManager.ShutdownAllNodes();
     }
 }

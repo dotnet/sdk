@@ -3,42 +3,41 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools
+namespace Microsoft.DotNet.Cli;
+
+internal class FilePermissionSetter : IFilePermissionSetter
 {
-    internal class FilePermissionSetter : IFilePermissionSetter
+    public void SetUserExecutionPermission(string path)
     {
-        public void SetUserExecutionPermission(string path)
+        RunCommand(path, "u+x");
+    }
+
+    /// <summary>
+    /// Chmod 755 (chmod a+rwx,g-w,o-w) sets permissions so that, (U)ser / owner can read, can write and can execute.
+    /// (G)roup can read, can't write and can execute.
+    /// (O)thers can read, can't write and can execute.
+    /// </summary>
+    public void SetPermission(string path, string chmodArgument)
+    {
+        RunCommand(path, chmodArgument.ToString());
+    }
+
+    private static void RunCommand(string path, string chmodArgument)
+    {
+        if (OperatingSystem.IsWindows())
         {
-            RunCommand(path, "u+x");
+            return;
         }
 
-        /// <summary>
-        /// Chmod 755 (chmod a+rwx,g-w,o-w) sets permissions so that, (U)ser / owner can read, can write and can execute.
-        /// (G)roup can read, can't write and can execute.
-        /// (O)thers can read, can't write and can execute.
-        /// </summary>
-        public void SetPermission(string path, string chmodArgument)
+        CommandResult result = new CommandFactory.CommandFactory()
+            .Create("chmod", [chmodArgument, path])
+            .CaptureStdOut()
+            .CaptureStdErr()
+            .Execute();
+
+        if (result.ExitCode != 0)
         {
-            RunCommand(path, chmodArgument.ToString());
-        }
-
-        private static void RunCommand(string path, string chmodArgument)
-        {
-            if (OperatingSystem.IsWindows())
-            {
-                return;
-            }
-
-            CommandResult result = new CommandFactory.CommandFactory()
-                .Create("chmod", new[] { chmodArgument, path })
-                .CaptureStdOut()
-                .CaptureStdErr()
-                .Execute();
-
-            if (result.ExitCode != 0)
-            {
-                throw new FilePermissionSettingException(result.StdErr);
-            }
+            throw new FilePermissionSettingException(result.StdErr);
         }
     }
 }

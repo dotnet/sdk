@@ -3,10 +3,9 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
+namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
+
+public interface IFirstPartyNuGetPackageSigningVerifier
 {
-    public interface IFirstPartyNuGetPackageSigningVerifier
-    {
-        bool Verify(FilePath nupkgToVerify, out string commandOutput);
-    }
+    bool Verify(FilePath nupkgToVerify, out string commandOutput);
 }

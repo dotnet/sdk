@@ -1,21 +1,11 @@
 <Project>
 
-  <ItemGroup Condition="'$(PostBuildSign)' != 'true'">
-    <ItemsToSign Remove="@(ItemsToSign)" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.exe" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.zip" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.msi" />
-    <ItemsToSign Include="$(ArtifactsPackagesDir)**\*.nupkg" />
-  </ItemGroup>
+  <PropertyGroup>
+    <PublishBinariesAndBadge Condition="'$(PublishBinariesAndBadge)' == ''">true</PublishBinariesAndBadge>
+  </PropertyGroup>
 
   <PropertyGroup>
     <ExternalCertificateId Condition="'$(ExternalCertificateId)' == ''">3PartySHA2</ExternalCertificateId>
-    <InternalCertificateId Condition="'$(InternalCertificateId)' == ''">MicrosoftDotNet500</InternalCertificateId>
-
-    <!-- Signing of shipping artifacts (layout, msi, bundle) are handled separately. It is therefore expected that <ItemsToSign> could be an empty set. -->
-    <AllowEmptySignList>true</AllowEmptySignList>
-    <AllowEmptySignPostBuildList>true</AllowEmptySignPostBuildList>
-
     <UseDotNetCertificate>true</UseDotNetCertificate>
   </PropertyGroup>
 
@@ -55,10 +45,6 @@
     <FileExtensionSignInfo Include=".js" CertificateName="None" />
   </ItemGroup>
 
-  <ItemGroup>
-    <FileExtensionSignInfo Include=".msi" CertificateName="$(InternalCertificateId)" />
-  </ItemGroup>
-
   <!--
     These are third party libraries that we use in Arcade. We need to sign them even if they
     are already signed. However, they must be signed with a 3rd party certificate.
@@ -86,8 +72,45 @@
 
   <!-- Filter out any test packages from ItemsToSign -->
   <ItemGroup>
-    <ItemsToSignPostBuild Remove="*tests*.nupkg" />
     <ItemsToSign Remove="$(ArtifactsPackagesDir)**\*tests*.nupkg" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' != 'true'">
+    <Artifact Include="$(ArtifactsPackagesDir)**\VS.Tools.*.nupkg;
+                       $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
+              IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
+              Kind="Package" />
+  </ItemGroup>
+
+  <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
+  <ItemGroup Condition="'$(PublishBinariesAndBadge)' == 'true' and '$(OS)' == 'Windows_NT' and '$(TargetArchitecture)' == 'x64' and '$(PgoInstrument)' != 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productVersion.txt" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)sdk-productVersion.txt" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.zip" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.tar.gz" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.pkg" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.exe" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.deb" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.rpm" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.msi" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)*.cab" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.json" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsShippingPackagesDir)productCommit-*.txt" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.swr" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.msi" IsShipping="false" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.tar.gz" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.zip" IsShipping="false" Condition="'$(PublishBinariesAndBadge)' == 'true'" />
+    <SdkArtifact Include="$(ArtifactsNonShippingPackagesDir)*.pkg" IsShipping="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Artifact Include="@(SdkArtifact)" Kind="Blob">
+      <ChecksumPath Condition="$([System.String]::Copy('%(Filename)%(Extension)').EndsWith('.wixpack.zip')) != 'true'">%(FullPath).sha512</ChecksumPath>
+    </Artifact>
   </ItemGroup>
 
 </Project>

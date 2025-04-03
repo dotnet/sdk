@@ -1,8 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -42,8 +43,9 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 {
                     candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
 
-                    foreach (var property in candidateEndpoint.EndpointProperties)
+                    for (var i = 0; i < candidateEndpoint.EndpointProperties.Length; i++)
                     {
+                        ref var property = ref candidateEndpoint.EndpointProperties[i];
                         if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
                         {
                             property.Value = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, property.Value, '/');

@@ -328,6 +328,11 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">El archivo de configuración de herramientas no existe para la herramienta {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UnrecognizedCommandOrArgument">
+        <source>Unrecognized command or argument '{0}'</source>
+        <target state="new">Unrecognized command or argument '{0}'</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Update">
         <source>Update</source>
         <target state="translated">Actualizar</target>

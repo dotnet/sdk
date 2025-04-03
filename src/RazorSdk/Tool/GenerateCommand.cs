@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis.CSharp;
@@ -75,7 +77,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             var version = RazorLanguageVersion.Parse(Version.Value());
-            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: []);
+            var configuration = new RazorConfiguration(version, Configuration.Value(), Extensions: [], UseConsolidatedMvcViews: false);
 
             var sourceItems = GetSourceItems(
                 Sources.Values, Outputs.Values, RelativePaths.Values,

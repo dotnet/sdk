@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watch
 {
