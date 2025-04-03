@@ -9,18 +9,19 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output) : IDisposable
 {
-    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
+    private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId, string InstanceId)> _executions = new();
     private readonly TerminalTestReporter _output = output;
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
         var testApplication = (TestApplication)sender;
         var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+        var instanceId = args.Handshake.Properties[HandshakeMessagePropertyNames.InstanceId];
         var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
         var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-        (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId);
+        (string ModulePath, string TargetFramework, string Architecture, string ExecutionId, string InstanceId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId, instanceId);
         _executions[testApplication] = appInfo;
-        _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+        _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, appInfo.InstanceId);
 
         LogHandshake(args);
     }
@@ -63,6 +64,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
         foreach (var testResult in args.SuccessfulTestResults)
         {
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
@@ -76,7 +78,7 @@ internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output)
 
         foreach (var testResult in args.FailedTestResults)
         {
-            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
