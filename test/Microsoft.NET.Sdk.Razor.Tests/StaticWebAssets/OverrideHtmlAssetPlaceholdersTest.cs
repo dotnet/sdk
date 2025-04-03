@@ -81,6 +81,32 @@ public class OverrideHtmlAssetPlaceholdersTest
     )]
     [InlineData(
         """
+        <h1>main#[.{fingerprint}].js</h1>
+        """,
+        false
+    )]
+    [InlineData(
+        """
+        <script>
+          var url = "main#[.{fingerprint}].js"
+        </script>
+        """,
+        true,
+        "main.js"
+    )]
+    [InlineData(
+        """
+        <script type='importmap'>{
+          "imports": {
+            "./main.js": "./main#[.{fingerprint}].js"
+          }
+        }</script>
+        """,
+        true,
+        "./main.js"
+    )]
+    [InlineData(
+        """
         <link href="main#[.{fingerprint}].js" rel="preload" as="script" fetchpriority="high" crossorigin="anonymous">
         """,
         true,
@@ -113,6 +139,15 @@ public class OverrideHtmlAssetPlaceholdersTest
     [InlineData(
         """
         <script type="importmap">
+        </script>
+        """,
+        true
+    )]
+    [InlineData(
+        """
+        <script
+         type="importmap"
+        >
         </script>
         """,
         true
@@ -231,6 +266,16 @@ public class OverrideHtmlAssetPlaceholdersTest
         <link id="webassembly" rel="preload" />
         """,
         false
+    )]
+    [InlineData(
+        """
+        <link
+         rel="preload"
+         id="webassembly"
+        />
+        """,
+        true,
+        "webassembly"
     )]
     public void ValidatePreloadRegex(string input, bool shouldMatch, string group = null)
     {

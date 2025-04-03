@@ -41,7 +41,7 @@ public partial class OverrideHtmlAssetPlaceholders : Task
 
     internal static readonly Regex _importMapRegex = new Regex(@"<script\s+type=""importmap""\s*>\s*</script>");
 
-    internal static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\sid=""(?<group>[^""]+)"")?\s*[/]?>");
+    internal static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\s+id=""(?<group>[^""]+)"")?\s*[/]?>");
 
     public override bool Execute()
     {
