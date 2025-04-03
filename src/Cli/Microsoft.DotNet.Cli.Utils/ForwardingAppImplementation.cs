@@ -93,11 +93,7 @@ namespace Microsoft.DotNet.Cli.Utils
             return this;
         }
 
-        private string GetHostExeName()
-        {
-            // Should instead make this a full path to dotnet
-            return System.Environment.ProcessPath;
-        }
+        private string GetHostExeName() => new Muxer().MuxerPath;
     }
 }
 

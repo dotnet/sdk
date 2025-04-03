@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\E\E.csproj" />
+    	<Compile Include="..\Common.cs" Link="Common.cs" />
+    </ItemGroup>
+</Project>
