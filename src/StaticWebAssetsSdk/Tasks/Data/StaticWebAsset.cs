@@ -1376,7 +1376,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         return metadataName switch
         {
+            // These two are special and aren't "Real metadata"
             "FullPath" => Identity ?? "",
+            nameof(Identity) => Identity ?? "",
+            // These are common metadata
             nameof(SourceId) => SourceId ?? "",
             nameof(SourceType) => SourceType ?? "",
             nameof(ContentRoot) => ContentRoot ?? "",
