@@ -58,6 +58,7 @@ namespace Microsoft.NET.Restore.Tests
 
             // simulate mismatched MSBuild versions
             project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
+            project.AdditionalProperties.Add("RoslynUseSdkCompiler", "false");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
@@ -143,6 +144,7 @@ namespace Microsoft.NET.Restore.Tests
 
             // simulate mismatched MSBuild versions
             project.AdditionalProperties.Add("_IsDisjointMSBuildVersion", "true");
+            project.AdditionalProperties.Add("RoslynUseSdkCompiler", "false");
 
             var testAsset = _testAssetsManager
                 .CreateTestProject(project);
@@ -178,7 +180,7 @@ namespace Microsoft.NET.Restore.Tests
             };
 
             // simulate mismatched MSBuild versions via _IsDisjointMSBuildVersion
-            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true")
+            buildCommand.Execute("-p:_IsDisjointMSBuildVersion=true -p:RoslynUseSdkCompiler=false")
                 .Should().Pass().And.NotHaveStdOutContaining("NETSDK1221");
 
             Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));

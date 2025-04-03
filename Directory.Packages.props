@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.9" />
     <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
     <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
@@ -75,6 +76,7 @@
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />
     <PackageVersion Include="Microsoft.Windows.CsWin32" Version="$(MicrosoftWindowsCsWin32PackageVersion)" />
+    <PackageVersion Include="MSBuild.StructuredLogger" Version="2.2.386" />
     <PackageVersion Include="Moq" Version="$(MoqPackageVersion)" />
     <PackageVersion Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
     <PackageVersion Include="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
