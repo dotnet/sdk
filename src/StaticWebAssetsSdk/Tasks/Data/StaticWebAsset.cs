@@ -5,6 +5,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using System.Globalization;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
@@ -44,6 +45,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     private long _fileLength = -1;
     private DateTimeOffset _lastWriteTime = DateTimeOffset.MinValue;
     private Dictionary<string, string> _additionalCustomMetadata;
+    private string _fileLengthString;
+    private string _lastWriteTimeString;
 
     public StaticWebAsset()
     {
@@ -80,7 +83,11 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         get
         {
-            return _identity ??= GetOriginalItemMetadata("FullPath");
+            return _identity ??=
+                // Register the identity as the full path since assets might have come
+                // from packages and other sources and the identity (which is typically
+                // just the relative path from the project) is not enough to locate them.
+                GetOriginalItemMetadata("FullPath");
         }
 
         set
@@ -270,14 +277,17 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
     }
 
+    internal string FileLengthString => _fileLengthString ??= GetOriginalItemMetadata(nameof(FileLength));
+
     public long FileLength
     {
         get
         {
             if (_fileLength < 0)
             {
-                var fileLengthString = GetOriginalItemMetadata(nameof(FileLength));
-                _fileLength = !string.IsNullOrEmpty(fileLengthString) && long.TryParse(fileLengthString, out var fileLength)
+                var fileLengthString = FileLengthString;
+                _fileLength = !string.IsNullOrEmpty(fileLengthString) &&
+                    long.TryParse(fileLengthString, NumberStyles.None, CultureInfo.InvariantCulture, out var fileLength)
                     ? fileLength
                     : -1;
             }
@@ -285,10 +295,13 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
         set
         {
+            _fileLengthString = null;
             _modified = true;
             _fileLength = value;
         }
     }
+
+    internal string LastWriteTimeString => _lastWriteTimeString ??= GetOriginalItemMetadata(nameof(LastWriteTime));
 
     public DateTimeOffset LastWriteTime
     {
@@ -296,8 +309,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         {
             if (_lastWriteTime == DateTimeOffset.MinValue)
             {
-                var lastWriteTimeString = GetOriginalItemMetadata(nameof(LastWriteTime));
-                _lastWriteTime = !string.IsNullOrEmpty(lastWriteTimeString) && DateTimeOffset.TryParse(lastWriteTimeString, out var lastWriteTime)
+                var lastWriteTimeString = LastWriteTimeString;
+                _lastWriteTime = !string.IsNullOrEmpty(lastWriteTimeString) &&
+                    DateTimeOffset.TryParse(lastWriteTimeString, CultureInfo.InvariantCulture, DateTimeStyles.None, out var lastWriteTime)
                     ? lastWriteTime
                     : DateTimeOffset.MinValue;
             }
@@ -305,6 +319,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         }
         set
         {
+            _lastWriteTimeString = null;
             _modified = true;
             _lastWriteTime = value;
         }
@@ -478,9 +493,6 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
     {
         return new()
         {
-            // Register the identity as the full path since assets might have come
-            // from packages and other sources and the identity (which is typically
-            // just the relative path from the project) is not enough to locate them.
             _originalItem = item,
         };
     }
@@ -1241,7 +1253,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     internal static Dictionary<string, (StaticWebAsset, List<StaticWebAsset>)> AssetsByTargetPath(ITaskItem[] assets, string source, string assetKind)
     {
-        // We return either the selected asset or a list with all the candidates that we re found to be ambiguous
+        // We return either the selected asset or a list with all the candidates that were found to be ambiguous
         var result = new Dictionary<string, (StaticWebAsset selected, List<StaticWebAsset> all)>();
         for (var i = 0; i < assets.Length; i++)
         {
@@ -1345,25 +1357,21 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             {
                 return _defaultPropertyNames;
             }
-            else
-            {
 
-            }
             var result = new List<string>(_defaultPropertyNames.Length + _additionalCustomMetadata.Count);
             result.AddRange(_defaultPropertyNames);
 
-            if (_additionalCustomMetadata != null)
+            foreach (var kvp in _additionalCustomMetadata)
             {
-                foreach (var kvp in _additionalCustomMetadata)
-                {
-                    result.Add(kvp.Key);
-                }
+                result.Add(kvp.Key);
             }
+
             return result;
         }
     }
 
-    int ITaskItem.MetadataCount => _defaultPropertyNames.Length + _additionalCustomMetadata?.Count ?? 0;
+    int ITaskItem.MetadataCount => _defaultPropertyNames.Length + (_additionalCustomMetadata?.Count ?? 0);
+
     string ITaskItem2.GetMetadataValueEscaped(string metadataName)
     {
         return metadataName switch
@@ -1387,11 +1395,17 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
             nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
             nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
-            nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
-            nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
+            nameof(FileLength) => GetFileLengthAsString() ?? "",
+            nameof(LastWriteTime) => GetLastWriteTimeAsString() ?? "",
             _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : "",
         };
     }
+
+    private string GetFileLengthAsString() =>
+        FileLength == -1 ? (FileLengthString ?? "") : FileLength.ToString(CultureInfo.InvariantCulture);
+
+    private string GetLastWriteTimeAsString() =>
+        LastWriteTime == DateTimeOffset.MinValue ? (LastWriteTimeString ?? "") : LastWriteTime.ToString(DateTimeAssetFormat, CultureInfo.InvariantCulture);
 
     void ITaskItem2.SetMetadataValueLiteral(string metadataName, string metadataValue)
     {
@@ -1453,10 +1467,12 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
                 OriginalItemSpec = metadataValue;
                 break;
             case nameof(FileLength):
-                FileLength = long.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
+                _fileLengthString = metadataValue;
+                _fileLength = -1;
                 break;
             case nameof(LastWriteTime):
-                LastWriteTime = DateTimeOffset.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
+                _lastWriteTimeString = metadataValue;
+                _lastWriteTime = DateTimeOffset.MinValue;
                 break;
             default:
                 _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -1468,7 +1484,7 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
 
     IDictionary ITaskItem2.CloneCustomMetadataEscaped()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string>(((ITaskItem)this).MetadataCount)
         {
             { nameof(SourceId), SourceId ?? "" },
             { nameof(SourceType), SourceType  ?? "" },
@@ -1488,8 +1504,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             { nameof(CopyToOutputDirectory), CopyToOutputDirectory  ?? "" },
             { nameof(CopyToPublishDirectory), CopyToPublishDirectory  ?? "" },
             { nameof(OriginalItemSpec), OriginalItemSpec  ?? "" },
-            { nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "" },
-            { nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "" }
+            { nameof(FileLength), GetFileLengthAsString() ?? "" },
+            { nameof(LastWriteTime), GetLastWriteTimeAsString() ?? "" }
         };
         if (_additionalCustomMetadata != null)
         {
@@ -1502,110 +1518,10 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         return result;
     }
 
-    string ITaskItem.GetMetadata(string metadataName) => metadataName switch
-    {
-        "FullPath" => Identity ?? "",
-        nameof(Identity) => Identity ?? "",
-        nameof(SourceId) => SourceId ?? "",
-        nameof(SourceType) => SourceType ?? "",
-        nameof(ContentRoot) => ContentRoot ?? "",
-        nameof(BasePath) => BasePath ?? "",
-        nameof(RelativePath) => RelativePath ?? "",
-        nameof(AssetKind) => AssetKind ?? "",
-        nameof(AssetMode) => AssetMode ?? "",
-        nameof(AssetRole) => AssetRole ?? "",
-        nameof(AssetMergeBehavior) => AssetMergeBehavior ?? "",
-        nameof(AssetMergeSource) => AssetMergeSource ?? "",
-        nameof(RelatedAsset) => RelatedAsset ?? "",
-        nameof(AssetTraitName) => AssetTraitName ?? "",
-        nameof(AssetTraitValue) => AssetTraitValue ?? "",
-        nameof(Fingerprint) => Fingerprint ?? "",
-        nameof(Integrity) => Integrity ?? "",
-        nameof(CopyToOutputDirectory) => CopyToOutputDirectory ?? "",
-        nameof(CopyToPublishDirectory) => CopyToPublishDirectory ?? "",
-        nameof(OriginalItemSpec) => OriginalItemSpec ?? "",
-        nameof(FileLength) => FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "",
-        nameof(LastWriteTime) => LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "",
-        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : ""
-    };
+    string ITaskItem.GetMetadata(string metadataName) => ((ITaskItem2)this).GetMetadataValueEscaped(metadataName);
+    void ITaskItem.SetMetadata(string metadataName, string metadataValue) => ((ITaskItem2)this).SetMetadataValueLiteral(metadataName, metadataValue);
 
-    void ITaskItem.SetMetadata(string metadataName, string metadataValue)
-    {
-        metadataValue ??= "";
-        switch (metadataName)
-        {
-            case nameof(SourceId):
-                SourceId = metadataValue;
-                break;
-            case nameof(SourceType):
-                SourceType = metadataValue;
-                break;
-            case nameof(ContentRoot):
-                ContentRoot = metadataValue;
-                break;
-            case nameof(BasePath):
-                BasePath = metadataValue;
-                break;
-            case nameof(RelativePath):
-                RelativePath = metadataValue;
-                break;
-            case nameof(AssetKind):
-                AssetKind = metadataValue;
-                break;
-            case nameof(AssetMode):
-                AssetMode = metadataValue;
-                break;
-            case nameof(AssetRole):
-                AssetRole = metadataValue;
-                break;
-            case nameof(AssetMergeBehavior):
-                AssetMergeBehavior = metadataValue;
-                break;
-            case nameof(AssetMergeSource):
-                AssetMergeSource = metadataValue;
-                break;
-            case nameof(RelatedAsset):
-                RelatedAsset = metadataValue;
-                break;
-            case nameof(AssetTraitName):
-                AssetTraitName = metadataValue;
-                break;
-            case nameof(AssetTraitValue):
-                AssetTraitValue = metadataValue;
-                break;
-            case nameof(Fingerprint):
-                Fingerprint = metadataValue;
-                break;
-            case nameof(Integrity):
-                Integrity = metadataValue;
-                break;
-            case nameof(CopyToOutputDirectory):
-                CopyToOutputDirectory = metadataValue;
-                break;
-            case nameof(CopyToPublishDirectory):
-                CopyToPublishDirectory = metadataValue;
-                break;
-            case nameof(OriginalItemSpec):
-                OriginalItemSpec = metadataValue;
-                break;
-            case nameof(FileLength):
-                FileLength = long.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            case nameof(LastWriteTime):
-                LastWriteTime = DateTimeOffset.Parse(metadataValue, System.Globalization.CultureInfo.InvariantCulture);
-                break;
-            default:
-                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                _additionalCustomMetadata[metadataName] = metadataValue;
-                _modified = true;
-                break;
-        }
-    }
-
-    void ITaskItem.RemoveMetadata(string metadataName)
-    {
-        _additionalCustomMetadata?.Remove(metadataName);
-    }
+    void ITaskItem.RemoveMetadata(string metadataName) => _additionalCustomMetadata?.Remove(metadataName);
 
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
@@ -1627,8 +1543,8 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         destinationItem.SetMetadata(nameof(CopyToOutputDirectory), CopyToOutputDirectory ?? "");
         destinationItem.SetMetadata(nameof(CopyToPublishDirectory), CopyToPublishDirectory ?? "");
         destinationItem.SetMetadata(nameof(OriginalItemSpec), OriginalItemSpec ?? "");
-        destinationItem.SetMetadata(nameof(FileLength), FileLength.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "");
-        destinationItem.SetMetadata(nameof(LastWriteTime), LastWriteTime.ToString(DateTimeAssetFormat, System.Globalization.CultureInfo.InvariantCulture) ?? "");
+        destinationItem.SetMetadata(nameof(FileLength), GetFileLengthAsString() ?? "");
+        destinationItem.SetMetadata(nameof(LastWriteTime), GetLastWriteTimeAsString() ?? "");
         if (_additionalCustomMetadata != null)
         {
             foreach (var kvp in _additionalCustomMetadata)

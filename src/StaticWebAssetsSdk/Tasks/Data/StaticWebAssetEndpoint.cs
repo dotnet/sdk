@@ -468,7 +468,7 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
 
     IDictionary ITaskItem2.CloneCustomMetadataEscaped()
     {
-        var result = new Dictionary<string, string>
+        var result = new Dictionary<string, string>(((ITaskItem)this).MetadataCount)
         {
             { nameof(AssetFile), AssetFile ?? "" },
             { nameof(Selectors), !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors) },
@@ -487,50 +487,11 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         return result;
     }
 
-    string ITaskItem.GetMetadata(string metadataName) => metadataName switch
-    {
-        nameof(AssetFile) => AssetFile ?? "",
-        nameof(Selectors) => !_selectorsModified ? SelectorsString ?? "" : StaticWebAssetEndpointSelector.ToMetadataValue(Selectors),
-        nameof(ResponseHeaders) => !_responseHeadersModified ? ResponseHeadersString ?? "" : StaticWebAssetEndpointResponseHeader.ToMetadataValue(ResponseHeaders),
-        nameof(EndpointProperties) => !_endpointPropertiesModified ? EndpointPropertiesString ?? "" : StaticWebAssetEndpointProperty.ToMetadataValue(EndpointProperties),
-        _ => _additionalCustomMetadata?.TryGetValue(metadataName, out var value) == true ? (value ?? "") : ""
-    };
+    string ITaskItem.GetMetadata(string metadataName) => ((ITaskItem2)this).GetMetadataValueEscaped(metadataName);
 
-    void ITaskItem.SetMetadata(string metadataName, string metadataValue)
-    {
-        metadataValue ??= "";
-        switch (metadataName)
-        {
-            case nameof(AssetFile):
-                AssetFile = metadataValue;
-                break;
-            case nameof(Selectors):
-                _selectorsString = metadataValue;
-                _selectors = null;  // Force re-evaluation
-                _selectorsModified = false;
-                break;
-            case nameof(ResponseHeaders):
-                _responseHeadersString = metadataValue;
-                _responseHeaders = null;  // Force re-evaluation
-                _responseHeadersModified = false;
-                break;
-            case nameof(EndpointProperties):
-                _endpointPropertiesString = metadataValue;
-                _endpointProperties = null;  // Force re-evaluation
-                _endpointPropertiesModified = false;
-                break;
-            default:
-                _additionalCustomMetadata ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-                _additionalCustomMetadata[metadataName] = metadataValue;
-                break;
-        }
-        _modified = true;
-    }
+    void ITaskItem.SetMetadata(string metadataName, string metadataValue) => ((ITaskItem2)this).SetMetadataValueLiteral(metadataName, metadataValue);
 
-    void ITaskItem.RemoveMetadata(string metadataName)
-    {
-        _additionalCustomMetadata?.Remove(metadataName);
-    }
+    void ITaskItem.RemoveMetadata(string metadataName) => _additionalCustomMetadata?.Remove(metadataName);
 
     void ITaskItem.CopyMetadataTo(ITaskItem destinationItem)
     {
