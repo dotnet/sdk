@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null)
         {
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
             var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
             var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public async Task<WorkloadSet> GetWorkloadSetContentsAsync(string workloadSetVersion)
         {
-            string workloadSetPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+            string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
             var packagePath = await _nugetPackageDownloader.DownloadPackageAsync(GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand),
                                 new NuGetVersion(workloadSetPackageVersion), _packageSourceLocation);
             var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{WorkloadManifestUpdater.WorkloadSetManifestId}-{workloadSetPackageVersion}-extracted");
@@ -133,6 +133,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         }
 
         public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
+        {
+            InstallWorkloads(workloadIds, sdkFeatureBand, transactionContext, overwriteExistingPacks: false, offlineCache);
+        }
+
+        public void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, bool overwriteExistingPacks, DirectoryPath? offlineCache = null)
         {
             var packInfos = GetPacksInWorkloads(workloadIds);
 
@@ -146,7 +151,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
                 transactionContext.Run(
                     action: () =>
                     {
-                        if (!PackIsInstalled(packInfo))
+                        if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
+                        {
+                            _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                        }
+                        else
                         {
                             shouldRollBackPack = true;
                             string packagePath;
@@ -175,22 +184,30 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
                             if (IsSingleFilePack(packInfo))
                             {
-                                File.Copy(packagePath, packInfo.Path);
+                                File.Copy(packagePath, packInfo.Path, overwrite: overwriteExistingPacks);
                             }
                             else
                             {
                                 var tempExtractionDir = Path.Combine(_tempPackagesDir.Value, $"{packInfo.ResolvedPackageId}-{packInfo.Version}-extracted");
                                 tempDirsToDelete.Add(tempExtractionDir);
+
+                                // This directory should have been deleted, but remove it just in case
+                                if (overwriteExistingPacks && Directory.Exists(tempExtractionDir))
+                                {
+                                    Directory.Delete(tempExtractionDir, recursive: true);
+                                }
+
                                 Directory.CreateDirectory(tempExtractionDir);
                                 var packFiles = _nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(tempExtractionDir)).GetAwaiter().GetResult();
 
+                                if (overwriteExistingPacks && Directory.Exists(packInfo.Path))
+                                {
+                                    Directory.Delete(packInfo.Path, recursive: true);
+                                }
+
                                 FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(tempExtractionDir, packInfo.Path));
                             }
-                        }
-                        else
-                        {
-                            _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
-                        }
+                        }                        
 
                         WritePackInstallationRecord(packInfo, sdkFeatureBand);
                     },
@@ -237,8 +254,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null)
         {
-            // TODO: Actually re-extract the packs to fix any corrupted files.
-            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, offlineCache));
+            CliTransaction.RunNew(context => InstallWorkloads(workloadIds, sdkFeatureBand, context, overwriteExistingPacks: true, offlineCache));
         }
 
         string GetManifestInstallDirForFeatureBand(string sdkFeatureBand)
@@ -381,7 +397,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             foreach ((string workloadSetVersion, _) in installedWorkloadSets)
             {
                 //  Get the feature band of the workload set
-                WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
+                WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out var workloadSetFeatureBand);
 
                 List<SdkFeatureBand> referencingFeatureBands;
                 if (!workloadSetInstallRecords.TryGetValue((workloadSetVersion, workloadSetFeatureBand), out referencingFeatureBands))
