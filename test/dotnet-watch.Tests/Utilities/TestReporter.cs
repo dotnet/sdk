@@ -4,7 +4,6 @@
 #nullable enable
 
 using System.Diagnostics;
-using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -12,14 +11,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private readonly Dictionary<int, Action> _actions = [];
         public readonly List<string> ProcessOutput = [];
-
-        public bool EnableProcessOutputReporting
-            => true;
+        public readonly List<(MessageSeverity severity, string text)> Messages = [];
 
         public bool IsVerbose
             => true;
 
-        public event Action<string, OutputLine>? OnProjectProcessOutput;
+        public bool PrefixProcessOutput
+            => true;
+
         public event Action<OutputLine>? OnProcessOutput;
 
         public void ReportProcessOutput(OutputLine line)
@@ -28,16 +27,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ProcessOutput.Add(line.Content);
 
             OnProcessOutput?.Invoke(line);
-        }
-
-        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
-        {
-            var content = $"[{project.GetDisplayName()}]: {line.Content}";
-
-            WriteTestOutput(content);
-            ProcessOutput.Add(content);
-
-            OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 
         public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
@@ -67,6 +56,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             if (descriptor.TryGetMessage(prefix, args, out var message))
             {
+                Messages.Add((descriptor.Severity, message));
+
                 WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
             }
 
@@ -76,11 +67,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        private void WriteTestOutput(string message)
+        private void WriteTestOutput(string line)
         {
             try
             {
-                output.WriteLine(message);
+                output.WriteLine(line);
             }
             catch (InvalidOperationException)
             {

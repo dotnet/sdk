@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Cli
             PackageCommandParser.GetCommand(),
             ParseCommandParser.GetCommand(),
             PublishCommandParser.GetCommand(),
+            ReferenceCommandParser.GetCommand(),
             RemoveCommandParser.GetCommand(),
             RestoreCommandParser.GetCommand(),
             RunCommandParser.GetCommand(),
@@ -335,7 +336,7 @@ namespace Microsoft.DotNet.Cli
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                     {
                         // Don't show package completions in help
-                        AddPackageParser.CmdPackageArgument.CompletionSources.Clear();
+                        PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
                     }
 
                     base.Write(context);

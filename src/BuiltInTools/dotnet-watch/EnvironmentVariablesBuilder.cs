@@ -10,8 +10,8 @@ namespace Microsoft.DotNet.Watch
         private static readonly char s_startupHooksSeparator = Path.PathSeparator;
         private const char AssembliesSeparator = ';';
 
-        public List<string> DotNetStartupHookDirective { get; } = [];
-        public List<string> AspNetCoreHostingStartupAssembliesVariable { get; } = [];
+        public List<string> DotNetStartupHooks { get; } = [];
+        public List<string> AspNetCoreHostingStartupAssemblies { get; } = [];
 
         /// <summary>
         /// Environment variables set on the dotnet run process.
@@ -22,14 +22,14 @@ namespace Microsoft.DotNet.Watch
         {
             var builder = new EnvironmentVariablesBuilder();
 
-            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetStartupHooks) is { } dotnetStartupHooks)
+            if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotNetStartupHooks) is { } dotnetStartupHooks)
             {
-                builder.DotNetStartupHookDirective.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
+                builder.DotNetStartupHooks.AddRange(dotnetStartupHooks.Split(s_startupHooksSeparator));
             }
 
             if (Environment.GetEnvironmentVariable(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies) is { } assemblies)
             {
-                builder.AspNetCoreHostingStartupAssembliesVariable.AddRange(assemblies.Split(AssembliesSeparator));
+                builder.AspNetCoreHostingStartupAssemblies.AddRange(assemblies.Split(AssembliesSeparator));
             }
 
             return builder;
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watch
         {
             // should use AspNetCoreHostingStartupAssembliesVariable/DotNetStartupHookDirective
             Debug.Assert(!name.Equals(EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, StringComparison.OrdinalIgnoreCase));
-            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotnetStartupHooks, StringComparison.OrdinalIgnoreCase));
+            Debug.Assert(!name.Equals(EnvironmentVariables.Names.DotNetStartupHooks, StringComparison.OrdinalIgnoreCase));
 
             _variables[name] = value;
         }
@@ -59,14 +59,14 @@ namespace Microsoft.DotNet.Watch
                 yield return (name, value);
             }
 
-            if (DotNetStartupHookDirective is not [])
+            if (DotNetStartupHooks is not [])
             {
-                yield return (EnvironmentVariables.Names.DotnetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHookDirective));
+                yield return (EnvironmentVariables.Names.DotNetStartupHooks, string.Join(s_startupHooksSeparator, DotNetStartupHooks));
             }
 
-            if (AspNetCoreHostingStartupAssembliesVariable is not [])
+            if (AspNetCoreHostingStartupAssemblies is not [])
             {
-                yield return (EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssembliesVariable));
+                yield return (EnvironmentVariables.Names.AspNetCoreHostingStartupAssemblies, string.Join(AssembliesSeparator, AspNetCoreHostingStartupAssemblies));
             }
         }
     }
