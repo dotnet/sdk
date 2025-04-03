@@ -1427,4 +1427,45 @@ public class EndToEndTests : IDisposable
             return new[] { $"{workingDir}/{binary}" };
         }
     }
+
+    [DockerAvailableFact(checkContainerdStoreAvailability: true)]
+    public void EnforcesOciSchemaForMultiRIDTarballOutput()
+    {
+        string imageName = NewImageName();
+        string tag = "1.0";
+
+        // Create new console app
+        DirectoryInfo newProjectDir = CreateNewProject("webapp");
+
+        // Run PublishContainer for multi-arch with ContainerGenerateLabels
+        var publishResult = new DotnetCommand(
+            _testOutput,
+            "publish",
+            "/t:PublishContainer",
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={tag}",
+            "/p:EnableSdkContainerSupport=true",
+            "/p:ContainerArchiveOutputPath=archive.tar.gz",
+            "-getProperty:GeneratedImageIndex",
+            "-getItem:GeneratedContainers",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        publishResult.Should().Pass();
+        var jsonDump = JsonDocument.Parse(publishResult.StdOut);
+        var index = JsonDocument.Parse(jsonDump.RootElement.GetProperty("Properties").GetProperty("GeneratedImageIndex").ToString());
+        var containers = jsonDump.RootElement.GetProperty("Items").GetProperty("GeneratedContainers").EnumerateArray().ToArray();
+
+        index.RootElement.GetProperty("mediaType").GetString().Should().Be("application/vnd.oci.image.index.v1+json");
+        containers.Should().HaveCount(2);
+        foreach (var container in containers)
+        {
+            container.GetProperty("ManifestMediaType").GetString().Should().Be("application/vnd.oci.image.manifest.v1+json");
+        }
+        // Cleanup
+        newProjectDir.Delete(true);
+    }
 }
