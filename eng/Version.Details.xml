@@ -3,16 +3,16 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.105">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>693a4fd2526759d8408ec1388970143e666b03e2</Sha>
+      <Sha>006b799c44481a0870d4cbe754e6aae9d1236708</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.105-servicing.25156.13">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.105-servicing.25163.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>693a4fd2526759d8408ec1388970143e666b03e2</Sha>
+      <Sha>006b799c44481a0870d4cbe754e6aae9d1236708</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.105-servicing.25156.13">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.105-servicing.25163.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>693a4fd2526759d8408ec1388970143e666b03e2</Sha>
+      <Sha>006b799c44481a0870d4cbe754e6aae9d1236708</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="9.0.3">
@@ -73,18 +73,18 @@
       <Sha>dad5528e5bdf92a05a5a404c5f7939523390b96d</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.12.32">
+    <Dependency Name="Microsoft.Build" Version="17.12.33">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8314f8fc4d11b3ea9bc86fba82b79e167cac41c6</Sha>
+      <Sha>84e2956bf64ce0472e54b5bfcf22836667d300eb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.12.32-preview-25125-10">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.12.33-preview-25169-05">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8314f8fc4d11b3ea9bc86fba82b79e167cac41c6</Sha>
+      <Sha>84e2956bf64ce0472e54b5bfcf22836667d300eb</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.32-preview-25125-10">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.33-preview-25169-05">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>8314f8fc4d11b3ea9bc86fba82b79e167cac41c6</Sha>
+      <Sha>84e2956bf64ce0472e54b5bfcf22836667d300eb</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.101-beta.25070.7">
@@ -379,14 +379,14 @@
       <Uri>https://github.com/dotnet/test-templates</Uri>
       <Sha>49c9ad01f057b3c6352bbec12b117acc2224493c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.24606.1">
+    <Dependency Name="Microsoft.DotNet.Test.ProjectTemplates.9.0" Version="1.1.0-rtm.25168.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>8d99bca98e3fd0c8f4e10eb200aed20d9665de0e</Sha>
+      <Sha>e66f2336162ebe9f1d781a8dae591e30d9ab08b4</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.24606.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.test-templates" Version="1.1.0-rtm.25168.1">
       <Uri>https://github.com/dotnet/test-templates</Uri>
-      <Sha>8d99bca98e3fd0c8f4e10eb200aed20d9665de0e</Sha>
+      <Sha>e66f2336162ebe9f1d781a8dae591e30d9ab08b4</Sha>
       <SourceBuild RepoName="test-templates" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
@@ -408,16 +408,16 @@
       <Sha>63ae81154c50a1cf9287cc47d8351d55b4289e6d</Sha>
       <SourceBuild RepoName="xdt" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.25123.3">
+    <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="9.0.0-preview.25173.3">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>16865ea61910500f1022ad2b96c499e5df02c228</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.25123.3">
+    <Dependency Name="Microsoft.CodeAnalysis.PublicApiAnalyzers" Version="3.11.0-beta1.25173.3">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>16865ea61910500f1022ad2b96c499e5df02c228</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.25123.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="3.11.0-beta1.25173.3">
       <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
       <Sha>16865ea61910500f1022ad2b96c499e5df02c228</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25163.3">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25170.3">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>27dfbb8d8a0344d845948109a5a1f0d9c7f17fa9</Sha>
+      <Sha>6968f7059f4418e985febe704a3b1320f9e5887d</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25059.4">
