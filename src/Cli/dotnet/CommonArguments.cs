@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli
         };
         private static (string PackageId, string Version) ParsePackageIdentity(ArgumentResult argumentResult)
         {
-            if (argumentResult.Tokens.Count != 1)
+            /*if (argumentResult.Tokens.Count > 1)
             {
                 throw new ArgumentException("Package id must be a single token.");
-            }
+            }*/
             var token = argumentResult.Tokens[0].Value;
             var versionSeparatorIndex = token.IndexOf('@');
             if (versionSeparatorIndex == -1)
