@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         #region PackageIdentityArgument
-        public static CliArgument<(string PackageId, string Version)> PackageIdentityArgument(bool requireArgument) =>
+        public static CliArgument<(string PackageId, string Version)> PackageIdentityArgument(bool requireArgument = true) =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Cli
         }
         public static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
         {
-            if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument).Version) &&
+            if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version) &&
                 !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
             {
                 throw new ArgumentException("TODO: Cannot specify --version when the package argument already contains a version.");
