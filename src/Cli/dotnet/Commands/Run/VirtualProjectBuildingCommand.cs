@@ -6,6 +6,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
+using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Build.Construction;
@@ -183,7 +184,12 @@ internal sealed class VirtualProjectBuildingCommand
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(
+                projectFileWriter,
+                _directives,
+                isVirtualProject: true,
+                targetFilePath: _targetFilePath,
+                artifactsPath: GetArtifactsPath(EntryPointFileFullPath));
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -192,14 +198,44 @@ internal sealed class VirtualProjectBuildingCommand
             projectRoot.FullPath = projectFileFullPath;
             return projectRoot;
         }
+
+        static string GetArtifactsPath(string entryPointFilePath)
+        {
+            return Path.Join(Path.GetTempPath(), "dotnet", "runfile", Hash(entryPointFilePath));
+        }
+
+        static string Hash(string s)
+        {
+            Span<byte> hashBytes = stackalloc byte[SHA256.HashSizeInBytes];
+            int written = SHA256.HashData(Encoding.UTF8.GetBytes(s), hashBytes);
+            Debug.Assert(written == hashBytes.Length);
+            return string.Create(hashBytes.Length * 2, hashBytes, static (destination, hashBytes) => ToHex(hashBytes, destination));
+        }
+
+        static void ToHex(ReadOnlySpan<byte> source, Span<char> destination)
+        {
+            int i = 0;
+            foreach (var b in source)
+            {
+                destination[i++] = HexChar(b >> 4);
+                destination[i++] = HexChar(b & 0xF);
+            }
+        }
+
+        static char HexChar(int x) => (char)((x <= 9) ? (x + '0') : (x + ('a' - 10)));
     }
 
     public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
     {
-        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null);
+        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null, artifactsPath: null);
     }
 
-    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool isVirtualProject, string? targetFilePath)
+    private static void WriteProjectFile(
+        TextWriter writer,
+        ImmutableArray<CSharpDirective> directives,
+        bool isVirtualProject,
+        string? targetFilePath,
+        string? artifactsPath)
     {
         int processedDirectives = 0;
 
@@ -217,8 +253,15 @@ internal sealed class VirtualProjectBuildingCommand
 
         if (isVirtualProject)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+
             writer.WriteLine($"""
                 <Project>
+
+                  <PropertyGroup>
+                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                  </PropertyGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
