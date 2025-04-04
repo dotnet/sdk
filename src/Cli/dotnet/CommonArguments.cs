@@ -6,18 +6,17 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         #region PackageIdentityArgument
-        public static readonly CliArgument<(string PackageId, string Version)> PackageIdentityArgument = new("packageId")
-        {
-            HelpName = "PACKAGE_ID",
-            Description = CommonLocalizableStrings.PackageIdentityArgumentDescription,
-            CustomParser = ParsePackageIdentity
-        };
+        public static CliArgument<(string PackageId, string Version)> PackageIdentityArgument(bool requireArgument) =>
+            new("packageId")
+            {
+                HelpName = "PACKAGE_ID",
+                Description = CommonLocalizableStrings.PackageIdentityArgumentDescription,
+                CustomParser = ParsePackageIdentity,
+                Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+            };
+
         private static (string PackageId, string Version) ParsePackageIdentity(ArgumentResult argumentResult)
         {
-            /*if (argumentResult.Tokens.Count > 1)
-            {
-                throw new ArgumentException("Package id must be a single token.");
-            }*/
             var token = argumentResult.Tokens[0].Value;
             var versionSeparatorIndex = token.IndexOf('@');
             if (versionSeparatorIndex == -1)
