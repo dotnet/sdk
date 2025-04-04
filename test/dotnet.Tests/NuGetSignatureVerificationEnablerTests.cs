@@ -3,8 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.MSBuild;
 using Moq;
 
 namespace Microsoft.DotNet.Tests

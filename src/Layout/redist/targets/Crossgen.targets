@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
-    <IsCrossgenSupported Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(Architecture)' != 's390x' AND '$(Architecture)' != 'ppc64le'">true</IsCrossgenSupported>
+    <IsCrossgenSupported Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(TargetArchitecture)' != 's390x' AND '$(TargetArchitecture)' != 'ppc64le'">true</IsCrossgenSupported>
 
     <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
     <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
@@ -150,7 +150,7 @@
     <Crossgen
         SourceAssembly="%(RoslynTargets.FullPath)"
         DestinationPath="%(RoslynTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -159,7 +159,7 @@
     <Crossgen
         SourceAssembly="%(FSharpTargets.FullPath)"
         DestinationPath="%(FSharpTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -168,7 +168,7 @@
     <Crossgen
         SourceAssembly="%(RemainingTargets.FullPath)"
         DestinationPath="%(RemainingTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"
@@ -177,7 +177,7 @@
     <Crossgen
         SourceAssembly="%(RazorToolTargets.FullPath)"
         DestinationPath="%(RazorToolTargets.FullPath)"
-        Architecture="$(Architecture)"
+        Architecture="$(TargetArchitecture)"
         CrossgenPath="$(CrossgenPath)"
         ReadyToRun="True"
         CreateSymbols="$(CreateCrossgenSymbols)"

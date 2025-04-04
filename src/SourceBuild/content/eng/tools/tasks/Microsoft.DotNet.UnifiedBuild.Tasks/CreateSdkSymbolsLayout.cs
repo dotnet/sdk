@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
                     string debugId = GetDebugId(guid, file);
                     if (!allPdbGuids.ContainsKey(debugId))
                     {
-                        filesWithoutPDBs.Add(file.Substring(SdkLayoutPath.Length + 1));
+                        filesWithoutPDBs.Add(file.Substring(SdkLayoutPath.Length));
                     }
                     else
                     {

@@ -25,7 +25,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile.Replace("\'{0}\'", "").Split(" ");
+            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
+                .Replace("\'{0}\'", "")
+                .Split(" ")
+                .Where(word => !string.IsNullOrEmpty(word))
+                .ToArray();
+
             runResult
                 .Should()
                 .Pass()

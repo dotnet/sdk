@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.BuildServer.Shutdown;
+namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
 internal class BuildServerShutdownCommand : CommandBase
 {
@@ -64,7 +64,7 @@ internal class BuildServerShutdownCommand : CommandBase
         bool success = true;
         while (tasks.Count > 0)
         {
-            var index = WaitForResult(tasks.Select(t => t.Item2).ToArray());
+            var index = WaitForResult([.. tasks.Select(t => t.Item2)]);
             var (server, task) = tasks[index];
 
             if (task.IsFaulted)

@@ -4,7 +4,7 @@
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 /// <summary>
 /// Factory that is loaded by TemplateEngine via <see cref="IComponentManager"/>.

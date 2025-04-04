@@ -51,10 +51,25 @@ Make the profile names distinct.</source>
         <target state="translated">名稱為 '{0}' 的啟動設定檔不存在。</target>
         <note />
       </trans-unit>
+      <trans-unit id="MissingDirectiveName">
+        <source>Missing name of '{0}' at {1}.</source>
+        <target state="new">Missing name of '{0}' at {1}.</target>
+        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
+      </trans-unit>
       <trans-unit id="OnlyOneProjectAllowed">
         <source>Only one project can be specified at a time using the -p option.</source>
         <target state="translated">使用 -p 選項時，一次只能指定一個專案。</target>
         <note>{Locked="-p"}</note>
+      </trans-unit>
+      <trans-unit id="PropertyDirectiveInvalidName">
+        <source>Invalid property name at {0}. {1}</source>
+        <target state="new">Invalid property name at {0}. {1}</target>
+        <note>{0} is the file path and line number. {1} is an inner exception message.</note>
+      </trans-unit>
+      <trans-unit id="PropertyDirectiveMissingParts">
+        <source>The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</source>
+        <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
+        <note>{0} is the file path and line number. {Locked="="}</note>
       </trans-unit>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
@@ -150,6 +165,11 @@ The current {1} is '{2}'.</source>
         <source>'{0}' is not a valid project file.</source>
         <target state="translated">'{0}' 並非有效的專案名稱。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="UnrecognizedDirective">
+        <source>Unrecognized directive '{0}' at {1}.</source>
+        <target state="new">Unrecognized directive '{0}' at {1}.</target>
+        <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="UsingLaunchSettingsFromMessage">
         <source>Using launch settings from {0}...</source>

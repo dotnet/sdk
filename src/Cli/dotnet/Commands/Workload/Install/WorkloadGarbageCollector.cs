@@ -2,10 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Packaging;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 /// <summary>
 /// Handles garbage collection of workload sets, workload manifests, and workload packs for a feature band.
@@ -16,44 +17,35 @@ namespace Microsoft.DotNet.Workloads.Workload.Install;
 /// and manifests for each feature band.  When it runs garbage collection, it should remove those reference counts
 /// for the current feature band for items not specified in ManifestsToKeep and PacksToKeep.  Then, if an item
 /// has no reference counts left, it can actually be deleted / uninstalled.
+///
+/// globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
+/// should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
+/// file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
+/// set version).
 /// </summary>
-internal class WorkloadGarbageCollector
+internal class WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
+    Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
 {
-    SdkFeatureBand _sdkFeatureBand;
-    string _dotnetDir;
-    IEnumerable<WorkloadId> _installedWorkloads;
-    Func<string, IWorkloadResolver> _getResolverForWorkloadSet;
-    Dictionary<string, string> _globalJsonWorkloadSetVersions;
-    IReporter _verboseReporter;
+    private SdkFeatureBand _sdkFeatureBand = sdkFeatureBand;
+    private readonly string _dotnetDir = dotnetDir;
+    private readonly IEnumerable<WorkloadId> _installedWorkloads = installedWorkloads;
+    private readonly Func<string, IWorkloadResolver> _getResolverForWorkloadSet = getResolverForWorkloadSet;
+    private readonly Dictionary<string, string> _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
+    private readonly IReporter _verboseReporter = verboseReporter ?? Reporter.NullReporter;
 
     public HashSet<string> WorkloadSetsToKeep = [];
     public HashSet<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand)> ManifestsToKeep = [];
     public HashSet<(WorkloadPackId id, string version)> PacksToKeep = [];
 
-    enum GCAction
+    private enum GCAction
     {
         Collect = 0,
         KeepWithoutPacks = 1,
         Keep = 2,
     }
 
-    Dictionary<string, GCAction> _workloadSets = [];
-    Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
-
-    //  globalJsonWorkloadSetVersions should be the contents of the GC Roots file.  The keys should be paths to global.json files, and the values
-    //  should be the workload set version referred to by that file.  Before calling this method, the installer implementation should update the
-    //  file by removing any outdated entries in it (where for example the global.json file doesn't exist or no longer specifies the same workload
-    //  set version).
-    public WorkloadGarbageCollector(string dotnetDir, SdkFeatureBand sdkFeatureBand, IEnumerable<WorkloadId> installedWorkloads, Func<string, IWorkloadResolver> getResolverForWorkloadSet,
-        Dictionary<string, string> globalJsonWorkloadSetVersions, IReporter verboseReporter)
-    {
-        _dotnetDir = dotnetDir;
-        _sdkFeatureBand = sdkFeatureBand;
-        _installedWorkloads = installedWorkloads;
-        _getResolverForWorkloadSet = getResolverForWorkloadSet;
-        _globalJsonWorkloadSetVersions = globalJsonWorkloadSetVersions;
-        _verboseReporter = verboseReporter ?? Reporter.NullReporter;
-    }
+    private Dictionary<string, GCAction> _workloadSets = [];
+    private readonly Dictionary<(ManifestId id, ManifestVersion version, SdkFeatureBand featureBand), GCAction> _manifests = [];
 
     public void Collect()
     {
@@ -67,12 +59,12 @@ internal class WorkloadGarbageCollector
         ManifestsToKeep.AddRange(_manifests.Where(kvp => kvp.Value != GCAction.Collect).Select(kvp => kvp.Key));
     }
 
-    IWorkloadResolver GetResolver(string workloadSetVersion = null)
+    private IWorkloadResolver GetResolver(string workloadSetVersion = null)
     {
         return _getResolverForWorkloadSet(workloadSetVersion);
     }
 
-    void GarbageCollectWorkloadSets()
+    private void GarbageCollectWorkloadSets()
     {
         //  Determine which workload sets should not be garbage collected.  IInstaller implementation will be responsible for actually uninstalling the other ones (if not referenced by another feature band)
         //  Keep the following, garbage collect all others:
@@ -123,7 +115,7 @@ internal class WorkloadGarbageCollector
         }
     }
 
-    void GarbageCollectWorkloadManifestsAndPacks()
+    private void GarbageCollectWorkloadManifestsAndPacks()
     {
         //  Determine which workload manifests and packs should not be garbage collected
         //  This will be within the scope of a feature band.

@@ -593,10 +593,10 @@ _testhost() {
                                             '--package-directory=[The directory to restore packages to.]:PACKAGE_DIR: ' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--prerelease[Allows prerelease packages to be installed.]' \
-                                            '--project=[]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':PACKAGE_NAME -- The package reference to add.:->dotnet_dynamic_complete' \
+                                            ':PACKAGE_NAME -- The package reference to add. This can be in the form of just the package identifier, for example '\''Newtonsoft.Json'\'', or a package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\'':->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -629,7 +629,7 @@ _testhost() {
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
                                             '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
-                                            '--project=[]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -637,7 +637,7 @@ _testhost() {
                                     (remove)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--project=[]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PACKAGE_NAME -- The package reference to remove.: ' \

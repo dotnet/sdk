@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Workloads.Workload.History;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal class WorkloadHistoryRecord
 {
@@ -49,8 +49,8 @@ internal class WorkloadHistoryState
             }
         }
 
-        if ((WorkloadSetVersion is not null && !WorkloadSetVersion.Equals(other.WorkloadSetVersion)) ||
-            (WorkloadSetVersion is null && other.WorkloadSetVersion is not null))
+        if (WorkloadSetVersion is not null && !WorkloadSetVersion.Equals(other.WorkloadSetVersion) ||
+            WorkloadSetVersion is null && other.WorkloadSetVersion is not null)
         {
             return false;
         }

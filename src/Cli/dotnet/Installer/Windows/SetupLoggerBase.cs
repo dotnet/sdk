@@ -28,7 +28,7 @@ internal abstract class SetupLoggerBase
     /// </summary>
     /// <param name="message">The message to format.</param>
     /// <returns>The formatted message.</returns>
-    protected string FormatMessage(string message)
+    protected static string FormatMessage(string message)
     {
         return $"[{Environment.ProcessId:X8}] {message}";
     }

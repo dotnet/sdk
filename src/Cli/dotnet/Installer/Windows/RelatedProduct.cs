@@ -38,12 +38,7 @@ internal class RelatedProduct
     {
         get
         {
-            if (_languages == null)
-            {
-                _languages = string.IsNullOrEmpty(Language)
-                    ? Enumerable.Empty<int>()
-                    : Language.Split(',').Select(lang => Convert.ToInt32(lang));
-            }
+            _languages ??= string.IsNullOrEmpty(Language) ? [] : Language.Split(',').Select(lang => Convert.ToInt32(lang));
 
             return _languages;
         }

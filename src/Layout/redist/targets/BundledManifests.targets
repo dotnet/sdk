@@ -25,7 +25,7 @@
   <PropertyGroup>
     <!-- TODO: Not exactly sure how this value should be calculated -->
     <!--<MsiArchitectureForWorkloadManifests>$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</MsiArchitectureForWorkloadManifests>-->
-    <MsiArchitectureForWorkloadManifests>$(Architecture)</MsiArchitectureForWorkloadManifests>
+    <MsiArchitectureForWorkloadManifests>$(TargetArchitecture)</MsiArchitectureForWorkloadManifests>
   </PropertyGroup>
   <ItemGroup>
     <BundledManifests Update="@(BundledManifests)">

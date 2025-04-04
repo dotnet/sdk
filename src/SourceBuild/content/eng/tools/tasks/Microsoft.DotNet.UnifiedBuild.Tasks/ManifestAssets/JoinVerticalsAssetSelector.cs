@@ -36,10 +36,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
                 // Skip packages with stable version
                 // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4892
                 StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.Diagnostics.NETCore.Client") ||
-                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100") ||
-                // Skip productVersion.txt files from all repos except sdk
-                // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4596
-                (assetVerticalMatch.AssetId.Contains("/productVersion.txt", StringComparison.OrdinalIgnoreCase) && (assetVerticalMatch.Asset.RepoOrigin != "sdk"));
+                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100");
         }
 
         public IEnumerable<AssetVerticalMatchResult> SelectAssetMatchingVertical(IEnumerable<BuildAssetsManifest> verticalManifests)

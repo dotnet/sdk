@@ -42,15 +42,14 @@ public static class TypoCorrection
         var matchByContains = new List<Suggestion>();
         if (currentToken.Length >= minCurrentTokenLength)
         {
-            matchByContains = possibleSuggestions
+            matchByContains = [.. possibleSuggestions
                 .Where(s =>
                     !s.IsSelected
                     && s.PossibleMatch.Contains(currentToken)
                     && s.Distance - currentTokenLength <= maxLevenshteinDistance)
                 .OrderBy(s => s.Distance)
                 .Take(maxNumberOfSuggestions - numberOfSuggestions)
-                .Select(SetSelection)
-                .ToList();
+                .Select(SetSelection)];
 
             numberOfSuggestions += matchByContains.Count;
             if (numberOfSuggestions >= maxNumberOfSuggestions)

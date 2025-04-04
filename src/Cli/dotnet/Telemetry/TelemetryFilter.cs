@@ -3,20 +3,22 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.Pack;
+using Microsoft.DotNet.Cli.Commands.Publish;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class TelemetryFilter : ITelemetryFilter
+internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
 {
     private const string ExceptionEventName = "mainCatchException/exception";
-    private readonly Func<string, string> _hash;
-
-    public TelemetryFilter(Func<string, string> hash)
-    {
-        _hash = hash ?? throw new ArgumentNullException(nameof(hash));
-    }
+    private readonly Func<string, string> _hash = hash ?? throw new ArgumentNullException(nameof(hash));
 
     public IEnumerable<ApplicationInsightsEntryFormat> Filter(object objectToFilter)
     {
@@ -68,18 +70,17 @@ internal class TelemetryFilter : ITelemetryFilter
             ));
         }
 
-        return result
-            .Select(r =>
+        return [.. result.Select(r =>
+        {
+            if (r.EventName == ExceptionEventName)
             {
-                if (r.EventName == ExceptionEventName)
-                {
-                    return r;
-                }
-                else
-                {
-                    return r.WithAppliedToPropertiesValue(_hash);
-                }
-            }).ToList();
+                return r;
+            }
+            else
+            {
+                return r.WithAppliedToPropertiesValue(_hash);
+            }
+        })];
     }
 
     private static List<IParseResultLogRule> ParseResultLogRules =>
@@ -191,7 +192,7 @@ internal class TelemetryFilter : ITelemetryFilter
         return s;
     }
 
-    private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
     {
         if (measurements != null)
         {

@@ -16,7 +16,6 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
     <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
   </ItemGroup>

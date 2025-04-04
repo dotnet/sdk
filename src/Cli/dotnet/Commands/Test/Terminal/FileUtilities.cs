@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal static class FileUtilities
 {

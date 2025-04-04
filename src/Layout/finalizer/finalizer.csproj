@@ -11,7 +11,7 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <_IsPublishing>true</_IsPublishing>
-    <PublishDir>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin</PublishDir>
+    <PublishDir>$(ArtifactsBinDir)finalizer\win-$(TargetArchitecture)\$(Configuration)\bin</PublishDir>
   </PropertyGroup>
 
   <ItemGroup>

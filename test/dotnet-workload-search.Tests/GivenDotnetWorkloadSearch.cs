@@ -4,11 +4,10 @@
 #nullable disable
 
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload.Search;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using Microsoft.TemplateEngine.Abstractions.Components;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests

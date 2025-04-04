@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <PackageReference Include="FakeItEasy"  />
-    <PackageReference Include="FluentAssertions" />
   </ItemGroup>
 
   <ItemGroup>

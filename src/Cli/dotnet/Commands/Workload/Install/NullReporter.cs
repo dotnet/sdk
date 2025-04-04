@@ -3,7 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal class NullReporter : IReporter
 {

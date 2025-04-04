@@ -4,8 +4,8 @@
 #nullable disable
 
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools.MSBuild;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

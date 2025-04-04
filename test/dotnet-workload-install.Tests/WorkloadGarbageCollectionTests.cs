@@ -4,16 +4,11 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
-using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using System.Text.Json;
-using Microsoft.TemplateEngine.Edge.Constraints;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {

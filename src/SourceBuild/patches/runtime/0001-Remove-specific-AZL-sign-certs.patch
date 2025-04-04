@@ -1,0 +1,35 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Matt Mitchell <mmitche@microsoft.com>
+Date: Tue, 1 Apr 2025 16:12:10 -0700
+Subject: [PATCH] Remove specific AZL sign certs
+
+Replaced by arcade pattern:
+
+https://github.com/dotnet/arcade/pull/15684
+
+Backport PR: https://github.com/dotnet/runtime/pull/114131
+---
+ eng/Signing.props | 10 ----------
+ 1 file changed, 10 deletions(-)
+
+diff --git a/eng/Signing.props b/eng/Signing.props
+index d06028e5d5e..28344c16e94 100644
+--- a/eng/Signing.props
++++ b/eng/Signing.props
+@@ -58,16 +58,6 @@
+     <FileSignInfo Include="Mono.Cecil.Rocks.dll" CertificateName="3PartySHA2" />
+   </ItemGroup>
+ 
+-  <!--
+-    Ensure that we sign the AZL3 RPM with the LinuxSignMariner key.
+-    This package name has the version in it, so we need to use a wildcard to discover the right name.
+-  -->
+-  <ItemGroup>
+-    <AzureLinuxRPM Include="$(ArtifactsPackagesDir)**/*-azl.*-*.rpm" />
+-    <AzureLinuxRPM Include="$(ArtifactsPackagesDir)**/*-azl-*.rpm" />
+-    <FileSignInfo Include="@(AzureLinuxRPM->'%(Filename)%(Extension)')" CertificateName="LinuxSignMariner" />
+-  </ItemGroup>
+-
+   <ItemGroup Condition="'$(DotNetFinalPublish)' != 'true'">
+     <BlobArtifact Include="$(ArtifactsPackagesDir)**\*.tar.gz;
+                            $(ArtifactsPackagesDir)**\*.zip;

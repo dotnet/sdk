@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
-using Microsoft.Build.Graph;
-using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch;
 

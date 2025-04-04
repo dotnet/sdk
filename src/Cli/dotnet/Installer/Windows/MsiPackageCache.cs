@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
 
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
 
-using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -16,26 +16,20 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// Manages caching workload pack MSI packages.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal class MsiPackageCache : InstallerBase
+internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISetupLogger logger,
+    bool verifySignatures, string packageCacheRoot = null) : InstallerBase(elevationContext, logger, verifySignatures)
 {
     /// <summary>
     /// Determines whether revocation checks can go online.
     /// </summary>
-    private bool _allowOnlineRevocationChecks;
+    private readonly bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
 
     /// <summary>
     /// The root directory of the package cache where MSI workload packs are stored.
     /// </summary>
-    public readonly string PackageCacheRoot;
-
-    public MsiPackageCache(InstallElevationContextBase elevationContext, ISetupLogger logger,
-        bool verifySignatures, string packageCacheRoot = null) : base(elevationContext, logger, verifySignatures)
-    {
-        PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
+    public readonly string PackageCacheRoot = string.IsNullOrWhiteSpace(packageCacheRoot)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "dotnet", "workloads")
             : packageCacheRoot;
-        _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
-    }
 
     /// <summary>
     /// Moves the MSI payload described by the manifest file to the cache.

@@ -4,32 +4,38 @@
 using System.Diagnostics;
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.History;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 using Microsoft.Win32.Msi;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
-namespace Microsoft.DotNet.Installer.Windows;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
+/// <summary>
+/// Creates a new <see cref="MsiInstallerBase"/> instance.
+/// </summary>
+/// <param name="dispatcher">The command dispatcher used for sending and receiving commands.</param>
+/// <param name="logger"></param>
+/// <param name="reporter"></param>
 [SupportedOSPlatform("windows")]
-internal abstract class MsiInstallerBase : InstallerBase
+internal abstract class MsiInstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger,
+    bool verifySignatures, IReporter reporter = null) : InstallerBase(elevationContext, logger, verifySignatures)
 {
     /// <summary>
     /// Track messages that should never be reported more than once.
     /// </summary>
-    private HashSet<string> _reportedMessages = [];
+    private readonly HashSet<string> _reportedMessages = [];
 
     /// <summary>
     /// Backing field for the install location of .NET
     /// </summary>
     private string _dotNetHome;
 
-    private JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
@@ -60,7 +66,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <summary>
     /// Determines whether the parent process is still active.
     /// </summary>
-    protected bool IsParentProcessRunning => Process.GetProcessById(ParentProcess.Id) != null;
+    protected static bool IsParentProcessRunning => Process.GetProcessById(ParentProcess.Id) != null;
 
     /// <summary>
     /// Provides access to the underlying MSI cache.
@@ -69,7 +75,7 @@ internal abstract class MsiInstallerBase : InstallerBase
     {
         get;
         private set;
-    }
+    } = new MsiPackageCache(elevationContext, logger, verifySignatures);
 
     /// <summary>
     /// The install location of the .NET based on the host and OS architecture as stored in the registry. If
@@ -88,32 +94,17 @@ internal abstract class MsiInstallerBase : InstallerBase
         }
     }
 
-    protected readonly IReporter Reporter;
+    protected readonly IReporter Reporter = reporter;
 
     /// <summary>
     /// A service controller representing the Windows Update agent (wuaserv).
     /// </summary>
-    protected readonly WindowsUpdateAgent UpdateAgent;
+    protected readonly WindowsUpdateAgent UpdateAgent = new WindowsUpdateAgent(logger);
 
     /// <summary>
     /// Provides access to workload installation records in the registry.
     /// </summary>
-    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository;
-
-    /// <summary>
-    /// Creates a new <see cref="MsiInstallerBase"/> instance.
-    /// </summary>
-    /// <param name="dispatcher">The command dispatcher used for sending and receiving commands.</param>
-    /// <param name="logger"></param>
-    /// <param name="reporter"></param>
-    public MsiInstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger,
-        bool verifySignatures, IReporter reporter = null) : base(elevationContext, logger, verifySignatures)
-    {
-        Cache = new MsiPackageCache(elevationContext, logger, verifySignatures);
-        RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
-        UpdateAgent = new WindowsUpdateAgent(logger);
-        Reporter = reporter;
-    }
+    protected readonly RegistryWorkloadInstallationRecordRepository RecordRepository = new RegistryWorkloadInstallationRecordRepository(elevationContext, logger, verifySignatures);
 
     /// <summary>
     /// Determines the per-machine install location for .NET. This is similar to the logic in the standalone installers.
@@ -154,7 +145,6 @@ internal abstract class MsiInstallerBase : InstallerBase
     /// <param name="logFile">The path of the log file.</param>
     protected void ConfigureInstall(string logFile)
     {
-        uint error = Error.SUCCESS;
 
         // Turn off the MSI UI.
         _ = WindowsInstaller.SetInternalUI(InstallUILevel.None);
@@ -163,7 +153,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         // against it.
         FileStream logFileStream = File.Create(logFile);
         logFileStream.Close();
-        error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
+        uint error = WindowsInstaller.EnableLog(InstallLogMode.DEFAULT | InstallLogMode.VERBOSE, logFile, InstallLogAttributes.NONE);
 
         // We can report issues with the log file creation, but shouldn't fail the workload operation.
         LogError(error, $"Failed to configure log file: {logFile}");
@@ -236,8 +226,8 @@ internal abstract class MsiInstallerBase : InstallerBase
     {
         string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, DotNetHome), "default.json");
         var installStateContents = InstallStateContents.FromPath(path);
-        if ((installStateContents.WorkloadVersion == null && workloadVersion == null) ||
-            (installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion)))
+        if (installStateContents.WorkloadVersion == null && workloadVersion == null ||
+            installStateContents.WorkloadVersion != null && installStateContents.WorkloadVersion.Equals(workloadVersion))
         {
             return;
         }
@@ -381,7 +371,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         throw new InvalidOperationException($"Invalid configuration: elevated: {IsElevated}, client: {IsClient}");
     }
 
-    internal protected string GetWorkloadHistoryDirectory(string sdkFeatureBand)
+    protected internal static string GetWorkloadHistoryDirectory(string sdkFeatureBand)
     {
         return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "dotnet", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkFeatureBand.ToString(), "history");
     }
@@ -391,7 +381,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         var historyDirectory = GetWorkloadHistoryDirectory(sdkFeatureBand);
         string logFile = Path.Combine(historyDirectory, $"{workloadHistoryRecord.TimeStarted:yyyy'-'MM'-'dd'T'HHmmss}_{workloadHistoryRecord.CommandName}.json");
         Directory.CreateDirectory(historyDirectory);
-        File.WriteAllText(logFile, (JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true })));
+        File.WriteAllText(logFile, JsonSerializer.Serialize(workloadHistoryRecord, new JsonSerializerOptions() { WriteIndented = true }));
     }
 
     /// <summary>
@@ -478,7 +468,7 @@ internal abstract class MsiInstallerBase : InstallerBase
 
         if (hklm32 == null)
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
 
         using RegistryKey installedSdkVersionsKey = hklm32.OpenSubKey(@$"SOFTWARE\dotnet\Setup\InstalledVersions\{HostArchitecture}\sdk");
@@ -613,7 +603,7 @@ internal abstract class MsiInstallerBase : InstallerBase
         }
     }
 
-    private void CreateSecureFileInDirectory(string path, string contents)
+    private static void CreateSecureFileInDirectory(string path, string contents)
     {
         SecurityUtils.CreateSecureDirectory(Path.GetDirectoryName(path));
         File.WriteAllText(path, contents);

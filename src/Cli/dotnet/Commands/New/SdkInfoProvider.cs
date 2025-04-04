@@ -6,8 +6,9 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Utils;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal class SdkInfoProvider : ISdkInfoProvider
 {
@@ -51,10 +52,7 @@ internal class SdkInfoProvider : ISdkInfoProvider
         catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
         {
             string sdkDir = Path.Combine(dotnetDir, "sdk");
-            sdks =
-                Directory.Exists(sdkDir)
-                    ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
-                    : Enumerable.Empty<string>();
+            sdks = Directory.Exists(sdkDir) ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion) : [];
         }
         return Task.FromResult(sdks);
     }

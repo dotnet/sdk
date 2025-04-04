@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;

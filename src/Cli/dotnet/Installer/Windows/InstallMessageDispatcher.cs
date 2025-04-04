@@ -15,11 +15,8 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 #if NETCOREAPP
 [SupportedOSPlatform("windows")]
 #endif
-internal class InstallMessageDispatcher : PipeStreamMessageDispatcherBase, IInstallMessageDispatcher
+internal class InstallMessageDispatcher(PipeStream pipeStream) : PipeStreamMessageDispatcherBase(pipeStream), IInstallMessageDispatcher
 {
-    public InstallMessageDispatcher(PipeStream pipeStream) : base(pipeStream)
-    {
-    }
 
     /// <summary>
     /// Sends a message and blocks until a reply is received.

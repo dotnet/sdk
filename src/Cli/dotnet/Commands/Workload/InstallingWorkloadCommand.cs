@@ -3,22 +3,22 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.Search;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.History;
 using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Search;
-using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 using Strings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 {
@@ -153,11 +153,11 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name,
                 WorkloadUpdateCommandParser.FromHistoryOption.Name), isUserError: true);
         }
-        else if (_shouldUseWorkloadSets == true && (UseRollback || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null)))
+        else if (_shouldUseWorkloadSets == true && (UseRollback || FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null))
         {
             throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
         }
-        else if (_shouldUseWorkloadSets == false && (SpecifiedWorkloadSetVersionInGlobalJson || SpecifiedWorkloadSetVersionOnCommandLine || (FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is not null)))
+        else if (_shouldUseWorkloadSets == false && (SpecifiedWorkloadSetVersionInGlobalJson || SpecifiedWorkloadSetVersionOnCommandLine || FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is not null))
         {
             throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
@@ -352,7 +352,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, workloadSetVersion));
         var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
 
-        return workloadSet is null ? Enumerable.Empty<ManifestVersionUpdate>() : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+        return workloadSet is null ? [] : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
     }
 
     protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null,
@@ -450,7 +450,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         {
             var workloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
 
-            return workloads ?? Enumerable.Empty<WorkloadId>();
+            return workloads ?? [];
         }
     }
 

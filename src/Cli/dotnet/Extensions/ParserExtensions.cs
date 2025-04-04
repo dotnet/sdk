@@ -11,5 +11,5 @@ public static class ParserExtensions
         this CliConfiguration parser,
         string context,
         string[] args = null) =>
-        parser.Parse(context.Split(' ').Concat(args).ToArray());
+        parser.Parse([.. context.Split(' '), .. args]);
 }

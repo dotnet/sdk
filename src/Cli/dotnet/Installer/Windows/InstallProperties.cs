@@ -53,7 +53,7 @@ internal static class InstallProperties
     /// <returns>A string containing all the properties or <see langword="null" /> if <paramref name="properties"/> contain no values.</returns>
     internal static string Create(params string[] properties)
     {
-        string[] props = properties.Where(p => !string.IsNullOrWhiteSpace(p)).ToArray();
+        string[] props = [.. properties.Where(p => !string.IsNullOrWhiteSpace(p))];
 
         return props.Length > 0 ? string.Join(' ', props) : null;
     }

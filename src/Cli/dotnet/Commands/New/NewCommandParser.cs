@@ -3,11 +3,12 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
+using Microsoft.DotNet.Cli.Commands.New.PostActions;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
-using Microsoft.DotNet.Tools.New.PostActionProcessors;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
@@ -16,10 +17,9 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.TemplateEngine.MSBuildEvaluation;
 using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class NewCommandParser
 {

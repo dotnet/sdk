@@ -9,7 +9,7 @@
   <!-- MIBC, PGO -->
   <PropertyGroup>
     <MibcPath>$(PkgMicrosoft_FSharp_Compiler)/contentFiles/mibc</MibcPath>
-    <MibcRid>$(Rid)</MibcRid>
+    <MibcRid>$(TargetRid)</MibcRid>
     <MibcRid Condition="$(MibcRid.Contains('musl-'))">$(MibcRid.Replace('musl-', ''))</MibcRid>
     <MibcFile>$(MibcPath)/optimization.$(MibcRid).mibc.runtime/DotNet_FSharp.mibc</MibcFile>
     <ReadyToRunOptimizationData>$(MibcFile)</ReadyToRunOptimizationData>

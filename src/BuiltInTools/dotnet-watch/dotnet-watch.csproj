@@ -34,9 +34,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.MSBuild" />
     <PackageReference Include="Microsoft.NET.StringTools" ExcludeAssets="runtime" PrivateAssets="All" />
 
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBRP. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
-
     <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
   </ItemGroup>
 

@@ -3,8 +3,7 @@
 
 using System.Globalization;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using BuildCommand = Microsoft.DotNet.Tools.Build.BuildCommand;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

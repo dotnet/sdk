@@ -3,54 +3,35 @@
 
 using Microsoft.DotNet.Cli.ToolPackage;
 
-namespace Microsoft.DotNet.Tools.Tool.Search;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 /// <summary>
 /// All fields are possibly null other than Id, Version, Tags, Authors, Versions
 /// </summary>
-internal class SearchResultPackage
+internal class SearchResultPackage(
+    PackageId id,
+    string latestVersion,
+    string description,
+    string summary,
+    IReadOnlyCollection<string> tags,
+    IReadOnlyCollection<string> authors,
+    int totalDownloads,
+    bool verified,
+    IReadOnlyCollection<SearchResultPackageVersion> versions)
 {
-    public SearchResultPackage(
-        PackageId id,
-        string latestVersion,
-        string description,
-        string summary,
-        IReadOnlyCollection<string> tags,
-        IReadOnlyCollection<string> authors,
-        int totalDownloads,
-        bool verified,
-        IReadOnlyCollection<SearchResultPackageVersion> versions)
-    {
-        Id = id;
-        LatestVersion = latestVersion ?? throw new ArgumentNullException(nameof(latestVersion));
-        Description = description;
-        Summary = summary;
-        Tags = tags ?? throw new ArgumentNullException(nameof(tags));
-        Authors = authors ?? throw new ArgumentNullException(nameof(authors));
-        TotalDownloads = totalDownloads;
-        Verified = verified;
-        Versions = versions ?? throw new ArgumentNullException(nameof(versions));
-    }
-
-    public PackageId Id { get; }
-    public string LatestVersion { get; }
-    public string Description { get; }
-    public string Summary { get; }
-    public IReadOnlyCollection<string> Tags { get; }
-    public IReadOnlyCollection<string> Authors { get; }
-    public int TotalDownloads { get; }
-    public bool Verified { get; }
-    public IReadOnlyCollection<SearchResultPackageVersion> Versions { get; }
+    public PackageId Id { get; } = id;
+    public string LatestVersion { get; } = latestVersion ?? throw new ArgumentNullException(nameof(latestVersion));
+    public string Description { get; } = description;
+    public string Summary { get; } = summary;
+    public IReadOnlyCollection<string> Tags { get; } = tags ?? throw new ArgumentNullException(nameof(tags));
+    public IReadOnlyCollection<string> Authors { get; } = authors ?? throw new ArgumentNullException(nameof(authors));
+    public int TotalDownloads { get; } = totalDownloads;
+    public bool Verified { get; } = verified;
+    public IReadOnlyCollection<SearchResultPackageVersion> Versions { get; } = versions ?? throw new ArgumentNullException(nameof(versions));
 }
 
-internal class SearchResultPackageVersion
+internal class SearchResultPackageVersion(string version, int downloads)
 {
-    public SearchResultPackageVersion(string version, int downloads)
-    {
-        Version = version ?? throw new ArgumentNullException(nameof(version));
-        Downloads = downloads;
-    }
-
-    public string Version { get; }
-    public int Downloads { get; }
+    public string Version { get; } = version ?? throw new ArgumentNullException(nameof(version));
+    public int Downloads { get; } = downloads;
 }

@@ -45,7 +45,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
                     string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
         }
 
-        return toolManifestPackageAndSource.Select(t => t.toolManifestPackage).ToArray();
+        return [.. toolManifestPackageAndSource.Select(t => t.toolManifestPackage)];
     }
 
     public IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
@@ -59,7 +59,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
             toolManifestPackageAndSource = [];
         }
 
-        return toolManifestPackageAndSource.ToArray();
+        return [.. toolManifestPackageAndSource];
     }
 
     private bool TryFindToolManifestPackages(
