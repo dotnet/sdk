@@ -171,7 +171,7 @@ internal partial class NetSdkMsiInstallerClient
                             List<string> relatedProductCodes;
                             try
                             {
-                                relatedProductCodes = WindowsInstaller.FindRelatedProducts(upgradeCode.ToString()).ToList();
+                                relatedProductCodes = [.. WindowsInstaller.FindRelatedProducts(upgradeCode.ToString())];
                             }
                             catch (WindowsInstallerException)
                             {

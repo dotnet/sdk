@@ -4,8 +4,9 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
+namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallback = null) : PostActionProcessorBase
 {

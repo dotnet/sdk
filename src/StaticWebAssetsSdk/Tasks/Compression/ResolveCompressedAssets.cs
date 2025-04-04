@@ -54,8 +54,8 @@ public class ResolveCompressedAssets : Task
             return true;
         }
 
-        var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
-        var explicitAssets = ExplicitAssets?.Select(StaticWebAsset.FromTaskItem).ToArray() ?? [];
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets).ToArray();
+        var explicitAssets = ExplicitAssets == null ? [] : StaticWebAsset.FromTaskItemGroup(ExplicitAssets);
         var existingCompressionFormatsByAssetItemSpec = CollectCompressedAssets(candidates);
 
         var includePatterns = SplitPattern(IncludePatterns);

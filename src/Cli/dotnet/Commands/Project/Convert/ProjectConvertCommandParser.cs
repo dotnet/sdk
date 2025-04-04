@@ -4,11 +4,10 @@
 #nullable enable
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
 using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 internal sealed class ProjectConvertCommandParser
 {

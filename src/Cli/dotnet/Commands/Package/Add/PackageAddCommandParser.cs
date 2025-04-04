@@ -6,16 +6,15 @@ using System.CommandLine.Completions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using Microsoft.DotNet.Tools.Package.Add;
 using Microsoft.DotNet.Cli.Extensions;
 using System.CommandLine.Parsing;
 using NuGet.Packaging.Core;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {
-    public static NuGet.Packaging.Core.PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
+    public static PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
     {
         // per the Arity of the CmdPackageArgument's Arity, we should have exactly one token - 
         // this is a safety net for if we change the Arity in the future and forget to update this parser.
@@ -28,16 +27,16 @@ internal static class PackageAddCommandParser
         if (indexOfAt == -1)
         {
             // no version specified, so we just return the package id
-            return new NuGet.Packaging.Core.PackageIdentity(token, null);
+            return new PackageIdentity(token, null);
         }
         // we have a version specified, so we need to split the token into id and version
         else
         {
             var id = token[0..indexOfAt];
             var versionString = token[(indexOfAt + 1)..];
-            if (NuGet.Versioning.SemanticVersion.TryParse(versionString, out var version))
+            if (SemanticVersion.TryParse(versionString, out var version))
             {
-                return new NuGet.Packaging.Core.PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
+                return new PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
             }
             else
             {
@@ -46,7 +45,7 @@ internal static class PackageAddCommandParser
         };
     }
 
-    public static readonly CliArgument<NuGet.Packaging.Core.PackageIdentity> CmdPackageArgument = new DynamicArgument<NuGet.Packaging.Core.PackageIdentity>(LocalizableStrings.CmdPackage)
+    public static readonly CliArgument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(LocalizableStrings.CmdPackage)
     {
         Description = LocalizableStrings.CmdPackageDescription,
         Arity = ArgumentArity.ExactlyOne,
@@ -67,7 +66,7 @@ internal static class PackageAddCommandParser
         .AddCompletions((context) =>
         {
             // we can only do version completion if we have a package id
-            if (context.ParseResult.GetValue(CmdPackageArgument) is NuGet.Packaging.Core.PackageIdentity packageId && !packageId.HasVersion)
+            if (context.ParseResult.GetValue(CmdPackageArgument) is PackageIdentity packageId && !packageId.HasVersion)
             {
                 // we should take --prerelease flags into account for version completion
                 var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
@@ -77,7 +76,7 @@ internal static class PackageAddCommandParser
             }
             else
             {
-                return Enumerable.Empty<CompletionItem>();
+                return [];
             }
         });
 
@@ -158,7 +157,7 @@ internal static class PackageAddCommandParser
         }
         catch (Exception)
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
     }
 
@@ -172,7 +171,7 @@ internal static class PackageAddCommandParser
         }
         catch (Exception)
         {
-            return Enumerable.Empty<NuGetVersion>();
+            return [];
         }
     }
 }

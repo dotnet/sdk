@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using CommandLocalizableStrings = Microsoft.DotNet.Cli.CommonLocalizableStrings;
+using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Sln.List;
+namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
 internal class ListProjectsInSolutionCommand(
     ParseResult parseResult) : CommandBase(parseResult)
@@ -25,7 +24,7 @@ internal class ListProjectsInSolutionCommand(
         }
         catch (Exception ex)
         {
-            throw new GracefulException(CommandLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
         }
     }
 
@@ -35,16 +34,13 @@ internal class ListProjectsInSolutionCommand(
         string[] paths;
         if (_displaySolutionFolders)
         {
-            paths = solution.SolutionFolders
+            paths = [.. solution.SolutionFolders
                 // VS-SolutionPersistence does not return a path object, so there might be issues with forward/backward slashes on different platforms
-                .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))
-                .ToArray();
+                .Select(folder => Path.GetDirectoryName(folder.Path.TrimStart('/')))];
         }
         else
         {
-            paths = solution.SolutionProjects
-                .Select(project => project.FilePath)
-                .ToArray();
+            paths = [.. solution.SolutionProjects.Select(project => project.FilePath)];
         }
         if (paths.Length == 0)
         {

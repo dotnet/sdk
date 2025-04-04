@@ -607,6 +607,11 @@ Argomenti di RunSettings:
         <target state="new">Standard output</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestDiscoveryExitCode">
+        <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="new">Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestDiscoverySummary">
         <source>Discovered {0} tests in {1} assemblies.</source>
         <target state="new">Discovered {0} tests in {1} assemblies.</target>
@@ -617,10 +622,20 @@ Argomenti di RunSettings:
         <target state="new">Discovered {0} tests.</target>
         <note>0 is number of tests</note>
       </trans-unit>
+      <trans-unit id="TestRunExitCode">
+        <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
+        <target state="new">Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <note>0 is whole number, the value of exit code</note>
+      </trans-unit>
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
         <target state="new">Test run summary:</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Try">
+        <source>try {0}</source>
+        <target state="new">try {0}</target>
+        <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
       <trans-unit id="ZeroTestsRan">
         <source>Zero tests ran</source>

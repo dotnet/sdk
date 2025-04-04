@@ -3,10 +3,9 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Workloads.Workload.List;
 using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal static class WorkloadListCommandParser
 {

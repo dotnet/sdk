@@ -7,8 +7,9 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Utils;
+using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
+namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, bool>? addProjToSolutionCallback = null) : PostActionProcessorBase
 {
@@ -31,7 +32,7 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         List<string> filesToAdd = [];
         projectFiles = [];
 
-        if ((actionConfig.Args != null) && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))
+        if (actionConfig.Args != null && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))
         {
             foreach (string indexString in projectIndexes.Split([';'], StringSplitOptions.RemoveEmptyEntries))
             {

@@ -5,8 +5,10 @@ using System.Collections.Concurrent;
 using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli;
-using Microsoft.Testing.Platform.Helpers;
+using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
+using FlatException = Microsoft.DotNet.Cli.Commands.Test.Terminal.FlatException;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -50,6 +52,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
+    private bool _isRetry;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -151,28 +154,52 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress = terminalWithProgress;
     }
 
-    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp)
+    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
     {
         _isDiscovery = isDiscovery;
         _isHelp = isHelp;
+        _isRetry = isRetry;
         _testExecutionStartTime = testStartTime;
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId, string? instanceId)
     {
+        var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        assemblyRun.Tries.Add(instanceId);
+
+        if (_isRetry)
+        {
+            // When we are retrying the new assembly run should ignore all previously failed tests and
+            // clear all errors. We restarted the run and will retry all failed tests.
+            //
+            // In case of folded dynamic data tests we do not know how many tests we will get in each run,
+            // if more or less, or the same amount as before,and we also will rerun tests that passed previously
+            // because we are unable to run just a single test from that dynamic data source.
+            // This will cause the total number of tests to differ between runs, and there is nothing we can do about it.
+            assemblyRun.TotalTests -= assemblyRun.FailedTests;
+            assemblyRun.RetriedFailedTests += assemblyRun.FailedTests;
+            assemblyRun.FailedTests = 0;
+            assemblyRun.ClearAllMessages();
+        }
+
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal =>
             {
+                if (_isRetry)
+                {
+                    terminal.SetColor(TerminalColor.DarkGray);
+                    terminal.Append($"({string.Format(LocalizableStrings.Try, assemblyRun.Tries.Count)}) ");
+                    terminal.ResetColor();
+                }
+
                 terminal.Append(_isDiscovery ? LocalizableStrings.DiscoveringTestsFrom : LocalizableStrings.RunningTestsFrom);
                 terminal.Append(' ');
                 AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
                 terminal.AppendLine();
             });
         }
-
-        GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
     }
 
     private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string? executionId)
@@ -194,14 +221,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _disableTestRunSummary = true;
     }
 
-    public void TestExecutionCompleted(DateTimeOffset endTime)
+    public void TestExecutionCompleted(DateTimeOffset endTime, int? exitCode)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
         if (!_isHelp && !_disableTestRunSummary)
         {
-            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+            if (_isDiscovery)
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestDiscoverySummary(terminal, exitCode));
+            }
+            else
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestRunSummary(terminal, exitCode));
+            }
         }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
@@ -211,7 +245,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = null;
     }
 
-    private void AppendTestRunSummary(ITerminal terminal)
+    private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
         IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
 
@@ -305,6 +339,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
+        int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
         int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
@@ -315,6 +350,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         string errorText = $"{SingleIndentation}error: {error}";
         string totalText = $"{SingleIndentation}total: {total}";
+        string retriedText = $" (+{retried} retried)";
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
@@ -329,7 +365,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         terminal.ResetColor();
-        terminal.AppendLine(totalText);
+        terminal.Append(totalText);
+        if (retried > 0)
+        {
+            terminal.SetColor(TerminalColor.DarkGray);
+            terminal.Append(retriedText);
+            terminal.ResetColor();
+        }
+        terminal.AppendLine();
+
         if (colorizeFailed)
         {
             terminal.SetColor(TerminalColor.Red);
@@ -369,6 +413,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(durationText);
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+    }
+
+    private void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
+    {
+        // When we crash with exception we don't have any predetermined exit code, and won't write our helper message to point users to exit code overview.
+        // When we succeed we also don't point users to exit code overview.
+        if (exitCode == null || exitCode == 0)
+        {
+            return;
+        }
+
+        terminal.AppendLine(string.Format(isRun ? LocalizableStrings.TestRunExitCode : LocalizableStrings.TestDiscoveryExitCode, exitCode));
     }
 
     /// <summary>
@@ -405,43 +463,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
     }
 
     internal void TestCompleted(
-       string assembly,
-       string? targetFramework,
-       string? architecture,
-       string? executionId,
-       string testNodeUid,
-       string displayName,
-       TestOutcome outcome,
-       TimeSpan duration,
-       string? errorMessage,
-       Exception? exception,
-       string? expected,
-       string? actual,
-       string? standardOutput,
-       string? errorOutput)
-    {
-        FlatException[] flatExceptions = ExceptionFlattener.Flatten(errorMessage, exception);
-        TestCompleted(
-            assembly,
-            targetFramework,
-            architecture,
-            executionId,
-            testNodeUid,
-            displayName,
-            outcome,
-            duration,
-            flatExceptions,
-            expected,
-            actual,
-            standardOutput,
-            errorOutput);
-    }
-
-    internal void TestCompleted(
         string assembly,
         string? targetFramework,
         string? architecture,
         string? executionId,
+        string instanceId,
         string testNodeUid,
         string displayName,
         TestOutcome outcome,
@@ -453,6 +479,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? errorOutput)
     {
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        var attempt = asm.Tries.Count;
 
         if (_options.ShowActiveTests)
         {
@@ -478,12 +505,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
+        if (_isRetry && asm.Tries.Count > 1 && outcome == TestOutcome.Passed)
+        {
+            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
+            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
+            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
+            asm.FlakyTests.Add(testNodeUid);
+            
+        }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {
             _terminalWithProgress.WriteToTerminal(terminal => RenderTestCompleted(
                 terminal,
                 assembly,
+                attempt,
                 targetFramework,
                 architecture,
                 displayName,
@@ -506,6 +542,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal /* for testing */ void RenderTestCompleted(
         ITerminal terminal,
         string assembly,
+        int attempt,
         string? targetFramework,
         string? architecture,
         string displayName,
@@ -540,6 +577,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         terminal.SetColor(color);
         terminal.Append(outcomeText);
+        if (_isRetry)
+        {
+            terminal.SetColor(TerminalColor.DarkGray);
+            terminal.Append($" ({string.Format(LocalizableStrings.Try, attempt)})");
+        }
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
@@ -785,22 +827,24 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
-            terminal.AppendLine();
         });
     }
 
     private static void AppendExecutableSummary(ITerminal terminal, int? exitCode, string? outputData, string? errorData)
     {
-        terminal.AppendLine();
         terminal.Append(LocalizableStrings.ExitCode);
         terminal.Append(": ");
         terminal.AppendLine(exitCode?.ToString(CultureInfo.CurrentCulture) ?? "<null>");
-        terminal.Append(LocalizableStrings.StandardOutput);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(outputData) ? string.Empty : outputData);
-        terminal.Append(LocalizableStrings.StandardError);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(errorData) ? string.Empty : errorData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardOutput, outputData);
+        AppendOutputWhenPresent(LocalizableStrings.StandardError, errorData);
+
+        void AppendOutputWhenPresent(string description, string? output)
+        {
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
+            }
+        }
     }
 
     private static string? NormalizeSpecialCharacters(string? text)
@@ -955,7 +999,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void AppendTestDiscoverySummary(ITerminal terminal)
+    public void AppendTestDiscoverySummary(ITerminal terminal, int? exitCode)
     {
         terminal.AppendLine();
 
@@ -1000,6 +1044,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(LocalizableStrings.Aborted);
             terminal.AppendLine();
         }
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>
@@ -1032,6 +1078,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string testNodeUid,
+        string instanceId,
         string displayName,
         string? executionId)
     {

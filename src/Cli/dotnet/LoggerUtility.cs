@@ -80,7 +80,7 @@ internal static class LoggerUtility
 /// <param name="innerLogger"></param>
 internal class PersistentDispatcher : EventArgsDispatcher, IEventSource4
 {
-    private List<BinaryLogger> innerLoggers;
+    private readonly List<BinaryLogger> innerLoggers;
 
     public PersistentDispatcher(List<BinaryLogger> innerLoggers)
     {
