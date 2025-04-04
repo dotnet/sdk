@@ -198,7 +198,9 @@ namespace Microsoft.DotNet.Cli
             else
             {
                 Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
 
             return 1;
