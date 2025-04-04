@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
     public class GenerateStaticWebAssetsDevelopmentManifest : Task
     {
         private static readonly char[] _separator = ['/'];
-        
+
         [Required]
         public string Source { get; set; }
 
