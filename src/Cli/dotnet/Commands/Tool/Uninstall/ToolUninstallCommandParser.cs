@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal static class ToolUninstallCommandParser
 {
-    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = CommonArguments.PackageIdentityArgument;
+    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = CommonArguments.PackageIdentityArgument();
 
     public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
