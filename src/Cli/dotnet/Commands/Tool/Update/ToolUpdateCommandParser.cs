@@ -28,6 +28,7 @@ internal static class ToolUpdateCommandParser
         CliCommand command = new("update", LocalizableStrings.CommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
+        PackageIdArgument.Arity = ArgumentArity.ZeroOrOne;
 
         ToolInstallCommandParser.AddCommandOptions(command);
         command.Options.Add(AllowPackageDowngradeOption);
