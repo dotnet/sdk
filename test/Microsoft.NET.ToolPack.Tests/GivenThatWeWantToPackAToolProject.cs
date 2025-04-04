@@ -268,7 +268,7 @@ namespace Microsoft.NET.ToolPack.Tests
         [InlineData("DotnetTool, 1.0.0.0", "DotnetTool, 1.0.0.0")]
         [InlineData("DotnetTool , 1.0.0.0", "DotnetTool , 1.0.0.0")]
         [InlineData("MyDotnetTool", "DotnetTool;MyDotnetTool")]
-        public void It_contains_allows_more_package_types(string input, string expectedString)
+        public void It_allows_more_package_types(string input, string expectedString)
         {
             var nugetPackage = SetupNuGetPackage(multiTarget: false, packageType: input);
             using (var nupkgReader = new PackageArchiveReader(nugetPackage))
