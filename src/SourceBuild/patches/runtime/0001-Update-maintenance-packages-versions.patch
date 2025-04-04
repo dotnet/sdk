@@ -1,0 +1,49 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
+ <1175054+carlossanlop@users.noreply.github.com>
+Date: Fri, 4 Apr 2025 12:09:40 -0700
+Subject: [PATCH] Update maintenance-packages versions
+
+Update dependencies from https://github.com/dotnet/source-build-reference-packages build 20250404.2
+
+Microsoft.SourceBuild.Intermediate.source-build-reference-packages
+ From Version 10.0.617601 -> To Version 10.0.620402
+---
+ eng/Version.Details.xml | 4 ++--
+ eng/Versions.props      | 6 +++---
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index fbd40396539..c4868c14788 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -71,9 +71,9 @@
+       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
+-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.617601">
++    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.620402">
+       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
+-      <Sha>1556b6c639edcaee959013681afcf2e66b118537</Sha>
++      <Sha>14f833124983b36ac4083338d0cad6caefce2489</Sha>
+       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 968de51fe1e..b6b4a79f065 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -114,10 +114,10 @@
+     <MicrosoftBclHashCodeVersion>6.0.0</MicrosoftBclHashCodeVersion>
+     <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
+     <SystemDataSqlClientVersion>4.9.0</SystemDataSqlClientVersion>
+-    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
++    <SystemMemoryVersion>4.6.3</SystemMemoryVersion>
+     <SystemNumericsVectorsVersion>4.6.1</SystemNumericsVectorsVersion>
+-    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.1</SystemRuntimeCompilerServicesUnsafeVersion>
+-    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
++    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.2</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemThreadingTasksExtensionsVersion>4.6.3</SystemThreadingTasksExtensionsVersion>
+     <SystemValueTupleVersion>4.6.1</SystemValueTupleVersion>
+     <!-- Libraries dependencies -->
+     <MicrosoftBclAsyncInterfacesVersion>6.0.0</MicrosoftBclAsyncInterfacesVersion>
