@@ -258,7 +258,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             CalculateExcludedLibraries();
 
-            List<RuntimeLibrary> runtimeLibraries = new();
+            List<ModifiableRuntimeLibrary> runtimeLibraries = new();
 
             if (_includeMainProjectInDepsFile)
             {
@@ -285,21 +285,74 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var directReference in directAndDependencyReferences)
             {
-                var runtimeLibrary = new RuntimeLibrary(
+                var runtimeLibrary = new ModifiableRuntimeLibrary(new RuntimeLibrary(
                     type: "reference",
                     name: GetReferenceLibraryName(directReference),
                     version: directReference.Version,
                     hash: string.Empty,
-                    runtimeAssemblyGroups: new[] { new RuntimeAssetGroup(string.Empty, new[] { CreateRuntimeFile(directReference.FileName, directReference.FullPath) }) },
-                    nativeLibraryGroups: new RuntimeAssetGroup[] { },
+                    runtimeAssemblyGroups: [new RuntimeAssetGroup(string.Empty, [CreateRuntimeFile(directReference.FileName, directReference.FullPath)])],
+                    nativeLibraryGroups: [],
                     resourceAssemblies: CreateResourceAssemblies(directReference.ResourceAssemblies),
-                    dependencies: Enumerable.Empty<Dependency>(),
+                    dependencies: [],
                     path: null,
                     hashPath: null,
                     runtimeStoreManifestName: null,
-                    serviceable: false);
+                    serviceable: false));
 
                 runtimeLibraries.Add(runtimeLibrary);
+            }
+
+            /*
+             * We now need to modify runtimeLibraries to eliminate those that don't have any runtime assets. We follow the following steps:
+             * 0. Construct a reverse dependencies list: all runtimeLibraries that depend on this one
+             * 1. If runtimeAssemblyGroups, nativeLibraryGroups, dependencies, and resourceAssemblies are all empty, remove this runtimeLibrary as well as any dependencies on it.
+             * 2. Add all runtimeLibraries to a list of to-be-processed libraries called libraryCandidatesForRemoval
+             * 3. libraryCandidatesForRemoval.Pop() --> if there are no runtimeAssemblyGroups, nativeLibraryGroups, or resourceAssemblies, and either dependencies is empty or all
+             *      dependencies have something else that depends on them, remove it (and from libraryCandidatesForRemoval), adding everything that depends on this to 
+             *      libraryCandidatesForRemoval if it isn't already there
+             * Repeat 3 until libraryCandidatesForRemoval is empty
+             */
+            var libraries = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
+            foreach (var reference in runtimeLibraries)
+            {
+                foreach (var dependency in reference.Library.Dependencies)
+                {
+                    if (libraries.TryGetValue(dependency.Name, out var dep))
+                    {
+                        dep.Dependents.Add(reference.Library.Name);
+                    }
+                }
+            }
+
+            var unprocessedLibraries = runtimeLibraries.ToHashSet();
+            while (unprocessedLibraries.Any())
+            {
+                var lib = unprocessedLibraries.First();
+                unprocessedLibraries.Remove(lib);
+
+                if (lib.Library.RuntimeAssemblyGroups.Count == 0 && lib.Library.NativeLibraryGroups.Count == 0 && lib.Library.ResourceAssemblies.Count == 0)
+                {
+                    if (lib.Library.Dependencies.All(d => !libraries.TryGetValue(d.Name, out var dependency) || dependency.Dependents.Count > 1))
+                    {
+                        runtimeLibraries.Remove(lib);
+                        libraries.Remove(lib.Library.Name);
+                        foreach (var dependency in lib.Library.Dependencies)
+                        {
+                            if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary? value))
+                            {
+                                value.Dependents.Remove(lib.Library.Name);
+                            }
+                        }
+
+                        foreach (var dependent in lib.Dependents)
+                        {
+                            if (libraries.TryGetValue(dependent, out var dep))
+                            {
+                                unprocessedLibraries.Add(dep);
+                            }
+                        }
+                    }
+                }
             }
 
             List<CompilationLibrary> compilationLibraries = new();
@@ -386,7 +439,6 @@ namespace Microsoft.NET.Build.Tasks
             //
             // Otherwise, it is the set of all runtimes compatible with (inheriting)
             // the target runtime-identifier.
-
             var runtimeFallbackGraph =
                 (_runtimeGraph == null || _runtimeIdentifier == null) ?
                     new RuntimeFallbacks[] { } :
@@ -399,11 +451,11 @@ namespace Microsoft.NET.Build.Tasks
             targetInfo,
             _compilationOptions ?? CompilationOptions.Default,
             compilationLibraries,
-            runtimeLibraries,
+            runtimeLibraries.Select(library => library.Library),
             runtimeFallbackGraph);
         }
 
-        private RuntimeLibrary GetProjectRuntimeLibrary()
+        private ModifiableRuntimeLibrary GetProjectRuntimeLibrary()
         {
             RuntimeAssetGroup[] runtimeAssemblyGroups = new[] { new RuntimeAssetGroup(string.Empty, _mainProjectInfo.OutputName) };
 
@@ -418,7 +470,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            return new RuntimeLibrary(
+            return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                 type: "project",
                 name: _mainProjectInfo.Name,
                 version: _mainProjectInfo.Version,
@@ -430,7 +482,7 @@ namespace Microsoft.NET.Build.Tasks
                 path: null,
                 hashPath: null,
                 runtimeStoreManifestName: GetRuntimeStoreManifestName(_mainProjectInfo.Name, _mainProjectInfo.Version),
-                serviceable: false);
+                serviceable: false));
         }
 
         private List<Dependency> GetProjectDependencies()
@@ -477,11 +529,11 @@ namespace Microsoft.NET.Build.Tasks
             return dependencies;
         }
 
-        private IEnumerable<RuntimeLibrary> GetRuntimePackLibraries()
+        private IEnumerable<ModifiableRuntimeLibrary> GetRuntimePackLibraries()
         {
             if (_runtimePackAssets == null)
             {
-                return Enumerable.Empty<RuntimeLibrary>();
+                return [];
             }
             return _runtimePackAssets.Select(runtimePack =>
             {
@@ -493,20 +545,20 @@ namespace Microsoft.NET.Build.Tasks
                     runtimePack.Value.Where(asset => asset.AssetType == AssetType.Native)
                     .Select(asset => CreateRuntimeFile(asset.DestinationSubPath, asset.SourcePath)));
 
-                return new RuntimeLibrary(
+                return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                     type: "runtimepack",
                     name: runtimePack.Key,
                     version: runtimePack.Value.First().PackageVersion,
                     hash: string.Empty,
-                    runtimeAssemblyGroups: new[] { runtimeAssemblyGroup },
-                    nativeLibraryGroups: new[] { nativeLibraryGroup },
-                    resourceAssemblies: Enumerable.Empty<ResourceAssembly>(),
-                    dependencies: Enumerable.Empty<Dependency>(),
-                    serviceable: false);
+                    runtimeAssemblyGroups: [runtimeAssemblyGroup],
+                    nativeLibraryGroups: [nativeLibraryGroup],
+                    resourceAssemblies: [],
+                    dependencies: [],
+                    serviceable: false));
             });
         }
 
-        private RuntimeLibrary GetRuntimeLibrary(DependencyLibrary library, string[] userRuntimeAssemblies)
+        private ModifiableRuntimeLibrary GetRuntimeLibrary(DependencyLibrary library, string[] userRuntimeAssemblies)
         {
             GetCommonLibraryProperties(library,
                 out string hash,
@@ -582,7 +634,7 @@ namespace Microsoft.NET.Build.Tasks
 
             }
 
-            var runtimeLibrary = new RuntimeLibrary(
+            var runtimeLibrary = new ModifiableRuntimeLibrary(new RuntimeLibrary(
                 type: library.Type,
                 name: library.Name,
                 version: library.Version.ToString(),
@@ -594,7 +646,7 @@ namespace Microsoft.NET.Build.Tasks
                 path: path,
                 hashPath: hashPath,
                 runtimeStoreManifestName: GetRuntimeStoreManifestName(library.Name, library.Version.ToString()),
-                serviceable: serviceable);
+                serviceable: serviceable));
 
             return runtimeLibrary;
         }
@@ -884,6 +936,19 @@ namespace Microsoft.NET.Build.Tasks
         {
             public string Name { get; set; }
             public NuGetVersion MinVersion { get; set; }
+        }
+
+        private class ModifiableRuntimeLibrary
+        {
+            // Dependents are assemblies that depend on this library, as opposed to dependencies which are libraries that this one depends on
+            public HashSet<string> Dependents { get; set; }
+            public RuntimeLibrary Library { get; set; }
+
+            public ModifiableRuntimeLibrary(RuntimeLibrary library)
+            {
+                this.Dependents = new();
+                this.Library = library;
+            }
         }
     }
 }
