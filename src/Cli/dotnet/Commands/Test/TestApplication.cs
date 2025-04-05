@@ -40,8 +40,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             return ExitCode.GenericFailure;
         }
 
-        bool isDll = Module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
-        var processStartInfo = CreateProcessStartInfo(isDll, testOptions);
+        var processStartInfo = CreateProcessStartInfo(testOptions);
 
         _testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(_cancellationToken.Token), _cancellationToken.Token);
         var testProcessResult = await StartProcess(processStartInfo);
@@ -51,8 +50,10 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         return testProcessResult;
     }
 
-    private ProcessStartInfo CreateProcessStartInfo(bool isDll, TestOptions testOptions)
+    private ProcessStartInfo CreateProcessStartInfo(TestOptions testOptions)
     {
+        bool isDll = Module.RunProperties.RunCommand.HasExtension(CliConstants.DLLExtension);
+
         var processStartInfo = new ProcessStartInfo
         {
             FileName = GetFileName(testOptions, isDll),
@@ -64,6 +65,21 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         if (!string.IsNullOrEmpty(Module.RunProperties.RunWorkingDirectory))
         {
             processStartInfo.WorkingDirectory = Module.RunProperties.RunWorkingDirectory;
+        }
+
+        if (Module.LaunchSettings is not null)
+        {
+            foreach (var entry in Module.LaunchSettings.EnvironmentVariables)
+            {
+                string value = Environment.ExpandEnvironmentVariables(entry.Value);
+                processStartInfo.EnvironmentVariables[entry.Key] = value;
+            }
+
+            // TODO: Support --no-launch-profile-arguments
+            if (!string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
+            {
+                processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
+            }
         }
 
         return processStartInfo;

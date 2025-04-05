@@ -53,7 +53,7 @@ internal static class MSBuildUtility
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
         var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
-        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection);
+        IEnumerable<TestModule> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
         logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
@@ -89,6 +89,7 @@ internal static class MSBuildUtility
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+            parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileOption),
             degreeOfParallelism,
             otherArgs,
             msbuildArgs);
@@ -120,7 +121,7 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = buildOptions.DegreeOfParallelism },
             (project) =>
             {
-                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection);
+                IEnumerable<TestModule> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project, projectCollection, buildOptions.NoLaunchProfile);
                 foreach (var projectMetadata in projectsMetadata)
                 {
                     allProjects.Add(projectMetadata);

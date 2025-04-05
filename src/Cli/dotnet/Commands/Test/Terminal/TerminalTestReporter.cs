@@ -164,6 +164,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
         assemblyRun.Tries.Add(instanceId);
 
+        // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
+        // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
+        // least show (try 2) etc. So user is still aware there is retry going on, and counts of tests won't break.
+        _isRetry |= assemblyRun.Tries.Count > 1;
+
         if (_isRetry)
         {
             // When we are retrying the new assembly run should ignore all previously failed tests and
