@@ -6,7 +6,6 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
-using System.Security.Cryptography;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Build.Construction;
@@ -201,28 +200,12 @@ internal sealed class VirtualProjectBuildingCommand
 
         static string GetArtifactsPath(string entryPointFilePath)
         {
-            return Path.Join(Path.GetTempPath(), "dotnet", "runfile", Hash(entryPointFilePath));
+            // We want a location where permissions are expected to be restricted to the current user.
+            var directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? Path.GetTempPath()
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return Path.Join(directory, "dotnet", "runfile", Sha256Hasher.HashWithNormalizedCasing(entryPointFilePath));
         }
-
-        static string Hash(string s)
-        {
-            Span<byte> hashBytes = stackalloc byte[SHA256.HashSizeInBytes];
-            int written = SHA256.HashData(Encoding.UTF8.GetBytes(s), hashBytes);
-            Debug.Assert(written == hashBytes.Length);
-            return string.Create(hashBytes.Length * 2, hashBytes, static (destination, hashBytes) => ToHex(hashBytes, destination));
-        }
-
-        static void ToHex(ReadOnlySpan<byte> source, Span<char> destination)
-        {
-            int i = 0;
-            foreach (var b in source)
-            {
-                destination[i++] = HexChar(b >> 4);
-                destination[i++] = HexChar(b & 0xF);
-            }
-        }
-
-        static char HexChar(int x) => (char)((x <= 9) ? (x + '0') : (x + ('a' - 10)));
     }
 
     public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
