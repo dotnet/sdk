@@ -185,7 +185,7 @@ internal static class VisualStudioWorkloads
             if (workloadsToWriteRecordsFor.Any())
             {
                 reporter.WriteLine(
-                    string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
+                    string.Format(CliCommandStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
                     string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
                 );
 

@@ -15,12 +15,12 @@ internal static class WorkloadListCommandParser
 
     public static readonly CliOption<string> TempDirOption = new CliOption<string>("--temp-dir")
     {
-        Description = LocalizableStrings.TempDirOptionDescription
+        Description = CliCommandStrings.TempDirOptionDescription
     }.Hide();
 
     public static readonly CliOption<bool> IncludePreviewsOption = new CliOption<bool>("--include-previews")
     {
-        Description = LocalizableStrings.IncludePreviewOptionDescription
+        Description = CliCommandStrings.IncludePreviewOptionDescription
     }.Hide();
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -32,7 +32,7 @@ internal static class WorkloadListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.WorkloadListCommandDescription);
+        CliCommand command = new("list", CliCommandStrings.WorkloadListCommandDescription);
         command.Options.Add(MachineReadableOption);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);
         command.Options.Add(VersionOption);

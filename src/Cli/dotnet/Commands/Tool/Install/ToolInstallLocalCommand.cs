@@ -124,7 +124,7 @@ internal class ToolInstallLocalCommand : CommandBase
             throw new GracefulException(
                 [
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolToLowerVersion,
+                        CliCommandStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
@@ -135,7 +135,7 @@ internal class ToolInstallLocalCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                    CliCommandStrings.UpdateLocaToolSucceededVersionNoChange,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
@@ -149,7 +149,7 @@ internal class ToolInstallLocalCommand : CommandBase
                 [toolDownloadedPackage.Command.Name]);
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.UpdateLocalToolSucceeded,
+                    CliCommandStrings.UpdateLocalToolSucceeded,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),
@@ -181,7 +181,7 @@ internal class ToolInstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.LocalToolInstallationSucceeded,
+                CliCommandStrings.LocalToolInstallationSucceeded,
                 toolDownloadedPackage.Command.Name,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version.ToNormalizedString(),
@@ -201,7 +201,7 @@ internal class ToolInstallLocalCommand : CommandBase
         catch (ToolManifestCannotBeFoundException e)
         {
             throw new GracefulException(
-                [e.Message, LocalizableStrings.ToolInstallNoManifestGuide],
+                [e.Message, CliCommandStrings.ToolInstallNoManifestGuide],
                 verboseMessages: [e.VerboseMessage],
                 isUserError: false);
         }

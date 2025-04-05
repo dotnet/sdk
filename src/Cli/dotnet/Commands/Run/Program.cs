@@ -21,7 +21,7 @@ public partial class RunCommand
     {
         if (parseResult.UsingRunCommandShorthandProjectOption())
         {
-            Reporter.Output.WriteLine(LocalizableStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
+            Reporter.Output.WriteLine(CliCommandStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 

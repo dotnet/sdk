@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             command.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().Equal(LocalizableStrings.NoServersToShutdown.Green());
+            _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.All), Times.Once);
         }
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             command.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().Equal(LocalizableStrings.NoServersToShutdown.Green());
+            _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.MSBuild), Times.Once);
         }
@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             command.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().Equal(LocalizableStrings.NoServersToShutdown.Green());
+            _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.VBCSCompiler), Times.Once);
         }
@@ -91,7 +91,7 @@ namespace Microsoft.DotNet.Tests.Commands
 
             command.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().Equal(LocalizableStrings.NoServersToShutdown.Green());
+            _reporter.Lines.Should().Equal(CliCommandStrings.NoServersToShutdown.Green());
 
             provider.Verify(p => p.EnumerateBuildServers(ServerEnumerationFlags.Razor), Times.Once);
         }
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .And
                 .HaveStdOutContaining(
                     string.Format(
-                        LocalizableStrings.ShutDownSucceededWithPid,
+                        CliCommandStrings.ShutDownSucceededWithPid,
                         CliStrings.RazorServer,
                         pidFile.ProcessId));
         }
@@ -239,27 +239,27 @@ namespace Microsoft.DotNet.Tests.Commands
         {
             if (server.ProcessId != 0)
             {
-                return string.Format(LocalizableStrings.ShuttingDownServerWithPid, server.Name, server.ProcessId);
+                return string.Format(CliCommandStrings.ShuttingDownServerWithPid, server.Name, server.ProcessId);
             }
-            return string.Format(LocalizableStrings.ShuttingDownServer, server.Name);
+            return string.Format(CliCommandStrings.ShuttingDownServer, server.Name);
         }
 
         private static string FormatSuccessMessage(IBuildServer server)
         {
             if (server.ProcessId != 0)
             {
-                return string.Format(LocalizableStrings.ShutDownSucceededWithPid, server.Name, server.ProcessId).Green();
+                return string.Format(CliCommandStrings.ShutDownSucceededWithPid, server.Name, server.ProcessId).Green();
             }
-            return string.Format(LocalizableStrings.ShutDownSucceeded, server.Name).Green();
+            return string.Format(CliCommandStrings.ShutDownSucceeded, server.Name).Green();
         }
 
         private static string FormatFailureMessage(IBuildServer server, string message)
         {
             if (server.ProcessId != 0)
             {
-                return string.Format(LocalizableStrings.ShutDownFailedWithPid, server.Name, server.ProcessId, message).Red();
+                return string.Format(CliCommandStrings.ShutDownFailedWithPid, server.Name, server.ProcessId, message).Red();
             }
-            return string.Format(LocalizableStrings.ShutDownFailed, server.Name, message).Red();
+            return string.Format(CliCommandStrings.ShutDownFailed, server.Name, message).Red();
         }
     }
 }

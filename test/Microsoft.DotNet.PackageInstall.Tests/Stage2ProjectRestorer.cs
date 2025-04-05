@@ -74,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (command.ExitCode != 0)
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
         }
     }

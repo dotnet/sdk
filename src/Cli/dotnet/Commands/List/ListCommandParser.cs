@@ -30,7 +30,7 @@ internal static class ListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand)
+        var command = new DocumentedCommand("list", DocsLink, CliCommandStrings.NetListCommand)
         {
             Hidden = true
         };

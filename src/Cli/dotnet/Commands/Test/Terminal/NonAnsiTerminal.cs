@@ -119,7 +119,7 @@ internal sealed class NonAnsiTerminal : ITerminal
     {
         if (_isBatching)
         {
-            throw new InvalidOperationException(LocalizableStrings.ConsoleIsAlreadyInBatchingMode);
+            throw new InvalidOperationException(CliCommandStrings.ConsoleIsAlreadyInBatchingMode);
         }
 
         _stringBuilder.Clear();

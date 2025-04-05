@@ -165,7 +165,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
-                    Console.WriteLine(LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
+                    Console.WriteLine(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
                 }
             }
         }
@@ -245,7 +245,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         var unrecognizedManifestIds = manifestRollbacks.Where(rollbackManifest => !currentManifestIds.Contains(rollbackManifest.Id));
         if (unrecognizedManifestIds.Any())
         {
-            _reporter.WriteLine(string.Format(LocalizableStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
+            _reporter.WriteLine(string.Format(CliCommandStrings.RollbackDefinitionContainsExtraneousManifestIds, rollbackDefinitionFilePath, string.Join(" ", unrecognizedManifestIds)).Yellow());
             manifestRollbacks = manifestRollbacks.Where(rollbackManifest => currentManifestIds.Contains(rollbackManifest.Id));
         }
 
@@ -293,12 +293,12 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
                 if (!success)
                 {
-                    _reporter.WriteLine(LocalizableStrings.ManifestPackageUrlNotResolved, providedPackageId);
+                    _reporter.WriteLine(CliCommandStrings.ManifestPackageUrlNotResolved, providedPackageId);
                 }
             }
             catch
             {
-                _reporter.WriteLine(LocalizableStrings.ManifestPackageUrlNotResolved, manifest.Id);
+                _reporter.WriteLine(CliCommandStrings.ManifestPackageUrlNotResolved, manifest.Id);
             }
         }
 
@@ -357,14 +357,14 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
 
             if (_displayManifestUpdates)
             {
-                _reporter.WriteLine(LocalizableStrings.AdManifestUpdated, manifestId);
+                _reporter.WriteLine(CliCommandStrings.AdManifestUpdated, manifestId);
             }
 
             return true;
         }
         catch (Exception e)
         {
-            _reporter.WriteLine(LocalizableStrings.FailedAdManifestUpdate, manifestId, e.Message);
+            _reporter.WriteLine(CliCommandStrings.FailedAdManifestUpdate, manifestId, e.Message);
             return false;
         }
         finally
@@ -403,7 +403,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             }
         }
 
-        _reporter.WriteLine(LocalizableStrings.AdManifestPackageDoesNotExist, manifest.Id);
+        _reporter.WriteLine(CliCommandStrings.AdManifestPackageDoesNotExist, manifest.Id);
     }
 
     private (ManifestVersionWithBand ManifestWithBand, WorkloadCollection Workloads)? GetAdvertisingManifestVersionAndWorkloads(ManifestId manifestId)
@@ -498,7 +498,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
         else
         {
-            throw new ArgumentException(string.Format(LocalizableStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
+            throw new ArgumentException(string.Format(CliCommandStrings.RollbackDefinitionFileDoesNotExist, rollbackDefinitionFilePath));
         }
 
         var versions = WorkloadSet.FromJson(fileContent, featureBand).ManifestVersions;

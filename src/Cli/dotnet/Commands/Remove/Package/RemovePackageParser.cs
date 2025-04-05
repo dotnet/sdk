@@ -17,7 +17,7 @@ internal static class RemovePackageParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("package", LocalizableStrings.PackageRemoveAppFullName);
+        var command = new CliCommand("package", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(PackageRemoveCommandParser.CmdPackageArgument);
         command.Options.Add(PackageRemoveCommandParser.InteractiveOption);

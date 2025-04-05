@@ -49,7 +49,7 @@ internal class ListProjectsInSolutionCommand(
         {
             Array.Sort(paths);
 
-            string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
+            string header = _displaySolutionFolders ? CliCommandStrings.SolutionFolderHeader : CliCommandStrings.ProjectsHeader;
             Reporter.Output.WriteLine(header);
             Reporter.Output.WriteLine(new string('-', header.Length));
             foreach (string slnProject in paths)

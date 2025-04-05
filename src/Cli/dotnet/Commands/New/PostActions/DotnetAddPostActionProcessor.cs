@@ -45,7 +45,7 @@ internal class DotnetAddPostActionProcessor(
                 if (projectFileExtensions.Contains('/') || projectFileExtensions.Contains('\\') || projectFileExtensions.Contains('*'))
                 {
                     // these must be literals
-                    Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
+                    Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_ActionMisconfigured);
                     return false;
                 }
 
@@ -55,8 +55,8 @@ internal class DotnetAddPostActionProcessor(
             if (projectsToProcess.Count > 1)
             {
                 // multiple projects at the same level. Error.
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ProjFileListHeader);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_UnresolvedProjFile);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_ProjFileListHeader);
                 foreach (string projectFile in projectsToProcess)
                 {
                     Reporter.Error.WriteLine(string.Format("\t{0}", projectFile));
@@ -73,7 +73,7 @@ internal class DotnetAddPostActionProcessor(
         if (!projectsToProcess.Any())
         {
             // no projects found. Error.
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_UnresolvedProjFile);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_UnresolvedProjFile);
             return false;
         }
 
@@ -115,13 +115,13 @@ internal class DotnetAddPostActionProcessor(
     {
         if (actionConfig.Args == null || !actionConfig.Args.TryGetValue("reference", out string? referenceToAdd))
         {
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_ActionMisconfigured);
             return false;
         }
 
         if (!actionConfig.Args.TryGetValue("referenceType", out string? referenceType))
         {
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Error_ActionMisconfigured);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Error_ActionMisconfigured);
             return false;
         }
 
@@ -141,12 +141,12 @@ internal class DotnetAddPostActionProcessor(
         }
         else if (string.Equals(referenceType, "framework", StringComparison.OrdinalIgnoreCase))
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_FrameworkNotSupported, referenceToAdd));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_Error_FrameworkNotSupported, referenceToAdd));
             return false;
         }
         else
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_Error_UnsupportedRefType, referenceType));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_Error_UnsupportedRefType, referenceType));
             return false;
         }
     }
@@ -157,26 +157,26 @@ internal class DotnetAddPostActionProcessor(
         {
             if (string.IsNullOrWhiteSpace(version))
             {
-                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference, packageName, projectPath));
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference, packageName, projectPath));
             }
             else
             {
-                Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
+                Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_WithVersion, packageName, version, projectPath));
             }
             bool succeeded = _addPackageReferenceCallback(projectPath, packageName, version);
             if (succeeded)
             {
-                Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
+                Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
             }
             else
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Failed);
             }
             return succeeded;
         }
         catch (Exception e)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddPackageReference_Failed, e.Message));
             return false;
         }
     }
@@ -185,21 +185,21 @@ internal class DotnetAddPostActionProcessor(
     {
         try
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference, projectToAdd, projectPath));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddProjectReference, projectToAdd, projectPath));
             bool succeeded = _addProjectReferenceCallback(projectPath, projectToAdd);
             if (succeeded)
             {
-                Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddReference_Succeeded);
+                Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddReference_Succeeded);
             }
             else
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddReference_Failed);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddReference_Failed);
             }
             return succeeded;
         }
         catch (Exception e)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddReference_AddProjectReference_Failed, e.Message));
             return false;
         }
     }

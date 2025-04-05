@@ -16,7 +16,7 @@ internal static class ReferenceListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("list", LocalizableStrings.ReferenceListAppFullName);
+        var command = new CliCommand("list", CliCommandStrings.ReferenceListAppFullName);
 
         command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
 

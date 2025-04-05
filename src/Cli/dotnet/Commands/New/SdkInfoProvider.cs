@@ -61,11 +61,11 @@ internal class SdkInfoProvider : ISdkInfoProvider
     {
         if (viableInstalledVersions.Any())
         {
-            return string.Format(LocalizableStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
+            return string.Format(CliCommandStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
         }
         else
         {
-            return string.Format(LocalizableStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
+            return string.Format(CliCommandStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
         }
     }
 

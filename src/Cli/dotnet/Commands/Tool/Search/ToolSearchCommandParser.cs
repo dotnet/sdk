@@ -9,31 +9,31 @@ internal static class ToolSearchCommandParser
 {
     public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
     {
-        HelpName = LocalizableStrings.ToolSearchSearchTermArgumentName,
-        Description = LocalizableStrings.ToolSearchSearchTermDescription
+        HelpName = CliCommandStrings.ToolSearchSearchTermArgumentName,
+        Description = CliCommandStrings.ToolSearchSearchTermDescription
     };
 
     public static readonly CliOption<bool> DetailOption = new("--detail")
     {
-        Description = LocalizableStrings.DetailDescription,
+        Description = CliCommandStrings.DetailDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<string> SkipOption = new("--skip")
     {
-        Description = LocalizableStrings.ToolSearchSkipDescription,
-        HelpName = LocalizableStrings.ToolSearchSkipArgumentName
+        Description = CliCommandStrings.ToolSearchSkipDescription,
+        HelpName = CliCommandStrings.ToolSearchSkipArgumentName
     };
 
     public static readonly CliOption<string> TakeOption = new("--take")
     {
-        Description = LocalizableStrings.ToolSearchTakeDescription,
-        HelpName = LocalizableStrings.ToolSearchTakeArgumentName
+        Description = CliCommandStrings.ToolSearchTakeDescription,
+        HelpName = CliCommandStrings.ToolSearchTakeArgumentName
     };
 
     public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
     {
-        Description = LocalizableStrings.ToolSearchPrereleaseDescription,
+        Description = CliCommandStrings.ToolSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -46,7 +46,7 @@ internal static class ToolSearchCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("search", LocalizableStrings.ToolSearchCommandDescription);
+        CliCommand command = new("search", CliCommandStrings.ToolSearchCommandDescription);
 
         command.Arguments.Add(SearchTermArgument);
 

@@ -71,16 +71,16 @@ internal class ToolListLocalCommand : CommandBase
     {
         var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
         table.AddColumn(
-            LocalizableStrings.ToolListPackageIdColumn,
+            CliCommandStrings.ToolListPackageIdColumn,
             p => p.toolManifestPackage.PackageId.ToString());
         table.AddColumn(
-            LocalizableStrings.ToolListVersionColumn,
+            CliCommandStrings.ToolListVersionColumn,
             p => p.toolManifestPackage.Version.ToNormalizedString());
         table.AddColumn(
-            LocalizableStrings.ToolListCommandsColumn,
+            CliCommandStrings.ToolListCommandsColumn,
             p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
         table.AddColumn(
-            LocalizableStrings.ManifestFileColumn,
+            CliCommandStrings.ManifestFileColumn,
             p => p.SourceManifest.Value);
         table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
     }

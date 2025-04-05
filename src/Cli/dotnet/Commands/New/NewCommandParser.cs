@@ -34,7 +34,7 @@ internal static class NewCommandParser
     private static readonly CliOption<bool> s_disableSdkTemplatesOption = new CliOption<bool>("--debug:disable-sdk-templates")
     {
         DefaultValueFactory = static _ => false,
-        Description = LocalizableStrings.DisableSdkTemplates_OptionDescription,
+        Description = CliCommandStrings.DisableSdkTemplates_OptionDescription,
         Recursive = true
     }.Hide();
 
@@ -42,14 +42,14 @@ internal static class NewCommandParser
         "--debug:disable-project-context")
     {
         DefaultValueFactory = static _ => false,
-        Description = LocalizableStrings.DisableProjectContextEval_OptionDescription,
+        Description = CliCommandStrings.DisableProjectContextEval_OptionDescription,
         Recursive = true
     }.Hide();
 
     private static readonly CliOption<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
     {
         DefaultValueFactory = _ => DefaultVerbosity,
-        Description = LocalizableStrings.Verbosity_OptionDescription,
+        Description = CliCommandStrings.Verbosity_OptionDescription,
         HelpName = CliStrings.LevelArgumentName,
         Recursive = true
     };
@@ -57,7 +57,7 @@ internal static class NewCommandParser
     private static readonly CliOption<bool> s_diagnosticOption =
         CommonOptionsFactory
             .CreateDiagnosticsOption(recursive: true)
-            .WithDescription(LocalizableStrings.Diagnostics_OptionDescription);
+            .WithDescription(CliCommandStrings.Diagnostics_OptionDescription);
 
     internal static readonly CliCommand s_command = GetCommand();
 

@@ -76,7 +76,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             }
             catch (Exception e)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
         }
         else if (_printDownloadLinkOnly)
@@ -104,7 +104,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
                     new DirectoryPath(_fromCacheOption))
                 .Wait();
             Reporter.WriteLine();
-            Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
+            Reporter.WriteLine(CliCommandStrings.WorkloadUpdateAdManifestsSucceeded);
         }
         else if (_printRollbackDefinitionOnly)
         {
@@ -131,7 +131,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             catch (Exception e)
             {
                 // Don't show entire stack trace
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
             }
         }
 
@@ -172,7 +172,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
 
         Reporter.WriteLine();
-        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUpdateUpdateSucceeded, string.Join(" ", workloadIds)));
+        Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUpdateUpdateSucceeded, string.Join(" ", workloadIds)));
         Reporter.WriteLine();
     }
 
@@ -224,7 +224,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
         if (workloads == null || !workloads.Any())
         {
-            reporter.WriteLine(LocalizableStrings.NoWorkloadsToUpdate);
+            reporter.WriteLine(CliCommandStrings.NoWorkloadsToUpdate);
         }
 
         return workloads;
@@ -235,12 +235,12 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         var transaction = new CliTransaction();
         transaction.RollbackStarted = () =>
         {
-            Reporter.WriteLine(LocalizableStrings.WorkloadUpdateRollingBackInstall);
+            Reporter.WriteLine(CliCommandStrings.WorkloadUpdateRollingBackInstall);
         };
         // Don't hide the original error if roll back fails, but do log the rollback failure
         transaction.RollbackFailed = ex =>
         {
-            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUpdateRollBackFailedMessage, ex.Message));
+            Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUpdateRollBackFailedMessage, ex.Message));
         };
 
         transaction.Run(context => a(context));

@@ -494,7 +494,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
-            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
+            _ => throw new GracefulException(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
         };
     }
 
@@ -514,7 +514,7 @@ internal abstract class CSharpDirective
         {
             if (string.IsNullOrWhiteSpace(firstPart))
             {
-                throw new GracefulException(LocalizableStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
             }
 
             return firstPart;
@@ -570,7 +570,7 @@ internal abstract class CSharpDirective
 
             if (propertyValue is null)
             {
-                throw new GracefulException(LocalizableStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
             }
 
             try
@@ -579,7 +579,7 @@ internal abstract class CSharpDirective
             }
             catch (XmlException ex)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
+                throw new GracefulException(string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
             }
 
             return new Property

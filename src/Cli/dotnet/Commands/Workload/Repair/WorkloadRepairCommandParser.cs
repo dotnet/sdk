@@ -23,7 +23,7 @@ internal static class WorkloadRepairCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("repair", LocalizableStrings.WorkloadRepairCommandDescription);
+        CliCommand command = new("repair", CliCommandStrings.WorkloadRepairCommandDescription);
 
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);

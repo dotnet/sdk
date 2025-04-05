@@ -16,7 +16,7 @@ internal static class SdkCheckCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("check", LocalizableStrings.SdkCheckAppFullName);
+        CliCommand command = new("check", CliCommandStrings.SdkCheckAppFullName);
 
         command.SetAction(SdkCheckCommand.Run);
 

@@ -47,7 +47,7 @@ internal class WorkloadRestoreCommand(
             new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
+            Reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
             new WorkloadInstallCommand(_result,
                 workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly(),
@@ -91,7 +91,7 @@ internal class WorkloadRestoreCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.FailedToRunTarget,
+                        CliCommandStrings.FailedToRunTarget,
                         projectFile),
                     isUserError: false);
             }
@@ -135,7 +135,7 @@ internal class WorkloadRestoreCommand(
         if (projectFiles.Count == 0)
         {
             throw new GracefulException(
-                LocalizableStrings.CouldNotFindAProject,
+                CliCommandStrings.CouldNotFindAProject,
                 currentDirectory, "--project");
         }
 

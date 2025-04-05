@@ -20,7 +20,7 @@ internal static class BuildServerCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.BuildServerCommandDescription);
+        var command = new DocumentedCommand("build-server", DocsLink, CliCommandStrings.BuildServerCommandDescription);
 
         command.Subcommands.Add(ServerShutdownCommandParser.GetCommand());
 

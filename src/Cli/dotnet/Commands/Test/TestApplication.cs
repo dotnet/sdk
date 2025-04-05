@@ -173,7 +173,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
                 default:
                     // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
             }
         }
         catch (Exception ex)

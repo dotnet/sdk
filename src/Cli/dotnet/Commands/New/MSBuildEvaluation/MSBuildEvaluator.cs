@@ -158,7 +158,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             if (targetFrameworks == null)
             {
                 _logger?.LogDebug("Project is SDK style, but does not specify the framework.");
-                return result = MSBuildEvaluationResult.CreateFailure(projectPath, string.Format(LocalizableStrings.MSBuildEvaluator_Error_NoTargetFramework, projectPath));
+                return result = MSBuildEvaluationResult.CreateFailure(projectPath, string.Format(CliCommandStrings.MSBuildEvaluator_Error_NoTargetFramework, projectPath));
             }
 
             //For multi-target project, we need to do additional evaluation for each target framework.

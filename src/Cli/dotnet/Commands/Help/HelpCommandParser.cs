@@ -9,9 +9,9 @@ internal static class HelpCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-help";
 
-    public static readonly CliArgument<string[]> Argument = new(LocalizableStrings.CommandArgumentName)
+    public static readonly CliArgument<string[]> Argument = new(CliCommandStrings.CommandArgumentName)
     {
-        Description = LocalizableStrings.CommandArgumentDescription,
+        Description = CliCommandStrings.CommandArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -24,7 +24,7 @@ internal static class HelpCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("help", DocsLink, LocalizableStrings.HelpAppFullName);
+        DocumentedCommand command = new("help", DocsLink, CliCommandStrings.HelpAppFullName);
 
         command.Arguments.Add(Argument);
 

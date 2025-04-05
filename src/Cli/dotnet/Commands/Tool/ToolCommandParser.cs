@@ -26,7 +26,7 @@ internal static class ToolCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("tool", DocsLink, LocalizableStrings.ToolCommandDescription);
+        DocumentedCommand command = new("tool", DocsLink, CliCommandStrings.ToolCommandDescription);
 
         command.Subcommands.Add(ToolInstallCommandParser.GetCommand());
         command.Subcommands.Add(ToolUninstallCommandParser.GetCommand());

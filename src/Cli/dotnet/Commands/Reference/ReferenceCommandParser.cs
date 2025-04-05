@@ -28,7 +28,7 @@ internal static class ReferenceCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
+        var command = new DocumentedCommand("reference", DocsLink, CliCommandStrings.NetRemoveCommand);
 
         command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
         command.Subcommands.Add(ReferenceListCommandParser.GetCommand());

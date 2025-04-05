@@ -24,7 +24,7 @@ internal class ToolUninstallCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 

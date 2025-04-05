@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -118,7 +119,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                   Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
+                   CliCommandStrings.ToolInstallationRestoreFailed);
         }
 
         [Fact]
@@ -202,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -217,7 +218,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -232,7 +233,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute().Should().Be(0);
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
@@ -248,7 +249,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                  string.Format(Cli.Commands.LocalizableStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
+                  string.Format(CliCommandStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
         }
 
        [Fact]
@@ -262,7 +263,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, HigherPackageVersion, LowerPackageVersion));
         }
 
@@ -277,7 +278,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -292,7 +293,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                CliCommandStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -308,7 +309,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(Cli.Commands.LocalizableStrings.UpdateToLowerVersion,
+                    string.Format(CliCommandStrings.UpdateToLowerVersion,
                         LowerPackageVersion,
                         HigherPackageVersion));
 
@@ -327,7 +328,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolAlreadyInstalled,
+                CliCommandStrings.ToolAlreadyInstalled,
                 _packageId, HigherPackageVersion));
         }
 
@@ -342,7 +343,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                Cli.Commands.LocalizableStrings.ToolAlreadyInstalled,
+                CliCommandStrings.ToolAlreadyInstalled,
                 _packageId, HigherPreviewPackageVersion));
         }
 
@@ -369,8 +370,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => command.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(
-                string.Format(Cli.Commands.LocalizableStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
-                string.Format(Cli.Commands.LocalizableStrings.InvalidToolConfiguration, "Simulated error"));
+                string.Format(CliCommandStrings.UpdateToolFailed, _packageId) + Environment.NewLine +
+                string.Format(CliCommandStrings.InvalidToolConfiguration, "Simulated error"));
         }
 
         [Fact]

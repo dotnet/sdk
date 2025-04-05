@@ -19,25 +19,25 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.BuildOutputOptionDescription,
-        HelpName = LocalizableStrings.OutputOptionName
+        Description = CliCommandStrings.BuildOutputOptionDescription,
+        HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
     public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental")
     {
-        Description = LocalizableStrings.NoIncrementalOptionDescription,
+        Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
     {
-        Description = LocalizableStrings.NoDependenciesOptionDescription,
+        Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:BuildProjectReferences=false");
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.BuildCmdNoLogo,
+        Description = CliCommandStrings.BuildCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
@@ -49,9 +49,9 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.BuildFrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.BuildConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -62,13 +62,13 @@ internal static class BuildCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("build", DocsLink, LocalizableStrings.BuildAppFullName);
+        DocumentedCommand command = new("build", DocsLink, CliCommandStrings.BuildAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.BuildRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.BuildRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

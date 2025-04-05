@@ -22,7 +22,7 @@ internal static class SolutionAndProjectUtility
 
         if (!Directory.Exists(directory))
         {
-            return (false, string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directory));
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
         }
 
         var solutionPaths = GetSolutionFilePaths(directory);
@@ -44,7 +44,7 @@ internal static class SolutionAndProjectUtility
                 return (true, string.Empty);
             }
 
-            return (false, LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+            return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
         }
         else  // If no solutions are found, look for a project file
         {
@@ -56,7 +56,7 @@ internal static class SolutionAndProjectUtility
 
                 if (solutionFilterPaths.Length == 0)
                 {
-                    return (false, LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                    return (false, CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
                 }
 
                 if (solutionFilterPaths.Length == 1)
@@ -67,7 +67,7 @@ internal static class SolutionAndProjectUtility
                 }
                 else
                 {
-                    return (false, LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+                    return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
                 }
             }
 

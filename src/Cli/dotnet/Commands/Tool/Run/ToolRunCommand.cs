@@ -33,7 +33,7 @@ internal class ToolRunCommand(
 
         if (commandspec == null)
         {
-            throw new GracefulException([string.Format(LocalizableStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
         var result = CommandFactoryUsingResolver.Create(commandspec).Execute();

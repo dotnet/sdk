@@ -36,7 +36,7 @@ internal class ListPackageReferencesCommand(
         mutexOptionCount += parseResult.HasOption(PackageListCommandParser.VulnerableOption) ? 1 : 0;
         if (mutexOptionCount > 1)
         {
-            throw new GracefulException(LocalizableStrings.OptionsCannotBeCombined);
+            throw new GracefulException(CliCommandStrings.OptionsCannotBeCombined);
         }
     }
 
@@ -90,7 +90,7 @@ internal class ListPackageReferencesCommand(
                 //No projects found throws an error that no sln nor projs were found
                 if (possibleProjectPath.Count() == 0)
                 {
-                    throw new GracefulException(LocalizableStrings.NoProjectsOrSolutions, resultPath);
+                    throw new GracefulException(CliCommandStrings.NoProjectsOrSolutions, resultPath);
                 }
                 //A single project found, use it
                 else if (possibleProjectPath.Count() == 1)
@@ -107,7 +107,7 @@ internal class ListPackageReferencesCommand(
 
         if (!File.Exists(resultPath))
         {
-            throw new GracefulException(LocalizableStrings.PackageListFileNotFound, resultPath);
+            throw new GracefulException(CliCommandStrings.PackageListFileNotFound, resultPath);
         }
 
         return resultPath;

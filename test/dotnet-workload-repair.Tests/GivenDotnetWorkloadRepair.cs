@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
                 nugetPackageDownloader: nugetDownloader);
             repairCommand.Execute();
 
-            _reporter.Lines.Should().Contain(LocalizableStrings.NoWorkloadsToRepair);
+            _reporter.Lines.Should().Contain(CliCommandStrings.NoWorkloadsToRepair);
         }
 
         [Theory]

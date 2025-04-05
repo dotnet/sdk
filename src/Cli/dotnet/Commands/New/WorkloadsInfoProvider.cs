@@ -18,5 +18,5 @@ internal class WorkloadsInfoProvider(Lazy<IWorkloadsRepositoryEnumerator> worklo
             );
     }
 
-    public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads) => LocalizableStrings.WorkloadInfoProvider_Message_AddWorkloads;
+    public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads) => CliCommandStrings.WorkloadInfoProvider_Message_AddWorkloads;
 }

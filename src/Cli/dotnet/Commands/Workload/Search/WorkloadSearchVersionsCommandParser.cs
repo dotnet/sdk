@@ -8,17 +8,17 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 internal static class WorkloadSearchVersionsCommandParser
 {
     public static readonly CliArgument<IEnumerable<string>> WorkloadVersionArgument =
-        new(LocalizableStrings.WorkloadVersionArgument)
+        new(CliCommandStrings.WorkloadVersionArgument)
         {
             Arity = ArgumentArity.ZeroOrMore,
-            Description = LocalizableStrings.WorkloadVersionArgumentDescription
+            Description = CliCommandStrings.WorkloadVersionArgumentDescription
         };
 
     public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
     public static readonly CliOption<string> FormatOption = new("--format")
     {
-        Description = LocalizableStrings.FormatOptionDescription
+        Description = CliCommandStrings.FormatOptionDescription
     };
 
     public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
@@ -32,7 +32,7 @@ internal static class WorkloadSearchVersionsCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("version", LocalizableStrings.PrintSetVersionsDescription);
+        var command = new CliCommand("version", CliCommandStrings.PrintSetVersionsDescription);
         command.Arguments.Add(WorkloadVersionArgument);
         command.Options.Add(FormatOption);
         command.Options.Add(TakeOption);
@@ -50,7 +50,7 @@ internal static class WorkloadSearchVersionsCommandParser
         {
             if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
             {
-                result.AddError(string.Format(LocalizableStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                result.AddError(string.Format(CliCommandStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
             }
         });
 

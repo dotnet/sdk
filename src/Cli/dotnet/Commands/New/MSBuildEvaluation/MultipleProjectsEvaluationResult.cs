@@ -14,7 +14,7 @@ internal class MultipleProjectsEvaluationResult : MSBuildEvaluationResult
         return new MultipleProjectsEvaluationResult()
         {
             ProjectPaths = projectPaths,
-            ErrorMessage = string.Format(LocalizableStrings.MultipleProjectsEvaluationResult_Error, string.Join("; ", projectPaths))
+            ErrorMessage = string.Format(CliCommandStrings.MultipleProjectsEvaluationResult_Error, string.Join("; ", projectPaths))
         };
     }
 }

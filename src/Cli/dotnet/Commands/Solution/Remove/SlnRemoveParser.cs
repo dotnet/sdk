@@ -7,10 +7,10 @@ namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
 public static class SlnRemoveParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.RemoveProjectPathArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.RemoveProjectPathArgumentName)
     {
-        HelpName = LocalizableStrings.RemoveProjectPathArgumentName,
-        Description = LocalizableStrings.RemoveProjectPathArgumentDescription,
+        HelpName = CliCommandStrings.RemoveProjectPathArgumentName,
+        Description = CliCommandStrings.RemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -23,7 +23,7 @@ public static class SlnRemoveParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("remove", LocalizableStrings.RemoveAppFullName);
+        CliCommand command = new("remove", CliCommandStrings.RemoveAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
 

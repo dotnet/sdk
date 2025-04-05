@@ -12,51 +12,51 @@ internal static class ToolInstallCommandParser
 {
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.ToolInstallPackageIdArgumentName,
-        Description = LocalizableStrings.ToolInstallPackageIdArgumentDescription
+        HelpName = CliCommandStrings.ToolInstallPackageIdArgumentName,
+        Description = CliCommandStrings.ToolInstallPackageIdArgumentDescription
     };
 
     public static readonly CliOption<string> VersionOption = new("--version")
     {
-        Description = LocalizableStrings.ToolInstallVersionOptionDescription,
-        HelpName = LocalizableStrings.ToolInstallVersionOptionName
+        Description = CliCommandStrings.ToolInstallVersionOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallVersionOptionName
     };
 
     public static readonly CliOption<string> ConfigOption = new("--configfile")
     {
-        Description = LocalizableStrings.ToolInstallConfigFileOptionDescription,
-        HelpName = LocalizableStrings.ToolInstallConfigFileOptionName
+        Description = CliCommandStrings.ToolInstallConfigFileOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallConfigFileOptionName
     };
 
     public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source")
     {
-        Description = LocalizableStrings.ToolInstallSourceOptionDescription,
-        HelpName = LocalizableStrings.ToolInstallSourceOptionName
+        Description = CliCommandStrings.ToolInstallSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallSourceOptionName
     }.AllowSingleArgPerToken();
 
     public static readonly CliOption<string[]> AddSourceOption = new CliOption<string[]>("--add-source")
     {
-        Description = LocalizableStrings.ToolInstallAddSourceOptionDescription,
-        HelpName = LocalizableStrings.ToolInstallAddSourceOptionName
+        Description = CliCommandStrings.ToolInstallAddSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallAddSourceOptionName
     }.AllowSingleArgPerToken();
 
     public static readonly CliOption<string> FrameworkOption = new("--framework")
     {
-        Description = LocalizableStrings.ToolInstallFrameworkOptionDescription,
-        HelpName = LocalizableStrings.ToolInstallFrameworkOptionName
+        Description = CliCommandStrings.ToolInstallFrameworkOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallFrameworkOptionName
     };
 
     public static readonly CliOption<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
     public static readonly CliOption<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
     {
-        Description = LocalizableStrings.CreateManifestIfNeededOptionDescription,
+        Description = CliCommandStrings.CreateManifestIfNeededOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
     {
-        Description = LocalizableStrings.AllowPackageDowngradeOptionDescription,
+        Description = CliCommandStrings.AllowPackageDowngradeOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -70,7 +70,7 @@ internal static class ToolInstallCommandParser
 
     public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = LocalizableStrings.RollForwardOptionDescription,
+        Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -91,7 +91,7 @@ internal static class ToolInstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("install", LocalizableStrings.ToolInstallCommandDescription);
+        CliCommand command = new("install", CliCommandStrings.ToolInstallCommandDescription);
         command.Arguments.Add(PackageIdArgument);
 
         AddCommandOptions(command);
@@ -108,12 +108,12 @@ internal static class ToolInstallCommandParser
 
     public static CliCommand AddCommandOptions(CliCommand command)
     {
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.ToolInstallGlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.ToolInstallLocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolInstallToolPathOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolInstallToolPathOptionDescription));
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ToolInstallManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolInstallManifestPathOptionDescription));
         command.Options.Add(AddSourceOption);
         command.Options.Add(SourceOption);
         command.Options.Add(FrameworkOption);

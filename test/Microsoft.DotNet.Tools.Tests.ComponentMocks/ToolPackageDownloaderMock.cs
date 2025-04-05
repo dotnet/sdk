@@ -5,6 +5,7 @@
 
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -112,7 +113,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
-                        throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
+                        throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
                     }
 
                     var feedPackage = GetPackage(
@@ -252,7 +253,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             if (package == null)
             {
                 _reporter?.WriteLine($"Error: failed to restore package {packageId}.");
-                throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             return package;
@@ -315,7 +316,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             if (string.IsNullOrEmpty(packageId.ToString()))
             {
-                throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             var feedPackage = GetPackage(

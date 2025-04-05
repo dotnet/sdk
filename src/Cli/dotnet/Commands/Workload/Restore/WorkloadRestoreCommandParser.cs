@@ -18,7 +18,7 @@ internal static class WorkloadRestoreCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("restore", LocalizableStrings.WorkloadRestoreCommandDescription);
+        CliCommand command = new("restore", CliCommandStrings.WorkloadRestoreCommandDescription);
 
         command.Arguments.Add(RestoreCommandParser.SlnOrProjectArgument);
         WorkloadInstallCommandParser.AddWorkloadInstallCommandOptions(command);

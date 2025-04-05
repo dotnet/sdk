@@ -27,7 +27,7 @@ internal static class ToolManifestFinderExtensions
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException([e.Message, LocalizableStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
+            throw new GracefulException([e.Message, CliCommandStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
         }
 
         if (manifestFilesContainPackageId.Any())
@@ -37,7 +37,7 @@ internal static class ToolManifestFinderExtensions
             {
                 warning =
                     string.Format(
-                        LocalizableStrings.SamePackageIdInOtherManifestFile,
+                        CliCommandStrings.SamePackageIdInOtherManifestFile,
                         string.Join(
                             Environment.NewLine,
                             manifestFilesContainPackageId.Skip(1).Select(m => $"\t{m}")));

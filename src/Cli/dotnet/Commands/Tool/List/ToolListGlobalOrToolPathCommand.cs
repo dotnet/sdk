@@ -39,7 +39,7 @@ internal class ToolListGlobalOrToolPathCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.ToolListInvalidToolPathOption,
+                        CliCommandStrings.ToolListInvalidToolPathOption,
                         toolPathOption));
             }
 
@@ -90,7 +90,7 @@ internal class ToolListGlobalOrToolPathCommand(
         {
             _errorReporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ToolListInvalidPackageWarning,
+                    CliCommandStrings.ToolListInvalidPackageWarning,
                     package.Id,
                     ex.Message).Yellow());
             return false;
@@ -102,13 +102,13 @@ internal class ToolListGlobalOrToolPathCommand(
         var table = new PrintableTable<IToolPackage>();
 
         table.AddColumn(
-            LocalizableStrings.ToolListPackageIdColumn,
+            CliCommandStrings.ToolListPackageIdColumn,
             p => p.Id.ToString());
         table.AddColumn(
-            LocalizableStrings.ToolListVersionColumn,
+            CliCommandStrings.ToolListVersionColumn,
             p => p.Version.ToNormalizedString());
         table.AddColumn(
-            LocalizableStrings.ToolListCommandsColumn,
+            CliCommandStrings.ToolListCommandsColumn,
             p => p.Command.Name.ToString());
 
         table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));

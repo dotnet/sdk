@@ -18,7 +18,7 @@ public class ProductCollectionProvider : IProductCollectionProvider
         }
         catch (Exception e)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.ReleasesLibraryFailed, e.Message));
+            throw new GracefulException(string.Format(CliCommandStrings.ReleasesLibraryFailed, e.Message));
         }
     }
 
@@ -30,7 +30,7 @@ public class ProductCollectionProvider : IProductCollectionProvider
         }
         catch (Exception e)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.ReleasesLibraryFailed, e.Message));
+            throw new GracefulException(string.Format(CliCommandStrings.ReleasesLibraryFailed, e.Message));
         }
     }
 }

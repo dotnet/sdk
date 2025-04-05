@@ -94,7 +94,7 @@ public class HelpCommand(string[] helpArgs)
         {
             Reporter.Error.WriteLine(
                 string.Format(
-                    LocalizableStrings.CommandDoesNotExist,
+                    CliCommandStrings.CommandDoesNotExist,
                     helpArgs).Red());
             Reporter.Output.WriteLine(HelpUsageText.UsageText);
             return 1;

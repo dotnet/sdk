@@ -24,7 +24,7 @@ internal class WorkloadSearchCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();
@@ -44,8 +44,8 @@ internal class WorkloadSearchCommand : WorkloadCommandBase
         }
 
         var table = new PrintableTable<WorkloadResolver.WorkloadInfo>();
-        table.AddColumn(LocalizableStrings.WorkloadIdColumnName, workload => workload.Id.ToString());
-        table.AddColumn(LocalizableStrings.DescriptionColumnName, workload => workload.Description);
+        table.AddColumn(CliCommandStrings.WorkloadIdColumnName, workload => workload.Id.ToString());
+        table.AddColumn(CliCommandStrings.DescriptionColumnName, workload => workload.Description);
 
         Reporter.WriteLine();
         table.PrintRows(availableWorkloads, l => Reporter.WriteLine(l));

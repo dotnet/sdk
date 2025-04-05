@@ -18,7 +18,7 @@ internal static class AddProjectToProjectReferenceParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("reference", LocalizableStrings.ReferenceAddAppFullName);
+        CliCommand command = new("reference", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandParser.FrameworkOption);

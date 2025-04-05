@@ -160,7 +160,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);

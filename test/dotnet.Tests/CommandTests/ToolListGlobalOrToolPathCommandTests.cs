@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -56,7 +57,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
              .And
              .Message
              .Should()
-             .Be(string.Format(Cli.Commands.LocalizableStrings.ToolListInvalidToolPathOption, toolPath));
+             .Be(string.Format(CliCommandStrings.ToolListInvalidToolPathOption, toolPath));
         }
 
         [Fact]
@@ -243,7 +244,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(
                 EnumerateExpectedTableLines(store.Object).Prepend(
                     string.Format(
-                        Cli.Commands.LocalizableStrings.ToolListInvalidPackageWarning,
+                        CliCommandStrings.ToolListInvalidPackageWarning,
                         "another.tool",
                         "broken").Yellow()));
         }
@@ -351,9 +352,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 ).OrderBy(package => package.Id);
             var columnDelimiter = PrintableTable<IToolPackageStoreQuery>.ColumnDelimiter;
 
-            int packageIdColumnWidth = Cli.Commands.LocalizableStrings.ToolListPackageIdColumn.Length;
-            int versionColumnWidth = Cli.Commands.LocalizableStrings.ToolListVersionColumn.Length;
-            int commandsColumnWidth = Cli.Commands.LocalizableStrings.ToolListCommandsColumn.Length;
+            int packageIdColumnWidth = CliCommandStrings.ToolListPackageIdColumn.Length;
+            int versionColumnWidth = CliCommandStrings.ToolListVersionColumn.Length;
+            int commandsColumnWidth = CliCommandStrings.ToolListCommandsColumn.Length;
             foreach (var package in packages)
             {
                 packageIdColumnWidth = Math.Max(packageIdColumnWidth, package.Id.ToString().Length);
@@ -363,11 +364,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             yield return string.Format(
                 "{0}{1}{2}{3}{4}",
-                Cli.Commands.LocalizableStrings.ToolListPackageIdColumn.PadRight(packageIdColumnWidth),
+                CliCommandStrings.ToolListPackageIdColumn.PadRight(packageIdColumnWidth),
                 columnDelimiter,
-                Cli.Commands.LocalizableStrings.ToolListVersionColumn.PadRight(versionColumnWidth),
+                CliCommandStrings.ToolListVersionColumn.PadRight(versionColumnWidth),
                 columnDelimiter,
-                Cli.Commands.LocalizableStrings.ToolListCommandsColumn.PadRight(commandsColumnWidth));
+                CliCommandStrings.ToolListCommandsColumn.PadRight(commandsColumnWidth));
 
             yield return new string(
                 '-',

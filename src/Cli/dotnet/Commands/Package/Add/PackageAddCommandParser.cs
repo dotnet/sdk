@@ -39,14 +39,14 @@ internal static class PackageAddCommandParser
             }
             else
             {
-                throw new ArgumentException(string.Format(LocalizableStrings.InvalidSemVerVersionString, versionString));
+                throw new ArgumentException(string.Format(CliCommandStrings.InvalidSemVerVersionString, versionString));
             }
         };
     }
 
-    public static readonly CliArgument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(LocalizableStrings.CmdPackage)
+    public static readonly CliArgument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(CliCommandStrings.CmdPackage)
     {
-        Description = LocalizableStrings.CmdPackageDescription,
+        Description = CliCommandStrings.CmdPackageDescription,
         Arity = ArgumentArity.ExactlyOne,
         CustomParser = ParsePackageIdentity,
 
@@ -59,8 +59,8 @@ internal static class PackageAddCommandParser
 
     public static readonly CliOption<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
     {
-        Description = LocalizableStrings.CmdVersionDescription,
-        HelpName = LocalizableStrings.CmdVersion
+        Description = CliCommandStrings.CmdVersionDescription,
+        HelpName = CliCommandStrings.CmdVersion
     }.ForwardAsSingle(o => $"--version {o}")
         .AddCompletions((context) =>
         {
@@ -81,26 +81,26 @@ internal static class PackageAddCommandParser
 
     public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
     {
-        Description = LocalizableStrings.PackageAddCmdFrameworkDescription,
-        HelpName = LocalizableStrings.PackageAddCmdFramework
+        Description = CliCommandStrings.PackageAddCmdFrameworkDescription,
+        HelpName = CliCommandStrings.PackageAddCmdFramework
     }.ForwardAsSingle(o => $"--framework {o}");
 
     public static readonly CliOption<bool> NoRestoreOption = new("--no-restore", "-n")
     {
-        Description = LocalizableStrings.PackageAddCmdNoRestoreDescription,
+        Description = CliCommandStrings.PackageAddCmdNoRestoreDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<string> SourceOption = new ForwardedOption<string>("--source", "-s")
     {
-        Description = LocalizableStrings.PackageAddCmdSourceDescription,
-        HelpName = LocalizableStrings.PackageAddCmdSource
+        Description = CliCommandStrings.PackageAddCmdSourceDescription,
+        HelpName = CliCommandStrings.PackageAddCmdSource
     }.ForwardAsSingle(o => $"--source {o}");
 
     public static readonly CliOption<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
     {
-        Description = LocalizableStrings.CmdPackageDirectoryDescription,
-        HelpName = LocalizableStrings.CmdPackageDirectory
+        Description = CliCommandStrings.CmdPackageDirectoryDescription,
+        HelpName = CliCommandStrings.CmdPackageDirectory
     }.ForwardAsSingle(o => $"--package-directory {o}");
 
     public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
@@ -120,7 +120,7 @@ internal static class PackageAddCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.PackageAddAppFullName);
+        CliCommand command = new("add", CliCommandStrings.PackageAddAppFullName);
 
         VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
         command.Arguments.Add(CmdPackageArgument);
@@ -142,7 +142,7 @@ internal static class PackageAddCommandParser
     {
         if (result.Parent.GetValue(CmdPackageArgument) is PackageIdentity identity && identity.HasVersion)
         {
-            result.AddError(LocalizableStrings.ValidationFailedDuplicateVersion);
+            result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
         }
     }
 

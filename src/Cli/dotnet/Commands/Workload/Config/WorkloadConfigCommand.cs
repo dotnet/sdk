@@ -60,7 +60,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             {
                 if (shouldUseWorkloadSets == false)
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
                 }
                 else
                 {
@@ -71,7 +71,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             {
                 if (shouldUseWorkloadSets == true)
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
                 }
                 else
                 {

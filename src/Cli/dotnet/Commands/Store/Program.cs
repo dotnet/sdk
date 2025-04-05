@@ -30,7 +30,7 @@ public class StoreCommand : MSBuildForwardingApp
 
         if (!result.HasOption(StoreCommandParser.ManifestOption))
         {
-            throw new GracefulException(LocalizableStrings.SpecifyManifests);
+            throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
         msbuildArgs.Add("-target:ComposeStore");

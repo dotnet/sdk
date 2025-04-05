@@ -278,7 +278,7 @@ internal class CapabilityExpressionEvaluator
         internal static Exception CreateInvalidExpressionException(int position)
         {
             return new ArgumentException(
-                string.Format(LocalizableStrings.CapabilityExpressionEvaluator_Exception_InvalidExpression, position),
+                string.Format(CliCommandStrings.CapabilityExpressionEvaluator_Exception_InvalidExpression, position),
                 "expression");
         }
     }

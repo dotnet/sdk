@@ -21,7 +21,7 @@ internal class ToolAppliedOption
 
     public static CliOption<bool> UpdateAllOption = new("--all")
     {
-        Description = LocalizableStrings.UpdateAllOptionDescription,
+        Description = CliCommandStrings.UpdateAllOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -31,12 +31,12 @@ internal class ToolAppliedOption
 
     public static CliOption<string> ToolPathOption = new("--tool-path")
     {
-        HelpName = LocalizableStrings.ToolInstallToolPathOptionName
+        HelpName = CliCommandStrings.ToolInstallToolPathOptionName
     };
 
     public static CliOption<string> ToolManifestOption = new("--tool-manifest")
     {
-        HelpName = LocalizableStrings.ToolInstallManifestPathOptionName,
+        HelpName = CliCommandStrings.ToolInstallManifestPathOptionName,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -100,7 +100,7 @@ internal class ToolAppliedOption
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
         }
     }
 

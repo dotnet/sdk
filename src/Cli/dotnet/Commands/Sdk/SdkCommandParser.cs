@@ -20,7 +20,7 @@ internal static class SdkCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("sdk", DocsLink, LocalizableStrings.SdkAppFullName);
+        DocumentedCommand command = new("sdk", DocsLink, CliCommandStrings.SdkAppFullName);
         command.Subcommands.Add(SdkCheckCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());

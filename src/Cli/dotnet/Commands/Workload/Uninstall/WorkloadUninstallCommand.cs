@@ -34,7 +34,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
         {
-            throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();
@@ -62,12 +62,12 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
                 var unrecognizedWorkloads = _workloadIds.Where(workloadId => !installedWorkloads.Contains(workloadId));
                 if (unrecognizedWorkloads.Any())
                 {
-                    throw new Exception(string.Format(LocalizableStrings.WorkloadNotInstalled, string.Join(" ", unrecognizedWorkloads)));
+                    throw new Exception(string.Format(CliCommandStrings.WorkloadNotInstalled, string.Join(" ", unrecognizedWorkloads)));
                 }
 
                 foreach (var workloadId in _workloadIds)
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.RemovingWorkloadInstallationRecord, workloadId));
+                    Reporter.WriteLine(string.Format(CliCommandStrings.RemovingWorkloadInstallationRecord, workloadId));
                     _workloadInstaller.GetWorkloadInstallationRecordRepository()
                         .DeleteWorkloadInstallationRecord(workloadId, featureBand);
                 }
@@ -75,7 +75,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
                 _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));
                 Reporter.WriteLine();
             });
         }
@@ -83,7 +83,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
         {
             _workloadInstaller.Shutdown();
             // Don't show entire stack trace
-            throw new GracefulException(string.Format(LocalizableStrings.WorkloadUninstallFailed, e.Message), e, isUserError: false);
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadUninstallFailed, e.Message), e, isUserError: false);
         }
 
         return _workloadInstaller.ExitCode;

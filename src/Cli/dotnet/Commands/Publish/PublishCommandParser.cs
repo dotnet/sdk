@@ -19,26 +19,26 @@ internal static class PublishCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.PublishOutputOptionDescription,
-        HelpName = LocalizableStrings.PublishOutputOption
+        Description = CliCommandStrings.PublishOutputOptionDescription,
+        HelpName = CliCommandStrings.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
     public static readonly CliOption<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
     {
-        Description = LocalizableStrings.ManifestOptionDescription,
-        HelpName = LocalizableStrings.ManifestOption
+        Description = CliCommandStrings.ManifestOptionDescription,
+        HelpName = CliCommandStrings.ManifestOption
     }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
     public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
     {
-        Description = LocalizableStrings.NoBuildOptionDescription,
+        Description = CliCommandStrings.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.PublishCmdNoLogo,
+        Description = CliCommandStrings.PublishCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
@@ -50,9 +50,9 @@ internal static class PublishCommandParser
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.PublishFrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.PublishConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -63,7 +63,7 @@ internal static class PublishCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("publish", DocsLink, LocalizableStrings.PublishAppDescription);
+        var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
 
         command.Arguments.Add(SlnOrProjectArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
@@ -76,7 +76,7 @@ internal static class PublishCommandParser
         command.Options.Add(NoSelfContainedOption);
         command.Options.Add(NoLogoOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.PublishRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.PublishRuntimeOptionDescription));
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

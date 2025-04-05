@@ -29,7 +29,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
             {
-                _output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentRootDirectoryErrorDescription, rootDirectory),
+                _output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentRootDirectoryErrorDescription, rootDirectory),
                     new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
                 return false;
             }
@@ -40,7 +40,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
         // If no matches were found, we simply return
         if (!testModulePaths.Any())
         {
-            _output.WriteMessage(string.Format(LocalizableStrings.CmdNoTestModulesErrorDescription, testModules, rootDirectory),
+            _output.WriteMessage(string.Format(CliCommandStrings.CmdNoTestModulesErrorDescription, testModules, rootDirectory),
                 new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
             return false;
         }

@@ -16,7 +16,7 @@ public static class SlnMigrateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("migrate", LocalizableStrings.MigrateAppFullName);
+        CliCommand command = new("migrate", CliCommandStrings.MigrateAppFullName);
 
         command.Arguments.Add(SlnCommandParser.SlnArgument);
 

@@ -19,7 +19,7 @@ internal static class AddPackageParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("package", LocalizableStrings.PackageAddAppFullName);
+        CliCommand command = new("package", CliCommandStrings.PackageAddAppFullName);
 
         command.Arguments.Add(PackageAddCommandParser.CmdPackageArgument);
         command.Options.Add(PackageAddCommandParser.VersionOption);

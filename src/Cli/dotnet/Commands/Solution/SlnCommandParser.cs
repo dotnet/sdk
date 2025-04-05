@@ -16,10 +16,10 @@ internal static class SlnCommandParser
 
     public static readonly string CommandName = "solution";
     public static readonly string CommandAlias = "sln";
-    public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(LocalizableStrings.SolutionArgumentName)
+    public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(CliCommandStrings.SolutionArgumentName)
     {
-        HelpName = LocalizableStrings.SolutionArgumentName,
-        Description = LocalizableStrings.SolutionArgumentDescription,
+        HelpName = CliCommandStrings.SolutionArgumentName,
+        Description = CliCommandStrings.SolutionArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     }.DefaultToCurrentDirectory();
 
@@ -32,7 +32,7 @@ internal static class SlnCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.SolutionAppFullName);
+        DocumentedCommand command = new(CommandName, DocsLink, CliCommandStrings.SolutionAppFullName);
 
         command.Aliases.Add(CommandAlias);
 

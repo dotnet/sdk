@@ -86,14 +86,14 @@ internal class WorkloadListCommand : WorkloadCommandBase
                 {
                     Reporter.WriteLine(string.Format(
                         versionInfo.IsInstalled ?
-                            LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
-                            LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                            CliCommandStrings.WorkloadSetFromGlobalJsonInstalled :
+                            CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled,
                         versionInfo.Version,
                         versionInfo.GlobalJsonPath));
                 }
                 else
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadListWorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().Version ?? "unknown"));
+                    Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadListWorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().Version ?? "unknown"));
                 }
 
                 Reporter.WriteLine();
@@ -104,27 +104,27 @@ internal class WorkloadListCommand : WorkloadCommandBase
                 var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
                 InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
                 PrintableTable<KeyValuePair<string, string>> table = new();
-                table.AddColumn(LocalizableStrings.WorkloadIdColumn, workload => workload.Key);
-                table.AddColumn(LocalizableStrings.WorkloadManifestVersionColumn, workload =>
+                table.AddColumn(CliCommandStrings.WorkloadIdColumn, workload => workload.Key);
+                table.AddColumn(CliCommandStrings.WorkloadManifestVersionColumn, workload =>
                 {
                     var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
                     var manifestInfo = manifestInfoDict[m.Id];
                     return m.Version + "/" + manifestInfo.ManifestFeatureBand;
                 });
 
-                table.AddColumn(LocalizableStrings.WorkloadSourceColumn, workload => workload.Value);
+                table.AddColumn(CliCommandStrings.WorkloadSourceColumn, workload => workload.Value);
 
                 table.PrintRows(installedWorkloads.AsEnumerable().OrderBy(workload => workload.Key), l => Reporter.WriteLine(l));
             }
 
             Reporter.WriteLine();
-            Reporter.WriteLine(LocalizableStrings.WorkloadListFooter);
+            Reporter.WriteLine(CliCommandStrings.WorkloadListFooter);
             Reporter.WriteLine();
 
             var updatableWorkloads = _workloadManifestUpdater.GetUpdatableWorkloadsToAdvertise(installedList).Select(workloadId => workloadId.ToString());
             if (updatableWorkloads.Any())
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadListWorkloadUpdatesAvailable, string.Join(" ", updatableWorkloads)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadListWorkloadUpdatesAvailable, string.Join(" ", updatableWorkloads)));
                 Reporter.WriteLine();
             }
         }

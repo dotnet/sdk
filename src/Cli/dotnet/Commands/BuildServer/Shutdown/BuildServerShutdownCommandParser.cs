@@ -9,19 +9,19 @@ internal static class ServerShutdownCommandParser
 {
     public static readonly CliOption<bool> MSBuildOption = new("--msbuild")
     {
-        Description = LocalizableStrings.MSBuildOptionDescription,
+        Description = CliCommandStrings.MSBuildOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> VbcsOption = new("--vbcscompiler")
     {
-        Description = LocalizableStrings.VBCSCompilerOptionDescription,
+        Description = CliCommandStrings.VBCSCompilerOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> RazorOption = new("--razor")
     {
-        Description = LocalizableStrings.RazorOptionDescription,
+        Description = CliCommandStrings.RazorOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -34,7 +34,7 @@ internal static class ServerShutdownCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("shutdown", LocalizableStrings.BuildServerShutdownCommandDescription);
+        CliCommand command = new("shutdown", CliCommandStrings.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

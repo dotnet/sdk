@@ -17,6 +17,7 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -173,10 +174,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolRestoreCommand.Execute().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l => l.Contains(string.Format(
-                Cli.Commands.LocalizableStrings.RestoreSuccessful, _packageIdA,
+                CliCommandStrings.RestoreSuccessful, _packageIdA,
                 _packageVersionA.ToNormalizedString(), _toolCommandNameA)));
             _reporter.Lines.Should().Contain(l => l.Contains(string.Format(
-                Cli.Commands.LocalizableStrings.RestoreSuccessful, _packageIdB,
+                CliCommandStrings.RestoreSuccessful, _packageIdB,
                 _packageVersionB.ToNormalizedString(), _toolCommandNameB)));
 
             _reporter.Lines.Should().Contain(l => l.Contains("\x1B[32m"),
@@ -209,26 +210,26 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var allPossibleErrorMessage = new[]
             {
-                string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionConclusion,
+                string.Format(CliCommandStrings.PackagesCommandNameCollisionConclusion,
                     string.Join(Environment.NewLine,
                         new[]
                         {
-                            "\t" + string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                            "\t" + string.Format(CliCommandStrings.PackagesCommandNameCollisionForOnePackage,
                                 _toolCommandNameA.Value,
                                 _packageIdA.ToString()),
-                            "\t" + string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                            "\t" + string.Format(CliCommandStrings.PackagesCommandNameCollisionForOnePackage,
                                 "A",
                                 _packageIdWithCommandNameCollisionWithA.ToString())
                         })),
 
-                string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionConclusion,
+                string.Format(CliCommandStrings.PackagesCommandNameCollisionConclusion,
                     string.Join(Environment.NewLine,
                         new[]
                         {
-                            "\t" + string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                            "\t" + string.Format(CliCommandStrings.PackagesCommandNameCollisionForOnePackage,
                                 "A",
                                 _packageIdWithCommandNameCollisionWithA.ToString()),
-                            "\t" + string.Format(Cli.Commands.LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                            "\t" + string.Format(CliCommandStrings.PackagesCommandNameCollisionForOnePackage,
                                 _toolCommandNameA.Value,
                                 _packageIdA.ToString()),
                         })),
@@ -266,10 +267,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             int executeResult = toolRestoreCommand.Execute();
             _reporter.Lines.Should()
-                .Contain(l => l.Contains(string.Format(Cli.Commands.LocalizableStrings.PackageFailedToRestore,
+                .Contain(l => l.Contains(string.Format(CliCommandStrings.PackageFailedToRestore,
                     "non-exists", "")));
 
-            _reporter.Lines.Should().Contain(l => l.Contains(Cli.Commands.LocalizableStrings.RestorePartiallyFailed));
+            _reporter.Lines.Should().Contain(l => l.Contains(CliCommandStrings.RestorePartiallyFailed));
 
             executeResult.Should().Be(1);
 
@@ -309,7 +310,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should()
                 .Contain(l =>
                     l.Contains(
-                        string.Format(Cli.Commands.LocalizableStrings.CommandsMismatch,
+                        string.Format(CliCommandStrings.CommandsMismatch,
                             "\"different-command-nameA\" \"different-command-nameB\"", _packageIdA, "a")));
         }
 
@@ -528,7 +529,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolRestoreCommand.Execute().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l =>
-                l.Contains(AnsiExtensions.Yellow(Cli.Commands.LocalizableStrings.NoToolsWereRestored)));
+                l.Contains(AnsiExtensions.Yellow(CliCommandStrings.NoToolsWereRestored)));
         }
 
         private class MockManifestFinder : IToolManifestFinder

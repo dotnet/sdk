@@ -279,7 +279,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             // check that update did not fail
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().NotContain(string.Format(LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().NotContain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
 
         }
 
@@ -346,7 +346,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Assert
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().Contain(string.Format(LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
         [Theory]
@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.GetFiles(adManifestDir).Should().BeEmpty();
 
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().Contain(string.Format(LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
         [Fact]
@@ -602,13 +602,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 commandResult
                     .Should()
-                    .HaveStdOutContaining(LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
+                    .HaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
             else
             {
                 commandResult
                     .Should()
-                    .NotHaveStdOutContaining(LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
+                    .NotHaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
 
         }
@@ -638,7 +638,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             commandResult
                 .Should()
-                .NotHaveStdOutContaining(LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
+                .NotHaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
         }
 
         [Fact]

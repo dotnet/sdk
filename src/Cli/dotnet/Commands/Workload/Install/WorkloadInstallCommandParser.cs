@@ -9,27 +9,27 @@ internal static class WorkloadInstallCommandParser
 {
     public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
     {
-        HelpName = LocalizableStrings.WorkloadIdArgumentName,
+        HelpName = CliCommandStrings.WorkloadIdArgumentName,
         Arity = ArgumentArity.OneOrMore,
-        Description = LocalizableStrings.WorkloadIdArgumentDescription
+        Description = CliCommandStrings.WorkloadIdArgumentDescription
     };
 
     public static readonly CliOption<bool> SkipSignCheckOption = new("--skip-sign-check")
     {
-        Description = LocalizableStrings.SkipSignCheckOptionDescription,
+        Description = CliCommandStrings.SkipSignCheckOptionDescription,
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
     {
-        Description = LocalizableStrings.SkipManifestUpdateOptionDescription,
+        Description = CliCommandStrings.SkipManifestUpdateOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<string> TempDirOption = new("--temp-dir")
     {
-        Description = LocalizableStrings.TempDirOptionDescription
+        Description = CliCommandStrings.TempDirOptionDescription
     };
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -41,7 +41,7 @@ internal static class WorkloadInstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("install", LocalizableStrings.WorkloadInstallCommandDescription);
+        CliCommand command = new("install", CliCommandStrings.WorkloadInstallCommandDescription);
 
         command.Arguments.Add(WorkloadIdArgument);
         AddWorkloadInstallCommandOptions(command);

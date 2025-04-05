@@ -31,7 +31,7 @@ internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommand
         }
         else
         {
-            throw new GracefulException(LocalizableStrings.RequiresWindows, isUserError: false);
+            throw new GracefulException(CliCommandStrings.RequiresWindows, isUserError: false);
         }
 
         return 0;

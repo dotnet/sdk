@@ -82,17 +82,17 @@ internal class ToolUpdateCommand : CommandBase
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
         ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndVersion);
 
         EnsureEitherUpdateAllOrUpdateOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

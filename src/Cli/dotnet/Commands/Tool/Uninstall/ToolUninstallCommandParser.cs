@@ -29,13 +29,13 @@ internal static class ToolUninstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.ToolUninstallCommandDescription);
+        CliCommand command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.ToolUninstallGlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.ToolUninstallLocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolUninstallToolPathOptionDescription));
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ToolUninstallManifestPathOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallToolPathOptionDescription));
+        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallManifestPathOptionDescription));
 
         command.SetAction((parseResult) => new ToolUninstallCommand(parseResult).Execute());
 

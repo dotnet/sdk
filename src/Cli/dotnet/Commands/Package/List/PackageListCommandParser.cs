@@ -10,63 +10,63 @@ internal static class PackageListCommandParser
 {
     public static readonly CliOption OutdatedOption = new ForwardedOption<bool>("--outdated")
     {
-        Description = LocalizableStrings.CmdOutdatedDescription,
+        Description = CliCommandStrings.CmdOutdatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--outdated");
 
     public static readonly CliOption DeprecatedOption = new ForwardedOption<bool>("--deprecated")
     {
-        Description = LocalizableStrings.CmdDeprecatedDescription,
+        Description = CliCommandStrings.CmdDeprecatedDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--deprecated");
 
     public static readonly CliOption VulnerableOption = new ForwardedOption<bool>("--vulnerable")
     {
-        Description = LocalizableStrings.CmdVulnerableDescription,
+        Description = CliCommandStrings.CmdVulnerableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--vulnerable");
 
     public static readonly CliOption FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", "-f")
     {
-        Description = LocalizableStrings.PackageListCmdFrameworkDescription,
-        HelpName = LocalizableStrings.PackageListCmdFramework
+        Description = CliCommandStrings.PackageListCmdFrameworkDescription,
+        HelpName = CliCommandStrings.PackageListCmdFramework
     }.ForwardAsManyArgumentsEachPrefixedByOption("--framework")
     .AllowSingleArgPerToken();
 
     public static readonly CliOption TransitiveOption = new ForwardedOption<bool>("--include-transitive")
     {
-        Description = LocalizableStrings.CmdTransitiveDescription,
+        Description = CliCommandStrings.CmdTransitiveDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-transitive");
 
     public static readonly CliOption PrereleaseOption = new ForwardedOption<bool>("--include-prerelease")
     {
-        Description = LocalizableStrings.CmdPrereleaseDescription,
+        Description = CliCommandStrings.CmdPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--include-prerelease");
 
     public static readonly CliOption HighestPatchOption = new ForwardedOption<bool>("--highest-patch")
     {
-        Description = LocalizableStrings.CmdHighestPatchDescription,
+        Description = CliCommandStrings.CmdHighestPatchDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-patch");
 
     public static readonly CliOption HighestMinorOption = new ForwardedOption<bool>("--highest-minor")
     {
-        Description = LocalizableStrings.CmdHighestMinorDescription,
+        Description = CliCommandStrings.CmdHighestMinorDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--highest-minor");
 
     public static readonly CliOption ConfigOption = new ForwardedOption<string>("--config", "--configfile")
     {
-        Description = LocalizableStrings.CmdConfigDescription,
-        HelpName = LocalizableStrings.CmdConfig
+        Description = CliCommandStrings.CmdConfigDescription,
+        HelpName = CliCommandStrings.CmdConfig
     }.ForwardAsMany(o => ["--config", o]);
 
     public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {
-        Description = LocalizableStrings.PackageListCmdSourceDescription,
-        HelpName = LocalizableStrings.PackageListCmdSource
+        Description = CliCommandStrings.PackageListCmdSourceDescription,
+        HelpName = CliCommandStrings.PackageListCmdSource
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
@@ -80,12 +80,12 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption FormatOption = new ForwardedOption<ReportOutputFormat>("--format")
     {
-        Description = LocalizableStrings.CmdFormatDescription
+        Description = CliCommandStrings.CmdFormatDescription
     }.ForwardAsSingle(o => $"--format:{o}");
 
     public static readonly CliOption OutputVersionOption = new ForwardedOption<int>("--output-version")
     {
-        Description = LocalizableStrings.CmdOutputVersionDescription
+        Description = CliCommandStrings.CmdOutputVersionDescription
     }.ForwardAsSingle(o => $"--output-version:{o}");
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -97,7 +97,7 @@ internal static class PackageListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.PackageListAppFullName);
+        CliCommand command = new("list", CliCommandStrings.PackageListAppFullName);
 
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutdatedOption);

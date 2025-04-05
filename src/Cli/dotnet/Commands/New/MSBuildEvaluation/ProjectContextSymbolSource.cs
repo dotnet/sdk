@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 /// </summary>
 internal class ProjectContextSymbolSource : IBindSymbolSource
 {
-    public string DisplayName => LocalizableStrings.ProjectContextSymbolSource_DisplayName;
+    public string DisplayName => CliCommandStrings.ProjectContextSymbolSource_DisplayName;
 
     public string? SourcePrefix => "msbuild";
 

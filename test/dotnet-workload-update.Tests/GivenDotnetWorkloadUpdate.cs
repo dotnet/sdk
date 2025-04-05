@@ -18,6 +18,7 @@ using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -610,7 +611,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             var exception = Assert.Throws<GracefulException>(() => updateCommand.Execute());
             exception.InnerException.Should().BeOfType<FormatException>();
-            exception.InnerException.Message.Should().Contain(string.Format(Commands.LocalizableStrings.InvalidVersionForWorkload, "mock.workload", "6.0.0.15"));
+            exception.InnerException.Message.Should().Contain(string.Format(CliCommandStrings.InvalidVersionForWorkload, "mock.workload", "6.0.0.15"));
         }
 
         internal (string, WorkloadUpdateCommand, MockPackWorkloadInstaller, IWorkloadResolver, MockWorkloadManifestUpdater, MockNuGetPackageDownloader) GetTestInstallers(

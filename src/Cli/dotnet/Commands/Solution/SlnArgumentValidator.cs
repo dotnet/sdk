@@ -26,7 +26,7 @@ internal static class SlnArgumentValidator
         if (_inRoot && hasRelativeRoot)
         {
             // These two options are mutually exclusive
-            throw new GracefulException(LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
+            throw new GracefulException(CliCommandStrings.SolutionFolderAndInRootMutuallyExclusive);
         }
 
         var slnFile = _arguments.FirstOrDefault(path => path.HasExtension(".sln") || path.HasExtension(".slnx"));

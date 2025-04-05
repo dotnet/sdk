@@ -22,7 +22,7 @@ internal class ToolInstallCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
@@ -37,7 +37,7 @@ internal class ToolInstallCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption));
+                        CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption));
             }
 
             return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();

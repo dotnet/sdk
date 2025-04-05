@@ -7,21 +7,21 @@ namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
 public static class SlnAddParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.AddProjectPathArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.AddProjectPathArgumentName)
     {
-        HelpName = LocalizableStrings.AddProjectPathArgumentName,
-        Description = LocalizableStrings.AddProjectPathArgumentDescription,
+        HelpName = CliCommandStrings.AddProjectPathArgumentName,
+        Description = CliCommandStrings.AddProjectPathArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore,
     };
 
     public static readonly CliOption<bool> InRootOption = new("--in-root")
     {
-        Description = LocalizableStrings.InRoot
+        Description = CliCommandStrings.InRoot
     };
 
     public static readonly CliOption<string> SolutionFolderOption = new("--solution-folder", "-s")
     {
-        Description = LocalizableStrings.AddProjectSolutionFolderArgumentDescription
+        Description = CliCommandStrings.AddProjectSolutionFolderArgumentDescription
     };
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -33,7 +33,7 @@ public static class SlnAddParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AddAppFullName);
+        CliCommand command = new("add", CliCommandStrings.AddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(InRootOption);

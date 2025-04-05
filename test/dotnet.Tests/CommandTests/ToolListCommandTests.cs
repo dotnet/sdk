@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    Cli.Commands.LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
+                    CliCommandStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
         }
 
@@ -37,7 +38,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(Cli.Commands.LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
+                    string.Format(CliCommandStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--local --tool-path"));
         }
     }

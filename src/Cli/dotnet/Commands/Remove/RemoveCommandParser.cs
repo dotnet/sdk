@@ -26,7 +26,7 @@ internal static class RemoveCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("remove", DocsLink, LocalizableStrings.NetRemoveCommand)
+        var command = new DocumentedCommand("remove", DocsLink, CliCommandStrings.NetRemoveCommand)
         {
             Hidden = true
         };

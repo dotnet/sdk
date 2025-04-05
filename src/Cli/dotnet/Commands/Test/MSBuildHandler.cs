@@ -46,7 +46,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         if (msBuildExitCode != ExitCode.Success)
         {
-            _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            _output.WriteMessage(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
@@ -90,7 +90,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
             _output.WriteMessage(
                 string.Format(
-                    LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                    CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                 new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 

@@ -44,7 +44,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
             catch (IOException ioex)
             {
                 // Catch IOException from Path.GetTempFileName() and throw a graceful exception to the user.
-                throw new GracefulException(string.Format(LocalizableStrings.CmdDGFileIOException, projectFilePath), ioex);
+                throw new GracefulException(string.Format(CliCommandStrings.CmdDGFileIOException, projectFilePath), ioex);
             }
 
             GetProjectDependencyGraph(projectFilePath, tempDgFilePath);
@@ -87,7 +87,7 @@ internal class AddPackageReferenceCommand(ParseResult parseResult, string fileOr
 
         if (result != 0)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.CmdDGFileException, projectFilePath));
+            throw new GracefulException(string.Format(CliCommandStrings.CmdDGFileException, projectFilePath));
         }
     }
 

@@ -18,7 +18,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
+                    CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
                     packageVersion));
         }
 
@@ -39,7 +39,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.ToolInstallInvalidNuGetVersionRange,
+                    CliCommandStrings.ToolInstallInvalidNuGetVersionRange,
                     packageVersion));
         }
         return versionRange;

@@ -26,7 +26,7 @@ internal static class AddCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand)
+        var command = new DocumentedCommand("add", DocsLink, CliCommandStrings.NetAddCommand)
         {
             Hidden = true
         };

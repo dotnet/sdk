@@ -19,7 +19,7 @@ internal static class ListProjectToProjectReferencesCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("reference", LocalizableStrings.ReferenceListAppFullName);
+        var command = new CliCommand("reference", CliCommandStrings.ReferenceListAppFullName);
 
         command.Arguments.Add(Argument);
 

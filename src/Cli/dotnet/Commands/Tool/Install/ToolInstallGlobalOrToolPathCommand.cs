@@ -166,7 +166,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
+                _reporter.WriteLine(string.Format(CliCommandStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
                 return 0;
             }   
         }
@@ -258,7 +258,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 [
-                    string.Format(LocalizableStrings.UpdateToLowerVersion,
+                    string.Format(CliCommandStrings.UpdateToLowerVersion,
                         newInstalledPackage.Version.ToNormalizedString(),
                         oldPackageNullable.Version.ToNormalizedString())
                 ],
@@ -272,7 +272,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
+                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
                     Path.GetFullPath(_configFilePath)));
         }
     }
@@ -288,7 +288,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -312,7 +312,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -348,7 +348,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 messages:
                 [
                     string.Format(
-                        LocalizableStrings.ToolUpdateToolHasMultipleVersionsInstalled,
+                        CliCommandStrings.ToolUpdateToolHasMultipleVersionsInstalled,
                         packageId),
                 ],
                 isUserError: false);
@@ -365,7 +365,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.ToolInstallInstallationSucceeded,
+                        CliCommandStrings.ToolInstallInstallationSucceeded,
                         newInstalledPackage.Command.Name,
                         newInstalledPackage.Id,
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -374,7 +374,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.ToolUpdateUpdateSucceeded,
+                        CliCommandStrings.ToolUpdateUpdateSucceeded,
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -385,7 +385,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                     string.Format(
                         
                         newInstalledPackage.Version.IsPrerelease ?
-                        LocalizableStrings.UpdateSucceededPreVersionNoChange : LocalizableStrings.UpdateSucceededStableVersionNoChange,
+                        CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
             }
         }

@@ -11,8 +11,8 @@ internal static class ToolUpdateCommandParser
 {
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.ToolUpdatePackageIdArgumentName,
-        Description = LocalizableStrings.ToolUpdatePackageIdArgumentDescription,
+        HelpName = CliCommandStrings.ToolUpdatePackageIdArgumentName,
+        Description = CliCommandStrings.ToolUpdatePackageIdArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -29,7 +29,7 @@ internal static class ToolUpdateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("update", LocalizableStrings.ToolUpdateCommandDescription);
+        CliCommand command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
 

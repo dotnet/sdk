@@ -12,13 +12,13 @@ internal sealed class ProjectConvertCommandParser
 {
     public static readonly CliArgument<string> FileArgument = new("file")
     {
-        Description = LocalizableStrings.CmdFileDescription,
+        Description = CliCommandStrings.CmdFileDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
     public static CliCommand GetCommand()
     {
-        CliCommand command = new("convert", LocalizableStrings.ProjectConvertAppFullName)
+        CliCommand command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,

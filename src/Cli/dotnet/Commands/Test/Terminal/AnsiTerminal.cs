@@ -152,7 +152,7 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
     {
         if (_isBatching)
         {
-            throw new InvalidOperationException(LocalizableStrings.ConsoleIsAlreadyInBatchingMode);
+            throw new InvalidOperationException(CliCommandStrings.ConsoleIsAlreadyInBatchingMode);
         }
 
         _stringBuilder.Clear();

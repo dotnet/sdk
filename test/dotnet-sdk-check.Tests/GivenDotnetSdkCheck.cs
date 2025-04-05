@@ -59,13 +59,13 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             {
                 _reporter.Lines
                     .Should()
-                    .Contain(new[] { string.Format(LocalizableStrings.NewFeatureBandMessage, "5.0.100") });
+                    .Contain(new[] { string.Format(CliCommandStrings.NewFeatureBandMessage, "5.0.100") });
             }
             else
             {
                 string.Join(' ', _reporter.Lines)
                     .Should()
-                    .NotContain(LocalizableStrings.NewFeatureBandMessage.Replace(".NET {0}.", string.Empty));
+                    .NotContain(CliCommandStrings.NewFeatureBandMessage.Replace(".NET {0}.", string.Empty));
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
 
             var commandResult = string.Join(' ', _reporter.Lines);
-            var expectedLines = latestPatchVersions.Select(version => string.Format(LocalizableStrings.NewPatchAvailableMessage, version));
+            var expectedLines = latestPatchVersions.Select(version => string.Format(CliCommandStrings.NewPatchAvailableMessage, version));
             foreach (var line in expectedLines)
             {
                 commandResult
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
 
             var commandResult = string.Join(' ', _reporter.Lines);
-            var expectedLines = outOfSupportVersions.Select(version => string.Format(LocalizableStrings.OutOfSupportMessage, version.Substring(0, 3)));
+            var expectedLines = outOfSupportVersions.Select(version => string.Format(CliCommandStrings.OutOfSupportMessage, version.Substring(0, 3)));
             foreach (var line in expectedLines)
             {
                 commandResult
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
 
             var unexpectedLines = sdkVersions.Concat(runtimeVersions).Except(outOfSupportVersions)
-                .Select(version => string.Format(LocalizableStrings.OutOfSupportMessage, version.Substring(0, 3)));
+                .Select(version => string.Format(CliCommandStrings.OutOfSupportMessage, version.Substring(0, 3)));
             foreach (var line in unexpectedLines)
             {
                 commandResult
@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             new SdkCheckCommand(parseResult, new MockNETBundleProvider(bundles), new MockProductCollectionProvider(fakeReleasesPath), _reporter).Execute();
 
             var commandResult = string.Join('\n', _reporter.Lines);
-            var expectedLines = maintenanceVersions.Select(version => string.Format(LocalizableStrings.MaintenanceMessage, version.Substring(0, 3)));
+            var expectedLines = maintenanceVersions.Select(version => string.Format(CliCommandStrings.MaintenanceMessage, version.Substring(0, 3)));
             foreach (var line in expectedLines)
             {
                 commandResult
@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Cli.SdkCheck.Tests
             }
 
             var unexpectedLines = sdkVersions.Concat(runtimeVersions).Except(maintenanceVersions)
-                .Select(version => string.Format(LocalizableStrings.MaintenanceMessage, version.Substring(0, 3)));
+                .Select(version => string.Format(CliCommandStrings.MaintenanceMessage, version.Substring(0, 3)));
             foreach (var line in unexpectedLines)
             {
                 commandResult

@@ -49,7 +49,7 @@ internal class MSBuildEvaluationResult
     {
         return new MSBuildEvaluationResult(EvalStatus.NoProjectFound)
         {
-            ErrorMessage = string.Format(LocalizableStrings.MSBuildEvaluationResult_Error_NoProjectFound, path)
+            ErrorMessage = string.Format(CliCommandStrings.MSBuildEvaluationResult_Error_NoProjectFound, path)
         };
     }
 
@@ -57,7 +57,7 @@ internal class MSBuildEvaluationResult
     {
         return new MSBuildEvaluationResult(EvalStatus.NoRestore, path)
         {
-            ErrorMessage = string.Format(LocalizableStrings.MSBuildEvaluationResult_Error_NotRestored, path)
+            ErrorMessage = string.Format(CliCommandStrings.MSBuildEvaluationResult_Error_NotRestored, path)
         };
     }
 

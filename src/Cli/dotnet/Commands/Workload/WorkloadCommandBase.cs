@@ -144,7 +144,7 @@ internal abstract class WorkloadCommandBase : CommandBase
         if (skipSignCheck && policyEnabled)
         {
             // Can't override the global policy by using the skip option.
-            throw new GracefulException(LocalizableStrings.SkipSignCheckInvalidOption);
+            throw new GracefulException(CliCommandStrings.SkipSignCheckInvalidOption);
         }
 
         return !skipSignCheck;

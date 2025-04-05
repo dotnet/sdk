@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Build.Tests
@@ -412,8 +413,8 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var parseResult = localCopy.Parse(new string[] { command, "-h" });
             parseResult.Invoke();
             localCopy.Output.ToString().Should().Contain(command.Equals("build") ?
-                Commands.LocalizableStrings.BuildRuntimeOptionDescription :
-                Commands.LocalizableStrings.RunRuntimeOptionDescription);
+                CliCommandStrings.BuildRuntimeOptionDescription :
+                CliCommandStrings.RunRuntimeOptionDescription);
         }
     }
 }

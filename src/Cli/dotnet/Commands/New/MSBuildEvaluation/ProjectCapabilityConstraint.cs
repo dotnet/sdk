@@ -24,7 +24,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
         if (evaluator == null)
         {
             environmentSettings.Host.Logger.LogDebug("{0}: '{1}' component is not available.", nameof(ProjectCapabilityConstraintFactory), nameof(MSBuildEvaluator));
-            throw new Exception(string.Format(LocalizableStrings.ProjectCapabilityConstraintFactory_Exception_NoEvaluator, Type, nameof(MSBuildEvaluator)));
+            throw new Exception(string.Format(CliCommandStrings.ProjectCapabilityConstraintFactory_Exception_NoEvaluator, Type, nameof(MSBuildEvaluator)));
         }
 
         try
@@ -35,7 +35,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
         catch (Exception e)
         {
             environmentSettings.Host.Logger.LogDebug("{0}: Failed to evaluate the project: {1}.", nameof(ProjectCapabilityConstraintFactory), e.Message);
-            throw new Exception(string.Format(LocalizableStrings.ProjectCapabilityConstraintFactory_Exception_EvaluationFailed, Type, e.Message), e);
+            throw new Exception(string.Format(CliCommandStrings.ProjectCapabilityConstraintFactory_Exception_EvaluationFailed, Type, e.Message), e);
         }
 
     }
@@ -59,7 +59,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
 
         public string Type => _factory.Type;
 
-        public string DisplayName => LocalizableStrings.ProjectCapabilityConstraint_DisplayName;
+        public string DisplayName => CliCommandStrings.ProjectCapabilityConstraint_DisplayName;
 
         public TemplateConstraintResult Evaluate(string? args)
         {
@@ -77,7 +77,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             catch (Exception e)
             {
                 _logger.LogDebug("Failed to parse configuration: '{0}', reason: {1}", args, e.Message);
-                throw new Exception($"{LocalizableStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}:{LocalizableStrings.ProjectCapabilityConstraint_Error_InvalidJson}.", e);
+                throw new Exception($"{CliCommandStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}:{CliCommandStrings.ProjectCapabilityConstraint_Error_InvalidJson}.", e);
             }
 
             string configuredCapabiltiesExpression;
@@ -88,14 +88,14 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                 if (string.IsNullOrWhiteSpace(configuredCapability))
                 {
                     _logger.LogDebug("Invalid configuration: '{0}', reason: arguments should not contain empty values.", args);
-                    throw new Exception($"{LocalizableStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}: {LocalizableStrings.ProjectCapabilityConstraint_Error_ArgumentShouldNotBeEmpty}.");
+                    throw new Exception($"{CliCommandStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}: {CliCommandStrings.ProjectCapabilityConstraint_Error_ArgumentShouldNotBeEmpty}.");
                 }
                 configuredCapabiltiesExpression = configuredCapability;
             }
             else
             {
                 _logger.LogDebug("Invalid configuration: '{0}', reason: argument should be a string.", args);
-                throw new Exception($"{LocalizableStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}: {LocalizableStrings.ProjectCapabilityConstraint_Error_ArgumentShouldBeString}.");
+                throw new Exception($"{CliCommandStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}: {CliCommandStrings.ProjectCapabilityConstraint_Error_ArgumentShouldBeString}.");
             }
 
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.NoProjectFound)
@@ -103,8 +103,8 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                 _logger.LogDebug("No project found. This template can only be created inside the project.");
                 return TemplateConstraintResult.CreateRestricted(
                     this,
-                    _evaluationResult.ErrorMessage ?? LocalizableStrings.MSBuildEvaluationResult_Error_NoProjectFound,
-                    LocalizableStrings.ProjectCapabilityConstraint_Restricted_NoProjectFound_CTA);
+                    _evaluationResult.ErrorMessage ?? CliCommandStrings.MSBuildEvaluationResult_Error_NoProjectFound,
+                    CliCommandStrings.ProjectCapabilityConstraint_Restricted_NoProjectFound_CTA);
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.MultipleProjectFound)
             {
@@ -112,26 +112,26 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                 _logger.LogDebug("Multiple projects found: {0}, specify the project to use.", foundProjects);
                 return TemplateConstraintResult.CreateRestricted(
                     this,
-                    _evaluationResult.ErrorMessage ?? string.Format(LocalizableStrings.MultipleProjectsEvaluationResult_Error, foundProjects),
-                    string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptions.ProjectPathOption.Name));
+                    _evaluationResult.ErrorMessage ?? string.Format(CliCommandStrings.MultipleProjectsEvaluationResult_Error, foundProjects),
+                    string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_MultipleProjectsFound_CTA, SharedOptions.ProjectPathOption.Name));
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.NoRestore)
             {
                 _logger.LogDebug("The project is not restored. Run 'dotnet restore {0}' to restore the project.", _evaluationResult.ProjectPath);
                 return TemplateConstraintResult.CreateRestricted(
                     this,
-                    _evaluationResult.ErrorMessage ?? string.Format(LocalizableStrings.MSBuildEvaluationResult_Error_NotRestored, _evaluationResult.ProjectPath),
-                    string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_NotRestored_CTA, _evaluationResult.ProjectPath));
+                    _evaluationResult.ErrorMessage ?? string.Format(CliCommandStrings.MSBuildEvaluationResult_Error_NotRestored, _evaluationResult.ProjectPath),
+                    string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_NotRestored_CTA, _evaluationResult.ProjectPath));
             }
             if (_evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.Failed || _evaluationResult.Status == MSBuildEvaluationResult.EvalStatus.NotEvaluated || _evaluationResult.EvaluatedProject == null)
             {
                 _logger.LogDebug("Failed to evaluate project context: {0}", _evaluationResult.ErrorMessage);
-                return TemplateConstraintResult.CreateRestricted(this, string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_EvaluationFailed_Message, _evaluationResult.ErrorMessage));
+                return TemplateConstraintResult.CreateRestricted(this, string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_EvaluationFailed_Message, _evaluationResult.ErrorMessage));
             }
             if (_evaluationResult is NonSDKStyleEvaluationResult)
             {
                 _logger.LogDebug("The project {0} is not an SDK style project, and is not supported for evaluation.", _evaluationResult.ProjectPath);
-                return TemplateConstraintResult.CreateRestricted(this, string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_NonSDKStyle_Message, _evaluationResult.ProjectPath));
+                return TemplateConstraintResult.CreateRestricted(this, string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_NonSDKStyle_Message, _evaluationResult.ProjectPath));
             }
 
             try
@@ -142,7 +142,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
                     _logger.LogDebug("Expression evaluated to 'false'.");
                     return TemplateConstraintResult.CreateRestricted(
                         this,
-                        string.Format(LocalizableStrings.ProjectCapabilityConstraint_Restricted_Message, configuredCapabiltiesExpression, _evaluationResult.ProjectPath));
+                        string.Format(CliCommandStrings.ProjectCapabilityConstraint_Restricted_Message, configuredCapabiltiesExpression, _evaluationResult.ProjectPath));
                 }
                 _logger.LogDebug("Expression evaluated to 'true'.");
                 return TemplateConstraintResult.CreateAllowed(this);
@@ -150,7 +150,7 @@ internal class ProjectCapabilityConstraintFactory : ITemplateConstraintFactory
             catch (ArgumentException ae)
             {
                 _logger.LogDebug("Invalid expression '{0}'.", configuredCapabiltiesExpression);
-                throw new Exception($"{LocalizableStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}:{ae.Message}.", ae);
+                throw new Exception($"{CliCommandStrings.ProjectCapabilityConstraint_Error_InvalidConstraintConfiguration}:{ae.Message}.", ae);
             }
         }
 

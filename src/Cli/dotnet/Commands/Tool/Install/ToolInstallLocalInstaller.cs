@@ -50,7 +50,7 @@ internal class ToolInstallLocalInstaller
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
+                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
                     Path.GetFullPath(_configFilePath)));
         }
 

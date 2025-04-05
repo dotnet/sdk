@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Sln.List.Tests
@@ -191,8 +192,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsPresentInTheSolutionItListsThem(string solutionCommand, string solutionExtension)
         {
-            var expectedOutput = $@"{Commands.LocalizableStrings.ProjectsHeader}
-{new string('-', Commands.LocalizableStrings.ProjectsHeader.Length)}
+            var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
+{new string('-', CliCommandStrings.ProjectsHeader.Length)}
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
@@ -215,8 +216,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsPresentInTheReadonlySolutionItListsThem(string solutionCommand, string solutionExtension)
         {
-            var expectedOutput = $@"{Commands.LocalizableStrings.ProjectsHeader}
-{new string('-', Commands.LocalizableStrings.ProjectsHeader.Length)}
+            var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
+{new string('-', CliCommandStrings.ProjectsHeader.Length)}
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
@@ -243,8 +244,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPaths(string solutionCommand, string solutionExtension)
         {
-            string[] expectedOutput = { $"{Commands.LocalizableStrings.SolutionFolderHeader}",
-$"{new string('-', Commands.LocalizableStrings.SolutionFolderHeader.Length)}",
+            string[] expectedOutput = { $"{CliCommandStrings.SolutionFolderHeader}",
+$"{new string('-', CliCommandStrings.SolutionFolderHeader.Length)}",
 $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
             var projectDirectory = _testAssetsManager
@@ -264,8 +265,8 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         [InlineData("solution")]
         public void WhenSolutionFilterIsPassedItListsProjectsMatching(string solutionCommand)
         {
-            string[] expectedOutput = { $"{Commands.LocalizableStrings.ProjectsHeader}",
-                $"{new string('-', Commands.LocalizableStrings.ProjectsHeader.Length)}",
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnxAndSolutionFilters", identifier: "GivenDotnetSlnList-Filter")
@@ -284,8 +285,8 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         [InlineData("solution")]
         public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
         {
-            string[] expectedOutput = { $"{Commands.LocalizableStrings.ProjectsHeader}",
-                $"{new string('-', Commands.LocalizableStrings.ProjectsHeader.Length)}",
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")

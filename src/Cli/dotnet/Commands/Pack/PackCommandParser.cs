@@ -19,43 +19,43 @@ internal static class PackCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.PackCmdOutputDirDescription,
-        HelpName = LocalizableStrings.PackCmdOutputDir
+        Description = CliCommandStrings.PackCmdOutputDirDescription,
+        HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
     public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
     {
-        Description = LocalizableStrings.CmdNoBuildOptionDescription,
+        Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
     public static readonly CliOption<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
     {
-        Description = LocalizableStrings.CmdIncludeSymbolsDescription,
+        Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
     public static readonly CliOption<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
     {
-        Description = LocalizableStrings.CmdIncludeSourceDescription,
+        Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
     public static readonly CliOption<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
     {
-        Description = LocalizableStrings.CmdServiceableDescription,
+        Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.PackCmdNoLogo,
+        Description = CliCommandStrings.PackCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
     public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.PackConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -66,7 +66,7 @@ internal static class PackCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.PackAppFullName);
+        var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(OutputOption);

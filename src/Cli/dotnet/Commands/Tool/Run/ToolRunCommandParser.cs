@@ -9,8 +9,8 @@ internal static class ToolRunCommandParser
 {
     public static readonly CliArgument<string> CommandNameArgument = new("commandName")
     {
-        HelpName = LocalizableStrings.CommandNameArgumentName,
-        Description = LocalizableStrings.CommandNameArgumentDescription
+        HelpName = CliCommandStrings.CommandNameArgumentName,
+        Description = CliCommandStrings.CommandNameArgumentDescription
     };
 
     public static readonly CliArgument<IEnumerable<string>> CommandArgument = new("toolArguments")
@@ -20,7 +20,7 @@ internal static class ToolRunCommandParser
 
     public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = LocalizableStrings.RollForwardOptionDescription,
+        Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -33,7 +33,7 @@ internal static class ToolRunCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("run", LocalizableStrings.ToolRunCommandDescription);
+        CliCommand command = new("run", CliCommandStrings.ToolRunCommandDescription);
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
