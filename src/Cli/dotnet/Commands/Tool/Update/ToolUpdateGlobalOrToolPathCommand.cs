@@ -36,7 +36,7 @@ internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
             createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
         PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument).PackageId is string s)
         {
             packageId = new PackageId(s);
         }

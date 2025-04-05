@@ -28,7 +28,7 @@ internal class ToolUninstallLocalCommand : CommandBase
         IReporter reporter = null)
         : base(parseResult)
     {
-        _packageId = new PackageId(parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
+        _packageId = new PackageId(parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument).PackageId);
         _explicitManifestFile = parseResult.GetValue(ToolUninstallCommandParser.ToolManifestOption);
 
         _reporter = reporter ?? Reporter.Output;

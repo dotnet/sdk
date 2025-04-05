@@ -762,4 +762,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="UnrecognizedCommandOrArgument" xml:space="preserve">
     <value>Unrecognized command or argument '{0}'</value>
   </data>
+  <data name="PackageIdentityArgumentDescription" xml:space="preserve">
+    <value>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3</value>
+  </data>
 </root>
