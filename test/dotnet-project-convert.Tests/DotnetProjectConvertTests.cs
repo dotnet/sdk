@@ -301,12 +301,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Be("Console.WriteLine();");
 
         File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
-            .Should().Be("""
+            .Should().Be($"""
                 <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -329,14 +329,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:property LangVersion preview
                 Console.WriteLine();
                 """,
-            expectedProject: """
+            expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <Sdk Name="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -366,12 +366,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:package MyPackage $(MyProp)
                 #:property MyProp MyValue
                 """,
-            expectedProject: """
+            expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -403,7 +403,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:package P1 1.0/a=b
                 #:package P2 2.0/a=b
                 """,
-            expectedProject: """
+            expectedProject: $"""
                 <Project Sdk="First/1.0=a/b">
 
                   <Sdk Name="Second" Version="2.0/a=b" />
@@ -411,7 +411,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -475,7 +475,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:property Test
                 """,
-            expectedWildcardPattern: "The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': /app/Program.cs:1");
+            expectedWildcardPattern: "The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': /app/Program.cs:1");
     }
 
     [Fact]
@@ -499,12 +499,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:sdk <test"> ="<>test
                 #:package <test"> ="<>test
                 """,
-            expectedProject: """
+            expectedProject: $"""
                 <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;test">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -528,19 +528,19 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                 #  !  /test
-                  #!  /program   x   
                     #:   sdk   TestSdk
                 #:property Name   Value   
                 #:property NugetPackageDescription "My package with spaces"
+                 #  !  /test
+                  #!  /program   x   
                  # :property Name Value
                 """,
-            expectedProject: """
+            expectedProject: $"""
                 <Project Sdk="TestSdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
-                    <TargetFramework>net10.0</TargetFramework>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
                   </PropertyGroup>
@@ -555,6 +555,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """,
             expectedCSharp: """
                  #  !  /test
+                  #!  /program   x   
                  # :property Name Value
                 """);
     }
@@ -567,6 +568,137 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:   property   Name{'\t'}     Value
                 """,
             expectedWildcardPattern: "Invalid property name at /app/Program.cs:1. The '\t' character, hexadecimal value 0x09, cannot be included in a name.");
+    }
+
+    /// <summary>
+    /// <c>#:</c> directives after C# code are ignored.
+    /// </summary>
+    [Fact]
+    public void Directives_AfterToken()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #:property Prop 1
+                #define X
+                #:property Prop 2
+                Console.WriteLine();
+                #:property Prop 3
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop>1</Prop>
+                    <Prop>2</Prop>
+                  </PropertyGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                #define X
+                Console.WriteLine();
+                #:property Prop 3
+                """);
+    }
+
+    /// <summary>
+    /// <c>#:</c> directives after <c>#if</c> are ignored.
+    /// </summary>
+    [Fact]
+    public void Directives_AfterIf()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #:property Prop 1
+                #define X
+                #:property Prop 2
+                #if X
+                #:property Prop 3
+                #endif
+                #:property Prop 4
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop>1</Prop>
+                    <Prop>2</Prop>
+                  </PropertyGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                #define X
+                #if X
+                #:property Prop 3
+                #endif
+                #:property Prop 4
+                """);
+    }
+
+    /// <summary>
+    /// Comments are not currently converted.
+    /// </summary>
+    [Fact]
+    public void Directives_Comments()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                // License for this file
+                #:sdk MySdk
+                // This package is needed for Json
+                #:package MyJson
+                // #:package Unused
+                /* Custom props: */
+                #:property Prop 1
+                #:property Prop 2
+                Console.Write();
+                """,
+            expectedProject: $"""
+                <Project Sdk="MySdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop>1</Prop>
+                    <Prop>2</Prop>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="MyJson" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                // License for this file
+                // This package is needed for Json
+                // #:package Unused
+                /* Custom props: */
+                Console.Write();
+                """);
     }
 
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp)
