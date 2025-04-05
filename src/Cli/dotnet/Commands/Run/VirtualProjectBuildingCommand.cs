@@ -183,7 +183,12 @@ internal sealed class VirtualProjectBuildingCommand
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(
+                projectFileWriter,
+                _directives,
+                isVirtualProject: true,
+                targetFilePath: _targetFilePath,
+                artifactsPath: GetArtifactsPath(EntryPointFileFullPath));
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -192,14 +197,28 @@ internal sealed class VirtualProjectBuildingCommand
             projectRoot.FullPath = projectFileFullPath;
             return projectRoot;
         }
+
+        static string GetArtifactsPath(string entryPointFilePath)
+        {
+            // We want a location where permissions are expected to be restricted to the current user.
+            var directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? Path.GetTempPath()
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            return Path.Join(directory, "dotnet", "runfile", Sha256Hasher.HashWithNormalizedCasing(entryPointFilePath));
+        }
     }
 
     public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
     {
-        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null);
+        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null, artifactsPath: null);
     }
 
-    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool isVirtualProject, string? targetFilePath)
+    private static void WriteProjectFile(
+        TextWriter writer,
+        ImmutableArray<CSharpDirective> directives,
+        bool isVirtualProject,
+        string? targetFilePath,
+        string? artifactsPath)
     {
         int processedDirectives = 0;
 
@@ -217,8 +236,15 @@ internal sealed class VirtualProjectBuildingCommand
 
         if (isVirtualProject)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+
             writer.WriteLine($"""
                 <Project>
+
+                  <PropertyGroup>
+                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                  </PropertyGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
