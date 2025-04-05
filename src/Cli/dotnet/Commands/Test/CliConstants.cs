@@ -94,4 +94,5 @@ internal static class ProjectProperties
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
+    internal const string AppDesignerFolder = "AppDesignerFolder";
 }
