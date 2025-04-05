@@ -2,18 +2,20 @@
 
 This document provides guidelines for introducing new diagnostics or breaking changes to the .NET SDK, which configuration knobs are available, what criteria should guide the decision around severity, timeline for introduction, and deprecation of diagnostics, and what steps are required by the .NET release process.
 
+## What is a breaking change in the .NET SDK?
+
+A .NET SDK breaking change is when a customer upgrades to a newer .NET SDK, while changing nothing else in their environment, and experiences a disruption to their product build or execution.
+
 ## General guidance
 
-In general, we want to make updating the .NET SDK as smooth as possible for developers. This extends to .NET tooling such as IDEs and code editors which may have a different release schedule and cadence. For example, the .NET 9 SDK (which was a new major version) was released with Visual Studio 17.12 (which was a new minor version). In this example, breaking changes in the .NET 9 SDK could disproportionally impact Visual Studio users who are expecting incremental, non-breaking, changes in the new minor version. Same applies to other IDEs and code editors from the wider .NET community.
+In general, we want to make updating the .NET SDK as smooth as possible for developers. This extends to updating .NET tooling such as IDEs and code editors which may have a different release schedule and cadence. For example, the .NET 9 SDK (which was a new major version) was released with Visual Studio 17.12 (which was a new minor version). In this example, breaking changes in the .NET 9 SDK could disproportionally impact Visual Studio users who are expecting incremental, non-breaking, changes in the new minor version. Same applies to other IDEs and code editors from the wider .NET community.
 
 This means:
 * Introducing new changes in a staged/gradual way.
 * Tying new analyzers/diagnostics to a mechanism that requires explicit opt-in.
 * Providing a way to opt out of a change entirely.
 
-## Kinds of .NET SDK breaking changes
-
-There are many kinds of breaking changes that can ship in the .NET SDK, such as:
+## Examples of .NET SDK breaking changes
 
 * New MSBuild warnings and errors (props/targets).
 * New NuGet warnings and errors. 
@@ -79,7 +81,9 @@ This knob exists so that users can safely and consistently say "for whatever rea
 
 Changes that are expected to cause significant disruption should only be introduced behind the Target Framework knob. This ensures business continuity and allows developers to address changes needed as part of scheduled work to migrate a codebase to a new TFM.
 
-Specific example: NuGet warnings for vulnerable transitive dependencies were introduced in the .NET 10 SDK only for applications targeting .NET 10 and higher.
+Examples:
+* NuGet warnings for vulnerable transitive dependencies were introduced in the .NET 10 SDK only for applications targeting .NET 10 and higher.
+* New Roslyn analyzers are regularly tied to target TFM (and are not considered breaking as a result).
 
 ## Required process for all .NET SDK breaking changes 
 
