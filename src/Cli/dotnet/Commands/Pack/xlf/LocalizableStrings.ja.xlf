@@ -22,24 +22,9 @@
         <target state="translated">パッケージに処理可能なフラグを設定します。詳細については、https://aka.ms/nupkgservicing をご覧ください。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdArgumentProject">
-        <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAppDescription">
-        <source>pack for msbuild</source>
-        <target state="new">pack for msbuild</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="new">.NET Core NuGet Package Packer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdArgumentDescription">
-        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdNoLogo">

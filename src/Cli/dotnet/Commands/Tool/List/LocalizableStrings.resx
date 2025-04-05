@@ -123,9 +123,6 @@
   <data name="ToolListGlobalOptionDescription" xml:space="preserve">
     <value>List tools installed for the current user.</value>
   </data>
-  <data name="ToolListToolPathOptionName" xml:space="preserve">
-    <value>PATH</value>
-  </data>
   <data name="ToolListToolPathOptionDescription" xml:space="preserve">
     <value>The directory containing the tools to list.</value>
   </data>

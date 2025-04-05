@@ -27,11 +27,6 @@
         <target state="translated">Das vom auszuführenden Befehl verwendete Arbeitsverzeichnis.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Das Zwischenarbeitsverzeichnis {0} ist bereits vorhanden. Entfernen Sie {0}, oder geben Sie mit "-w" ein anderes Verzeichnis an.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">Hiermit wird die Optimierungsphase übersprungen.</target>

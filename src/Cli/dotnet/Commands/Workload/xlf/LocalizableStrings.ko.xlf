@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="EmscriptenDescription">
-        <source>Emscripten SDK compiler tooling</source>
-        <target state="translated">Emscripten SDK 컴파일러 도구</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoWorkloadsInstalledInfoWarning">
         <source>There are no installed workloads to display.</source>
         <target state="translated">표시할 설치된 워크로드가 없습니다.</target>
@@ -22,11 +17,6 @@
         <target state="translated">서명 확인을 무시할 수 없습니다. 지정한 옵션이 전역 정책과 충돌합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WasmToolsDescription">
-        <source>.NET WebAssembly build tools</source>
-        <target state="translated">.NET WebAssembly 빌드 도구</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadCommandDescription">
         <source>Install or work with workloads that extend the .NET experience.</source>
         <target state="new">Install or work with workloads that extend the .NET experience.</target>
@@ -40,11 +30,6 @@
       <trans-unit id="WorkloadInfoDescription">
         <source>Display information about installed workloads.</source>
         <target state="translated">설치된 워크로드에 대한 정보를 표시합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallFullCommandNameLocalized">
-        <source>.NET Install Command</source>
-        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallTypeColumn">

@@ -7,11 +7,6 @@
         <target state="translated">프로젝트 또는 솔루션에 스타일 기본 설정을 적용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="HelpAppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpAppFullName">
         <source>.NET CLI help utility</source>
         <target state="new">.NET CLI help utility</target>
@@ -47,54 +42,14 @@
         <target state="translated">사용법</target>
         <note />
       </trans-unit>
-      <trans-unit id="Arguments">
-        <source>Arguments</source>
-        <target state="translated">인수</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDefinition">
-        <source>The command to execute</source>
-        <target state="translated">실행할 명령입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsDefinition">
-        <source>Arguments to pass to the command</source>
-        <target state="translated">명령에 전달할 인수입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HostOptionsDefinition">
-        <source>Options specific to dotnet (host)</source>
-        <target state="translated">dotnet(호스트)과 관련된 옵션입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionsDescription">
-        <source>Options common to all commands</source>
-        <target state="translated">모든 명령에 공통된 옵션입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
         <target state="translated">지정된 명령에 대한 참조 페이지를 브라우저에서 엽니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="HostOptions">
-        <source>Host options (passed before the command)</source>
-        <target state="translated">호스트 옵션(명령 전에 전달됨)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UserJwtsDefinition">
         <source>Manage JSON Web Tokens in development.</source>
         <target state="translated">개발 중인 JSON 웹 토큰을 관리합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionDescription">
-        <source>Display the version of the .NET SDK, including the effects of any global.json</source>
-        <target state="translated">global.json의 효과를 포함하여 .NET SDK의 버전을 표시합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InfoDescription">
-        <source>Display .NET CLI Info</source>
-        <target state="translated">.NET CLI 정보 표시</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
@@ -137,16 +92,6 @@
         <target state="translated">NuGet 패키지를 만듭니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectModificationCommands">
-        <source>Project modification commands</source>
-        <target state="translated">프로젝트 수정 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdvancedCommands">
-        <source>Advanced Commands</source>
-        <target state="translated">고급 명령</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NugetDefinition">
         <source>Provides additional NuGet commands.</source>
         <target state="translated">추가 NuGet 명령을 제공합니다.</target>
@@ -160,11 +105,6 @@
       <trans-unit id="VsTestDefinition">
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Microsoft Test Engine(VSTest) 명령을 실행합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DiagnosticsDefinition">
-        <source>Enable diagnostic output</source>
-        <target state="translated">진단 출력을 사용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanDefinition">

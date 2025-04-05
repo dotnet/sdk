@@ -120,15 +120,9 @@
   <data name="RunAppFullName" xml:space="preserve">
     <value>.NET Run Command</value>
   </data>
-  <data name="RunAppDescription" xml:space="preserve">
-    <value>Command used to run .NET apps</value>
-  </data>
   <data name="CommandOptionNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before running. Implies --no-restore.</value>
     <comment>{Locked="--no-restore"}</comment>
-  </data>
-  <data name="CommandOptionFrameworkDescription" xml:space="preserve">
-    <value>Build and run the app using the specified framework. The framework has to be specified in the project file. </value>
   </data>
   <data name="CommandOptionProjectDescription" xml:space="preserve">
     <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
@@ -173,9 +167,6 @@ The current {1} is '{2}'.</value>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
   </data>
-  <data name="RunCommandAdditionalArgsHelpText" xml:space="preserve">
-    <value>Arguments passed to the application that is being run.</value>
-  </data>
   <data name="RunCommandExceptionCouldNotLocateALaunchSettingsFile" xml:space="preserve">
     <value>The specified launch profile '{0}' could not be located.</value>
   </data>
@@ -202,10 +193,6 @@ The current {1} is '{2}'.</value>
   <data name="UsableLaunchProfileCannotBeLocated" xml:space="preserve">
     <value>A usable launch profile could not be located.</value>
   </data>
-  <data name="UnexpectedExceptionProcessingLaunchSettings" xml:space="preserve">
-    <value>An unexpected exception occurred while processing launch settings:
-{0}</value>
-  </data>
   <data name="LaunchProfilesCollectionIsNotAJsonObject" xml:space="preserve">
     <value>The 'profiles' property of the launch settings document is not a JSON object.</value>
   </data>
@@ -228,9 +215,6 @@ The current {1} is '{2}'.</value>
   <data name="RunCommandProjectAbbreviationDeprecated" xml:space="preserve">
     <value>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</value>
     <comment>{Locked="--project"}</comment>
-  </data>
-  <data name="PropertyOptionDescription" xml:space="preserve">
-    <value>Properties to be passed to MSBuild.</value>
   </data>
   <data name="OnlyOneProjectAllowed" xml:space="preserve">
     <value>Only one project can be specified at a time using the -p option.</value>

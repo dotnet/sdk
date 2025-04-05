@@ -7,11 +7,6 @@
         <target state="new">Interact with servers started from a build.</target>
         <note />
       </trans-unit>
-      <trans-unit id="BuildServerCommandName">
-        <source>.NET Build Server Command</source>
-        <target state="translated">.NET-Buildserverbefehl</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

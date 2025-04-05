@@ -120,9 +120,6 @@
   <data name="ReferenceRemoveAppFullName" xml:space="preserve">
     <value>Remove a project-to-project reference from the project.</value>
   </data>
-  <data name="ReferenceRemoveAppDescription" xml:space="preserve">
-    <value>Command to remove project to project reference</value>
-  </data>
   <data name="ReferenceRemoveProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>

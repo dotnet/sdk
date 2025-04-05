@@ -7,11 +7,6 @@
         <target state="translated">將樣式喜好設定套用至專案或解決方案。</target>
         <note />
       </trans-unit>
-      <trans-unit id="HelpAppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpAppFullName">
         <source>.NET CLI help utility</source>
         <target state="new">.NET CLI help utility</target>
@@ -47,54 +42,14 @@
         <target state="translated">使用方式</target>
         <note />
       </trans-unit>
-      <trans-unit id="Arguments">
-        <source>Arguments</source>
-        <target state="translated">引數</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDefinition">
-        <source>The command to execute</source>
-        <target state="translated">要執行的命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsDefinition">
-        <source>Arguments to pass to the command</source>
-        <target state="translated">要傳遞到命令的引數</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HostOptionsDefinition">
-        <source>Options specific to dotnet (host)</source>
-        <target state="translated">dotnet (host) 專用選項</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionsDescription">
-        <source>Options common to all commands</source>
-        <target state="translated">所有命令通用的選項</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
         <target state="translated">在瀏覽器中開啟指定命令的參考頁面。</target>
         <note />
       </trans-unit>
-      <trans-unit id="HostOptions">
-        <source>Host options (passed before the command)</source>
-        <target state="translated">裝載選項 (在命令之前傳遞)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UserJwtsDefinition">
         <source>Manage JSON Web Tokens in development.</source>
         <target state="translated">在開發中管理 JSON Web 權杖。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionDescription">
-        <source>Display the version of the .NET SDK, including the effects of any global.json</source>
-        <target state="translated">顯示 .NET SDK 的版本，包括任何 global.json 的影響</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InfoDescription">
-        <source>Display .NET CLI Info</source>
-        <target state="translated">顯示 .NET CLI 資訊</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
@@ -137,16 +92,6 @@
         <target state="translated">建立 NuGet 套件。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectModificationCommands">
-        <source>Project modification commands</source>
-        <target state="translated">專案修改命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdvancedCommands">
-        <source>Advanced Commands</source>
-        <target state="translated">進階命令</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NugetDefinition">
         <source>Provides additional NuGet commands.</source>
         <target state="translated">提供其他 NuGet 命令。</target>
@@ -160,11 +105,6 @@
       <trans-unit id="VsTestDefinition">
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">執行 Microsoft Test Engine (VSTest) 命令。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DiagnosticsDefinition">
-        <source>Enable diagnostic output</source>
-        <target state="translated">啟用診斷輸出</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanDefinition">

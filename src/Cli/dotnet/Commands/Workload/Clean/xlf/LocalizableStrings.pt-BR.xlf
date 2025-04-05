@@ -14,11 +14,6 @@ Caminhos pesquisados: '{1}', '{2}'.</target>
         <target state="translated">Causa limpeza para remover e desinstalar todos os componentes da carga de trabalho de todas as versões do SDK.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadProcessPath">
-        <source>The path '{0}' of the process is the root path of the drive, which is not allowed, or it is invalid/inaccessible. Please run dotnet in a valid and available path.</source>
-        <target state="translated">O caminho '{0}' do processo é o caminho raiz do drive, que não é permitido, ou é inválido/inacessível. Execute dotnet em um caminho válido e disponível.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">Workload '{0}' não foi removido porque é instalado e gerenciado pelo Visual Studio: '{1}'. Desinstale esta carga de trabalho usando o Instalador do Visual Studio para removê-la completamente.</target>

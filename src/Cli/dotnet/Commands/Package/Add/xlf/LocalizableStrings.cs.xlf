@@ -47,11 +47,6 @@
         <target state="translated">Nejde generovat dočasný soubor pro projekt {0}. Není možné přidat odkaz na balíček. Vyprázdněte dočasný adresář a zkuste to znovu.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PackageAddAppDescription">
-        <source>Command to add package reference</source>
-        <target state="new">Command to add package reference</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageAddAppFullName">
         <source>Add a NuGet package reference to the project.</source>
         <target state="new">Add a NuGet package reference to the project.</target>
@@ -80,11 +75,6 @@
       <trans-unit id="PackageAddCmdSourceDescription">
         <source>The NuGet package source to use during the restore.</source>
         <target state="new">The NuGet package source to use during the restore.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageAddSpecifyExactlyOnePackageReference">
-        <source>Specify one package reference to add.</source>
-        <target state="new">Specify one package reference to add.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValidationFailedDuplicateVersion">

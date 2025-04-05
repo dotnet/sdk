@@ -87,11 +87,6 @@
         <target state="translated">広告マニフェスト {0} を更新できませんでした: {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToDownloadPackageManifest">
-        <source>Failed to download manifest package {0}.</source>
-        <target state="translated">マニフェスト パッケージ {0} をダウンロードできませんでした。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToExtractMsi">
         <source>Failed to extract information from MSI: {0}</source>
         <target state="translated">MSI から情報を抽出できませんでした: {0}</target>
@@ -157,11 +152,6 @@
         <target state="translated">ワークロード マニフェスト ID '{0}' のバージョン '{1}' の解析でエラーが発生しました</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadConfiguration">
-        <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="translated">ワークロードの NuGet パッケージ内の設定ファイルが無効です: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">NuGet パッケージ {0} にマニフェスト MSI が見つかりません</target>
@@ -207,11 +197,6 @@
         <target state="translated">マシンの再起動が保留中です。ワークロード操作は続行されますが、再起動が必要になる場合があります。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ResolvingPackageUrls">
-        <source>Resolving package URLs for workload(s) {0}...</source>
-        <target state="translated">ワークロード {0} 向けパッケージ URL を解決しています...</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">無効なロールバック定義。ロールバック定義 {0} のマニフェスト ID が、インストール済みのマニフェスト ID {1} と一致しません。</target>
@@ -250,16 +235,6 @@
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">このコマンドに NuGet パッケージをダウンロードして抽出するための一時ディレクトリを指定します (セキュリティで保護する必要があります)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnknownInstallType">
-        <source>Unknown installation type: {0}.</source>
-        <target state="translated">不明なインストールの種類: {0}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedPackError">
-        <source>Pack ID {0} unrecognized.</source>
-        <target state="translated">パック ID {0} を認識できません。</target>
         <note />
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -307,29 +282,9 @@
         <target state="new">FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="new">The target framework to install the workload for.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="new">.NET install command</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="new">Successfully installed workload(s) {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallRollBackFailedMessage">
@@ -392,16 +347,6 @@
         <target state="translated">パック '{0}' バージョン {1} は既にインストールされています。</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadPathOptionDescription">
-        <source>The directory where the workload will be installed. The directory will be created if it doesn't exist.</source>
-        <target state="translated">ワークロードがインストールされるディレクトリ。このディレクトリが存在しない場合は、作成されます。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadPathOptionName">
-        <source>PATH</source>
-        <target state="translated">パス</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">表示するワークロードのバージョン、または '@' 文字で結合された 1 つ以上のワークロードとそのバージョン。</target>
@@ -410,11 +355,6 @@
       <trans-unit id="WritingPackInstallRecordMessage">
         <source>Writing workload pack installation record for {0} version {1}...</source>
         <target state="translated">{0} バージョン {1} のワークロード パックのインストール レコードを書き込んでいます...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WritingWorkloadInstallRecordMessage">
-        <source>Writing workload installation record for {0}...</source>
-        <target state="translated">{0} のワークロード インストール レコードを書き込んでいます...</target>
         <note />
       </trans-unit>
     </body>

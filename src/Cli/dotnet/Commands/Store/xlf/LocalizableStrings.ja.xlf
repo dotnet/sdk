@@ -27,11 +27,6 @@
         <target state="translated">実行のためにコマンドで使用される作業ディレクトリ。</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">中間作業ディレクトリ {0} は既に存在します。{0} を削除するか、-w を使用して別のディレクトリを指定してください。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">最適化フェーズをスキップします。</target>

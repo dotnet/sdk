@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandOptionFrameworkDescription">
-        <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
-        <target state="translated">지정된 프레임워크를 사용하여 앱을 빌드 및 실행합니다. 프로젝트 파일에서 프레임워크를 지정해야 합니다. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
         <target state="translated">시작 프로필에 지정된 인수를 사용하여 애플리케이션을 실행하지 마세요.</target>
@@ -61,16 +56,6 @@ Make the profile names distinct.</source>
         <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
         <note>{0} is the file path and line number. {Locked="="}</note>
       </trans-unit>
-      <trans-unit id="PropertyOptionDescription">
-        <source>Properties to be passed to MSBuild.</source>
-        <target state="translated">MSBuild에 전달할 속성입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunAppDescription">
-        <source>Command used to run .NET apps</source>
-        <target state="new">Command used to run .NET apps</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunAppFullName">
         <source>.NET Run Command</source>
         <target state="new">.NET Run Command</target>
@@ -89,11 +74,6 @@ Make the profile names distinct.</source>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
         <target state="translated">빌드하지 못했습니다. 빌드 오류를 수정하고 다시 실행하세요.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandAdditionalArgsHelpText">
-        <source>Arguments passed to the application that is being run.</source>
-        <target state="translated">실행 중인 애플리케이션에 전달되는 인수입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -204,13 +184,6 @@ The current {1} is '{2}'.</source>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
         <target state="translated">사용할 수 있는 시작 프로필을 찾을 수 없습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
-        <source>An unexpected exception occurred while processing launch settings:
-{0}</source>
-        <target state="translated">시작 설정을 처리하는 동안 예기치 않은 예외가 발생했습니다.
-{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">

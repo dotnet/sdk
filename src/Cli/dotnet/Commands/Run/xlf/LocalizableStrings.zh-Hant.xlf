@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandOptionFrameworkDescription">
-        <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
-        <target state="translated">使用指定的架構建置及執行應用程式。架構必須在專案檔中指定。 </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
         <target state="translated">不要使用啟動配置檔中指定的自變數來執行應用程式。</target>
@@ -61,16 +56,6 @@ Make the profile names distinct.</source>
         <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
         <note>{0} is the file path and line number. {Locked="="}</note>
       </trans-unit>
-      <trans-unit id="PropertyOptionDescription">
-        <source>Properties to be passed to MSBuild.</source>
-        <target state="translated">要傳送至 MSBuild 的屬性。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunAppDescription">
-        <source>Command used to run .NET apps</source>
-        <target state="new">Command used to run .NET apps</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunAppFullName">
         <source>.NET Run Command</source>
         <target state="new">.NET Run Command</target>
@@ -89,11 +74,6 @@ Make the profile names distinct.</source>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
         <target state="translated">建置失敗。請修正建置錯誤後，再執行一次。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandAdditionalArgsHelpText">
-        <source>Arguments passed to the application that is being run.</source>
-        <target state="translated">傳遞至正在執行之應用程式的引數。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -204,13 +184,6 @@ The current {1} is '{2}'.</source>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
         <target state="translated">找不到可用的啟動設定檔。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
-        <source>An unexpected exception occurred while processing launch settings:
-{0}</source>
-        <target state="translated">處理啟動設定時發生未預期的例外狀況: 
-{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">

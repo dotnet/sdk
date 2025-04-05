@@ -27,11 +27,6 @@
         <target state="translated">출력의 서식을 적절하게 지정하세요. 'table' 또는 'json'입니다. 기본값은 'table'입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InteractiveDescription">
-        <source>Stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="translated">사용자 입력 또는 작업(예: 인증 완료)을 중지하고 기다리세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageSearchCommandDescription">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
         <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>

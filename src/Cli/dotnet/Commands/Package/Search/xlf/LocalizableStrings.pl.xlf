@@ -27,11 +27,6 @@
         <target state="translated">Odpowiednio sformatuj dane wyjściowe. Element „table” lub „json”. Wartość domyślna to „table”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InteractiveDescription">
-        <source>Stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="translated">Zatrzymaj i poczekaj na wprowadzenie przez użytkownika lub podjęcie przez niego akcji (na przykład ukończenie uwierzytelniania).</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageSearchCommandDescription">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
         <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>

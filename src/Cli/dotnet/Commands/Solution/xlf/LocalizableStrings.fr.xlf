@@ -37,24 +37,9 @@
         <target state="translated">Supprimez un ou plusieurs projets d'un fichier solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RemoveSubcommandHelpText">
-        <source>Remove the specified project(s) from the solution. The project is not impacted.</source>
-        <target state="translated">Retirez le ou les projets spécifiés dans la solution. Le projet n'est pas affecté.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ListAppFullName">
         <source>List all projects in a solution file.</source>
         <target state="translated">Listez tous les projets d'un fichier solution.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListSubcommandHelpText">
-        <source>List all projects in the solution.</source>
-        <target state="translated">Répertoriez tous les projets de la solution.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SerializerNotFound">
-        <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
-        <target state="translated">Impossible de lire le fichier solution {0}. Les fichiers pris en charge sont des solutions valides .sln et .slnx.</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
@@ -62,19 +47,9 @@
         <target state="translated">Fichier .slnx {0} généré.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionAppDescription">
-        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
-        <target state="new">Command to add, remove, and list projects from the solution (SLN) file.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SolutionAppFullName">
         <source>.NET modify solution file command</source>
         <target state="new">.NET modify solution file command</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SolutionAppHelpText">
-        <source>Projects to add or to remove from the solution.</source>
-        <target state="new">Projects to add or to remove from the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

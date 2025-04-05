@@ -132,9 +132,6 @@
   <data name="DescriptionColumnName" xml:space="preserve">
     <value>Description</value>
   </data>
-  <data name="PlatformColumnName" xml:space="preserve">
-    <value>Platforms</value>
-  </data>
   <data name="PrintSetVersionsDescription" xml:space="preserve">
     <value>'dotnet workload search version' has three functions depending on its argument:
       1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
@@ -170,9 +167,6 @@
   </data>
   <data name="FormatOptionDescription" xml:space="preserve">
     <value>Changes the format of outputted workload versions. Can take 'json' or 'list'</value>
-  </data>
-  <data name="TakeOptionMustBePositive" xml:space="preserve">
-    <value>The --take option must be positive.</value>
   </data>
   <data name="WorkloadVersionArgument" xml:space="preserve">
     <value>WORKLOAD_VERSION</value>

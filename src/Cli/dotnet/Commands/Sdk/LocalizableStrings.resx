@@ -120,7 +120,4 @@
   <data name="SdkAppFullName" xml:space="preserve">
     <value>.NET SDK Command</value>
   </data>
-  <data name="SdkAppDescription" xml:space="preserve">
-    <value>Manage .NET SDK installation.</value>
-  </data>
 </root>

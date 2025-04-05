@@ -87,11 +87,6 @@ Przykłady:
         <target state="new">File `{0}` not found.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CorruptSolutionProjectFolderStructure">
-        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
-        <target state="translated">W pliku rozwiązania „{0}” brakuje tagów EndProject lub ma nieprawidłowe mapowania folderu projektu podrzędnego nadrzędnego wokół identyfikatora GUID projektu: „{1}”. Napraw ręcznie rozwiązanie lub spróbuj otworzyć je i zapisać w programie Visual Studio.”</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">Nie można odnaleźć żadnego projektu w lokalizacji „{0}”.</target>
@@ -215,11 +210,6 @@ export PATH="$PATH:{0}"
         <target state="translated">Projekt</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectFile">
-        <source>Project file</source>
-        <target state="translated">Plik projektu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Odwołanie</target>
@@ -238,11 +228,6 @@ export PATH="$PATH:{0}"
       <trans-unit id="P2P">
         <source>Project to Project</source>
         <target state="translated">Między projektami</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="P2PReference">
-        <source>Project to Project reference</source>
-        <target state="translated">Odwołanie między projektami</target>
         <note />
       </trans-unit>
       <trans-unit id="Package">
@@ -282,29 +267,9 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Argument rozwiązania „{0}” jest zagubiony.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFile">
-        <source>Solution file</source>
-        <target state="translated">Plik rozwiązania</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Executable">
-        <source>Executable</source>
-        <target state="translated">Plik wykonywalny</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Library">
         <source>Library</source>
         <target state="translated">Biblioteka</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Program">
-        <source>Program</source>
-        <target state="translated">Program</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Application">
-        <source>Application</source>
-        <target state="translated">Aplikacja</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
@@ -327,16 +292,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Usuń</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFolderAlreadyContainsProject">
-        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
-        <target state="translated">Rozwiązanie {0} zawiera już projekt {1} w folderze rozwiązania {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSettingsNotFound">
-        <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">Plik ustawień narzędzia nie istnieje dla narzędzia {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnrecognizedCommandOrArgument">
         <source>Unrecognized command or argument '{0}'</source>
         <target state="new">Unrecognized command or argument '{0}'</target>
@@ -357,29 +312,9 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Wyświetl listę</target>
         <note />
       </trans-unit>
-      <trans-unit id="Load">
-        <source>Load</source>
-        <target state="translated">Wczytaj</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Save">
-        <source>Save</source>
-        <target state="translated">Zapisz</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Find">
-        <source>Find</source>
-        <target state="translated">Znajdź</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Błąd</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning">
-        <source>Warning</source>
-        <target state="translated">Ostrzeżenie</target>
         <note />
       </trans-unit>
       <trans-unit id="File">
@@ -402,144 +337,9 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Wartość</target>
         <note />
       </trans-unit>
-      <trans-unit id="Group">
-        <source>Group</source>
-        <target state="translated">Grupa</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAddedToY">
-        <source>{0} added to {1}.</source>
-        <target state="translated">Dodano element {0} do elementu {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XRemovedFromY">
-        <source>{0} removed from {1}.</source>
-        <target state="translated">Skasowano element {0} z elementu {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDeletedFromY">
-        <source>{0} deleted from {1}.</source>
-        <target state="translated">Usunięto element {0} z elementu {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XSuccessfullyUpdated">
-        <source>{0} successfully updated.</source>
-        <target state="translated">Pomyślnie zaktualizowano element {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XIsInvalid">
-        <source>{0} is invalid.</source>
-        <target state="translated">Element {0} jest nieprawidłowy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYFoundButInvalid">
-        <source>{0} `{1}` found but is invalid.</source>
-        <target state="translated">Element {0} „{1}” został znaleziony, ale jest nieprawidłowy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XFoundButInvalid">
-        <source>`{0}` found but is invalid.</source>
-        <target state="translated">Element „{0}” został znaleziony, ale jest nieprawidłowy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationInvalid">
-        <source>Operation is invalid.</source>
-        <target state="translated">Operacja jest nieprawidłowa.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationXInvalid">
-        <source>Operation {0} is invalid.</source>
-        <target state="translated">Operacja {0} jest nieprawidłowa.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotFound">
-        <source>{0} not found.</source>
-        <target state="translated">Nie odnaleziono elementu {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFound">
-        <source>{0} or {1} not found.</source>
-        <target state="translated">Nie odnaleziono elementu {0} lub {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFoundInZ">
-        <source>{0} or {1} not found in `{2}`.</source>
-        <target state="translated">Nie odnaleziono elementu {0} lub {1} w lokalizacji „{2}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDoesNotExist">
-        <source>{0} does not exist.</source>
-        <target state="translated">Element {0} nie istnieje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYDoesNotExist">
-        <source>{0} `{1}` does not exist.</source>
-        <target state="translated">Element {0} „{1}” nie istnieje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneXFound">
-        <source>More than one {0} found.</source>
-        <target state="translated">Znaleziono więcej niż jeden element {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsY">
-        <source>{0} already contains {1}.</source>
-        <target state="translated">Element {0} zawiera już element {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsYZ">
-        <source>{0} already contains {1} `{2}`.</source>
-        <target state="translated">Element {0} zawiera już element {1} „{2}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasY">
-        <source>{0} already has {1}.</source>
-        <target state="translated">Element {0} ma już element {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasYZ">
-        <source>{0} already has {1} `{2}`.</source>
-        <target state="translated">Element {0} ma już element {1} „{2}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XWasNotExpected">
-        <source>{0} was not expected.</source>
-        <target state="translated">Nieoczekiwany element {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotProvided">
-        <source>{0} not provided.</source>
-        <target state="translated">Nie podano elementu {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOne">
         <source>Specify at least one {0}.</source>
         <target state="translated">Określ co najmniej jeden element {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConnectWithTheServer">
-        <source>Could not connect with the server.</source>
-        <target state="translated">Nie można nawiązać połączenia z serwerem.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentIsInvalid">
-        <source>Required argument {0} is invalid.</source>
-        <target state="translated">Wymagany argument {0} jest nieprawidłowy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionIsInvalid">
-        <source>Option {0} is invalid.</source>
-        <target state="translated">Opcja {0} jest nieprawidłowa.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentIsInvalid">
-        <source>Argument {0} is invalid.</source>
-        <target state="translated">Argument {0} jest nieprawidłowy.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentNotPassed">
-        <source>Required argument {0} was not provided.</source>
-        <target state="translated">Nie podano wymaganego argumentu {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindProjectOrDirectory">
@@ -572,46 +372,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Określony plik rozwiązania {0} nie istnieje bądź w katalogu nie ma żadnego pliku rozwiązania.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceIsInvalid">
-        <source>Reference `{0}` is invalid.</source>
-        <target state="translated">Odwołanie „{0}” jest nieprawidłowe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOneReferenceToAdd">
-        <source>You must specify at least one reference to add.</source>
-        <target state="translated">Musisz określić co najmniej jedno odwołanie do dodania.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDoesNotExist">
-        <source>Package reference `{0}` does not exist.</source>
-        <target state="translated">Odwołanie do pakietu „{0}” nie istnieje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceIsInvalid">
-        <source>Package reference `{0}` is invalid.</source>
-        <target state="translated">Odwołanie do pakietu „{0}” jest nieprawidłowe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToAdd">
-        <source>You must specify at least one package to add.</source>
-        <target state="translated">Musisz określić co najmniej jeden pakiet do dodania.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceAddedToTheProject">
-        <source>Package reference `{0}` added to the project.</source>
-        <target state="translated">Do projektu zostało dodane odwołanie do pakietu „{0}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectAlreadyHasAPackageReference">
-        <source>Project {0} already has a reference `{1}`.</source>
-        <target state="translated">Projekt {0} zawiera już odwołanie „{1}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyVersion">
-        <source>Specify a version of the package.</source>
-        <target state="translated">Określ wersję pakietu.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectDoesNotExist">
         <source>Project `{0}` does not exist.</source>
         <target state="translated">Projekt „{0}” nie istnieje.</target>
@@ -632,44 +392,9 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Dodano projekt „{0}” do rozwiązania.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceNotFoundInTheProject">
-        <source>Specified reference {0} does not exist in project {1}.</source>
-        <target state="translated">Określone odwołanie {0} nie istnieje w projekcie {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Odwołanie „{0}” zostało usunięte z projektu.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
         <source>You must specify at least one reference to remove.</source>
         <target state="translated">Musisz określić co najmniej jedno odwołanie do usunięcia.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceDeleted">
-        <source>Reference `{0}` deleted.</source>
-        <target state="translated">Odwołanie „{0}” zostało usunięte.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceNotFoundInTheProject">
-        <source>Package reference `{0}` could not be found in the project.</source>
-        <target state="translated">Nie można odnaleźć odwołania do pakietu „{0}” w projekcie.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Odwołanie „{0}” zostało usunięte z projektu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToRemove">
-        <source>You must specify at least one package reference to remove.</source>
-        <target state="translated">Musisz określić co najmniej jedno odwołanie do pakietu, które ma zostać usunięte.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDeleted">
-        <source>Package reference `{0}` deleted.</source>
-        <target state="translated">Odwołanie do pakietu „{0}” zostało usunięte.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotFoundInTheSolution">
@@ -687,11 +412,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Musisz określić co najmniej jeden projekt do skasowania.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectDeleted">
-        <source>Project `{0}` deleted from solution.</source>
-        <target state="translated">Projekt „{0}” został usunięty z rozwiązania.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">Brak odwołań do elementu {0} w projekcie {1}.</target>
@@ -700,76 +420,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">Nie znaleziono żadnych projektów w tym rozwiązaniu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyNewVersion">
-        <source>Specify new version of the package.</source>
-        <target state="translated">Określ nową wersję pakietu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyWhichPackageToUpdate">
-        <source>Specify which package to update.</source>
-        <target state="translated">Określ, który pakiet ma zostać zaktualizowany.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NothingToUpdate">
-        <source>Nothing to update.</source>
-        <target state="translated">Brak elementów wymagających aktualizacji.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EverythingUpToDate">
-        <source>Everything is already up-to-date.</source>
-        <target state="translated">Wszystko jest już aktualne.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdatedTo">
-        <source>Version of package `{0}` updated to `{1}`.</source>
-        <target state="translated">Pakiet „{0}” został zaktualizowany do wersji „{1}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdated">
-        <source>Version of package `{0}` updated.</source>
-        <target state="translated">Wersja pakietu „{0}” została zaktualizowana.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotUpdateTheVersion">
-        <source>Could not update the version of the package `{0}`.</source>
-        <target state="translated">Nie można zaktualizować wersji pakietu „{0}”.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreatedSuccessfully">
-        <source>The template {0} created successfully. run "dotnet restore" to get started!</source>
-        <target state="translated">Pomyślnie utworzono szablon {0}. Uruchom polecenie „dotnet restore”, aby rozpocząć pracę.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstalledSuccesfully">
-        <source>The template {0} installed successfully. You can use "dotnet new {0}" to get started with the new template.</source>
-        <target state="translated">Pomyślnie zainstalowano szablon {0}. Za pomocą polecenia „dotnet new {0}” możesz rozpocząć pracę z nowym szablonem.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreateError">
-        <source>Template {0} could not be created. Error returned was: {1}.</source>
-        <target state="translated">Nie można utworzyć szablonu {0}. Zwrócony błąd to: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstallError">
-        <source>Template {0} could not be installed. Error returned was: {1}.</source>
-        <target state="translated">Nie można zainstalować szablonu {0}. Zwrócony błąd to: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedNameExists">
-        <source>Specified name {0} already exists. Specify a different name.</source>
-        <target state="translated">Podana nazwa {0} już istnieje. Podaj inną nazwę.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedAliasExists">
-        <source>Specified alias {0} already exists. Specify a different alias.</source>
-        <target state="translated">Podany alias {0} już istnieje. Podaj inny alias.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MandatoryParameterMissing">
-        <source>Mandatory parameter {0} missing for template {1}. </source>
-        <target state="translated">Brak obowiązkowego parametru {0} dla szablonu {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceOneOrMore">
@@ -790,11 +440,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       <trans-unit id="SolutionAlreadyContainsProject">
         <source>Solution {0} already contains project {1}.</source>
         <target state="translated">Rozwiązanie {0} zawiera już projekt {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsProjectOrSolutionDescription">
-        <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
-        <target state="translated">Projekt lub rozwiązanie, na którym ma zostać wykonana operacja. Jeśli nie określono pliku, zostanie przeszukany bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">
@@ -914,11 +559,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Nie można utworzyć podkładki powłoki dla pustej ścieżki pliku wykonywalnego.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotCreateShimForEmptyCommand">
-        <source>Cannot create shell shim for an empty command.</source>
-        <target state="translated">Nie można utworzyć podkładki powłoki dla pustego polecenia.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToRetrieveToolConfiguration">
         <source>Failed to retrieve tool configuration: {0}</source>
         <target state="translated">Nie można pobrać konfiguracji narzędzia: {0}</target>
@@ -979,11 +619,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FailedSettingShimPermissions">
         <source>Failed to set user executable permissions for shell shim: {0}</source>
         <target state="translated">Nie można ustawić uprawnień pliku wykonywalnego użytkownika dla podkładki powłoki: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToInstallToolPackage">
-        <source>Failed to install tool package '{0}': {1}</source>
-        <target state="translated">Nie można zainstalować pakietu narzędzia „{0}”: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallToolPackage">

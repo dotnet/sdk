@@ -22,11 +22,6 @@
         <target state="translated">No se encontraron versiones de carga de trabajo para la banda de características del SDK {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PlatformColumnName">
-        <source>Platforms</source>
-        <target state="translated">Plataformas</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PrintSetVersionsDescription">
         <source>'dotnet workload search version' has three functions depending on its argument:
       1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
@@ -89,11 +84,6 @@
            9.0.201
     </target>
         <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
-      </trans-unit>
-      <trans-unit id="TakeOptionMustBePositive">
-        <source>The --take option must be positive.</source>
-        <target state="translated">La opción --take debe ser positiva.</target>
-        <note />
       </trans-unit>
       <trans-unit id="WorkloadIdColumnName">
         <source>Workload ID</source>

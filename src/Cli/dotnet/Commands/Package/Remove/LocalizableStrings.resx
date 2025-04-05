@@ -120,9 +120,6 @@
   <data name="PackageRemoveAppFullName" xml:space="preserve">
     <value>Remove a NuGet package reference from the project.</value>
   </data>
-  <data name="PackageRemoveAppDescription" xml:space="preserve">
-    <value>Command to remove package reference.</value>
-  </data>
   <data name="PackageRemoveAppHelpText" xml:space="preserve">
     <value>The package reference to remove.</value>
   </data>

@@ -87,11 +87,6 @@ Exemples :
         <target state="new">File `{0}` not found.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CorruptSolutionProjectFolderStructure">
-        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
-        <target state="translated">Il manque des balises EndProject au fichier solution '{0}' ou des mappages de dossiers de projet parent-enfant non valides autour du GUID du projet : '{1}'. Réparez manuellement la solution ou essayez de l’ouvrir et de l’enregistrer dans Visual Studio. »</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">Projet introuvable dans '{0}'.</target>
@@ -215,11 +210,6 @@ export PATH="$PATH:{0}"
         <target state="translated">Projet</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectFile">
-        <source>Project file</source>
-        <target state="translated">Fichier projet</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Référence</target>
@@ -238,11 +228,6 @@ export PATH="$PATH:{0}"
       <trans-unit id="P2P">
         <source>Project to Project</source>
         <target state="translated">Projet à projet</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="P2PReference">
-        <source>Project to Project reference</source>
-        <target state="translated">Référence projet à projet</target>
         <note />
       </trans-unit>
       <trans-unit id="Package">
@@ -283,29 +268,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">L'argument de solution '{0}' est mal placé.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFile">
-        <source>Solution file</source>
-        <target state="translated">Fichier solution</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Executable">
-        <source>Executable</source>
-        <target state="translated">Exécutable</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Library">
         <source>Library</source>
         <target state="translated">Bibliothèque</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Program">
-        <source>Program</source>
-        <target state="translated">Programme</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Application">
-        <source>Application</source>
-        <target state="translated">Application</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
@@ -328,16 +293,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">supprimer</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFolderAlreadyContainsProject">
-        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
-        <target state="translated">La solution {0} contient déjà le projet {1} dans le dossier de la solution {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSettingsNotFound">
-        <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">Le fichier de paramètres d’outil n’existe pas pour l’outil {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnrecognizedCommandOrArgument">
         <source>Unrecognized command or argument '{0}'</source>
         <target state="new">Unrecognized command or argument '{0}'</target>
@@ -358,29 +313,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Répertorier</target>
         <note />
       </trans-unit>
-      <trans-unit id="Load">
-        <source>Load</source>
-        <target state="translated">Charger</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Save">
-        <source>Save</source>
-        <target state="translated">Enregistrer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Find">
-        <source>Find</source>
-        <target state="translated">Rechercher</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Erreur</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning">
-        <source>Warning</source>
-        <target state="translated">Avertissement</target>
         <note />
       </trans-unit>
       <trans-unit id="File">
@@ -403,144 +338,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Valeur</target>
         <note />
       </trans-unit>
-      <trans-unit id="Group">
-        <source>Group</source>
-        <target state="translated">Groupe</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAddedToY">
-        <source>{0} added to {1}.</source>
-        <target state="translated">{0} ajouté à {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XRemovedFromY">
-        <source>{0} removed from {1}.</source>
-        <target state="translated">{0} retiré de {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDeletedFromY">
-        <source>{0} deleted from {1}.</source>
-        <target state="translated">{0} supprimé de {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XSuccessfullyUpdated">
-        <source>{0} successfully updated.</source>
-        <target state="translated">{0} mis à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XIsInvalid">
-        <source>{0} is invalid.</source>
-        <target state="translated">{0} n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYFoundButInvalid">
-        <source>{0} `{1}` found but is invalid.</source>
-        <target state="translated">{0} '{1}' trouvé, mais il n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XFoundButInvalid">
-        <source>`{0}` found but is invalid.</source>
-        <target state="translated">'{0}' trouvé, mais il n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationInvalid">
-        <source>Operation is invalid.</source>
-        <target state="translated">L'opération n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationXInvalid">
-        <source>Operation {0} is invalid.</source>
-        <target state="translated">L'opération {0} n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotFound">
-        <source>{0} not found.</source>
-        <target state="translated">{0} introuvable.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFound">
-        <source>{0} or {1} not found.</source>
-        <target state="translated">{0} ou {1} introuvable.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFoundInZ">
-        <source>{0} or {1} not found in `{2}`.</source>
-        <target state="translated">{0} ou {1} introuvable dans '{2}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDoesNotExist">
-        <source>{0} does not exist.</source>
-        <target state="translated">{0} n'existe pas.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYDoesNotExist">
-        <source>{0} `{1}` does not exist.</source>
-        <target state="translated">{0} '{1}' n'existe pas.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneXFound">
-        <source>More than one {0} found.</source>
-        <target state="translated">Plusieurs {0} ont été trouvés.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsY">
-        <source>{0} already contains {1}.</source>
-        <target state="translated">{0} contient déjà {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsYZ">
-        <source>{0} already contains {1} `{2}`.</source>
-        <target state="translated">{0} contient déjà {1} '{2}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasY">
-        <source>{0} already has {1}.</source>
-        <target state="translated">{0} a déjà {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasYZ">
-        <source>{0} already has {1} `{2}`.</source>
-        <target state="translated">{0} a déjà {1} '{2}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XWasNotExpected">
-        <source>{0} was not expected.</source>
-        <target state="translated">{0} n'était pas attendu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotProvided">
-        <source>{0} not provided.</source>
-        <target state="translated">{0} non fourni.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOne">
         <source>Specify at least one {0}.</source>
         <target state="translated">Spécifiez au moins un {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConnectWithTheServer">
-        <source>Could not connect with the server.</source>
-        <target state="translated">Impossible de se connecter au serveur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentIsInvalid">
-        <source>Required argument {0} is invalid.</source>
-        <target state="translated">L'argument obligatoire {0} n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionIsInvalid">
-        <source>Option {0} is invalid.</source>
-        <target state="translated">L'option {0} n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentIsInvalid">
-        <source>Argument {0} is invalid.</source>
-        <target state="translated">L'argument {0} n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentNotPassed">
-        <source>Required argument {0} was not provided.</source>
-        <target state="translated">L'argument obligatoire {0} n'a pas été fourni.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindProjectOrDirectory">
@@ -573,46 +373,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Le fichier solution spécifié {0} n'existe pas ou il n'y a pas de fichier solution dans le répertoire.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceIsInvalid">
-        <source>Reference `{0}` is invalid.</source>
-        <target state="translated">La référence '{0}' n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOneReferenceToAdd">
-        <source>You must specify at least one reference to add.</source>
-        <target state="translated">Vous devez spécifier au moins une référence à ajouter.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDoesNotExist">
-        <source>Package reference `{0}` does not exist.</source>
-        <target state="translated">La référence de package '{0}' n'existe pas.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceIsInvalid">
-        <source>Package reference `{0}` is invalid.</source>
-        <target state="translated">La référence de package '{0}' n'est pas valide.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToAdd">
-        <source>You must specify at least one package to add.</source>
-        <target state="translated">Vous devez spécifier au moins un package à ajouter.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceAddedToTheProject">
-        <source>Package reference `{0}` added to the project.</source>
-        <target state="translated">Référence de package '{0}' ajoutée au projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectAlreadyHasAPackageReference">
-        <source>Project {0} already has a reference `{1}`.</source>
-        <target state="translated">Le projet {0} a déjà une référence '{1}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyVersion">
-        <source>Specify a version of the package.</source>
-        <target state="translated">Spécifiez une version du package.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectDoesNotExist">
         <source>Project `{0}` does not exist.</source>
         <target state="translated">Le projet '{0}' n'existe pas.</target>
@@ -633,44 +393,9 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Projet '{0}' ajouté à la solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceNotFoundInTheProject">
-        <source>Specified reference {0} does not exist in project {1}.</source>
-        <target state="translated">La référence spécifiée {0} n'existe pas dans le projet {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Référence '{0}' supprimée du projet.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
         <source>You must specify at least one reference to remove.</source>
         <target state="translated">Vous devez spécifier au moins une référence à retirer.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceDeleted">
-        <source>Reference `{0}` deleted.</source>
-        <target state="translated">Référence '{0}' supprimée.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceNotFoundInTheProject">
-        <source>Package reference `{0}` could not be found in the project.</source>
-        <target state="translated">Référence de package '{0}' introuvable dans le projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Référence '{0}' supprimée du projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToRemove">
-        <source>You must specify at least one package reference to remove.</source>
-        <target state="translated">Vous devez spécifier au moins une référence de package à retirer.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDeleted">
-        <source>Package reference `{0}` deleted.</source>
-        <target state="translated">Référence de package '{0}' supprimée.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotFoundInTheSolution">
@@ -688,11 +413,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Vous devez spécifier au moins un projet à retirer.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectDeleted">
-        <source>Project `{0}` deleted from solution.</source>
-        <target state="translated">Projet '{0}' supprimé de la solution.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">Il n'existe aucune référence {0} dans le projet {1}.</target>
@@ -701,76 +421,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">Aucun projet trouvé dans la solution.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyNewVersion">
-        <source>Specify new version of the package.</source>
-        <target state="translated">Spécifiez une nouvelle version du package.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyWhichPackageToUpdate">
-        <source>Specify which package to update.</source>
-        <target state="translated">Spécifiez le package à mettre à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NothingToUpdate">
-        <source>Nothing to update.</source>
-        <target state="translated">Rien à mettre à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EverythingUpToDate">
-        <source>Everything is already up-to-date.</source>
-        <target state="translated">Tout est déjà à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdatedTo">
-        <source>Version of package `{0}` updated to `{1}`.</source>
-        <target state="translated">Le package version '{0}' a été mis à jour vers la version '{1}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdated">
-        <source>Version of package `{0}` updated.</source>
-        <target state="translated">Version du package '{0}' mise à jour.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotUpdateTheVersion">
-        <source>Could not update the version of the package `{0}`.</source>
-        <target state="translated">Impossible de mettre à jour la version du package '{0}'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreatedSuccessfully">
-        <source>The template {0} created successfully. run "dotnet restore" to get started!</source>
-        <target state="translated">Le modèle {0} a été créé. Exécutez "dotnet restore" pour démarrer !</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstalledSuccesfully">
-        <source>The template {0} installed successfully. You can use "dotnet new {0}" to get started with the new template.</source>
-        <target state="translated">Le modèle {0} a été installé. Vous pouvez utiliser "dotnet new {0}" pour commencer à utiliser le nouveau modèle.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreateError">
-        <source>Template {0} could not be created. Error returned was: {1}.</source>
-        <target state="translated">Impossible de créer le modèle {0}. L'erreur retournée était : {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstallError">
-        <source>Template {0} could not be installed. Error returned was: {1}.</source>
-        <target state="translated">Impossible d'installer le modèle {0}. L'erreur retournée était : {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedNameExists">
-        <source>Specified name {0} already exists. Specify a different name.</source>
-        <target state="translated">Le nom spécifié {0} existe déjà. Spécifiez un autre nom.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedAliasExists">
-        <source>Specified alias {0} already exists. Specify a different alias.</source>
-        <target state="translated">L'alias spécifié {0} existe déjà. Spécifiez un alias différent.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MandatoryParameterMissing">
-        <source>Mandatory parameter {0} missing for template {1}. </source>
-        <target state="translated">Paramètre obligatoire {0} manquant pour le modèle {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceOneOrMore">
@@ -791,11 +441,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
       <trans-unit id="SolutionAlreadyContainsProject">
         <source>Solution {0} already contains project {1}.</source>
         <target state="translated">La solution {0} contient déjà le projet {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsProjectOrSolutionDescription">
-        <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
-        <target state="translated">Projet ou solution à utiliser. Si aucun fichier n'est spécifié, le répertoire actif fait l'objet d'une recherche.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">
@@ -915,11 +560,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">Impossible de créer un shim d'environnement pour un chemin d'exécutable vide.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotCreateShimForEmptyCommand">
-        <source>Cannot create shell shim for an empty command.</source>
-        <target state="translated">Impossible de créer un shim d'environnement pour une commande vide.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToRetrieveToolConfiguration">
         <source>Failed to retrieve tool configuration: {0}</source>
         <target state="translated">Échec de récupération de la configuration de l'outil : {0}</target>
@@ -980,11 +620,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FailedSettingShimPermissions">
         <source>Failed to set user executable permissions for shell shim: {0}</source>
         <target state="translated">Échec de définition des autorisations utilisateur d'exécutable pour le shim d'environnement : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToInstallToolPackage">
-        <source>Failed to install tool package '{0}': {1}</source>
-        <target state="translated">Échec d'installation du package d'outils '{0}' : {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallToolPackage">

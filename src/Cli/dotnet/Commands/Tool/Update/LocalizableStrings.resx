@@ -123,64 +123,14 @@
   <data name="ToolUpdatePackageIdArgumentDescription" xml:space="preserve">
     <value>The NuGet Package Id of the tool to update.</value>
   </data>
-  <data name="ToolUpdateSpecifyExactlyOnePackageId" xml:space="preserve">
-    <value>Specify one tool Package Id to update.</value>
-  </data>
-  <data name="ToolUpdateAddSourceOptionDescription" xml:space="preserve">
-    <value>Add an additional NuGet package source to use during the update.</value>
-  </data>
-  <data name="ToolUpdateAddSourceOptionName" xml:space="preserve">
-    <value>SOURCE</value>
-  </data>
   <data name="ToolUpdateCommandDescription" xml:space="preserve">
     <value>Update a global or local tool.</value>
-  </data>
-  <data name="ToolUpdateConfigFileOptionName" xml:space="preserve">
-    <value>FILE</value>
-  </data>
-  <data name="ToolUpdateConfigFileOptionDescription" xml:space="preserve">
-    <value>The NuGet configuration file to use.</value>
-  </data>
-  <data name="ToolUpdateFrameworkOptionName" xml:space="preserve">
-    <value>FRAMEWORK</value>
-  </data>
-  <data name="ToolUpdateFrameworkOptionDescription" xml:space="preserve">
-    <value>The target framework to update the tool for.</value>
-  </data>
-  <data name="ToolUpdateNuGetConfigurationFileDoesNotExist" xml:space="preserve">
-    <value>NuGet configuration file '{0}' does not exist.</value>
   </data>
   <data name="ToolUpdateUpdateSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}'.</value>
   </data>
-  <data name="ToolUpdateGlobalOptionDescription" xml:space="preserve">
-    <value>Update the tool in the current user's tools directory.</value>
-  </data>
-  <data name="UpdateFullCommandNameLocalized" xml:space="preserve">
-    <value>.NET update Command</value>
-  </data>
-  <data name="UpdateToolCommandNeedGlobalOrToolPath" xml:space="preserve">
-    <value>Specify either the global option (--global) or the tool path option (--tool-path).</value>
-  </data>
-  <data name="UpdateToolCommandInvalidGlobalAndToolPath" xml:space="preserve">
-    <value>(--global) conflicts with the tool path option (--tool-path). Specify only one of the options.</value>
-  </data>
-  <data name="ToolUpdateToolPathOptionName" xml:space="preserve">
-    <value>PATH</value>
-  </data>
-  <data name="ToolUpdateToolPathOptionDescription" xml:space="preserve">
-    <value>The directory containing the tool to update.</value>
-  </data>
   <data name="ToolUpdateToolHasMultipleVersionsInstalled" xml:space="preserve">
     <value>Tool '{0}' has multiple versions installed and cannot be updated.</value>
-  </data>
-  <data name="ToolUpdateToolNotInstalled" xml:space="preserve">
-    <value>A tool with the package Id '{0}' could not be found. 
-
-Tools are updated using their package Id which may be different 
-from the tool name you use when calling the tool. You can find the tool names 
-and the corresponding package Ids for installed tools using the command
-'dotnet tool list'.</value>
   </data>
   <data name="UpdateSucceededPreVersionNoChange" xml:space="preserve">
     <value>Tool '{0}' was reinstalled with the prerelease version (version '{1}').</value>
@@ -191,29 +141,11 @@ and the corresponding package Ids for installed tools using the command
   <data name="UpdateToolFailed" xml:space="preserve">
     <value>Tool '{0}' failed to update due to the following:</value>
   </data>
-  <data name="ToolUpdateVersionOptionName" xml:space="preserve">
-    <value>VERSION</value>
-  </data>
-  <data name="ToolUpdateVersionOptionDescription" xml:space="preserve">
-    <value>The version range of the tool package to update to.</value>
-  </data>
-  <data name="ToolUpdateInvalidNuGetVersionRange" xml:space="preserve">
-    <value>Specified version '{0}' is not a valid NuGet version range.</value>
-  </data>
   <data name="UpdateToLowerVersion" xml:space="preserve">
     <value>The requested version {0} is lower than existing version {1}.</value>
   </data>
   <data name="UpdateToolCommandInvalidGlobalAndLocalAndToolPath" xml:space="preserve">
     <value>The local option (--local), the global option (--global), and the tool path option (--tool-path) cannot be used together. Specify only one of the options: {0}.</value>
-  </data>
-  <data name="ToolUpdateLocalOptionDescription" xml:space="preserve">
-    <value>Update the tool and the local tool manifest.</value>
-  </data>
-  <data name="ToolUpdateManifestPathOptionDescription" xml:space="preserve">
-    <value>Path to the manifest file.</value>
-  </data>
-  <data name="ToolUpdateManifestPathOptionName" xml:space="preserve">
-    <value>PATH</value>
   </data>
   <data name="UpdateLocalToolSucceeded" xml:space="preserve">
     <value>Tool '{0}' was successfully updated from version '{1}' to version '{2}' (manifest file {3}).</value>

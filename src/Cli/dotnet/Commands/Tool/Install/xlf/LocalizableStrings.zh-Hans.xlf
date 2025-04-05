@@ -89,11 +89,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="new">Install the tool for the current user.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallInstallFullCommandNameLocalized">
-        <source>.NET Install Command</source>
-        <target state="new">.NET Install Command</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallInstallationSucceeded">
         <source>You can invoke the tool using the following command: {0}
 Tool '{1}' (version '{2}') was successfully installed.</source>
@@ -151,11 +146,6 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
       <trans-unit id="ToolInstallSourceOptionName">
         <source>SOURCE</source>
         <target state="new">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallSpecifyExactlyOnePackageId">
-        <source>Specify one tool Package Id to install.</source>
-        <target state="new">Specify one tool Package Id to install.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallToolPathOptionDescription">

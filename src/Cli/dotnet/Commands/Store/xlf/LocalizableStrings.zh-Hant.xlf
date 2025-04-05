@@ -27,11 +27,6 @@
         <target state="translated">命令用於執行的工作目錄。</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">中繼工作目錄 {0} 已存在。請移除 {0}，或使用 -w 指定另一個目錄。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">跳過最佳化階段。</target>

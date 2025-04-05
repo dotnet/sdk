@@ -49,71 +49,14 @@
         <target state="translated">Error parcial de restauración.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolRestoreAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to use during installation.</source>
-        <target state="new">Add an additional NuGet package source to use during installation.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreAddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="new">SOURCE</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolRestoreCommandDescription">
         <source>Restore tools defined in the local tool manifest.</source>
         <target state="new">Restore tools defined in the local tool manifest.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolRestoreCommandsColumn">
-        <source>Commands</source>
-        <target state="new">Commands</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="new">The NuGet configuration file to use.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreConfigFileOptionName">
-        <source>FILE</source>
-        <target state="new">FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreInvalidPackageWarning">
-        <source>Warning: tool package '{0}' is invalid, contact tool author:
-{1}</source>
-        <target state="new">Warning: tool package '{0}' is invalid, contact tool author:
-{1}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolRestoreManifestPathOptionDescription">
         <source>Path to the manifest file.</source>
         <target state="new">Path to the manifest file.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreManifestPathOptionName">
-        <source>PATH</source>
-        <target state="new">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestorePackageIdColumn">
-        <source>Package Id</source>
-        <target state="new">Package Id</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreVersionColumn">
-        <source>Version</source>
-        <target state="new">Version</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreVersionOptionDescription">
-        <source>The version of the tool package to install.</source>
-        <target state="new">The version of the tool package to install.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRestoreVersionOptionName">
-        <source>VERSION</source>
-        <target state="new">VERSION</target>
         <note />
       </trans-unit>
     </body>

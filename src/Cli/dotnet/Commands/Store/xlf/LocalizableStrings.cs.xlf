@@ -27,11 +27,6 @@
         <target state="translated">Pracovní adresář použitý příkazem, který se má spustit</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Přechodný pracovní adresář {0} už existuje. Odeberte {0} nebo pomocí parametru -w určete jiný adresář.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">Vynechá fázi optimalizace.</target>

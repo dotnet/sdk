@@ -22,24 +22,9 @@
         <target state="translated">패키지에서 서비스 가능 플래그를 설정합니다. 자세한 내용은 https://aka.ms/nupkgservicing을 참조하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdArgumentProject">
-        <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackAppDescription">
-        <source>pack for msbuild</source>
-        <target state="new">pack for msbuild</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackAppFullName">
         <source>.NET Core NuGet Package Packer</source>
         <target state="new">.NET Core NuGet Package Packer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackCmdArgumentDescription">
-        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdNoLogo">

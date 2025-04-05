@@ -7,11 +7,6 @@
         <target state="new">Install or work with tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallFullCommandNameLocalized">
-        <source>.NET Install Command</source>
-        <target state="new">.NET Install Command</target>
-        <note />
-      </trans-unit>
     </body>
   </file>
 </xliff>

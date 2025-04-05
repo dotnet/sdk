@@ -120,9 +120,6 @@
   <data name="CleanAppFullName" xml:space="preserve">
     <value>.NET Clean Command</value>
   </data>
-  <data name="CleanAppDescription" xml:space="preserve">
-    <value>Command to clean previously generated build outputs.</value>
-  </data>
   <data name="CleanCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>

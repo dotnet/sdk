@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CmdArgument">
-        <source>PROJECT</source>
-        <target state="translated">PROJECT</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdCurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
         <target state="translated">현재 런타임을 대상 런타임으로 사용합니다.</target>
@@ -109,19 +104,9 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">복원에 사용되고 생성될 프로젝트 잠금 파일을 사용합니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RestoreAppDescription">
-        <source>restore for msbuild</source>
-        <target state="new">restore for msbuild</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RestoreAppFullName">
         <source>.NET dependency restorer</source>
         <target state="new">.NET dependency restorer</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RestoreCmdArgumentDescription">
-        <source>Optional path to a project file or MSBuild arguments.</source>
-        <target state="new">Optional path to a project file or MSBuild arguments.</target>
         <note />
       </trans-unit>
     </body>

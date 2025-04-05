@@ -42,11 +42,6 @@
         <target state="translated">Platforma .NET {0} nie jest już wspierana.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SdkCheckAppDescription">
-        <source>Check for SDK updates.</source>
-        <target state="new">Check for SDK updates.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SdkCheckAppFullName">
         <source>.NET SDK Check Command</source>
         <target state="new">.NET SDK Check Command</target>

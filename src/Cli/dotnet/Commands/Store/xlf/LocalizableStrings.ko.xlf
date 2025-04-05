@@ -27,11 +27,6 @@
         <target state="translated">실행할 명령에서 사용하는 작업 디렉터리입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">중간 작업 디렉터리 {0}이(가) 이미 있습니다. {0}을(를) 제거하거나 -w를 포함하는 다른 디렉터리를 지정하세요.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">최적화 단계를 건너뜁니다.</target>

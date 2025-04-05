@@ -120,9 +120,6 @@
   <data name="PackAppFullName" xml:space="preserve">
     <value>.NET Core NuGet Package Packer</value>
   </data>
-  <data name="PackAppDescription" xml:space="preserve">
-    <value>pack for msbuild</value>
-  </data>
   <data name="PackCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
@@ -140,12 +137,6 @@
   </data>
   <data name="CmdServiceableDescription" xml:space="preserve">
     <value>Set the serviceable flag in the package. See https://aka.ms/nupkgservicing for more information.</value>
-  </data>
-  <data name="CmdArgumentProject" xml:space="preserve">
-    <value>PROJECT</value>
-  </data>
-  <data name="PackCmdArgumentDescription" xml:space="preserve">
-    <value>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</value>
   </data>
   <data name="PackConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to use for building the package. The default is 'Release'.</value>

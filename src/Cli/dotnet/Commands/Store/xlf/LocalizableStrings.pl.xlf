@@ -27,11 +27,6 @@
         <target state="translated">Katalog roboczy używany do wykonania polecenia.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Pośredni katalog roboczy {0} już istnieje. Usuń katalog {0} lub określ inny katalog przy użyciu elementu -w.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">Pomiń fazę optymalizacji.</target>

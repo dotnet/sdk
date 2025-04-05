@@ -7,11 +7,6 @@
         <target state="translated">Appliquez les préférences de style à un projet ou une solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="HelpAppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpAppFullName">
         <source>.NET CLI help utility</source>
         <target state="new">.NET CLI help utility</target>
@@ -47,54 +42,14 @@
         <target state="translated">Utilisation</target>
         <note />
       </trans-unit>
-      <trans-unit id="Arguments">
-        <source>Arguments</source>
-        <target state="translated">Arguments</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDefinition">
-        <source>The command to execute</source>
-        <target state="translated">Commande à exécuter</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsDefinition">
-        <source>Arguments to pass to the command</source>
-        <target state="translated">Arguments à passer à la commande</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="HostOptionsDefinition">
-        <source>Options specific to dotnet (host)</source>
-        <target state="translated">Options spécifiques à dotnet (hôte)</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionsDescription">
-        <source>Options common to all commands</source>
-        <target state="translated">Options communes à toutes les commandes</target>
-        <note />
-      </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
         <target state="translated">Ouvre la page de référence dans un navigateur pour la commande spécifiée.</target>
         <note />
       </trans-unit>
-      <trans-unit id="HostOptions">
-        <source>Host options (passed before the command)</source>
-        <target state="translated">Options de l'hôte (passées avant la commande)</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UserJwtsDefinition">
         <source>Manage JSON Web Tokens in development.</source>
         <target state="translated">Gérer les jetons Web JSON en développement.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionDescription">
-        <source>Display the version of the .NET SDK, including the effects of any global.json</source>
-        <target state="translated">Afficher la version du kit SDK .NET ainsi que les effets de global.json</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InfoDescription">
-        <source>Display .NET CLI Info</source>
-        <target state="translated">Affichage des informations sur l'interface CLI .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
@@ -137,16 +92,6 @@
         <target state="translated">Créez un package NuGet.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectModificationCommands">
-        <source>Project modification commands</source>
-        <target state="translated">Commandes de modification de projet</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AdvancedCommands">
-        <source>Advanced Commands</source>
-        <target state="translated">Commandes avancées</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NugetDefinition">
         <source>Provides additional NuGet commands.</source>
         <target state="translated">Fournit des commandes NuGet supplémentaires.</target>
@@ -160,11 +105,6 @@
       <trans-unit id="VsTestDefinition">
         <source>Run Microsoft Test Engine (VSTest) commands.</source>
         <target state="translated">Exécutez des commandes VSTest (Microsoft Test Engine).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="DiagnosticsDefinition">
-        <source>Enable diagnostic output</source>
-        <target state="translated">Activer la sortie des diagnostics</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanDefinition">

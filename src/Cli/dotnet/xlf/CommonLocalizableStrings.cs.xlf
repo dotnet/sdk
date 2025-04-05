@@ -87,11 +87,6 @@ Příklady:
         <target state="new">File `{0}` not found.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CorruptSolutionProjectFolderStructure">
-        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
-        <target state="translated">V souboru řešení {0} chybí značky EndProject nebo obsahuje neplatná mapování složky nadřazeného/podřízeného projektu kolem projektu GUID: {1}. Opravte řešení ručně nebo se ho pokuste otevřít a uložit v sadě Visual Studio.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">V {0} se nenašel žádný projekt.</target>
@@ -215,11 +210,6 @@ export PATH="$PATH:{0}"
         <target state="translated">Projekt</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectFile">
-        <source>Project file</source>
-        <target state="translated">Soubor projektu</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Odkaz</target>
@@ -238,11 +228,6 @@ export PATH="$PATH:{0}"
       <trans-unit id="P2P">
         <source>Project to Project</source>
         <target state="translated">Z projektu na projekt</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="P2PReference">
-        <source>Project to Project reference</source>
-        <target state="translated">Odkaz mezi projekty</target>
         <note />
       </trans-unit>
       <trans-unit id="Package">
@@ -282,29 +267,9 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Argument řešení „{0}“ je chybně umístěný.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFile">
-        <source>Solution file</source>
-        <target state="translated">Soubor řešení</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Executable">
-        <source>Executable</source>
-        <target state="translated">Ke spuštění</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Library">
         <source>Library</source>
         <target state="translated">Knihovna</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Program">
-        <source>Program</source>
-        <target state="translated">Program</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Application">
-        <source>Application</source>
-        <target state="translated">Aplikace</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
@@ -327,16 +292,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Odstranit</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFolderAlreadyContainsProject">
-        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
-        <target state="translated">Řešení {0} již obsahuje projekt {1} ve složce řešení {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSettingsNotFound">
-        <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">Soubor nastavení nástroje {0} neexistuje.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnrecognizedCommandOrArgument">
         <source>Unrecognized command or argument '{0}'</source>
         <target state="new">Unrecognized command or argument '{0}'</target>
@@ -357,29 +312,9 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Seznam</target>
         <note />
       </trans-unit>
-      <trans-unit id="Load">
-        <source>Load</source>
-        <target state="translated">Načíst</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Save">
-        <source>Save</source>
-        <target state="translated">Uložit</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Find">
-        <source>Find</source>
-        <target state="translated">Najít</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Chyba</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning">
-        <source>Warning</source>
-        <target state="translated">Upozornění</target>
         <note />
       </trans-unit>
       <trans-unit id="File">
@@ -402,144 +337,9 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Hodnota</target>
         <note />
       </trans-unit>
-      <trans-unit id="Group">
-        <source>Group</source>
-        <target state="translated">Skupina</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAddedToY">
-        <source>{0} added to {1}.</source>
-        <target state="translated">Položka {0} byla přidána do {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XRemovedFromY">
-        <source>{0} removed from {1}.</source>
-        <target state="translated">Položka {0} byla odebrána z {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDeletedFromY">
-        <source>{0} deleted from {1}.</source>
-        <target state="translated">Položka {0} byla odstraněna z {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XSuccessfullyUpdated">
-        <source>{0} successfully updated.</source>
-        <target state="translated">Položka {0} byla úspěšně aktualizována.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XIsInvalid">
-        <source>{0} is invalid.</source>
-        <target state="translated">Položka {0} není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYFoundButInvalid">
-        <source>{0} `{1}` found but is invalid.</source>
-        <target state="translated">Položka {0} {1} byl nalezena, ale není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XFoundButInvalid">
-        <source>`{0}` found but is invalid.</source>
-        <target state="translated">Položka {0} byla nalezena, ale není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationInvalid">
-        <source>Operation is invalid.</source>
-        <target state="translated">Operace není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationXInvalid">
-        <source>Operation {0} is invalid.</source>
-        <target state="translated">Operace {0} není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotFound">
-        <source>{0} not found.</source>
-        <target state="translated">Položka {0} se nenašla.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFound">
-        <source>{0} or {1} not found.</source>
-        <target state="translated">Položka {0} nebo {1} se nenašla.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFoundInZ">
-        <source>{0} or {1} not found in `{2}`.</source>
-        <target state="translated">Položka {0} nebo {1} se nenašla v {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDoesNotExist">
-        <source>{0} does not exist.</source>
-        <target state="translated">{0} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYDoesNotExist">
-        <source>{0} `{1}` does not exist.</source>
-        <target state="translated">{0} {1} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneXFound">
-        <source>More than one {0} found.</source>
-        <target state="translated">Našlo se více položek {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsY">
-        <source>{0} already contains {1}.</source>
-        <target state="translated">{0} už obsahuje {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsYZ">
-        <source>{0} already contains {1} `{2}`.</source>
-        <target state="translated">{0} už obsahuje {1} {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasY">
-        <source>{0} already has {1}.</source>
-        <target state="translated">{0} už má {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasYZ">
-        <source>{0} already has {1} `{2}`.</source>
-        <target state="translated">{0} už má {1} {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XWasNotExpected">
-        <source>{0} was not expected.</source>
-        <target state="translated">Položka {0} nebyla očekávána.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotProvided">
-        <source>{0} not provided.</source>
-        <target state="translated">Položka {0} nebyla zadána.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOne">
         <source>Specify at least one {0}.</source>
         <target state="translated">Zadejte aspoň jednu položku {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConnectWithTheServer">
-        <source>Could not connect with the server.</source>
-        <target state="translated">Není možné se připojit k serveru.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentIsInvalid">
-        <source>Required argument {0} is invalid.</source>
-        <target state="translated">Požadovaný argument {0} není platný.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionIsInvalid">
-        <source>Option {0} is invalid.</source>
-        <target state="translated">Možnost {0} není platná.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentIsInvalid">
-        <source>Argument {0} is invalid.</source>
-        <target state="translated">Argument {0} není platný.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentNotPassed">
-        <source>Required argument {0} was not provided.</source>
-        <target state="translated">Požadovaný argument {0} nebyl zadán.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindProjectOrDirectory">
@@ -572,46 +372,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Zadaný soubor řešení {0} neexistuje nebo v adresáři není soubor řešení.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceIsInvalid">
-        <source>Reference `{0}` is invalid.</source>
-        <target state="translated">Odkaz na {0} není platný.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOneReferenceToAdd">
-        <source>You must specify at least one reference to add.</source>
-        <target state="translated">Musíte zadat aspoň jeden odkaz, který chcete přidat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDoesNotExist">
-        <source>Package reference `{0}` does not exist.</source>
-        <target state="translated">Odkaz na balíček {0} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceIsInvalid">
-        <source>Package reference `{0}` is invalid.</source>
-        <target state="translated">Odkaz na balíček {0} není platný.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToAdd">
-        <source>You must specify at least one package to add.</source>
-        <target state="translated">Musíte zadat aspoň jeden balíček, který chcete přidat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceAddedToTheProject">
-        <source>Package reference `{0}` added to the project.</source>
-        <target state="translated">Odkaz na balíček {0} byl přidán do projektu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectAlreadyHasAPackageReference">
-        <source>Project {0} already has a reference `{1}`.</source>
-        <target state="translated">Projekt {0} už obsahuje odkaz na {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyVersion">
-        <source>Specify a version of the package.</source>
-        <target state="translated">Zadejte verzi balíčku.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectDoesNotExist">
         <source>Project `{0}` does not exist.</source>
         <target state="translated">Projekt {0} neexistuje.</target>
@@ -632,44 +392,9 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Projekt {0} byl přidán do řešení.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceNotFoundInTheProject">
-        <source>Specified reference {0} does not exist in project {1}.</source>
-        <target state="translated">Zadaný odkaz {0} v projektu {1} neexistuje.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Odkaz na {0} byl z projektu odstraněn.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
         <source>You must specify at least one reference to remove.</source>
         <target state="translated">Musíte zadat aspoň jeden odkaz, který chcete odebrat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceDeleted">
-        <source>Reference `{0}` deleted.</source>
-        <target state="translated">Odkaz na {0} byl odstraněn.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceNotFoundInTheProject">
-        <source>Package reference `{0}` could not be found in the project.</source>
-        <target state="translated">Odkaz na balíček {0} se v projektu nenašel.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">Odkaz na {0} byl z projektu odstraněn.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToRemove">
-        <source>You must specify at least one package reference to remove.</source>
-        <target state="translated">Musíte zadat aspoň jeden odkaz na balíček, který chcete odebrat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDeleted">
-        <source>Package reference `{0}` deleted.</source>
-        <target state="translated">Odkaz na balíček {0} byl odstraněn.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotFoundInTheSolution">
@@ -687,11 +412,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Musíte zadat aspoň jeden projekt, který chcete odebrat.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectDeleted">
-        <source>Project `{0}` deleted from solution.</source>
-        <target state="translated">Projekt {0} byl z řešení odstraněn.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">V projektu {1} nejsou žádné odkazy na {0}.</target>
@@ -700,76 +420,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">V řešení se nenašly žádné projekty.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyNewVersion">
-        <source>Specify new version of the package.</source>
-        <target state="translated">Zadejte novou verzi balíčku.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyWhichPackageToUpdate">
-        <source>Specify which package to update.</source>
-        <target state="translated">Zadejte, který balíček chcete aktualizovat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NothingToUpdate">
-        <source>Nothing to update.</source>
-        <target state="translated">Nic k aktualizaci.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EverythingUpToDate">
-        <source>Everything is already up-to-date.</source>
-        <target state="translated">Všechno je aktuální.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdatedTo">
-        <source>Version of package `{0}` updated to `{1}`.</source>
-        <target state="translated">Verze balíčku {0} byla aktualizována na {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdated">
-        <source>Version of package `{0}` updated.</source>
-        <target state="translated">Verze balíčku {0} byla aktualizována.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotUpdateTheVersion">
-        <source>Could not update the version of the package `{0}`.</source>
-        <target state="translated">Verzi balíčku {0} není možné aktualizovat.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreatedSuccessfully">
-        <source>The template {0} created successfully. run "dotnet restore" to get started!</source>
-        <target state="translated">Šablona {0} se úspěšně vytvořila. Začněte spuštěním příkazu dotnet restore!</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstalledSuccesfully">
-        <source>The template {0} installed successfully. You can use "dotnet new {0}" to get started with the new template.</source>
-        <target state="translated">Šablona {0} byla úspěšně nainstalována. Pokud chcete začít novou šablonou, použijte příkaz dotnet new {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreateError">
-        <source>Template {0} could not be created. Error returned was: {1}.</source>
-        <target state="translated">Šablonu {0} se nepodařilo vytvořit. Vrácená chyba: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstallError">
-        <source>Template {0} could not be installed. Error returned was: {1}.</source>
-        <target state="translated">Šablonu {0} se nepodařilo nainstalovat. Vrácená chyba: {1}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedNameExists">
-        <source>Specified name {0} already exists. Specify a different name.</source>
-        <target state="translated">Zadaný název {0} už existuje. Zadejte jiný název.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedAliasExists">
-        <source>Specified alias {0} already exists. Specify a different alias.</source>
-        <target state="translated">Zadaný alias {0} už existuje. Zadejte jiný alias.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MandatoryParameterMissing">
-        <source>Mandatory parameter {0} missing for template {1}. </source>
-        <target state="translated">Chybí povinný parametr {0} pro šablonu {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceOneOrMore">
@@ -790,11 +440,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       <trans-unit id="SolutionAlreadyContainsProject">
         <source>Solution {0} already contains project {1}.</source>
         <target state="translated">Řešení {0} už obsahuje projekt {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsProjectOrSolutionDescription">
-        <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
-        <target state="translated">Použitý projekt nebo řešení. Pokud není soubor zadaný, prohledá se aktuální adresář.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">
@@ -914,11 +559,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Pro prázdnou cestu ke spustitelnému souboru nelze vytvořit překrytí prostředí.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotCreateShimForEmptyCommand">
-        <source>Cannot create shell shim for an empty command.</source>
-        <target state="translated">Pro prázdný příkaz nelze vytvořit překrytí prostředí.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToRetrieveToolConfiguration">
         <source>Failed to retrieve tool configuration: {0}</source>
         <target state="translated">Nepodařilo se načíst konfiguraci nástroje: {0}.</target>
@@ -979,11 +619,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FailedSettingShimPermissions">
         <source>Failed to set user executable permissions for shell shim: {0}</source>
         <target state="translated">Pro překrytí prostředí se nepodařilo nastavit oprávnění uživatele ke spouštění: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToInstallToolPackage">
-        <source>Failed to install tool package '{0}': {1}</source>
-        <target state="translated">Nepodařilo se nainstalovat balíček nástroje {0}: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallToolPackage">

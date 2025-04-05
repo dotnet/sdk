@@ -32,26 +32,6 @@
         <target state="new">Path to the manifest file.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolUninstallManifestPathOptionName">
-        <source>PATH</source>
-        <target state="new">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallPackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to uninstall.</source>
-        <target state="new">The NuGet Package Id of the tool to uninstall.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallPackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallSpecifyExactlyOnePackageId">
-        <source>Specify one tool Package Id to uninstall.</source>
-        <target state="new">Specify one tool Package Id to uninstall.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolUninstallToolHasMultipleVersionsInstalled">
         <source>Tool '{0}' has multiple versions installed and cannot be uninstalled.</source>
         <target state="new">Tool '{0}' has multiple versions installed and cannot be uninstalled.</target>
@@ -75,11 +55,6 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="ToolUninstallToolPathOptionDescription">
         <source>The directory containing the tool to uninstall.</source>
         <target state="new">The directory containing the tool to uninstall.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolUninstallToolPathOptionName">
-        <source>PATH</source>
-        <target state="new">PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUninstallUninstallSucceeded">

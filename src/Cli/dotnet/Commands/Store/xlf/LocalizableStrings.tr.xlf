@@ -27,11 +27,6 @@
         <target state="translated">Yürütülecek komut tarafından kullanılan çalışma dizini.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Ara çalışma dizini {0} zaten mevcut. {0} dizinini kaldırın veya -w ile başka bir dizin belirtin.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">İyileştirme aşamasını atlar.</target>

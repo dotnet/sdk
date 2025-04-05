@@ -120,9 +120,6 @@
   <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
   </data>
-  <data name="FrameworkOption" xml:space="preserve">
-    <value>FRAMEWORK</value>
-  </data>
   <data name="PublishOutputOption" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>

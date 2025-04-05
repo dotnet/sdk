@@ -17,11 +17,6 @@
         <target state="translated">COMMAND_NAME</target>
         <note />
       </trans-unit>
-      <trans-unit id="SpecifyExactlyOneCommandName">
-        <source>Specify one command name to run.</source>
-        <target state="translated">Zadejte jeden název příkazu, který se má spustit.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolRunCommandDescription">
         <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
         <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>

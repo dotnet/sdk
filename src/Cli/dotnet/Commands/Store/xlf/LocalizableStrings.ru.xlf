@@ -27,11 +27,6 @@
         <target state="translated">Рабочий каталог для выполняемой команды.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Промежуточный рабочий каталог {0} существует. Удалите {0} или укажите другой каталог с помощью -w.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">Пропуск этапа оптимизации.</target>

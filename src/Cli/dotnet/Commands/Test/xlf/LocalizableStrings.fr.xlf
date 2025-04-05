@@ -32,16 +32,6 @@
         <target state="new">Canceling the test session...</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
-        <source>The additional msbuild parameters to pass.</source>
-        <target state="translated">Paramètres msbuild supplémentaires à transmettre.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdArchitectureDescription">
-        <source>The target architecture '{0}' on which tests will run.</source>
-        <target state="new">The target architecture '{0}' on which tests will run.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Active la collecte des données de vidage sur plantage en cas de sortie attendue et inattendue de testhost.</target>
@@ -98,11 +88,6 @@ Lorsqu’elle est utilisée avec des tests pilotés par les données, le comport
 Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour tous les cas de test.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdConfigurationDescription">
-        <source>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</source>
-        <target state="new">Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
         <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
         <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
@@ -132,11 +117,6 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
         <source>The provided solution file has an invalid extension: {0}.</source>
         <target state="new">The provided solution file has an invalid extension: {0}.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="CmdInvalidTestMessageStateException">
-        <source>Invalid test message state '{0}'</source>
-        <target state="new">Invalid test message state '{0}'</target>
-        <note>{0} - test message state</note>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
@@ -535,23 +515,6 @@ dotnet.config is a name don't translate.</note>
         <target state="new">passed</target>
         <note />
       </trans-unit>
-      <trans-unit id="RunSettingsArgumentsDescription">
-        <source>
-
-RunSettings arguments:
-  Arguments to pass as RunSettings configurations. Arguments are specified as '[name]=[value]' pairs after "-- " (note the space after --). 
-  Use a space to separate multiple '[name]=[value]' pairs.
-  See https://aka.ms/vstest-runsettings-arguments for more information on RunSettings arguments.
-  Example: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</source>
-        <target state="translated">
-
-Arguments de RunSettings :
-  Arguments à passer en tant que configurations RunSettings. Spécifiez les arguments en tant que paires '[name]=[value]' après "-- " (notez l'espace après --). 
-  Utilisez un espace pour séparer plusieurs paires '[name]=[value]'.
-  Pour plus d'informations sur les arguments de RunSettings, consultez https://aka.ms/vstest-runsettings-arguments.
-  Exemple : dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunningTestsFrom">
         <source>Running tests from</source>
         <target state="new">Running tests from</target>
@@ -582,11 +545,6 @@ Arguments de RunSettings :
         <target state="new">Standard output</target>
         <note />
       </trans-unit>
-      <trans-unit id="TestAppDescription">
-        <source>Test Driver for the .NET Platform</source>
-        <target state="new">Test Driver for the .NET Platform</target>
-        <note />
-      </trans-unit>
       <trans-unit id="TestAppFullName">
         <source>.NET Test Driver</source>
         <target state="new">.NET Test Driver</target>
@@ -595,11 +553,6 @@ Arguments de RunSettings :
       <trans-unit id="TestCmdNoLogo">
         <source>Run test(s), without displaying Microsoft Testplatform banner</source>
         <target state="new">Run test(s), without displaying Microsoft Testplatform banner</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TestCmdNoRestoreDescription">
-        <source>Do not execute an implicit restore.</source>
-        <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">

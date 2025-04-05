@@ -120,9 +120,6 @@
   <data name="TestAppFullName" xml:space="preserve">
     <value>.NET Test Driver</value>
   </data>
-  <data name="TestAppDescription" xml:space="preserve">
-    <value>Test Driver for the .NET Platform</value>
-  </data>
   <data name="DotnetTestCommand" xml:space="preserve">
     <value>.NET Test Command</value>
   </data>
@@ -178,15 +175,6 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
-  <data name="TestCmdNoRestoreDescription" xml:space="preserve">
-    <value>Do not execute an implicit restore.</value>
-  </data>
-  <data name="CmdArchitectureDescription" xml:space="preserve">
-    <value>The target architecture '{0}' on which tests will run.</value>
-  </data>
-  <data name="CmdConfigurationDescription" xml:space="preserve">
-    <value>Defines the build configuration. The default for most projects is Debug, but you can override the build configuration settings in your project.</value>
-  </data>
   <data name="CmdProjectDescription" xml:space="preserve">
     <value>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</value>
   </data>
@@ -202,15 +190,6 @@ The specified directory will be created if it does not exist.</value>
   </data>
   <data name="CmdPathToResultsDirectory" xml:space="preserve">
     <value>RESULTS_DIR</value>
-  </data>
-  <data name="RunSettingsArgumentsDescription" xml:space="preserve">
-    <value>
-
-RunSettings arguments:
-  Arguments to pass as RunSettings configurations. Arguments are specified as '[name]=[value]' pairs after "-- " (note the space after --). 
-  Use a space to separate multiple '[name]=[value]' pairs.
-  See https://aka.ms/vstest-runsettings-arguments for more information on RunSettings arguments.
-  Example: dotnet test -- MSTest.DeploymentEnabled=false MSTest.MapInconclusiveToFailed=True</value>
   </data>
   <data name="cmdCollectFriendlyName" xml:space="preserve">
     <value>DATA_COLLECTOR_NAME</value>
@@ -299,9 +278,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   <data name="CmdMaxParallelTestModulesDescription" xml:space="preserve">
     <value>The max number of test modules that can run in parallel.</value>
   </data>
-  <data name="CmdAdditionalMSBuildParametersDescription" xml:space="preserve">
-    <value>The additional msbuild parameters to pass.</value>
-  </data>
   <data name="CmdTestModulesDescription" xml:space="preserve">
     <value>Run tests for the specified test modules.</value>
   </data>
@@ -311,10 +287,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</value>
   <data name="CmdUnsupportedMessageRequestTypeException" xml:space="preserve">
     <value>Message Request type '{0}' is unsupported.</value>
     <comment>{0} - message request type</comment>
-  </data>
-  <data name="CmdInvalidTestMessageStateException" xml:space="preserve">
-    <value>Invalid test message state '{0}'</value>
-    <comment>{0} - test message state</comment>
   </data>
   <data name="CmdUnsupportedVSTestTestApplicationsDescription" xml:space="preserve">
     <value>dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.

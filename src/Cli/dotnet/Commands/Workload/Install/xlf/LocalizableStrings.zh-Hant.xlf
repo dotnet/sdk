@@ -87,11 +87,6 @@
         <target state="translated">無法更新廣告資訊清單 {0}: {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToDownloadPackageManifest">
-        <source>Failed to download manifest package {0}.</source>
-        <target state="translated">無法下載資訊清單套件 {0}。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToExtractMsi">
         <source>Failed to extract information from MSI: {0}</source>
         <target state="translated">無法從 MSI 擷取資訊: {0}</target>
@@ -157,11 +152,6 @@
         <target state="translated">剖析工作負載資訊清單識別碼 '{1}' 的版本 '{0}' 時發生錯誤</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadConfiguration">
-        <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="translated">工作負載的 NuGet 套件設定檔案無效: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">在 NuGet 套件 {0} 中找不到資訊清單 MSI</target>
@@ -207,11 +197,6 @@
         <target state="translated">機器有擱置中的重新開機。工作負載作業將繼續，但您可能需要重新開機。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ResolvingPackageUrls">
-        <source>Resolving package URLs for workload(s) {0}...</source>
-        <target state="translated">正在解析工作負載 {0} 的套件 URL...</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">無效的復原定義。復原定義 {0} 中的資訊清單識別碼不符合已安裝的資訊清單識別碼 {1}。</target>
@@ -250,16 +235,6 @@
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">指定此命令的暫存目錄，以下載並解壓縮 NuGet 套件 (必須為安全)。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnknownInstallType">
-        <source>Unknown installation type: {0}.</source>
-        <target state="translated">未知的安裝類型: {0}。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedPackError">
-        <source>Pack ID {0} unrecognized.</source>
-        <target state="translated">無法辨識套件識別碼 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -307,29 +282,9 @@
         <target state="new">FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="new">The target framework to install the workload for.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="new">.NET install command</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="new">Successfully installed workload(s) {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallRollBackFailedMessage">
@@ -392,16 +347,6 @@
         <target state="translated">套件{0} ({1} 版本) 已經安裝。</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadPathOptionDescription">
-        <source>The directory where the workload will be installed. The directory will be created if it doesn't exist.</source>
-        <target state="translated">安裝工作負載所在的目錄。若目錄不存在，則會建立該目錄。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadPathOptionName">
-        <source>PATH</source>
-        <target state="translated">路徑</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">要顯示的工作負載版本，或是一或多個工作負載及其由 '@' 字元加入的版本。</target>
@@ -410,11 +355,6 @@
       <trans-unit id="WritingPackInstallRecordMessage">
         <source>Writing workload pack installation record for {0} version {1}...</source>
         <target state="translated">正在寫入 {0} 版本 {1} 的工作負載套件安裝記錄...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WritingWorkloadInstallRecordMessage">
-        <source>Writing workload installation record for {0}...</source>
-        <target state="translated">正在寫入 {0} 的工作負載安裝記錄...</target>
         <note />
       </trans-unit>
     </body>

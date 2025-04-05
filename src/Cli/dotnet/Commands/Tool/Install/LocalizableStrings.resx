@@ -123,9 +123,6 @@
   <data name="ToolInstallPackageIdArgumentDescription" xml:space="preserve">
     <value>The NuGet Package Id of the tool to install.</value>
   </data>
-  <data name="ToolInstallSpecifyExactlyOnePackageId" xml:space="preserve">
-    <value>Specify one tool Package Id to install.</value>
-  </data>
   <data name="ToolInstallVersionOptionName" xml:space="preserve">
     <value>VERSION</value>
   </data>
@@ -175,9 +172,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   </data>
   <data name="ToolInstallLocalOptionDescription" xml:space="preserve">
     <value>Install the tool and add to the local tool manifest (default).</value>
-  </data>
-  <data name="ToolInstallInstallFullCommandNameLocalized" xml:space="preserve">
-    <value>.NET Install Command</value>
   </data>
   <data name="InvalidToolConfiguration" xml:space="preserve">
     <value>The settings file in the tool's NuGet package is invalid: {0}</value>

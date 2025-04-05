@@ -117,17 +117,8 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="WorkloadInstallFullCommandNameLocalized" xml:space="preserve">
-    <value>.NET Install Command</value>
-  </data>
   <data name="WorkloadCommandDescription" xml:space="preserve">
     <value>Install or work with workloads that extend the .NET experience.</value>
-  </data>
-  <data name="EmscriptenDescription" xml:space="preserve">
-    <value>Emscripten SDK compiler tooling</value>
-  </data>
-  <data name="WasmToolsDescription" xml:space="preserve">
-    <value>.NET WebAssembly build tools</value>
   </data>
   <data name="SkipSignCheckInvalidOption" xml:space="preserve">
     <value>Unable to bypass signature verification. The specified option conflicts with a global policy.</value>

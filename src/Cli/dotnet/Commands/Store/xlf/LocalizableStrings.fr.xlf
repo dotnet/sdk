@@ -27,11 +27,6 @@
         <target state="translated">Répertoire de travail utilisé par la commande pour s'exécuter.</target>
         <note />
       </trans-unit>
-      <trans-unit id="IntermediateDirExists">
-        <source>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</source>
-        <target state="translated">Le répertoire de travail intermédiaire {0} existe déjà. Retirez {0} ou spécifiez un autre répertoire avec -w.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SkipOptimizationOptionDescription">
         <source>Skip the optimization phase.</source>
         <target state="translated">Ignorez la phase d'optimisation.</target>

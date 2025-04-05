@@ -69,11 +69,6 @@
         <target state="new">The directory containing the tools to list.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolListToolPathOptionName">
-        <source>PATH</source>
-        <target state="new">PATH</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolListVersionColumn">
         <source>Version</source>
         <target state="new">Version</target>

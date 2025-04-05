@@ -120,24 +120,6 @@
   <data name="Usage" xml:space="preserve">
     <value>Usage</value>
   </data>
-  <data name="Arguments" xml:space="preserve">
-    <value>Arguments</value>
-  </data>
-  <data name="CommandDefinition" xml:space="preserve">
-    <value>The command to execute</value>
-  </data>
-  <data name="ArgumentsDefinition" xml:space="preserve">
-    <value>Arguments to pass to the command</value>
-  </data>
-  <data name="HostOptionsDefinition" xml:space="preserve">
-    <value>Options specific to dotnet (host)</value>
-  </data>
-  <data name="OptionsDescription" xml:space="preserve">
-    <value>Options common to all commands</value>
-  </data>
-  <data name="DiagnosticsDefinition" xml:space="preserve">
-    <value>Enable diagnostic output</value>
-  </data>
   <data name="SDKCommandUsageDescription" xml:space="preserve">
     <value>Execute a .NET SDK command.</value>
   </data>
@@ -146,15 +128,6 @@
   </data>
   <data name="HelpDefinition" xml:space="preserve">
     <value>Opens the reference page in a browser for the specified command.</value>
-  </data>
-  <data name="HostOptions" xml:space="preserve">
-    <value>Host options (passed before the command)</value>
-  </data>
-  <data name="VersionDescription" xml:space="preserve">
-    <value>Display the version of the .NET SDK, including the effects of any global.json</value>
-  </data>
-  <data name="InfoDescription" xml:space="preserve">
-    <value>Display .NET CLI Info</value>
   </data>
   <data name="Commands" xml:space="preserve">
     <value>SDK commands</value>
@@ -189,12 +162,6 @@
   <data name="StoreDefinition" xml:space="preserve">
     <value>Store the specified assemblies in the runtime package store.</value>
   </data>
-  <data name="ProjectModificationCommands" xml:space="preserve">
-    <value>Project modification commands</value>
-  </data>
-  <data name="AdvancedCommands" xml:space="preserve">
-    <value>Advanced Commands</value>
-  </data>
   <data name="NugetDefinition" xml:space="preserve">
     <value>Provides additional NuGet commands.</value>
   </data>
@@ -218,9 +185,6 @@
   </data>
   <data name="HelpAppFullName" xml:space="preserve">
     <value>.NET CLI help utility</value>
-  </data>
-  <data name="HelpAppDescription" xml:space="preserve">
-    <value>Utility to get more detailed help about each of the SDK commands.</value>
   </data>
   <data name="CommandArgumentName" xml:space="preserve">
     <value>COMMAND_NAME</value>

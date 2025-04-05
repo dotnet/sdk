@@ -120,15 +120,6 @@
   <data name="RestoreAppFullName" xml:space="preserve">
     <value>.NET dependency restorer</value>
   </data>
-  <data name="RestoreAppDescription" xml:space="preserve">
-    <value>restore for msbuild</value>
-  </data>
-  <data name="CmdArgument" xml:space="preserve">
-    <value>PROJECT</value>
-  </data>
-  <data name="RestoreCmdArgumentDescription" xml:space="preserve">
-    <value>Optional path to a project file or MSBuild arguments.</value>
-  </data>
   <data name="CmdSourceOption" xml:space="preserve">
     <value>SOURCE</value>
   </data>

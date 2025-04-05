@@ -120,9 +120,6 @@
   <data name="SdkCheckAppFullName" xml:space="preserve">
     <value>.NET SDK Check Command</value>
   </data>
-  <data name="SdkCheckAppDescription" xml:space="preserve">
-    <value>Check for SDK updates.</value>
-  </data>
   <data name="SdkSectionHeader" xml:space="preserve">
     <value>.NET SDKs:</value>
   </data>

@@ -87,11 +87,6 @@
         <target state="translated">No se pudo actualizar el manifiesto publicitario {0}: {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToDownloadPackageManifest">
-        <source>Failed to download manifest package {0}.</source>
-        <target state="translated">No se pudo descargar el paquete de manifiesto {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToExtractMsi">
         <source>Failed to extract information from MSI: {0}</source>
         <target state="translated">No se pudo extraer información de MSI: {0}</target>
@@ -157,11 +152,6 @@
         <target state="translated">Error al analizar la versión \"{1}\" para el id. de manifiesto de carga de trabajo \"{0}\"</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadConfiguration">
-        <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="translated">El archivo de configuración del paquete NuGet de la carga de trabajo no es válido: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">No se encontró el MSI del manifiesto en el paquete NuGet {0}</target>
@@ -207,11 +197,6 @@
         <target state="translated">La máquina tiene un reinicio pendiente. La operación de carga de trabajo continuará, pero es posible que tenga que reiniciar.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ResolvingPackageUrls">
-        <source>Resolving package URLs for workload(s) {0}...</source>
-        <target state="translated">Resolviendo direcciones URL del paquete para la(s) carga(s) de trabajo {0}...</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">Definición de reversión no válida. Los id. de manifiesto de la definición de reversión {0} no coinciden con los id. de manifiesto instalados {1}.</target>
@@ -250,16 +235,6 @@
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Especifique un directorio temporal para que este comando descargue y extraiga paquetes NuGet (debe ser seguro).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnknownInstallType">
-        <source>Unknown installation type: {0}.</source>
-        <target state="translated">Tipo de instalación desconocido: {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedPackError">
-        <source>Pack ID {0} unrecognized.</source>
-        <target state="translated">No se reconoce la Id. del paquete {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -307,29 +282,9 @@
         <target state="new">FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="new">The target framework to install the workload for.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="new">.NET install command</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="new">Successfully installed workload(s) {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallRollBackFailedMessage">
@@ -392,16 +347,6 @@
         <target state="translated">Paquete {0} versión {1} ya está instalado.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadPathOptionDescription">
-        <source>The directory where the workload will be installed. The directory will be created if it doesn't exist.</source>
-        <target state="translated">El directorio donde se instalará la carga de trabajo. El directorio se creará si no existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadPathOptionName">
-        <source>PATH</source>
-        <target state="translated">RUTA DE ACCESO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Una versión de carga de trabajo para mostrar o una o más cargas de trabajo y sus versiones unidas por el carácter "@".</target>
@@ -410,11 +355,6 @@
       <trans-unit id="WritingPackInstallRecordMessage">
         <source>Writing workload pack installation record for {0} version {1}...</source>
         <target state="translated">Escribiendo el registro de instalación de paquete de carga de trabajo para {0} versión {1}...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WritingWorkloadInstallRecordMessage">
-        <source>Writing workload installation record for {0}...</source>
-        <target state="translated">Escribiendo el registro de instalación de carga de trabajo para {0}...</target>
         <note />
       </trans-unit>
     </body>

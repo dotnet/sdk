@@ -120,14 +120,8 @@
   <data name="PackageAddAppFullName" xml:space="preserve">
     <value>Add a NuGet package reference to the project.</value>
   </data>
-  <data name="PackageAddAppDescription" xml:space="preserve">
-    <value>Command to add package reference</value>
-  </data>
   <data name="CmdPackageDescription" xml:space="preserve">
     <value>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</value>
-  </data>
-  <data name="PackageAddSpecifyExactlyOnePackageReference" xml:space="preserve">
-    <value>Specify one package reference to add.</value>
   </data>
   <data name="PackageAddCmdFrameworkDescription" xml:space="preserve">
     <value>Add the reference only when targeting a specific framework.</value>

@@ -87,11 +87,6 @@
         <target state="translated">Reklam bildirimi {0} güncelleştirilemedi: {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FailedToDownloadPackageManifest">
-        <source>Failed to download manifest package {0}.</source>
-        <target state="translated">Bildirim paketi {0} indirilemedi.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToExtractMsi">
         <source>Failed to extract information from MSI: {0}</source>
         <target state="translated">MSI'dan bilgi ayıklanamadı: {0}</target>
@@ -157,11 +152,6 @@
         <target state="translated">İş yükü bildirim kimliği '{0}' için hata ayrıştırma sürümü '{1}'</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadConfiguration">
-        <source>The settings file in the workload's NuGet package is invalid: {0}</source>
-        <target state="translated">İş yükünün NuGet paketindeki ayar dosyası geçersiz: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
         <source>Manifest MSI not found in NuGet package {0}</source>
         <target state="translated">{0} NuGet paketinde bildirim MSI'sı bulunamadı</target>
@@ -207,11 +197,6 @@
         <target state="translated">Makinede bekleyen bir yeniden başlatma işlemi var. İş yükü işlemi devam edecek ancak yeniden başlatmanız gerekebilir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ResolvingPackageUrls">
-        <source>Resolving package URLs for workload(s) {0}...</source>
-        <target state="translated">{0} iş yükleri için paket URL'leri çözümleniyor...</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">Geri alma tanımı geçersiz. {0} geri alma tanımındaki bildirim kimlikleri yüklü bildirim kimlikleriyle ({1}) eşleşmiyor.</target>
@@ -250,16 +235,6 @@
       <trans-unit id="TempDirOptionDescription">
         <source>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</source>
         <target state="translated">Bu komut için NuGet paketlerini indirmek ve ayıklamak üzere geçici bir dizin belirtin (güvenli olmalıdır).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnknownInstallType">
-        <source>Unknown installation type: {0}.</source>
-        <target state="translated">{0} yükleme türü bilinmiyor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnrecognizedPackError">
-        <source>Pack ID {0} unrecognized.</source>
-        <target state="translated">{0} paket kimliği tanınmıyor.</target>
         <note />
       </trans-unit>
       <trans-unit id="PrintDownloadLinkOnlyDescription">
@@ -307,29 +282,9 @@
         <target state="new">FILE</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="new">The target framework to install the workload for.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="new">.NET install command</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
         <source>Successfully installed workload(s) {0}.</source>
         <target state="new">Successfully installed workload(s) {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallRollBackFailedMessage">
@@ -392,16 +347,6 @@
         <target state="translated">Paket {0} sürüm {1} zaten yüklü.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadPathOptionDescription">
-        <source>The directory where the workload will be installed. The directory will be created if it doesn't exist.</source>
-        <target state="translated">İş yükünün yükleneceği dizin. Dizin yoksa oluşturulur.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadPathOptionName">
-        <source>PATH</source>
-        <target state="translated">YOL</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Görüntülenecek iş yükü sürümü veya bir veya daha fazla iş yükü ve '@' karakteriyle birleştirilmiş sürümleri.</target>
@@ -410,11 +355,6 @@
       <trans-unit id="WritingPackInstallRecordMessage">
         <source>Writing workload pack installation record for {0} version {1}...</source>
         <target state="translated">{0} sürümü {1} için iş yükü paketi yükleme kaydı yazılıyor...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WritingWorkloadInstallRecordMessage">
-        <source>Writing workload installation record for {0}...</source>
-        <target state="translated">{0} için iş yükü yükleme kaydı yazılıyor...</target>
         <note />
       </trans-unit>
     </body>

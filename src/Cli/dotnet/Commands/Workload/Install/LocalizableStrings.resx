@@ -144,23 +144,11 @@
   <data name="WorkloadInstallConfigFileOptionDescription" xml:space="preserve">
     <value>The NuGet configuration file to use.</value>
   </data>
-  <data name="WorkloadInstallFrameworkOptionDescription" xml:space="preserve">
-    <value>The target framework to install the workload for.</value>
-  </data>
   <data name="SkipManifestUpdateOptionDescription" xml:space="preserve">
     <value>Skip updating the workload manifests.</value>
   </data>
-  <data name="WorkloadInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
-    <value>NuGet configuration file '{0}' doesn't exist.</value>
-  </data>
   <data name="WorkloadInstallInstallationSucceeded" xml:space="preserve">
     <value>Successfully installed workload(s) {0}.</value>
-  </data>
-  <data name="WorkloadInstallInstallFullCommandNameLocalized" xml:space="preserve">
-    <value>.NET install command</value>
-  </data>
-  <data name="InvalidWorkloadConfiguration" xml:space="preserve">
-    <value>The settings file in the workload's NuGet package is invalid: {0}</value>
   </data>
   <data name="WorkloadInstallationFailed" xml:space="preserve">
     <value>Workload installation failed: {0}</value>
@@ -170,15 +158,6 @@
   </data>
   <data name="WorkloadAlreadyInstalled" xml:space="preserve">
     <value>Workload(s) '{0}' are already installed.</value>
-  </data>
-  <data name="WorkloadInstallInvalidNuGetVersionRange" xml:space="preserve">
-    <value>Specified version '{0}' isn't a valid NuGet version range.</value>
-  </data>
-  <data name="WorkloadPathOptionName" xml:space="preserve">
-    <value>PATH</value>
-  </data>
-  <data name="WorkloadPathOptionDescription" xml:space="preserve">
-    <value>The directory where the workload will be installed. The directory will be created if it doesn't exist.</value>
   </data>
   <data name="PrintDownloadLinkOnlyDescription" xml:space="preserve">
     <value>Only print the list of links to download without downloading.</value>
@@ -192,9 +171,6 @@
   <data name="TempDirOptionDescription" xml:space="preserve">
     <value>Specify a temporary directory for this command to download and extract NuGet packages (must be secure).</value>
   </data>
-  <data name="UnrecognizedPackError" xml:space="preserve">
-    <value>Pack ID {0} unrecognized.</value>
-  </data>
   <data name="InstallingPackVersionMessage" xml:space="preserve">
     <value>Installing pack {0} version {1}...</value>
   </data>
@@ -206,9 +182,6 @@
   </data>
   <data name="WritingPackInstallRecordMessage" xml:space="preserve">
     <value>Writing workload pack installation record for {0} version {1}...</value>
-  </data>
-  <data name="WritingWorkloadInstallRecordMessage" xml:space="preserve">
-    <value>Writing workload installation record for {0}...</value>
   </data>
   <data name="GarbageCollectingSdkFeatureBandsMessage" xml:space="preserve">
     <value>Garbage collecting for SDK feature band(s) {0}...</value>
@@ -245,12 +218,6 @@
   </data>
   <data name="IncludePreviewOptionDescription" xml:space="preserve">
     <value>Allow prerelease workload manifests.</value>
-  </data>
-  <data name="ResolvingPackageUrls" xml:space="preserve">
-    <value>Resolving package URLs for workload(s) {0}...</value>
-  </data>
-  <data name="FailedToDownloadPackageManifest" xml:space="preserve">
-    <value>Failed to download manifest package {0}.</value>
   </data>
   <data name="ManifestPackageUrlNotResolved" xml:space="preserve">
     <value>Manifest package not resolved. Manifest package or URL for {0} doesn't exist.</value>
@@ -306,9 +273,6 @@
   </data>
   <data name="MsiProgressUninstall" xml:space="preserve">
     <value>Removing {0} </value>
-  </data>
-  <data name="UnknownInstallType" xml:space="preserve">
-    <value>Unknown installation type: {0}.</value>
   </data>
   <data name="GarbageCollectionFailed" xml:space="preserve">
     <value>Warning: Workload garbage collection failed with error: {0}.</value>

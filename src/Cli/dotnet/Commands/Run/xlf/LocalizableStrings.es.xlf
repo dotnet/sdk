@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandOptionFrameworkDescription">
-        <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
-        <target state="translated">Compila y ejecuta la aplicación con la plataforma especificada. La plataforma se debe especificar en el archivo de proyecto. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
         <target state="translated">No use los argumentos especificados en el perfil de inicio para ejecutar la aplicación.</target>
@@ -61,16 +56,6 @@ Defina nombres de perfiles distintos.</target>
         <target state="new">The property directive needs to have two parts separated by '=' like 'PropertyName=PropertyValue': {0}</target>
         <note>{0} is the file path and line number. {Locked="="}</note>
       </trans-unit>
-      <trans-unit id="PropertyOptionDescription">
-        <source>Properties to be passed to MSBuild.</source>
-        <target state="translated">Propiedades que se van a pasar a MSBuild.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunAppDescription">
-        <source>Command used to run .NET apps</source>
-        <target state="new">Command used to run .NET apps</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RunAppFullName">
         <source>.NET Run Command</source>
         <target state="new">.NET Run Command</target>
@@ -89,11 +74,6 @@ Defina nombres de perfiles distintos.</target>
       <trans-unit id="RunCommandException">
         <source>The build failed. Fix the build errors and run again.</source>
         <target state="translated">No se pudo llevar a cabo la compilación. Corrija los errores de compilación y vuelva a ejecutar el proyecto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RunCommandAdditionalArgsHelpText">
-        <source>Arguments passed to the application that is being run.</source>
-        <target state="translated">Argumentos que se pasan a la aplicación en ejecución.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -204,13 +184,6 @@ El valor actual de {1} es "{2}".</target>
       <trans-unit id="UsableLaunchProfileCannotBeLocated">
         <source>A usable launch profile could not be located.</source>
         <target state="translated">No se ha podido encontrar un perfil de inicio que se pueda usar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="UnexpectedExceptionProcessingLaunchSettings">
-        <source>An unexpected exception occurred while processing launch settings:
-{0}</source>
-        <target state="translated">Excepción inesperada al procesar la configuración de inicio:
-{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LaunchProfilesCollectionIsNotAJsonObject">

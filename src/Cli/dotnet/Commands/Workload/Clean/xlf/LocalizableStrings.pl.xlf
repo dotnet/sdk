@@ -14,11 +14,6 @@ Przeszukane ścieżki: „{1}”, „{2}”.</target>
         <target state="translated">Powoduje usunięcie i odinstalowanie wszystkich składników obciążenia ze wszystkich wersji zestawu SDK.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidWorkloadProcessPath">
-        <source>The path '{0}' of the process is the root path of the drive, which is not allowed, or it is invalid/inaccessible. Please run dotnet in a valid and available path.</source>
-        <target state="translated">Ścieżka „{0}” procesu jest ścieżką główną dysku, co jest niedozwolone lub jest nieprawidłowe/niedostępne. Uruchom narzędzie dotnet w prawidłowej i dostępnej ścieżce.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="VSWorkloadNotRemoved">
         <source>Workload '{0}' was not removed because it is installed and managed by Visual Studio: '{1}'. Please uninstall this workload using the Visual Studio Installer to fully remove it.</source>
         <target state="translated">Obciążenie „{0}” nie zostało usunięte, ponieważ jest zainstalowane i zarządzane przez program Visual Studio: „{1}”. Odinstaluj to obciążenie przy użyciu Instalatora programu Visual Studio, aby w pełni je usunąć.</target>

@@ -57,11 +57,6 @@
         <target state="new">'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateFailed">
-        <source>Workload '{0}' failed to update due to the following:</source>
-        <target state="translated">Falha ao atualizar a carga de trabalho '{0}' devido ao seguinte motivo:</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
         <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
         <target state="translated">Atualizar em um arquivo de reversão não é compatível com os conjuntos de carga de trabalho. A instalação e a atualização agora usarão manifestos flexíveis. Para atualizar para uma versão de carga de trabalho específica, use --versão.</target>
@@ -70,11 +65,6 @@
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
         <target state="translated">A ID de um registro de histórico de carga de trabalho deve estar entre 1 e o número de registros de histórico de carga de trabalho, inclusive.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
-        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
-        <target state="translated">Argumento "{0}" inválido para o argumento --mode para atualização de carga de trabalho dotnet. Os únicos modos com suporte são "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

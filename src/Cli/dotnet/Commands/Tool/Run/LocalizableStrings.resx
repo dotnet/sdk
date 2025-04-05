@@ -129,7 +129,4 @@
   <data name="CommandNameArgumentName" xml:space="preserve">
     <value>COMMAND_NAME</value>
   </data>
-  <data name="SpecifyExactlyOneCommandName" xml:space="preserve">
-    <value>Specify one command name to run.</value>
-  </data>
 </root>

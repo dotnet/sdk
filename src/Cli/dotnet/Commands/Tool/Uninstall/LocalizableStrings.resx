@@ -117,15 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ToolUninstallPackageIdArgumentName" xml:space="preserve">
-    <value>PACKAGE_ID</value>
-  </data>
-  <data name="ToolUninstallPackageIdArgumentDescription" xml:space="preserve">
-    <value>The NuGet Package Id of the tool to uninstall.</value>
-  </data>
-  <data name="ToolUninstallSpecifyExactlyOnePackageId" xml:space="preserve">
-    <value>Specify one tool Package Id to uninstall.</value>
-  </data>
   <data name="ToolUninstallCommandDescription" xml:space="preserve">
     <value>Uninstall a global tool or local tool.</value>
   </data>
@@ -149,9 +140,6 @@ and the corresponding package Ids for installed tools using the command
   <data name="FailedToUninstallTool" xml:space="preserve">
     <value>Failed to uninstall tool '{0}': {1}</value>
   </data>
-  <data name="ToolUninstallToolPathOptionName" xml:space="preserve">
-    <value>PATH</value>
-  </data>
   <data name="ToolUninstallToolPathOptionDescription" xml:space="preserve">
     <value>The directory containing the tool to uninstall.</value>
   </data>
@@ -160,9 +148,6 @@ and the corresponding package Ids for installed tools using the command
   </data>
   <data name="ToolUninstallManifestPathOptionDescription" xml:space="preserve">
     <value>Path to the manifest file.</value>
-  </data>
-  <data name="ToolUninstallManifestPathOptionName" xml:space="preserve">
-    <value>PATH</value>
   </data>
   <data name="ToolUninstallLocalOptionDescription" xml:space="preserve">
     <value>Uninstall the tool and remove it from the local tool manifest.</value>

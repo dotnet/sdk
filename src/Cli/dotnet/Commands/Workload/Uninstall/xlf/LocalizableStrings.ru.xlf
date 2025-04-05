@@ -22,21 +22,6 @@
         <target state="translated">Сбой удаления рабочей нагрузки: {0}</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadUninstallPackageIdArgumentDescription">
-        <source>The workload ID(s) to uninstall.</source>
-        <target state="new">The workload ID(s) to uninstall.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUninstallPackageIdArgumentName">
-        <source>WORKLOAD_ID</source>
-        <target state="new">WORKLOAD_ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUninstallSpecifyExactlyOnePackageId">
-        <source>Specify one workload ID to uninstall.</source>
-        <target state="new">Specify one workload ID to uninstall.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadUninstallUninstallSucceeded">
         <source>Successfully uninstalled workload(s): {0}</source>
         <target state="new">Successfully uninstalled workload(s): {0}</target>

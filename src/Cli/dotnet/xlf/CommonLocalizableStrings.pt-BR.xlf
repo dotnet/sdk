@@ -87,11 +87,6 @@ Exemplos:
         <target state="new">File `{0}` not found.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CorruptSolutionProjectFolderStructure">
-        <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
-        <target state="translated">O arquivo de solução '{0}' tem marcas EndProject ausentes ou tem mapeamentos de pasta de projeto pai-filho inválidos em torno do GUID do projeto: '{1}'. Repare manualmente a solução ou tente abri-la e salvá-la no Visual Studio."</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAnyProjectInDirectory">
         <source>Could not find any project in `{0}`.</source>
         <target state="translated">Não foi possível encontrar nenhum projeto em ‘{0}’.</target>
@@ -215,11 +210,6 @@ export PATH="$PATH:{0}"
         <target state="translated">Projeto</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectFile">
-        <source>Project file</source>
-        <target state="translated">Arquivo de Projeto</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Reference">
         <source>Reference</source>
         <target state="translated">Referência</target>
@@ -238,11 +228,6 @@ export PATH="$PATH:{0}"
       <trans-unit id="P2P">
         <source>Project to Project</source>
         <target state="translated">Projeto para Projeto</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="P2PReference">
-        <source>Project to Project reference</source>
-        <target state="translated">Referência de Projeto para Projeto</target>
         <note />
       </trans-unit>
       <trans-unit id="Package">
@@ -282,29 +267,9 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">O argumento da solução '{0}' está mal colocado.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFile">
-        <source>Solution file</source>
-        <target state="translated">Arquivo de solução</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Executable">
-        <source>Executable</source>
-        <target state="translated">Executável</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Library">
         <source>Library</source>
         <target state="translated">Biblioteca</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Program">
-        <source>Program</source>
-        <target state="translated">Programa</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Application">
-        <source>Application</source>
-        <target state="translated">Aplicativo</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceAddedToTheProject">
@@ -327,16 +292,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">Excluir</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionFolderAlreadyContainsProject">
-        <source>Solution {0} already contains project {1} in solution folder {2}.</source>
-        <target state="translated">A solução {0} já contém o projeto {1} na pasta da solução {2}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSettingsNotFound">
-        <source>Tool settings file does not exist for the tool {0}.</source>
-        <target state="translated">O arquivo de configurações de ferramenta não existe para a ferramenta {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnrecognizedCommandOrArgument">
         <source>Unrecognized command or argument '{0}'</source>
         <target state="new">Unrecognized command or argument '{0}'</target>
@@ -357,29 +312,9 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">Listar</target>
         <note />
       </trans-unit>
-      <trans-unit id="Load">
-        <source>Load</source>
-        <target state="translated">Carregar</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Save">
-        <source>Save</source>
-        <target state="translated">Salvar</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Find">
-        <source>Find</source>
-        <target state="translated">Encontrar</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Error">
         <source>Error</source>
         <target state="translated">Erro</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="Warning">
-        <source>Warning</source>
-        <target state="translated">Aviso</target>
         <note />
       </trans-unit>
       <trans-unit id="File">
@@ -402,144 +337,9 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">Valor</target>
         <note />
       </trans-unit>
-      <trans-unit id="Group">
-        <source>Group</source>
-        <target state="translated">Grupo</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAddedToY">
-        <source>{0} added to {1}.</source>
-        <target state="translated">{0} adicionado a {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XRemovedFromY">
-        <source>{0} removed from {1}.</source>
-        <target state="translated">{0} removido de {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDeletedFromY">
-        <source>{0} deleted from {1}.</source>
-        <target state="translated">{0} excluído de {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XSuccessfullyUpdated">
-        <source>{0} successfully updated.</source>
-        <target state="translated">{0} atualizado com êxito.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XIsInvalid">
-        <source>{0} is invalid.</source>
-        <target state="translated">{0} é inválido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYFoundButInvalid">
-        <source>{0} `{1}` found but is invalid.</source>
-        <target state="translated">{0} ‘{1}’ encontrado, mas é inválido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XFoundButInvalid">
-        <source>`{0}` found but is invalid.</source>
-        <target state="translated">‘{0}’ encontrado, mas é inválido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationInvalid">
-        <source>Operation is invalid.</source>
-        <target state="translated">A operação é inválida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OperationXInvalid">
-        <source>Operation {0} is invalid.</source>
-        <target state="translated">A operação {0} é inválida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotFound">
-        <source>{0} not found.</source>
-        <target state="translated">{0} não encontrado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFound">
-        <source>{0} or {1} not found.</source>
-        <target state="translated">{0} ou {1} não encontrado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XOrYNotFoundInZ">
-        <source>{0} or {1} not found in `{2}`.</source>
-        <target state="translated">{0} ou {1} não encontrado em {2}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XDoesNotExist">
-        <source>{0} does not exist.</source>
-        <target state="translated">{0} não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XYDoesNotExist">
-        <source>{0} `{1}` does not exist.</source>
-        <target state="translated">{0} ‘{1}’ não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MoreThanOneXFound">
-        <source>More than one {0} found.</source>
-        <target state="translated">Mais de um {0} encontrado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsY">
-        <source>{0} already contains {1}.</source>
-        <target state="translated">{0} já contém {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyContainsYZ">
-        <source>{0} already contains {1} `{2}`.</source>
-        <target state="translated">{0} já contém {1} ‘{2}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasY">
-        <source>{0} already has {1}.</source>
-        <target state="translated">{0} já tem {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XAlreadyHasYZ">
-        <source>{0} already has {1} `{2}`.</source>
-        <target state="translated">{0} já tem {1} ‘{2}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XWasNotExpected">
-        <source>{0} was not expected.</source>
-        <target state="translated">{0} não era esperado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="XNotProvided">
-        <source>{0} not provided.</source>
-        <target state="translated">{0} não fornecido.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOne">
         <source>Specify at least one {0}.</source>
         <target state="translated">Especifique pelo menos um {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotConnectWithTheServer">
-        <source>Could not connect with the server.</source>
-        <target state="translated">Não foi possível se conectar ao servidor.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentIsInvalid">
-        <source>Required argument {0} is invalid.</source>
-        <target state="translated">O argumento obrigatório {0} é inválido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OptionIsInvalid">
-        <source>Option {0} is invalid.</source>
-        <target state="translated">A opção {0} é inválida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentIsInvalid">
-        <source>Argument {0} is invalid.</source>
-        <target state="translated">O argumento {0} é inválido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RequiredArgumentNotPassed">
-        <source>Required argument {0} was not provided.</source>
-        <target state="translated">O argumento obrigatório {0} não foi fornecido.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotFindProjectOrDirectory">
@@ -572,46 +372,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">O arquivo de solução {0} especificado não existe ou não há um arquivo de solução no diretório.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceIsInvalid">
-        <source>Reference `{0}` is invalid.</source>
-        <target state="translated">A referência ‘{0}’ é inválida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOneReferenceToAdd">
-        <source>You must specify at least one reference to add.</source>
-        <target state="translated">É necessário especificar pelo menos uma referência a ser adicionada.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDoesNotExist">
-        <source>Package reference `{0}` does not exist.</source>
-        <target state="translated">A referência do pacote ‘{0}’ não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceIsInvalid">
-        <source>Package reference `{0}` is invalid.</source>
-        <target state="translated">A referência do pacote ‘{0}’ é inválida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToAdd">
-        <source>You must specify at least one package to add.</source>
-        <target state="translated">É necessário especificar pelo menos um pacote a ser adicionado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceAddedToTheProject">
-        <source>Package reference `{0}` added to the project.</source>
-        <target state="translated">A referência do pacote ‘{0}’ foi adicionada ao projeto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ProjectAlreadyHasAPackageReference">
-        <source>Project {0} already has a reference `{1}`.</source>
-        <target state="translated">O projeto {0} já tem uma referência ‘{1}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyVersion">
-        <source>Specify a version of the package.</source>
-        <target state="translated">Especifique uma versão do pacote.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ProjectDoesNotExist">
         <source>Project `{0}` does not exist.</source>
         <target state="translated">O projeto ‘{0}’ não existe.</target>
@@ -632,44 +392,9 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">O projeto ‘{0}’ foi adicionado à solução.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ReferenceNotFoundInTheProject">
-        <source>Specified reference {0} does not exist in project {1}.</source>
-        <target state="translated">A referência {0} especificada não existe no projeto {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">A referência ‘{0}’ foi excluída do projeto.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifyAtLeastOneReferenceToRemove">
         <source>You must specify at least one reference to remove.</source>
         <target state="translated">É necessário especificar pelo menos uma referência a ser removida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ReferenceDeleted">
-        <source>Reference `{0}` deleted.</source>
-        <target state="translated">A referência ‘{0}’ foi excluída.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceNotFoundInTheProject">
-        <source>Package reference `{0}` could not be found in the project.</source>
-        <target state="translated">Não foi possível encontrar a referência do pacote ‘{0}’ no projeto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceRemoved">
-        <source>Reference `{0}` deleted from the project.</source>
-        <target state="translated">A referência ‘{0}’ foi excluída do projeto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyAtLeastOnePackageReferenceToRemove">
-        <source>You must specify at least one package reference to remove.</source>
-        <target state="translated">É necessário especificar pelo menos uma referência do pacote a ser removida.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageReferenceDeleted">
-        <source>Package reference `{0}` deleted.</source>
-        <target state="translated">A referência do pacote ‘{0}’ foi excluída.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotFoundInTheSolution">
@@ -687,11 +412,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">É necessário especificar pelo menos um projeto para ser removido.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ProjectDeleted">
-        <source>Project `{0}` deleted from solution.</source>
-        <target state="translated">O projeto ‘{0}’ foi excluído da solução.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoReferencesFound">
         <source>There are no {0} references in project {1}.</source>
         <target state="translated">Não há nenhuma referência {0} no projeto {1}.</target>
@@ -700,76 +420,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="translated">Não foi encontrado nenhum projeto na solução.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyNewVersion">
-        <source>Specify new version of the package.</source>
-        <target state="translated">Especifique a nova versão do pacote.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PleaseSpecifyWhichPackageToUpdate">
-        <source>Specify which package to update.</source>
-        <target state="translated">Especifique qual pacote atualizar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NothingToUpdate">
-        <source>Nothing to update.</source>
-        <target state="translated">Nada para atualizar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="EverythingUpToDate">
-        <source>Everything is already up-to-date.</source>
-        <target state="translated">Tudo já está atualizado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdatedTo">
-        <source>Version of package `{0}` updated to `{1}`.</source>
-        <target state="translated">Versão do pacote ‘{0}’ atualizada para ‘{1}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageVersionUpdated">
-        <source>Version of package `{0}` updated.</source>
-        <target state="translated">Versão do pacote ‘{0}’ atualizada.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CouldNotUpdateTheVersion">
-        <source>Could not update the version of the package `{0}`.</source>
-        <target state="translated">Não foi possível atualizar a versão do pacote ‘{0}’.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreatedSuccessfully">
-        <source>The template {0} created successfully. run "dotnet restore" to get started!</source>
-        <target state="translated">O modelo {0} foi criado com êxito. Execute "dotnet restore" para começar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstalledSuccesfully">
-        <source>The template {0} installed successfully. You can use "dotnet new {0}" to get started with the new template.</source>
-        <target state="translated">O modelo {0} foi instalado com êxito. Você pode usar "dotnet new {0}" para começar a trabalhar com um novo modelo.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateCreateError">
-        <source>Template {0} could not be created. Error returned was: {1}.</source>
-        <target state="translated">Não foi possível criar o modelo {0}. O erro retornado foi: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TemplateInstallError">
-        <source>Template {0} could not be installed. Error returned was: {1}.</source>
-        <target state="translated">Não foi possível instalar o modelo {0}. O erro retornado foi: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedNameExists">
-        <source>Specified name {0} already exists. Specify a different name.</source>
-        <target state="translated">O nome especificado {0} já existe. Especifique um nome diferente.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifiedAliasExists">
-        <source>Specified alias {0} already exists. Specify a different alias.</source>
-        <target state="translated">O alias especificado {0} já existe. Especifique um alias diferente.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MandatoryParameterMissing">
-        <source>Mandatory parameter {0} missing for template {1}. </source>
-        <target state="translated">O parâmetro obrigatório {0} está ausente no modelo {1}. </target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectReferenceOneOrMore">
@@ -790,11 +440,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
       <trans-unit id="SolutionAlreadyContainsProject">
         <source>Solution {0} already contains project {1}.</source>
         <target state="translated">A solução {0} já contém o projeto {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ArgumentsProjectOrSolutionDescription">
-        <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
-        <target state="translated">O projeto ou a solução no qual ocorre a operação. Se um arquivo não for especificado, o diretório atual será pesquisado.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">
@@ -914,11 +559,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">Não é possível criar o shim do shell para um caminho executável vazio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotCreateShimForEmptyCommand">
-        <source>Cannot create shell shim for an empty command.</source>
-        <target state="translated">Não é possível criar o shim do shell para um comando vazio.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FailedToRetrieveToolConfiguration">
         <source>Failed to retrieve tool configuration: {0}</source>
         <target state="translated">Falha ao recuperar a configuração da ferramenta: {0}</target>
@@ -979,11 +619,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FailedSettingShimPermissions">
         <source>Failed to set user executable permissions for shell shim: {0}</source>
         <target state="translated">Falha ao definir as permissões do executável do usuário para o shim do shell: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FailedToInstallToolPackage">
-        <source>Failed to install tool package '{0}': {1}</source>
-        <target state="translated">Falha ao instalar o pacote da ferramenta '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToUninstallToolPackage">

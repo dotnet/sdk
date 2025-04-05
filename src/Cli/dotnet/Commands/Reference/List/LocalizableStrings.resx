@@ -120,7 +120,4 @@
   <data name="ReferenceListAppFullName" xml:space="preserve">
     <value>List all project-to-project references of the project.</value>
   </data>
-  <data name="ReferenceListAppDescription" xml:space="preserve">
-    <value>Command to list project to project references</value>
-  </data>
 </root>

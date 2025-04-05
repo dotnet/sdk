@@ -12,11 +12,6 @@
         <target state="translated">Beschreibung</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="DetailArgumentName">
-        <source>Detail</source>
-        <target state="translated">Details</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DetailDescription">
         <source>Show detail result of the query.</source>
         <target state="translated">Hiermit wird das Ergebnis der Abfrage im Detail angezeigt.</target>
@@ -69,11 +64,6 @@
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in nuget.org</source>
         <target state="new">Search dotnet tools in nuget.org</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchCommandsColumn">
-        <source>Commands</source>
-        <target state="new">Commands</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

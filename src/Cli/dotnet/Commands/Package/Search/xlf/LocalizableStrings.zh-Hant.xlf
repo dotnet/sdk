@@ -27,11 +27,6 @@
         <target state="translated">依此格式化輸出。可以是 `table` 或 `json`。預設值為 `table`。</target>
         <note />
       </trans-unit>
-      <trans-unit id="InteractiveDescription">
-        <source>Stop and wait for user input or action (for example to complete authentication).</source>
-        <target state="translated">停止並等候使用者輸入或動作 (例如: 完成驗證)。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PackageSearchCommandDescription">
         <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
         <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>

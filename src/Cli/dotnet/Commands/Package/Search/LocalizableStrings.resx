@@ -135,9 +135,6 @@
   <data name="FormatDescription" xml:space="preserve">
     <value>Format the output accordingly. Either `table`, or `json`. The default value is `table`.</value>
   </data>
-  <data name="InteractiveDescription" xml:space="preserve">
-    <value>Stop and wait for user input or action (for example to complete authentication).</value>
-  </data>
   <data name="PackageSearchPrereleaseDescription" xml:space="preserve">
     <value>Include prerelease packages.</value>
   </data>

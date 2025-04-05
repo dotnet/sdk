@@ -120,9 +120,6 @@
   <data name="ReferenceAddAppFullName" xml:space="preserve">
     <value>Add a project-to-project reference to the project.</value>
   </data>
-  <data name="ReferenceAddAppDescription" xml:space="preserve">
-    <value>Command to add project to project reference</value>
-  </data>
   <data name="ReferenceAddProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>

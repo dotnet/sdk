@@ -153,9 +153,6 @@
   <data name="SpecifyManifests" xml:space="preserve">
     <value>Specify at least one manifest with --manifest.</value>
   </data>
-  <data name="IntermediateDirExists" xml:space="preserve">
-    <value>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</value>
-  </data>
   <data name="StoreFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to store packages for. The target framework has to be specified in the project file.</value>
   </data>

@@ -120,17 +120,11 @@
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
   </data>
-  <data name="ToolSearchCommandsColumn" xml:space="preserve">
-    <value>Commands</value>
-  </data>
   <data name="ToolSearchSearchTermArgumentName" xml:space="preserve">
     <value>SEARCH_TERM</value>
   </data>
   <data name="ToolSearchSearchTermDescription" xml:space="preserve">
     <value>Search term from package id or package description. Require at least one character.</value>
-  </data>
-  <data name="DetailArgumentName" xml:space="preserve">
-    <value>Detail</value>
   </data>
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
