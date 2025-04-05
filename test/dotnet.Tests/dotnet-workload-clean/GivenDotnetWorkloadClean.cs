@@ -7,7 +7,6 @@ using System.CommandLine;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;

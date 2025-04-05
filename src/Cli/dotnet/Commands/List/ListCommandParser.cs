@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.List.Package;
 using Microsoft.DotNet.Cli.Commands.List.Reference;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.List;
 
@@ -13,7 +12,7 @@ internal static class ListCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
+    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
 
     internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
         => new CliArgument<string>(name)
@@ -31,7 +30,7 @@ internal static class ListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("list", DocsLink, LocalizableStrings.NetListCommand)
+        var command = new DocumentedCommand("list", DocsLink, CliCommandStrings.NetListCommand)
         {
             Hidden = true
         };

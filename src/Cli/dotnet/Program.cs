@@ -3,18 +3,17 @@
 
 using System.CommandLine;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
-using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
-using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.CommandFactory;
-using Microsoft.DotNet.Cli.ShellShim;
-using Microsoft.DotNet.Cli.Commands.Workload;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -362,7 +361,7 @@ public class Program
             catch (Exception)
             {
                 // If the workload check fails for any reason, we want to eat the failure and continue running the command.
-                reporter.WriteLine(Workloads.Workload.LocalizableStrings.WorkloadIntegrityCheckError.Yellow());
+                reporter.WriteLine(CliStrings.WorkloadIntegrityCheckError.Yellow());
             }
         }
     }

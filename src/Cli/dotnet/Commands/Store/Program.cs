@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Store.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Store;
 
@@ -31,7 +30,7 @@ public class StoreCommand : MSBuildForwardingApp
 
         if (!result.HasOption(StoreCommandParser.ManifestOption))
         {
-            throw new GracefulException(LocalizableStrings.SpecifyManifests);
+            throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
         msbuildArgs.Add("-target:ComposeStore");

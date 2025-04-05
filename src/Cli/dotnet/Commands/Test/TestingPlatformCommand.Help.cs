@@ -4,10 +4,8 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.CommandLine.Help;
-using Microsoft.DotNet.Cli.Commands.Test;
-using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class TestingPlatformCommand
 {
@@ -20,7 +18,7 @@ internal partial class TestingPlatformCommand
         yield return (context) =>
         {
             WriteHelpOptions(context);
-            Console.WriteLine(LocalizableStrings.HelpWaitingForOptionsAndExtensions);
+            Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
             Run(context.ParseResult);
 
@@ -51,7 +49,7 @@ internal partial class TestingPlatformCommand
 
     private static void WriteUsageSection(HelpContext context)
     {
-        context.Output.WriteLine(LocalizableStrings.CmdHelpUsageTitle);
+        context.Output.WriteLine(CliCommandStrings.CmdHelpUsageTitle);
         context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
     }
 
@@ -73,17 +71,17 @@ internal partial class TestingPlatformCommand
 
         if (showOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpOptions);
         }
 
         if (showPlatformOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpPlatformOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpPlatformOptions);
         }
 
         if (showExtensionOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpExtensionOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpExtensionOptions);
         }
     }
 

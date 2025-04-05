@@ -3,16 +3,7 @@
 
 #nullable disable
 
-using System.Runtime.CompilerServices;
-using System.Text.Json;
-using FluentAssertions.Extensions;
-using ManifestReaderTests;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -101,6 +92,5 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         {
             return new(ManifestId, NewVersion, NewFeatureBand);
         }
-
     }
 }

@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                    CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                    string.Format(CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--local --tool-path"));
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
         [Fact]
@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
     }
 }

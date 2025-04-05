@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Build.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
@@ -12,33 +11,33 @@ internal static class BuildCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-build";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
-        Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.OutputOptionDescription,
-        HelpName = LocalizableStrings.OutputOptionName
+        Description = CliCommandStrings.BuildOutputOptionDescription,
+        HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
     public static readonly CliOption<bool> NoIncrementalOption = new("--no-incremental")
     {
-        Description = LocalizableStrings.NoIncrementalOptionDescription,
+        Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
     {
-        Description = LocalizableStrings.NoDependenciesOptionDescription,
+        Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:BuildProjectReferences=false");
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = CliCommandStrings.BuildCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
@@ -50,9 +49,9 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.BuildConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -63,13 +62,13 @@ internal static class BuildCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("build", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("build", DocsLink, CliCommandStrings.BuildAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.BuildRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

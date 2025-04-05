@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Package;
 
@@ -18,7 +17,7 @@ internal static class RemovePackageParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("package", LocalizableStrings.AppFullName);
+        var command = new CliCommand("package", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(PackageRemoveCommandParser.CmdPackageArgument);
         command.Options.Add(PackageRemoveCommandParser.InteractiveOption);

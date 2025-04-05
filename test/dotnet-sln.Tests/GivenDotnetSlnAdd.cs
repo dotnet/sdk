@@ -4,11 +4,10 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -69,7 +68,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute($"{solutionCommand} {commandName}".Trim().Split());
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Theory]
@@ -80,8 +79,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "add");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -100,7 +99,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, solutionName, "add", "p.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindSolutionOrDirectory, solutionName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -121,7 +120,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"InvalidSolution{solutionExtension}", "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -148,7 +147,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -168,7 +167,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
+            cmd.StdErr.Should().Be(CliStrings.SpecifyAtLeastOneProjectToAdd);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -187,7 +186,7 @@ Options:
                 .WithWorkingDirectory(solutionPath)
                 .Execute(solutionCommand, "add", "App.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -206,7 +205,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -371,7 +370,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(
-                    CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
+                    CliStrings.CouldNotFindAnyProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToAdd)));
 
             File.ReadAllText(slnFullPath)
@@ -400,7 +399,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(
-                    CommonLocalizableStrings.MoreThanOneProjectInDirectory,
+                    CliStrings.MoreThanOneProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToAdd)));
 
             File.ReadAllText(slnFullPath)
@@ -558,7 +557,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAddedToTheSolution, projectPath));
             cmd.StdErr.Should().BeEmpty();
         }
 
@@ -619,7 +618,7 @@ Options:
                     .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
             cmd.StdOut.Should().BeEmpty();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidProjectWithExceptionMessage, '*', '*'));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidProjectWithExceptionMessage, '*', '*'));
 
             solution = await serializer.OpenAsync(Path.Combine(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
             solution.SolutionProjects.Count().Should().Be(expectedNumberOfProjects);
@@ -692,7 +691,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
         }
 
         [Theory]
@@ -715,7 +714,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd, "idonotexist.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, "idonotexist.csproj"));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, "idonotexist.csproj"));
 
             File.ReadAllText(slnFullPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);
@@ -775,7 +774,7 @@ Options:
                 .Execute(solutionCommand, "App.sln", "add", projectToAdd);
             cmd.Should().Pass();
             cmd.StdErr.Should().BeEmpty();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
 
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Combine(projectDirectory, "App.sln"));
             SolutionModel solution = await serializer.OpenAsync(Path.Combine(projectDirectory, "App.sln"), CancellationToken.None);
@@ -806,7 +805,7 @@ Options:
             cmd.Should().Pass();
             cmd.StdErr.Should().Be(
                 string.Format(
-                    CommonLocalizableStrings.UnsupportedProjectType,
+                    CliStrings.UnsupportedProjectType,
                     Path.Combine(solutionDirectory, projectToAdd)));
             cmd.StdOut.Should().BeEmpty();
 
@@ -933,7 +932,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -956,7 +955,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -980,7 +979,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -1059,7 +1058,7 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", "--solution-folder", "blah", "--in-root", projectToAdd);
             cmd.Should().Fail();
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
-            cmd.StdErr.Should().Be(Tools.Sln.LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
+            cmd.StdErr.Should().Be(CliCommandStrings.SolutionFolderAndInRootMutuallyExclusive);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
 
             File.ReadAllText(solutionPath)
@@ -1227,8 +1226,8 @@ Options:
                 .Execute(solutionCommand, "add", arguments, "Lib", $"App{solutionExtension}", projectArg);
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
-                + CommonLocalizableStrings.DidYouMean + Environment.NewLine
+                string.Format(CliStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
+                + CliStrings.DidYouMean + Environment.NewLine
                 + $"  dotnet solution App{solutionExtension} add {arguments} Lib {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");

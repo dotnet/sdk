@@ -42,7 +42,7 @@ public static class ParseResultExtensions
             var unrecognizedTokenErrors = parseResult.Errors.Where(error =>
             {
                 // Can't really cache this access in a static or something because it implicitly depends on the environment.
-                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CommonLocalizableStrings.UnrecognizedCommandOrArgument);
+                var rawResourcePartsForThisLocale = DistinctFormatStringParts(CliStrings.UnrecognizedCommandOrArgument);
                 return ErrorContainsAllParts(error.Message, rawResourcePartsForThisLocale);
             });
             if (parseResult.CommandResult.Command.TreatUnmatchedTokensAsErrors ||
@@ -109,7 +109,7 @@ public static class ParseResultExtensions
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
-        Reporter.Error.WriteLine(CommonLocalizableStrings.RequiredCommandNotPassed.Red());
+        Reporter.Error.WriteLine(CliStrings.RequiredCommandNotPassed.Red());
         parseResult.ShowHelp();
         return 1;
     }
@@ -196,7 +196,7 @@ public static class ParseResultExtensions
             {
                 if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
                 {
-                    throw new GracefulException(Tools.Run.LocalizableStrings.OnlyOneProjectAllowed);
+                    throw new GracefulException(CliStrings.OnlyOneProjectAllowed);
                 }
                 return true;
             }

@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -23,7 +22,7 @@ internal class ToolInstallCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
@@ -38,7 +37,7 @@ internal class ToolInstallCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption));
+                        CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption));
             }
 
             return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();

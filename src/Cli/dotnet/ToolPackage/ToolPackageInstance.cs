@@ -90,7 +90,7 @@ internal class ToolPackageInstance : IToolPackage
             {
                 throw new ToolConfigurationException(
                     string.Format(
-                        CommonLocalizableStrings.MissingToolEntryPointFile,
+                        CliStrings.MissingToolEntryPointFile,
                         configuration.ToolAssemblyEntryPoint,
                         configuration.CommandName));
             }
@@ -105,7 +105,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
         }
@@ -131,7 +131,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
         }
@@ -148,7 +148,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolPackageException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToReadNuGetLockFile,
+                    CliStrings.FailedToReadNuGetLockFile,
                     Id,
                     ex.Message),
                 ex);
@@ -187,7 +187,7 @@ internal class ToolPackageInstance : IToolPackage
         if (dotnetToolSettings == null)
         {
             throw new ToolConfigurationException(
-                CommonLocalizableStrings.MissingToolSettingsFile);
+                CliStrings.MissingToolSettingsFile);
         }
 
         var toolConfigurationPath =

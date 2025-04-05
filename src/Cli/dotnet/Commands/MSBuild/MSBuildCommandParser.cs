@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Build.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
@@ -21,7 +20,7 @@ internal static class MSBuildCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName)
+        var command = new DocumentedCommand("msbuild", DocsLink, CliCommandStrings.BuildAppFullName)
         {
             Arguments
         };

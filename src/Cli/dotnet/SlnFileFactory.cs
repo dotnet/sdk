@@ -16,7 +16,7 @@ public static class SlnFileFactory
         // Throw error if slnFileOrDirectory is an invalid path
         if (string.IsNullOrWhiteSpace(slnFileOrDirectory) || slnFileOrDirectory.IndexOfAny(Path.GetInvalidPathChars()) != -1)
         {
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory);
+            throw new GracefulException(CliStrings.CouldNotFindSolutionOrDirectory);
         }
         if (File.Exists(slnFileOrDirectory))
         {
@@ -28,19 +28,19 @@ public static class SlnFileFactory
             if (files.Length == 0)
             {
                 throw new GracefulException(
-                    CommonLocalizableStrings.CouldNotFindSolutionIn,
+                    CliStrings.CouldNotFindSolutionIn,
                     slnFileOrDirectory);
             }
             if (files.Length > 1)
             {
                 throw new GracefulException(
-                    CommonLocalizableStrings.MoreThanOneSolutionInDirectory,
+                    CliStrings.MoreThanOneSolutionInDirectory,
                     slnFileOrDirectory);
             }
             return Path.GetFullPath(files.Single());
         }
         throw new GracefulException(
-            CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
+            CliStrings.CouldNotFindSolutionOrDirectory,
             slnFileOrDirectory);
     }
 
@@ -64,7 +64,7 @@ public static class SlnFileFactory
             return CreateFromFilteredSolutionFile(solutionPath);
         }
         ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
-                CommonLocalizableStrings.CouldNotFindSolutionOrDirectory,
+                CliStrings.CouldNotFindSolutionOrDirectory,
                 solutionPath);
 
         return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
@@ -85,7 +85,7 @@ public static class SlnFileFactory
         catch (Exception ex)
         {
             throw new GracefulException(
-                CommonLocalizableStrings.InvalidSolutionFormatString,
+                CliStrings.InvalidSolutionFormatString,
                 filteredSolutionPath, ex.Message);
         }
 
@@ -108,7 +108,7 @@ public static class SlnFileFactory
             .Select(path => path.Replace('\\', Path.DirectorySeparatorChar))
             .Select(path => Uri.UnescapeDataString(path))
             .Select(path => originalSolution.FindProject(path) ?? throw new GracefulException(
-                    CommonLocalizableStrings.ProjectNotFoundInTheSolution,
+                    CliStrings.ProjectNotFoundInTheSolution,
                     path,
                     originalSolutionPath));
 

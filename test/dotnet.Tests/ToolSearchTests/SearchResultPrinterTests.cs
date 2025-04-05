@@ -3,9 +3,9 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Search;
 
 namespace dotnet.Tests.ToolSearchTests
 {
@@ -99,7 +99,7 @@ namespace dotnet.Tests.ToolSearchTests
                 new List<SearchResultPackage>();
             _searchResultPrinter.Print(false, searchResultPackages);
             _reporter.Lines.Count.Should().Be(1);
-            _reporter.Lines.Should().Contain(LocalizableStrings.NoResult);
+            _reporter.Lines.Should().Contain(CliCommandStrings.NoResult);
         }
 
         [Fact]
@@ -109,7 +109,7 @@ namespace dotnet.Tests.ToolSearchTests
                 new List<SearchResultPackage>();
             _searchResultPrinter.Print(true, searchResultPackages);
             _reporter.Lines.Count.Should().Be(1);
-            _reporter.Lines.Should().Contain(LocalizableStrings.NoResult);
+            _reporter.Lines.Should().Contain(CliCommandStrings.NoResult);
         }
     }
 }

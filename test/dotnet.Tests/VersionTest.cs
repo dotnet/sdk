@@ -6,7 +6,6 @@
 using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 
-
 namespace Microsoft.DotNet.Tests
 {
     public class GivenDotnetSdk : SdkTest

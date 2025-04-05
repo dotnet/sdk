@@ -9,7 +9,7 @@ internal class MSBuildServer : IBuildServer
 {
     public int ProcessId => 0; // Not yet used
 
-    public string Name => LocalizableStrings.MSBuildServer;
+    public string Name => CliStrings.MSBuildServer;
 
     public void Shutdown()
     {

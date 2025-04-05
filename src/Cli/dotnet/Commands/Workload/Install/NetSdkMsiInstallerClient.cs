@@ -3,16 +3,13 @@
 
 using System.Globalization;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -20,7 +17,7 @@ using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 [SupportedOSPlatform("windows")]
 internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
@@ -363,7 +360,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         //  Unwrap AggregateException caused by switch from async to sync
         catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
         {
-            throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
         }
         VerifyPackage(msi);
 
@@ -437,7 +434,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, workload set record: {record.ProductCode}.");
                     string logFile = GetMsiLogName(record.ProductCode, InstallAction.Uninstall);
-                    uint error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
+                    uint error = ExecuteWithProgress(String.Format(CliCommandStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
                     ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
                 }
                 else
@@ -463,7 +460,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, manifest record: {record.ProductCode}.");
                     string logFile = GetMsiLogName(record.ProductCode, InstallAction.Uninstall);
-                    uint error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
+                    uint error = ExecuteWithProgress(String.Format(CliCommandStrings.MsiProgressUninstall, msiNuGetPackageId), () => UninstallMsi(record.ProductCode, logFile));
                     ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
                 }
                 else
@@ -497,7 +494,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 {
                     Log?.LogMessage($"ProductCode mismatch! Cached package: {msi.ProductCode}, pack record: {record.ProductCode}.");
                     string logFile = GetMsiLogName(record, InstallAction.Uninstall);
-                    uint error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressUninstall, id), () => UninstallMsi(record.ProductCode, logFile));
+                    uint error = ExecuteWithProgress(string.Format(CliCommandStrings.MsiProgressUninstall, id), () => UninstallMsi(record.ProductCode, logFile));
                     ExitOnError(error, $"Failed to uninstall {msi.MsiPath}.");
                 }
                 else
@@ -771,7 +768,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                 string packageDataPath = Path.Combine(extractionPath, "data");
                 if (!Cache.TryGetMsiPathFromPackageData(packageDataPath, out string msiPath, out _))
                 {
-                    throw new FileNotFoundException(string.Format(LocalizableStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
+                    throw new FileNotFoundException(string.Format(CliCommandStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
                 }
                 string msiExtractionPath = Path.Combine(extractionPath, "msi");
 
@@ -789,7 +786,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
                     if (result != Error.SUCCESS)
                     {
                         Log?.LogMessage($"ExtractManifestAsync: Admin install failed: {result}");
-                        throw new GracefulException(string.Format(LocalizableStrings.FailedToExtractMsi, msiPath));
+                        throw new GracefulException(string.Format(CliCommandStrings.FailedToExtractMsi, msiPath));
                     }
                 }
 
@@ -804,7 +801,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
                 if (manifestFolder == null)
                 {
-                    throw new GracefulException(string.Format(LocalizableStrings.ExpectedSingleManifest, nupkgPath));
+                    throw new GracefulException(string.Format(CliCommandStrings.ExpectedSingleManifest, nupkgPath));
                 }
 
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestFolder, targetPath));
@@ -948,7 +945,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
         if (!File.Exists(packagePath))
         {
-            throw new FileNotFoundException(string.Format(LocalizableStrings.CacheMissingPackage, packageId, packageVersion, offlineCache));
+            throw new FileNotFoundException(string.Format(CliCommandStrings.CacheMissingPackage, packageId, packageVersion, offlineCache));
         }
 
         // Extract the contents to a random folder to avoid potential file injection/hijacking
@@ -1028,17 +1025,17 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         switch (action)
         {
             case InstallAction.Install:
-                error = ExecuteWithProgress(String.Format(LocalizableStrings.MsiProgressInstall, name), () => InstallMsi(msi.MsiPath, logFile));
+                error = ExecuteWithProgress(String.Format(CliCommandStrings.MsiProgressInstall, name), () => InstallMsi(msi.MsiPath, logFile));
                 ExitOnError(error, $"Failed to install {msi.Payload}.");
                 break;
 
             case InstallAction.Repair:
-                error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressRepair, name), () => RepairMsi(msi.ProductCode, logFile));
+                error = ExecuteWithProgress(string.Format(CliCommandStrings.MsiProgressRepair, name), () => RepairMsi(msi.ProductCode, logFile));
                 ExitOnError(error, $"Failed to repair {msi.Payload}.");
                 break;
 
             case InstallAction.Uninstall:
-                error = ExecuteWithProgress(string.Format(LocalizableStrings.MsiProgressUninstall, name), () => UninstallMsi(msi.ProductCode, logFile));
+                error = ExecuteWithProgress(string.Format(CliCommandStrings.MsiProgressUninstall, name), () => UninstallMsi(msi.ProductCode, logFile));
                 ExitOnError(error, $"Failed to remove {msi.Payload}.");
                 break;
 
@@ -1128,7 +1125,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         {
             DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
 
-            nugetPackageDownloader = new NuGetPackageDownloader(tempPackagesDir,
+            nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                 filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
                 new NullLogger(), restoreActionConfig: restoreActionConfig);
         }
@@ -1144,7 +1141,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         if (RebootPending)
         {
-            ReportOnce(AnsiExtensions.Yellow(LocalizableStrings.PendingReboot));
+            ReportOnce(AnsiExtensions.Yellow(CliCommandStrings.PendingReboot));
         }
     }
 
@@ -1176,7 +1173,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     {
         UpdateInstallMode(sdkFeatureBand, newMode);
         string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
-        Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
+        Reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 
     // This method should never be called for this kind of installer. It is challenging to get this information from an MSI

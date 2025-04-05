@@ -24,7 +24,7 @@ internal class RemoveProjectToProjectReferenceCommand : CommandBase
 
         if (_arguments.Count == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneReferenceToRemove);
+            throw new GracefulException(CliStrings.SpecifyAtLeastOneReferenceToRemove);
         }
     }
 
