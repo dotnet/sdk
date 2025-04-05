@@ -6,7 +6,6 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.Check.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 

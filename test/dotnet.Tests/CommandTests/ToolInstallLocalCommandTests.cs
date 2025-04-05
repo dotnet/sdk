@@ -15,7 +15,6 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -148,7 +147,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolInstallLocalCommand.Execute();
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(LocalizableStrings.ToolInstallNoManifestGuide);
+                .Contain(Cli.Commands.LocalizableStrings.ToolInstallNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
@@ -247,7 +246,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines[0].Should()
                 .Contain(
-                    string.Format(LocalizableStrings.LocalToolInstallationSucceeded,
+                    string.Format(Cli.Commands.LocalizableStrings.LocalToolInstallationSucceeded,
                         _toolCommandNameA.ToString(),
                         _packageIdA,
                         _packageVersionA.ToNormalizedString(),
@@ -271,7 +270,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => installLocalCommand.Execute();
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(LocalizableStrings.ToolInstallationRestoreFailed);
+                .Contain(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
 
             _fileSystem.File.ReadAllText(_manifestFilePath).Should()
                 .Be(_jsonContent, "Manifest file should not be changed");

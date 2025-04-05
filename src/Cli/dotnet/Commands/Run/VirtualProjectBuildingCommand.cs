@@ -16,11 +16,9 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.

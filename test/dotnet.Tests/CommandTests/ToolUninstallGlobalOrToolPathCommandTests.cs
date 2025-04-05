@@ -13,8 +13,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -52,7 +50,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And
                 .Message
                 .Should()
-                .Be(string.Format(LocalizableStrings.ToolUninstallToolNotInstalled, packageId));
+                .Be(string.Format(Cli.Commands.LocalizableStrings.ToolUninstallToolNotInstalled, packageId));
         }
 
         [Fact]
@@ -65,7 +63,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.ToolInstallInstallationSucceeded,
+                    Cli.Commands.LocalizableStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -89,7 +87,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Single()
                 .Should()
                 .Contain(string.Format(
-                    LocalizableStrings.ToolUninstallUninstallSucceeded,
+                    Cli.Commands.LocalizableStrings.ToolUninstallUninstallSucceeded,
                     PackageId,
                     PackageVersion));
 
@@ -107,7 +105,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.ToolInstallInstallationSucceeded,
+                    Cli.Commands.LocalizableStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -159,7 +157,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Single()
                 .Should()
                 .Contain(string.Format(
-                    LocalizableStrings.ToolUninstallUninstallSucceeded,
+                    Cli.Commands.LocalizableStrings.ToolUninstallUninstallSucceeded,
                     PackageId,
                     PackageVersion));
 
@@ -177,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.ToolInstallInstallationSucceeded,
+                    Cli.Commands.LocalizableStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -223,7 +221,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And
                 .Message
                 .Should()
-                .Be(string.Format(LocalizableStrings.ToolUninstallInvalidToolPathOption, toolPath));
+                .Be(string.Format(Cli.Commands.LocalizableStrings.ToolUninstallInvalidToolPathOption, toolPath));
         }
 
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)

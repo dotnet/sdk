@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 

@@ -3,9 +3,9 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Search;
 
 namespace dotnet.Tests.ToolSearchTests
 {

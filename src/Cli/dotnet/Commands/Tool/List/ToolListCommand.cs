@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 

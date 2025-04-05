@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 

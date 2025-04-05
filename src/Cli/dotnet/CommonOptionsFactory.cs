@@ -15,7 +15,7 @@ internal static class CommonOptionsFactory
     /// </summary>
     public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
     {
-        Description = Tools.Help.LocalizableStrings.SDKDiagnosticsCommandDefinition,
+        Description = CommonLocalizableStrings.SDKDiagnosticsCommandDefinition,
         Recursive = recursive,
         Arity = ArgumentArity.Zero
     };

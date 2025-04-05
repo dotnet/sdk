@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 

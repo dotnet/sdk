@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 

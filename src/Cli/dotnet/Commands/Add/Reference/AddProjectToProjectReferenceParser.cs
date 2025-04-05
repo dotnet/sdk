@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Add.Reference;
 

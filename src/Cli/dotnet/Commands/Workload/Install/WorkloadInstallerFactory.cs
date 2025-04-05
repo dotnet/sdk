@@ -4,10 +4,7 @@
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 

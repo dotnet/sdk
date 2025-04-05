@@ -4,11 +4,9 @@
 #nullable enable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 

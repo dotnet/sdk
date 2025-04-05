@@ -6,7 +6,6 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 

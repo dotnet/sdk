@@ -4,7 +4,6 @@
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.Check.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 

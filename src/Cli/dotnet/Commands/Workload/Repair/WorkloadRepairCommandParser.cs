@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 

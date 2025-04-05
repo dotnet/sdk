@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Package;
 

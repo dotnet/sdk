@@ -196,7 +196,7 @@ public static class ParseResultExtensions
             {
                 if (projVals.Count() != 1 || parseResult.HasOption(RunCommandParser.ProjectOption))
                 {
-                    throw new GracefulException(Tools.Run.LocalizableStrings.OnlyOneProjectAllowed);
+                    throw new GracefulException(CommonLocalizableStrings.OnlyOneProjectAllowed);
                 }
                 return true;
             }

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -21,7 +20,7 @@ internal static class ToolRunCommandParser
 
     public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription,
+        Description = LocalizableStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 

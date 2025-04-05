@@ -6,12 +6,8 @@ using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Cli.Commands.Test;
-using Microsoft.DotNet.Cli.Commands.Test.Terminal;
-using FlatException = Microsoft.DotNet.Cli.Commands.Test.Terminal.FlatException;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Terminal test reporter that outputs test progress and is capable of writing ANSI or non-ANSI output via the given terminal.

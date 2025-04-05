@@ -3,8 +3,8 @@
 
 using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Moq;

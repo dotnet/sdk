@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 

@@ -8,7 +8,6 @@ using System.Runtime.CompilerServices;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -40,7 +39,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(string.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotRecognized, "fake"));
+                .HaveStdErrContaining(string.Format(Commands.LocalizableStrings.WorkloadNotRecognized, "fake"));
         }
 
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/26624")]
@@ -54,7 +53,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(string.Format(Workloads.Workload.Install.LocalizableStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file"));
+                .HaveStdErrContaining(string.Format(Commands.LocalizableStrings.CannotCombineSkipManifestAndRollback, "skip-manifest-update", "from-rollback-file"));
         }
 
 
@@ -340,7 +339,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 nugetPackageDownloader: nugetDownloader, workloadManifestUpdater: manifestUpdater);
 
             var exceptionThrown = Assert.Throws<GracefulException>(() => command.Execute());
-            exceptionThrown.Message.Should().Be(String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadInstallationFailed, String.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId)));
+            exceptionThrown.Message.Should().Be(String.Format(Commands.LocalizableStrings.WorkloadInstallationFailed, String.Format(Commands.LocalizableStrings.WorkloadNotSupportedOnPlatform, mockWorkloadId)));
         }
 
         [Theory]
@@ -578,7 +577,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .Should().Be(0);
 
             // Install command warns
-            string.Join(" ", _reporter.Lines).Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.WorkloadAlreadyInstalled, workloadId));
+            string.Join(" ", _reporter.Lines).Should().Contain(string.Format(Commands.LocalizableStrings.WorkloadAlreadyInstalled, workloadId));
 
             // Both workloads are installed
             var installRecordPath = Path.Combine(dotnetRoot, "metadata", "workloads", sdkFeatureVersion, "InstalledWorkloads");
@@ -594,9 +593,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .WithEnvironmentVariable("PATH", "fake")
                 .Execute("workload", "install", "--verbosity:quiet", "wasm-tools")
                 .Should()
-                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests)
+                .NotHaveStdOutContaining(Commands.LocalizableStrings.CheckForUpdatedWorkloadManifests)
                 .And
-                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.AdManifestUpdated);
+                .NotHaveStdOutContaining(Commands.LocalizableStrings.AdManifestUpdated);
         }
 
 
@@ -611,9 +610,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 .WithEnvironmentVariable("PATH", "fake")
                 .Execute("workload", "install", verbosityFlag, "wasm-tools")
                 .Should()
-                .HaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests)
+                .HaveStdOutContaining(Commands.LocalizableStrings.CheckForUpdatedWorkloadManifests)
                 .And
-                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.AdManifestUpdated);
+                .NotHaveStdOutContaining(Commands.LocalizableStrings.AdManifestUpdated);
         }
 
         [Theory(Skip = "https://github.com/dotnet/sdk/issues/25175")]
@@ -635,8 +634,8 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             installManager.Execute().Should().Be(0);
 
-            string.Join(" ", _reporter.Lines).Should().Contain(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests);
-            string.Join(" ", _reporter.Lines).Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.CheckForUpdatedWorkloadManifests, "mock-manifest"));
+            string.Join(" ", _reporter.Lines).Should().Contain(Commands.LocalizableStrings.CheckForUpdatedWorkloadManifests);
+            string.Join(" ", _reporter.Lines).Should().Contain(string.Format(Commands.LocalizableStrings.CheckForUpdatedWorkloadManifests, "mock-manifest"));
         }
 
         private string AppendForUserLocal(string identifier, bool userLocal)

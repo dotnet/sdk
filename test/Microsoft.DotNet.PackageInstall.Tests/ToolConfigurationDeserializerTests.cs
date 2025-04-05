@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {

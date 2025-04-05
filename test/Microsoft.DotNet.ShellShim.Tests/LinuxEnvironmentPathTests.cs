@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;

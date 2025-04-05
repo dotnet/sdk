@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 

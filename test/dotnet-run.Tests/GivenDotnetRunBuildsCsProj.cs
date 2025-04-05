@@ -5,7 +5,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
@@ -165,7 +164,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute($"--project", projectFile)
                 .Should().Pass()
                          .And.HaveStdOutContaining("Hello World!")
-                         .And.NotHaveStdOutContaining(LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
+                         .And.NotHaveStdOutContaining(Commands.LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
         [Fact]
@@ -182,7 +181,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--project", testProjectDirectory)
                 .Should().Pass()
                          .And.HaveStdOutContaining("Hello World!")
-                         .And.NotHaveStdOutContaining(LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
+                         .And.NotHaveStdOutContaining(Commands.LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
         [Fact]
@@ -199,7 +198,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute($"-p", projectFile)
                 .Should().Pass()
                          .And.HaveStdOutContaining("Hello World!")
-                         .And.HaveStdOutContaining(LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
+                         .And.HaveStdOutContaining(Commands.LocalizableStrings.RunCommandProjectAbbreviationDeprecated);
         }
 
         [Theory]
@@ -212,7 +211,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(LocalizableStrings.OnlyOneProjectAllowed);
+                .HaveStdErrContaining(CommonLocalizableStrings.OnlyOneProjectAllowed);
         }
 
         [Fact]
@@ -375,7 +374,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
+            string[] expectedErrorWords = Commands.LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
                 .Replace("\'{0}\'", "")
                 .Split(" ")
                 .Where(word => !string.IsNullOrEmpty(word))
@@ -424,7 +423,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.NotHaveStdOutContaining(string.Format(Commands.LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
@@ -524,7 +523,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdOutContaining(string.Format(Commands.LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
@@ -582,7 +581,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--launch-profile", "Third")
                 .Should().Pass()
                          .And.HaveStdOutContaining("(NO MESSAGE)")
-                         .And.HaveStdErrContaining(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
+                         .And.HaveStdErrContaining(string.Format(Commands.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
         }
 
         [Fact]
@@ -599,7 +598,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--launch-profile", "IIS Express")
                 .Should().Pass()
                          .And.HaveStdOutContaining("(NO MESSAGE)")
-                         .And.HaveStdErrContaining(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "IIS Express", "").Trim());
+                         .And.HaveStdErrContaining(string.Format(Commands.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "IIS Express", "").Trim());
         }
 
         [Fact]
@@ -655,7 +654,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LocalizableStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(Commands.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, Commands.LocalizableStrings.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]
@@ -673,7 +672,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
 
             cmd.Should().Pass()
                 .And.HaveStdOutContaining("(NO MESSAGE)")
-                .And.HaveStdErrContaining(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, LocalizableStrings.DefaultLaunchProfileDisplayName, "").Trim());
+                .And.HaveStdErrContaining(string.Format(Commands.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, Commands.LocalizableStrings.DefaultLaunchProfileDisplayName, "").Trim());
         }
 
         [Fact]

@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.Tests.ParserTests;
 

@@ -5,7 +5,6 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.Cli.Publish.Tests
 {

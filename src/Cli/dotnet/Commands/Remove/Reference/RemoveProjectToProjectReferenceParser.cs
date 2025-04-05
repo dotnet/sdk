@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Reference;
 

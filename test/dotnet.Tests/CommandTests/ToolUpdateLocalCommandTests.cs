@@ -16,7 +16,6 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -306,7 +305,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        Cli.Commands.LocalizableStrings.UpdateLocalToolSucceeded,
                         _packageIdA,
                         _packageOriginalVersionA.ToNormalizedString(),
                         _packageNewVersionA.ToNormalizedString(),
@@ -359,7 +358,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        Cli.Commands.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                         _packageIdA,
                         _packageOriginalVersionA.ToNormalizedString(),
                         _manifestFilePath));
@@ -374,7 +373,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
             Action a = () => _defaultToolUpdateLocalCommand.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                LocalizableStrings.UpdateLocalToolToLowerVersion,
+                Cli.Commands.LocalizableStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
                 _packageOriginalVersionA.ToNormalizedString(),
                 _manifestFilePath));

@@ -16,7 +16,6 @@ using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
@@ -259,7 +258,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 [
-                    string.Format(Tools.Tool.Update.LocalizableStrings.UpdateToLowerVersion,
+                    string.Format(LocalizableStrings.UpdateToLowerVersion,
                         newInstalledPackage.Version.ToNormalizedString(),
                         oldPackageNullable.Version.ToNormalizedString())
                 ],
@@ -289,7 +288,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(Tools.Tool.Update.LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(LocalizableStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -313,7 +312,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(Tools.Tool.Update.LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(LocalizableStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -349,7 +348,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 messages:
                 [
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.ToolUpdateToolHasMultipleVersionsInstalled,
+                        LocalizableStrings.ToolUpdateToolHasMultipleVersionsInstalled,
                         packageId),
                 ],
                 isUserError: false);
@@ -375,7 +374,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.ToolUpdateUpdateSucceeded,
+                        LocalizableStrings.ToolUpdateUpdateSucceeded,
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -386,7 +385,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                     string.Format(
                         
                         newInstalledPackage.Version.IsPrerelease ?
-                        Tools.Tool.Update.LocalizableStrings.UpdateSucceededPreVersionNoChange : Tools.Tool.Update.LocalizableStrings.UpdateSucceededStableVersionNoChange,
+                        LocalizableStrings.UpdateSucceededPreVersionNoChange : LocalizableStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
             }
         }

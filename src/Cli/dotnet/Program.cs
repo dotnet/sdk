@@ -362,7 +362,7 @@ public class Program
             catch (Exception)
             {
                 // If the workload check fails for any reason, we want to eat the failure and continue running the command.
-                reporter.WriteLine(Workloads.Workload.LocalizableStrings.WorkloadIntegrityCheckError.Yellow());
+                reporter.WriteLine(CommonLocalizableStrings.WorkloadIntegrityCheckError.Yellow());
             }
         }
     }

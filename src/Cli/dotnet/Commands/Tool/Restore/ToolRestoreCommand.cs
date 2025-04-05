@@ -11,7 +11,6 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 

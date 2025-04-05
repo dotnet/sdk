@@ -5,7 +5,6 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -47,7 +46,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         if (msBuildExitCode != ExitCode.Success)
         {
-            _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            _output.WriteMessage(string.Format(LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
@@ -91,7 +90,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
             _output.WriteMessage(
                 string.Format(
-                    Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                    LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                 new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
 

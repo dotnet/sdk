@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using System.Runtime.InteropServices;
 using Microsoft.DotNet.Configurer;
 using LocalizableStrings = Microsoft.DotNet.Cli.Utils.LocalizableStrings;
 

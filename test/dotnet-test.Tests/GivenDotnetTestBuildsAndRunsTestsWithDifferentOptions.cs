@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
@@ -104,7 +105,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.ProjectOption.Name, invalidProjectPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
+            result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, invalidProjectPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -123,7 +124,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.SolutionOption.Name, invalidSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
+            result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, invalidSolutionPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.DirectoryOption.Name, testDirectoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -167,7 +168,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.SolutionOption.Name, testSolutionPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdErr.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+            result.StdErr.Should().Contain(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -187,7 +188,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullProjectPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{testProjectPath}";
-            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
+            result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdNonExistentFileErrorDescription, fullProjectPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -207,7 +208,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             string fullSolutionPath = $"{testInstance.TestRoot}{Path.DirectorySeparatorChar}{solutionPath}";
-            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
+            result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdNonExistentFileErrorDescription, fullSolutionPath));
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
@@ -226,7 +227,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute(TestingPlatformOptions.DirectoryOption.Name, directoryPath,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
-            result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
+            result.StdOut.Should().Contain(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directoryPath));
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 

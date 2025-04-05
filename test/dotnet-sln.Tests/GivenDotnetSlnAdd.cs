@@ -4,11 +4,9 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -1059,7 +1057,7 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", "--solution-folder", "blah", "--in-root", projectToAdd);
             cmd.Should().Fail();
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
-            cmd.StdErr.Should().Be(Tools.Sln.LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
+            cmd.StdErr.Should().Be(Commands.LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
 
             File.ReadAllText(solutionPath)

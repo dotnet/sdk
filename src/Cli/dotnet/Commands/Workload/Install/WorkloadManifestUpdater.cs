@@ -2,22 +2,18 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 

@@ -11,12 +11,9 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
-using Strings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
@@ -63,14 +60,14 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 var workloadHistoryRecords = _workloadInstaller.GetWorkloadHistoryRecords(_sdkFeatureBand.ToString()).OrderBy(r => r.TimeStarted).ToList();
                 if (workloadHistoryRecords.Count == 0)
                 {
-                    throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.NoWorkloadHistoryRecords, isUserError: true);
+                    throw new GracefulException(LocalizableStrings.NoWorkloadHistoryRecords, isUserError: true);
                 }
 
                 var displayRecords = WorkloadHistoryDisplay.ProcessWorkloadHistoryRecords(workloadHistoryRecords, out _);
 
                 if (_fromHistorySpecified < 1 || _fromHistorySpecified > displayRecords.Count)
                 {
-                    throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.WorkloadHistoryRecordInvalidIdValue, isUserError: true);
+                    throw new GracefulException(LocalizableStrings.WorkloadHistoryRecordInvalidIdValue, isUserError: true);
                 }
 
                 _workloadHistoryRecord = displayRecords[_fromHistorySpecified - 1].HistoryState;
@@ -116,7 +113,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
             }
             else
             {
-                throw new GracefulException(Strings.SdkVersionOptionNotSupported);
+                throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
             }
         }
 
@@ -139,27 +136,27 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 
         if (SpecifiedWorkloadSetVersionInGlobalJson && (SpecifiedWorkloadSetVersionOnCommandLine || UseRollback || FromHistory))
         {
-            throw new GracefulException(string.Format(Strings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, _globalJsonPath), isUserError: true);
+            throw new GracefulException(string.Format(LocalizableStrings.CannotSpecifyVersionOnCommandLineAndInGlobalJson, _globalJsonPath), isUserError: true);
         }
         else if (SpecifiedWorkloadSetVersionOnCommandLine && UseRollback)
         {
-            throw new GracefulException(string.Format(Workloads.Workload.Update.LocalizableStrings.CannotCombineOptions,
+            throw new GracefulException(string.Format(LocalizableStrings.CannotCombineOptions,
                 InstallingWorkloadCommandParser.FromRollbackFileOption.Name,
                 InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name), isUserError: true);
         }
         else if (SpecifiedWorkloadSetVersionOnCommandLine && FromHistory)
         {
-            throw new GracefulException(string.Format(Workloads.Workload.Update.LocalizableStrings.CannotCombineOptions,
+            throw new GracefulException(string.Format(LocalizableStrings.CannotCombineOptions,
                 InstallingWorkloadCommandParser.WorkloadSetVersionOption.Name,
                 WorkloadUpdateCommandParser.FromHistoryOption.Name), isUserError: true);
         }
         else if (_shouldUseWorkloadSets == true && (UseRollback || FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is null))
         {
-            throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
+            throw new GracefulException(LocalizableStrings.SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion, isUserError: true);
         }
         else if (_shouldUseWorkloadSets == false && (SpecifiedWorkloadSetVersionInGlobalJson || SpecifiedWorkloadSetVersionOnCommandLine || FromHistory && _WorkloadHistoryRecord.WorkloadSetVersion is not null))
         {
-            throw new GracefulException(Workloads.Workload.Update.LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
+            throw new GracefulException(LocalizableStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
@@ -194,7 +191,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
         else if ((UseRollback || FromHistory) && updateToLatestWorkloadSet)
         {
             // Rollback files are only for loose manifests. Update the mode to be loose manifests.
-            Reporter.WriteLine(Workloads.Workload.Update.LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
+            Reporter.WriteLine(LocalizableStrings.UpdateFromRollbackSwitchesModeToLooseManifests);
             _workloadInstaller.UpdateInstallMode(_sdkFeatureBand, false);
             updateToLatestWorkloadSet = false;
         }
@@ -234,7 +231,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 }
                 else if (!versions.Any())
                 {
-                    Reporter.WriteLine(Workloads.Workload.Update.LocalizableStrings.NoWorkloadUpdateFound);
+                    Reporter.WriteLine(LocalizableStrings.NoWorkloadUpdateFound);
                     return;
                 }
                 else
@@ -271,7 +268,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 
         if (updateToLatestWorkloadSet && resolvedWorkloadSetVersion == null)
         {
-            Reporter.WriteLine(Workloads.Workload.Update.LocalizableStrings.NoWorkloadUpdateFound);
+            Reporter.WriteLine(LocalizableStrings.NoWorkloadUpdateFound);
             return;
         }
 
@@ -349,7 +346,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 
     private IEnumerable<ManifestVersionUpdate> InstallWorkloadSet(ITransactionContext context, string workloadSetVersion)
     {
-        Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, workloadSetVersion));
+        Reporter.WriteLine(string.Format(LocalizableStrings.NewWorkloadSet, workloadSetVersion));
         var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
 
         return workloadSet is null ? [] : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
@@ -384,7 +381,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
 
                 if (!manifestDownloads.Any())
                 {
-                    reporter.WriteLine(Strings.SkippingManifestUpdate);
+                    reporter.WriteLine(LocalizableStrings.SkippingManifestUpdate);
                 }
 
                 foreach (var download in manifestDownloads)
@@ -415,7 +412,7 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase
                 DirectoryPath downloadFolderDirectoryPath = new(downloadFolder);
                 foreach (var packDownload in packDownloads)
                 {
-                    reporter.WriteLine(string.Format(Strings.DownloadingPackToCacheMessage, packDownload.NuGetPackageId, packDownload.NuGetPackageVersion, downloadFolder));
+                    reporter.WriteLine(string.Format(LocalizableStrings.DownloadingPackToCacheMessage, packDownload.NuGetPackageId, packDownload.NuGetPackageVersion, downloadFolder));
 
                     await packageDownloader.DownloadPackageAsync(new PackageId(packDownload.NuGetPackageId), new NuGetVersion(packDownload.NuGetPackageVersion),
                         _packageSourceLocation, downloadFolder: downloadFolderDirectoryPath);
@@ -470,59 +467,59 @@ internal static class InstallingWorkloadCommandParser
 {
     public static readonly CliOption<IEnumerable<string>> WorkloadSetVersionOption = new("--version")
     {
-        Description = Strings.WorkloadSetVersionOptionDescription,
+        Description = LocalizableStrings.WorkloadSetVersionOptionDescription,
         AllowMultipleArgumentsPerToken = true
     };
 
     public static readonly CliOption<bool> PrintDownloadLinkOnlyOption = new("--print-download-link-only")
     {
-        Description = Strings.PrintDownloadLinkOnlyDescription,
+        Description = LocalizableStrings.PrintDownloadLinkOnlyDescription,
         Hidden = true
     };
 
     public static readonly CliOption<string> FromCacheOption = new("--from-cache")
     {
-        Description = Strings.FromCacheOptionDescription,
-        HelpName = Strings.FromCacheOptionArgumentName,
+        Description = LocalizableStrings.FromCacheOptionDescription,
+        HelpName = LocalizableStrings.FromCacheOptionArgumentName,
         Hidden = true
     };
 
     public static readonly CliOption<bool> IncludePreviewOption =
     new("--include-previews")
     {
-        Description = Strings.IncludePreviewOptionDescription
+        Description = LocalizableStrings.IncludePreviewOptionDescription
     };
 
     public static readonly CliOption<string> DownloadToCacheOption = new("--download-to-cache")
     {
-        Description = Strings.DownloadToCacheOptionDescription,
-        HelpName = Strings.DownloadToCacheOptionArgumentName,
+        Description = LocalizableStrings.DownloadToCacheOptionDescription,
+        HelpName = LocalizableStrings.DownloadToCacheOptionArgumentName,
         Hidden = true
     };
 
     public static readonly CliOption<string> VersionOption = new("--sdk-version")
     {
-        Description = Strings.WorkloadInstallVersionOptionDescription,
-        HelpName = Strings.WorkloadInstallVersionOptionName,
+        Description = LocalizableStrings.WorkloadInstallVersionOptionDescription,
+        HelpName = LocalizableStrings.WorkloadInstallVersionOptionName,
         Hidden = true
     };
 
     public static readonly CliOption<string> FromRollbackFileOption = new("--from-rollback-file")
     {
-        Description = Workloads.Workload.Update.LocalizableStrings.FromRollbackDefinitionOptionDescription,
+        Description = LocalizableStrings.FromRollbackDefinitionOptionDescription,
         Hidden = true
     };
 
     public static readonly CliOption<string> ConfigOption = new("--configfile")
     {
-        Description = Strings.WorkloadInstallConfigFileOptionDescription,
-        HelpName = Strings.WorkloadInstallConfigFileOptionName
+        Description = LocalizableStrings.WorkloadInstallConfigFileOptionDescription,
+        HelpName = LocalizableStrings.WorkloadInstallConfigFileOptionName
     };
 
     public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source", "-s")
     {
-        Description = Strings.WorkloadInstallSourceOptionDescription,
-        HelpName = Strings.WorkloadInstallSourceOptionName
+        Description = LocalizableStrings.WorkloadInstallSourceOptionDescription,
+        HelpName = LocalizableStrings.WorkloadInstallSourceOptionName
     }.AllowSingleArgPerToken();
 
     internal static void AddWorkloadInstallCommandOptions(CliCommand command)

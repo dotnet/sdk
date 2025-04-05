@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 

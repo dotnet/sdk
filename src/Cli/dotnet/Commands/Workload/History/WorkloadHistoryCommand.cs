@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.History.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 

@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;

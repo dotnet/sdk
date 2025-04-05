@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 

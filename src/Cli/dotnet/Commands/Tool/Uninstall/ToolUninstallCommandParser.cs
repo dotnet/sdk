@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 

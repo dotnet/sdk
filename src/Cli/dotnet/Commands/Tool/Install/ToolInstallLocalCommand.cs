@@ -11,7 +11,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -125,7 +124,7 @@ internal class ToolInstallLocalCommand : CommandBase
             throw new GracefulException(
                 [
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
+                        LocalizableStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
@@ -136,7 +135,7 @@ internal class ToolInstallLocalCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    Tools.Tool.Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                    LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
@@ -150,7 +149,7 @@ internal class ToolInstallLocalCommand : CommandBase
                 [toolDownloadedPackage.Command.Name]);
             _reporter.WriteLine(
                 string.Format(
-                    Tools.Tool.Update.LocalizableStrings.UpdateLocalToolSucceeded,
+                    LocalizableStrings.UpdateLocalToolSucceeded,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),

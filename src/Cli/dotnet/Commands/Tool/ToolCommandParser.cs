@@ -10,7 +10,6 @@ using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
 

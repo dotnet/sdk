@@ -4,15 +4,13 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
-using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
@@ -89,7 +87,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
                     Reporter.WriteLine(string.Format(
                         versionInfo.IsInstalled ?
                             LocalizableStrings.WorkloadSetFromGlobalJsonInstalled :
-                            InformationStrings.WorkloadSetFromGlobalJsonNotInstalled,
+                            LocalizableStrings.WorkloadSetFromGlobalJsonNotInstalled,
                         versionInfo.Version,
                         versionInfo.GlobalJsonPath));
                 }
@@ -106,15 +104,15 @@ internal class WorkloadListCommand : WorkloadCommandBase
                 var manifestInfoDict = _workloadListHelper.WorkloadResolver.GetInstalledManifests().ToDictionary(info => info.Id, StringComparer.OrdinalIgnoreCase);
                 InstalledWorkloadsCollection installedWorkloads = _workloadListHelper.AddInstalledVsWorkloads(installedList);
                 PrintableTable<KeyValuePair<string, string>> table = new();
-                table.AddColumn(InformationStrings.WorkloadIdColumn, workload => workload.Key);
-                table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, workload =>
+                table.AddColumn(LocalizableStrings.WorkloadIdColumn, workload => workload.Key);
+                table.AddColumn(LocalizableStrings.WorkloadManifestVersionColumn, workload =>
                 {
                     var m = _workloadListHelper.WorkloadResolver.GetManifestFromWorkload(new WorkloadId(workload.Key));
                     var manifestInfo = manifestInfoDict[m.Id];
                     return m.Version + "/" + manifestInfo.ManifestFeatureBand;
                 });
 
-                table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
+                table.AddColumn(LocalizableStrings.WorkloadSourceColumn, workload => workload.Value);
 
                 table.PrintRows(installedWorkloads.AsEnumerable().OrderBy(workload => workload.Key), l => Reporter.WriteLine(l));
             }

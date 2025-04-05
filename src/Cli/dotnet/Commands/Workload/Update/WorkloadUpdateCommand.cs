@@ -11,7 +11,6 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
@@ -39,7 +38,6 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
               tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
 
     {
-        
         _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
         _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
         _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);

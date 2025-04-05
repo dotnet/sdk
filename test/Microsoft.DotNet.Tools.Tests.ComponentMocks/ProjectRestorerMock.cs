@@ -6,7 +6,6 @@
 using System.Text.Json;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
@@ -70,7 +69,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 var tokens = contents.Split(';');
                 if (tokens.Length != 4)
                 {
-                    throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                    throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
                 }
 
                 packageId = tokens[0];
@@ -80,12 +79,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             }
             catch (IOException)
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
             }
 
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
             }
 
             var feedPackage = GetPackage(
@@ -146,7 +145,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             if (package == null)
             {
                 _reporter?.WriteLine($"Error: failed to restore package {packageId}.");
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(Cli.Commands.LocalizableStrings.ToolInstallationRestoreFailed);
             }
 
             return package;

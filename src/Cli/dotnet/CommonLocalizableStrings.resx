@@ -636,9 +636,15 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   <data name="InvalidCommandResolverArguments" xml:space="preserve">
     <value>{0}: invalid commandResolverArguments</value>
   </data>
+  <data name="InvalidInputTypeInteger" xml:space="preserve">
+    <value>{0} should be an integer</value>
+  </data>
   <data name="InvalidManifestFilePrefix" xml:space="preserve">
     <value>Invalid manifest file. Path {0}:
 {1}</value>
+  </data>
+  <data name="InvalidRuntimeIdentifier" xml:space="preserve">
+    <value>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</value>
   </data>
   <data name="IsNotFoundInNuGetFeeds" xml:space="preserve">
     <value>{0} is not found in NuGet feeds {1}.</value>
@@ -706,6 +712,10 @@ For a list of locations searched, specify the "-d" option before the tool name.<
     <value>{0}: nuget packages root:
 {1}</value>
   </data>
+  <data name="OnlyOneProjectAllowed" xml:space="preserve">
+    <value>Only one project can be specified at a time using the -p option.</value>
+    <comment>{Locked="-p"}</comment>
+  </data>
   <data name="PackageVersionDescriptionDefault" xml:space="preserve">
     <value>A version of {0} of package {1}</value>
   </data>
@@ -730,6 +740,9 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   <data name="RetriableNugetSearchFailure" xml:space="preserve">
     <value>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
     RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</value>
+  </data>
+  <data name="SDKDiagnosticsCommandDefinition" xml:space="preserve">
+    <value>Enable diagnostic output.</value>
   </data>
   <data name="ShutdownCommandFailed" xml:space="preserve">
     <value>The shutdown command failed: {0}</value>
@@ -766,5 +779,9 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   </data>
   <data name="VersionIsInvalid" xml:space="preserve">
     <value>Version {0} is invalid.</value>
+  </data>
+  <data name="WorkloadIntegrityCheckError" xml:space="preserve">
+    <value>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</value>
+    <comment>{Locked="dotnet workload update"}</comment>
   </data>
 </root>

@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 

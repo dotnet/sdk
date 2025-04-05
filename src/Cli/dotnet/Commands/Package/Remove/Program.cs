@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 

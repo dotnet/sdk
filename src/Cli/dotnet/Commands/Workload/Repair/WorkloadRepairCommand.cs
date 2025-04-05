@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
@@ -40,7 +39,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
         {
-            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();

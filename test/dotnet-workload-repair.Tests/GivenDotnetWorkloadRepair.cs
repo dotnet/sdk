@@ -6,13 +6,12 @@
 using System.CommandLine;
 using System.Text.Json;
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Repair;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Workload.Repair.Tests
 {

@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
@@ -25,7 +24,7 @@ internal class WorkloadSearchCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();

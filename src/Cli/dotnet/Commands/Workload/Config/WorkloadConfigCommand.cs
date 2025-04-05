@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Config.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 

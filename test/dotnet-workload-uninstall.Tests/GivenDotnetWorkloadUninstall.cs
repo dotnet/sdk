@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests

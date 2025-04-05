@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -22,7 +21,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
+                    Cli.Commands.LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
         }
 
@@ -38,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
+                    string.Format(Cli.Commands.LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--local --tool-path"));
         }
     }

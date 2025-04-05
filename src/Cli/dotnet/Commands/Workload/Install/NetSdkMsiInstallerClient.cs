@@ -3,16 +3,13 @@
 
 using System.Globalization;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
-using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32.Msi;
@@ -20,7 +17,7 @@ using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 [SupportedOSPlatform("windows")]
 internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
@@ -363,7 +360,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         //  Unwrap AggregateException caused by switch from async to sync
         catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
         {
-            throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
+            throw new GracefulException(string.Format(LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
         }
         VerifyPackage(msi);
 
@@ -1128,7 +1125,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         {
             DirectoryPath tempPackagesDir = new(string.IsNullOrWhiteSpace(tempDirPath) ? PathUtilities.CreateTempSubdirectory() : tempDirPath);
 
-            nugetPackageDownloader = new NuGetPackageDownloader(tempPackagesDir,
+            nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(tempPackagesDir,
                 filePermissionSetter: null, new FirstPartyNuGetPackageSigningVerifier(),
                 new NullLogger(), restoreActionConfig: restoreActionConfig);
         }

@@ -7,10 +7,7 @@ using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 

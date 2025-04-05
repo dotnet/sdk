@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 

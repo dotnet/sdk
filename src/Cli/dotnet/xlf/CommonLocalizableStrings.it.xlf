@@ -326,11 +326,21 @@ export PATH="$PATH:{0}"
         <target state="new">{0}: invalid commandResolverArguments</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidInputTypeInteger">
+        <source>{0} should be an integer</source>
+        <target state="new">{0} should be an integer</target>
+        <note />
+      </trans-unit>
       <trans-unit id="InvalidManifestFilePrefix">
         <source>Invalid manifest file. Path {0}:
 {1}</source>
         <target state="new">Invalid manifest file. Path {0}:
 {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="InvalidRuntimeIdentifier">
+        <source>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</source>
+        <target state="new">The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
@@ -459,6 +469,11 @@ export PATH="$PATH:{0}"
         <target state="translated">Sistema operativo</target>
         <note />
       </trans-unit>
+      <trans-unit id="OnlyOneProjectAllowed">
+        <source>Only one project can be specified at a time using the -p option.</source>
+        <target state="new">Only one project can be specified at a time using the -p option.</target>
+        <note>{Locked="-p"}</note>
+      </trans-unit>
       <trans-unit id="OperatingSystemOptionDescription">
         <source>The target operating system.</source>
         <target state="translated">Sistema operativo di destinazione.</target>
@@ -554,6 +569,11 @@ export PATH="$PATH:{0}"
     RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</source>
         <target state="new">Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
     RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SDKDiagnosticsCommandDefinition">
+        <source>Enable diagnostic output.</source>
+        <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -1101,6 +1121,11 @@ setx PATH "%PATH%;{0}"
         <source>PROJECT | SOLUTION</source>
         <target state="translated">PROJECT | SOLUTION</target>
         <note />
+      </trans-unit>
+      <trans-unit id="WorkloadIntegrityCheckError">
+        <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
+        <target state="new">An issue was encountered verifying workloads. For more information, run "dotnet workload update".</target>
+        <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
     </body>
   </file>

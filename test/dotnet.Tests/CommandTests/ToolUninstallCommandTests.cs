@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -32,7 +31,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                    Cli.Commands.LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
         }
 
@@ -47,7 +46,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
+                    string.Format(Cli.Commands.LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--local --tool-path"));
         }
 
@@ -61,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(Cli.Commands.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
         [Fact]
@@ -75,7 +74,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUninstallCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(Cli.Commands.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
         }
     }
 }

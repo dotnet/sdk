@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Workload.List;
-using Microsoft.DotNet.Tools.New;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
 namespace Microsoft.DotNet.Cli.Commands.New;

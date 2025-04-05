@@ -17,7 +17,6 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 

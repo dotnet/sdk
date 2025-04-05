@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 

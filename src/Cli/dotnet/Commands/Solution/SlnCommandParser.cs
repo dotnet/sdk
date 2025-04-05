@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Commands.Solution.List;
 using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 using Microsoft.DotNet.Cli.Commands.Solution.Remove;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 

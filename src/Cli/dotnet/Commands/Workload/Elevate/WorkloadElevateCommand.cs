@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 

@@ -8,9 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Clean.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
@@ -37,7 +35,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
         {
-            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(LocalizableStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();

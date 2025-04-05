@@ -10,7 +10,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -65,7 +64,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
-               .Contain(Tools.Tool.Common.LocalizableStrings.ToolCommonNoManifestGuide);
+               .Contain(Cli.Commands.LocalizableStrings.ToolCommonNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
@@ -85,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
-               .Contain(string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageIdDotnsay));
+               .Contain(string.Format(Cli.Commands.LocalizableStrings.NoManifestFileContainPackageId, _packageIdDotnsay));
         }
 
         [Fact]
@@ -134,7 +133,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UninstallLocalToolSucceeded,
+                        Cli.Commands.LocalizableStrings.UninstallLocalToolSucceeded,
                         _packageIdDotnsay,
                         _manifestFilePath).Green());
         }

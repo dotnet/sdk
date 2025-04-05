@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 

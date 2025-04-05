@@ -4,19 +4,17 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;

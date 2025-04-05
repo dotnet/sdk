@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 

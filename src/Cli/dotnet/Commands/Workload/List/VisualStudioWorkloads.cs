@@ -5,10 +5,8 @@ using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 

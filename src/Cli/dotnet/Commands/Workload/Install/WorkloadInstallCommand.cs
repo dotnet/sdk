@@ -8,12 +8,10 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 

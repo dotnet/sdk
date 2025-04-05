@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Common.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 

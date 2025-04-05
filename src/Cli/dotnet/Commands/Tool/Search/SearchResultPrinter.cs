@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 

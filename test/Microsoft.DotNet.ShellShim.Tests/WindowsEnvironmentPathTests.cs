@@ -6,7 +6,6 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
