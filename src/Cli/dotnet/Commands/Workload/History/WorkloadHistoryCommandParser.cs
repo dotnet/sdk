@@ -17,7 +17,7 @@ internal static class WorkloadHistoryCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("history", LocalizableStrings.CommandDescription);
+        var command = new CliCommand("history", LocalizableStrings.WorkloadHistoryCommandDescription);
 
         command.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
 

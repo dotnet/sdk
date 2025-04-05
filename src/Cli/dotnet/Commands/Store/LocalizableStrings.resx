@@ -1,17 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <root>
-  <!--
-    Microsoft ResX Schema
-
+  <!-- 
+    Microsoft ResX Schema 
+    
     Version 2.0
-
-    The primary goals of this format is to allow a simple XML format
-    that is mostly human readable. The generation and parsing of the
-    various data types are done through the TypeConverter classes
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
     associated with the data types.
-
+    
     Example:
-
+    
     ... ado.net/XML headers & schema ...
     <resheader name="resmimetype">text/microsoft-resx</resheader>
     <resheader name="version">2.0</resheader>
@@ -26,36 +26,36 @@
         <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
         <comment>This is a comment</comment>
     </data>
-
-    There are any number of "resheader" rows that contain simple
+                
+    There are any number of "resheader" rows that contain simple 
     name/value pairs.
-
-    Each data row contains a name, and value. The row also contains a
-    type or mimetype. Type corresponds to a .NET class that support
-    text/value conversion through the TypeConverter architecture.
-    Classes that don't support this are serialized and stored with the
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
     mimetype set.
-
-    The mimetype is used for serialized objects, and tells the
-    ResXResourceReader how to depersist the object. This is currently not
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
     extensible. For a given mimetype the value must be set accordingly:
-
-    Note - application/x-microsoft.net.object.binary.base64 is the format
-    that the ResXResourceWriter will generate, however the reader can
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
     read any of the formats listed below.
-
+    
     mimetype: application/x-microsoft.net.object.binary.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
             : and then encoded with base64 encoding.
-
+    
     mimetype: application/x-microsoft.net.object.soap.base64
-    value   : The object must be serialized with
+    value   : The object must be serialized with 
             : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
             : and then encoded with base64 encoding.
 
     mimetype: application/x-microsoft.net.object.bytearray.base64
-    value   : The object must be serialized into a byte array
+    value   : The object must be serialized into a byte array 
             : using a System.ComponentModel.TypeConverter
             : and then encoded with base64 encoding.
     -->
@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="StoreAppDescription" xml:space="preserve">
     <value>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</value>
   </data>
   <data name="ProjectManifest" xml:space="preserve">
@@ -126,10 +126,10 @@
   <data name="ProjectManifestDescription" xml:space="preserve">
     <value>The XML file that contains the list of packages to be stored.</value>
   </data>
-  <data name="OutputOption" xml:space="preserve">
+  <data name="StoreOutputOption" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
-  <data name="OutputOptionDescription" xml:space="preserve">
+  <data name="StoreOutputOptionDescription" xml:space="preserve">
     <value>The output directory to store the given assemblies in.</value>
   </data>
   <data name="FrameworkVersionOption" xml:space="preserve">
@@ -156,10 +156,10 @@
   <data name="IntermediateDirExists" xml:space="preserve">
     <value>Intermediate working directory {0} already exists. Remove {0} or specify another directory with -w.</value>
   </data>
-  <data name="FrameworkOptionDescription" xml:space="preserve">
+  <data name="StoreFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to store packages for. The target framework has to be specified in the project file.</value>
   </data>
-  <data name="RuntimeOptionDescription" xml:space="preserve">
+  <data name="StoreRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to store packages for.</value>
   </data>
   <data name="CurrentRuntimeOptionDescription" xml:space="preserve">

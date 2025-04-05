@@ -7,6 +7,16 @@
         <target state="translated">プロジェクトやソリューションにスタイルのユーザー設定を適用します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="HelpAppDescription">
+        <source>Utility to get more detailed help about each of the SDK commands.</source>
+        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpAppFullName">
+        <source>.NET CLI help utility</source>
+        <target state="new">.NET CLI help utility</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
         <target state="translated">.NET プロジェクトの PackageReferences を検索、追加、削除、または一覧表示します。</target>
@@ -170,16 +180,6 @@
       <trans-unit id="CommandDoesNotExist">
         <source>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</source>
         <target state="translated">指定されたコマンド '{0}' は、有効な SDK コマンドではありません。有効な SDK コマンドを指定してください。詳細については、dotnet のヘルプを実行してください。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET CLI help utility</source>
-        <target state="translated">.NET CLI ヘルプ ユーティリティ</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="translated">各 SDK コマンドに関する詳しいヘルプを取得するためのユーティリティ。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentName">

@@ -117,28 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="CleanAppFullName" xml:space="preserve">
     <value>.NET Clean Command</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="CleanAppDescription" xml:space="preserve">
     <value>Command to clean previously generated build outputs.</value>
   </data>
-  <data name="CmdOutputDir" xml:space="preserve">
+  <data name="CleanCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
-  <data name="CmdOutputDirDescription" xml:space="preserve">
+  <data name="CleanCmdOutputDirDescription" xml:space="preserve">
     <value>The directory containing the build artifacts to clean.</value>
   </data>
-  <data name="FrameworkOptionDescription" xml:space="preserve">
+  <data name="CleanFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to clean for. The target framework must also be specified in the project file.</value>
   </data>
-  <data name="RuntimeOptionDescription" xml:space="preserve">
+  <data name="CleanRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to clean for.</value>
   </data>
-  <data name="ConfigurationOptionDescription" xml:space="preserve">
+  <data name="CleanConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to clean for. The default for most projects is 'Debug'.</value>
   </data>
-  <data name="CmdNoLogo" xml:space="preserve">
+  <data name="CleanCmdNoLogo" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
 </root>

@@ -18,7 +18,7 @@ internal static class ListPackageReferencesCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("package", LocalizableStrings.AppFullName);
+        CliCommand command = new("package", LocalizableStrings.PackageListAppFullName);
 
         command.Options.Add(PackageListCommandParser.VerbosityOption);
         command.Options.Add(PackageListCommandParser.OutdatedOption);

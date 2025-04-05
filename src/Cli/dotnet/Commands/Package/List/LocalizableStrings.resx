@@ -117,13 +117,13 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="PackageListAppFullName" xml:space="preserve">
     <value>List all package references of the project or solution.</value>
   </data>
-  <data name="CmdFramework" xml:space="preserve">
+  <data name="PackageListCmdFramework" xml:space="preserve">
     <value>FRAMEWORK | FRAMEWORK\RID</value>
   </data>
-  <data name="CmdFrameworkDescription" xml:space="preserve">
+  <data name="PackageListCmdFrameworkDescription" xml:space="preserve">
     <value>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</value>
   </data>
   <data name="CmdTransitiveDescription" xml:space="preserve">
@@ -147,13 +147,13 @@
   <data name="CmdPrereleaseDescription" xml:space="preserve">
     <value>Consider packages with prerelease versions when searching for newer packages. Requires the '--outdated' option.</value>
   </data>
-  <data name="CmdSource" xml:space="preserve">
+  <data name="PackageListCmdSource" xml:space="preserve">
     <value>SOURCE</value>
   </data>
-  <data name="CmdSourceDescription" xml:space="preserve">
+  <data name="PackageListCmdSourceDescription" xml:space="preserve">
     <value>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</value>
   </data>
-  <data name="FileNotFound" xml:space="preserve">
+  <data name="PackageListFileNotFound" xml:space="preserve">
     <value>Could not find file or directory '{0}'.</value>
   </data>
   <data name="OptionsCannotBeCombined" xml:space="preserve">

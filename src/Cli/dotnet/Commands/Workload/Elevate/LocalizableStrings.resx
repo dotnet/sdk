@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadElevateCommandDescription" xml:space="preserve">
     <value>Start the elevated server process to facilitate MSI based installations.</value>
   </data>
   <data name="RequiresWindows" xml:space="preserve">

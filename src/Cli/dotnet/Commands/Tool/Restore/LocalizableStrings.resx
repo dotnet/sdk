@@ -117,47 +117,47 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="ToolRestoreCommandDescription" xml:space="preserve">
     <value>Restore tools defined in the local tool manifest.</value>
   </data>
-  <data name="InvalidPackageWarning" xml:space="preserve">
+  <data name="ToolRestoreInvalidPackageWarning" xml:space="preserve">
     <value>Warning: tool package '{0}' is invalid, contact tool author:
 {1}</value>
   </data>
-  <data name="PackageIdColumn" xml:space="preserve">
+  <data name="ToolRestorePackageIdColumn" xml:space="preserve">
     <value>Package Id</value>
   </data>
-  <data name="VersionColumn" xml:space="preserve">
+  <data name="ToolRestoreVersionColumn" xml:space="preserve">
     <value>Version</value>
   </data>
-  <data name="CommandsColumn" xml:space="preserve">
+  <data name="ToolRestoreCommandsColumn" xml:space="preserve">
     <value>Commands</value>
   </data>
   <data name="CommandsMismatch" xml:space="preserve">
     <value>The command {0} specified in the tool manifest file is not contained in the package with Package Id {1}. The commands contained in the package are {2}.</value>
   </data>
-  <data name="AddSourceOptionDescription" xml:space="preserve">
+  <data name="ToolRestoreAddSourceOptionDescription" xml:space="preserve">
     <value>Add an additional NuGet package source to use during installation.</value>
   </data>
-  <data name="AddSourceOptionName" xml:space="preserve">
+  <data name="ToolRestoreAddSourceOptionName" xml:space="preserve">
     <value>SOURCE</value>
   </data>
-  <data name="ConfigFileOptionDescription" xml:space="preserve">
+  <data name="ToolRestoreConfigFileOptionDescription" xml:space="preserve">
     <value>The NuGet configuration file to use.</value>
   </data>
-  <data name="ConfigFileOptionName" xml:space="preserve">
+  <data name="ToolRestoreConfigFileOptionName" xml:space="preserve">
     <value>FILE</value>
   </data>
-  <data name="ManifestPathOptionName" xml:space="preserve">
+  <data name="ToolRestoreManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
   </data>
-  <data name="ManifestPathOptionDescription" xml:space="preserve">
+  <data name="ToolRestoreManifestPathOptionDescription" xml:space="preserve">
     <value>Path to the manifest file.</value>
   </data>
-  <data name="VersionOptionDescription" xml:space="preserve">
+  <data name="ToolRestoreVersionOptionDescription" xml:space="preserve">
     <value>The version of the tool package to install.</value>
   </data>
-  <data name="VersionOptionName" xml:space="preserve">
+  <data name="ToolRestoreVersionOptionName" xml:space="preserve">
     <value>VERSION</value>
   </data>
   <data name="PackageFailedToRestore" xml:space="preserve">

@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="SdkAppFullName" xml:space="preserve">
     <value>.NET SDK Command</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="SdkAppDescription" xml:space="preserve">
     <value>Manage .NET SDK installation.</value>
   </data>
 </root>

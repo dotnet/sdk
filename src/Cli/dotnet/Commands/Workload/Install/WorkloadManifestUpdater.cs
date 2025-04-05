@@ -169,7 +169,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
                 if (updatableWorkloads != null && updatableWorkloads.Any())
                 {
                     Console.WriteLine();
-                    Console.WriteLine(LocalizableStrings.WorkloadUpdatesAvailable);
+                    Console.WriteLine(LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
                 }
             }
         }

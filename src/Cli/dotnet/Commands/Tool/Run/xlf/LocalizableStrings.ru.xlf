@@ -7,11 +7,6 @@
         <target state="translated">Не удается найти средство в файле манифеста, который содержит команду с именем "{0}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">Запуск локального инструмента. Обратите внимание, что с помощью этой команды невозможно запустить глобальный инструмент. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
         <source>The command name of the tool to run.</source>
         <target state="translated">Имя выполняемой команды в средстве.</target>
@@ -25,6 +20,11 @@
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">Укажите одно имя выполняемой команды.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
     </body>

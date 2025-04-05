@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolInstallLocalCommand.Execute();
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(LocalizableStrings.NoManifestGuide);
+                .Contain(LocalizableStrings.ToolInstallNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()

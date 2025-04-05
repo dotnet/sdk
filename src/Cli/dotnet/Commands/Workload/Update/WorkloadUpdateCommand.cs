@@ -78,7 +78,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             }
             catch (Exception e)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
         }
         else if (_printDownloadLinkOnly)
@@ -174,7 +174,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
 
         Reporter.WriteLine();
-        Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUpdateUpdateSucceeded, string.Join(" ", workloadIds)));
         Reporter.WriteLine();
     }
 
@@ -237,12 +237,12 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         var transaction = new CliTransaction();
         transaction.RollbackStarted = () =>
         {
-            Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+            Reporter.WriteLine(LocalizableStrings.WorkloadUpdateRollingBackInstall);
         };
         // Don't hide the original error if roll back fails, but do log the rollback failure
         transaction.RollbackFailed = ex =>
         {
-            Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
+            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUpdateRollBackFailedMessage, ex.Message));
         };
 
         transaction.Run(context => a(context));

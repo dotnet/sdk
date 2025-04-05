@@ -7,11 +7,6 @@
         <target state="translated">Příkaz</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Zobrazí historii akcí instalace úlohy.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Datum</target>
@@ -37,9 +32,14 @@
         <target state="translated">Řádky s nezaprotokolovanými změnami představují změny z jiných akcí než příkazů úloh rozhraní příkazového řádku .NET. Obvykle to představuje aktualizaci sady .NET SDK nebo sady Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Verze úlohy</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

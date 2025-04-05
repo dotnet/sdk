@@ -120,7 +120,7 @@
   <data name="CleanAllOptionDescription" xml:space="preserve">
     <value>Causes clean to remove and uninstall all workload components from all SDK versions.</value>
   </data>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadCleanCommandDescription" xml:space="preserve">
     <value>Removes workload components that may have been left behind from previous updates and uninstallations.</value>
   </data>
   <data name="VSWorkloadNotRemoved" xml:space="preserve">

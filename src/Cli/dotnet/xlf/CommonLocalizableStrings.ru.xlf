@@ -77,6 +77,16 @@ Examples:
         <target state="translated">Разрешает установку пакетов предварительного выпуска.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">В файле решения "{0}" отсутствуют теги EndProject или содержатся недопустимые сопоставления дочерних и родительских папок проекта применительно к GUID проекта: "{1}". Исправьте решение вручную или попробуйте открыть и сохранить его в Visual Studio."</target>
@@ -457,11 +467,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">{0} или {1}: не найдено в "{2}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">Файл "{0}" не найден.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} не существует.</target>
@@ -790,11 +795,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">Проект или решение для обработки. Если файл не указан, выполняется поиск в текущем каталоге.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

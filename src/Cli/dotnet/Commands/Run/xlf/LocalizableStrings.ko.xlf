@@ -2,16 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET Run Command</source>
-        <target state="translated">.NET 실행 명령</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command used to run .NET apps</source>
-        <target state="translated">.NET 앱을 실행하는 데 사용하는 명령입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionFrameworkDescription">
         <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
         <target state="translated">지정된 프레임워크를 사용하여 앱을 빌드 및 실행합니다. 프로젝트 파일에서 프레임워크를 지정해야 합니다. </target>
@@ -74,6 +64,16 @@ Make the profile names distinct.</source>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
         <target state="translated">MSBuild에 전달할 속성입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunAppDescription">
+        <source>Command used to run .NET apps</source>
+        <target state="new">Command used to run .NET apps</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunAppFullName">
+        <source>.NET Run Command</source>
+        <target state="new">.NET Run Command</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -166,6 +166,21 @@ The current {1} is '{2}'.</source>
         <target state="translated">'{0}'은(는) 유효한 프로젝트 파일이 아닙니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunConfigurationOptionDescription">
+        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to run for. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunFrameworkOptionDescription">
+        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunRuntimeOptionDescription">
+        <source>The target runtime to run for.</source>
+        <target state="new">The target runtime to run for.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}' at {1}.</source>
         <target state="new">Unrecognized directive '{0}' at {1}.</target>
@@ -208,21 +223,6 @@ The current {1} is '{2}'.</source>
 {0}</source>
         <target state="translated">launchSettings.json을 읽는 동안 오류가 발생했습니다.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
-        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
-        <target state="translated">실행할 구성입니다. 대부분의 프로젝트에서 기본값은 'Debug'입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
-        <target state="translated">실행할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에도 지정되어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to run for.</source>
-        <target state="translated">실행할 대상 런타임입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueMustBeAnObject">

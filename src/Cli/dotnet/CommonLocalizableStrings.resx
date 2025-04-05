@@ -261,7 +261,7 @@
   <data name="XOrYNotFoundInZ" xml:space="preserve">
     <value>{0} or {1} not found in `{2}`.</value>
   </data>
-  <data name="FileNotFound" xml:space="preserve">
+  <data name="CommonFileNotFound" xml:space="preserve">
     <value>File `{0}` not found.</value>
   </data>
   <data name="XDoesNotExist" xml:space="preserve">
@@ -441,7 +441,7 @@
   <data name="ProjectArgumentDescription" xml:space="preserve">
     <value>The project file to operate on. If a file is not specified, the command will search the current directory for one.</value>
   </data>
-  <data name="CmdFramework" xml:space="preserve">
+  <data name="CommonCmdFramework" xml:space="preserve">
     <value>FRAMEWORK</value>
   </data>
   <data name="PleaseSpecifyNewVersion" xml:space="preserve">

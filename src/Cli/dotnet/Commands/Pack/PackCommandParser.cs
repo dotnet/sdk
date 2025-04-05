@@ -20,8 +20,8 @@ internal static class PackCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.CmdOutputDirDescription,
-        HelpName = LocalizableStrings.CmdOutputDir
+        Description = LocalizableStrings.PackCmdOutputDirDescription,
+        HelpName = LocalizableStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
     public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
@@ -50,13 +50,13 @@ internal static class PackCommandParser
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = LocalizableStrings.PackCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
     public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.PackConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -67,7 +67,7 @@ internal static class PackCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.AppFullName);
+        var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.PackAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(OutputOption);

@@ -7,11 +7,6 @@
         <target state="translated">Nie można określić zarówno argumentu {0}, jak i {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Wyszukaj dostępne obciążenia.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionColumnName">
         <source>Description</source>
         <target state="translated">Opis</target>
@@ -123,6 +118,11 @@
       <trans-unit id="WorkloadManifestIdColumn">
         <source>Workload manifest ID</source>
         <target state="translated">Identyfikator manifestu obciążenia</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSearchCommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="new">Search for available workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionArgument">

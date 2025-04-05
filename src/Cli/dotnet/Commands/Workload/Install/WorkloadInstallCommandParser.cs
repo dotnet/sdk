@@ -42,7 +42,7 @@ internal static class WorkloadInstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("install", LocalizableStrings.CommandDescription);
+        CliCommand command = new("install", LocalizableStrings.WorkloadInstallCommandDescription);
 
         command.Arguments.Add(WorkloadIdArgument);
         AddWorkloadInstallCommandOptions(command);

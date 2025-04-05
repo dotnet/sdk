@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="SolutionAppFullName" xml:space="preserve">
     <value>.NET modify solution file command</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="SolutionAppDescription" xml:space="preserve">
     <value>Command to add, remove, and list projects from the solution (SLN) file.</value>
   </data>
   <data name="SolutionArgumentName" xml:space="preserve">
@@ -129,7 +129,7 @@
   <data name="SolutionArgumentDescription" xml:space="preserve">
     <value>The solution file to operate on. If not specified, the command will search the current directory for one.</value>
   </data>
-  <data name="AppHelpText" xml:space="preserve">
+  <data name="SolutionAppHelpText" xml:space="preserve">
     <value>Projects to add or to remove from the solution.</value>
   </data>
   <data name="AddAppFullName" xml:space="preserve">

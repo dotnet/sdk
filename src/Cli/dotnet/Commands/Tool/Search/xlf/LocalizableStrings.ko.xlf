@@ -7,16 +7,6 @@
         <target state="translated">작성자</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">nuget.org에서 dotnet 도구 검색</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandsColumn">
-        <source>Commands</source>
-        <target state="translated">명령</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Description">
         <source>Description</source>
         <target state="translated">설명</target>
@@ -66,31 +56,6 @@
         <target state="translated">패키지 ID</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="PrereleaseDescription">
-        <source>Include pre-release packages.</source>
-        <target state="translated">시험판 패키지를 포함합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SearchTermArgumentName">
-        <source>SEARCH_TERM</source>
-        <target state="translated">SEARCH_TERM</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SearchTermDescription">
-        <source>Search term from package id or package description. Require at least one character.</source>
-        <target state="translated">패키지 ID 또는 패키지 설명에서 가져온 검색어입니다. 1자 이상이어야 합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipArgumentName">
-        <source>Skip</source>
-        <target state="translated">건너뛰기</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipDescription">
-        <source>The number of results to skip, for pagination.</source>
-        <target state="translated">페이지 매김을 위해 건너뛸 결과 수입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">요약</target>
@@ -101,14 +66,49 @@
         <target state="translated">태그</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="TakeArgumentName">
-        <source>Take</source>
-        <target state="translated">가져오기</target>
+      <trans-unit id="ToolSearchCommandDescription">
+        <source>Search dotnet tools in nuget.org</source>
+        <target state="new">Search dotnet tools in nuget.org</target>
         <note />
       </trans-unit>
-      <trans-unit id="TakeDescription">
+      <trans-unit id="ToolSearchCommandsColumn">
+        <source>Commands</source>
+        <target state="new">Commands</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchPrereleaseDescription">
+        <source>Include pre-release packages.</source>
+        <target state="new">Include pre-release packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="new">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermDescription">
+        <source>Search term from package id or package description. Require at least one character.</source>
+        <target state="new">Search term from package id or package description. Require at least one character.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="new">The number of results to skip, for pagination.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeDescription">
         <source>The number of results to return, for pagination.</source>
-        <target state="translated">페이지 매김을 위해 반환할 결과 수입니다.</target>
+        <target state="new">The number of results to return, for pagination.</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

@@ -2,9 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ru" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandDescription">
+      <trans-unit id="BuildServerShutdownCommandDescription">
         <source>Shuts down build servers that are started from dotnet. By default, all servers are shut down.</source>
-        <target state="translated">Завершает работу серверов сборки, запущенных из среды dotnet. По умолчанию завершается работа всех серверов.</target>
+        <target state="new">Shuts down build servers that are started from dotnet. By default, all servers are shut down.</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildOptionDescription">

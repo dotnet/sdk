@@ -7,11 +7,6 @@
         <target state="translated">Non è possibile trovare uno strumento nel file manifesto che include un comando denominato '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">Eseguire uno strumento locale. Si noti che questo comando non può essere utilizzato per eseguire uno strumento globale. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
         <source>The command name of the tool to run.</source>
         <target state="translated">Nome del comando dello strumento da eseguire.</target>
@@ -25,6 +20,11 @@
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">Specificare il nome di un comando da eseguire.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
     </body>

@@ -19,7 +19,7 @@ internal sealed class ProjectConvertCommandParser
 
     public static CliCommand GetCommand()
     {
-        CliCommand command = new("convert", LocalizableStrings.AppFullName)
+        CliCommand command = new("convert", LocalizableStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,

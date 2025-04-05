@@ -26,7 +26,7 @@ internal static class WorkloadSearchCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("search", LocalizableStrings.CommandDescription);
+        var command = new CliCommand("search", LocalizableStrings.WorkloadSearchCommandDescription);
         command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
         command.Arguments.Add(WorkloadIdStubArgument);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);

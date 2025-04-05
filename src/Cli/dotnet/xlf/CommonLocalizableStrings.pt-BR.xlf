@@ -77,6 +77,16 @@ Exemplos:
         <target state="translated">Permite a instalação de pacotes de pré-lançamento.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">O arquivo de solução '{0}' tem marcas EndProject ausentes ou tem mapeamentos de pasta de projeto pai-filho inválidos em torno do GUID do projeto: '{1}'. Repare manualmente a solução ou tente abri-la e salvá-la no Visual Studio."</target>
@@ -457,11 +467,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
         <target state="translated">{0} ou {1} não encontrado em {2}’.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">Arquivo ‘{0}’ não encontrado.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} não existe.</target>
@@ -790,11 +795,6 @@ O padrão é falso.' No entanto, ao direcionar o .NET 7 ou inferior, o padrão �
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">O projeto ou a solução no qual ocorre a operação. Se um arquivo não for especificado, o diretório atual será pesquisado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

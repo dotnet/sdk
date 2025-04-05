@@ -7,11 +7,6 @@
         <target state="translated">Befehl</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Zeigt einen Verlauf der Workloadinstallationsaktionen an.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Datum</target>
@@ -37,9 +32,14 @@
         <target state="translated">Zeilen mit nicht protokollierten Änderungen stellen Änderungen von anderen Aktionen als .NET CLI-Workloadbefehlen dar. In der Regel stellt dies ein Update für das .NET SDK oder für Visual Studio dar.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Workloadversion</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

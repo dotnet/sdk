@@ -44,8 +44,8 @@ internal static class StoreCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.OutputOptionDescription,
-        HelpName = LocalizableStrings.OutputOption
+        Description = LocalizableStrings.StoreOutputOptionDescription,
+        HelpName = LocalizableStrings.StoreOutputOption
     }.ForwardAsOutputPath("ComposeDir");
 
     public static readonly CliOption<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
@@ -75,7 +75,7 @@ internal static class StoreCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("store", DocsLink, LocalizableStrings.AppDescription);
+        DocumentedCommand command = new("store", DocsLink, LocalizableStrings.StoreAppDescription);
 
         command.Arguments.Add(Argument);
         command.Options.Add(ManifestOption);
@@ -84,8 +84,8 @@ internal static class StoreCommandParser
         command.Options.Add(WorkingDirOption);
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
-        command.Options.Add(CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(CommonOptions.FrameworkOption(LocalizableStrings.StoreFrameworkOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.StoreRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.CurrentRuntimeOption(LocalizableStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);

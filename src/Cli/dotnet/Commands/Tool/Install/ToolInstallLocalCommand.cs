@@ -202,7 +202,7 @@ internal class ToolInstallLocalCommand : CommandBase
         catch (ToolManifestCannotBeFoundException e)
         {
             throw new GracefulException(
-                [e.Message, LocalizableStrings.NoManifestGuide],
+                [e.Message, LocalizableStrings.ToolInstallNoManifestGuide],
                 verboseMessages: [e.VerboseMessage],
                 isUserError: false);
         }

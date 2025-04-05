@@ -47,7 +47,7 @@ internal static class WorkloadUpdateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("update", LocalizableStrings.CommandDescription);
+        CliCommand command = new("update", LocalizableStrings.WorkloadUpdateCommandDescription);
 
         InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

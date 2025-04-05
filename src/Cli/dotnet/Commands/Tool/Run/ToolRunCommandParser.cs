@@ -34,7 +34,7 @@ internal static class ToolRunCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("run", LocalizableStrings.CommandDescription);
+        CliCommand command = new("run", LocalizableStrings.ToolRunCommandDescription);
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);

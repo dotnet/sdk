@@ -7,21 +7,6 @@
         <target state="translated">Ruta de acceso de la carpeta de la solución de destino a la que agregar los proyectos.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET modify solution file command</source>
-        <target state="translated">Comando de .NET para modificar el archivo de solución</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
-        <target state="translated">Comando para agregar, quitar y enumerar proyectos desde el archivo de solución (SLN).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppHelpText">
-        <source>Projects to add or to remove from the solution.</source>
-        <target state="translated">Proyectos para agregar o quitar de la solución.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddAppFullName">
         <source>Add one or more projects to a solution file.</source>
         <target state="translated">Agrega uno o varios proyectos a un archivo de solución.</target>
@@ -75,6 +60,21 @@
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
         <target state="translated">{0} generar el archivo .slnx.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppDescription">
+        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
+        <target state="new">Command to add, remove, and list projects from the solution (SLN) file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppFullName">
+        <source>.NET modify solution file command</source>
+        <target state="new">.NET modify solution file command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppHelpText">
+        <source>Projects to add or to remove from the solution.</source>
+        <target state="new">Projects to add or to remove from the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

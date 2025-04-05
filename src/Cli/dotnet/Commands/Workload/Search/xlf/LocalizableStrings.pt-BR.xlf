@@ -7,11 +7,6 @@
         <target state="translated">Não é possível especificar os argumentos {0} e {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Pesquise cargas de trabalho disponíveis.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionColumnName">
         <source>Description</source>
         <target state="translated">Descrição</target>
@@ -123,6 +118,11 @@
       <trans-unit id="WorkloadManifestIdColumn">
         <source>Workload manifest ID</source>
         <target state="translated">ID do manifesto da carga de trabalho</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSearchCommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="new">Search for available workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionArgument">

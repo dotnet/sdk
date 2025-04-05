@@ -2,19 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandDescription">
-        <source>Install or work with workloads that extend the .NET experience.</source>
-        <target state="translated">Instale o trabaje con cargas de trabajo que mejoran la experiencia de uso de .NET.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="EmscriptenDescription">
         <source>Emscripten SDK compiler tooling</source>
         <target state="translated">Herramientas del compilador de SDK de Emscripten</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET Install Command</source>
-        <target state="translated">Comando para la instalación de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsInstalledInfoWarning">
@@ -37,6 +27,11 @@
         <target state="translated">Herramientas de compilación de WebAssembly de .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadCommandDescription">
+        <source>Install or work with workloads that extend the .NET experience.</source>
+        <target state="new">Install or work with workloads that extend the .NET experience.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadIdColumn">
         <source>Installed Workload Id</source>
         <target state="translated">Id. de carga de trabajo instalada</target>
@@ -45,6 +40,11 @@
       <trans-unit id="WorkloadInfoDescription">
         <source>Display information about installed workloads.</source>
         <target state="translated">Mostrar información sobre las cargas de trabajo instaladas.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallFullCommandNameLocalized">
+        <source>.NET Install Command</source>
+        <target state="new">.NET Install Command</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallTypeColumn">

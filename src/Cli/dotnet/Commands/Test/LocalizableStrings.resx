@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="TestAppFullName" xml:space="preserve">
     <value>.NET Test Driver</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="TestAppDescription" xml:space="preserve">
     <value>Test Driver for the .NET Platform</value>
   </data>
   <data name="DotnetTestCommand" xml:space="preserve">
@@ -163,7 +163,7 @@
                                         Log in trx format using the specified file name: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
                                         See https://aka.ms/vstest-report for more information on logger arguments.</value>
   </data>
-  <data name="CmdOutputDir" xml:space="preserve">
+  <data name="TestCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
   <data name="CmdOutputDescription" xml:space="preserve">
@@ -178,7 +178,7 @@
   <data name="CmdNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before testing. Implies --no-restore.</value>
   </data>
-  <data name="CmdNoRestoreDescription" xml:space="preserve">
+  <data name="TestCmdNoRestoreDescription" xml:space="preserve">
     <value>Do not execute an implicit restore.</value>
   </data>
   <data name="CmdArchitectureDescription" xml:space="preserve">
@@ -235,16 +235,16 @@ Example:
   dotnet test --blame-hang-timeout 20min
 </value>
   </data>
-  <data name="FrameworkOptionDescription" xml:space="preserve">
+  <data name="TestFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to run tests for. The target framework must also be specified in the project file.</value>
   </data>
-  <data name="RuntimeOptionDescription" xml:space="preserve">
+  <data name="TestRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to test for.</value>
   </data>
-  <data name="ConfigurationOptionDescription" xml:space="preserve">
+  <data name="TestConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to use for running tests. The default for most projects is 'Debug'.</value>
   </data>
-  <data name="CmdNoLogo" xml:space="preserve">
+  <data name="TestCmdNoLogo" xml:space="preserve">
     <value>Run test(s), without displaying Microsoft Testplatform banner</value>
   </data>
   <data name="IgnoredArgumentsMessage" xml:space="preserve">

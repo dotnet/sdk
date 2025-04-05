@@ -62,7 +62,7 @@ internal static class RestoreCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
+        var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.RestoreAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);

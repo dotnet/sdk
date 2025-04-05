@@ -236,7 +236,7 @@ internal class FileBasedInstaller : IInstaller
                     catch (Exception e)
                     {
                         // Don't hide the original error if roll back fails
-                        _reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, e.Message));
+                        _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadInstallRollBackFailedMessage, e.Message));
                     }
                 },
                 cleanup: () =>

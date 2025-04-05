@@ -137,11 +137,6 @@
         <target state="translated">プレリリースのワークロード マニフェストを許可します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="InstallationSucceeded">
-        <source>Successfully installed workload(s) {0}.</source>
-        <target state="translated">ワークロード {0} が正常にインストールされました。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallingPackVersionMessage">
         <source>Installing pack {0} version {1}...</source>
         <target state="translated">Pack {0} バージョン {1} をインストールしています...</target>
@@ -165,21 +160,6 @@
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
         <target state="translated">ワークロードの NuGet パッケージ内の設定ファイルが無効です: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Install one or more workloads.</source>
-        <target state="translated">1 つ以上のワークロードをインストールします。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">使用する NuGet 構成ファイル。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="translated">ワークロードをインストールするターゲット フレームワーク。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -232,11 +212,6 @@
         <target state="translated">ワークロード {0} 向けパッケージ URL を解決しています...</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollBackFailedMessage">
-        <source>Installation rollback failed: {0}</source>
-        <target state="translated">インストールのロールバックに失敗しました: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">無効なロールバック定義。ロールバック定義 {0} のマニフェスト ID が、インストール済みのマニフェスト ID {1} と一致しません。</target>
@@ -245,11 +220,6 @@
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
         <source>Provided rollback definition file {0} doesn't exist.</source>
         <target state="translated">指定されたロールバック定義ファイル {0} が存在しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RollingBackInstall">
-        <source>Workload installation failed. Rolling back installed packs...</source>
-        <target state="translated">ワークロードをインストールできませんでした。インストール パックをロールバックしています...</target>
         <note />
       </trans-unit>
       <trans-unit id="RollingBackPackInstall">
@@ -275,16 +245,6 @@
       <trans-unit id="SkippingManifestUpdate">
         <source>Manifest packages were not found. Skipping manifest update...</source>
         <target state="translated">マニフェスト パッケージが見つかりませんでした。マニフェストの更新をスキップしています...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionDescription">
-        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
-        <target state="translated">復元中に使用する NuGet パッケージ ソース。複数のソースを指定するには、オプションを繰り返します。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">ソース</target>
         <note />
       </trans-unit>
       <trans-unit id="TempDirOptionDescription">
@@ -317,44 +277,9 @@
         <target state="translated">オフライン キャッシュ {2} でパッケージ {0} のバージョン {1} をインストールしています。</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionOptionDescription">
-        <source>The version of the SDK.</source>
-        <target state="translated">SDK のバージョンです。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="translated">.NET インストール コマンド</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="translated">NuGet 構成ファイル '{0}' は存在しません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="translated">指定されたバージョン '{0}' は、有効な NuGet バージョン範囲ではありません。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload(s) '{0}' are already installed.</source>
         <target state="translated">ワークロード '{0}' は既にインストールされています。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCacheDownloadFailed">
-        <source>Download of workload packs to offline cache failed: {0}</source>
-        <target state="translated">オフライン キャッシュへのワークロード パックのダウンロードに失敗しました: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
@@ -365,6 +290,86 @@
       <trans-unit id="WorkloadIdArgumentName">
         <source>WORKLOAD_ID</source>
         <target state="translated">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallCommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="new">Install one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
+        <source>The target framework to install the workload for.</source>
+        <target state="new">The target framework to install the workload for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
+        <source>.NET install command</source>
+        <target state="new">.NET install command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallationSucceeded">
+        <source>Successfully installed workload(s) {0}.</source>
+        <target state="new">Successfully installed workload(s) {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
+        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
+        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' doesn't exist.</source>
+        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="new">Installation rollback failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="new">Workload installation failed. Rolling back installed packs...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="new">The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="new">The version of the SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
+        <source>Download of workload packs to offline cache failed: {0}</source>
+        <target state="new">Download of workload packs to offline cache failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadUpdatesAvailable">
+        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
+        <target state="new">Workload updates are available. Run `dotnet workload list` for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
@@ -400,11 +405,6 @@
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">表示するワークロードのバージョン、または '@' 文字で結合された 1 つ以上のワークロードとそのバージョン。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUpdatesAvailable">
-        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">ワークロードの更新が利用可能です。詳細については、`dotnet workload list` を実行してください。</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

@@ -125,7 +125,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             }
             catch (Exception e)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
         }
         else if (_skipManifestUpdate && usedRollback)
@@ -259,7 +259,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
+            Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadInstallInstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
             Reporter.WriteLine();
 
         });
@@ -304,9 +304,9 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
     {
         new CliTransaction()
         {
-            RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
+            RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.WorkloadInstallRollingBackInstall),
             // Don't hide the original error if roll back fails, but do log the rollback failure
-            RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
+            RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadInstallRollBackFailedMessage, ex.Message))
         }.Run(context => a(context));
     }
 }

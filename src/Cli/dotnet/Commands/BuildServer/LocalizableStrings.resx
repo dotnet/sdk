@@ -120,7 +120,7 @@
   <data name="BuildServerCommandName" xml:space="preserve">
     <value>.NET Build Server Command</value>
   </data>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="BuildServerCommandDescription" xml:space="preserve">
     <value>Interact with servers started from a build.</value>
   </data>
 </root>

@@ -52,7 +52,7 @@ internal static class TestCommandParser
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
         Description = LocalizableStrings.CmdOutputDescription,
-        HelpName = LocalizableStrings.CmdOutputDir
+        HelpName = LocalizableStrings.TestCmdOutputDir
     }
     .ForwardAsOutputPath("OutputPath", true);
 
@@ -142,15 +142,15 @@ internal static class TestCommandParser
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = LocalizableStrings.TestCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:VSTestNoLogo=true");
 
     public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.TestFrameworkOptionDescription);
 
-    public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.TestConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -237,7 +237,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.ConfigurationOption);
         command.Options.Add(TestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.TestRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
@@ -250,7 +250,7 @@ internal static class TestCommandParser
 
     private static CliCommand GetVSTestCliCommand()
     {
-        DocumentedCommand command = new("test", DocsLink, LocalizableStrings.AppFullName)
+        DocumentedCommand command = new("test", DocsLink, LocalizableStrings.TestAppFullName)
         {
             TreatUnmatchedTokensAsErrors = false
         };
@@ -280,7 +280,7 @@ internal static class TestCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(CommonOptions.VerbosityOption);

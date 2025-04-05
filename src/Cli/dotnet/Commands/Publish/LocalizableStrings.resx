@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="PublishAppDescription" xml:space="preserve">
     <value>Publisher for the .NET Platform</value>
   </data>
   <data name="FrameworkOption" xml:space="preserve">
     <value>FRAMEWORK</value>
   </data>
-  <data name="OutputOption" xml:space="preserve">
+  <data name="PublishOutputOption" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
-  <data name="OutputOptionDescription" xml:space="preserve">
+  <data name="PublishOutputOptionDescription" xml:space="preserve">
     <value>The output directory to place the published artifacts in.</value>
   </data>
   <data name="ManifestOption" xml:space="preserve">
@@ -138,17 +138,17 @@
   <data name="NoBuildOptionDescription" xml:space="preserve">
     <value>Do not build the project before publishing. Implies --no-restore.</value>
   </data>
-  <data name="FrameworkOptionDescription" xml:space="preserve">
+  <data name="PublishFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to publish for. The target framework has to be specified in the project file.</value>
   </data>
-  <data name="RuntimeOptionDescription" xml:space="preserve">
+  <data name="PublishRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to publish for. This is used when creating a self-contained deployment.
 The default is to publish a framework-dependent application.</value>
   </data>
-  <data name="ConfigurationOptionDescription" xml:space="preserve">
+  <data name="PublishConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</value>
   </data>
-  <data name="CmdNoLogo" xml:space="preserve">
+  <data name="PublishCmdNoLogo" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
 </root>

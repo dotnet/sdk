@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadSearchCommandDescription" xml:space="preserve">
     <value>Search for available workloads.</value>
   </data>
   <data name="WorkloadIdStubArgumentName" xml:space="preserve">
@@ -195,5 +195,4 @@
   <data name="WorkloadVersionWithSpecifiedManifestNotFound" xml:space="preserve">
     <value>No workload version matching {0} was found.</value>
   </data>
-  
 </root>

@@ -95,7 +95,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
                 }
                 else
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().Version ?? "unknown"));
+                    Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadListWorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().Version ?? "unknown"));
                 }
 
                 Reporter.WriteLine();
@@ -126,7 +126,7 @@ internal class WorkloadListCommand : WorkloadCommandBase
             var updatableWorkloads = _workloadManifestUpdater.GetUpdatableWorkloadsToAdvertise(installedList).Select(workloadId => workloadId.ToString());
             if (updatableWorkloads.Any())
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUpdatesAvailable, string.Join(" ", updatableWorkloads)));
+                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadListWorkloadUpdatesAvailable, string.Join(" ", updatableWorkloads)));
                 Reporter.WriteLine();
             }
         }

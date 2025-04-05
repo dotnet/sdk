@@ -40,7 +40,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.InvalidNuGetVersionRange,
+                    LocalizableStrings.ToolInstallInvalidNuGetVersionRange,
                     packageVersion));
         }
         return versionRange;

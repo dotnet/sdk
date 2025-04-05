@@ -28,11 +28,11 @@ internal static class ToolRestoreCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("restore", LocalizableStrings.CommandDescription);
+        CliCommand command = new("restore", LocalizableStrings.ToolRestoreCommandDescription);
 
         command.Options.Add(ConfigOption);
         command.Options.Add(AddSourceOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ToolRestoreManifestPathOptionDescription));
         command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);

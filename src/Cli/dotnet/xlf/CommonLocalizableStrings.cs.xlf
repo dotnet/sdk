@@ -77,6 +77,16 @@ Příklady:
         <target state="translated">Umožňuje instalaci předběžných verzí balíčků.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">V souboru řešení {0} chybí značky EndProject nebo obsahuje neplatná mapování složky nadřazeného/podřízeného projektu kolem projektu GUID: {1}. Opravte řešení ručně nebo se ho pokuste otevřít a uložit v sadě Visual Studio.</target>
@@ -457,11 +467,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
         <target state="translated">Položka {0} nebo {1} se nenašla v {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">Soubor {0} se nenašel.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} neexistuje.</target>
@@ -790,11 +795,6 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">Použitý projekt nebo řešení. Pokud není soubor zadaný, prohledá se aktuální adresář.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

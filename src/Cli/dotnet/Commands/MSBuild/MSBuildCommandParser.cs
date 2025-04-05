@@ -21,7 +21,7 @@ internal static class MSBuildCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.AppFullName)
+        var command = new DocumentedCommand("msbuild", DocsLink, LocalizableStrings.BuildAppFullName)
         {
             Arguments
         };

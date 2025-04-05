@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadListCommandDescription" xml:space="preserve">
     <value>List workloads available.</value>
   </data>
-  <data name="WorkloadUpdatesAvailable" xml:space="preserve">
+  <data name="WorkloadListWorkloadUpdatesAvailable" xml:space="preserve">
     <value>Updates are available for the following workload(s): {0}. Run `dotnet workload update` to get the latest.</value>
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
@@ -128,7 +128,7 @@
     <value>Use `dotnet workload search` to find additional workloads to install.</value>
     <comment>{Locked="dotnet workload search"}</comment>
   </data>
-  <data name="WorkloadSetVersion" xml:space="preserve">
+  <data name="WorkloadListWorkloadSetVersion" xml:space="preserve">
     <value>Workload version: {0}</value>
   </data>
   <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">

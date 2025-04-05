@@ -2,24 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">.NET 플랫폼에 대해 지정된 어셈블리를 저장합니다. 기본적으로 대상 런타임 및 프레임워크에 대해 최적화됩니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
         <target state="translated">현재 런타임을 대상 런타임으로 사용합니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOption">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOptionDescription">
-        <source>The output directory to store the given assemblies in.</source>
-        <target state="translated">지정된 어셈블리를 저장할 출력 디렉터리입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkVersionOption">
@@ -72,14 +57,29 @@
         <target state="translated">--manifest가 포함된 매니페스트를 하나 이상 지정하세요.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
-        <target state="translated">패키지를 저장할 대상 프레임워크입니다. 대상 프레임워크는 프로젝트 파일에서 지정해야 합니다.</target>
+      <trans-unit id="StoreAppDescription">
+        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="new">Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
+      <trans-unit id="StoreFrameworkOptionDescription">
+        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
+        <target state="new">The target framework to store packages for. The target framework has to be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOption">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOptionDescription">
+        <source>The output directory to store the given assemblies in.</source>
+        <target state="new">The output directory to store the given assemblies in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
-        <target state="translated">패키지를 저장할 대상 런타임입니다.</target>
+        <target state="new">The target runtime to store packages for.</target>
         <note />
       </trans-unit>
     </body>

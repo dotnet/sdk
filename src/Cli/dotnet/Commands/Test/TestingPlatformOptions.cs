@@ -48,9 +48,9 @@ internal static class TestingPlatformOptions
         HelpName = LocalizableStrings.CmdNumberName
     };
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.TestConfigurationOptionDescription);
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.TestFrameworkOptionDescription);
 
     public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
     {

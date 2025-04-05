@@ -7,11 +7,6 @@
         <target state="translated">命令</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">顯示工作負載安裝動作的歷程記錄。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">日期</target>
@@ -37,9 +32,14 @@
         <target state="translated">具有未記錄變更的列代表變更來自 .NET CLI 工作負載命令以外的動作。這通常代表對 .NET SDK 或 Visual Studio 的更新。</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">工作負載版本</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

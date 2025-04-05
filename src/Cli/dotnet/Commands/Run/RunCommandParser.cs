@@ -12,9 +12,9 @@ internal static class RunCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.RunConfigurationOptionDescription);
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.RunFrameworkOptionDescription);
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
@@ -70,11 +70,11 @@ internal static class RunCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("run", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("run", DocsLink, LocalizableStrings.RunAppFullName);
 
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RunRuntimeOptionDescription));
         command.Options.Add(ProjectOption);
         command.Options.Add(PropertyOption);
         command.Options.Add(LaunchProfileOption);

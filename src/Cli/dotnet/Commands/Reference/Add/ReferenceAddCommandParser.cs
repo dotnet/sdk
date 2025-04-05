@@ -8,9 +8,9 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal static class ReferenceAddCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ReferenceAddProjectPathArgumentName)
     {
-        Description = LocalizableStrings.ProjectPathArgumentDescription,
+        Description = LocalizableStrings.ReferenceAddProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
         CustomParser = arguments =>
         {
@@ -22,8 +22,8 @@ internal static class ReferenceAddCommandParser
 
     public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CmdFramework
+        Description = LocalizableStrings.ReferenceAddCmdFrameworkDescription,
+        HelpName = CommonLocalizableStrings.CommonCmdFramework
 
     }.AddCompletions(Complete.Complete.TargetFrameworksFromProjectFile);
 
@@ -38,7 +38,7 @@ internal static class ReferenceAddCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AppFullName);
+        CliCommand command = new("add", LocalizableStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);

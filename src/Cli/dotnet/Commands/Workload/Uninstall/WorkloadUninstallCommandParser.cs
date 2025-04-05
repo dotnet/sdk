@@ -22,7 +22,7 @@ internal static class WorkloadUninstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        CliCommand command = new("uninstall", LocalizableStrings.WorkloadUninstallCommandDescription);
         command.Arguments.Add(WorkloadIdArgument);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
         command.Options.Add(CommonOptions.VerbosityOption);

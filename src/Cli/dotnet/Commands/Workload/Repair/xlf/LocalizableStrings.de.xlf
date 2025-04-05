@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandDescription">
-        <source>Repair workload installations.</source>
-        <target state="translated">Reparieren Sie Workloadinstallationen.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoWorkloadsToRepair">
         <source>No workloads are installed, nothing to repair. Run `dotnet workload search` to find workloads to install.</source>
         <target state="translated">Es sind keine Workloads installiert, es ist keine Reparatur erforderlich. Führen Sie „dotnet workload search“ aus, um zu installierende Workloads zu finden.</target>
@@ -20,6 +15,11 @@
       <trans-unit id="RepairingWorkloads">
         <source>Repairing workload installation for workloads: {0}</source>
         <target state="translated">Die Workload-Installation für Workloads wird repariert: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadRepairCommandDescription">
+        <source>Repair workload installations.</source>
+        <target state="new">Repair workload installations.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadRepairFailed">

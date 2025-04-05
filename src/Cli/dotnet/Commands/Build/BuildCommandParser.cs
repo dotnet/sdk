@@ -20,7 +20,7 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.OutputOptionDescription,
+        Description = LocalizableStrings.BuildOutputOptionDescription,
         HelpName = LocalizableStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
@@ -38,7 +38,7 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = LocalizableStrings.BuildCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
@@ -50,9 +50,9 @@ internal static class BuildCommandParser
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.BuildFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.BuildConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -63,13 +63,13 @@ internal static class BuildCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("build", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("build", DocsLink, LocalizableStrings.BuildAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.BuildRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

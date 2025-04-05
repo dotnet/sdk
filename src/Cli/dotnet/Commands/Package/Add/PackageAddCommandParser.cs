@@ -82,20 +82,20 @@ internal static class PackageAddCommandParser
 
     public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = LocalizableStrings.CmdFramework
+        Description = LocalizableStrings.PackageAddCmdFrameworkDescription,
+        HelpName = LocalizableStrings.PackageAddCmdFramework
     }.ForwardAsSingle(o => $"--framework {o}");
 
     public static readonly CliOption<bool> NoRestoreOption = new("--no-restore", "-n")
     {
-        Description = LocalizableStrings.CmdNoRestoreDescription,
+        Description = LocalizableStrings.PackageAddCmdNoRestoreDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<string> SourceOption = new ForwardedOption<string>("--source", "-s")
     {
-        Description = LocalizableStrings.CmdSourceDescription,
-        HelpName = LocalizableStrings.CmdSource
+        Description = LocalizableStrings.PackageAddCmdSourceDescription,
+        HelpName = LocalizableStrings.PackageAddCmdSource
     }.ForwardAsSingle(o => $"--source {o}");
 
     public static readonly CliOption<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
@@ -121,7 +121,7 @@ internal static class PackageAddCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AppFullName);
+        CliCommand command = new("add", LocalizableStrings.PackageAddAppFullName);
 
         VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
         command.Arguments.Add(CmdPackageArgument);

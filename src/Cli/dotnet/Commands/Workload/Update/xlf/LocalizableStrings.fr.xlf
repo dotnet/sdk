@@ -12,11 +12,6 @@
         <target state="translated">Désolé, impossible d’utiliser les options {0} et {1} ensemble.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Update all installed workloads.</source>
-        <target state="translated">Mettez à jour toutes les charges de travail installées.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
         <target state="translated">Mettre à jour les charges de travail vers une version précédente spécifiée par l’argument. Utiliser l'« historique de charge de travail dotnet » pour afficher les enregistrements d’historique de charge de travail disponibles.</target>
@@ -52,16 +47,6 @@
         <target state="translated">Aucune charge de travail installée pour cette bande de fonctionnalités. Pour mettre à jour les charges de travail installées avec des versions antérieures du SDK, incluez l'option --from-previous-sdk.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollBackFailedMessage">
-        <source>Installation rollback failed: {0}</source>
-        <target state="translated">Échec de la restauration de l'installation : {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RollingBackInstall">
-        <source>Workload installation failed. Rolling back installed packs...</source>
-        <target state="translated">Échec de l’installation de la charge de travail, restauration des packs installés...</target>
-        <note />
-      </trans-unit>
       <trans-unit id="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion">
         <source>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</source>
         <target state="new">'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</target>
@@ -82,16 +67,6 @@
         <target state="translated">La mise à jour vers un fichier de restauration n’est pas compatible avec les jeux de charge de travail. L’installation et la mise à jour utiliseront désormais des manifestes libres. Pour effectuer une mise à jour vers une version de charge de travail spécifique, utilisez --version.</target>
         <note />
       </trans-unit>
-      <trans-unit id="UpdateSucceeded">
-        <source>Successfully updated workload(s): {0}.</source>
-        <target state="translated">Mise à jour réussie du charge de travail : {0}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCacheDownloadFailed">
-        <source>Failed to download workload update packages to cache: {0}</source>
-        <target state="translated">Échec du téléchargement des packages de mise à jour de charge de travail dans le cache : {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
         <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
         <target state="translated">L’ID d’un enregistrement d’historique de charge de travail doit être compris entre 1 et le nombre d’enregistrements d’historique de charge de travail, inclus.</target>
@@ -107,9 +82,34 @@
         <target state="translated">Les manifestes de publicité ont été mis à jour.</target>
         <note />
       </trans-unit>
+      <trans-unit id="WorkloadUpdateCommandDescription">
+        <source>Update all installed workloads.</source>
+        <target state="new">Update all installed workloads.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Échec de la mise à jour du chargement vers le serveur : {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateRollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="new">Installation rollback failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateRollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="new">Workload installation failed. Rolling back installed packs...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateUpdateSucceeded">
+        <source>Successfully updated workload(s): {0}.</source>
+        <target state="new">Successfully updated workload(s): {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadUpdateWorkloadCacheDownloadFailed">
+        <source>Failed to download workload update packages to cache: {0}</source>
+        <target state="new">Failed to download workload update packages to cache: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionRequestedNotFound">

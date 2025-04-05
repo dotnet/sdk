@@ -2,19 +2,39 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="it" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppDescription">
+      <trans-unit id="BuildAppDescription">
         <source>Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</source>
-        <target state="translated">Generatore per la piattaforma .NET. Delegati per la destinazione 'Build' di MSBuild nel file di progetto.</target>
+        <target state="new">Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
+      <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
-        <target state="translated">Generatore .NET</target>
+        <target state="new">.NET Builder</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoLogo">
+      <trans-unit id="BuildCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Evita la visualizzazione del messaggio di avvio o di copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildConfigurationOptionDescription">
+        <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to use for building the project. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildFrameworkOptionDescription">
+        <source>The target framework to build for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to build for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildOutputOptionDescription">
+        <source>The output directory to place built artifacts in.</source>
+        <target state="new">The output directory to place built artifacts in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="BuildRuntimeOptionDescription">
+        <source>The target runtime to build for.</source>
+        <target state="new">The target runtime to build for.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoDependenciesOptionDescription">
@@ -27,29 +47,9 @@
         <target state="translated">Non usa la compilazione incrementale.</target>
         <note />
       </trans-unit>
-      <trans-unit id="OutputOptionDescription">
-        <source>The output directory to place built artifacts in.</source>
-        <target state="translated">Directory di output in cui inserire gli artefatti compilati.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OutputOptionName">
         <source>OUTPUT_DIR</source>
         <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to build for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Framework di destinazione per cui eseguire la compilazione. Il framework di destinazione deve essere specificato anche nel file di progetto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to build for.</source>
-        <target state="translated">Runtime di destinazione per cui eseguire la compilazione.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
-        <source>The configuration to use for building the project. The default for most projects is 'Debug'.</source>
-        <target state="translated">Configurazione da usare per compilare il progetto. L'impostazione predefinita per la maggior parte dei progetti è 'Debug'.</target>
         <note />
       </trans-unit>
     </body>

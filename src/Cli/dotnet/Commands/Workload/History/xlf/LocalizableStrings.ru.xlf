@@ -7,11 +7,6 @@
         <target state="translated">Команда</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Показывает журнал действий по установке рабочей нагрузки.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Дата</target>
@@ -37,9 +32,14 @@
         <target state="translated">Строки с нерегистрируемыми в журнале изменениями представляют изменения из действий, отличных от команд рабочей нагрузки .NET CLI. Обычно это представляет обновление пакета SDK для .NET или Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Версия рабочей нагрузки</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

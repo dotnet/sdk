@@ -502,8 +502,8 @@ internal static class InstallingWorkloadCommandParser
 
     public static readonly CliOption<string> VersionOption = new("--sdk-version")
     {
-        Description = Strings.VersionOptionDescription,
-        HelpName = Strings.VersionOptionName,
+        Description = Strings.WorkloadInstallVersionOptionDescription,
+        HelpName = Strings.WorkloadInstallVersionOptionName,
         Hidden = true
     };
 
@@ -515,14 +515,14 @@ internal static class InstallingWorkloadCommandParser
 
     public static readonly CliOption<string> ConfigOption = new("--configfile")
     {
-        Description = Strings.ConfigFileOptionDescription,
-        HelpName = Strings.ConfigFileOptionName
+        Description = Strings.WorkloadInstallConfigFileOptionDescription,
+        HelpName = Strings.WorkloadInstallConfigFileOptionName
     };
 
     public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source", "-s")
     {
-        Description = Strings.SourceOptionDescription,
-        HelpName = Strings.SourceOptionName
+        Description = Strings.WorkloadInstallSourceOptionDescription,
+        HelpName = Strings.WorkloadInstallSourceOptionName
     }.AllowSingleArgPerToken();
 
     internal static void AddWorkloadInstallCommandOptions(CliCommand command)

@@ -19,7 +19,7 @@ internal static class WorkloadCleanCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("clean", LocalizableStrings.CommandDescription);
+        CliCommand command = new("clean", LocalizableStrings.WorkloadCleanCommandDescription);
 
         command.Options.Add(CleanAllOption);
 

@@ -601,13 +601,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 commandResult
                     .Should()
-                    .HaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
+                    .HaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
             else
             {
                 commandResult
                     .Should()
-                    .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
+                    .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
 
         }
@@ -637,7 +637,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             commandResult
                 .Should()
-                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
+                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadInstallWorkloadUpdatesAvailable);
 
 
 

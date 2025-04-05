@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>List all package references of the project or solution.</source>
-        <target state="translated">Listez toutes les références de package du projet ou de la solution.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdDeprecatedDescription">
         <source>Lists packages that have been deprecated. Cannot be combined with '--vulnerable' or '--outdated' options.</source>
         <target state="translated">Liste les packages qui ont été dépréciés. Impossible à combiner avec les options '--vulnerable' ou '--outdated'.</target>
@@ -15,16 +10,6 @@
       <trans-unit id="CmdFormatDescription">
         <source>Specifies the output format type for the list packages command.</source>
         <target state="translated">Spécifie le type de format de sortie pour la commande list packages.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK | FRAMEWORK\RID</source>
-        <target state="translated">FRAMEWORK | FRAMEWORK\RID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFrameworkDescription">
-        <source>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</source>
-        <target state="translated">Choisit un framework pour afficher ses packages. Utilisez l'option plusieurs fois selon le nombre de frameworks.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
@@ -77,24 +62,39 @@
         <target state="translated">Prenez en compte les packages avec des préversions quand vous recherchez des packages plus récents. Nécessite l'option '--outdated'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdSource">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdSourceDescription">
-        <source>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
-        <target state="translated">Sources NuGet à utiliser durant la recherche de packages plus récents. Nécessite l'option '--outdated', '--deprecated' ou '--vulnerable'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>Could not find file or directory '{0}'.</source>
-        <target state="translated">Fichier ou répertoire '{0}' introuvable.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OptionsCannotBeCombined">
         <source>Options '--outdated', '--deprecated' and '--vulnerable' cannot be combined.</source>
         <target state="translated">Les options '--outdated', '--deprecated' et '--vulnerable' ne peuvent pas être combinées.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListAppFullName">
+        <source>List all package references of the project or solution.</source>
+        <target state="new">List all package references of the project or solution.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdFramework">
+        <source>FRAMEWORK | FRAMEWORK\RID</source>
+        <target state="new">FRAMEWORK | FRAMEWORK\RID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdFrameworkDescription">
+        <source>Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</source>
+        <target state="new">Chooses a framework to show its packages. Use the option multiple times for multiple frameworks.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdSource">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListCmdSourceDescription">
+        <source>The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</source>
+        <target state="new">The NuGet sources to use when searching for newer packages. Requires the '--outdated', '--deprecated' or '--vulnerable' option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageListFileNotFound">
+        <source>Could not find file or directory '{0}'.</source>
+        <target state="new">Could not find file or directory '{0}'.</target>
         <note />
       </trans-unit>
     </body>

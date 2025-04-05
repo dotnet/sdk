@@ -7,21 +7,6 @@
         <target state="translated">要添加项目的目标解决方案文件夹路径。</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET modify solution file command</source>
-        <target state="translated">.NET“修改解决方案文件”命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
-        <target state="translated">从解决方案(SLN)文件添加、删除和列出项目的命令。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppHelpText">
-        <source>Projects to add or to remove from the solution.</source>
-        <target state="translated">要从解决方案添加或删除的项目。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddAppFullName">
         <source>Add one or more projects to a solution file.</source>
         <target state="translated">将一个或多个项目添加到解决方案文件。</target>
@@ -75,6 +60,21 @@
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
         <target state="translated">{0} 生成 .slnx 文件。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppDescription">
+        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
+        <target state="new">Command to add, remove, and list projects from the solution (SLN) file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppFullName">
+        <source>.NET modify solution file command</source>
+        <target state="new">.NET modify solution file command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppHelpText">
+        <source>Projects to add or to remove from the solution.</source>
+        <target state="new">Projects to add or to remove from the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

@@ -22,16 +22,6 @@
         <target state="new">Actual</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">.NET 測試驅動程式</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Test Driver for the .NET Platform</source>
-        <target state="translated">適用於 .NET 平台的測試驅動程式</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CancelledLowercase">
         <source>canceled</source>
         <target state="new">canceled</target>
@@ -173,11 +163,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
         <target state="new">Disable ANSI output.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">執行測試，但不顯示 Microsoft Testplatform 橫幅</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdNoProgressDescription">
         <source>Disable progress reporting.</source>
         <target state="new">Disable progress reporting.</target>
@@ -186,11 +171,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
         <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoRestoreDescription">
-        <source>Do not execute an implicit restore.</source>
-        <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
@@ -306,11 +286,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
                                         使用獨特的檔案名稱登入 trx 格式: --logger trx
                                         使用指定的檔案名稱登入 trx 格式: --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
                                         如需了解記錄器引數的詳細資訊，請參閱 https://aka.ms/vstest-report。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDescription">
@@ -607,6 +582,36 @@ RunSettings 引數:
         <target state="new">Standard output</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestAppDescription">
+        <source>Test Driver for the .NET Platform</source>
+        <target state="new">Test Driver for the .NET Platform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestAppFullName">
+        <source>.NET Test Driver</source>
+        <target state="new">.NET Test Driver</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdNoLogo">
+        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft Testplatform banner</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestConfigurationOptionDescription">
+        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to use for running tests. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
         <target state="new">Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
@@ -622,6 +627,11 @@ RunSettings 引數:
         <target state="new">Discovered {0} tests.</target>
         <note>0 is number of tests</note>
       </trans-unit>
+      <trans-unit id="TestFrameworkOptionDescription">
+        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run tests for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
         <target state="new">Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
@@ -630,6 +640,11 @@ RunSettings 引數:
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
         <target state="new">Test run summary:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestRuntimeOptionDescription">
+        <source>The target runtime to test for.</source>
+        <target state="new">The target runtime to test for.</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
@@ -683,21 +698,6 @@ Example:
   當測試進行時間超過 20 分鐘時讓測試逾時，並收集停止回應傾印。
   dotnet test --blame-hang-timeout 20min
 </target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
-        <target state="translated">要為其執行測試的目標架構。該目標架構必須在專案檔中指定。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
-        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
-        <target state="translated">要用於執行測試的組態。大部分的專案預設為「偵錯」。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to test for.</source>
-        <target state="translated">要測試的目標執行時間。</target>
         <note />
       </trans-unit>
     </body>

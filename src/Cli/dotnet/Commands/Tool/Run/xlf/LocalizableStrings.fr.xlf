@@ -7,11 +7,6 @@
         <target state="translated">Outil introuvable dans le fichier manifeste comportant une commande nommée '{0}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">Exécuter un outil local. Notez que cette commande ne peut pas être utilisée pour exécuter un outil global. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
         <source>The command name of the tool to run.</source>
         <target state="translated">Nom de commande de l'outil à exécuter.</target>
@@ -25,6 +20,11 @@
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">Spécifiez un nom de commande à exécuter.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
     </body>

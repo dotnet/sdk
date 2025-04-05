@@ -77,6 +77,16 @@ Examples:
         <target state="translated">允许安装预发行包。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">解决方案文件 "{0}" 缺少 EndProject 标记或在项目 GUID "{1}" 周围具有无效的子父项目文件夹映射。请手动修复解决方案或尝试将其打开并保存在 Visual Studio 中。</target>
@@ -457,11 +467,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">未在“{2}”中找到 {0} 或 {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">未找到文件“{0}”。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} 不存在。</target>
@@ -790,11 +795,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">要操作的项目或解决方案。如果未指定文件，则搜索当前目录。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

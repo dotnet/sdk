@@ -108,7 +108,7 @@ internal class ListPackageReferencesCommand(
 
         if (!File.Exists(resultPath))
         {
-            throw new GracefulException(LocalizableStrings.FileNotFound, resultPath);
+            throw new GracefulException(LocalizableStrings.PackageListFileNotFound, resultPath);
         }
 
         return resultPath;

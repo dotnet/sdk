@@ -7,11 +7,6 @@
         <target state="translated">Comando</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Mostra una cronologia delle azioni di installazione del carico di lavoro.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Data</target>
@@ -37,9 +32,14 @@
         <target state="translated">Le righe con modifiche non registrate rappresentano modifiche da azioni diverse dai comandi del carico di lavoro dell'interfaccia della riga di comando .NET. In genere si tratta di un aggiornamento di .NET SDK o di Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Versione del carico di lavoro</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

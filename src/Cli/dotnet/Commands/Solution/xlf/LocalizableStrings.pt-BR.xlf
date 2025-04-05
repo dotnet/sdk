@@ -7,21 +7,6 @@
         <target state="translated">O caminho da pasta de solução de destino ao qual adicionar os projetos.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET modify solution file command</source>
-        <target state="translated">Comando para modificar o arquivo de solução do .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
-        <target state="translated">Comando para adicionar, remover e listar projetos do arquivo de solução (SLN).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppHelpText">
-        <source>Projects to add or to remove from the solution.</source>
-        <target state="translated">Projetos a serem adicionados ou removidos da solução.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddAppFullName">
         <source>Add one or more projects to a solution file.</source>
         <target state="translated">Adicionar um ou mais projetos em um arquivo de solução.</target>
@@ -75,6 +60,21 @@
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
         <target state="translated">Arquivo .slnx {0} gerado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppDescription">
+        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
+        <target state="new">Command to add, remove, and list projects from the solution (SLN) file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppFullName">
+        <source>.NET modify solution file command</source>
+        <target state="new">.NET modify solution file command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppHelpText">
+        <source>Projects to add or to remove from the solution.</source>
+        <target state="new">Projects to add or to remove from the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

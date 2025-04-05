@@ -388,7 +388,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -412,7 +412,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .NotContain(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -437,7 +437,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             action
                 .Should().Throw<GracefulException>()
                 .WithMessage(string.Format(
-                    LocalizableStrings.InvalidNuGetVersionRange,
+                    LocalizableStrings.ToolInstallInvalidNuGetVersionRange,
                     invalidVersion));
         }
 
@@ -460,7 +460,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -485,7 +485,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -516,7 +516,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -538,7 +538,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.ToolUpdateUpdateSucceeded,
                     PackageId,
                     PackageVersion,
                     HigherPackageVersion).Green());
@@ -564,7 +564,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -586,7 +586,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.ToolUpdateUpdateSucceeded,
                     PackageId,
                     PackageVersion,
                     LowerPackageVersion).Green());
@@ -612,7 +612,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -651,7 +651,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -730,7 +730,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Contain(l => l == string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     "2.0.1-preview1").Green());
@@ -881,7 +881,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    LocalizableStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());

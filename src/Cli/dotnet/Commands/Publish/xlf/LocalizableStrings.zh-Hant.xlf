@@ -2,34 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="zh-Hant" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppDescription">
-        <source>Publisher for the .NET Platform</source>
-        <target state="translated">.NET 平台的發行者</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">不顯示啟始資訊或著作權訊息。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="FrameworkOption">
         <source>FRAMEWORK</source>
         <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to publish for. The target framework has to be specified in the project file.</source>
-        <target state="translated">要為其進行發佈的目標架構。該架構必須在專案檔中指定。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOption">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOptionDescription">
-        <source>The output directory to place the published artifacts in.</source>
-        <target state="translated">放置發佈之成品的輸出目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestOption">
@@ -47,16 +22,41 @@
         <target state="translated">請勿在發佈之前建置專案。提示: -no-restore.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to publish for. This is used when creating a self-contained deployment.
-The default is to publish a framework-dependent application.</source>
-        <target state="translated">要發佈至的目標執行階段。在建立獨立式部署時會使用此項目。
-預設為發佈與 Framework 相依的應用程式。</target>
+      <trans-unit id="PublishAppDescription">
+        <source>Publisher for the .NET Platform</source>
+        <target state="new">Publisher for the .NET Platform</target>
         <note />
       </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
+      <trans-unit id="PublishCmdNoLogo">
+        <source>Do not display the startup banner or the copyright message.</source>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishConfigurationOptionDescription">
         <source>The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</source>
-        <target state="translated">要發佈的設定。.NET 8.0 專案及更新版本的預設值為 'Release'，但較舊專案的預設值為 'Debug'。</target>
+        <target state="new">The configuration to publish for. The default is 'Release' for NET 8.0 projects and above, but 'Debug' for older projects.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishFrameworkOptionDescription">
+        <source>The target framework to publish for. The target framework has to be specified in the project file.</source>
+        <target state="new">The target framework to publish for. The target framework has to be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishOutputOption">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishOutputOptionDescription">
+        <source>The output directory to place the published artifacts in.</source>
+        <target state="new">The output directory to place the published artifacts in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PublishRuntimeOptionDescription">
+        <source>The target runtime to publish for. This is used when creating a self-contained deployment.
+The default is to publish a framework-dependent application.</source>
+        <target state="new">The target runtime to publish for. This is used when creating a self-contained deployment.
+The default is to publish a framework-dependent application.</target>
         <note />
       </trans-unit>
     </body>

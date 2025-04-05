@@ -7,11 +7,6 @@
         <target state="translated">Impossible de spécifier à la fois les arguments {0} et {1}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Search for available workloads.</source>
-        <target state="translated">Recherchez les charges de travail disponibles.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="DescriptionColumnName">
         <source>Description</source>
         <target state="translated">Description</target>
@@ -123,6 +118,11 @@
       <trans-unit id="WorkloadManifestIdColumn">
         <source>Workload manifest ID</source>
         <target state="translated">ID du manifeste de charge de travail</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSearchCommandDescription">
+        <source>Search for available workloads.</source>
+        <target state="new">Search for available workloads.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadVersionArgument">

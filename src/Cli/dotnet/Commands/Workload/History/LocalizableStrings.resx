@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadHistoryCommandDescription" xml:space="preserve">
     <value>Shows a history of workload installation actions.</value>
   </data>
   <data name="NoHistoryFound" xml:space="preserve">
@@ -141,7 +141,7 @@
   <data name="GlobalJsonVersion" xml:space="preserve">
     <value>Global.json Version</value>
   </data>
-  <data name="WorkloadSetVersion" xml:space="preserve">
+  <data name="WorkloadHistoryWorkloadSetVersion" xml:space="preserve">
     <value>Workload Version</value>
   </data>
 </root>

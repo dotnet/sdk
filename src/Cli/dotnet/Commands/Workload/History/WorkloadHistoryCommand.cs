@@ -54,7 +54,7 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
             table.AddColumn(LocalizableStrings.Command, r => r.Command);
             table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? []));
             table.AddColumn(LocalizableStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
-            table.AddColumn(LocalizableStrings.WorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
+            table.AddColumn(LocalizableStrings.WorkloadHistoryWorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
 
             Reporter.WriteLine();
             table.PrintRows(displayRecords, l => Reporter.WriteLine(l));

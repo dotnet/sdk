@@ -22,16 +22,6 @@
         <target state="new">Actual</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET Test Driver</source>
-        <target state="translated">Pilote de test .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Test Driver for the .NET Platform</source>
-        <target state="translated">Pilote de test pour la plateforme .NET</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CancelledLowercase">
         <source>canceled</source>
         <target state="new">canceled</target>
@@ -173,11 +163,6 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
         <target state="new">Disable ANSI output.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoLogo">
-        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
-        <target state="translated">Exécute le ou les tests, sans afficher la bannière Microsoft Testplatform</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdNoProgressDescription">
         <source>Disable progress reporting.</source>
         <target state="new">Disable progress reporting.</target>
@@ -186,11 +171,6 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
         <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoRestoreDescription">
-        <source>Do not execute an implicit restore.</source>
-        <target state="new">Do not execute an implicit restore.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
@@ -306,11 +286,6 @@ Pour MSTest avant la version 2.2.4, le délai d’expiration est utilisé pour 
                                         Journal au format trx avec un nom de fichier unique : --logger trx
                                         Journal au format trx avec le nom de fichier spécifié : --logger "trx;LogFileName=&lt;TestResults.trx&gt;"
                                         Pour plus d'informations sur les arguments du journaliseur, consultez https://aka.ms/vstest-report.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutputDescription">
@@ -607,6 +582,36 @@ Arguments de RunSettings :
         <target state="new">Standard output</target>
         <note />
       </trans-unit>
+      <trans-unit id="TestAppDescription">
+        <source>Test Driver for the .NET Platform</source>
+        <target state="new">Test Driver for the .NET Platform</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestAppFullName">
+        <source>.NET Test Driver</source>
+        <target state="new">.NET Test Driver</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdNoLogo">
+        <source>Run test(s), without displaying Microsoft Testplatform banner</source>
+        <target state="new">Run test(s), without displaying Microsoft Testplatform banner</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdNoRestoreDescription">
+        <source>Do not execute an implicit restore.</source>
+        <target state="new">Do not execute an implicit restore.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestConfigurationOptionDescription">
+        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to use for running tests. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
         <target state="new">Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
@@ -622,6 +627,11 @@ Arguments de RunSettings :
         <target state="new">Discovered {0} tests.</target>
         <note>0 is number of tests</note>
       </trans-unit>
+      <trans-unit id="TestFrameworkOptionDescription">
+        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run tests for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
         <target state="new">Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
@@ -630,6 +640,11 @@ Arguments de RunSettings :
       <trans-unit id="TestRunSummary">
         <source>Test run summary:</source>
         <target state="new">Test run summary:</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TestRuntimeOptionDescription">
+        <source>The target runtime to test for.</source>
+        <target state="new">The target runtime to test for.</target>
         <note />
       </trans-unit>
       <trans-unit id="Try">
@@ -683,21 +698,6 @@ Exemple :
   Définissez le délai d'expiration de la série de tests quand un test prend plus de 20 minutes, et collectez les données de vidage sur blocage. 
   dotnet test --blame-hang-timeout 20min
 </target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to run tests for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Framework cible pour lequel les tests sont exécutés. Le framework cible doit également être spécifié dans le fichier projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
-        <source>The configuration to use for running tests. The default for most projects is 'Debug'.</source>
-        <target state="translated">Configuration à utiliser pour l'exécution des tests. La valeur par défaut pour la plupart des projets est 'Debug'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to test for.</source>
-        <target state="translated">Runtime cible à tester.</target>
         <note />
       </trans-unit>
     </body>

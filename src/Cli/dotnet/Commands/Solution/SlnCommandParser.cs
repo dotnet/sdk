@@ -33,7 +33,7 @@ internal static class SlnCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.SolutionAppFullName);
 
         command.Aliases.Add(CommandAlias);
 

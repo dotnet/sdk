@@ -15,7 +15,7 @@ internal static class DotnetCommandCallbacks
 {
     internal static bool AddPackageReference(string projectPath, string packageName, string? version)
     {
-        PathUtility.EnsureAllPathsExist([projectPath], CommonLocalizableStrings.FileNotFound, allowDirectories: false);
+        PathUtility.EnsureAllPathsExist([projectPath], CommonLocalizableStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
         if (!string.IsNullOrWhiteSpace(version))
         {
@@ -27,8 +27,8 @@ internal static class DotnetCommandCallbacks
 
     internal static bool AddProjectReference(string projectPath, string projectToAdd)
     {
-        PathUtility.EnsureAllPathsExist([projectPath], CommonLocalizableStrings.FileNotFound, allowDirectories: false);
-        PathUtility.EnsureAllPathsExist([projectToAdd], CommonLocalizableStrings.FileNotFound, allowDirectories: false);
+        PathUtility.EnsureAllPathsExist([projectPath], CommonLocalizableStrings.CommonFileNotFound, allowDirectories: false);
+        PathUtility.EnsureAllPathsExist([projectToAdd], CommonLocalizableStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = ["add", projectPath, "reference", projectToAdd];
         var addProjectReferenceCommand = new AddProjectToProjectReferenceCommand(AddCommandParser.GetCommand().Parse([.. commandArgs]));
         return addProjectReferenceCommand.Execute() == 0;
@@ -36,15 +36,15 @@ internal static class DotnetCommandCallbacks
 
     internal static bool RestoreProject(string pathToRestore)
     {
-        PathUtility.EnsureAllPathsExist([pathToRestore], CommonLocalizableStrings.FileNotFound, allowDirectories: true);
+        PathUtility.EnsureAllPathsExist([pathToRestore], CommonLocalizableStrings.CommonFileNotFound, allowDirectories: true);
         // for the implicit restore we do not want the terminal logger to emit any output unless there are errors
         return RestoreCommand.Run([pathToRestore, "-tlp:verbosity=quiet"]) == 0;
     }
 
     internal static bool AddProjectsToSolution(string solutionPath, IReadOnlyList<string> projectsToAdd, string? solutionFolder, bool? inRoot)
     {
-        PathUtility.EnsureAllPathsExist([solutionPath], CommonLocalizableStrings.FileNotFound, allowDirectories: false);
-        PathUtility.EnsureAllPathsExist(projectsToAdd, CommonLocalizableStrings.FileNotFound, allowDirectories: false);
+        PathUtility.EnsureAllPathsExist([solutionPath], CommonLocalizableStrings.CommonFileNotFound, allowDirectories: false);
+        PathUtility.EnsureAllPathsExist(projectsToAdd, CommonLocalizableStrings.CommonFileNotFound, allowDirectories: false);
         IEnumerable<string> commandArgs = new[] { "solution", solutionPath, "add" }.Concat(projectsToAdd);
         if (!string.IsNullOrWhiteSpace(solutionFolder))
         {

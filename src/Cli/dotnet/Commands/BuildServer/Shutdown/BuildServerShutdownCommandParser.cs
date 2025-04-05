@@ -35,7 +35,7 @@ internal static class ServerShutdownCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("shutdown", LocalizableStrings.CommandDescription);
+        CliCommand command = new("shutdown", LocalizableStrings.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

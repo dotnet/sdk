@@ -7,6 +7,16 @@
         <target state="translated">將樣式喜好設定套用至專案或解決方案。</target>
         <note />
       </trans-unit>
+      <trans-unit id="HelpAppDescription">
+        <source>Utility to get more detailed help about each of the SDK commands.</source>
+        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpAppFullName">
+        <source>.NET CLI help utility</source>
+        <target state="new">.NET CLI help utility</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
         <target state="translated">搜尋、新增、移除或列出 .NET 專案的 PackageReferences。</target>
@@ -170,16 +180,6 @@
       <trans-unit id="CommandDoesNotExist">
         <source>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</source>
         <target state="translated">指定的命令 '{0}' 並非有效的 SDK 命令。請指定有效的 SDK 命令。如需詳細資訊，請執行 dotnet help。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET CLI help utility</source>
-        <target state="translated">.NET CLI 說明公用程式</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="translated">取得每個 SDK 命令相關詳細說明的公用程式。</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentName">

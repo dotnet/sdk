@@ -2,44 +2,44 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="fr" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET Clean Command</source>
-        <target state="translated">Commande de nettoyage .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
+      <trans-unit id="CleanAppDescription">
         <source>Command to clean previously generated build outputs.</source>
-        <target state="translated">Commande de nettoyage des sorties de build générées précédemment.</target>
+        <target state="new">Command to clean previously generated build outputs.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdNoLogo">
+      <trans-unit id="CleanAppFullName">
+        <source>.NET Clean Command</source>
+        <target state="new">.NET Clean Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanCmdNoLogo">
         <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">N'affiche pas la bannière de démarrage ni le message de copyright.</target>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdOutputDir">
+      <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
+        <target state="new">OUTPUT_DIR</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdOutputDirDescription">
+      <trans-unit id="CleanCmdOutputDirDescription">
         <source>The directory containing the build artifacts to clean.</source>
-        <target state="translated">Répertoire contenant les artefacts de build à nettoyer.</target>
+        <target state="new">The directory containing the build artifacts to clean.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
-        <target state="translated">Framework cible pour lequel le nettoyage est effectué. Le framework cible doit également être spécifié dans le fichier projet.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to clean for.</source>
-        <target state="translated">Runtime cible pour lequel le nettoyage est effectué.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
+      <trans-unit id="CleanConfigurationOptionDescription">
         <source>The configuration to clean for. The default for most projects is 'Debug'.</source>
-        <target state="translated">Configuration pour laquelle le nettoyage est effectué. La valeur par défaut pour la plupart des projets est 'Debug'.</target>
+        <target state="new">The configuration to clean for. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanFrameworkOptionDescription">
+        <source>The target framework to clean for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to clean for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CleanRuntimeOptionDescription">
+        <source>The target runtime to clean for.</source>
+        <target state="new">The target runtime to clean for.</target>
         <note />
       </trans-unit>
     </body>

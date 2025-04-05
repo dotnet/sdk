@@ -2,16 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="es" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET Run Command</source>
-        <target state="translated">Comando Run de .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command used to run .NET apps</source>
-        <target state="translated">Comando para ejecutar aplicaciones de .NET</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandOptionFrameworkDescription">
         <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
         <target state="translated">Compila y ejecuta la aplicación con la plataforma especificada. La plataforma se debe especificar en el archivo de proyecto. </target>
@@ -74,6 +64,16 @@ Defina nombres de perfiles distintos.</target>
       <trans-unit id="PropertyOptionDescription">
         <source>Properties to be passed to MSBuild.</source>
         <target state="translated">Propiedades que se van a pasar a MSBuild.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunAppDescription">
+        <source>Command used to run .NET apps</source>
+        <target state="new">Command used to run .NET apps</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunAppFullName">
+        <source>.NET Run Command</source>
+        <target state="new">.NET Run Command</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -166,6 +166,21 @@ El valor actual de {1} es "{2}".</target>
         <target state="translated">"{0}" no es un archivo de proyecto válido.</target>
         <note />
       </trans-unit>
+      <trans-unit id="RunConfigurationOptionDescription">
+        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
+        <target state="new">The configuration to run for. The default for most projects is 'Debug'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunFrameworkOptionDescription">
+        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
+        <target state="new">The target framework to run for. The target framework must also be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RunRuntimeOptionDescription">
+        <source>The target runtime to run for.</source>
+        <target state="new">The target runtime to run for.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}' at {1}.</source>
         <target state="new">Unrecognized directive '{0}' at {1}.</target>
@@ -208,21 +223,6 @@ El valor actual de {1} es "{2}".</target>
 {0}</source>
         <target state="translated">Se produjo un error al leer launchSettings.json.
 {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
-        <source>The configuration to run for. The default for most projects is 'Debug'.</source>
-        <target state="translated">La configuración para la que se ejecuta. El valor predeterminado para la mayoría de los proyectos es "Debug".</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to run for. The target framework must also be specified in the project file.</source>
-        <target state="translated">La plataforma de destino para la que se ejecuta. La plataforma de destino se debe especificar en el archivo de proyecto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
-        <source>The target runtime to run for.</source>
-        <target state="translated">El entorno de ejecución de destino en el que se ejecuta.</target>
         <note />
       </trans-unit>
       <trans-unit id="ValueMustBeAnObject">

@@ -137,11 +137,6 @@
         <target state="translated">Permitir manifestos de carga de trabalho de pré-lançamento.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InstallationSucceeded">
-        <source>Successfully installed workload(s) {0}.</source>
-        <target state="translated">Carga(s) de trabalho(s) instalada(s) com êxito {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallingPackVersionMessage">
         <source>Installing pack {0} version {1}...</source>
         <target state="translated">Instalando o pacote {0} versão {1}...</target>
@@ -165,21 +160,6 @@
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
         <target state="translated">O arquivo de configurações no pacote NuGet da carga de trabalho é inválido: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Install one or more workloads.</source>
-        <target state="translated">Instale uma ou mais cargas de trabalho.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">O arquivo de configuração do NuGet a ser usado.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="translated">A estrutura de destino para a qual a carga de trabalho será instalada.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -232,11 +212,6 @@
         <target state="translated">Resolvendo URLs de pacote para carga(s) de trabalho {0}...</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollBackFailedMessage">
-        <source>Installation rollback failed: {0}</source>
-        <target state="translated">Falha na reversão da instalação: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">Definição de reversão inválida. Os IDs de manifesto na definição de reversão {0} não correspondem aos IDs de manifesto instalados {1}.</target>
@@ -245,11 +220,6 @@
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
         <source>Provided rollback definition file {0} doesn't exist.</source>
         <target state="translated">O arquivo de definição de reversão {0} fornecido não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RollingBackInstall">
-        <source>Workload installation failed. Rolling back installed packs...</source>
-        <target state="translated">A instalação da carga de trabalho falhou, revertendo os pacotes instalados...</target>
         <note />
       </trans-unit>
       <trans-unit id="RollingBackPackInstall">
@@ -275,16 +245,6 @@
       <trans-unit id="SkippingManifestUpdate">
         <source>Manifest packages were not found. Skipping manifest update...</source>
         <target state="translated">Pacotes de manifesto não foram encontrados. Ignorando atualização de manifesto...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionDescription">
-        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
-        <target state="translated">A origem do pacote NuGet a ser usada durante a restauração. Para especificar várias fontes, repita a opção.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">ORIGEM</target>
         <note />
       </trans-unit>
       <trans-unit id="TempDirOptionDescription">
@@ -317,44 +277,9 @@
         <target state="translated">Instalando o pacote {0} versão {1} do cache offline {2}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionOptionDescription">
-        <source>The version of the SDK.</source>
-        <target state="translated">A versão do SDK.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="translated">Comando de instalação do .NET</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="translated">O arquivo de configuração '{0}' do NuGet não existe.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="translated">A versão '{0}' especificada não é um intervalo de versão do NuGet válido.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">ARQUIVO</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload(s) '{0}' are already installed.</source>
         <target state="translated">A(s) carga(s) de trabalho '{0}' já está(ão) instalada(s).</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCacheDownloadFailed">
-        <source>Download of workload packs to offline cache failed: {0}</source>
-        <target state="translated">Falha no download de pacotes de carga de trabalho para cache offline: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
@@ -365,6 +290,86 @@
       <trans-unit id="WorkloadIdArgumentName">
         <source>WORKLOAD_ID</source>
         <target state="translated">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallCommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="new">Install one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
+        <source>The target framework to install the workload for.</source>
+        <target state="new">The target framework to install the workload for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
+        <source>.NET install command</source>
+        <target state="new">.NET install command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallationSucceeded">
+        <source>Successfully installed workload(s) {0}.</source>
+        <target state="new">Successfully installed workload(s) {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
+        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
+        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' doesn't exist.</source>
+        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="new">Installation rollback failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="new">Workload installation failed. Rolling back installed packs...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="new">The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="new">The version of the SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
+        <source>Download of workload packs to offline cache failed: {0}</source>
+        <target state="new">Download of workload packs to offline cache failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadUpdatesAvailable">
+        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
+        <target state="new">Workload updates are available. Run `dotnet workload list` for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
@@ -400,11 +405,6 @@
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Uma versão de carga de trabalho a ser exibida ou uma ou mais cargas de trabalho e suas versões ingressadas pelo caractere '@'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUpdatesAvailable">
-        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">As atualizações de carga de trabalho estão disponíveis. Execute `dotnet workload list` para obter mais informações.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

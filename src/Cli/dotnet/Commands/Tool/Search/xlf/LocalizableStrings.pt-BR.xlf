@@ -7,16 +7,6 @@
         <target state="translated">Autores</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Pesquisar as ferramentas do dotnet em nuget.org</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandsColumn">
-        <source>Commands</source>
-        <target state="translated">Comandos</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Description">
         <source>Description</source>
         <target state="translated">Descrição</target>
@@ -66,31 +56,6 @@
         <target state="translated">ID do Pacote</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="PrereleaseDescription">
-        <source>Include pre-release packages.</source>
-        <target state="translated">Inclua pacotes de pré-lançamento.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SearchTermArgumentName">
-        <source>SEARCH_TERM</source>
-        <target state="translated">SEARCH_TERM</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SearchTermDescription">
-        <source>Search term from package id or package description. Require at least one character.</source>
-        <target state="translated">Termo de pesquisa da ID ou da descrição do pacote. Exige pelo menos um caractere.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipArgumentName">
-        <source>Skip</source>
-        <target state="translated">Ignorar</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SkipDescription">
-        <source>The number of results to skip, for pagination.</source>
-        <target state="translated">O número de resultados a serem ignorados para paginação.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Summary">
         <source>Summary</source>
         <target state="translated">Resumo</target>
@@ -101,14 +66,49 @@
         <target state="translated">Tags</target>
         <note>Table lable</note>
       </trans-unit>
-      <trans-unit id="TakeArgumentName">
-        <source>Take</source>
-        <target state="translated">Obter</target>
+      <trans-unit id="ToolSearchCommandDescription">
+        <source>Search dotnet tools in nuget.org</source>
+        <target state="new">Search dotnet tools in nuget.org</target>
         <note />
       </trans-unit>
-      <trans-unit id="TakeDescription">
+      <trans-unit id="ToolSearchCommandsColumn">
+        <source>Commands</source>
+        <target state="new">Commands</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchPrereleaseDescription">
+        <source>Include pre-release packages.</source>
+        <target state="new">Include pre-release packages.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermArgumentName">
+        <source>SEARCH_TERM</source>
+        <target state="new">SEARCH_TERM</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSearchTermDescription">
+        <source>Search term from package id or package description. Require at least one character.</source>
+        <target state="new">Search term from package id or package description. Require at least one character.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipArgumentName">
+        <source>Skip</source>
+        <target state="new">Skip</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSkipDescription">
+        <source>The number of results to skip, for pagination.</source>
+        <target state="new">The number of results to skip, for pagination.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchTakeDescription">
         <source>The number of results to return, for pagination.</source>
-        <target state="translated">O número de resultados a serem retornados para paginação.</target>
+        <target state="new">The number of results to return, for pagination.</target>
         <note />
       </trans-unit>
       <trans-unit id="Verified">

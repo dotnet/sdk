@@ -2,31 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET Core NuGet Package Packer</source>
-        <target state="translated">Nástroj .NET Core pro balení balíčku NuGet</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>pack for msbuild</source>
-        <target state="translated">zabalit pro msbuild</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">Nezobrazovat úvodní nápis ani zprávu o autorských právech</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDirDescription">
-        <source>The output directory to place built packages in.</source>
-        <target state="translated">Výstupní adresář, kam se mají umístit sestavené balíčky</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdNoBuildOptionDescription">
         <source>Do not build the project before packing. Implies --no-restore.</source>
         <target state="translated">Nesestavujte projekt, dokud ho nezabalíte. Implikuje možnost --no-restore.</target>
@@ -52,14 +27,39 @@
         <target state="translated">PROJECT</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdArgumentDescription">
-        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="translated">Balený projekt – výchozí hodnotou je soubor projektu v aktuálním adresáři. Může to být cesta k libovolnému souboru projektu.</target>
+      <trans-unit id="PackAppDescription">
+        <source>pack for msbuild</source>
+        <target state="new">pack for msbuild</target>
         <note />
       </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
+      <trans-unit id="PackAppFullName">
+        <source>.NET Core NuGet Package Packer</source>
+        <target state="new">.NET Core NuGet Package Packer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdArgumentDescription">
+        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
+        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdNoLogo">
+        <source>Do not display the startup banner or the copyright message.</source>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDirDescription">
+        <source>The output directory to place built packages in.</source>
+        <target state="new">The output directory to place built packages in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
-        <target state="translated">Konfigurace, která se má použít k sestavení balíčku. Výchozí hodnota je Release.</target>
+        <target state="new">The configuration to use for building the package. The default is 'Release'.</target>
         <note />
       </trans-unit>
     </body>

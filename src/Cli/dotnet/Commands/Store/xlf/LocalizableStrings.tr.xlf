@@ -2,24 +2,9 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="tr" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppDescription">
-        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
-        <target state="translated">.NET Platformu için belirtilen bütünleştirilmiş kodları depolar. Varsayılan olarak, bunlar hedef çalışma zamanı ve çerçeve için iyileştirilir.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CurrentRuntimeOptionDescription">
         <source>Use current runtime as the target runtime.</source>
         <target state="translated">Hedef çalışma zamanı olarak geçerli çalışma zamanını kullanın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOption">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="OutputOptionDescription">
-        <source>The output directory to store the given assemblies in.</source>
-        <target state="translated">Belirtilen bütünleştirilmiş kodların depolanacağı çıkış dizini.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkVersionOption">
@@ -72,14 +57,29 @@
         <target state="translated">--manifest ile en az bir bildirim belirtin.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
-        <target state="translated">Paketlerin depolanacağı hedef çerçeve. Hedef çerçevenin proje dosyasında belirtilmesi gerekir.</target>
+      <trans-unit id="StoreAppDescription">
+        <source>Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</source>
+        <target state="new">Stores the specified assemblies for the .NET Platform. By default, these will be optimized for the target runtime and framework.</target>
         <note />
       </trans-unit>
-      <trans-unit id="RuntimeOptionDescription">
+      <trans-unit id="StoreFrameworkOptionDescription">
+        <source>The target framework to store packages for. The target framework has to be specified in the project file.</source>
+        <target state="new">The target framework to store packages for. The target framework has to be specified in the project file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOption">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreOutputOptionDescription">
+        <source>The output directory to store the given assemblies in.</source>
+        <target state="new">The output directory to store the given assemblies in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="StoreRuntimeOptionDescription">
         <source>The target runtime to store packages for.</source>
-        <target state="translated">Paketlerin geri yükleneceği hedef çalışma zamanı.</target>
+        <target state="new">The target runtime to store packages for.</target>
         <note />
       </trans-unit>
     </body>

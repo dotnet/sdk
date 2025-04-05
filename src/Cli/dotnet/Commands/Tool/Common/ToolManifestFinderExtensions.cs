@@ -28,7 +28,7 @@ internal static class ToolManifestFinderExtensions
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException([e.Message, LocalizableStrings.NoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
+            throw new GracefulException([e.Message, LocalizableStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
         }
 
         if (manifestFilesContainPackageId.Any())

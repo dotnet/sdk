@@ -20,8 +20,8 @@ internal static class PublishCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.OutputOptionDescription,
-        HelpName = LocalizableStrings.OutputOption
+        Description = LocalizableStrings.PublishOutputOptionDescription,
+        HelpName = LocalizableStrings.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
     public static readonly CliOption<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
@@ -39,7 +39,7 @@ internal static class PublishCommandParser
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = LocalizableStrings.PublishCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
@@ -51,9 +51,9 @@ internal static class PublishCommandParser
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.PublishFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.PublishConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -64,7 +64,7 @@ internal static class PublishCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("publish", DocsLink, LocalizableStrings.AppDescription);
+        var command = new DocumentedCommand("publish", DocsLink, LocalizableStrings.PublishAppDescription);
 
         command.Arguments.Add(SlnOrProjectArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
@@ -77,7 +77,7 @@ internal static class PublishCommandParser
         command.Options.Add(NoSelfContainedOption);
         command.Options.Add(NoLogoOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.PublishRuntimeOptionDescription));
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

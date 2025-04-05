@@ -412,8 +412,8 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             var parseResult = localCopy.Parse(new string[] { command, "-h" });
             parseResult.Invoke();
             localCopy.Output.ToString().Should().Contain(command.Equals("build") ?
-                Tools.Build.LocalizableStrings.RuntimeOptionDescription :
-                Tools.Run.LocalizableStrings.RuntimeOptionDescription);
+                Tools.Build.LocalizableStrings.BuildRuntimeOptionDescription :
+                Tools.Run.LocalizableStrings.RunRuntimeOptionDescription);
         }
     }
 }

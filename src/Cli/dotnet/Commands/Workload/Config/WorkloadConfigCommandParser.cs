@@ -30,7 +30,7 @@ internal static class WorkloadConfigCommandParser
     {
         UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
 
-        CliCommand command = new("config", LocalizableStrings.CommandDescription);
+        CliCommand command = new("config", LocalizableStrings.WorkloadConfigCommandDescription);
         command.Options.Add(UpdateMode);
 
         command.SetAction(parseResult =>

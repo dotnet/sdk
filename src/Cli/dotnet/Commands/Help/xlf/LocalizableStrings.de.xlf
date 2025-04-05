@@ -7,6 +7,16 @@
         <target state="translated">Wenden Sie Formatvorlageneinstellungen auf ein Projekt oder eine Lösung an.</target>
         <note />
       </trans-unit>
+      <trans-unit id="HelpAppDescription">
+        <source>Utility to get more detailed help about each of the SDK commands.</source>
+        <target state="new">Utility to get more detailed help about each of the SDK commands.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HelpAppFullName">
+        <source>.NET CLI help utility</source>
+        <target state="new">.NET CLI help utility</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
         <target state="translated">PackageReferences für ein .NET-Projekt suchen, hinzufügen, entfernen oder auflisten.</target>
@@ -170,16 +180,6 @@
       <trans-unit id="CommandDoesNotExist">
         <source>Specified command '{0}' is not a valid SDK command. Specify a valid SDK command. For more information, run dotnet help.</source>
         <target state="translated">Der angegebene Befehl "{0}" ist kein gültiger SDK-Befehl. Geben Sie einen gültigen SDK-Befehl an. Führen Sie "dotnet help" aus, um weitere Informationen zu erhalten.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET CLI help utility</source>
-        <target state="translated">.NET CLI-Hilfeprogramm</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Utility to get more detailed help about each of the SDK commands.</source>
-        <target state="translated">Hilfeprogramm für detailliertere Hilfe zu den einzelnen SDK-Befehlen.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandArgumentName">

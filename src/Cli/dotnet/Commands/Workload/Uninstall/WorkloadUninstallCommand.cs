@@ -80,7 +80,7 @@ internal class WorkloadUninstallCommand : WorkloadCommandBase
                 _workloadInstaller.GarbageCollect(workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.UninstallSucceeded, string.Join(" ", _workloadIds)));
+                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadUninstallUninstallSucceeded, string.Join(" ", _workloadIds)));
                 Reporter.WriteLine();
             });
         }

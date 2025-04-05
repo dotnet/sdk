@@ -2,31 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET Core NuGet Package Packer</source>
-        <target state="translated">.NET Core NuGet 패키지 패커</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>pack for msbuild</source>
-        <target state="translated">msbuild용 팩입니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdNoLogo">
-        <source>Do not display the startup banner or the copyright message.</source>
-        <target state="translated">시작 배너 또는 저작권 메시지를 표시하지 않습니다.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDir">
-        <source>OUTPUT_DIR</source>
-        <target state="translated">OUTPUT_DIR</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdOutputDirDescription">
-        <source>The output directory to place built packages in.</source>
-        <target state="translated">빌드된 패키지를 배치할 출력 디렉터리입니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdNoBuildOptionDescription">
         <source>Do not build the project before packing. Implies --no-restore.</source>
         <target state="translated">압축하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
@@ -52,14 +27,39 @@
         <target state="translated">PROJECT</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdArgumentDescription">
-        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
-        <target state="translated">압축할 프로젝트입니다. 현재 디렉터리의 프로젝트 파일로 기본 설정됩니다. 프로젝트 파일의 경로일 수 있습니다.</target>
+      <trans-unit id="PackAppDescription">
+        <source>pack for msbuild</source>
+        <target state="new">pack for msbuild</target>
         <note />
       </trans-unit>
-      <trans-unit id="ConfigurationOptionDescription">
+      <trans-unit id="PackAppFullName">
+        <source>.NET Core NuGet Package Packer</source>
+        <target state="new">.NET Core NuGet Package Packer</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdArgumentDescription">
+        <source>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</source>
+        <target state="new">The project to pack, defaults to the project file in the current directory. Can be a path to any project file</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdNoLogo">
+        <source>Do not display the startup banner or the copyright message.</source>
+        <target state="new">Do not display the startup banner or the copyright message.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDir">
+        <source>OUTPUT_DIR</source>
+        <target state="new">OUTPUT_DIR</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdOutputDirDescription">
+        <source>The output directory to place built packages in.</source>
+        <target state="new">The output directory to place built packages in.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
-        <target state="translated">패키지를 빌드하는 데 사용할 구성입니다. 기본값은 'Release'입니다.</target>
+        <target state="new">The configuration to use for building the package. The default is 'Release'.</target>
         <note />
       </trans-unit>
     </body>

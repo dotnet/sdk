@@ -7,11 +7,6 @@
         <target state="translated">'{0}' という名前のコマンドを持つマニフェスト ファイルでツールが見つかりません。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">ローカル ツールを実行します。このコマンドを使用してグローバル ツールを実行することはできません。 </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
         <source>The command name of the tool to run.</source>
         <target state="translated">実行するツールのコマンド名。</target>
@@ -25,6 +20,11 @@
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">実行するコマンド名を 1 つ指定してください。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
     </body>

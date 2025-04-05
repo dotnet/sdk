@@ -154,7 +154,7 @@ internal static class WorkloadCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("workload", DocsLink, CommonStrings.CommandDescription);
+        DocumentedCommand command = new("workload", DocsLink, CommonStrings.WorkloadCommandDescription);
 
         command.Subcommands.Add(WorkloadInstallCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadUpdateCommandParser.GetCommand());

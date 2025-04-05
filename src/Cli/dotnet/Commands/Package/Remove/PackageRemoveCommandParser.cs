@@ -11,7 +11,7 @@ internal static class PackageRemoveCommandParser
 {
     public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Package.Add.LocalizableStrings.CmdPackage)
     {
-        Description = LocalizableStrings.AppHelpText,
+        Description = LocalizableStrings.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
     };
 
@@ -26,7 +26,7 @@ internal static class PackageRemoveCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("remove", LocalizableStrings.AppFullName);
+        var command = new CliCommand("remove", LocalizableStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(InteractiveOption);

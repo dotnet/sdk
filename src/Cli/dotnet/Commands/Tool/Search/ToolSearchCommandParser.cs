@@ -10,8 +10,8 @@ internal static class ToolSearchCommandParser
 {
     public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
     {
-        HelpName = LocalizableStrings.SearchTermArgumentName,
-        Description = LocalizableStrings.SearchTermDescription
+        HelpName = LocalizableStrings.ToolSearchSearchTermArgumentName,
+        Description = LocalizableStrings.ToolSearchSearchTermDescription
     };
 
     public static readonly CliOption<bool> DetailOption = new("--detail")
@@ -22,19 +22,19 @@ internal static class ToolSearchCommandParser
 
     public static readonly CliOption<string> SkipOption = new("--skip")
     {
-        Description = LocalizableStrings.SkipDescription,
-        HelpName = LocalizableStrings.SkipArgumentName
+        Description = LocalizableStrings.ToolSearchSkipDescription,
+        HelpName = LocalizableStrings.ToolSearchSkipArgumentName
     };
 
     public static readonly CliOption<string> TakeOption = new("--take")
     {
-        Description = LocalizableStrings.TakeDescription,
-        HelpName = LocalizableStrings.TakeArgumentName
+        Description = LocalizableStrings.ToolSearchTakeDescription,
+        HelpName = LocalizableStrings.ToolSearchTakeArgumentName
     };
 
     public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
     {
-        Description = LocalizableStrings.PrereleaseDescription,
+        Description = LocalizableStrings.ToolSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -47,7 +47,7 @@ internal static class ToolSearchCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("search", LocalizableStrings.CommandDescription);
+        CliCommand command = new("search", LocalizableStrings.ToolSearchCommandDescription);
 
         command.Arguments.Add(SearchTermArgument);
 

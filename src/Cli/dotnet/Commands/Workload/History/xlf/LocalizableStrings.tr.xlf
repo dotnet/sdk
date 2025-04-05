@@ -7,11 +7,6 @@
         <target state="translated">Komut</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">İş yükü yükleme eylemlerinin geçmişini gösterir.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Tarih</target>
@@ -37,9 +32,14 @@
         <target state="translated">Kaydedilmemiş değişiklikler içeren satırlar, .NET CLI iş yükü komutları dışındaki eylemlerden kaynaklanan değişiklikleri temsil eder. Bu genellikle .NET SDK'ya veya Visual Studio'ya bir güncelleştirme anlamına gelir.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">İş Yükü Sürümü</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

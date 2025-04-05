@@ -7,11 +7,6 @@
         <target state="translated">Polecenie</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Pokazuje historię akcji instalacji obciążenia.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Data</target>
@@ -37,9 +32,14 @@
         <target state="translated">Wiersze z niezarejestrowanymi zmianami reprezentują zmiany pochodzące z akcji innych niż polecenia obciążenia interfejsu wiersza polecenia platformy .NET. Zazwyczaj oznacza to aktualizację zestawu .NET SDK lub programu Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Wersja obciążenia</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

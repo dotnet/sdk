@@ -25,7 +25,7 @@ internal static class HelpCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("help", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("help", DocsLink, LocalizableStrings.HelpAppFullName);
 
         command.Arguments.Add(Argument);
 

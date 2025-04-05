@@ -117,10 +117,10 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="BuildAppDescription" xml:space="preserve">
     <value>Builder for the .NET Platform. Delegates to the MSBuild 'Build' target in the project file.</value>
   </data>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="BuildAppFullName" xml:space="preserve">
     <value>.NET Builder</value>
   </data>
   <data name="NoDependenciesOptionDescription" xml:space="preserve">
@@ -129,22 +129,22 @@
   <data name="NoIncrementalOptionDescription" xml:space="preserve">
     <value>Do not use incremental building.</value>
   </data>
-  <data name="OutputOptionDescription" xml:space="preserve">
+  <data name="BuildOutputOptionDescription" xml:space="preserve">
     <value>The output directory to place built artifacts in.</value>
   </data>
   <data name="OutputOptionName" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
-  <data name="FrameworkOptionDescription" xml:space="preserve">
+  <data name="BuildFrameworkOptionDescription" xml:space="preserve">
     <value>The target framework to build for. The target framework must also be specified in the project file.</value>
   </data>
-  <data name="RuntimeOptionDescription" xml:space="preserve">
+  <data name="BuildRuntimeOptionDescription" xml:space="preserve">
     <value>The target runtime to build for.</value>
   </data>
-  <data name="ConfigurationOptionDescription" xml:space="preserve">
+  <data name="BuildConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to use for building the project. The default for most projects is 'Debug'.</value>
   </data>
-  <data name="CmdNoLogo" xml:space="preserve">
+  <data name="BuildCmdNoLogo" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
 </root>

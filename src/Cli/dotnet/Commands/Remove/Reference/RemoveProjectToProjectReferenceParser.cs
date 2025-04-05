@@ -18,7 +18,7 @@ internal static class RemoveProjectToProjectReferenceParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        var command = new CliCommand("reference", LocalizableStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);

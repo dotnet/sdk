@@ -33,12 +33,12 @@ internal class ToolAppliedOption
 
     public static CliOption<string> ToolPathOption = new("--tool-path")
     {
-        HelpName = Tools.Tool.Install.LocalizableStrings.ToolPathOptionName
+        HelpName = Tools.Tool.Install.LocalizableStrings.ToolInstallToolPathOptionName
     };
 
     public static CliOption<string> ToolManifestOption = new("--tool-manifest")
     {
-        HelpName = Tools.Tool.Install.LocalizableStrings.ManifestPathOptionName,
+        HelpName = Tools.Tool.Install.LocalizableStrings.ToolInstallManifestPathOptionName,
         Arity = ArgumentArity.ZeroOrOne
     };
 

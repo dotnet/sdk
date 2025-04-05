@@ -28,7 +28,7 @@ internal class RemovePackageReferenceCommand : CommandBase
         }
         if (_arguments.Count != 1)
         {
-            throw new GracefulException(LocalizableStrings.SpecifyExactlyOnePackageReference);
+            throw new GracefulException(LocalizableStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
     }
 

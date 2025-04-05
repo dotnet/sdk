@@ -7,21 +7,6 @@
         <target state="translated">Projelerin ekleneceği hedef çözüm klasör yolu.</target>
         <note />
       </trans-unit>
-      <trans-unit id="AppFullName">
-        <source>.NET modify solution file command</source>
-        <target state="translated">.NET çözüm dosyasını değiştir komutu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
-        <target state="translated">Çözüm (SLN) dosyasında proje ekleme, kaldırma ve listeleme komutu.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppHelpText">
-        <source>Projects to add or to remove from the solution.</source>
-        <target state="translated">Çözüme eklenecek veya çözümden kaldırılacak projeler.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="AddAppFullName">
         <source>Add one or more projects to a solution file.</source>
         <target state="translated">Bir çözüm dosyasına bir veya daha fazla proje ekler.</target>
@@ -75,6 +60,21 @@
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
         <target state="translated">.slnx dosyası {0} değil.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppDescription">
+        <source>Command to add, remove, and list projects from the solution (SLN) file.</source>
+        <target state="new">Command to add, remove, and list projects from the solution (SLN) file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppFullName">
+        <source>.NET modify solution file command</source>
+        <target state="new">.NET modify solution file command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SolutionAppHelpText">
+        <source>Projects to add or to remove from the solution.</source>
+        <target state="new">Projects to add or to remove from the solution.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

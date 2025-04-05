@@ -203,7 +203,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -218,7 +218,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute().Should().Be(0);
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
@@ -263,7 +263,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, HigherPackageVersion, LowerPackageVersion));
         }
 
@@ -278,7 +278,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             command.Execute();
 
             _reporter.Lines.First().Should().Contain(string.Format(
-                LocalizableStrings.UpdateSucceeded,
+                LocalizableStrings.ToolUpdateUpdateSucceeded,
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 

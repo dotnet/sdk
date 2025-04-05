@@ -12,8 +12,8 @@ internal static class ToolListCommandParser
 {
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription,
+        HelpName = LocalizableStrings.ToolListPackageIdArgumentName,
+        Description = LocalizableStrings.ToolListPackageIdArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne,
     };
 
@@ -38,12 +38,12 @@ internal static class ToolListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        CliCommand command = new("list", LocalizableStrings.ToolListCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.ToolListGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.ToolListLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolListToolPathOptionDescription));
         command.Options.Add(ToolListFormatOption.WithHelpDescription(command, LocalizableStrings.ToolListFormatOptionDescription));
 
         command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());

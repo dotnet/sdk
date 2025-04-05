@@ -77,6 +77,16 @@ Ejemplos:
         <target state="translated">Permite que se instalen paquetes de versión preliminar.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">Al archivo de solución '{0}' le faltan etiquetas EndProject o tiene asignaciones de carpetas de proyecto primarias y secundarias no válidas alrededor del GUID del proyecto: '{1}'. Repare manualmente la solución o intente abrirla y guardarla en Visual Studio".</target>
@@ -458,11 +468,6 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <target state="translated">No se encuentran {0} ni {1} en "{2}".</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">No se encuentra el archivo "{0}".</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} no existe.</target>
@@ -791,11 +796,6 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">El proyecto o la solución donde realizar la operación. Si no se especifica un archivo, se buscará en el directorio actual.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

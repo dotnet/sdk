@@ -2,16 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pl" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="AppFullName">
-        <source>.NET SDK Check Command</source>
-        <target state="translated">Polecenie sprawdzania zestawu .NET SDK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AppDescription">
-        <source>Check for SDK updates.</source>
-        <target state="translated">Sprawdź dostępność aktualizacji zestawu SDK.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="BundleUpToDateMessage">
         <source>Up to date.</source>
         <target state="translated">Aktualne.</target>
@@ -50,6 +40,16 @@
       <trans-unit id="OutOfSupportMessage">
         <source>.NET {0} is out of support.</source>
         <target state="translated">Platforma .NET {0} nie jest już wspierana.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkCheckAppDescription">
+        <source>Check for SDK updates.</source>
+        <target state="new">Check for SDK updates.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SdkCheckAppFullName">
+        <source>.NET SDK Check Command</source>
+        <target state="new">.NET SDK Check Command</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionCheckFailure">

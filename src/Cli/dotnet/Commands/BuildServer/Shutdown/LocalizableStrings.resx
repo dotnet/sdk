@@ -117,7 +117,7 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="BuildServerShutdownCommandDescription" xml:space="preserve">
     <value>Shuts down build servers that are started from dotnet. By default, all servers are shut down.</value>
   </data>
   <data name="MSBuildOptionDescription" xml:space="preserve">

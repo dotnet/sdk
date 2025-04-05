@@ -273,7 +273,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.NuGetConfigurationFileDoesNotExist,
+                    LocalizableStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
                     Path.GetFullPath(_configFilePath)));
         }
     }
@@ -349,7 +349,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 messages:
                 [
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.ToolHasMultipleVersionsInstalled,
+                        Tools.Tool.Update.LocalizableStrings.ToolUpdateToolHasMultipleVersionsInstalled,
                         packageId),
                 ],
                 isUserError: false);
@@ -366,7 +366,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.InstallationSucceeded,
+                        LocalizableStrings.ToolInstallInstallationSucceeded,
                         newInstalledPackage.Command.Name,
                         newInstalledPackage.Id,
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -375,7 +375,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                        Tools.Tool.Update.LocalizableStrings.ToolUpdateUpdateSucceeded,
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());

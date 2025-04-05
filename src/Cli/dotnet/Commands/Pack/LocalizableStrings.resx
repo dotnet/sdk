@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="PackAppFullName" xml:space="preserve">
     <value>.NET Core NuGet Package Packer</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="PackAppDescription" xml:space="preserve">
     <value>pack for msbuild</value>
   </data>
-  <data name="CmdOutputDir" xml:space="preserve">
+  <data name="PackCmdOutputDir" xml:space="preserve">
     <value>OUTPUT_DIR</value>
   </data>
-  <data name="CmdOutputDirDescription" xml:space="preserve">
+  <data name="PackCmdOutputDirDescription" xml:space="preserve">
     <value>The output directory to place built packages in.</value>
   </data>
   <data name="CmdNoBuildOptionDescription" xml:space="preserve">
@@ -144,13 +144,13 @@
   <data name="CmdArgumentProject" xml:space="preserve">
     <value>PROJECT</value>
   </data>
-  <data name="CmdArgumentDescription" xml:space="preserve">
+  <data name="PackCmdArgumentDescription" xml:space="preserve">
     <value>The project to pack, defaults to the project file in the current directory. Can be a path to any project file</value>
   </data>
-  <data name="ConfigurationOptionDescription" xml:space="preserve">
+  <data name="PackConfigurationOptionDescription" xml:space="preserve">
     <value>The configuration to use for building the package. The default is 'Release'.</value>
   </data>
-  <data name="CmdNoLogo" xml:space="preserve">
+  <data name="PackCmdNoLogo" xml:space="preserve">
     <value>Do not display the startup banner or the copyright message.</value>
   </data>
 </root>

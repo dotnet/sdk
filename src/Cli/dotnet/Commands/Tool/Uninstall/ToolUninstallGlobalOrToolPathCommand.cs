@@ -40,7 +40,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.InvalidToolPathOption,
+                        LocalizableStrings.ToolUninstallInvalidToolPathOption,
                         toolPath));
             }
 
@@ -59,12 +59,12 @@ internal class ToolUninstallGlobalOrToolPathCommand(
             package = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();
             if (package == null)
             {
-                throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolNotInstalled, packageId)], isUserError: false);
+                throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolUninstallToolNotInstalled, packageId)], isUserError: false);
             }
         }
         catch (InvalidOperationException)
         {
-            throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
+            throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolUninstallToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
         }
 
         try
@@ -82,7 +82,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.UninstallSucceeded,
+                    LocalizableStrings.ToolUninstallUninstallSucceeded,
                     package.Id,
                     package.Version.ToNormalizedString()).Green());
             return 0;

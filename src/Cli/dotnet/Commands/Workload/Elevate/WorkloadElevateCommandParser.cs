@@ -17,7 +17,7 @@ internal static class WorkloadElevateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("elevate", LocalizableStrings.CommandDescription)
+        CliCommand command = new("elevate", LocalizableStrings.WorkloadElevateCommandDescription)
         {
             Hidden = true
         };

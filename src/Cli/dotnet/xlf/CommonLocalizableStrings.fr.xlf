@@ -77,6 +77,16 @@ Exemples :
         <target state="translated">Permet d'installer les packages de préversion.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">Il manque des balises EndProject au fichier solution '{0}' ou des mappages de dossiers de projet parent-enfant non valides autour du GUID du projet : '{1}'. Réparez manuellement la solution ou essayez de l’ouvrir et de l’enregistrer dans Visual Studio. »</target>
@@ -458,11 +468,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
         <target state="translated">{0} ou {1} introuvable dans '{2}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">Fichier '{0}' introuvable.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} n'existe pas.</target>
@@ -791,11 +796,6 @@ La valeur par défaut est « false ». Toutefois, lorsque vous ciblez .NET 7 ou 
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">Projet ou solution à utiliser. Si aucun fichier n'est spécifié, le répertoire actif fait l'objet d'une recherche.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

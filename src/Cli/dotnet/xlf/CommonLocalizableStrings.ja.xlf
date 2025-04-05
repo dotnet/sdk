@@ -77,6 +77,16 @@ Examples:
         <target state="translated">プレリリース パッケージのインストールを許可します。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">ソリューション ファイル '{0}' に EndProject タグがないか、プロジェクト GUID: '{1}' に関して無効な子 - 親プロジェクト フォルダー マッピングがあります。ソリューションを手動で修正するか、Visual Studio で開いて保存してみてください。"</target>
@@ -457,11 +467,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">`{2}` に {0} または {1} が見つかりません。</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">ファイル `{0}` が見つかりません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">{0} は存在しません。</target>
@@ -790,11 +795,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">操作するプロジェクトまたはソリューション。ファイルを指定しない場合、現在のディレクトリが検索されます。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

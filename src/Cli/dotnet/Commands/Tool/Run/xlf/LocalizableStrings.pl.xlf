@@ -7,11 +7,6 @@
         <target state="translated">Nie można odnaleźć narzędzia w pliku manifestu, które zawiera polecenie o nazwie „{0}”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
-        <target state="translated">Uruchom narzędzie lokalne. Pamiętaj, że tego polecenia nie można używać do uruchamiania narzędzia globalnego. </target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">
         <source>The command name of the tool to run.</source>
         <target state="translated">Nazwa polecenia narzędzia do uruchomienia.</target>
@@ -25,6 +20,11 @@
       <trans-unit id="SpecifyExactlyOneCommandName">
         <source>Specify one command name to run.</source>
         <target state="translated">Określ jedną nazwę polecenia do uruchomienia.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunCommandDescription">
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
     </body>

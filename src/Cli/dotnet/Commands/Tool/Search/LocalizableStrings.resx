@@ -117,16 +117,16 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
   </data>
-  <data name="CommandsColumn" xml:space="preserve">
+  <data name="ToolSearchCommandsColumn" xml:space="preserve">
     <value>Commands</value>
   </data>
-  <data name="SearchTermArgumentName" xml:space="preserve">
+  <data name="ToolSearchSearchTermArgumentName" xml:space="preserve">
     <value>SEARCH_TERM</value>
   </data>
-  <data name="SearchTermDescription" xml:space="preserve">
+  <data name="ToolSearchSearchTermDescription" xml:space="preserve">
     <value>Search term from package id or package description. Require at least one character.</value>
   </data>
   <data name="DetailArgumentName" xml:space="preserve">
@@ -135,19 +135,19 @@
   <data name="DetailDescription" xml:space="preserve">
     <value>Show detail result of the query.</value>
   </data>
-  <data name="SkipArgumentName" xml:space="preserve">
+  <data name="ToolSearchSkipArgumentName" xml:space="preserve">
     <value>Skip</value>
   </data>
-  <data name="SkipDescription" xml:space="preserve">
+  <data name="ToolSearchSkipDescription" xml:space="preserve">
     <value>The number of results to skip, for pagination.</value>
   </data>
-  <data name="TakeArgumentName" xml:space="preserve">
+  <data name="ToolSearchTakeArgumentName" xml:space="preserve">
     <value>Take</value>
   </data>
-  <data name="TakeDescription" xml:space="preserve">
+  <data name="ToolSearchTakeDescription" xml:space="preserve">
     <value>The number of results to return, for pagination.</value>
   </data>
-  <data name="PrereleaseDescription" xml:space="preserve">
+  <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>
   </data>
   <data name="NoResult" xml:space="preserve">

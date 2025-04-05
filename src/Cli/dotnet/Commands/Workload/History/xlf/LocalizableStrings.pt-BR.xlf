@@ -7,11 +7,6 @@
         <target state="translated">Comando</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">Mostra um histórico de ações de instalação de carga de trabalho.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">Data</target>
@@ -37,9 +32,14 @@
         <target state="translated">As linhas com as alterações Não Registradas representam as alterações de ações diferentes dos comandos de carga de trabalho da CLI do .NET. Geralmente, isso representa uma atualização para o SDK do .NET ou para o Visual Studio.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">Versão da Carga de Trabalho</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

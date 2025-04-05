@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
-               .Contain(Tools.Tool.Common.LocalizableStrings.NoManifestGuide);
+               .Contain(Tools.Tool.Common.LocalizableStrings.ToolCommonNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()

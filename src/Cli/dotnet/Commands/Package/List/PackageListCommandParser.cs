@@ -29,8 +29,8 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption FrameworkOption = new ForwardedOption<IEnumerable<string>>("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = LocalizableStrings.CmdFramework
+        Description = LocalizableStrings.PackageListCmdFrameworkDescription,
+        HelpName = LocalizableStrings.PackageListCmdFramework
     }.ForwardAsManyArgumentsEachPrefixedByOption("--framework")
     .AllowSingleArgPerToken();
 
@@ -66,8 +66,8 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {
-        Description = LocalizableStrings.CmdSourceDescription,
-        HelpName = LocalizableStrings.CmdSource
+        Description = LocalizableStrings.PackageListCmdSourceDescription,
+        HelpName = LocalizableStrings.PackageListCmdSource
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
@@ -98,7 +98,7 @@ internal static class PackageListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.AppFullName);
+        CliCommand command = new("list", LocalizableStrings.PackageListAppFullName);
 
         command.Options.Add(VerbosityOption);
         command.Options.Add(OutdatedOption);

@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="pt-BR" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandDescription">
-        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
-        <target state="translated">Pesquisa uma ou mais fontes de pacote em busca de pacotes que correspondam a um termo de pesquisa. Se nenhuma fonte for especificada, todas as fontes definidas no NuGet.Config serão usadas.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ConfigFileArgumentName">
         <source>ConfigFile</source>
         <target state="translated">ConfigFile</target>
@@ -37,29 +32,44 @@
         <target state="translated">Pare e aguarde a entrada ou a ação do usuário (por exemplo, para concluir a autenticação).</target>
         <note />
       </trans-unit>
-      <trans-unit id="PrereleaseDescription">
+      <trans-unit id="PackageSearchCommandDescription">
+        <source>Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</source>
+        <target state="new">Searches one or more package sources for packages that match a search term. If no sources are specified, all sources defined in the NuGet.Config are used.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchPrereleaseDescription">
         <source>Include prerelease packages.</source>
-        <target state="translated">Incluir pacotes de pré-lançamento.</target>
+        <target state="new">Include prerelease packages.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SearchTermArgumentName">
+      <trans-unit id="PackageSearchSearchTermArgumentName">
         <source>SearchTerm</source>
-        <target state="translated">SearchTerm</target>
+        <target state="new">SearchTerm</target>
         <note />
       </trans-unit>
-      <trans-unit id="SearchTermDescription">
+      <trans-unit id="PackageSearchSearchTermDescription">
         <source>Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</source>
-        <target state="translated">Termo de pesquisa para filtrar nomes, descrições e marcas do pacote. Usado como um valor literal. Exemplo: ''dotnet package search some.package''. Consulte também ''--exact-match''.</target>
+        <target state="new">Search term to filter package names, descriptions, and tags. Used as a literal value. Example: `dotnet package search some.package`. See also `--exact-match`.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipArgumentName">
+      <trans-unit id="PackageSearchSkipArgumentName">
         <source>Skip</source>
-        <target state="translated">Ignorar</target>
+        <target state="new">Skip</target>
         <note />
       </trans-unit>
-      <trans-unit id="SkipDescription">
+      <trans-unit id="PackageSearchSkipDescription">
         <source>Number of results to skip, to allow pagination. Default 0.</source>
-        <target state="translated">Número de resultados a serem ignorados, para permitir paginação. Padrão 0.</target>
+        <target state="new">Number of results to skip, to allow pagination. Default 0.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchTakeArgumentName">
+        <source>Take</source>
+        <target state="new">Take</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageSearchTakeDescription">
+        <source>Number of results to return. Default 20.</source>
+        <target state="new">Number of results to return. Default 20.</target>
         <note />
       </trans-unit>
       <trans-unit id="SourceArgumentName">
@@ -70,16 +80,6 @@
       <trans-unit id="SourceDescription">
         <source>The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.</source>
         <target state="translated">A origem do pacote a ser pesquisada. Você pode passar várias opções de fonte para pesquisar várias fontes de pacote. Exemplo: '--source https://api.nuget.org/v3/index.json'.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TakeArgumentName">
-        <source>Take</source>
-        <target state="translated">Obter</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="TakeDescription">
-        <source>Number of results to return. Default 20.</source>
-        <target state="translated">O número de resultados a serem retornados. Padrão 20.</target>
         <note />
       </trans-unit>
       <trans-unit id="VerbosityArgumentName">

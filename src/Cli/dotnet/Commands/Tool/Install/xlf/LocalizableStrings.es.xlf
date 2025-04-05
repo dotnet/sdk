@@ -17,21 +17,9 @@
         <target state="translated">La opción local (--local), la opción global (--global) y la opción de ruta de acceso de herramienta (--tool-path), solo pueden estar una cada vez. Especifique solo una de las opciones: {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InstallationSucceeded">
-        <source>You can invoke the tool using the following command: {0}
-Tool '{1}' (version '{2}') was successfully installed.</source>
-        <target state="translated">Puede invocar la herramienta con el comando siguiente: {0}
-La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InvalidRuntimeIdentifier">
         <source>The runtime identifier {0} is invalid. Valid runtime identifiers are: {1}.</source>
         <target state="translated">El identificador en tiempo de ejecución {0} no es válido. Los identificadores en tiempo de ejecución válidos son: {1}.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="LocalOptionDescription">
-        <source>Install the tool and add to the local tool manifest (default).</source>
-        <target state="translated">Instalar la herramienta y agregar al manifiesto de la herramienta local (predeterminado).</target>
         <note />
       </trans-unit>
       <trans-unit id="LocalOptionDoesNotSupportFrameworkOption">
@@ -46,43 +34,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
 La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado la entrada al archivo de manifiesto {3}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ManifestPathOptionDescription">
-        <source>Path to the manifest file.</source>
-        <target state="translated">Ruta de acceso al archivo de manifiesto.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ManifestPathOptionName">
-        <source>PATH</source>
-        <target state="translated">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NoManifestGuide">
-        <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">Si tiene previsto instalar una herramienta global, agregue "--global" al comando.
-Si desea crear un manifiesto, use la marca "--create-manifest-if-needed" con el comando "dotnet tool install" o use "dotnet new tool-manifest", normalmente en el directorio raíz del repositorio.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdArgumentDescription">
-        <source>The NuGet Package Id of the tool to install.</source>
-        <target state="translated">El id. del paquete de NuGet de la herramienta que se instalará.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Install global or local tool. Local tools are added to manifest and restored.</source>
-        <target state="translated">Instalar herramienta global o local. Las herramientas locales se agregan al manifiesto y se restauran.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">Archivo de configuración de NuGet que debe usarse.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to install the tool for.</source>
-        <target state="translated">La plataforma de destino para la que se instala la herramienta.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">No se admiten las opciones --prerelease y --version en el mismo comando.</target>
@@ -93,44 +44,138 @@ Si desea crear un manifiesto, use la marca "--create-manifest-if-needed" con el 
         <target state="translated">Permitir que una herramienta .NET se ponga al día a versiones más recientes del runtime de .NET si el runtime al que se dirige no está instalado.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SourceOptionDescription">
-        <source>Replace all NuGet package sources to use during installation with these.</source>
-        <target state="translated">Reemplazar todos los orígenes de paquetes NuGet que se usarán durante la instalación por estos.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">FUENTE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionDescription">
-        <source>The version of the tool package to install.</source>
-        <target state="translated">La versión del paquete de herramientas para instalar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PackageIdArgumentName">
-        <source>PACKAGE_ID</source>
-        <target state="translated">PACKAGE_ID</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SpecifyExactlyOnePackageId">
-        <source>Specify one tool Package Id to install.</source>
-        <target state="translated">Especifique un id. de paquete para instalar.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="GlobalOptionDescription">
-        <source>Install the tool for the current user.</source>
-        <target state="translated">Instalar la herramienta para el usuario actual.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET Install Command</source>
-        <target state="translated">Comando para la instalación de .NET</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
         <source>The settings file in the tool's NuGet package is invalid: {0}</source>
         <target state="translated">El archivo de configuración del paquete NuGet de la herramienta no es válido: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallAddSourceOptionDescription">
+        <source>Add an additional NuGet package source to use during installation.</source>
+        <target state="new">Add an additional NuGet package source to use during installation.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallAddSourceOptionName">
+        <source>ADDSOURCE</source>
+        <target state="new">ADDSOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallCommandDescription">
+        <source>Install global or local tool. Local tools are added to manifest and restored.</source>
+        <target state="new">Install global or local tool. Local tools are added to manifest and restored.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallFrameworkOptionDescription">
+        <source>The target framework to install the tool for.</source>
+        <target state="new">The target framework to install the tool for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallFrameworkOptionName">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallGlobalOptionDescription">
+        <source>Install the tool for the current user.</source>
+        <target state="new">Install the tool for the current user.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallInstallFullCommandNameLocalized">
+        <source>.NET Install Command</source>
+        <target state="new">.NET Install Command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallInstallationSucceeded">
+        <source>You can invoke the tool using the following command: {0}
+Tool '{1}' (version '{2}') was successfully installed.</source>
+        <target state="new">You can invoke the tool using the following command: {0}
+Tool '{1}' (version '{2}') was successfully installed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallInvalidNuGetVersionRange">
+        <source>Specified version '{0}' is not a valid NuGet version range.</source>
+        <target state="new">Specified version '{0}' is not a valid NuGet version range.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallLocalOptionDescription">
+        <source>Install the tool and add to the local tool manifest (default).</source>
+        <target state="new">Install the tool and add to the local tool manifest (default).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallManifestPathOptionDescription">
+        <source>Path to the manifest file.</source>
+        <target state="new">Path to the manifest file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallManifestPathOptionName">
+        <source>PATH</source>
+        <target state="new">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallNoManifestGuide">
+        <source>If you intended to install a global tool, add `--global` to the command.
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="new">If you intended to install a global tool, add `--global` to the command.
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' does not exist.</source>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdArgumentDescription">
+        <source>The NuGet Package Id of the tool to install.</source>
+        <target state="new">The NuGet Package Id of the tool to install.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallPackageIdArgumentName">
+        <source>PACKAGE_ID</source>
+        <target state="new">PACKAGE_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallSourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="new">Replace all NuGet package sources to use during installation with these.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallSpecifyExactlyOnePackageId">
+        <source>Specify one tool Package Id to install.</source>
+        <target state="new">Specify one tool Package Id to install.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallToolPathOptionDescription">
+        <source>The directory where the tool will be installed. The directory will be created if it does not exist.</source>
+        <target state="new">The directory where the tool will be installed. The directory will be created if it does not exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallToolPathOptionName">
+        <source>PATH</source>
+        <target state="new">PATH</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallVersionOptionDescription">
+        <source>The version of the tool package to install.</source>
+        <target state="new">The version of the tool package to install.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationFailedContactAuthor">
@@ -148,19 +193,9 @@ Si desea crear un manifiesto, use la marca "--create-manifest-if-needed" con el 
         <target state="translated">No se pudieron crear correcciones de compatibilidad (shim) de shell para la herramienta "{0}": {1}</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">El archivo de configuración de NuGet "{0}" no existe.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallationRestoreFailed">
         <source>The tool package could not be restored.</source>
         <target state="translated">No se puede restaurar el paquete de la herramienta.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidNuGetVersionRange">
-        <source>Specified version '{0}' is not a valid NuGet version range.</source>
-        <target state="translated">La versión especificada "{0}" no es una gama de versiones de NuGet válida.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationFailed">
@@ -185,41 +220,6 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
 * El nombre de la herramienta no se escribió correctamente.
 
 Para ver más razones, como el cumplimiento de la nomenclatura de los paquetes, visite https://aka.ms/failure-installing-tool</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddSourceOptionDescription">
-        <source>Add an additional NuGet package source to use during installation.</source>
-        <target state="translated">Agrega un origen de paquetes de NuGet para utilizar durante la instalación.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AddSourceOptionName">
-        <source>ADDSOURCE</source>
-        <target state="translated">ADDSOURCE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionName">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolPathOptionName">
-        <source>PATH</source>
-        <target state="translated">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolPathOptionDescription">
-        <source>The directory where the tool will be installed. The directory will be created if it does not exist.</source>
-        <target state="translated">El directorio donde se instalará la herramienta. Si no existe, se creará el directorio.</target>
         <note />
       </trans-unit>
     </body>

@@ -137,11 +137,6 @@
         <target state="translated">Yayın öncesi iş yükü bildirimlerine izin ver.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InstallationSucceeded">
-        <source>Successfully installed workload(s) {0}.</source>
-        <target state="translated">İş yükleri başarıyla yüklendi {0}.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallingPackVersionMessage">
         <source>Installing pack {0} version {1}...</source>
         <target state="translated">Paket {0} sürümü {1} yükleniyor...</target>
@@ -165,21 +160,6 @@
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
         <target state="translated">İş yükünün NuGet paketindeki ayar dosyası geçersiz: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Install one or more workloads.</source>
-        <target state="translated">Bir veya daha fazla iş yükünü yükleyin.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">Kullanılacak NuGet yapılandırma dosyası.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="translated">İş yükünün yükleneceği hedef çerçeve.</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -232,11 +212,6 @@
         <target state="translated">{0} iş yükleri için paket URL'leri çözümleniyor...</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollBackFailedMessage">
-        <source>Installation rollback failed: {0}</source>
-        <target state="translated">Yükleme geri alınamadı: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">Geri alma tanımı geçersiz. {0} geri alma tanımındaki bildirim kimlikleri yüklü bildirim kimlikleriyle ({1}) eşleşmiyor.</target>
@@ -245,11 +220,6 @@
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
         <source>Provided rollback definition file {0} doesn't exist.</source>
         <target state="translated">Sağlanan geri alma tanımı dosyası ({0}) yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RollingBackInstall">
-        <source>Workload installation failed. Rolling back installed packs...</source>
-        <target state="translated">İş yükü yüklenemedi. Yüklü paketler geri alınıyor...</target>
         <note />
       </trans-unit>
       <trans-unit id="RollingBackPackInstall">
@@ -275,16 +245,6 @@
       <trans-unit id="SkippingManifestUpdate">
         <source>Manifest packages were not found. Skipping manifest update...</source>
         <target state="translated">Bildirim paketleri bulunamadı. Bildirim güncelleştirmesi atlanıyor...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionDescription">
-        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
-        <target state="translated">Geri yükleme sırasında kullanılacak NuGet paket kaynağı. Birden çok kaynak belirtmek için seçeneği tekrarlayın.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">KAYNAK</target>
         <note />
       </trans-unit>
       <trans-unit id="TempDirOptionDescription">
@@ -317,44 +277,9 @@
         <target state="translated">{0} paketi sürüm {1}, {2} çevrimdışı önbelleğinden yükleniyor.</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionOptionDescription">
-        <source>The version of the SDK.</source>
-        <target state="translated">SDK sürümü.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="translated">.NET yükleme komutu</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="translated">'{0}' NuGet yapılandırma dosyası yok.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="translated">Belirtilen '{0}' sürümü geçerli bir NuGet sürüm aralığı değil.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">SÜRÜM</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload(s) '{0}' are already installed.</source>
         <target state="translated">'{0}' iş yükleri zaten yüklü.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCacheDownloadFailed">
-        <source>Download of workload packs to offline cache failed: {0}</source>
-        <target state="translated">İş yükü paketleri çevrimdışı önbelleğe indirilemedi: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
@@ -365,6 +290,86 @@
       <trans-unit id="WorkloadIdArgumentName">
         <source>WORKLOAD_ID</source>
         <target state="translated">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallCommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="new">Install one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
+        <source>The target framework to install the workload for.</source>
+        <target state="new">The target framework to install the workload for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
+        <source>.NET install command</source>
+        <target state="new">.NET install command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallationSucceeded">
+        <source>Successfully installed workload(s) {0}.</source>
+        <target state="new">Successfully installed workload(s) {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
+        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
+        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' doesn't exist.</source>
+        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="new">Installation rollback failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="new">Workload installation failed. Rolling back installed packs...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="new">The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="new">The version of the SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
+        <source>Download of workload packs to offline cache failed: {0}</source>
+        <target state="new">Download of workload packs to offline cache failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadUpdatesAvailable">
+        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
+        <target state="new">Workload updates are available. Run `dotnet workload list` for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
@@ -400,11 +405,6 @@
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Görüntülenecek iş yükü sürümü veya bir veya daha fazla iş yükü ve '@' karakteriyle birleştirilmiş sürümleri.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUpdatesAvailable">
-        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">İş yükü güncelleştirmeleri var. Daha fazla bilgi için `dotnet workload list` çalıştırın.</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">

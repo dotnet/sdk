@@ -7,11 +7,6 @@
         <target state="translated">명령</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">워크로드 설치 작업의 기록을 표시합니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">날짜</target>
@@ -37,9 +32,14 @@
         <target state="translated">기록되지 않은 변경 내용이 있는 행은 .NET CLI 워크로드 명령 이외의 작업에서 변경된 사항을 나타냅니다. 이러한 변경 사항은 일반적으로 .NET SDK 또는 Visual Studio에 대한 업데이트를 나타냅니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">워크로드 버전</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

@@ -7,11 +7,6 @@
         <target state="translated">コマンド</target>
         <note />
       </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Shows a history of workload installation actions.</source>
-        <target state="translated">ワークロードのインストール操作の履歴を表示します。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Date">
         <source>Date</source>
         <target state="translated">日付</target>
@@ -37,9 +32,14 @@
         <target state="translated">ログに記録されていない変更がある行は、.NET CLI ワークロード コマンド以外のアクションからの変更を表します。通常、これは .NET SDK または Visual Studio の更新を表します。</target>
         <note />
       </trans-unit>
-      <trans-unit id="WorkloadSetVersion">
+      <trans-unit id="WorkloadHistoryCommandDescription">
+        <source>Shows a history of workload installation actions.</source>
+        <target state="new">Shows a history of workload installation actions.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="translated">ワークロードのバージョン</target>
+        <target state="new">Workload Version</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">

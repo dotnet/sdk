@@ -2,11 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="de" original="../LocalizableStrings.resx">
     <body>
-      <trans-unit id="CommandDescription">
-        <source>Restore workloads required for a project.</source>
-        <target state="translated">Stellen Sie Workloads wieder her, die für ein Projekt erforderlich sind.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CouldNotFindAProject">
         <source>Couldn't find a project. Ensure that a project exists in {0}, or pass the path to the project using {1}.</source>
         <target state="translated">Es konnte kein Projekt gefunden werden. Vergewissern Sie sich, dass unter {0} ein Projekt vorhanden ist, oder übergeben Sie den Pfad zum Projekt mithilfe von {1}.</target>
@@ -20,6 +15,11 @@
       <trans-unit id="InstallingWorkloads">
         <source>Installing workloads: {0}</source>
         <target state="translated">Workloads werden installiert: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadRestoreCommandDescription">
+        <source>Restore workloads required for a project.</source>
+        <target state="new">Restore workloads required for a project.</target>
         <note />
       </trans-unit>
     </body>

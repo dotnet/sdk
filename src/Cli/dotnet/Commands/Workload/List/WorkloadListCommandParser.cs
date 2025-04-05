@@ -33,7 +33,7 @@ internal static class WorkloadListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        CliCommand command = new("list", LocalizableStrings.WorkloadListCommandDescription);
         command.Options.Add(MachineReadableOption);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);
         command.Options.Add(VersionOption);

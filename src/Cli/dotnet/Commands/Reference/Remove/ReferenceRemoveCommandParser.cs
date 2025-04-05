@@ -8,16 +8,16 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal static class ReferenceRemoveCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(LocalizableStrings.ReferenceRemoveProjectPathArgumentName)
     {
-        Description = LocalizableStrings.ProjectPathArgumentDescription,
+        Description = LocalizableStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
     }.AddCompletions(Complete.Complete.ProjectReferencesFromProjectFile);
 
     public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CmdFramework
+        Description = LocalizableStrings.ReferenceRemoveCmdFrameworkDescription,
+        HelpName = CommonLocalizableStrings.CommonCmdFramework
     };
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -29,7 +29,7 @@ internal static class ReferenceRemoveCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("remove", LocalizableStrings.AppFullName);
+        var command = new CliCommand("remove", LocalizableStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);

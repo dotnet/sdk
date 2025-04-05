@@ -117,19 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="PackageIdArgumentName" xml:space="preserve">
+  <data name="WorkloadUninstallPackageIdArgumentName" xml:space="preserve">
     <value>WORKLOAD_ID</value>
   </data>
-  <data name="PackageIdArgumentDescription" xml:space="preserve">
+  <data name="WorkloadUninstallPackageIdArgumentDescription" xml:space="preserve">
     <value>The workload ID(s) to uninstall.</value>
   </data>
-  <data name="SpecifyExactlyOnePackageId" xml:space="preserve">
+  <data name="WorkloadUninstallSpecifyExactlyOnePackageId" xml:space="preserve">
     <value>Specify one workload ID to uninstall.</value>
   </data>
-  <data name="CommandDescription" xml:space="preserve">
+  <data name="WorkloadUninstallCommandDescription" xml:space="preserve">
     <value>Uninstall one or more workloads.</value>
   </data>
-  <data name="UninstallSucceeded" xml:space="preserve">
+  <data name="WorkloadUninstallUninstallSucceeded" xml:space="preserve">
     <value>Successfully uninstalled workload(s): {0}</value>
   </data>
   <data name="WorkloadNotInstalled" xml:space="preserve">

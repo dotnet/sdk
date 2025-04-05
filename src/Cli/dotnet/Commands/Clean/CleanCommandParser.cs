@@ -19,19 +19,19 @@ internal static class CleanCommandParser
 
     public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.CmdOutputDirDescription,
-        HelpName = LocalizableStrings.CmdOutputDir
+        Description = LocalizableStrings.CleanCmdOutputDirDescription,
+        HelpName = LocalizableStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
     public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = LocalizableStrings.CleanCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    public static readonly CliOption FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.CleanFrameworkOptionDescription);
 
-    public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.CleanConfigurationOptionDescription);
 
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -42,11 +42,11 @@ internal static class CleanCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("clean", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("clean", DocsLink, LocalizableStrings.CleanAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.CleanRuntimeOptionDescription));
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(CommonOptions.VerbosityOption);

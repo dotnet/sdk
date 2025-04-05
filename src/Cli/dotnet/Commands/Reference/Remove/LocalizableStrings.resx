@@ -117,19 +117,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="AppFullName" xml:space="preserve">
+  <data name="ReferenceRemoveAppFullName" xml:space="preserve">
     <value>Remove a project-to-project reference from the project.</value>
   </data>
-  <data name="AppDescription" xml:space="preserve">
+  <data name="ReferenceRemoveAppDescription" xml:space="preserve">
     <value>Command to remove project to project reference</value>
   </data>
-  <data name="ProjectPathArgumentName" xml:space="preserve">
+  <data name="ReferenceRemoveProjectPathArgumentName" xml:space="preserve">
     <value>PROJECT_PATH</value>
   </data>
-  <data name="ProjectPathArgumentDescription" xml:space="preserve">
+  <data name="ReferenceRemoveProjectPathArgumentDescription" xml:space="preserve">
     <value>The paths to the referenced projects to remove.</value>
   </data>
-  <data name="CmdFrameworkDescription" xml:space="preserve">
+  <data name="ReferenceRemoveCmdFrameworkDescription" xml:space="preserve">
     <value>Remove the reference only when targeting a specific framework.</value>
   </data>
 </root>

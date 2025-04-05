@@ -77,6 +77,16 @@ Przykłady:
         <target state="translated">Zezwala na instalowanie pakietów wersji wstępnych.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommonCmdFramework">
+        <source>FRAMEWORK</source>
+        <target state="new">FRAMEWORK</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommonFileNotFound">
+        <source>File `{0}` not found.</source>
+        <target state="new">File `{0}` not found.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CorruptSolutionProjectFolderStructure">
         <source>The solution file '{0}' is missing EndProject tags or has invalid child-parent project folder mappings around project GUID: '{1}'. Manually repair the solution or try to open and save it in Visual Studio."</source>
         <target state="translated">W pliku rozwiązania „{0}” brakuje tagów EndProject lub ma nieprawidłowe mapowania folderu projektu podrzędnego nadrzędnego wokół identyfikatora GUID projektu: „{1}”. Napraw ręcznie rozwiązanie lub spróbuj otworzyć je i zapisać w programie Visual Studio.”</target>
@@ -457,11 +467,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
         <target state="translated">Nie odnaleziono elementu {0} lub {1} w lokalizacji „{2}”.</target>
         <note />
       </trans-unit>
-      <trans-unit id="FileNotFound">
-        <source>File `{0}` not found.</source>
-        <target state="translated">Nie odnaleziono pliku „{0}”.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="XDoesNotExist">
         <source>{0} does not exist.</source>
         <target state="translated">Element {0} nie istnieje.</target>
@@ -790,11 +795,6 @@ Wartość domyślna to „false”. Jednak w przypadku określania wartości doc
       <trans-unit id="ArgumentsProjectOrSolutionDescription">
         <source>The project or solution to operation on. If a file is not specified, the current directory is searched.</source>
         <target state="translated">Projekt lub rozwiązanie, na którym ma zostać wykonana operacja. Jeśli nie określono pliku, zostanie przeszukany bieżący katalog.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CmdFramework">
-        <source>FRAMEWORK</source>
-        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectNotCompatibleWithFrameworks">

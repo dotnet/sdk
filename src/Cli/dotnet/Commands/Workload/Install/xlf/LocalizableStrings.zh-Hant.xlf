@@ -137,11 +137,6 @@
         <target state="translated">允許發行前階段工作負載資訊清單。</target>
         <note />
       </trans-unit>
-      <trans-unit id="InstallationSucceeded">
-        <source>Successfully installed workload(s) {0}.</source>
-        <target state="translated">已成功安裝工作負載 (s) {0}。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="InstallingPackVersionMessage">
         <source>Installing pack {0} version {1}...</source>
         <target state="translated">正在安裝套件 {0} 版本 {1}...</target>
@@ -165,21 +160,6 @@
       <trans-unit id="InvalidWorkloadConfiguration">
         <source>The settings file in the workload's NuGet package is invalid: {0}</source>
         <target state="translated">工作負載的 NuGet 套件設定檔案無效: {0}</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="CommandDescription">
-        <source>Install one or more workloads.</source>
-        <target state="translated">安裝一或多個工作負載。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionDescription">
-        <source>The NuGet configuration file to use.</source>
-        <target state="translated">要使用的 NuGet 組態檔。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="FrameworkOptionDescription">
-        <source>The target framework to install the workload for.</source>
-        <target state="translated">要為工作負載安裝的目標 Framework。</target>
         <note />
       </trans-unit>
       <trans-unit id="ManifestMsiNotFoundInNuGetPackage">
@@ -232,11 +212,6 @@
         <target state="translated">正在解析工作負載 {0} 的套件 URL...</target>
         <note />
       </trans-unit>
-      <trans-unit id="RollBackFailedMessage">
-        <source>Installation rollback failed: {0}</source>
-        <target state="translated">安裝復原失敗: {0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RollbackDefinitionContainsExtraneousManifestIds">
         <source>Invalid rollback definition. The manifest IDs in rollback definition {0} do not match installed manifest IDs {1}.</source>
         <target state="translated">無效的復原定義。復原定義 {0} 中的資訊清單識別碼不符合已安裝的資訊清單識別碼 {1}。</target>
@@ -245,11 +220,6 @@
       <trans-unit id="RollbackDefinitionFileDoesNotExist">
         <source>Provided rollback definition file {0} doesn't exist.</source>
         <target state="translated">提供的復原定義檔案 {0} 不存在。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="RollingBackInstall">
-        <source>Workload installation failed. Rolling back installed packs...</source>
-        <target state="translated">工作負載安裝失敗。正在復原已安裝的套件...</target>
         <note />
       </trans-unit>
       <trans-unit id="RollingBackPackInstall">
@@ -275,16 +245,6 @@
       <trans-unit id="SkippingManifestUpdate">
         <source>Manifest packages were not found. Skipping manifest update...</source>
         <target state="translated">找不到資訊清單套件。正在略過資訊清單更新...</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionDescription">
-        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
-        <target state="translated">還原期間要使用的 NuGet 套件資料來源。若要指定多個來源，請重複選項。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">資料來源</target>
         <note />
       </trans-unit>
       <trans-unit id="TempDirOptionDescription">
@@ -317,44 +277,9 @@
         <target state="translated">正在從離線快取 {2} 安裝套件 {0} 版本 {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="VersionOptionDescription">
-        <source>The version of the SDK.</source>
-        <target state="translated">SDK 的版本。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InstallFullCommandNameLocalized">
-        <source>.NET install command</source>
-        <target state="translated">.NET 安裝命令</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' doesn't exist.</source>
-        <target state="translated">NuGet 組態檔 '{0}' 不存在。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="InvalidNuGetVersionRange">
-        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
-        <target state="translated">指定的版本 '{0}' 不是有效的 NuGet 版本範圍。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="VersionOptionName">
-        <source>VERSION</source>
-        <target state="translated">VERSION</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ConfigFileOptionName">
-        <source>FILE</source>
-        <target state="translated">FILE</target>
-        <note />
-      </trans-unit>
       <trans-unit id="WorkloadAlreadyInstalled">
         <source>Workload(s) '{0}' are already installed.</source>
         <target state="translated">已安裝工作負載 '{0}'。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadCacheDownloadFailed">
-        <source>Download of workload packs to offline cache failed: {0}</source>
-        <target state="translated">將工作負載套件下載到離線快取失敗: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
@@ -365,6 +290,86 @@
       <trans-unit id="WorkloadIdArgumentName">
         <source>WORKLOAD_ID</source>
         <target state="translated">WORKLOAD_ID</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallCommandDescription">
+        <source>Install one or more workloads.</source>
+        <target state="new">Install one or more workloads.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionDescription">
+        <source>The NuGet configuration file to use.</source>
+        <target state="new">The NuGet configuration file to use.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallConfigFileOptionName">
+        <source>FILE</source>
+        <target state="new">FILE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallFrameworkOptionDescription">
+        <source>The target framework to install the workload for.</source>
+        <target state="new">The target framework to install the workload for.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallFullCommandNameLocalized">
+        <source>.NET install command</source>
+        <target state="new">.NET install command</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInstallationSucceeded">
+        <source>Successfully installed workload(s) {0}.</source>
+        <target state="new">Successfully installed workload(s) {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallInvalidNuGetVersionRange">
+        <source>Specified version '{0}' isn't a valid NuGet version range.</source>
+        <target state="new">Specified version '{0}' isn't a valid NuGet version range.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallNuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' doesn't exist.</source>
+        <target state="new">NuGet configuration file '{0}' doesn't exist.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollBackFailedMessage">
+        <source>Installation rollback failed: {0}</source>
+        <target state="new">Installation rollback failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallRollingBackInstall">
+        <source>Workload installation failed. Rolling back installed packs...</source>
+        <target state="new">Workload installation failed. Rolling back installed packs...</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionDescription">
+        <source>The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</source>
+        <target state="new">The NuGet package source to use during the restore. To specify multiple sources, repeat the option.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallSourceOptionName">
+        <source>SOURCE</source>
+        <target state="new">SOURCE</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionDescription">
+        <source>The version of the SDK.</source>
+        <target state="new">The version of the SDK.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallVersionOptionName">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
+        <source>Download of workload packs to offline cache failed: {0}</source>
+        <target state="new">Download of workload packs to offline cache failed: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadInstallWorkloadUpdatesAvailable">
+        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
+        <target state="new">Workload updates are available. Run `dotnet workload list` for more information.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallationFailed">
@@ -400,11 +405,6 @@
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">要顯示的工作負載版本，或是一或多個工作負載及其由 '@' 字元加入的版本。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="WorkloadUpdatesAvailable">
-        <source>Workload updates are available. Run `dotnet workload list` for more information.</source>
-        <target state="translated">有可用的工作負載更新。如需詳細資訊，請執行 `dotnet workload list`。</target>
         <note />
       </trans-unit>
       <trans-unit id="WritingPackInstallRecordMessage">
