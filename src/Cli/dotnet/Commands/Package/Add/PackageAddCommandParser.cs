@@ -107,7 +107,7 @@ internal static class PackageAddCommandParser
 
     public static readonly CliOption<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
     {
-        Description = CommonLocalizableStrings.CommandPrereleaseOptionDescription,
+        Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 

@@ -15,7 +15,7 @@ internal static class ReferenceCommandParser
 
     public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
     {
-        Description = CommonLocalizableStrings.ProjectArgumentDescription,
+        Description = CliStrings.ProjectArgumentDescription,
         Recursive = true
     };
 

@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)]
@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestException>().And.Message.Should()
-                .Contain(string.Format(string.Format(CommonLocalizableStrings.MultipleSamePackageId,
+                .Contain(string.Format(string.Format(CliStrings.MultipleSamePackageId,
                     string.Join(", ", "t-rex")), ""));
         }
 
@@ -254,10 +254,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""))
+                .Contain(string.Format(CliStrings.ListOfSearched, ""))
                 .And.Contain(
                     Path.Combine(_testDirectoryRoot, "non-exists"),
                     "the specificied manifest file name is in the 'searched list'");
@@ -274,10 +274,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                 .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                 .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]
@@ -293,11 +293,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(
-                string.Format(CommonLocalizableStrings.InvalidManifestFilePrefix,
+                string.Format(CliStrings.InvalidManifestFilePrefix,
                     Path.Combine(_testDirectoryRoot, _manifestFilename),
-                    "\t" + string.Format(CommonLocalizableStrings.InPackage, "t-rex",
-                        ("\t\t" + CommonLocalizableStrings.ToolMissingVersion + Environment.NewLine +
-                        "\t\t" + CommonLocalizableStrings.FieldCommandsIsMissing))));
+                    "\t" + string.Format(CliStrings.InPackage, "t-rex",
+                        ("\t\t" + CliStrings.ToolMissingVersion + Environment.NewLine +
+                        "\t\t" + CliStrings.FieldCommandsIsMissing))));
         }
 
         [Fact]
@@ -313,7 +313,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestException>().And.Message.Should()
-                .Contain(string.Format(CommonLocalizableStrings.VersionIsInvalid, "1.*"));
+                .Contain(string.Format(CliStrings.VersionIsInvalid, "1.*"));
         }
 
         [Fact]
@@ -330,7 +330,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestException>()
-                .And.Message.Should().Contain(string.Format(CommonLocalizableStrings.UnexpectedTypeInJson, "True|False", "isRoot"));
+                .And.Message.Should().Contain(string.Format(CliStrings.UnexpectedTypeInJson, "True|False", "isRoot"));
         }
 
         [Fact]
@@ -444,10 +444,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.FindByPackageId(new PackageId("t-rex"));
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]
@@ -483,7 +483,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
 
             a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(string.Format(
-                            CommonLocalizableStrings.ManifestVersionHigherThanSupported,
+                            CliStrings.ManifestVersionHigherThanSupported,
                             99, 1));
         }
 
@@ -499,7 +499,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find();
 
-            a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(CommonLocalizableStrings.ManifestMissingIsRoot);
+            a.Should().Throw<ToolManifestException>().And.Message.Should().Contain(CliStrings.ManifestMissingIsRoot);
         }
 
         [Fact]
@@ -676,7 +676,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And.Message
 
                 .Should().Contain(
-                string.Format(CommonLocalizableStrings.ManifestHasMarkOfTheWeb, manifestFilePath),
+                string.Format(CliStrings.ManifestHasMarkOfTheWeb, manifestFilePath),
                 "The message is similar to Windows file property page");
         }
 
@@ -740,10 +740,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.FindFirst();
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]

@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             _windowsEnvironmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
-            _reporter.Lines.Should().Equal(CommonLocalizableStrings.EnvironmentPathWindowsNeedReopen);
+            _reporter.Lines.Should().Equal(CliStrings.EnvironmentPathWindowsNeedReopen);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             _reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathWindowsManualInstructions,
+                    CliStrings.EnvironmentPathWindowsManualInstructions,
                     _toolsPath));
         }
 

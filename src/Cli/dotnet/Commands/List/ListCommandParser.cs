@@ -12,7 +12,7 @@ internal static class ListCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CommonLocalizableStrings.SolutionOrProjectArgumentName, CommonLocalizableStrings.SolutionOrProjectArgumentDescription);
+    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
 
     internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
         => new CliArgument<string>(name)

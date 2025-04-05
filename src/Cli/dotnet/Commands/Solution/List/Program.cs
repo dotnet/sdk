@@ -23,7 +23,7 @@ internal class ListProjectsInSolutionCommand(
         }
         catch (Exception ex)
         {
-            throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
         }
     }
 
@@ -43,7 +43,7 @@ internal class ListProjectsInSolutionCommand(
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
         }
         else
         {

@@ -200,7 +200,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Message
                 .Should()
                 .Be(string.Format(
-                    CommonLocalizableStrings.FailedToUninstallToolPackage,
+                    CliStrings.FailedToUninstallToolPackage,
                     PackageId,
                     "simulated error"));
 

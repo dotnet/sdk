@@ -13,7 +13,7 @@ internal static class ToolUninstallCommandLowLevelErrorConverter
         string[] userFacingMessages = null;
         if (ex is ToolPackageException)
         {
-            userFacingMessages = [string.Format(CommonLocalizableStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
+            userFacingMessages = [string.Format(CliStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
         }
         else if (ex is ToolConfigurationException || ex is ShellShimException)
         {

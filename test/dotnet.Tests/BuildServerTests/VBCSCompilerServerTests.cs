@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Tests.BuildServerTests
 
             a.Should().Throw<BuildServerException>().WithMessage(
                 string.Format(
-                    CommonLocalizableStrings.ShutdownCommandFailed,
+                    CliStrings.ShutdownCommandFailed,
                     ErrorMessage));
         }
 

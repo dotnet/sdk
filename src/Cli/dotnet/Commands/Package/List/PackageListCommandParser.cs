@@ -74,8 +74,8 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption VerbosityOption = new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
     {
-        Description = CommonLocalizableStrings.VerbosityOptionDescription,
-        HelpName = CommonLocalizableStrings.LevelArgumentName
+        Description = CliStrings.VerbosityOptionDescription,
+        HelpName = CliStrings.LevelArgumentName
     }.ForwardAsSingle(o => $"--verbosity:{o}");
 
     public static readonly CliOption FormatOption = new ForwardedOption<ReportOutputFormat>("--format")

@@ -27,13 +27,13 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             {
                 throw new NugetSearchApiRequestException(
                     string.Format(
-                        CommonLocalizableStrings.RetriableNugetSearchFailure,
+                        CliStrings.RetriableNugetSearchFailure,
                         queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
             }
 
             throw new NugetSearchApiRequestException(
                 string.Format(
-                    CommonLocalizableStrings.NonRetriableNugetSearchFailure,
+                    CliStrings.NonRetriableNugetSearchFailure,
                     queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
         }
 

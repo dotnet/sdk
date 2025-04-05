@@ -28,7 +28,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         string runtimeConfigPath)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            CommonLocalizableStrings.AttemptingToFindCommand,
+            CliStrings.AttemptingToFindCommand,
             PackagedCommandSpecFactoryName,
             commandName,
             toolLibrary.Name));
@@ -39,7 +39,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (toolAssembly == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                CommonLocalizableStrings.FailedToFindToolAssembly,
+                CliStrings.FailedToFindToolAssembly,
                 PackagedCommandSpecFactoryName,
                 commandName));
 
@@ -51,7 +51,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (!File.Exists(commandPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                CommonLocalizableStrings.FailedToFindCommandPath,
+                CliStrings.FailedToFindCommandPath,
                 PackagedCommandSpecFactoryName,
                 commandPath));
 
@@ -76,7 +76,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (packageDirectory == null)
         {
             throw new GracefulException(string.Format(
-                CommonLocalizableStrings.CommandAssembliesNotFound,
+                CliStrings.CommandAssembliesNotFound,
                 toolLibrary.Name));
         }
 

@@ -22,7 +22,7 @@ internal static class ReferenceAddCommandParser
     public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
     {
         Description = LocalizableStrings.ReferenceAddCmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CommonCmdFramework
+        HelpName = CliStrings.CommonCmdFramework
 
     }.AddCompletions(Complete.Complete.TargetFrameworksFromProjectFile);
 

@@ -62,7 +62,7 @@ internal static class WorkloadCommandNuGetRestoreActionConfigOptions
 
     public static CliOption<bool> HiddenInteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
     {
-        Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+        Description = CliStrings.CommandInteractiveOptionDescription,
     }.Hide();
 
     public static RestoreActionConfig ToRestoreActionConfig(this ParseResult parseResult)

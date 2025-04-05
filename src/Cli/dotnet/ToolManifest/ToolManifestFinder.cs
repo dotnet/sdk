@@ -40,8 +40,8 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         if (!findAnyManifest)
         {
             throw new ToolManifestCannotBeFoundException(
-                CommonLocalizableStrings.CannotFindAManifestFile,
-                string.Format(CommonLocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
         }
 
@@ -181,8 +181,8 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
             }
         }
         throw new ToolManifestCannotBeFoundException(
-                CommonLocalizableStrings.CannotFindAManifestFile,
-                string.Format(CommonLocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine,
                         EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
     }
@@ -273,8 +273,8 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         if (!findAnyManifest)
         {
             throw new ToolManifestCannotBeFoundException(
-                CommonLocalizableStrings.CannotFindAManifestFile,
-                string.Format(CommonLocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine,
                         EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
         }

@@ -68,10 +68,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""));
+                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]

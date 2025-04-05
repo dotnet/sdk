@@ -59,7 +59,7 @@ Commands:
             var cmd = new DotnetCommand(Log)
                 .Execute("remove", commandName);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Fact]

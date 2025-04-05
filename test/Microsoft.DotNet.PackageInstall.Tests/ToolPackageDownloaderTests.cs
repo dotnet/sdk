@@ -454,7 +454,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             a.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 
@@ -587,7 +587,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             secondCall.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 

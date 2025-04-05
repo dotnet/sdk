@@ -59,7 +59,7 @@ internal static class WorkloadSearchVersionsCommandParser
             var versionArgument = result.GetValue(WorkloadVersionArgument);
             if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
             {
-                result.AddError(string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
+                result.AddError(string.Format(CliStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
             }
         });
 

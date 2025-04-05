@@ -16,7 +16,7 @@ internal static class ReferenceRemoveCommandParser
     public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
     {
         Description = LocalizableStrings.ReferenceRemoveCmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CommonCmdFramework
+        HelpName = CliStrings.CommonCmdFramework
     };
 
     private static readonly CliCommand Command = ConstructCommand();

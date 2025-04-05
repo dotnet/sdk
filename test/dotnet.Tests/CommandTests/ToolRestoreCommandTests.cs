@@ -451,7 +451,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Should()
                 .Contain(l =>
-                    l.Contains(CommonLocalizableStrings.CannotFindAManifestFile));
+                    l.Contains(CliStrings.CannotFindAManifestFile));
         }
 
         [Fact]

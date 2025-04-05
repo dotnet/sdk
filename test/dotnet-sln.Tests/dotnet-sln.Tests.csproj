@@ -19,7 +19,7 @@
 
   <ItemGroup>
     <!-- Use string resources from product in order to validate test output. -->
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CommonLocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Include="..\..\src\Cli\dotnet\Commands\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 

@@ -157,7 +157,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             a.Should().Throw<ShellShimException>().Where(
                 ex => ex.Message ==
                     string.Format(
-                        CommonLocalizableStrings.ShellShimConflict,
+                        CliStrings.ShellShimConflict,
                         shellCommandName));
 
             Directory
@@ -392,7 +392,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .And.Message
                 .Should().Contain(
                     string.Format(
-                           CommonLocalizableStrings.MoreThanOnePackagedShimAvailable,
+                           CliStrings.MoreThanOnePackagedShimAvailable,
                            string.Join(';', filePaths)));
         }
 

@@ -18,7 +18,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        CommonLocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.String.ToString(),
                         name));
             }
@@ -38,7 +38,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        CommonLocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.Number.ToString(),
                         name));
             }
@@ -58,7 +58,7 @@ internal static class JsonElementExtension
             {
                 throw new ToolManifestException(
                     string.Format(
-                        CommonLocalizableStrings.UnexpectedTypeInJson,
+                        CliStrings.UnexpectedTypeInJson,
                         JsonValueKind.True.ToString() + "|" + JsonValueKind.False.ToString(),
                         name));
             }

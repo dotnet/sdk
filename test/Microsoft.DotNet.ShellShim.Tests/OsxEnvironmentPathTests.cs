@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
+                    CliStrings.EnvironmentPathOSXBashManualInstructions,
                     toolsPath.Path));
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
-            reporter.Lines.Should().Equal(CommonLocalizableStrings.EnvironmentPathOSXNeedReopen);
+            reporter.Lines.Should().Equal(CliStrings.EnvironmentPathOSXNeedReopen);
         }
 
         [UnixOnlyTheory]

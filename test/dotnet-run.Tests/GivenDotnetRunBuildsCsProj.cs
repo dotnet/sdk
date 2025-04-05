@@ -211,7 +211,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Should()
                 .Fail()
                 .And
-                .HaveStdErrContaining(CommonLocalizableStrings.OnlyOneProjectAllowed);
+                .HaveStdErrContaining(CliStrings.OnlyOneProjectAllowed);
         }
 
         [Fact]

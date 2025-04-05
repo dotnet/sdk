@@ -84,7 +84,7 @@ internal class LocalToolsCommandResolver(
         {
             if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
             {
-                throw new GracefulException(string.Format(CommonLocalizableStrings.NeedRunToolRestore,
+                throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
             }
 
@@ -99,7 +99,7 @@ internal class LocalToolsCommandResolver(
         }
         else
         {
-            throw new GracefulException(string.Format(CommonLocalizableStrings.NeedRunToolRestore,
+            throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
         }
     }

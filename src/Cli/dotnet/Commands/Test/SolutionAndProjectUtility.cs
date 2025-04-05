@@ -30,7 +30,7 @@ internal static class SolutionAndProjectUtility
         // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
         if (solutionPaths.Length > 1)
         {
-            return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
         }
 
         if (solutionPaths.Length == 1)
@@ -77,7 +77,7 @@ internal static class SolutionAndProjectUtility
                 return (true, string.Empty);
             }
 
-            return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
         }
     }
 

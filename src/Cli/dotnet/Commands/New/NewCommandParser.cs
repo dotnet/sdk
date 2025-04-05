@@ -50,7 +50,7 @@ internal static class NewCommandParser
     {
         DefaultValueFactory = _ => DefaultVerbosity,
         Description = LocalizableStrings.Verbosity_OptionDescription,
-        HelpName = CommonLocalizableStrings.LevelArgumentName,
+        HelpName = CliStrings.LevelArgumentName,
         Recursive = true
     };
 

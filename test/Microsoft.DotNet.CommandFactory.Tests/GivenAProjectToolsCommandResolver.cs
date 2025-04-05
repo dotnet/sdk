@@ -375,7 +375,7 @@ namespace Microsoft.DotNet.Tests
             new DotnetCommand(Log)
             .WithWorkingDirectory(testProjectDirectory)
             .Execute("fallbackfoldertool", $"/p:RestorePackagesPath={nugetPackages}")
-            .Should().Fail().And.NotHaveStdOutContaining(string.Format(CommonLocalizableStrings.CommandAssembliesNotFound, "dotnet-fallbackfoldertool"));
+            .Should().Fail().And.NotHaveStdOutContaining(string.Format(CliStrings.CommandAssembliesNotFound, "dotnet-fallbackfoldertool"));
         }
 
         private void PopulateFallbackFolder(string testProjectDirectory, string fallbackFolder)

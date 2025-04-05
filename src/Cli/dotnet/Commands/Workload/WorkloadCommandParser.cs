@@ -170,7 +170,7 @@ internal static class WorkloadCommandParser
         {
             if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
-                commandResult.AddError(CommonLocalizableStrings.RequiredCommandNotPassed);
+                commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }
         });
 

@@ -58,7 +58,7 @@ public class OutputPathCommandResolver(IEnvironmentProvider environment,
         if (!Directory.Exists(buildOutputPath))
         {
             Reporter.Verbose.WriteLine(
-                string.Format(CommonLocalizableStrings.BuildOutputPathDoesNotExist, buildOutputPath));
+                string.Format(CliStrings.BuildOutputPathDoesNotExist, buildOutputPath));
             return null;
         }
 

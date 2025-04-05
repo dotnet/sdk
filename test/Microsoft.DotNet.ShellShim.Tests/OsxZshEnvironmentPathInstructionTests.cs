@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     toolsPath.Path));
         }
 
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     toolsPath.Path));
         }
     }

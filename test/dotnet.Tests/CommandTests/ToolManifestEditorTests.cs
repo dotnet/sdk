@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new[] { new ToolCommandName("dotnetsay") });
 
             var expectedString = string.Format(
-                CommonLocalizableStrings.ManifestPackageIdCollision,
+                CliStrings.ManifestPackageIdCollision,
                 "2.1.4",
                 packageId.ToString(),
                 manifestFile,
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
-                    string.Format(CommonLocalizableStrings.InvalidManifestFilePrefix,
+                    string.Format(CliStrings.InvalidManifestFilePrefix,
                         manifestFile,
                         string.Empty));
 
@@ -221,7 +221,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(string.Format(
-                    CommonLocalizableStrings.CannotFindPackageIdInManifest, "non-exist"));
+                    CliStrings.CannotFindPackageIdInManifest, "non-exist"));
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
-                    string.Format(CommonLocalizableStrings.InvalidManifestFilePrefix,
+                    string.Format(CliStrings.InvalidManifestFilePrefix,
                         manifestFile,
                         string.Empty));
 

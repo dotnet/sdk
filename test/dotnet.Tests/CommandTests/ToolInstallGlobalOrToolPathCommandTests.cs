@@ -337,7 +337,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    CommonLocalizableStrings.ShellShimConflict,
+                    CliStrings.ShellShimConflict,
                     ToolCommandName));
 
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
@@ -914,7 +914,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                  reporter: _reporter);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-            _reporter.Lines.Should().NotContain(l => l.Contains(CommonLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
+            _reporter.Lines.Should().NotContain(l => l.Contains(CliStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
         [Fact]

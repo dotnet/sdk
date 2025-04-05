@@ -63,7 +63,7 @@ internal class WindowsEnvironmentPath(string packageExecutablePath,
         {
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.FailedToSetToolsPathEnvironmentVariable,
+                    CliStrings.FailedToSetToolsPathEnvironmentVariable,
                     _expandedPackageExecutablePath).Yellow());
         }
     }
@@ -104,13 +104,13 @@ internal class WindowsEnvironmentPath(string packageExecutablePath,
     {
         if (!PackageExecutablePathExistsForCurrentProcess() && PackageExecutablePathWillExistForFutureNewProcess())
         {
-            _reporter.WriteLine(CommonLocalizableStrings.EnvironmentPathWindowsNeedReopen);
+            _reporter.WriteLine(CliStrings.EnvironmentPathWindowsNeedReopen);
         }
         else if (!PackageExecutablePathWillExistForFutureNewProcess())
         {
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathWindowsManualInstructions,
+                    CliStrings.EnvironmentPathWindowsManualInstructions,
                     _expandedPackageExecutablePath));
         }
     }

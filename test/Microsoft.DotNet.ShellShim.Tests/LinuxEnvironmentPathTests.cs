@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathLinuxManualInstructions,
+                    CliStrings.EnvironmentPathLinuxManualInstructions,
                     toolsPath.Path));
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             environmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
-            reporter.Lines.Should().Equal(CommonLocalizableStrings.EnvironmentPathLinuxNeedLogout);
+            reporter.Lines.Should().Equal(CliStrings.EnvironmentPathLinuxNeedLogout);
         }
 
         [UnixOnlyTheory]

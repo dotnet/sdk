@@ -114,7 +114,7 @@ public class CommonOptionsTests
 
         result.Errors.Select(e => e.Message).Should().BeEquivalentTo(
         [
-            string.Format(CommonLocalizableStrings.IncorrectlyFormattedEnvironmentVariables, $"'{token}'")
+            string.Format(CliStrings.IncorrectlyFormattedEnvironmentVariables, $"'{token}'")
         ]);
     }
 }

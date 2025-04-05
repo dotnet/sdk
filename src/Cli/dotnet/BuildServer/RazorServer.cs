@@ -16,7 +16,7 @@ internal class RazorServer(
 
     public int ProcessId => PidFile.ProcessId;
 
-    public string Name => CommonLocalizableStrings.RazorServer;
+    public string Name => CliStrings.RazorServer;
 
     public RazorPidFile PidFile { get; } = pidFile ?? throw new ArgumentNullException(nameof(pidFile));
 
@@ -48,7 +48,7 @@ internal class RazorServer(
         {
             throw new BuildServerException(
                 string.Format(
-                    CommonLocalizableStrings.ShutdownCommandFailed,
+                    CliStrings.ShutdownCommandFailed,
                     result.StdErr));
         }
 

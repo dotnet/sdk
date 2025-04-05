@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .HaveStdOutContaining(
                     string.Format(
                         LocalizableStrings.ShutDownSucceededWithPid,
-                        CommonLocalizableStrings.RazorServer,
+                        CliStrings.RazorServer,
                         pidFile.ProcessId));
         }
 

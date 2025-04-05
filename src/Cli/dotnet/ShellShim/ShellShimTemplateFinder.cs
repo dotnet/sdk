@@ -45,7 +45,7 @@ internal class ShellShimTemplateFinder(
 
         if (!validRids.Contains(rid))
         {
-            throw new GracefulException(string.Format(CommonLocalizableStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
+            throw new GracefulException(string.Format(CliStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
         }
 
         var packageId = new PackageId($"microsoft.netcore.app.host.{rid}");

@@ -19,7 +19,7 @@ public class PackagedCommandSpecFactoryWithCliRuntime : PackagedCommandSpecFacto
 
             if (!File.Exists(runtimeConfigFile))
             {
-                throw new GracefulException(string.Format(CommonLocalizableStrings.CouldNotFindToolRuntimeConfigFile,
+                throw new GracefulException(string.Format(CliStrings.CouldNotFindToolRuntimeConfigFile,
                                                           nameof(PackagedCommandSpecFactory),
                                                           Path.GetFileName(commandPath)));
             }
@@ -35,7 +35,7 @@ public class PackagedCommandSpecFactoryWithCliRuntime : PackagedCommandSpecFacto
             {
                 Reporter.Verbose.WriteLine(
                     string.Format(
-                        CommonLocalizableStrings.IgnoringPreferCLIRuntimeFile,
+                        CliStrings.IgnoringPreferCLIRuntimeFile,
                         nameof(PackagedCommandSpecFactory),
                         runtimeConfig.Framework.Version,
                         muxer.SharedFxVersion));
@@ -68,7 +68,7 @@ public class PackagedCommandSpecFactoryWithCliRuntime : PackagedCommandSpecFacto
 
         Reporter.Verbose.WriteLine(
             string.Format(
-                CommonLocalizableStrings.LookingForPreferCliRuntimeFile,
+                CliStrings.LookingForPreferCliRuntimeFile,
                 nameof(PackagedCommandSpecFactory),
                 preferCliRuntimePath));
 

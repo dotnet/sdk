@@ -26,7 +26,7 @@ path-to-application:
 {LocalizableStrings.SDKCommandUsageDescription}
 
 sdk-options:
-  -d|--diagnostics  {CommonLocalizableStrings.SDKDiagnosticsCommandDefinition}
+  -d|--diagnostics  {CliStrings.SDKDiagnosticsCommandDefinition}
   -h|--help         {LocalizableStrings.SDKOptionsHelpDefinition}
   --info            {LocalizableStrings.SDKInfoCommandDefinition}
   --list-runtimes   {LocalizableStrings.SDKListRuntimesCommandDefinition}

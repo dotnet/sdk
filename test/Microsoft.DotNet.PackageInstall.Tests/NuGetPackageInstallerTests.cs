@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CommonLocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CommonLocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    CommonLocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    CliStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 

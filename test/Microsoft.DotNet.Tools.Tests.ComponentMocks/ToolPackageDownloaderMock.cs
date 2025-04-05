@@ -155,7 +155,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         throw new ToolPackageException(
                             string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                CliStrings.ToolPackageConflictPackageId,
                                 packageId,
                                 version.ToNormalizedString()));
                     }

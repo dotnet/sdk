@@ -65,7 +65,7 @@ internal static class ToolInstallCommandParser
     // Don't use the common options version as we don't want this to be a forwarded option
     public static readonly CliOption<string> ArchitectureOption = new("--arch", "-a")
     {
-        Description = CommonLocalizableStrings.ArchitectureOptionDescription
+        Description = CliStrings.ArchitectureOptionDescription
     };
 
     public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")

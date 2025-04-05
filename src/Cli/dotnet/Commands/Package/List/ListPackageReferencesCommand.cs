@@ -73,7 +73,7 @@ internal class ListPackageReferencesCommand(
             //If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
             if (possibleSolutionPath.Count() > 1)
             {
-                throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, resultPath);
+                throw new GracefulException(CliStrings.MoreThanOneSolutionInDirectory, resultPath);
             }
             //If a single solution is found, use it.
             else if (possibleSolutionPath.Count() == 1)
@@ -100,7 +100,7 @@ internal class ListPackageReferencesCommand(
                 //More than one project found. Not sure which one to choose
                 else
                 {
-                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneProjectInDirectory, resultPath);
+                    throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, resultPath);
                 }
             }
         }
