@@ -19,7 +19,6 @@ using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using NuGetPackageDownloaderLocalizableStrings = Microsoft.DotNet.Cli.NuGetPackageDownloader.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -916,7 +915,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                  reporter: _reporter);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-            _reporter.Lines.Should().NotContain(l => l.Contains(NuGetPackageDownloaderLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
+            _reporter.Lines.Should().NotContain(l => l.Contains(CommonLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
         [Fact]

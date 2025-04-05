@@ -24,7 +24,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
 
     public int ProcessId => 0; // Not yet used
 
-    public string Name => LocalizableStrings.VBCSCompilerServer;
+    public string Name => CommonLocalizableStrings.VBCSCompilerServer;
 
     public void Shutdown()
     {
@@ -55,7 +55,7 @@ internal class VBCSCompilerServer(ICommandFactory commandFactory = null) : IBuil
         {
             throw new BuildServerException(
                 string.Format(
-                    LocalizableStrings.ShutdownCommandFailed,
+                    CommonLocalizableStrings.ShutdownCommandFailed,
                     string.Join(Environment.NewLine, errors)));
         }
 

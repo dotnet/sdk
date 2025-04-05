@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -68,10 +69,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(Cli.ToolManifest.LocalizableStrings.CannotFindAManifestFile);
+                .Contain(CommonLocalizableStrings.CannotFindAManifestFile);
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(Cli.ToolManifest.LocalizableStrings.ListOfSearched, ""));
+                .And.VerboseMessage.Should().Contain(string.Format(CommonLocalizableStrings.ListOfSearched, ""));
         }
 
         [Fact]

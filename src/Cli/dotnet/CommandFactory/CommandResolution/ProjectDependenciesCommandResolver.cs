@@ -36,7 +36,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.AttemptingToResolve,
+            CommonLocalizableStrings.AttemptingToResolve,
             ProjectDependenciesCommandResolverName,
             commandResolverArguments.CommandName));
 
@@ -46,7 +46,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
             || commandResolverArguments.CommandName == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.InvalidCommandResolverArguments,
+                CommonLocalizableStrings.InvalidCommandResolverArguments,
                 ProjectDependenciesCommandResolverName));
 
             return null;
@@ -84,7 +84,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (project == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DidNotFindAMatchingProject,
+                CommonLocalizableStrings.DidNotFindAMatchingProject,
                 ProjectDependenciesCommandResolverName,
                 projectDirectory));
             return null;
@@ -95,7 +95,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (!File.Exists(depsFilePath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CommonLocalizableStrings.DoesNotExist,
                 ProjectDependenciesCommandResolverName,
                 depsFilePath));
             return null;
@@ -106,7 +106,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (!File.Exists(runtimeConfigPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CommonLocalizableStrings.DoesNotExist,
                 ProjectDependenciesCommandResolverName,
                 runtimeConfigPath));
             return null;
@@ -141,12 +141,12 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (toolLibraries?.Count() > 1)
         {
             throw new InvalidOperationException(string.Format(
-                LocalizableStrings.AmbiguousCommandName,
+                CommonLocalizableStrings.AmbiguousCommandName,
                 commandName));
         }
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.ToolLibraryFound,
+            CommonLocalizableStrings.ToolLibraryFound,
             ProjectDependenciesCommandResolverName,
             toolLibraries?.Count() > 0));
 

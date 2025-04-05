@@ -1,13 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Cli.ToolManifest.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 new[] { new ToolCommandName("dotnetsay") });
 
             var expectedString = string.Format(
-                LocalizableStrings.ManifestPackageIdCollision,
+                CommonLocalizableStrings.ManifestPackageIdCollision,
                 "2.1.4",
                 packageId.ToString(),
                 manifestFile,
@@ -159,7 +159,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
-                    string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                    string.Format(CommonLocalizableStrings.InvalidManifestFilePrefix,
                         manifestFile,
                         string.Empty));
 
@@ -221,7 +221,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(string.Format(
-                    LocalizableStrings.CannotFindPackageIdInManifest, "non-exist"));
+                    CommonLocalizableStrings.CannotFindPackageIdInManifest, "non-exist"));
 
             _fileSystem.File.ReadAllText(manifestFile).Should().Be(_jsonContent);
         }
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestException>()
                 .And.Message.Should().Contain(
-                    string.Format(LocalizableStrings.InvalidManifestFilePrefix,
+                    string.Format(CommonLocalizableStrings.InvalidManifestFilePrefix,
                         manifestFile,
                         string.Empty));
 

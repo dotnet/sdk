@@ -63,7 +63,7 @@ internal static class Signature
 
             if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, pChainContext, &policyCriteria, &policyStatus))
             {
-                throw new CryptographicException(string.Format(LocalizableStrings.UnableToCheckCertificateChainPolicy, nameof(CERT_CHAIN_POLICY_MICROSOFT_ROOT)));
+                throw new CryptographicException(string.Format(CommonLocalizableStrings.UnableToCheckCertificateChainPolicy, nameof(CERT_CHAIN_POLICY_MICROSOFT_ROOT)));
             }
 
             return (int)policyStatus.dwError;

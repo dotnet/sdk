@@ -543,4 +543,228 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="UnrecognizedCommandOrArgument" xml:space="preserve">
     <value>Unrecognized command or argument '{0}'</value>
   </data>
+  <data name="AmbiguousCommandName" xml:space="preserve">
+    <value>Ambiguous command name: {0}</value>
+  </data>
+  <data name="AttemptingToCreateCommandSpec" xml:space="preserve">
+    <value>{0}: attempting to create commandspec</value>
+  </data>
+  <data name="AttemptingToFindCommand" xml:space="preserve">
+    <value>{0}: attempting to find command {1} in {2}</value>
+  </data>
+  <data name="AttemptingToResolve" xml:space="preserve">
+    <value>{0}: attempting to resolve {1}</value>
+  </data>
+  <data name="AttemptingToResolveCommandSpec" xml:space="preserve">
+    <value>{0}: Attempting to resolve command spec from tool {1}</value>
+  </data>
+  <data name="BuildOutputPathDoesNotExist" xml:space="preserve">
+    <value>outputpathresolver: {0} does not exist</value>
+  </data>
+  <data name="CannotFindAManifestFile" xml:space="preserve">
+    <value>Cannot find a manifest file.
+For a list of locations searched, specify the "-d" option before the tool name.</value>
+  </data>
+  <data name="CannotFindPackageIdInManifest" xml:space="preserve">
+    <value>Cannot find a package with the package id {0} in the manifest file.</value>
+  </data>
+  <data name="CommandAssembliesNotFound" xml:space="preserve">
+    <value>The command executable for "{0}" was not found. The project may not have been restored or restore failed - run `dotnet restore`</value>
+  </data>
+  <data name="CommandSpecIsNull" xml:space="preserve">
+    <value>{0}: commandSpec is null.</value>
+  </data>
+  <data name="CouldNotFindToolRuntimeConfigFile" xml:space="preserve">
+    <value>{0}: Could not find runtimeconfig.json file for tool {1}</value>
+  </data>
+  <data name="DepsJsonGeneratorProjectNotSet" xml:space="preserve">
+    <value>Unable to find deps.json generator project.</value>
+  </data>
+  <data name="DidNotFindAMatchingProject" xml:space="preserve">
+    <value>{0}: Did not find a matching project {1}.</value>
+  </data>
+  <data name="DidNotFindProject" xml:space="preserve">
+    <value>{0}: ProjectFactory did not find Project.</value>
+  </data>
+  <data name="DoesNotExist" xml:space="preserve">
+    <value>{0}: {1} does not exist</value>
+  </data>
+  <data name="ExpectDepsJsonAt" xml:space="preserve">
+    <value>{0}: expect deps.json at: {1}</value>
+  </data>
+  <data name="FailedToFindCommandPath" xml:space="preserve">
+    <value>{0}: failed to find commandPath {1}</value>
+  </data>
+  <data name="FailedToFindSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
+  <data name="FailedToFindToolAssembly" xml:space="preserve">
+    <value>{0}: failed to find toolAssembly for {1}</value>
+  </data>
+  <data name="FailedToLoadNuGetSource" xml:space="preserve">
+    <value>Failed to load NuGet source {0}</value>
+  </data>
+  <data name="FailedToMapSourceUnderPackageSourceMapping" xml:space="preserve">
+    <value>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
+  </data>
+  <data name="FailedToReadPidFile" xml:space="preserve">
+    <value>Failed to read pid file '{0}': {1}</value>
+  </data>
+  <data name="FailedToResolveCommandSpec" xml:space="preserve">
+    <value>{0}: failed to resolve commandspec from library.</value>
+  </data>
+  <data name="FailedToValidatePackageSigning" xml:space="preserve">
+    <value>Failed to validate package signing.
+{0}</value>
+  </data>
+  <data name="FieldCommandsIsMissing" xml:space="preserve">
+    <value>Missing 'commands' entry.</value>
+  </data>
+  <data name="FoundToolLockFile" xml:space="preserve">
+    <value>{0}: found tool lockfile at : {1}</value>
+  </data>
+  <data name="GeneratingDepsJson" xml:space="preserve">
+    <value>Generating deps.json at: {0}</value>
+  </data>
+  <data name="IgnoringPreferCLIRuntimeFile" xml:space="preserve">
+    <value>{0}: Ignoring prefercliruntime file as the tool target framework ({1}) has a different major version than the current CLI runtime ({2})</value>
+  </data>
+  <data name="InPackage" xml:space="preserve">
+    <value>In package {0}:
+{1}</value>
+  </data>
+  <data name="InvalidCommandResolverArguments" xml:space="preserve">
+    <value>{0}: invalid commandResolverArguments</value>
+  </data>
+  <data name="InvalidManifestFilePrefix" xml:space="preserve">
+    <value>Invalid manifest file. Path {0}:
+{1}</value>
+  </data>
+  <data name="IsNotFoundInNuGetFeeds" xml:space="preserve">
+    <value>{0} is not found in NuGet feeds {1}.</value>
+  </data>
+  <data name="JsonParsingError" xml:space="preserve">
+    <value>Json parsing error in file {0} : {1}</value>
+  </data>
+  <data name="LibraryNotFoundInLockFile" xml:space="preserve">
+    <value>{0}: library not found in lock file.</value>
+  </data>
+  <data name="ListOfSearched" xml:space="preserve">
+    <value>The list of searched paths:
+{0}</value>
+  </data>
+  <data name="LookingForPreferCliRuntimeFile" xml:space="preserve">
+    <value>{0}: Looking for prefercliruntime file at `{1}`</value>
+  </data>
+  <data name="ManifestHasMarkOfTheWeb" xml:space="preserve">
+    <value>File {0} came from another computer and might be blocked to help protect this computer. For more information, including how to unblock, see https://aka.ms/motw</value>
+  </data>
+  <data name="ManifestMissingIsRoot" xml:space="preserve">
+    <value>Missing 'isRoot' entry.</value>
+  </data>
+  <data name="ManifestPackageIdCollision" xml:space="preserve">
+    <value>Cannot add package. Manifest file already contains version {0} of the package {1}. Uninstall/install or edit manifest file {2} to specify the new version {3}.</value>
+  </data>
+  <data name="ManifestVersion0" xml:space="preserve">
+    <value>Manifest version 0 is not supported.</value>
+  </data>
+  <data name="ManifestVersionHigherThanSupported" xml:space="preserve">
+    <value>Manifest version is {0}. This manifest may not be supported in this SDK version that can support up to manifest version {1}.</value>
+  </data>
+  <data name="MSBuildArgs" xml:space="preserve">
+    <value>MSBuild arguments: {0}</value>
+  </data>
+  <data name="MSBuildExePath" xml:space="preserve">
+    <value>{0}: MSBUILD_EXE_PATH = {1}</value>
+  </data>
+  <data name="MSBuildProjectPath" xml:space="preserve">
+    <value>{0}: MSBuild project path = {1}</value>
+  </data>
+  <data name="MSBuildServer" xml:space="preserve">
+    <value>MSBuild server</value>
+  </data>
+  <data name="MultipleProjectFilesFound" xml:space="preserve">
+    <value>Specify which project file to use because this '{0}' contains more than one project file.</value>
+  </data>
+  <data name="MultipleSamePackageId" xml:space="preserve">
+    <value>More than one entry exists for package(s): {0}.</value>
+  </data>
+  <data name="NeedRunToolRestore" xml:space="preserve">
+    <value>Run "dotnet tool restore" to make the "{0}" command available.</value>
+  </data>
+  <data name="NonRetriableNugetSearchFailure" xml:space="preserve">
+    <value>Failed to search. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</value>
+  </data>
+  <data name="NuGetPackageShouldNotBeSigned" xml:space="preserve">
+    <value>Skipping signature verification for NuGet package "{0}" because it comes from a source that does not require signature validation.</value>
+  </data>
+  <data name="NuGetPackageSignatureVerificationSkipped" xml:space="preserve">
+    <value>Skipping NuGet package signature verification.</value>
+  </data>
+  <data name="NuGetPackagesRoot" xml:space="preserve">
+    <value>{0}: nuget packages root:
+{1}</value>
+  </data>
+  <data name="PackageVersionDescriptionDefault" xml:space="preserve">
+    <value>A version of {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForExactVersionMatch" xml:space="preserve">
+    <value>Version {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerAndUpperBounds" xml:space="preserve">
+    <value>A version between {0} and {1} of package {2}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerBound" xml:space="preserve">
+    <value>A version higher than {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithUpperBound" xml:space="preserve">
+    <value>A version less than {0} of package {1}</value>
+  </data>
+  <data name="RazorServer" xml:space="preserve">
+    <value>Razor build server</value>
+  </data>
+  <data name="ResolvingCommandSpec" xml:space="preserve">
+    <value>{0}: resolving commandspec from {1} Tool Libraries.</value>
+  </data>
+  <data name="RetriableNugetSearchFailure" xml:space="preserve">
+    <value>Failed to search. Retry later may resolve the issue. NuGet Search API response detail:
+    RequestUrl: {0}. ReasonPhrase: {1}. StatusCode: {2}.</value>
+  </data>
+  <data name="ShutdownCommandFailed" xml:space="preserve">
+    <value>The shutdown command failed: {0}</value>
+  </data>
+  <data name="ToolLibraryFound" xml:space="preserve">
+    <value>{0}: tool library found {1}</value>
+  </data>
+  <data name="ToolMissingVersion" xml:space="preserve">
+    <value>Missing 'version' entry.</value>
+  </data>
+  <data name="UnableToCheckCertificateChainPolicy" xml:space="preserve">
+    <value>The requested certificate chain policy could not be checked: {0}</value>
+  </data>
+  <data name="UnableToDeleteTemporaryDepsJson" xml:space="preserve">
+    <value>unable to delete temporary deps.json file: {0}</value>
+  </data>
+  <data name="UnableToGenerateDepsJson" xml:space="preserve">
+    <value>Unable to generate deps.json, it may have been already generated.  You can specify the "-d" option option after "dotnet" for diagnostic output (for example, "dotnet -d &lt;toolname&gt;": {0}</value>
+  </data>
+  <data name="UnableToLocateDotnetMultiplexer" xml:space="preserve">
+    <value>Unable to locate dotnet multiplexer</value>
+  </data>
+  <data name="UnexpectedTypeInJson" xml:space="preserve">
+    <value>Expected a {0} for property '{1}'.</value>
+  </data>
+  <data name="VBCSCompilerServer" xml:space="preserve">
+    <value>VB/C# compiler server</value>
+  </data>
+  <data name="VerifyingNuGetPackageSignature" xml:space="preserve">
+    <value>Verified that the NuGet package "{0}" has a valid signature.</value>
+  </data>
+  <data name="VersionForPackageCouldNotBeResolved" xml:space="preserve">
+    <value>Version for package `{0}` could not be resolved.</value>
+  </data>
+  <data name="VersionIsInvalid" xml:space="preserve">
+    <value>Version {0} is invalid.</value>
+  </data>
 </root>

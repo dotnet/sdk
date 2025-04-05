@@ -35,8 +35,6 @@
     <EmbeddedResource Include="Commands\New\*.zip" />
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
     <EmbeddedResource Update="*.resx" Namespace="Microsoft.DotNet.Cli" />
-    <EmbeddedResource Update="BuildServer\*.resx" Namespace="Microsoft.DotNet.Cli.BuildServer" />
-    <EmbeddedResource Update="CommandFactory\*.resx" Namespace="Microsoft.DotNet.Cli.CommandFactory" />
     <EmbeddedResource Update="Commands\Package\Add\*.resx" Namespace="Microsoft.DotNet.Tools.Package.Add" />
     <EmbeddedResource Update="Commands\Project\Convert\*.resx" Namespace="Microsoft.DotNet.Tools.Project.Convert" />
     <EmbeddedResource Update="Commands\Reference\Add\*.resx" Namespace="Microsoft.DotNet.Tools.Reference.Add" />
@@ -84,10 +82,6 @@
     <EmbeddedResource Update="Commands\Workload\Search\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Search" />
     <EmbeddedResource Update="Commands\Workload\Uninstall\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Uninstall" />
     <EmbeddedResource Update="Commands\Workload\Update\*.resx" Namespace="Microsoft.DotNet.Workloads.Workload.Update" />
-    <EmbeddedResource Update="Installer\Windows\*.resx" Namespace="Microsoft.DotNet.Cli.Installer.Windows" />
-    <EmbeddedResource Update="ToolManifest\*.resx" Namespace="Microsoft.DotNet.Cli.ToolManifest" />
-    <EmbeddedResource Update="NugetSearch\*.resx" Namespace="Microsoft.DotNet.Cli.NugetSearch" />
-    <EmbeddedResource Update="NugetPackageDownloader\*.resx" Namespace="Microsoft.DotNet.Cli.NuGetPackageDownloader" />
     <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
 

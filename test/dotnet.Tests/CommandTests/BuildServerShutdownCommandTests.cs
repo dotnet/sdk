@@ -4,13 +4,13 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
-using CommandLocalizableStrings = Microsoft.DotNet.Cli.BuildServer.LocalizableStrings;
 using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
@@ -190,7 +190,7 @@ namespace Microsoft.DotNet.Tests.Commands
                 .HaveStdOutContaining(
                     string.Format(
                         LocalizableStrings.ShutDownSucceededWithPid,
-                        CommandLocalizableStrings.RazorServer,
+                        CommonLocalizableStrings.RazorServer,
                         pidFile.ProcessId));
         }
 
