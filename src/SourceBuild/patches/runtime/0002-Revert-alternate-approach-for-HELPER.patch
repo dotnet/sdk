@@ -1,0 +1,1535 @@
+From 683ab27cd72312d68eb23f7302ed688e5c162d5d Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Sun, 6 Apr 2025 12:08:37 +0200
+Subject: [PATCH] =?UTF-8?q?Revert=20"Alternate=20approach=20for=20HELPER?=
+ =?UTF-8?q?=5FMETHOD=5FFRAME=20removal=20for=20arithmetic=20div=E2=80=A6"?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+Backport: https://github.com/dotnet/runtime/pull/114308
+
+---
+ .../classlibnative/float/CMakeLists.txt       |   1 -
+ .../classlibnative/float/divmodint.cpp        |  60 -----
+ src/coreclr/classlibnative/inc/divmodint.h    |  22 --
+ src/coreclr/inc/jithelpers.h                  |  45 +---
+ src/coreclr/jit/valuenum.cpp                  |   2 +-
+ src/coreclr/nativeaot/Runtime/CommonMacros.h  |   2 -
+ src/coreclr/nativeaot/Runtime/MathHelpers.cpp |  20 +-
+ .../Runtime/CompilerHelpers/MathHelpers.cs    | 128 +++++++++++
+ .../src/System.Private.CoreLib.csproj         |   1 +
+ .../ILCompiler.Compiler/Compiler/JitHelper.cs |  33 +--
+ src/coreclr/vm/appdomain.cpp                  |  10 -
+ src/coreclr/vm/corelib.cpp                    |   1 -
+ src/coreclr/vm/corelib.h                      |  25 +--
+ src/coreclr/vm/ecalllist.h                    |  10 -
+ src/coreclr/vm/fcall.cpp                      |  48 ++++
+ src/coreclr/vm/fcall.h                        |  78 ++++++-
+ src/coreclr/vm/i386/asmhelpers.asm            | 207 -----------------
+ src/coreclr/vm/jithelpers.cpp                 | 208 +++++++++++++++++-
+ src/coreclr/vm/threadsuspend.cpp              |   2 +
+ .../System.Private.CoreLib.Shared.projitems   |   1 -
+ .../src/System/Math.DivModInt.cs              | 204 -----------------
+ 21 files changed, 496 insertions(+), 612 deletions(-)
+ delete mode 100644 src/coreclr/classlibnative/float/divmodint.cpp
+ delete mode 100644 src/coreclr/classlibnative/inc/divmodint.h
+ create mode 100644 src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/MathHelpers.cs
+ delete mode 100644 src/libraries/System.Private.CoreLib/src/System/Math.DivModInt.cs
+
+diff --git a/src/coreclr/classlibnative/float/CMakeLists.txt b/src/coreclr/classlibnative/float/CMakeLists.txt
+index c6153d5d34c096..1dbe160248f26e 100644
+--- a/src/coreclr/classlibnative/float/CMakeLists.txt
++++ b/src/coreclr/classlibnative/float/CMakeLists.txt
+@@ -3,7 +3,6 @@ include_directories("../inc")
+ set(FLOAT_SOURCES
+     floatdouble.cpp
+     floatsingle.cpp
+-    divmodint.cpp
+ )
+ 
+ add_library_clr(comfloat_wks OBJECT ${FLOAT_SOURCES})
+diff --git a/src/coreclr/classlibnative/float/divmodint.cpp b/src/coreclr/classlibnative/float/divmodint.cpp
+deleted file mode 100644
+index d7b194c5587dc7..00000000000000
+--- a/src/coreclr/classlibnative/float/divmodint.cpp
++++ /dev/null
+@@ -1,60 +0,0 @@
+-// Licensed to the .NET Foundation under one or more agreements.
+-// The .NET Foundation licenses this file to you under the MIT license.
+-
+-#ifdef TARGET_32BIT
+-
+-#include <common.h>
+-
+-#include "divmodint.h"
+-
+-#include <optsmallperfcritical.h>
+-
+-FCIMPL2(int32_t, DivModInt::DivInt32, int32_t dividend, int32_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend / divisor;
+-FCIMPLEND
+-
+-FCIMPL2(uint32_t, DivModInt::DivUInt32, uint32_t dividend, uint32_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend / divisor;
+-FCIMPLEND
+-
+-FCIMPL2_VV(int64_t, DivModInt::DivInt64, int64_t dividend, int64_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend / divisor;
+-FCIMPLEND
+-
+-FCIMPL2_VV(uint64_t, DivModInt::DivUInt64, uint64_t dividend, uint64_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend / divisor;
+-FCIMPLEND
+-
+-FCIMPL2(int32_t, DivModInt::ModInt32, int32_t dividend, int32_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend % divisor;
+-FCIMPLEND
+-
+-FCIMPL2(uint32_t, DivModInt::ModUInt32, uint32_t dividend, uint32_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend % divisor;
+-FCIMPLEND
+-
+-FCIMPL2_VV(int64_t, DivModInt::ModInt64, int64_t dividend, int64_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend % divisor;
+-FCIMPLEND
+-
+-FCIMPL2_VV(uint64_t, DivModInt::ModUInt64, uint64_t dividend, uint64_t divisor)
+-    FCALL_CONTRACT;
+-
+-    return dividend % divisor;
+-FCIMPLEND
+-
+-#endif // TARGET_32BIT
+diff --git a/src/coreclr/classlibnative/inc/divmodint.h b/src/coreclr/classlibnative/inc/divmodint.h
+deleted file mode 100644
+index a6aefdbdb78aed..00000000000000
+--- a/src/coreclr/classlibnative/inc/divmodint.h
++++ /dev/null
+@@ -1,22 +0,0 @@
+-// Licensed to the .NET Foundation under one or more agreements.
+-// The .NET Foundation licenses this file to you under the MIT license.
+-
+-#ifndef HAVE_DIVMODINT_H
+-#define HAVE_DIVMODINT_H
+-
+-#include <object.h>
+-#include <fcall.h>
+-
+-class DivModInt {
+-public:
+-    FCDECL2(static int32_t, DivInt32, int32_t dividend, int32_t divisor);
+-    FCDECL2(static uint32_t, DivUInt32, uint32_t dividend, uint32_t divisor);
+-    FCDECL2_VV(static int64_t, DivInt64, int64_t dividend, int64_t divisor);
+-    FCDECL2_VV(static uint64_t, DivUInt64, uint64_t dividend, uint64_t divisor);
+-    FCDECL2(static int32_t, ModInt32, int32_t dividend, int32_t divisor);
+-    FCDECL2(static uint32_t, ModUInt32, uint32_t dividend, uint32_t divisor);
+-    FCDECL2_VV(static int64_t, ModInt64, int64_t dividend, int64_t divisor);
+-    FCDECL2_VV(static uint64_t, ModUInt64, uint64_t dividend, uint64_t divisor);
+-};
+-
+-#endif // HAVE_DIVMODINT_H
+diff --git a/src/coreclr/inc/jithelpers.h b/src/coreclr/inc/jithelpers.h
+index 8543f647c93b52..601505a3b13c93 100644
+--- a/src/coreclr/inc/jithelpers.h
++++ b/src/coreclr/inc/jithelpers.h
+@@ -29,34 +29,24 @@
+ #define DYNAMICJITHELPER_NOINDIRECT(code,fn,binderId) DYNAMICJITHELPER(code,fn,binderId)
+ #endif
+ 
+-#if defined(TARGET_32BIT) && defined (TARGET_ARM)
+-#define FEATURE_USE_HELPERS_FOR_32BIT_INT_DIV
+-#endif
+-
+ // pfnHelper is set to NULL if it is a stubbed helper.
+ // It will be set in InitJITHelpers1
+ 
+     JITHELPER(CORINFO_HELP_UNDEF,               NULL,               METHOD__NIL)
+ 
+     // Arithmetic
+-#ifdef FEATURE_USE_HELPERS_FOR_32BIT_INT_DIV
+-    DYNAMICJITHELPER(CORINFO_HELP_DIV,          NULL,               METHOD__MATH__DIV_INT32)
+-    DYNAMICJITHELPER(CORINFO_HELP_MOD,          NULL,               METHOD__MATH__MOD_INT32)
+-    DYNAMICJITHELPER(CORINFO_HELP_UDIV,         NULL,               METHOD__MATH__DIV_UINT32)
+-    DYNAMICJITHELPER(CORINFO_HELP_UMOD,         NULL,               METHOD__MATH__MOD_UINT32)
+-#else
+-    JITHELPER(CORINFO_HELP_DIV,          NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_MOD,          NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_UDIV,         NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_UMOD,         NULL,               METHOD__NIL)
+-#endif
++    JITHELPER(CORINFO_HELP_DIV,                 JIT_Div,            METHOD__NIL)
++    JITHELPER(CORINFO_HELP_MOD,                 JIT_Mod,            METHOD__NIL)
++    JITHELPER(CORINFO_HELP_UDIV,                JIT_UDiv,           METHOD__NIL)
++    JITHELPER(CORINFO_HELP_UMOD,                JIT_UMod,           METHOD__NIL)
+ 
+-#ifdef TARGET_32BIT
++    // CORINFO_HELP_DBL2INT, CORINFO_HELP_DBL2UINT, and CORINFO_HELP_DBL2LONG get
++    // patched for CPUs that support SSE2 (P4 and above).
++#ifndef TARGET_64BIT
+     JITHELPER(CORINFO_HELP_LLSH,                JIT_LLsh,           METHOD__NIL)
+     JITHELPER(CORINFO_HELP_LRSH,                JIT_LRsh,           METHOD__NIL)
+     JITHELPER(CORINFO_HELP_LRSZ,                JIT_LRsz,           METHOD__NIL)
+-#else // TARGET_32BIT
+-
++#else // !TARGET_64BIT
+     JITHELPER(CORINFO_HELP_LLSH,                NULL,               METHOD__NIL)
+     JITHELPER(CORINFO_HELP_LRSH,                NULL,               METHOD__NIL)
+     JITHELPER(CORINFO_HELP_LRSZ,                NULL,               METHOD__NIL)
+@@ -65,25 +55,14 @@
+ #ifndef TARGET_64BIT
+     DYNAMICJITHELPER(CORINFO_HELP_LMUL_OVF,     NULL,               METHOD__MATH__MULTIPLY_CHECKED_INT64)
+     DYNAMICJITHELPER(CORINFO_HELP_ULMUL_OVF,    NULL,               METHOD__MATH__MULTIPLY_CHECKED_UINT64)
+-#if defined(TARGET_X86) && defined(TARGET_WINDOWS)
++#else
++    DYNAMICJITHELPER(CORINFO_HELP_LMUL_OVF,     NULL,               METHOD__NIL)
++    DYNAMICJITHELPER(CORINFO_HELP_ULMUL_OVF,    NULL,               METHOD__NIL)
++#endif // TARGET_64BIT
+     JITHELPER(CORINFO_HELP_LDIV,                JIT_LDiv,           METHOD__NIL)
+     JITHELPER(CORINFO_HELP_LMOD,                JIT_LMod,           METHOD__NIL)
+     JITHELPER(CORINFO_HELP_ULDIV,               JIT_ULDiv,          METHOD__NIL)
+     JITHELPER(CORINFO_HELP_ULMOD,               JIT_ULMod,          METHOD__NIL)
+-#else
+-    DYNAMICJITHELPER(CORINFO_HELP_LDIV,         NULL,               METHOD__MATH__DIV_INT64)
+-    DYNAMICJITHELPER(CORINFO_HELP_LMOD,         NULL,               METHOD__MATH__MOD_INT64)
+-    DYNAMICJITHELPER(CORINFO_HELP_ULDIV,        NULL,               METHOD__MATH__DIV_UINT64)
+-    DYNAMICJITHELPER(CORINFO_HELP_ULMOD,        NULL,               METHOD__MATH__MOD_UINT64)
+-#endif // TARGET_X86 && TARGET_WINDOWS
+-#else // TARGET_64BIT
+-    JITHELPER(CORINFO_HELP_LMUL_OVF,            NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_ULMUL_OVF,           NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_LDIV,                NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_LMOD,                NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_ULDIV,               NULL,               METHOD__NIL)
+-    JITHELPER(CORINFO_HELP_ULMOD,               NULL,               METHOD__NIL)
+-#endif // TARGET_64BIT
+     JITHELPER(CORINFO_HELP_LNG2DBL,             JIT_Lng2Dbl,        METHOD__NIL)
+     JITHELPER(CORINFO_HELP_ULNG2DBL,            JIT_ULng2Dbl,       METHOD__NIL)
+     JITHELPER(CORINFO_HELP_DBL2INT,             JIT_Dbl2Int,        METHOD__NIL)
+diff --git a/src/coreclr/jit/valuenum.cpp b/src/coreclr/jit/valuenum.cpp
+index e240bd47fc50b2..c4c50a11d58cf5 100644
+--- a/src/coreclr/jit/valuenum.cpp
++++ b/src/coreclr/jit/valuenum.cpp
+@@ -14160,8 +14160,8 @@ bool Compiler::fgValueNumberHelperCall(GenTreeCall* call)
+                 vnpExc = fgValueNumberDivisionExceptions(GT_DIV, call->gtArgs.GetUserArgByIndex(0)->GetNode(),
+                                                          call->gtArgs.GetUserArgByIndex(1)->GetNode());
+                 break;
+-            case CORINFO_HELP_LMOD:
+             case CORINFO_HELP_MOD:
++            case CORINFO_HELP_LMOD:
+                 vnpExc = fgValueNumberDivisionExceptions(GT_MOD, call->gtArgs.GetUserArgByIndex(0)->GetNode(),
+                                                          call->gtArgs.GetUserArgByIndex(1)->GetNode());
+                 break;
+diff --git a/src/coreclr/nativeaot/Runtime/CommonMacros.h b/src/coreclr/nativeaot/Runtime/CommonMacros.h
+index 426e0119209b9e..22077753082af7 100644
+--- a/src/coreclr/nativeaot/Runtime/CommonMacros.h
++++ b/src/coreclr/nativeaot/Runtime/CommonMacros.h
+@@ -207,7 +207,6 @@ typedef uint8_t CODE_LOCATION;
+     FCIMPL_RENAME_ARGSIZE(_rettype, _method, 16) \
+     EXTERN_C _rettype F_CALL_CONV _method##_FCall (b, a) \
+     {
+-#define FCIMPL2_LL FCIMPL2_DD
+ #define FCIMPL2_FI(_rettype, _method, a, b) \
+     FCIMPL_RENAME_ARGSIZE(_rettype, _method, 8) \
+     EXTERN_C _rettype F_CALL_CONV _method##_FCall (a, b) \
+@@ -250,7 +249,6 @@ typedef uint8_t CODE_LOCATION;
+ #define FCIMPL2_DD(_rettype, _method, a, b) \
+     EXTERN_C _rettype F_CALL_CONV _method (a, b) \
+     {
+-#define FCIMPL2_LL FCIMPL2_DD
+ #define FCIMPL2_FI(_rettype, _method, a, b) \
+     EXTERN_C _rettype F_CALL_CONV _method (a, b) \
+     {
+diff --git a/src/coreclr/nativeaot/Runtime/MathHelpers.cpp b/src/coreclr/nativeaot/Runtime/MathHelpers.cpp
+index 8af728b69e71dc..6e3f4d73de8af2 100644
+--- a/src/coreclr/nativeaot/Runtime/MathHelpers.cpp
++++ b/src/coreclr/nativeaot/Runtime/MathHelpers.cpp
+@@ -56,33 +56,29 @@ FCIMPL1_D(uint32_t, RhpDbl2UInt, double val)
+ FCIMPLEND
+ 
+ #ifndef HOST_64BIT
+-FCIMPL2_LL(int64_t, DivInt64Internal, int64_t i, int64_t j)
++EXTERN_C int64_t QCALLTYPE RhpLDiv(int64_t i, int64_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i / j;
+ }
+-FCIMPLEND
+ 
+-FCIMPL2_LL(uint64_t, DivUInt64Internal, uint64_t i, uint64_t j)
++EXTERN_C uint64_t QCALLTYPE RhpULDiv(uint64_t i, uint64_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i / j;
+ }
+-FCIMPLEND
+ 
+-FCIMPL2_LL(int64_t, ModInt64Internal, int64_t i, int64_t j)
++EXTERN_C int64_t QCALLTYPE RhpLMod(int64_t i, int64_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i % j;
+ }
+-FCIMPLEND
+ 
+-FCIMPL2_LL(uint64_t, ModUInt64Internal, uint64_t i, uint64_t j)
++EXTERN_C uint64_t QCALLTYPE RhpULMod(uint64_t i, uint64_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i % j;
+ }
+-FCIMPLEND
+ 
+ FCIMPL1_L(double, RhpLng2Dbl, int64_t val)
+ {
+@@ -99,25 +95,25 @@ FCIMPLEND
+ #endif
+ 
+ #ifdef HOST_ARM
+-EXTERN_C int32_t F_CALL_CONV DivInt32Internal(int32_t i, int32_t j)
++EXTERN_C int32_t F_CALL_CONV RhpIDiv(int32_t i, int32_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i / j;
+ }
+ 
+-EXTERN_C uint32_t F_CALL_CONV DivUInt32Internal(uint32_t i, uint32_t j)
++EXTERN_C uint32_t F_CALL_CONV RhpUDiv(uint32_t i, uint32_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i / j;
+ }
+ 
+-EXTERN_C int32_t F_CALL_CONV ModInt32Internal(int32_t i, int32_t j)
++EXTERN_C int32_t F_CALL_CONV RhpIMod(int32_t i, int32_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i % j;
+ }
+ 
+-EXTERN_C uint32_t F_CALL_CONV ModUInt32Internal(uint32_t i, uint32_t j)
++EXTERN_C uint32_t F_CALL_CONV RhpUMod(uint32_t i, uint32_t j)
+ {
+     ASSERT(j && "Divide by zero!");
+     return i % j;
+diff --git a/src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/MathHelpers.cs b/src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/MathHelpers.cs
+new file mode 100644
+index 00000000000000..df8c6d407901ff
+--- /dev/null
++++ b/src/coreclr/nativeaot/System.Private.CoreLib/src/Internal/Runtime/CompilerHelpers/MathHelpers.cs
+@@ -0,0 +1,128 @@
++// Licensed to the .NET Foundation under one or more agreements.
++// The .NET Foundation licenses this file to you under the MIT license.
++
++using System;
++using System.Diagnostics;
++using System.Runtime;
++using System.Runtime.CompilerServices;
++using System.Runtime.InteropServices;
++
++namespace Internal.Runtime.CompilerHelpers
++{
++    /// <summary>
++    /// Math helpers for generated code. The helpers here are referenced by the runtime.
++    /// </summary>
++    [StackTraceHidden]
++    internal static partial class MathHelpers
++    {
++#if !TARGET_64BIT
++        private const string RuntimeLibrary = "*";
++
++        [LibraryImport(RuntimeLibrary)]
++        [SuppressGCTransition]
++        private static partial ulong RhpULMod(ulong dividend, ulong divisor);
++
++        public static ulong ULMod(ulong dividend, ulong divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++
++            return RhpULMod(dividend, divisor);
++        }
++
++        [LibraryImport(RuntimeLibrary)]
++        [SuppressGCTransition]
++        private static partial long RhpLMod(long dividend, long divisor);
++
++        public static long LMod(long dividend, long divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++            if (divisor == -1 && dividend == long.MinValue)
++                ThrowHelper.ThrowOverflowException();
++
++            return RhpLMod(dividend, divisor);
++        }
++
++        [LibraryImport(RuntimeLibrary)]
++        [SuppressGCTransition]
++        private static partial ulong RhpULDiv(ulong dividend, ulong divisor);
++
++        public static ulong ULDiv(ulong dividend, ulong divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++
++            return RhpULDiv(dividend, divisor);
++        }
++
++        [LibraryImport(RuntimeLibrary)]
++        [SuppressGCTransition]
++        private static partial long RhpLDiv(long dividend, long divisor);
++
++        public static long LDiv(long dividend, long divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++            if (divisor == -1 && dividend == long.MinValue)
++                ThrowHelper.ThrowOverflowException();
++
++            return RhpLDiv(dividend, divisor);
++        }
++
++#if TARGET_ARM
++        [RuntimeImport(RuntimeLibrary, "RhpIDiv")]
++        [MethodImpl(MethodImplOptions.InternalCall)]
++        private static extern int RhpIDiv(int dividend, int divisor);
++
++        public static int IDiv(int dividend, int divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++            if (divisor == -1 && dividend == int.MinValue)
++                ThrowHelper.ThrowOverflowException();
++
++            return RhpIDiv(dividend, divisor);
++        }
++
++        [RuntimeImport(RuntimeLibrary, "RhpUDiv")]
++        [MethodImpl(MethodImplOptions.InternalCall)]
++        private static extern uint RhpUDiv(uint dividend, uint divisor);
++
++        public static long UDiv(uint dividend, uint divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++
++            return RhpUDiv(dividend, divisor);
++        }
++
++        [RuntimeImport(RuntimeLibrary, "RhpIMod")]
++        [MethodImpl(MethodImplOptions.InternalCall)]
++        private static extern int RhpIMod(int dividend, int divisor);
++
++        public static int IMod(int dividend, int divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++            if (divisor == -1 && dividend == int.MinValue)
++                ThrowHelper.ThrowOverflowException();
++
++            return RhpIMod(dividend, divisor);
++        }
++
++        [RuntimeImport(RuntimeLibrary, "RhpUMod")]
++        [MethodImpl(MethodImplOptions.InternalCall)]
++        private static extern uint RhpUMod(uint dividend, uint divisor);
++
++        public static long UMod(uint dividend, uint divisor)
++        {
++            if (divisor == 0)
++                ThrowHelper.ThrowDivideByZeroException();
++
++            return RhpUMod(dividend, divisor);
++        }
++#endif // TARGET_ARM
++#endif // TARGET_64BIT
++    }
++}
+diff --git a/src/coreclr/nativeaot/System.Private.CoreLib/src/System.Private.CoreLib.csproj b/src/coreclr/nativeaot/System.Private.CoreLib/src/System.Private.CoreLib.csproj
+index d7f5454259ee61..72df9073427635 100644
+--- a/src/coreclr/nativeaot/System.Private.CoreLib/src/System.Private.CoreLib.csproj
++++ b/src/coreclr/nativeaot/System.Private.CoreLib/src/System.Private.CoreLib.csproj
+@@ -116,6 +116,7 @@
+     <Compile Include="Internal\Runtime\IDynamicInterfaceCastableSupport.cs" />
+     <Compile Include="Internal\Runtime\MethodTable.Runtime.cs" />
+     <Compile Include="Internal\Runtime\CompilerHelpers\ThrowHelpers.cs" />
++    <Compile Include="Internal\Runtime\CompilerHelpers\MathHelpers.cs" />
+     <Compile Include="Internal\Runtime\CompilerServices\FunctionPointerOps.cs" />
+     <Compile Include="Internal\Runtime\CompilerServices\GenericMethodDescriptor.cs" />
+     <Compile Include="Internal\Runtime\CompilerServices\MethodNameAndSignature.cs" />
+diff --git a/src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/JitHelper.cs b/src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/JitHelper.cs
+index c510a38a0a9c65..20b2253175bc04 100644
+--- a/src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/JitHelper.cs
++++ b/src/coreclr/tools/aot/ILCompiler.Compiler/Compiler/JitHelper.cs
+@@ -66,6 +66,7 @@ public static void GetEntryPoint(TypeSystemContext context, ReadyToRunHelper id,
+                     {
+                         TargetArchitecture.ARM64 => "RhpAssignRefArm64",
+                         TargetArchitecture.LoongArch64 => "RhpAssignRefLoongArch64",
++                        TargetArchitecture.RiscV64 => "RhpAssignRefRiscV64",
+                         _ => "RhpAssignRef"
+                     };
+                     break;
+@@ -233,30 +234,30 @@ public static void GetEntryPoint(TypeSystemContext context, ReadyToRunHelper id,
+                     }
+                     break;
+ 
+-                case ReadyToRunHelper.Div:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("DivInt32", null);
++                case ReadyToRunHelper.Mod:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "IMod");
+                     break;
+-                case ReadyToRunHelper.UDiv:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("DivUInt32", null);
++                case ReadyToRunHelper.UMod:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "UMod");
+                     break;
+-                case ReadyToRunHelper.LDiv:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("DivInt64", null);
++                case ReadyToRunHelper.ULMod:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "ULMod");
+                     break;
+-                case ReadyToRunHelper.ULDiv:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("DivUInt64", null);
++                case ReadyToRunHelper.LMod:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "LMod");
+                     break;
+ 
+-                case ReadyToRunHelper.Mod:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("ModInt32", null);
++                case ReadyToRunHelper.Div:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "IDiv");
+                     break;
+-                case ReadyToRunHelper.UMod:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("ModUInt32", null);
++                case ReadyToRunHelper.UDiv:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "UDiv");
+                     break;
+-                case ReadyToRunHelper.LMod:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("ModInt64", null);
++                case ReadyToRunHelper.ULDiv:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "ULDiv");
+                     break;
+-                case ReadyToRunHelper.ULMod:
+-                    methodDesc = context.SystemModule.GetKnownType("System", "Math").GetKnownMethod("ModUInt64", null);
++                case ReadyToRunHelper.LDiv:
++                    methodDesc = context.GetHelperEntryPoint("MathHelpers", "LDiv");
+                     break;
+ 
+                 case ReadyToRunHelper.LRsz:
+diff --git a/src/coreclr/vm/appdomain.cpp b/src/coreclr/vm/appdomain.cpp
+index b683ea0871922d..6bdd8dd053a796 100644
+--- a/src/coreclr/vm/appdomain.cpp
++++ b/src/coreclr/vm/appdomain.cpp
+@@ -998,12 +998,6 @@ extern "C" PCODE g_pGetNonGCStaticBase;
+ PCODE g_pGetNonGCStaticBase;
+ extern "C" PCODE g_pPollGC;
+ PCODE g_pPollGC;
+-#if defined(TARGET_X86) && defined(TARGET_WINDOWS)
+-extern "C" PCODE g_pThrowOverflowException;
+-PCODE g_pThrowOverflowException;
+-extern "C" PCODE g_pThrowDivideByZeroException;
+-PCODE g_pThrowDivideByZeroException;
+-#endif // defined(TARGET_X86) && defined(TARGET_WINDOWS)
+ 
+ void SystemDomain::LoadBaseSystemClasses()
+ {
+@@ -1139,10 +1133,6 @@ void SystemDomain::LoadBaseSystemClasses()
+         g_pGetGCStaticBase = CoreLibBinder::GetMethod(METHOD__STATICSHELPERS__GET_GC_STATIC)->GetMultiCallableAddrOfCode();
+         g_pGetNonGCStaticBase = CoreLibBinder::GetMethod(METHOD__STATICSHELPERS__GET_NONGC_STATIC)->GetMultiCallableAddrOfCode();
+         g_pPollGC = CoreLibBinder::GetMethod(METHOD__THREAD__POLLGC)->GetMultiCallableAddrOfCode();
+-#if defined(TARGET_X86) && defined(TARGET_WINDOWS)
+-        g_pThrowOverflowException = CoreLibBinder::GetMethod(METHOD__THROWHELPERS__THROWOVERFLOWEXCEPTION)->GetMultiCallableAddrOfCode();
+-        g_pThrowDivideByZeroException = CoreLibBinder::GetMethod(METHOD__THROWHELPERS__THROWDIVIDEBYZEROEXCEPTION)->GetMultiCallableAddrOfCode();
+-#endif // TARGET_32BIT
+ 
+     #ifdef PROFILING_SUPPORTED
+         // Note that g_profControlBlock.fBaseSystemClassesLoaded must be set to TRUE only after
+diff --git a/src/coreclr/vm/corelib.cpp b/src/coreclr/vm/corelib.cpp
+index c271a057d12d68..beb66a2086a226 100644
+--- a/src/coreclr/vm/corelib.cpp
++++ b/src/coreclr/vm/corelib.cpp
+@@ -28,7 +28,6 @@
+ #include "comsynchronizable.h"
+ #include "floatdouble.h"
+ #include "floatsingle.h"
+-#include "divmodint.h"
+ #include "comdatetime.h"
+ #include "debugdebugger.h"
+ #include "assemblynative.hpp"
+diff --git a/src/coreclr/vm/corelib.h b/src/coreclr/vm/corelib.h
+index bb71255f382cd5..3b7ad29038a950 100644
+--- a/src/coreclr/vm/corelib.h
++++ b/src/coreclr/vm/corelib.h
+@@ -267,23 +267,14 @@ DEFINE_CLASS(INT128,               System,                 Int128)
+ DEFINE_CLASS(UINT128,              System,                 UInt128)
+ 
+ DEFINE_CLASS(MATH,                  System,                 Math)
+-DEFINE_METHOD(MATH,                 CONVERT_TO_INT32_CHECKED,    ConvertToInt32Checked,    NoSig)
+-DEFINE_METHOD(MATH,                 CONVERT_TO_UINT32_CHECKED,   ConvertToUInt32Checked,   NoSig)
+-DEFINE_METHOD(MATH,                 CONVERT_TO_INT64_CHECKED,    ConvertToInt64Checked,    NoSig)
+-DEFINE_METHOD(MATH,                 CONVERT_TO_UINT64_CHECKED,   ConvertToUInt64Checked,   NoSig)
+-
+-#ifdef TARGET_32BIT
+-DEFINE_METHOD(MATH,                 MULTIPLY_CHECKED_INT64,      MultiplyChecked,          SM_Long_Long_RetLong)
+-DEFINE_METHOD(MATH,                 MULTIPLY_CHECKED_UINT64,     MultiplyChecked,          SM_ULong_ULong_RetULong)
+-DEFINE_METHOD(MATH,                 DIV_INT32,                   DivInt32,                 NoSig)
+-DEFINE_METHOD(MATH,                 DIV_UINT32,                  DivUInt32,                NoSig)
+-DEFINE_METHOD(MATH,                 DIV_INT64,                   DivInt64,                 NoSig)
+-DEFINE_METHOD(MATH,                 DIV_UINT64,                  DivUInt64,                NoSig)
+-DEFINE_METHOD(MATH,                 MOD_INT32,                   ModInt32,                 NoSig)
+-DEFINE_METHOD(MATH,                 MOD_UINT32,                  ModUInt32,                NoSig)
+-DEFINE_METHOD(MATH,                 MOD_INT64,                   ModInt64,                 NoSig)
+-DEFINE_METHOD(MATH,                 MOD_UINT64,                  ModUInt64,                NoSig)
+-#endif // TARGET_32BIT
++#ifndef TARGET_64BIT
++DEFINE_METHOD(MATH,                 MULTIPLY_CHECKED_INT64, MultiplyChecked,            SM_Long_Long_RetLong)
++DEFINE_METHOD(MATH,                 MULTIPLY_CHECKED_UINT64, MultiplyChecked,           SM_ULong_ULong_RetULong)
++#endif
++DEFINE_METHOD(MATH,                 CONVERT_TO_INT32_CHECKED, ConvertToInt32Checked,    NoSig)
++DEFINE_METHOD(MATH,                 CONVERT_TO_UINT32_CHECKED, ConvertToUInt32Checked,  NoSig)
++DEFINE_METHOD(MATH,                 CONVERT_TO_INT64_CHECKED, ConvertToInt64Checked,    NoSig)
++DEFINE_METHOD(MATH,                 CONVERT_TO_UINT64_CHECKED, ConvertToUInt64Checked,  NoSig)
+ 
+ DEFINE_CLASS(DYNAMICMETHOD,         ReflectionEmit,         DynamicMethod)
+ 
+diff --git a/src/coreclr/vm/ecalllist.h b/src/coreclr/vm/ecalllist.h
+index 9fcd6082b5edc6..357977ba8a5a68 100644
+--- a/src/coreclr/vm/ecalllist.h
++++ b/src/coreclr/vm/ecalllist.h
+@@ -206,16 +206,6 @@ FCFuncStart(gMathFuncs)
+     FCFuncElement("Sqrt", COMDouble::Sqrt)
+     FCFuncElement("Tan", COMDouble::Tan)
+     FCFuncElement("Tanh", COMDouble::Tanh)
+-#ifdef TARGET_32BIT
+-    FCFuncElement("DivInt32Internal", DivModInt::DivInt32)
+-    FCFuncElement("DivUInt32Internal", DivModInt::DivUInt32)
+-    FCFuncElement("DivInt64Internal", DivModInt::DivInt64)
+-    FCFuncElement("DivUInt64Internal", DivModInt::DivUInt64)
+-    FCFuncElement("ModInt32Internal", DivModInt::ModInt32)
+-    FCFuncElement("ModUInt32Internal", DivModInt::ModUInt32)
+-    FCFuncElement("ModInt64Internal", DivModInt::ModInt64)
+-    FCFuncElement("ModUInt64Internal", DivModInt::ModUInt64)
+-#endif // TARGET_32BIT
+ FCFuncEnd()
+ 
+ FCFuncStart(gMathFFuncs)
+diff --git a/src/coreclr/vm/fcall.cpp b/src/coreclr/vm/fcall.cpp
+index 0da0fc6a63e2a7..a3aa1d37368c58 100644
+--- a/src/coreclr/vm/fcall.cpp
++++ b/src/coreclr/vm/fcall.cpp
+@@ -15,6 +15,54 @@
+ #include "ecall.h"
+ #include "eeconfig.h"
+ 
++NOINLINE LPVOID __FCThrow(LPVOID __me, RuntimeExceptionKind reKind, UINT resID, LPCWSTR arg1, LPCWSTR arg2, LPCWSTR arg3)
++{
++    STATIC_CONTRACT_THROWS;
++    // This isn't strictly true... But the guarantee that we make here is
++    // that we won't trigger without having setup a frame.
++    // STATIC_CONTRACT_TRIGGER
++    STATIC_CONTRACT_GC_NOTRIGGER;
++
++    // side effect the compiler can't remove
++    if (FC_NO_TAILCALL != 1)
++        return (LPVOID)(SIZE_T)(FC_NO_TAILCALL + 1);
++
++    FC_CAN_TRIGGER_GC();
++    INCONTRACT(FCallCheck __fCallCheck(__FILE__, __LINE__));
++    FC_GC_POLL_NOT_NEEDED();
++
++    HELPER_METHOD_FRAME_BEGIN_RET_ATTRIB_NOPOLL(Frame::FRAME_ATTR_CAPTURE_DEPTH_2);
++    // Now, we can construct & throw.
++
++    // In V1, throwing an ExecutionEngineException actually never really threw anything... its was the same as a
++    // fatal error in the runtime, and we will most probably would have ripped the process down. Starting in
++    // Whidbey, this behavior has changed a lot. Its not really legal to try to throw an
++    // ExecutionEngineException with this function.
++    _ASSERTE((reKind != kExecutionEngineException) ||
++             !"Don't throw kExecutionEngineException from here. Go to EEPolicy directly, or throw something better.");
++
++#ifdef FEATURE_EH_FUNCLETS
++    DispatchManagedException(reKind);
++
++#endif // FEATURE_EH_FUNCLETS
++
++    if (resID == 0)
++    {
++        // If we have an string to add use NonLocalized otherwise just throw the exception.
++        if (arg1)
++            COMPlusThrowNonLocalized(reKind, arg1); //COMPlusThrow(reKind,arg1);
++        else
++            COMPlusThrow(reKind);
++    }
++    else
++        COMPlusThrow(reKind, resID, arg1, arg2, arg3);
++
++    HELPER_METHOD_FRAME_END();
++    FC_CAN_TRIGGER_GC_END();
++    _ASSERTE(!"Throw returned");
++    return NULL;
++}
++
+ #ifdef ENABLE_CONTRACTS
+ 
+ /**************************************************************************************/
+diff --git a/src/coreclr/vm/fcall.h b/src/coreclr/vm/fcall.h
+index 9da9cb4e039213..79e88dc399e5ca 100644
+--- a/src/coreclr/vm/fcall.h
++++ b/src/coreclr/vm/fcall.h
+@@ -86,6 +86,11 @@
+ //      COMPlusThrow(execpt);
+ //      HELPER_METHOD_FRAME_END()
+ 
++// It is more efficient (in space) to use convenience macro FCTHROW that does
++// this for you (sets up a frame, and does the throw).
++
++//      FCTHROW(except)
++
+ // Since FCALLS have to conform to the EE calling conventions and not to C
+ // calling conventions, FCALLS, need to be declared using special macros (FCIMPL*)
+ // that implement the correct calling conventions.  There are variants of these
+@@ -119,6 +124,16 @@
+ //    Consider either using ObjectToOBJECTREF or calling VALIDATEOBJECTREF
+ //    to make sure your Object* is valid.
+ //
++//  - FCThrow() must be called directly from your FCall impl function: it
++//    cannot be called from a subfunction. Calling from a subfunction breaks
++//    the VC code parsing workaround that lets us recover the callee saved registers.
++//    Fortunately, you'll get a compile error complaining about an
++//    unknown variable "__me".
++//
++//  - If your FCall returns VOID, you must use FCThrowVoid() rather than
++//    FCThrow(). This is because FCThrow() has to generate an unexecuted
++//    "return" statement for the code parser.
++//
+ //  - On x86, if first and/or second argument of your FCall cannot be passed
+ //    in either of the __fastcall registers (ECX/EDX), you must use "V" versions
+ //    of FCDECL and  FCIMPL macros to enregister arguments correctly. Some of the
+@@ -157,6 +172,43 @@
+ //   An FCall target uses __fastcall or some other calling convention to
+ //   match the IL calling convention exactly. Thus, a call to FCall is a direct
+ //   call to the target w/ no intervening stub or frame.
++//
++//   The tricky part is when FCThrow is called. FCThrow must generate
++//   a proper method frame before allocating and throwing the exception.
++//   To do this, it must recover several things:
++//
++//      - The location of the FCIMPL's return address (since that's
++//        where the frame will be based.)
++//
++//      - The on-entry values of the callee-saved regs; which must
++//        be recorded in the frame so that GC can update them.
++//        Depending on how VC compiles your FCIMPL, those values are still
++//        in the original registers or saved on the stack.
++//
++//        To figure out which, FCThrow() generates the code:
++//
++//              while (NULL == __FCThrow(__me, ...)) {};
++//              return 0;
++//
++//        The "return" statement will never execute; but its presence guarantees
++//        that VC will follow the __FCThrow() call with a VC epilog
++//        that restores the callee-saved registers using a pretty small
++//        and predictable set of Intel opcodes. __FCThrow() parses this
++//        epilog and simulates its execution to recover the callee saved
++//        registers.
++//
++//        The while loop is to prevent the compiler from doing tail call optimizations.
++//        The helper frame interpreter needs the frame to be present.
++//
++//      - The MethodDesc* that this FCall implements. This MethodDesc*
++//        is part of the frame and ensures that the FCall will appear
++//        in the exception's stack trace. To get this, FCDECL declares
++//        a static local __me, initialized to point to the FC target itself.
++//        This address is exactly what's stored in the ECall lookup tables;
++//        so __FCThrow() simply does a reverse lookup on that table to recover
++//        the MethodDesc*.
++//
++
+ 
+ #ifndef __FCall_h__
+ #define __FCall_h__
+@@ -305,6 +357,12 @@ class CompletedFCallTransitionState
+ 
+ #endif // unsupported processor
+ 
++//==============================================================================================
++// This is where FCThrow ultimately ends up. Never call this directly.
++// Use the FCThrow() macro.
++//==============================================================================================
++LPVOID __FCThrow(LPVOID me, enum RuntimeExceptionKind reKind, UINT resID, LPCWSTR arg1, LPCWSTR arg2, LPCWSTR arg3);
++
+ //==============================================================================================
+ // FDECLn: A set of macros for generating header declarations for FC targets.
+ // Use FIMPLn for the actual body.
+@@ -850,7 +908,8 @@ extern RAW_KEYWORD(volatile) int FC_NO_TAILCALL;
+ // implementation (use FDECLN for header protos.)
+ //
+ // The hidden "__me" variable lets us recover the original MethodDesc*
+-// so any thrown exceptions will have the correct stack trace.
++// so any thrown exceptions will have the correct stack trace. FCThrow()
++// passes this along to __FCThrowInternal().
+ //==============================================================================================
+ 
+ #define GetEEFuncEntryPointMacro(func)  ((LPVOID)(func))
+@@ -1059,13 +1118,11 @@ struct FCSigCheck {
+ #define HCCALL1(funcname, a1)           funcname(0, 0, a1)
+ #define HCCALL1_V(funcname, a1)         funcname(0, 0, 0, a1)
+ #define HCCALL2(funcname, a1, a2)       funcname(0, a2, a1)
+-#define HCCALL2_VV(funcname, a1, a2)    funcname(0, 0, 0, a2, a1)
+ #define HCCALL3(funcname, a1, a2, a3)   funcname(0, a2, a1, a3)
+ #define HCCALL4(funcname, a1, a2, a3, a4)       funcname(0, a2, a1, a4, a3)
+ #define HCCALL5(funcname, a1, a2, a3, a4, a5)   funcname(0, a2, a1, a5, a4, a3)
+ #define HCCALL1_PTR(rettype, funcptr, a1)        rettype (F_CALL_CONV * funcptr)(int /* EAX */, int /* EDX */, a1)
+ #define HCCALL2_PTR(rettype, funcptr, a1, a2)    rettype (F_CALL_CONV * funcptr)(int /* EAX */, a2, a1)
+-#define HCCALL2_VV_PTR(rettype, funcptr, a1, a2)    rettype (F_CALL_CONV * funcptr)(int /* EAX */, int /* EDX */, int /* ECX */, a2, a1)
+ #else // SWIZZLE_REGARG_ORDER
+ 
+ #define HCIMPL0(rettype, funcname) rettype F_CALL_CONV funcname() { HCIMPL_PROLOG(funcname)
+@@ -1085,13 +1142,11 @@ struct FCSigCheck {
+ #define HCCALL1(funcname, a1)           funcname(a1)
+ #define HCCALL1_V(funcname, a1)         funcname(a1)
+ #define HCCALL2(funcname, a1, a2)       funcname(a1, a2)
+-#define HCCALL2_VV(funcname, a1, a2)    funcname(a1, a2)
+ #define HCCALL3(funcname, a1, a2, a3)   funcname(a1, a2, a3)
+ #define HCCALL4(funcname, a1, a2, a3, a4)       funcname(a1, a2, a4, a3)
+ #define HCCALL5(funcname, a1, a2, a3, a4, a5)   funcname(a1, a2, a5, a4, a3)
+ #define HCCALL1_PTR(rettype, funcptr, a1)        rettype (F_CALL_CONV * (funcptr))(a1)
+ #define HCCALL2_PTR(rettype, funcptr, a1, a2)    rettype (F_CALL_CONV * (funcptr))(a1, a2)
+-#define HCCALL2_VV_PTR(rettype, funcptr, a1, a2) rettype (F_CALL_CONV * (funcptr))(a1, a2)
+ #endif // !SWIZZLE_REGARG_ORDER
+ #else // SWIZZLE_STKARG_ORDER
+ 
+@@ -1112,13 +1167,11 @@ struct FCSigCheck {
+ #define HCCALL1(funcname, a1)           funcname(a1)
+ #define HCCALL1_V(funcname, a1)         funcname(a1)
+ #define HCCALL2(funcname, a1, a2)       funcname(a1, a2)
+-#define HCCALL2_VV(funcname, a1, a2)    funcname(a1, a2)
+ #define HCCALL3(funcname, a1, a2, a3)   funcname(a1, a2, a3)
+ #define HCCALL4(funcname, a1, a2, a3, a4)       funcname(a1, a2, a3, a4)
+ #define HCCALL5(funcname, a1, a2, a3, a4, a5)   funcname(a1, a2, a3, a4, a5)
+ #define HCCALL1_PTR(rettype, funcptr, a1)        rettype (F_CALL_CONV * (funcptr))(a1)
+ #define HCCALL2_PTR(rettype, funcptr, a1, a2)    rettype (F_CALL_CONV * (funcptr))(a1, a2)
+-#define HCCALL2_VV_PTR(rettype, funcptr, a1, a2) rettype (F_CALL_CONV * (funcptr))(a1, a2)
+ 
+ #endif // !SWIZZLE_STKARG_ORDER
+ 
+@@ -1126,6 +1179,17 @@ struct FCSigCheck {
+ #define HCIMPLEND       FCALL_TRANSITION_END(); }
+ 
+ 
++//==============================================================================================
++// Throws an exception from an FCall. See rexcep.h for a list of valid
++// exception codes.
++//==============================================================================================
++#define FCThrow(reKind)                                         \
++    {                                                           \
++        while (NULL ==                                          \
++            __FCThrow(__me, reKind, 0, 0, 0, 0)) {};            \
++        return 0;                                               \
++    }
++
+ // The managed calling convention expects returned small types (e.g. bool) to be
+ // widened to 32-bit on return. The C/C++ calling convention does not guarantee returned
+ // small types to be widened on most platforms. The small types have to be artificially
+diff --git a/src/coreclr/vm/i386/asmhelpers.asm b/src/coreclr/vm/i386/asmhelpers.asm
+index 5656aee6c1e230..2cd464fe93a88d 100644
+--- a/src/coreclr/vm/i386/asmhelpers.asm
++++ b/src/coreclr/vm/i386/asmhelpers.asm
+@@ -20,11 +20,6 @@ include asmconstants.inc
+         option  casemap:none
+         .code
+ 
+-g_pThrowDivideByZeroException    TEXTEQU <_g_pThrowDivideByZeroException>
+-g_pThrowOverflowException        TEXTEQU <_g_pThrowOverflowException>
+-EXTERN g_pThrowDivideByZeroException:DWORD
+-EXTERN g_pThrowOverflowException:DWORD
+-
+ EXTERN __imp__RtlUnwind@16:DWORD
+ ifdef _DEBUG
+ EXTERN _HelperMethodFrameConfirmState@20:PROC
+@@ -73,11 +68,6 @@ EXTERN @ProfileEnter@8:PROC
+ EXTERN @ProfileLeave@8:PROC
+ EXTERN @ProfileTailcall@8:PROC
+ 
+-EXTERN __alldiv:PROC
+-EXTERN __allrem:PROC
+-EXTERN __aulldiv:PROC
+-EXTERN __aullrem:PROC
+-
+ EXTERN _VSD_ResolveWorker@12:PROC
+ EXTERN _BackPatchWorkerStaticStub@8:PROC
+ ifdef CHAIN_LOOKUP
+@@ -1520,203 +1510,6 @@ _OnCallCountThresholdReachedStub@0 endp
+ 
+ endif ; FEATURE_TIERED_COMPILATION
+ 
+-    DivisorLow32BitsOffset     equ 04h
+-    DivisorHi32BitsOffset     equ 08h
+-    DividendLow32BitsOffset     equ 0Ch
+-    DividendHi32BitsOffset     equ 10h
+-
+-;; Stack on entry
+-;; dividend (hi 32 bits)
+-;; dividend (lo 32 bits)
+-;; divisor (hi 32 bits)
+-;; divisor (lo 32 bits)
+-;; return address
+-ALIGN 16
+-FASTCALL_FUNC JIT_LDiv, 16
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    cdq
+-    cmp     edx,dword ptr [esp + DivisorHi32BitsOffset]
+-    jne     JIT_LDiv_Call__alldiv ; We're going to call CRT Helper routine
+-    test    eax, eax
+-    je      JIT_ThrowDivideByZero_Long
+-    cmp     eax,0FFFFFFFFh
+-    jne     JIT_LDiv_DoDivideBy32BitDivisor
+-    mov     eax,dword  ptr [esp + DividendLow32BitsOffset]
+-    test    eax, eax
+-    mov     edx,dword  ptr [esp + DividendHi32BitsOffset]
+-    jne     JIT_LDiv_DoNegate
+-    cmp     edx,80000000h
+-    je      JIT_ThrowOverflow_Long
+-JIT_LDiv_DoNegate:
+-    neg     eax
+-    adc     edx,0
+-    neg     edx
+-    ret     10h
+-ALIGN 16
+-JIT_LDiv_DoDivideBy32BitDivisor:
+-    ; First check to see if dividend is also 32 bits
+-    mov     ecx, eax ; Put divisor in ecx
+-    mov     eax, dword ptr  [esp + DividendLow32BitsOffset]
+-    cdq
+-    cmp     edx, dword ptr [esp + DividendHi32BitsOffset]
+-    jne     JIT_LDiv_Call__alldiv ; We're going to call CRT Helper routine
+-    idiv    ecx
+-    cdq
+-    ret     10h
+-ALIGN 16
+-JIT_LDiv_Call__alldiv:
+-    ; Swap the divisor and dividend in output
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    mov     ecx,dword ptr [esp + DivisorHi32BitsOffset]
+-    mov     edx,dword ptr [esp + DividendLow32BitsOffset]
+-    mov     dword ptr [esp + DividendLow32BitsOffset], eax
+-    mov     eax,dword ptr [esp + DividendHi32BitsOffset]
+-    mov     dword ptr [esp + DividendHi32BitsOffset], ecx
+-    mov     dword ptr [esp + DivisorLow32BitsOffset], edx
+-    mov     dword ptr [esp + DivisorHi32BitsOffset], eax
+-    jne     __alldiv ; Tail call the CRT Helper routine for 64 bit divide
+-FASTCALL_ENDFUNC
+-
+-;; Stack on entry
+-;; dividend (hi 32 bits)
+-;; dividend (lo 32 bits)
+-;; divisor (hi 32 bits)
+-;; divisor (lo 32 bits)
+-;; return address
+-ALIGN 16
+-FASTCALL_FUNC JIT_LMod, 16
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    cdq
+-    cmp     edx,dword ptr [esp + DivisorHi32BitsOffset]
+-    jne     JIT_LMod_Call__allrem ; We're going to call CRT Helper routine
+-    test    eax, eax
+-    je      JIT_ThrowDivideByZero_Long
+-    cmp     eax,0FFFFFFFFh
+-    jne     JIT_LMod_DoDivideBy32BitDivisor
+-    mov     eax,dword  ptr [esp + DividendLow32BitsOffset]
+-    test    eax, eax
+-    jne     JIT_LMod_ReturnZero
+-    mov     edx,dword  ptr [esp + DividendHi32BitsOffset]
+-    cmp     edx,80000000h
+-    je      JIT_ThrowOverflow_Long
+-JIT_LMod_ReturnZero:
+-    xor     eax, eax
+-    xor     edx, edx
+-    ret     10h
+-ALIGN 16
+-JIT_LMod_DoDivideBy32BitDivisor:
+-    ; First check to see if dividend is also 32 bits
+-    mov     ecx, eax ; Put divisor in ecx
+-    mov     eax, dword ptr [esp + DividendLow32BitsOffset]
+-    cdq
+-    cmp     edx, dword ptr [esp + DividendHi32BitsOffset]
+-    jne     JIT_LMod_Call__allrem ; We're going to call CRT Helper routine
+-    idiv    ecx
+-    mov     eax,edx
+-    cdq
+-    ret     10h
+-ALIGN 16
+-JIT_LMod_Call__allrem:
+-    ; Swap the divisor and dividend in output
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    mov     ecx,dword ptr [esp + DivisorHi32BitsOffset]
+-    mov     edx,dword ptr [esp + DividendLow32BitsOffset]
+-    mov     dword ptr [esp + DividendLow32BitsOffset], eax
+-    mov     eax,dword ptr [esp + DividendHi32BitsOffset]
+-    mov     dword ptr [esp + DividendHi32BitsOffset], ecx
+-    mov     dword ptr [esp + DivisorLow32BitsOffset], edx
+-    mov     dword ptr [esp + DivisorHi32BitsOffset], eax
+-    jne     __allrem ; Tail call the CRT Helper routine for 64 bit divide
+-FASTCALL_ENDFUNC
+-
+-;; Stack on entry
+-;; dividend (hi 32 bits)
+-;; dividend (lo 32 bits)
+-;; divisor (hi 32 bits)
+-;; divisor (lo 32 bits)
+-;; return address
+-ALIGN 16
+-FASTCALL_FUNC JIT_ULDiv, 16
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    cmp     dword ptr [esp + DivisorHi32BitsOffset], 0
+-    jne     JIT_ULDiv_Call__aulldiv ; We're going to call CRT Helper routine
+-    test    eax, eax
+-    je      JIT_ThrowDivideByZero_Long
+-    ; First check to see if dividend is also 32 bits
+-    mov     ecx, eax ; Put divisor in ecx
+-    cmp     dword ptr [esp + DividendHi32BitsOffset], 0
+-    jne     JIT_ULDiv_Call__aulldiv ; We're going to call CRT Helper routine
+-    mov     eax, dword ptr [esp + DividendLow32BitsOffset]
+-    xor     edx, edx
+-    div     ecx
+-    xor     edx, edx
+-    ret     10h
+-ALIGN 16
+-JIT_ULDiv_Call__aulldiv:
+-    ; Swap the divisor and dividend in output
+-    mov     ecx,dword ptr [esp + DivisorHi32BitsOffset]
+-    mov     edx,dword ptr [esp + DividendLow32BitsOffset]
+-    mov     dword ptr [esp + DividendLow32BitsOffset], eax
+-    mov     eax,dword ptr [esp + DividendHi32BitsOffset]
+-    mov     dword ptr [esp + DividendHi32BitsOffset], ecx
+-    mov     dword ptr [esp + DivisorLow32BitsOffset], edx
+-    mov     dword ptr [esp + DivisorHi32BitsOffset], eax
+-    jne    __aulldiv ; Tail call the CRT Helper routine for 64 bit unsigned divide
+-FASTCALL_ENDFUNC
+-
+-;; Stack on entry
+-;; dividend (hi 32 bits)
+-;; dividend (lo 32 bits)
+-;; divisor (hi 32 bits)
+-;; divisor (lo 32 bits)
+-;; return address
+-ALIGN 16
+-FASTCALL_FUNC JIT_ULMod, 16
+-    mov     eax,dword ptr [esp + DivisorLow32BitsOffset]
+-    cdq
+-    cmp     dword ptr [esp + DivisorHi32BitsOffset], 0
+-    jne     JIT_LMod_Call__aullrem ; We're going to call CRT Helper routine
+-    test    eax, eax
+-    je      JIT_ThrowDivideByZero_Long
+-    ; First check to see if dividend is also 32 bits
+-    mov     ecx, eax ; Put divisor in ecx
+-    cmp     dword ptr [esp + DividendHi32BitsOffset], 0
+-    jne     JIT_LMod_Call__aullrem ; We're going to call CRT Helper routine
+-    mov     eax, dword ptr [esp + DividendLow32BitsOffset]
+-    xor     edx, edx
+-    div     ecx
+-    mov     eax, edx
+-    xor     edx, edx
+-    ret     10h
+-ALIGN 16
+-JIT_LMod_Call__aullrem:
+-    ; Swap the divisor and dividend in output
+-    mov     ecx,dword ptr [esp + DivisorHi32BitsOffset]
+-    mov     edx,dword ptr [esp + DividendLow32BitsOffset]
+-    mov     dword ptr [esp + DividendLow32BitsOffset], eax
+-    mov     eax,dword ptr [esp + DividendHi32BitsOffset]
+-    mov     dword ptr [esp + DividendHi32BitsOffset], ecx
+-    mov     dword ptr [esp + DivisorLow32BitsOffset], edx
+-    mov     dword ptr [esp + DivisorHi32BitsOffset], eax
+-    jne     __aullrem ; Tail call the CRT Helper routine for 64 bit unsigned modulus
+-FASTCALL_ENDFUNC
+-
+-JIT_ThrowDivideByZero_Long proc public
+-    pop eax ; Pop return address into eax
+-    add esp, 10h
+-    push eax ; Fix return address
+-    mov eax, g_pThrowDivideByZeroException
+-    jmp eax
+-JIT_ThrowDivideByZero_Long endp
+-
+-JIT_ThrowOverflow_Long proc public
+-    pop eax ; Pop return address into eax
+-    add esp, 10h
+-    push eax ; Fix return address
+-    mov eax, g_pThrowOverflowException
+-    jmp eax
+-JIT_ThrowOverflow_Long endp
+-
+ ; rcx -This pointer
+ ; rdx -ReturnBuffer
+ _ThisPtrRetBufPrecodeWorker@0 proc public
+diff --git a/src/coreclr/vm/jithelpers.cpp b/src/coreclr/vm/jithelpers.cpp
+index 608d55dd8460d6..c8049fc4fc684e 100644
+--- a/src/coreclr/vm/jithelpers.cpp
++++ b/src/coreclr/vm/jithelpers.cpp
+@@ -117,14 +117,206 @@ HCIMPLEND
+ #endif // !TARGET_X86 || TARGET_UNIX
+ 
+ /*********************************************************************/
+-extern "C" FCDECL2(INT32, JIT_Div, INT32 dividend, INT32 divisor);
+-extern "C" FCDECL2(INT32, JIT_Mod, INT32 dividend, INT32 divisor);
+-extern "C" FCDECL2(UINT32, JIT_UDiv, UINT32 dividend, UINT32 divisor);
+-extern "C" FCDECL2(UINT32, JIT_UMod, UINT32 dividend, UINT32 divisor);
+-extern "C" FCDECL2_VV(INT64, JIT_LDiv, INT64 dividend, INT64 divisor);
+-extern "C" FCDECL2_VV(INT64, JIT_LMod, INT64 dividend, INT64 divisor);
+-extern "C" FCDECL2_VV(UINT64, JIT_ULDiv, UINT64 dividend, UINT64 divisor);
+-extern "C" FCDECL2_VV(UINT64, JIT_ULMod, UINT64 dividend, UINT64 divisor);
++HCIMPL2(INT32, JIT_Div, INT32 dividend, INT32 divisor)
++{
++    FCALL_CONTRACT;
++
++    RuntimeExceptionKind ehKind;
++
++    if (((UINT32) (divisor + 1)) <= 1)  // Unsigned test for divisor in [-1 .. 0]
++    {
++        if (divisor == 0)
++        {
++            ehKind = kDivideByZeroException;
++            goto ThrowExcep;
++        }
++        else if (divisor == -1)
++        {
++            if (dividend == INT32_MIN)
++            {
++                ehKind = kOverflowException;
++                goto ThrowExcep;
++            }
++            return -dividend;
++        }
++    }
++
++    return(dividend / divisor);
++
++ThrowExcep:
++    FCThrow(ehKind);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2(INT32, JIT_Mod, INT32 dividend, INT32 divisor)
++{
++    FCALL_CONTRACT;
++
++    RuntimeExceptionKind ehKind;
++
++    if (((UINT32) (divisor + 1)) <= 1)  // Unsigned test for divisor in [-1 .. 0]
++    {
++        if (divisor == 0)
++        {
++            ehKind = kDivideByZeroException;
++            goto ThrowExcep;
++        }
++        else if (divisor == -1)
++        {
++            if (dividend == INT32_MIN)
++            {
++                ehKind = kOverflowException;
++                goto ThrowExcep;
++            }
++            return 0;
++        }
++    }
++
++    return(dividend % divisor);
++
++ThrowExcep:
++    FCThrow(ehKind);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2(UINT32, JIT_UDiv, UINT32 dividend, UINT32 divisor)
++{
++    FCALL_CONTRACT;
++
++    if (divisor == 0)
++        FCThrow(kDivideByZeroException);
++
++    return(dividend / divisor);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2(UINT32, JIT_UMod, UINT32 dividend, UINT32 divisor)
++{
++    FCALL_CONTRACT;
++
++    if (divisor == 0)
++        FCThrow(kDivideByZeroException);
++
++    return(dividend % divisor);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2_VV(INT64, JIT_LDiv, INT64 dividend, INT64 divisor)
++{
++    FCALL_CONTRACT;
++
++    RuntimeExceptionKind ehKind;
++
++    if (Is32BitSigned(divisor))
++    {
++        if ((INT32)divisor == 0)
++        {
++            ehKind = kDivideByZeroException;
++            goto ThrowExcep;
++        }
++
++        if ((INT32)divisor == -1)
++        {
++            if ((UINT64) dividend == UI64(0x8000000000000000))
++            {
++                ehKind = kOverflowException;
++                goto ThrowExcep;
++            }
++            return -dividend;
++        }
++
++        // Check for -ive or +ive numbers in the range -2**31 to 2**31
++        if (Is32BitSigned(dividend))
++            return((INT32)dividend / (INT32)divisor);
++    }
++
++    // For all other combinations fallback to int64 div.
++    return(dividend / divisor);
++
++ThrowExcep:
++    FCThrow(ehKind);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2_VV(INT64, JIT_LMod, INT64 dividend, INT64 divisor)
++{
++    FCALL_CONTRACT;
++
++    RuntimeExceptionKind ehKind;
++
++    if (Is32BitSigned(divisor))
++    {
++        if ((INT32)divisor == 0)
++        {
++            ehKind = kDivideByZeroException;
++            goto ThrowExcep;
++        }
++
++        if ((INT32)divisor == -1)
++        {
++            // <TODO>TODO, we really should remove this as it lengthens the code path
++            // and the spec really says that it should not throw an exception. </TODO>
++            if ((UINT64) dividend == UI64(0x8000000000000000))
++            {
++                ehKind = kOverflowException;
++                goto ThrowExcep;
++            }
++            return 0;
++        }
++
++        // Check for -ive or +ive numbers in the range -2**31 to 2**31
++        if (Is32BitSigned(dividend))
++            return((INT32)dividend % (INT32)divisor);
++    }
++
++    // For all other combinations fallback to int64 div.
++    return(dividend % divisor);
++
++ThrowExcep:
++    FCThrow(ehKind);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2_VV(UINT64, JIT_ULDiv, UINT64 dividend, UINT64 divisor)
++{
++    FCALL_CONTRACT;
++
++    if (Hi32Bits(divisor) == 0)
++    {
++        if ((UINT32)(divisor) == 0)
++        FCThrow(kDivideByZeroException);
++
++        if (Hi32Bits(dividend) == 0)
++            return((UINT32)dividend / (UINT32)divisor);
++    }
++
++    return(dividend / divisor);
++}
++HCIMPLEND
++
++/*********************************************************************/
++HCIMPL2_VV(UINT64, JIT_ULMod, UINT64 dividend, UINT64 divisor)
++{
++    FCALL_CONTRACT;
++
++    if (Hi32Bits(divisor) == 0)
++    {
++        if ((UINT32)(divisor) == 0)
++        FCThrow(kDivideByZeroException);
++
++        if (Hi32Bits(dividend) == 0)
++            return((UINT32)dividend % (UINT32)divisor);
++    }
++
++    return(dividend % divisor);
++}
++HCIMPLEND
+ 
+ #if !defined(HOST_64BIT) && !defined(TARGET_X86)
+ /*********************************************************************/
+diff --git a/src/coreclr/vm/threadsuspend.cpp b/src/coreclr/vm/threadsuspend.cpp
+index 38f6a2e855cb86..c71b0502f76d24 100644
+--- a/src/coreclr/vm/threadsuspend.cpp
++++ b/src/coreclr/vm/threadsuspend.cpp
+@@ -2267,6 +2267,8 @@ void Thread::HandleThreadAbort ()
+     STATIC_CONTRACT_THROWS;
+     STATIC_CONTRACT_GC_TRIGGERS;
+ 
++    // @TODO: we should consider treating this function as an FCALL or HCALL and use FCThrow instead of COMPlusThrow
++
+     // Sometimes we call this without any CLR SEH in place.  An example is UMThunkStubRareDisableWorker.
+     // That's okay since COMPlusThrow will eventually erect SEH around the RaiseException. It prevents
+     // us from stating CONTRACT here.
+diff --git a/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems b/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
+index a13ce9957e434e..9de275bad2cbc8 100644
+--- a/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
++++ b/src/libraries/System.Private.CoreLib/src/System.Private.CoreLib.Shared.projitems
+@@ -566,7 +566,6 @@
+     <Compile Include="$(MSBuildThisFileDirectory)System\Marvin.OrdinalIgnoreCase.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Math.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\MathF.cs" />
+-    <Compile Include="$(MSBuildThisFileDirectory)System\Math.DivModInt.cs" Condition="'$(Is64Bit)' != 'true' and ('$(FeatureCoreCLR)' == 'true' or '$(FeatureNativeAot)' == 'true')" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\MemberAccessException.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\Memory.cs" />
+     <Compile Include="$(MSBuildThisFileDirectory)System\MemoryDebugView.cs" />
+diff --git a/src/libraries/System.Private.CoreLib/src/System/Math.DivModInt.cs b/src/libraries/System.Private.CoreLib/src/System/Math.DivModInt.cs
+deleted file mode 100644
+index 9e4a15ac7c3bd5..00000000000000
+--- a/src/libraries/System.Private.CoreLib/src/System/Math.DivModInt.cs
++++ /dev/null
+@@ -1,204 +0,0 @@
+-// Licensed to the .NET Foundation under one or more agreements.
+-// The .NET Foundation licenses this file to you under the MIT license.
+-
+-using System.Diagnostics;
+-using System.Numerics;
+-using System.Runtime.CompilerServices;
+-
+-#if NATIVEAOT
+-using System.Runtime.InteropServices;
+-#endif
+-
+-namespace System
+-{
+-    /// <summary>
+-    /// Math helpers for generated code. The helpers here are referenced by the runtime.
+-    /// </summary>
+-    public static partial class Math
+-    {
+-        [StackTraceHidden]
+-        internal static int DivInt32(int dividend, int divisor)
+-        {
+-            if ((uint)(divisor + 1) <= 1) // Unsigned test for divisor in [-1 .. 0]
+-            {
+-                if (divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-                else if (divisor == -1)
+-                {
+-                    if (dividend == int.MinValue)
+-                    {
+-                        ThrowHelper.ThrowOverflowException();
+-                    }
+-                    return -dividend;
+-                }
+-            }
+-
+-            return DivInt32Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static uint DivUInt32(uint dividend, uint divisor)
+-        {
+-            if (divisor == 0)
+-            {
+-                ThrowHelper.ThrowDivideByZeroException();
+-            }
+-
+-            return DivUInt32Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static long DivInt64(long dividend, long divisor)
+-        {
+-            if ((int)((ulong)divisor >> 32) == (int)(((ulong)(int)divisor) >> 32))
+-            {
+-                if ((int)divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-
+-                if ((int)divisor == -1)
+-                {
+-                    if (dividend == long.MinValue)
+-                    {
+-                        ThrowHelper.ThrowOverflowException();
+-                    }
+-                    return -dividend;
+-                }
+-
+-                // Check for -ive or +ive numbers in the range -2**31 to 2**31
+-                if ((int)((ulong)dividend >> 32) == (int)(((ulong)(int)dividend) >> 32))
+-                {
+-                    return DivInt32Internal((int)dividend, (int)divisor);
+-                }
+-            }
+-
+-            return DivInt64Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static ulong DivUInt64(ulong dividend, ulong divisor)
+-        {
+-            if ((int)(divisor >> 32) == 0)
+-            {
+-                if ((uint)divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-
+-                if ((int)(dividend >> 32) == 0)
+-                {
+-                    return DivUInt32Internal((uint)dividend, (uint)divisor);
+-                }
+-            }
+-
+-            return DivUInt64Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static int ModInt32(int dividend, int divisor)
+-        {
+-            if ((uint)(divisor + 1) <= 1) // Unsigned test for divisor in [-1 .. 0]
+-            {
+-                if (divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-                else if (divisor == -1)
+-                {
+-                    if (dividend == int.MinValue)
+-                    {
+-                        ThrowHelper.ThrowOverflowException();
+-                    }
+-                    return 0;
+-                }
+-            }
+-
+-            return ModInt32Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static uint ModUInt32(uint dividend, uint divisor)
+-        {
+-            if (divisor == 0)
+-            {
+-                ThrowHelper.ThrowDivideByZeroException();
+-            }
+-
+-            return ModUInt32Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static long ModInt64(long dividend, long divisor)
+-        {
+-            if ((int)((ulong)divisor >> 32) == (int)(((ulong)(int)divisor) >> 32))
+-            {
+-                if ((int)divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-
+-                if ((int)divisor == -1)
+-                {
+-                    if (dividend == long.MinValue)
+-                    {
+-                        ThrowHelper.ThrowOverflowException();
+-                    }
+-                    return 0;
+-                }
+-
+-                if ((int)((ulong)dividend >> 32) == (int)(((ulong)(int)dividend) >> 32))
+-                {
+-                    return ModInt32Internal((int)dividend, (int)divisor);
+-                }
+-            }
+-
+-            return ModInt64Internal(dividend, divisor);
+-        }
+-
+-        [StackTraceHidden]
+-        internal static ulong ModUInt64(ulong dividend, ulong divisor)
+-        {
+-            if ((int)(divisor >> 32) == 0)
+-            {
+-                if ((uint)divisor == 0)
+-                {
+-                    ThrowHelper.ThrowDivideByZeroException();
+-                }
+-
+-                if ((int)(dividend >> 32) == 0)
+-                {
+-                    return ModUInt32Internal((uint)dividend, (uint)divisor);
+-                }
+-            }
+-
+-            return ModUInt64Internal(dividend, divisor);
+-        }
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern int DivInt32Internal(int dividend, int divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern uint DivUInt32Internal(uint dividend, uint divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern long DivInt64Internal(long dividend, long divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern ulong DivUInt64Internal(ulong dividend, ulong divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern int ModInt32Internal(int dividend, int divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern uint ModUInt32Internal(uint dividend, uint divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern long ModInt64Internal(long dividend, long divisor);
+-
+-        [MethodImpl(MethodImplOptions.InternalCall)]
+-        private static extern ulong ModUInt64Internal(ulong dividend, ulong divisor);
+-    }
+-}
