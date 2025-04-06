@@ -7,6 +7,9 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
+using Microsoft.DotNet.Tools.Test;
 using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -116,7 +119,7 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection)
+    public static IEnumerable<TestModule> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
     {
         var projects = new List<TestModule>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
@@ -127,7 +130,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
+            if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
             {
                 projects.Add(module);
             }
@@ -140,7 +143,7 @@ internal static class SolutionAndProjectUtility
                 projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
                 Logger.LogTrace(() => $"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                if (GetModuleFromProject(projectInstance, projectCollection.Loggers) is { } module)
+                if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
                 {
                     projects.Add(module);
                 }
@@ -150,7 +153,7 @@ internal static class SolutionAndProjectUtility
         return projects;
     }
 
-    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers)
+    private static TestModule? GetModuleFromProject(ProjectInstance project, ICollection<ILogger>? loggers, bool noLaunchProfile)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -164,7 +167,10 @@ internal static class SolutionAndProjectUtility
         RunProperties runProperties = GetRunProperties(project, loggers);
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject);
+        // TODO: Support --launch-profile and pass it here.
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
+
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings);
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
@@ -183,5 +189,28 @@ internal static class SolutionAndProjectUtility
 
             return RunProperties.FromProjectAndApplicationArguments(project, [], fallbackToTargetPath: true);
         }
+    }
+
+    private static ProjectLaunchSettingsModel? TryGetLaunchProfileSettings(string projectDirectory, string appDesignerFolder, bool noLaunchProfile, string? profileName)
+    {
+        if (noLaunchProfile)
+        {
+            return null;
+        }
+
+        var launchSettingsPath = Path.Combine(projectDirectory, appDesignerFolder, "launchSettings.json");
+        if (!File.Exists(launchSettingsPath))
+        {
+            return null;
+        }
+
+        var result = LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath), profileName);
+        if (!result.Success)
+        {
+            Reporter.Error.WriteLine(string.Format(Tools.Run.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
+            return null;
+        }
+
+        return result.LaunchSettings;
     }
 }
