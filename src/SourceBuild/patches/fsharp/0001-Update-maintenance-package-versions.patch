@@ -1,0 +1,54 @@
+From 90d9b4ef29343e68c2654b0dc1ac0691d80faa69 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Carlos=20S=C3=A1nchez=20L=C3=B3pez?=
+ <1175054+carlossanlop@users.noreply.github.com>
+Date: Fri, 4 Apr 2025 11:48:20 -0700
+Subject: [PATCH 1/2] Update maintenance-packages versions
+
+---
+ eng/Versions.props | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/eng/Versions.props b/eng/Versions.props
+index 5ce287e802b..3b796e557b9 100644
+--- a/eng/Versions.props
++++ b/eng/Versions.props
+@@ -74,8 +74,8 @@
+   <!-- Dependencies from maintenance-packages, source-build specific -->
+   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+     <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
+-    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
+-    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.1</SystemRuntimeCompilerServicesUnsafeVersion>
++    <SystemMemoryVersion>4.6.3</SystemMemoryVersion>
++    <SystemRuntimeCompilerServicesUnsafeVersion>6.1.2</SystemRuntimeCompilerServicesUnsafeVersion>
+   </PropertyGroup>
+   <!-- Dependencies from maintenance-packages, everything else -->
+   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+
+From 5beeff2becca7c4c6abd91d53feefea4bdcb1848 Mon Sep 17 00:00:00 2001
+From: "dotnet-maestro[bot]" <dotnet-maestro[bot]@users.noreply.github.com>
+Date: Fri, 4 Apr 2025 20:52:55 +0000
+Subject: [PATCH 2/2] Update dependencies from
+ https://github.com/dotnet/source-build-reference-packages build 20250404.3
+
+Microsoft.SourceBuild.Intermediate.source-build-reference-packages
+ From Version 9.0.0-alpha.1.25170.3 -> To Version 9.0.0-alpha.1.25204.3
+---
+ eng/Version.Details.xml | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/eng/Version.Details.xml b/eng/Version.Details.xml
+index a3b61734d48..5d099d46ea5 100644
+--- a/eng/Version.Details.xml
++++ b/eng/Version.Details.xml
+@@ -1,9 +1,9 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <Dependencies>
+   <ProductDependencies>
+-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25170.3">
++    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25204.3">
+       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
+-      <Sha>6968f7059f4418e985febe704a3b1320f9e5887d</Sha>
++      <Sha>643689c88b1d5a0f1561383972c4189a0c673abe</Sha>
+       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
+     </Dependency>
+     <!-- Intermediate is necessary for source build. -->
