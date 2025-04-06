@@ -139,6 +139,12 @@ public class StaticWebAssetEndpoint : IEquatable<StaticWebAssetEndpoint>, ICompa
         }
     }
 
+    internal void MarkProperiesAsModified()
+    {
+        _modified = true;
+        _endpointPropertiesModified = true;
+    }
+
     public static IEqualityComparer<StaticWebAssetEndpoint> RouteAndAssetComparer { get; } = new RouteAndAssetEqualityComparer();
 
     public static StaticWebAssetEndpoint[] FromItemGroup(ITaskItem[] endpoints)

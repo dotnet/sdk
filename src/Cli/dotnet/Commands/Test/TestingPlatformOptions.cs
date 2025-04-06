@@ -52,14 +52,20 @@ internal static class TestingPlatformOptions
 
     public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
 
-    public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly CliOption<bool> NoBuildOption = new("--no-build")
     {
         Description = LocalizableStrings.CmdNoBuildDescription
-    }.ForwardAs("-property:MTPNoBuild=true");
+    };
 
     public static readonly CliOption<bool> NoAnsiOption = new("--no-ansi")
     {
         Description = LocalizableStrings.CmdNoAnsiDescription,
+        Arity = ArgumentArity.Zero
+    };
+
+    public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    {
+        Description = Tools.Run.LocalizableStrings.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
