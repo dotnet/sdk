@@ -30,7 +30,7 @@
     <MicrosoftIORedistPackageVersion>6.0.1</MicrosoftIORedistPackageVersion>
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
-    <MicrosoftTestingPlatformVersion>1.7.0-preview.25203.1</MicrosoftTestingPlatformVersion>
+    <MicrosoftTestingPlatformVersion>1.7.0-preview.25204.3</MicrosoftTestingPlatformVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
@@ -149,9 +149,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-preview.4.25204.1</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-preview.4.25204.1</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
-    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.4.25204.1</MicrosoftWindowsDesktopAppRefPackageVersion>
+    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-preview.4.25204.2</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
+    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-preview.4.25204.2</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.4.25204.2</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
@@ -198,8 +198,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.15.0-preview-25203-02</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.15.0-preview-25203-02</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.15.0-preview-25204-04</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.15.0-preview-25204-04</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.13</MinimumVSVersion>
   </PropertyGroup>
@@ -252,9 +252,9 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/razor -->
-    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>10.0.0-preview.25204.1</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
-    <MicrosoftCodeAnalysisRazorToolingInternalVersion>10.0.0-preview.25204.1</MicrosoftCodeAnalysisRazorToolingInternalVersion>
-    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.0.0-preview.25204.1</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
+    <MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>10.0.0-preview.25205.3</MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion>
+    <MicrosoftCodeAnalysisRazorToolingInternalVersion>10.0.0-preview.25205.3</MicrosoftCodeAnalysisRazorToolingInternalVersion>
+    <MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>10.0.0-preview.25205.3</MicrosoftNETSdkRazorSourceGeneratorsTransportPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/wpf -->
@@ -295,7 +295,7 @@
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
     <AwesomeAssertionsJsonVersion>8.0.0</AwesomeAssertionsJsonVersion>
     <MoqPackageVersion>4.18.4</MoqPackageVersion>
-    <MSTestVersion>3.9.0-preview.25203.1</MSTestVersion>
+    <MSTestVersion>3.9.0-preview.25204.3</MSTestVersion>
     <XunitCombinatorialVersion>1.3.2</XunitCombinatorialVersion>
     <MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>8.0.0-beta.23607.1</MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion>
   </PropertyGroup>
