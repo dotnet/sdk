@@ -6,6 +6,8 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Packaging.Core;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -24,7 +26,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool install -g console.test.app --version 1.0.1");
 
-            var packageId = result.GetValue(ToolInstallCommandParser.PackageIdArgument).PackageId;
+            var packageId = result.GetValue(ToolInstallCommandParser.PackageIdentityArgument).Id;
             var packageVersion = result.GetValue<string>(ToolInstallCommandParser.VersionOption);
 
             packageId.Should().Be("console.test.app");
@@ -36,9 +38,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool install -g console.test.app@1.0.1");
 
-            var packageIdVersion = result.GetValue<(string PackageId, string Version)>(ToolInstallCommandParser.PackageIdArgument);
-            packageIdVersion.PackageId.Should().Be("console.test.app");
-            packageIdVersion.Version.Should().Be("1.0.1");
+            var packageIdVersion = result.GetValue<PackageIdentity>(ToolInstallCommandParser.PackageIdentityArgument);
+            packageIdVersion.Id.Should().Be("console.test.app");
+            packageIdVersion.Version.ToString().Should().Be("1.0.1");
         }
 
         [Fact]

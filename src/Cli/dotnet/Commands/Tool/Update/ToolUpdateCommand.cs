@@ -67,9 +67,9 @@ internal class ToolUpdateCommand : CommandBase
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdArgument) is not null)
+        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdentityArgument) is not null)
         {
-            options.Add(ToolUpdateCommandParser.PackageIdArgument.Name);
+            options.Add(ToolUpdateCommandParser.PackageIdentityArgument.Name);
         }
 
         if (options.Count != 1)

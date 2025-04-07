@@ -10,12 +10,13 @@ using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.DotNet.Workloads.Workload;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = CommonArguments.PackageIdentityArgument();
+    public static readonly CliArgument<PackageIdentity> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
 
     public static readonly CliOption<string> VersionOption = new("--version")
     {
@@ -93,7 +94,7 @@ internal static class ToolInstallCommandParser
     private static CliCommand ConstructCommand()
     {
         CliCommand command = new("install", CliCommandStrings.ToolInstallCommandDescription);
-        command.Arguments.Add(PackageIdArgument);
+        command.Arguments.Add(PackageIdentityArgument);
 
         AddCommandOptions(command);
 

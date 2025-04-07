@@ -4,12 +4,14 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly CliArgument<(string PackageId, string Version)> PackageIdArgument = CommonArguments.PackageIdentityArgument(false);
+    public static readonly CliArgument<PackageIdentity> PackageIdentityArgument = CommonArguments.PackageIdentityArgument(requireArgument: false);
 
     public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 
@@ -26,7 +28,7 @@ internal static class ToolUpdateCommandParser
     {
         CliCommand command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
 
-        command.Arguments.Add(PackageIdArgument);
+        command.Arguments.Add(PackageIdentityArgument);
 
         ToolInstallCommandParser.AddCommandOptions(command);
         command.Options.Add(AllowPackageDowngradeOption);
@@ -37,4 +39,3 @@ internal static class ToolUpdateCommandParser
         return command;
     }
 }
-
