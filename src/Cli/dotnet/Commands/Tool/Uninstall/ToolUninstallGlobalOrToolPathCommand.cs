@@ -51,7 +51,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
-        var packageId = new PackageId(_parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument).PackageId);
+        var packageId = new PackageId(_parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument).PackageId);
         IToolPackage package = null;
         try
         {
