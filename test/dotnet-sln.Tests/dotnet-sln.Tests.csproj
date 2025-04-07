@@ -10,6 +10,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <RootNamespace>Microsoft.DotNet.Cli.Sln</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
