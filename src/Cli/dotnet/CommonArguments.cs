@@ -1,8 +1,12 @@
-﻿using System.CommandLine;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+
+using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-
 
 namespace Microsoft.DotNet.Cli
 {
@@ -30,11 +34,11 @@ namespace Microsoft.DotNet.Cli
             var versionString = token.Substring(versionSeparatorIndex + 1);
             if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(versionString))
             {
-                throw new ArgumentException(CommonLocalizableStrings.PackageIdentityArgumentIdOrVersionIsNull);
+                throw new GracefulException(CommonLocalizableStrings.PackageIdentityArgumentIdOrVersionIsNull);
             }
             if (!NuGetVersion.TryParse(versionString, out var version))
             {
-                throw new ArgumentException(string.Format(CommonLocalizableStrings.InvalidVersion, versionString));
+                throw new GracefulException(string.Format(CommonLocalizableStrings.InvalidVersion, versionString));
             }
             return new(packageId, new NuGetVersion(version));
         }
@@ -43,7 +47,7 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version.ToString()) &&
                 !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
             {
-                throw new ArgumentException(CommonLocalizableStrings.PackageIdentityArgumentVersionOptionConflict);
+                throw new GracefulException(CommonLocalizableStrings.PackageIdentityArgumentVersionOptionConflict);
             }
         }
         #endregion
