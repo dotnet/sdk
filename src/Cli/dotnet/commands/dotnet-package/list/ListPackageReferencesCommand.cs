@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Common;
 using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Tools.List.PackageReferences
+namespace Microsoft.DotNet.Tools.Package.List
 {
     internal class ListPackageReferencesCommand : CommandBase
     {
@@ -18,6 +18,8 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
             ParseResult parseResult) : base(parseResult)
         {
             _fileOrDirectory = GetAbsolutePath(Directory.GetCurrentDirectory(),
+                parseResult.HasOption(PackageCommandParser.ProjectOption) ?
+                parseResult.GetValue(PackageCommandParser.ProjectOption) :
                 parseResult.GetValue(ListCommandParser.SlnOrProjectArgument));
         }
 
@@ -34,9 +36,9 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
         internal static void EnforceOptionRules(ParseResult parseResult)
         {
             var mutexOptionCount = 0;
-            mutexOptionCount += parseResult.HasOption(ListPackageReferencesCommandParser.DeprecatedOption) ? 1 : 0;
-            mutexOptionCount += parseResult.HasOption(ListPackageReferencesCommandParser.OutdatedOption) ? 1 : 0;
-            mutexOptionCount += parseResult.HasOption(ListPackageReferencesCommandParser.VulnerableOption) ? 1 : 0;
+            mutexOptionCount += parseResult.HasOption(PackageListCommandParser.DeprecatedOption) ? 1 : 0;
+            mutexOptionCount += parseResult.HasOption(PackageListCommandParser.OutdatedOption) ? 1 : 0;
+            mutexOptionCount += parseResult.HasOption(PackageListCommandParser.VulnerableOption) ? 1 : 0;
             if (mutexOptionCount > 1)
             {
                 throw new GracefulException(LocalizableStrings.OptionsCannotBeCombined);
@@ -53,7 +55,7 @@ namespace Microsoft.DotNet.Tools.List.PackageReferences
 
             args.Add(GetProjectOrSolution());
 
-            args.AddRange(_parseResult.OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand()));
+            args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 
             EnforceOptionRules(_parseResult);
 

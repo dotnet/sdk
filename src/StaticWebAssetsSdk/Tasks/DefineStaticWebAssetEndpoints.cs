@@ -18,14 +18,28 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public ITaskItem[] ContentTypeMappings { get; set; }
 
+        public ITaskItem[] AssetFileDetails { get; set; }
+
         [Output]
         public ITaskItem[] Endpoints { get; set; }
 
         public Func<string, int> TestLengthResolver;
         public Func<string, DateTime> TestLastWriteResolver;
 
+        private Dictionary<string, ITaskItem> _assetFileDetails;
+
         public override bool Execute()
         {
+            if (AssetFileDetails != null)
+            {
+                _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
+                for (int i = 0; i < AssetFileDetails.Length; i++)
+                {
+                    var item = AssetFileDetails[i];
+                    _assetFileDetails[item.ItemSpec] = item;
+                }
+            }
+
             var staticWebAssets = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
             var existingEndpoints = StaticWebAssetEndpoint.FromItemGroup(ExistingEndpoints);
             var existingEndpointsByAssetFile = existingEndpoints
@@ -87,7 +101,8 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private List<StaticWebAssetEndpoint> CreateEndpoints(StaticWebAsset asset, ContentTypeProvider contentTypeMappings)
         {
             var routes = asset.ComputeRoutes();
-            var result = new List<StaticWebAssetEndpoint>();
+            var (length, lastModified) = ResolveDetails(asset);
+            var result = new List<StaticWebAssetEndpoint>(); 
             foreach (var (label, route, values) in routes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, contentTypeMappings);
@@ -100,7 +115,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         new()
                         {
                             Name = "Content-Length",
-                            Value = GetFileLength(asset),
+                            Value = length,
                         },
                         new()
                         {
@@ -115,7 +130,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         new()
                         {
                             Name = "Last-Modified",
-                            Value = GetFileLastModified(asset)
+                            Value = lastModified
                         },
                     ];
 
@@ -187,36 +202,47 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         //
         // GMT
         // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
-        private string GetFileLastModified(StaticWebAsset asset)
+        private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
         {
-            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : GetFileLastModifiedCore(asset);
+            if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.Identity, out var details))
+            {
+                return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
+            }
+            else if (_assetFileDetails != null && _assetFileDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
+            {
+                return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
+            }
+            else if (TestLastWriteResolver != null || TestLengthResolver != null)
+            {
+                return (length: GetTestFileLength(asset), lastModified: GetTestFileLastModified(asset));
+            }
+            else
+            {
+                Log.LogMessage(MessageImportance.High, $"No details found for {asset.Identity}. Using file system to resolve details.");
+                var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
+                var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
+                var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
+                return (length, lastModified);
+            }
+        }
+
+        // Only used for testing
+        private string GetTestFileLastModified(StaticWebAsset asset)
+        {
+            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : asset.ResolveFile().LastWriteTimeUtc;
             return lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
         }
 
-        private static DateTime GetFileLastModifiedCore(StaticWebAsset asset)
-        {
-            var path = File.Exists(asset.OriginalItemSpec) ? asset.OriginalItemSpec : asset.Identity;
-            var lastWrite = new FileInfo(path).LastWriteTimeUtc;
-            return lastWrite;
-        }
-
-        private string GetFileLength(StaticWebAsset asset)
+        // Only used for testing
+        private string GetTestFileLength(StaticWebAsset asset)
         {
             if (TestLengthResolver != null)
             {
                 return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
             }
 
-            if (File.Exists(asset.Identity))
-            {
-                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} exists.");
-                return new FileInfo(asset.Identity).Length.ToString(CultureInfo.InvariantCulture);
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.Low, $"File {asset.Identity} does not exist. Using {asset.OriginalItemSpec} instead.");
-                return new FileInfo(asset.OriginalItemSpec).Length.ToString(CultureInfo.InvariantCulture);
-            }
+            var fileInfo = asset.ResolveFile();
+            return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
         }
 
         private (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider)
