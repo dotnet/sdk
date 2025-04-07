@@ -24,6 +24,10 @@ namespace Microsoft.DotNet.Cli
 
         private static PackageIdentity ParsePackageIdentity(ArgumentResult argumentResult)
         {
+            if (argumentResult.Tokens.Count == 0)
+            {
+                return null;
+            }
             var token = argumentResult.Tokens[0].Value;
             var versionSeparatorIndex = token.IndexOf('@');
             if (versionSeparatorIndex == -1)
