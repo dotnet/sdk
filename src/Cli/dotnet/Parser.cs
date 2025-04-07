@@ -221,21 +221,29 @@ public static class Parser
 
         if (exception is GracefulException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else if (exception is CommandParsingException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
             parseResult.ShowHelp();
+        }
+        else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else
         {
             Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-            Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
 
         return 1;

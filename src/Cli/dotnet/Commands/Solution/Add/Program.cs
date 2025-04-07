@@ -134,6 +134,7 @@ internal class AddProjectToSolutionCommand : CommandBase
     {
         // Open project instance to see if it is a valid project
         ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
+        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
         SolutionProjectModel project;
         try
         {
@@ -142,7 +143,7 @@ internal class AddProjectToSolutionCommand : CommandBase
         catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
         {
             // If guid is not identified by vs-solutionpersistence, check in project element itself
-            var guid = projectRootElement.GetProjectTypeGuid();
+            var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
             if (string.IsNullOrEmpty(guid))
             {
                 Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
@@ -151,7 +152,6 @@ internal class AddProjectToSolutionCommand : CommandBase
             project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
         }
         // Add settings based on existing project instance
-        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
         string projectInstanceId = projectInstance.GetProjectId();
         if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
         {
