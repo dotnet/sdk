@@ -5,7 +5,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 
-internal static class InternalReportinstallsuccessCommandParser
+internal static class InternalReportInstallSuccessCommandParser
 {
     public static readonly CliArgument<string> Argument = new("internal-reportinstallsuccess-arg");
 
@@ -25,7 +25,7 @@ internal static class InternalReportinstallsuccessCommandParser
 
         command.Arguments.Add(Argument);
 
-        command.SetAction(InternalReportinstallsuccess.Run);
+        command.SetAction(InternalReportInstallSuccess.Run);
 
         return command;
     }

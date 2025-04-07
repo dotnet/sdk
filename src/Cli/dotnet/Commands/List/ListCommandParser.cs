@@ -37,8 +37,8 @@ internal static class ListCommandParser
         };
 
         command.Arguments.Add(SlnOrProjectArgument);
-        command.Subcommands.Add(ListPackageReferencesCommandParser.GetCommand());
-        command.Subcommands.Add(ListProjectToProjectReferencesCommandParser.GetCommand());
+        command.Subcommands.Add(ListPackageCommandParser.GetCommand());
+        command.Subcommands.Add(ListReferenceCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

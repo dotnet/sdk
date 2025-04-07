@@ -31,11 +31,11 @@ internal class SolutionAddCommand : CommandBase
 
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []);
-        _inRoot = parseResult.GetValue(SlnAddParser.InRootOption);
-        _solutionFolderPath = parseResult.GetValue(SlnAddParser.SolutionFolderOption);
-        SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
+        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddParser.ProjectPathArgument) ?? []);
+        _inRoot = parseResult.GetValue(SolutionAddParser.InRootOption);
+        _solutionFolderPath = parseResult.GetValue(SolutionAddParser.SolutionFolderOption);
+        SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
     }
 
     public override int Execute()

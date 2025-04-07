@@ -325,7 +325,7 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Instance.Parse($"dotnet list package {string.Join(' ', options)}");
-            Action checkRules = () => ListPackageReferencesCommand.EnforceOptionRules(parseResult);
+            Action checkRules = () => PackageListCommand.EnforceOptionRules(parseResult);
 
             if (throws)
             {

@@ -11,7 +11,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
-internal static class SlnCommandParser
+internal static class SolutionCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-sln";
 
@@ -38,10 +38,10 @@ internal static class SlnCommandParser
         command.Aliases.Add(CommandAlias);
 
         command.Arguments.Add(SlnArgument);
-        command.Subcommands.Add(SlnAddParser.GetCommand());
-        command.Subcommands.Add(SlnListParser.GetCommand());
-        command.Subcommands.Add(SlnRemoveParser.GetCommand());
-        command.Subcommands.Add(SlnMigrateCommandParser.GetCommand());
+        command.Subcommands.Add(SolutionAddParser.GetCommand());
+        command.Subcommands.Add(SolutionListParser.GetCommand());
+        command.Subcommands.Add(SolutionRemoveParser.GetCommand());
+        command.Subcommands.Add(SolutionMigrateCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

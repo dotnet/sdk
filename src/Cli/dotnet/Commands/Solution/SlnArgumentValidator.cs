@@ -7,7 +7,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
-internal static class SlnArgumentValidator
+internal static class SolutionArgumentValidator
 {
     public enum CommandType
     {
@@ -36,11 +36,11 @@ internal static class SlnArgumentValidator
             string args;
             if (_inRoot)
             {
-                args = $"--{SlnAddParser.InRootOption.Name} ";
+                args = $"--{SolutionAddParser.InRootOption.Name} ";
             }
             else if (hasRelativeRoot)
             {
-                args = $"--{SlnAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
+                args = $"--{SolutionAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
             }
             else
             {

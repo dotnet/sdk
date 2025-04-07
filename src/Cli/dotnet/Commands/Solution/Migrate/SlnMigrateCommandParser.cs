@@ -6,7 +6,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
-public static class SlnMigrateCommandParser
+public static class SolutionMigrateCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -19,9 +19,9 @@ public static class SlnMigrateCommandParser
     {
         CliCommand command = new("migrate", LocalizableStrings.MigrateAppFullName);
 
-        command.Arguments.Add(SlnCommandParser.SlnArgument);
+        command.Arguments.Add(SolutionCommandParser.SlnArgument);
 
-        command.SetAction((parseResult) => new SlnMigrateCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new SolutionMigrateCommand(parseResult).Execute());
 
         return command;
     }

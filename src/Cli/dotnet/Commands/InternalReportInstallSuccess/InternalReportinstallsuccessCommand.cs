@@ -9,7 +9,7 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 
-public class InternalReportinstallsuccess
+public class InternalReportInstallSuccess
 {
     internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
 
@@ -30,7 +30,7 @@ public class InternalReportinstallsuccess
 
     public static void ProcessInputAndSendTelemetry(ParseResult result, ITelemetry telemetry)
     {
-        var exeName = Path.GetFileName(result.GetValue(InternalReportinstallsuccessCommandParser.Argument));
+        var exeName = Path.GetFileName(result.GetValue(InternalReportInstallSuccessCommandParser.Argument));
 
         var filter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
         foreach (var e in filter.Filter(new InstallerSuccessReport(exeName)))

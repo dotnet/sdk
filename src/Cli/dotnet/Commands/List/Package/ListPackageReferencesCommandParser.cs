@@ -7,7 +7,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableString
 
 namespace Microsoft.DotNet.Cli.Commands.List.Package;
 
-internal static class ListPackageReferencesCommandParser
+internal static class ListPackageCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 
@@ -35,7 +35,7 @@ internal static class ListPackageReferencesCommandParser
         command.Options.Add(PackageListCommandParser.FormatOption);
         command.Options.Add(PackageListCommandParser.OutputVersionOption);
 
-        command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
 
         return command;
     }

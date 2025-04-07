@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet list package --interactive");
 
-            result.OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand()).Should().ContainSingle("--interactive");
+            result.OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand()).Should().ContainSingle("--interactive");
             result.Errors.Should().BeEmpty();
         }
 
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result = Parser.Instance.Parse($"dotnet list package {inputOption} {value}");
 
             result
-                .OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand())
+                .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())
                 .Should()
                 .Contain($"--verbosity:{value.ToLowerInvariant()}");
             result.Errors.Should().BeEmpty();
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result = Parser.Instance.Parse($"dotnet list package");
 
             result
-                .OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand())
+                .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())
                 .Should()
                 .NotContain(i => i.Contains("--verbosity", StringComparison.OrdinalIgnoreCase))
                 .And.NotContain(i => i.Contains("-v", StringComparison.OrdinalIgnoreCase));

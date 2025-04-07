@@ -9,11 +9,11 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
-internal class SlnMigrateCommand(
+internal class SolutionMigrateCommand(
     ParseResult parseResult,
     IReporter reporter = null) : CommandBase(parseResult)
 {
-    private readonly string _slnFileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+    private readonly string _slnFileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
     private readonly IReporter _reporter = reporter ?? Reporter.Output;
 
     public override int Execute()

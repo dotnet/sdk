@@ -33,8 +33,8 @@ internal static class AddCommandParser
         };
 
         command.Arguments.Add(ProjectArgument);
-        command.Subcommands.Add(AddPackageParser.GetCommand());
-        command.Subcommands.Add(AddProjectToProjectReferenceParser.GetCommand());
+        command.Subcommands.Add(AddPackageCommandParser.GetCommand());
+        command.Subcommands.Add(AddReferenceCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

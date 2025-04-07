@@ -11,8 +11,8 @@ namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 internal class SolutionListCommand(
     ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
-    private readonly bool _displaySolutionFolders = parseResult.GetValue(SlnListParser.SolutionFolderOption);
+    private readonly string _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
+    private readonly bool _displaySolutionFolders = parseResult.GetValue(SolutionListParser.SolutionFolderOption);
 
     public override int Execute()
     {

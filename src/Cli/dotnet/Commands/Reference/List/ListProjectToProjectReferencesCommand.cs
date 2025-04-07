@@ -9,11 +9,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
-internal class ListProjectToProjectReferencesCommand : CommandBase
+internal class ReferenceListCommand : CommandBase
 {
     private readonly string _fileOrDirectory;
 
-    public ListProjectToProjectReferencesCommand(
+    public ReferenceListCommand(
         ParseResult parseResult) : base(parseResult)
     {
         ShowHelpOrErrorIfAppropriate(parseResult);

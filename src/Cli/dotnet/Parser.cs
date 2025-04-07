@@ -51,7 +51,7 @@ public static class Parser
         Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
     };
 
-    public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
+    public static readonly CliCommand InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
 
     // Subcommands
     public static readonly CliCommand[] Subcommands =
@@ -76,7 +76,7 @@ public static class Parser
         RemoveCommandParser.GetCommand(),
         RestoreCommandParser.GetCommand(),
         RunCommandParser.GetCommand(),
-        SlnCommandParser.GetCommand(),
+        SolutionCommandParser.GetCommand(),
         StoreCommandParser.GetCommand(),
         TestCommandParser.GetCommand(),
         ToolCommandParser.GetCommand(),
@@ -339,7 +339,7 @@ public static class Parser
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
                 var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
-                new DotnetFormatForwardingApp([.. arguments, .. helpArgs]).Execute();
+                new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
@@ -355,7 +355,7 @@ public static class Parser
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
-                new DotnetFormatForwardingApp(helpArgs).Execute();
+                new FormatForwardingApp(helpArgs).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
@@ -363,7 +363,7 @@ public static class Parser
             }
             else
             {
-                if (command.Name.Equals(ListProjectToProjectReferencesCommandParser.GetCommand().Name))
+                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
                 {
                     CliCommand listCommand = command.Parents.Single() as CliCommand;
 
@@ -376,7 +376,7 @@ public static class Parser
                         }
                     }
                 }
-                else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                 {
                     // Don't show package completions in help
                     PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();

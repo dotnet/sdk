@@ -7,7 +7,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableSt
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Reference;
 
-internal static class RemoveProjectToProjectReferenceParser
+internal static class RemoveReferenceParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 

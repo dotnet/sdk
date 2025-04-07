@@ -7,7 +7,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStri
 
 namespace Microsoft.DotNet.Cli.Commands.List.Reference;
 
-internal static class ListProjectToProjectReferencesCommandParser
+internal static class ListReferenceCommandParser
 {
     public static readonly CliArgument<string> Argument = new("argument") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
@@ -24,7 +24,7 @@ internal static class ListProjectToProjectReferencesCommandParser
 
         command.Arguments.Add(Argument);
 
-        command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceListCommand(parseResult).Execute());
 
         return command;
     }

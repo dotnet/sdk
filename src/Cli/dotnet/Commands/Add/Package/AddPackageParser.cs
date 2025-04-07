@@ -9,7 +9,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings
 
 namespace Microsoft.DotNet.Cli.Commands.Add.Package;
 
-internal static class AddPackageParser
+internal static class AddPackageCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 

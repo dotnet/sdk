@@ -8,7 +8,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrin
 
 namespace Microsoft.DotNet.Cli.Commands.Add.Reference;
 
-internal static class AddProjectToProjectReferenceParser
+internal static class AddReferenceCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 

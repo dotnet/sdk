@@ -16,11 +16,11 @@ internal class SolutionRemoveCommand : CommandBase
 
     public SolutionRemoveCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
 
-        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        _projects = (parseResult.GetValue(SolutionRemoveParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
 
-        SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
+        SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }
 
     public override int Execute()

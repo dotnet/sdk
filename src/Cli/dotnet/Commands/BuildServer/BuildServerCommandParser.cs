@@ -23,7 +23,7 @@ internal static class BuildServerCommandParser
     {
         var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.CommandDescription);
 
-        command.Subcommands.Add(ServerShutdownCommandParser.GetCommand());
+        command.Subcommands.Add(BuildServerShutdownCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

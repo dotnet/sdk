@@ -10,7 +10,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableString
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
-internal class ListPackageReferencesCommand(
+internal class PackageListCommand(
     ParseResult parseResult) : CommandBase(parseResult)
 {
     //The file or directory passed down by the command

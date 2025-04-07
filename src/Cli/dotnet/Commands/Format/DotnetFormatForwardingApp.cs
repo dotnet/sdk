@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Format;
 
-public class DotnetFormatForwardingApp(IEnumerable<string> argsToForward) : ForwardingApp(forwardApplicationPath: GetForwardApplicationPath(),
+public class FormatForwardingApp(IEnumerable<string> argsToForward) : ForwardingApp(forwardApplicationPath: GetForwardApplicationPath(),
         argsToForward: argsToForward,
         depsFile: GetDepsFilePath(),
         runtimeConfig: GetRuntimeConfigPath())

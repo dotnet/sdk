@@ -34,7 +34,7 @@ internal static class RemoveCommandParser
 
         command.Arguments.Add(ProjectArgument);
         command.Subcommands.Add(RemovePackageParser.GetCommand());
-        command.Subcommands.Add(RemoveProjectToProjectReferenceParser.GetCommand());
+        command.Subcommands.Add(RemoveReferenceParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

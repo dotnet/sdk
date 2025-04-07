@@ -116,7 +116,7 @@ internal static class PackageListCommandParser
         command.Options.Add(OutputVersionOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
 
         return command;
     }
