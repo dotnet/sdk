@@ -8,7 +8,7 @@ using static System.Array;
 
 namespace Microsoft.DotNet.Cli.Commands.Complete;
 
-internal static class Complete
+internal static class CliCompletion
 {
     private static CompletionItem ToCompletionItem(string s) => new(s);
 

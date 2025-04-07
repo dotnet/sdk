@@ -161,7 +161,7 @@ public static class Parser
             else
             {
                 // when user does not specify any args (just "dotnet"), a usage needs to be printed
-                parseResult.Configuration.Output.WriteLine(HelpUsageText.UsageText);
+                parseResult.Configuration.Output.WriteLine(CliUsage.HelpText);
                 return 0;
             }
         });
@@ -313,7 +313,7 @@ public static class Parser
             var helpArgs = new string[] { "--help" };
             if (command.Equals(RootCommand))
             {
-                Console.Out.WriteLine(HelpUsageText.UsageText);
+                Console.Out.WriteLine(CliUsage.HelpText);
                 return;
             }
 

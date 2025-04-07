@@ -32,7 +32,7 @@ public class HelpCommand(string[] helpArgs)
     public static void PrintHelp()
     {
         PrintVersionHeader();
-        Reporter.Output.WriteLine(HelpUsageText.UsageText);
+        Reporter.Output.WriteLine(CliUsage.HelpText);
     }
 
     public static void PrintVersionHeader()
@@ -97,7 +97,7 @@ public class HelpCommand(string[] helpArgs)
                 string.Format(
                     LocalizableStrings.CommandDoesNotExist,
                     helpArgs).Red());
-            Reporter.Output.WriteLine(HelpUsageText.UsageText);
+            Reporter.Output.WriteLine(CliUsage.HelpText);
             return 1;
         }
     }

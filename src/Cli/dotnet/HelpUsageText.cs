@@ -3,9 +3,9 @@
 
 using Microsoft.DotNet.Tools.Help;
 
-internal static class HelpUsageText
+internal static class CliUsage
 {
-    public static readonly string UsageText =
+    public static readonly string HelpText =
 $@"{LocalizableStrings.Usage}: dotnet [runtime-options] [path-to-application] [arguments]
 
 {LocalizableStrings.ExecutionUsageDescription}

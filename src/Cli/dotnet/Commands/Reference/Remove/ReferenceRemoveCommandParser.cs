@@ -12,7 +12,7 @@ internal static class ReferenceRemoveCommandParser
     {
         Description = LocalizableStrings.ProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
-    }.AddCompletions(Complete.Complete.ProjectReferencesFromProjectFile);
+    }.AddCompletions(Complete.CliCompletion.ProjectReferencesFromProjectFile);
 
     public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
     {

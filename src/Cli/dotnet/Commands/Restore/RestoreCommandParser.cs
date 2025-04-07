@@ -195,7 +195,7 @@ internal static class RestoreCommandParser
                 Hidden = !showHelp,
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
              .AllowSingleArgPerToken()
-             .AddCompletions(Complete.Complete.RunTimesFromProjectFile);
+             .AddCompletions(Complete.CliCompletion.RunTimesFromProjectFile);
 
             if (useShortOptions)
             {
