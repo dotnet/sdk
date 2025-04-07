@@ -215,7 +215,14 @@ public class LinuxInstallerTests : IDisposable
     {
         List<string> packageList = GetPackageList(baseImage, packageType);
         string dockerfile = GenerateDockerfile(packageList, baseImage, packageType);
-        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/";
+
+        // Define the host and container paths for the log file
+        string hostLogDir = Path.Combine(Config.ArtifactsTestResultsDirectory, "scenario-tests");
+        Directory.CreateDirectory(hostLogDir);
+        string containerLogDir = "/logs";
+        string containerLogPath = Path.Combine(containerLogDir, $"scenario-tests-{GetSanitatizedImageName(baseImage)}.xml");
+
+        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/ --xml {containerLogPath}";
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";
@@ -226,7 +233,10 @@ public class LinuxInstallerTests : IDisposable
             // Build docker image and run the tests
             _dockerHelper.Build(tag, dockerfile: dockerfile, contextDir: _contextDir);
             buildCompleted = true;
-            output = _dockerHelper.Run(tag, tag, testCommand);
+
+            // Mount the host log directory to the container
+            string optionalRunArgs = $"-v {hostLogDir}:{containerLogDir}";
+            output = _dockerHelper.Run(tag, tag, testCommand, optionalRunArgs: optionalRunArgs);
 
             int testResultsSummaryIndex = output.IndexOf("Tests run: ");
             if (testResultsSummaryIndex >= 0)
@@ -388,6 +398,9 @@ public class LinuxInstallerTests : IDisposable
 
         return files.OrderByDescending(f => f).First();
     }
+
+    private static string GetSanitatizedImageName(string image) =>
+        image.Replace("/", "_").Replace(":", "_").Replace(".", "_");
 
     private static async Task DownloadFileAsync(string url, string filePath)
     {
