@@ -46,7 +46,6 @@ public static class DiffGeneratorFactory
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">Indicates whether to hide implicit default constructors.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>
     /// <returns>A new instance of <see cref="IDiffGenerator"/> that writes the diff to disk.</returns>
@@ -64,7 +63,6 @@ public static class DiffGeneratorFactory
                                         string[]? attributesToExclude,
                                         string[]? apisToExclude,
                                         bool addPartialModifier,
-                                        bool hideImplicitDefaultConstructors,
                                         bool writeToDisk,
                                         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
@@ -81,7 +79,6 @@ public static class DiffGeneratorFactory
                                            attributesToExclude,
                                            apisToExclude,
                                            addPartialModifier,
-                                           hideImplicitDefaultConstructors,
                                            writeToDisk,
                                            diagnosticOptions);
     }
@@ -97,7 +94,6 @@ public static class DiffGeneratorFactory
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">Indicates whether to hide implicit default constructors.</param>
     /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>
     /// <returns>A new instance of <see cref="IDiffGenerator"/> that writes the diff to memory.</returns>
     public static IDiffGenerator Create(ILog log,
@@ -108,7 +104,6 @@ public static class DiffGeneratorFactory
                                         string[]? attributesToExclude,
                                         string[]? apisToExclude,
                                         bool addPartialModifier,
-                                        bool hideImplicitDefaultConstructors,
                                         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         return new MemoryOutputDiffGenerator(log,
@@ -119,7 +114,6 @@ public static class DiffGeneratorFactory
                                              attributesToExclude,
                                              apisToExclude,
                                              addPartialModifier,
-                                             hideImplicitDefaultConstructors,
                                              diagnosticOptions);
     }
 }

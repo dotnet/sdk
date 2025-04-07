@@ -333,7 +333,6 @@ public class DiffPropertyTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
 
     [Fact]
@@ -357,7 +356,6 @@ public class DiffPropertyTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty1", "P:MyNamespace.MyClass.MyProperty2"]);
 
     [Fact]
@@ -380,7 +378,6 @@ public class DiffPropertyTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["P:MyNamespace.MyClass.MyProperty"]);
 
     #endregion

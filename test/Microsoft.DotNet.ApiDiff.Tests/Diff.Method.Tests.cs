@@ -203,7 +203,6 @@ public class DiffMethodTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod1", "M:MyNamespace.MyClass.MyMethod2"]);
 
     [Fact]
@@ -226,7 +225,6 @@ public class DiffMethodTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.MyMethod"]);
 
     #endregion

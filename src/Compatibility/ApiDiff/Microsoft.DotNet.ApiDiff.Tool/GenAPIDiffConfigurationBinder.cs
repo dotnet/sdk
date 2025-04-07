@@ -21,7 +21,6 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<string[]?> _optionAttributesToExclude;
     private readonly Option<string[]?> _optionApisToExclude;
     private readonly Option<bool> _optionAddPartialModifier;
-    private readonly Option<bool> _optionHideImplicitDefaultConstructors;
     private readonly Option<bool> _optionAttachDebugger;
 
     internal GenAPIDiffConfigurationBinder(Option<string> optionBeforeAssembliesFolderPath,
@@ -36,7 +35,6 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
                                            Option<string[]?> optionAttributesToExclude,
                                            Option<string[]?> optionApisToExclude,
                                            Option<bool> optionAddPartialModifier,
-                                           Option<bool> optionHideImplicitDefaultConstructors,
                                            Option<bool> optionAttachDebugger)
     {
         _optionBeforeAssembliesFolderPath = optionBeforeAssembliesFolderPath;
@@ -51,7 +49,6 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
         _optionAttributesToExclude = optionAttributesToExclude;
         _optionApisToExclude = optionApisToExclude;
         _optionAddPartialModifier = optionAddPartialModifier;
-        _optionHideImplicitDefaultConstructors = optionHideImplicitDefaultConstructors;
         _optionAttachDebugger = optionAttachDebugger;
     }
 
@@ -69,7 +66,6 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
             AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
             ApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionApisToExclude),
             AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
-            HideImplicitDefaultConstructors: bindingContext.ParseResult.GetValueForOption(_optionHideImplicitDefaultConstructors),
             AttachDebugger: bindingContext.ParseResult.GetValueForOption(_optionAttachDebugger)
         );
 }

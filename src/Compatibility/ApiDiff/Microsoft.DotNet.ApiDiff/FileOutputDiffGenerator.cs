@@ -26,7 +26,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     private readonly string[] _attributesToExclude;
     private readonly string[] _apisToExclude;
     private readonly bool _addPartialModifier;
-    private readonly bool _hideImplicitDefaultConstructors;
     private readonly bool _writeToDisk;
     private readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>>? _diagnosticOptions;
     private readonly Dictionary<string, string> _results;
@@ -47,7 +46,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">A value indicating whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">A value indicating whether to hide implicit default constructors.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="RunAsync"/>, the generated markdown files get added to the <see cref="RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions">An optional set of diagnostic options.</param>
     internal FileOutputDiffGenerator(ILog log,
@@ -63,7 +61,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                     string[]? attributesToExclude,
                                     string[]? apisToExclude,
                                     bool addPartialModifier,
-                                    bool hideImplicitDefaultConstructors,
                                     bool writeToDisk,
                                     IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
 
@@ -81,7 +78,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _attributesToExclude = attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude;
         _apisToExclude = apisToExclude ?? [];
         _addPartialModifier = addPartialModifier;
-        _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
         _writeToDisk = writeToDisk;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
         _results = [];
@@ -120,7 +116,6 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                                   _attributesToExclude,
                                                   _apisToExclude,
                                                   _addPartialModifier,
-                                                  _hideImplicitDefaultConstructors,
                                                   _diagnosticOptions);
 
         await generator.RunAsync().ConfigureAwait(false);

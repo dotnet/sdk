@@ -31,7 +31,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     private readonly ConcurrentDictionary<string, IAssemblySymbol> _beforeAssemblySymbols;
     private readonly ConcurrentDictionary<string, IAssemblySymbol> _afterAssemblySymbols;
     private readonly bool _addPartialModifier;
-    private readonly bool _hideImplicitDefaultConstructors;
     private readonly ISymbolFilter _attributeSymbolFilter;
     private readonly ISymbolFilter _symbolFilter;
     private readonly SyntaxTriviaList _twoSpacesTrivia;
@@ -53,7 +52,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">A boolean indicating whether to add the partial modifier to types.</param>
-    /// <param name="hideImplicitDefaultConstructors">A boolean indicating whether to hide implicit default constructors.</param>
     /// <param name="diagnosticOptions">An optional dictionary of diagnostic options.</param>
     internal MemoryOutputDiffGenerator(
         ILog log,
@@ -64,7 +62,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         string[]? attributesToExclude,
         string[]? apisToExclude,
         bool addPartialModifier,
-        bool hideImplicitDefaultConstructors,
         IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         _log = log;
@@ -73,7 +70,6 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _beforeAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(beforeAssemblySymbols);
         _afterAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(afterAssemblySymbols);
         _addPartialModifier = addPartialModifier;
-        _hideImplicitDefaultConstructors = hideImplicitDefaultConstructors;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
         _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
         _symbolFilter = SymbolFilterFactory.GetFilterFromList(apisToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
@@ -174,7 +170,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     {
         CSharpAssemblyDocumentGeneratorOptions options = new(loader, _symbolFilter, _attributeSymbolFilter)
         {
-            HideImplicitDefaultConstructors = _hideImplicitDefaultConstructors,
+            HideImplicitDefaultConstructors = false,
             ShouldFormat = true,
             ShouldReduce = false,
             MetadataReferences = loader.MetadataReferences,

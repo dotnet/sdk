@@ -23,16 +23,14 @@ public abstract class DiffBaseTests
                            string expectedCode,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false,
-                           bool hideImplicitDefaultConstructors = false)
+                           bool addPartialModifier = false)
         => RunTestAsync(
                    before: [($"{AssemblyName}.dll", beforeCode)],
                    after: [($"{AssemblyName}.dll", afterCode)],
                    expected: new() { { AssemblyName, expectedCode } },
                    attributesToExclude,
                    apisToExclude,
-                   addPartialModifier,
-                   hideImplicitDefaultConstructors);
+                   addPartialModifier);
 
     protected async Task RunTestAsync(
                            (string, string)[] before,
@@ -40,8 +38,7 @@ public abstract class DiffBaseTests
                            Dictionary<string, string> expected,
                            string[]? attributesToExclude = null,
                            string[]? apisToExclude = null,
-                           bool addPartialModifier = false,
-                           bool hideImplicitDefaultConstructors = false)
+                           bool addPartialModifier = false)
     {
         // CreateFromTexts will assert on any loader diagnostics via SyntaxFactory.
 
@@ -62,7 +59,6 @@ public abstract class DiffBaseTests
             attributesToExclude,
             apisToExclude,
             addPartialModifier,
-            hideImplicitDefaultConstructors,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
 
         await generator.RunAsync();

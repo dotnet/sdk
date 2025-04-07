@@ -19,6 +19,5 @@ public record DiffConfiguration(
     string[]? AttributesToExclude,
     string[]? ApisToExclude,
     bool AddPartialModifier,
-    bool HideImplicitDefaultConstructors,
     bool AttachDebugger
 );

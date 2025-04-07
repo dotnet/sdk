@@ -480,7 +480,6 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             attributesToExclude: null,
             apisToExclude: null,
             addPartialModifier: false,
-            hideImplicitDefaultConstructors: true,
             writeToDisk,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
     }

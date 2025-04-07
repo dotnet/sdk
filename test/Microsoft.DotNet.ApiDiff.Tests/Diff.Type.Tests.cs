@@ -24,6 +24,7 @@ public class DiffTypeTests : DiffBaseTests
                     {
                         public class MyNestedType
                         {
+                            public MyNestedType() { }
                         }
                     }
                 }
@@ -91,6 +92,7 @@ public class DiffTypeTests : DiffBaseTests
                     {
                         public class MyNestedType
                         {
+                            public MyNestedType() { }
                         }
                     }
                 }
@@ -258,7 +260,6 @@ public class DiffTypeTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
 
     [Fact]
@@ -286,7 +287,6 @@ public class DiffTypeTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct1", "T:MyNamespace.MyStruct2"]);
 
     [Fact]
@@ -305,7 +305,6 @@ public class DiffTypeTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "", // The removal is not shown
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["T:MyNamespace.MyStruct"]);
 
     #endregion

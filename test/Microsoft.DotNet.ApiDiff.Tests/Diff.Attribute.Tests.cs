@@ -45,7 +45,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -299,7 +298,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -344,6 +342,7 @@ public class DiffAttributeTests : DiffBaseTests
                 -     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 -     public class MyAttribute1Attribute : System.Attribute
                 -     {
+                -         public MyAttribute1Attribute();
                 -     }
                       public class MyClass
                       {
@@ -354,10 +353,10 @@ public class DiffAttributeTests : DiffBaseTests
                 +     [System.AttributeUsageAttribute(System.AttributeTargets.All)]
                 +     public class MyAttribute2Attribute : System.Attribute
                 +     {
+                +         public MyAttribute2Attribute();
                 +     }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -415,7 +414,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -462,7 +460,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -511,7 +508,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     #endregion
@@ -563,7 +559,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     #endregion
@@ -619,7 +614,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     [Fact]
@@ -674,7 +668,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     //[Fact]
@@ -732,7 +725,6 @@ public class DiffAttributeTests : DiffBaseTests
                       }
                   }
                 """,
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: []);
 
     #endregion
@@ -970,7 +962,6 @@ public class DiffAttributeTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 attributesToExclude: ["T:MyNamespace.MyAttributeAttribute"], // Exclude the attribute decorating other APIs
                 apisToExclude: ["T:MyNamespace.MyAttributeAttribute"]); // Excludes the type definition of the attribute itself
 

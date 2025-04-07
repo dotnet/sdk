@@ -295,7 +295,7 @@ public class DiffNamespaceTests : DiffBaseTests
 
     #region Full names
 
-    [Fact/*(Skip = "Still working on this")*/]
+    [Fact]
     public Task NamespaceUsingDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
@@ -317,13 +317,13 @@ public class DiffNamespaceTests : DiffBaseTests
                 + {
                 +     public class MyAClass
                 +     {
+                +         public MyAClass();
                 +         public void MyMethod(System.Reflection.AssemblyName assemblyName);
                 +     }
                 + }
-                """,
-        hideImplicitDefaultConstructors: true);
+                """);
 
-    [Fact/*(Skip = "Still working on this")*/]
+    [Fact]
     public Task NamespacesSameAssemblyDependencyKeepFullName() =>
         // If the same assembly contains two APIs in two different namespaces, but the two namespaces
         // share a prefix of their name, and a reference to the API from the other namespace is
@@ -350,17 +350,18 @@ public class DiffNamespaceTests : DiffBaseTests
                 + {
                 +     public class MyAClass
                 +     {
+                +         public MyAClass();
                 +     }
                 + }
                 + namespace System.MyNamespaceB
                 + {
                 +     public class MyBClass
                 +     {
+                +         public MyBClass();
                 +         public void MyMethod(System.MyNamespaceA.MyAClass myAClass);
                 +     }
                 + }
-                """,
-        hideImplicitDefaultConstructors: true);
+                """);
 
     #endregion 
 }

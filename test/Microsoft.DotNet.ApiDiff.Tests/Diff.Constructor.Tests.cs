@@ -18,6 +18,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                     }
                 }
                 """,
@@ -26,6 +27,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                         public MyClass(int x)
                         {
                         }
@@ -40,7 +42,7 @@ public class DiffConstructorTests : DiffBaseTests
                 +         public MyClass(int x);
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     [Fact]
     public Task ConstructorChange() => RunTestAsync(
@@ -75,7 +77,7 @@ public class DiffConstructorTests : DiffBaseTests
                 +         public MyClass(int x);
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     [Fact]
     public Task ConstructorDelete() => RunTestAsync(
@@ -84,6 +86,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                         public MyClass(int x)
                         {
                         }
@@ -95,6 +98,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                     }
                 }
                 """,
@@ -106,11 +110,12 @@ public class DiffConstructorTests : DiffBaseTests
                 -         public MyClass(int x);
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     #endregion
 
     #region Primary constructors
+
 
     [Fact]
     public Task PrimaryConstructorAdd() => RunTestAsync(
@@ -119,6 +124,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                     }
                 }
                 """,
@@ -127,6 +133,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass(string x)
                     {
+                        public MyClass() : this("") { }
                         public string X { get; } = x;
                     }
                 }
@@ -140,7 +147,7 @@ public class DiffConstructorTests : DiffBaseTests
                 +         public string X { get; }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     [Fact]
     public Task PrimaryConstructorChange() => RunTestAsync(
@@ -175,7 +182,7 @@ public class DiffConstructorTests : DiffBaseTests
                 +         public MyClass(string x);
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     [Fact]
     public Task PrimaryConstructorDelete() => RunTestAsync(
@@ -184,6 +191,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass(string x)
                     {
+                        public MyClass() : this("") { }
                         public string X { get; } = x;
                     }
                 }
@@ -193,6 +201,7 @@ public class DiffConstructorTests : DiffBaseTests
                 {
                     public class MyClass
                     {
+                        public MyClass() { }
                     }
                 }
                 """,
@@ -205,196 +214,16 @@ public class DiffConstructorTests : DiffBaseTests
                 -         public string X { get; }
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
-
-    #endregion
-
-    #region Hide Default constructors
-
-    [Fact]
-    public Task AddHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                    public class MyClass1
-                    {
-                        public MyClass1() { }
-                    }
-                    public class MyClass2
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                +     public class MyClass1
-                +     {
-                +     }
-                +     public class MyClass2
-                +     {
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task ChangeHideImplicitDefaultConstructors() => RunTestAsync(
-                // This isn't really a modification, but a deletion and an addition, and since
-                // deletions show up before additions, that explains the order of the expected code.
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyBeforeClass1
-                    {
-                        public MyBeforeClass1() { }
-                    }
-                    public class MyBeforeClass2
-                    {
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyAfterClass1
-                    {
-                        public MyAfterClass1() { }
-                    }
-                    public class MyAfterClass2
-                    {
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                -     public class MyBeforeClass1
-                -     {
-                -     }
-                -     public class MyBeforeClass2
-                -     {
-                -     }
-                +     public class MyAfterClass1
-                +     {
-                +     }
-                +     public class MyAfterClass2
-                +     {
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task NestedTypeAddHideImplicitDefaultConstructors() => RunTestAsync(
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public delegate void MyDelegate();
-                    public class MyClass1
-                    {
-                        public class MyNestedClass1
-                        {
-                            public MyNestedClass1() { }
-                        }
-                        public class MyNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                +     public class MyClass1
-                +     {
-                +         public class MyNestedClass1
-                +         {
-                +         }
-                +         public class MyNestedClass2
-                +         {
-                +         }
-                +     }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
-
-    [Fact]
-    public Task NestedTypeChangeHideImplicitDefaultConstructors() => RunTestAsync(
-                // This isn't really a modification, but a deletion and an addition, and since
-                // deletions show up before additions, that explains the order of the expected code.
-                beforeCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass1
-                    {
-                        public class MyBeforeNestedClass1
-                        {
-                            public MyBeforeNestedClass1() { }
-                        }
-                        public class MyBeforeNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                afterCode: """
-                namespace MyNamespace
-                {
-                    public class MyClass1
-                    {
-                        public class MyAfterNestedClass1
-                        {
-                            public MyAfterNestedClass1() { }
-                        }
-                        public class MyAfterNestedClass2
-                        {
-                        }
-                    }
-                }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass1
-                      {
-                -         public class MyBeforeNestedClass1
-                -         {
-                -         }
-                -         public class MyBeforeNestedClass2
-                -         {
-                -         }
-                +         public class MyAfterNestedClass1
-                +         {
-                +         }
-                +         public class MyAfterNestedClass2
-                +         {
-                +         }
-                      }
-                  }
-                """,
-                hideImplicitDefaultConstructors: true);
+                """);
 
     #endregion
 
     #region Visibility
 
     [Fact]
-    public Task DefaultConstructorMakePrivate() => RunTestAsync(
-                beforeCode: """
+    public Task DefaultConstructorMakePrivate()
+    {
+        string beforeCode = """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -404,8 +233,8 @@ public class DiffConstructorTests : DiffBaseTests
                         }
                     }
                 }
-                """,
-                afterCode: """
+                """;
+        string afterCode = """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -415,20 +244,17 @@ public class DiffConstructorTests : DiffBaseTests
                         }
                     }
                 }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                -         public MyClass();
-                      }
-                  }
-                """);
+                """;
+        return RunTestAsync(
+            before: [($"{AssemblyName}.dll", beforeCode)],
+            after: [($"{AssemblyName}.dll", afterCode)],
+            expected: []); // No results expected as the API is not getting removed
+    }
 
     [Fact]
-    public Task DefaultConstructorMakePublic() => RunTestAsync(
-                beforeCode: """
+    public Task DefaultConstructorMakePublic()
+    {
+        string beforeCode = """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -438,8 +264,8 @@ public class DiffConstructorTests : DiffBaseTests
                         }
                     }
                 }
-                """,
-                afterCode: """
+                """;
+        string afterCode = """
                 namespace MyNamespace
                 {
                     public class MyClass
@@ -449,16 +275,12 @@ public class DiffConstructorTests : DiffBaseTests
                         }
                     }
                 }
-                """,
-                expectedCode: """
-                  namespace MyNamespace
-                  {
-                      public class MyClass
-                      {
-                +         public MyClass();
-                      }
-                  }
-                """);
+                """;
+        return RunTestAsync(
+            before: [($"{AssemblyName}.dll", beforeCode)],
+            after: [($"{AssemblyName}.dll", afterCode)],
+            expected: []); // No results expected as the API is not getting added
+    }
 
     #endregion
 }

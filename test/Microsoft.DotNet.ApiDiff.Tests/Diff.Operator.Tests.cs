@@ -629,7 +629,6 @@ public class DiffOperatorTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
 
     [Fact]
@@ -653,7 +652,6 @@ public class DiffOperatorTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32", "M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Byte"]);
 
     [Fact]
@@ -676,7 +674,6 @@ public class DiffOperatorTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Int32"]);
 
     [Fact]
@@ -702,7 +699,6 @@ public class DiffOperatorTests : DiffBaseTests
                 }
                 """,
                 expectedCode: "",
-                hideImplicitDefaultConstructors: true,
                 apisToExclude: ["M:MyNamespace.MyClass.op_Explicit(MyNamespace.MyClass)~System.Byte"]);
 
     #endregion

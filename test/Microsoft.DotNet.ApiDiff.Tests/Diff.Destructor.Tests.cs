@@ -34,7 +34,7 @@ public class DiffDestructorTests : DiffBaseTests
                 +         ~MyClass();
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
     [Fact]
     public Task DestructorDelete() => RunTestAsync(
@@ -65,6 +65,6 @@ public class DiffDestructorTests : DiffBaseTests
                 -         ~MyClass();
                       }
                   }
-                """, hideImplicitDefaultConstructors: true);
+                """);
 
 }

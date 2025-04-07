@@ -39,6 +39,38 @@ public class DiffClassTests : DiffBaseTests
                 """);
 
     [Fact]
+    public Task ClassAddWithDefaultConstructor() => RunTestAsync(
+                beforeCode: """
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                    public class MyAddedClass
+                    {
+                        public MyAddedClass() { }
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     public class MyAddedClass
+                +     {
+                +         public MyAddedClass();
+                +     }
+                  }
+                """);
+
+    [Fact]
     public Task ClassChange() => RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
