@@ -13,7 +13,7 @@ internal static class ToolConfigurationDeserializer
 {
     // The supported tool configuration schema version.
     // This should match the schema version in the GenerateToolsSettingsFile task from the SDK.
-    private const int SupportedVersion = 1;
+    private const int SupportedVersion = 2;
 
     public static ToolConfiguration Deserialize(string pathToXml)
     {
