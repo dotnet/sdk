@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tools.Build
 
         public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
         {
-            var parser = Cli.Parser.Instance;
+            var parser = Parser.Instance;
             var parseResult = parser.ParseFrom("dotnet build", args);
             return FromParseResult(parseResult, msbuildPath);
         }
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tools.Build
         public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
         {
             PerformanceLogEventSource.Log.CreateBuildCommandStart();
-             
+
             var msbuildArgs = new List<string>();
 
             parseResult.ShowHelpOrErrorIfAppropriate();
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Tools.Build
 
             bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
-            BuildCommand command = new BuildCommand(
+            BuildCommand command = new(
                 msbuildArgs,
                 noRestore,
                 msbuildPath);

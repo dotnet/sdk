@@ -27,6 +27,16 @@ namespace Microsoft.DotNet.Cli
             Hidden = true
         };
 
+        public static readonly CliOption<int> FromHistoryOption = new("--from-history")
+        {
+            Description = LocalizableStrings.FromHistoryOptionDescription
+        };
+
+        public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+        {
+            Description = LocalizableStrings.HistoryManifestOnlyOptionDescription
+        };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -48,6 +58,8 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(CommonOptions.VerbosityOption);
             command.Options.Add(PrintRollbackOption);
             command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
+            command.Options.Add(FromHistoryOption);
+            command.Options.Add(HistoryManifestOnlyOption);
 
             command.SetAction((parseResult) => new WorkloadUpdateCommand(parseResult).Execute());
 
