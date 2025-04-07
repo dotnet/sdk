@@ -872,23 +872,9 @@ stages:
             targetArchitecture: arm64
             extraProperties: /p:PgoInstrument=true
 
-        # Build Pass 2 verticals
+        ## Build Pass 2 verticals
 
-        - template: ../jobs/vmr-build.yml
-          parameters:
-            buildName: Windows
-            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
-            vmrBranch: ${{ variables.VmrBranch }}
-            sign: ${{ variables.signEnabled }}
-            pool: ${{ parameters.pool_Windows }}
-            targetOS: windows
-            targetArchitecture: x64
-            buildPass: 2
-            reuseBuildArtifactsFrom:
-            - Windows_x64
-            - Windows_x86
-            - Windows_arm64
-
+        # build the cross-OS DACs
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Windows
@@ -911,6 +897,89 @@ stages:
             - AzureLinux_x64_Cross_arm
             - AzureLinux_x64_Cross_Alpine_arm
 
+        # build the ASP.NET Core hosting bundle and VS components
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            buildPass: 2
+            reuseBuildArtifactsFrom:
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
+
+        # build the workloads
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows_Workloads
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            buildPass: 2
+            extraProperties: /p:DotNetBuildBuildWorkloads=true
+            reuseBuildArtifactsFrom:
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
+            - Browser_Shortstack_wasm
+            - Browser_Multithreaded_Shortstack_wasm
+            - Wasi_Shortstack_wasm
+            - Android_Shortstack_arm64
+            - Android_Shortstack_arm
+            - Android_Shortstack_x64
+            - Android_Shortstack_x86
+            - iOS_Shortstack_arm64
+            - iOSSimulator_Shortstack_arm64
+            - iOSSimulator_Shortstack_x64
+            - tvOS_Shortstack_arm64
+            - tvOSSimulator_Shortstack_arm64
+            - tvOSSimulator_Shortstack_x64
+            - MacCatalyst_Shortstack_arm64
+            - MacCatalyst_Shortstack_x64
+
+        ## Build Pass 3 verticals
+
+        # build the Windows SDK bundles
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x64
+            buildPass: 3
+            reuseBuildArtifactsFrom:
+            - Windows_Workloads_x64_BuildPass2
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
+
+        - template: ../jobs/vmr-build.yml
+          parameters:
+            buildName: Windows
+            isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+            vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            pool: ${{ parameters.pool_Windows }}
+            targetOS: windows
+            targetArchitecture: x86
+            buildPass: 3
+            reuseBuildArtifactsFrom:
+            - Windows_Workloads_x64_BuildPass2
+            - Windows_x64
+            - Windows_x86
+            - Windows_arm64
+
         - template: ../jobs/vmr-build.yml
           parameters:
             buildName: Windows
@@ -920,8 +989,9 @@ stages:
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
-            buildPass: 2
+            buildPass: 3
             reuseBuildArtifactsFrom:
+            - Windows_Workloads_x64_BuildPass2
             - Windows_x64
             - Windows_x86
             - Windows_arm64

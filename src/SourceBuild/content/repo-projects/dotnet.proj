@@ -15,18 +15,24 @@
   </ItemGroup>
 
   <!-- Build the cross-OS DACs. -->
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">
+  <ItemGroup Condition="'$(DotNetBuildBuildWorkloads)' != 'true' and '$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x86'">
     <RepositoryReference Include="runtime" DotNetBuildPass="2" />
   </ItemGroup>
 
-  <!-- Build the windows bundle and VS components. -->
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows'">
+  <!-- Build the ASP.NET Core hosting bundle and VS components. -->
+  <ItemGroup Condition="'$(DotNetBuildBuildWorkloads)' != 'true' and '$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
+    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
     <RepositoryReference Include="sdk" DotNetBuildPass="2" />
   </ItemGroup>
 
-  <!-- Build the ASP.NET Core hosting bundle -->
-  <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and '$(TargetOS)' == 'windows' and '$(TargetArchitecture)' == 'x64'">
-    <RepositoryReference Include="aspnetcore" DotNetBuildPass="2" />
+  <!-- Build the workloads. -->
+  <ItemGroup Condition="'$(DotNetBuildBuildWorkloads)' == 'true'">
+    <RepositoryReference Include="sdk" DotNetBuildPass="2" />
+  </ItemGroup>
+
+  <!-- Build the windows SDK bundle. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '3' and '$(TargetOS)' == 'windows'">
+    <RepositoryReference Include="sdk" DotNetBuildPass="3" />
   </ItemGroup>
 
 </Project>
