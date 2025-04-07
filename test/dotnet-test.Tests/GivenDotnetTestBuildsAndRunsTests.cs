@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
@@ -203,7 +204,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
+                result.StdOut.Should().Contain(string.Format(CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription, "AnotherTestProject.csproj"));
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -223,7 +224,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -243,7 +244,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
@@ -263,7 +264,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!TestContext.IsLocalized())
             {
-                result.StdOut.Should().Contain(Tools.Test.LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+                result.StdOut.Should().Contain(CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);

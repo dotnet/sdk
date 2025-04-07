@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.List;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.List.Package;
 
@@ -18,7 +17,7 @@ internal static class ListPackageReferencesCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("package", LocalizableStrings.AppFullName);
+        CliCommand command = new("package", CliCommandStrings.PackageListAppFullName);
 
         command.Options.Add(PackageListCommandParser.VerbosityOption);
         command.Options.Add(PackageListCommandParser.OutdatedOption);

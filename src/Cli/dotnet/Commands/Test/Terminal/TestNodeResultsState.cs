@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -37,9 +36,9 @@ internal sealed class TestNodeResultsState(long id)
             _summaryDetail.Text =
                 itemsToTake == 0
                     // Note: If itemsToTake is 0, then we only show two lines, the project summary and the number of running tests.
-                    ? string.Format(CultureInfo.CurrentCulture, LocalizableStrings.ActiveTestsRunning_FullTestsCount, sortedDetails.Count)
+                    ? string.Format(CultureInfo.CurrentCulture, CliCommandStrings.ActiveTestsRunning_FullTestsCount, sortedDetails.Count)
                     // If itemsToTake is larger, then we show the project summary, active tests, and the number of active tests that are not shown.
-                    : $"... {string.Format(CultureInfo.CurrentCulture, LocalizableStrings.ActiveTestsRunning_MoreTestsCount, sortedDetails.Count - itemsToTake)}";
+                    : $"... {string.Format(CultureInfo.CurrentCulture, CliCommandStrings.ActiveTestsRunning_MoreTestsCount, sortedDetails.Count - itemsToTake)}";
             sortedDetails = [.. sortedDetails.Take(itemsToTake)];
         }
 

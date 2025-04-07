@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.Cli.Project.Convert.Tests;
 
