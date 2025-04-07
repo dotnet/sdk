@@ -1,0 +1,63 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
+Date: Mon, 7 Apr 2025 16:13:05 -0700
+Subject: [PATCH] IDE0031 fixes
+
+Backport: https://github.com/dotnet/aspnetcore/pull/61244
+---
+ src/Http/Http/src/HttpContextAccessor.cs           | 8 ++------
+ src/Shared/HttpExtensions.cs                       | 6 +-----
+ src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs | 5 +----
+ 3 files changed, 4 insertions(+), 15 deletions(-)
+
+diff --git a/src/Http/Http/src/HttpContextAccessor.cs b/src/Http/Http/src/HttpContextAccessor.cs
+index f71a6ef7c0..d306a8dbeb 100644
+--- a/src/Http/Http/src/HttpContextAccessor.cs
++++ b/src/Http/Http/src/HttpContextAccessor.cs
+@@ -22,12 +22,8 @@ public class HttpContextAccessor : IHttpContextAccessor
+         }
+         set
+         {
+-            var holder = _httpContextCurrent.Value;
+-            if (holder != null)
+-            {
+-                // Clear current HttpContext trapped in the AsyncLocals, as its done.
+-                holder.Context = null;
+-            }
++            // Clear current HttpContext trapped in the AsyncLocals, as its done.
++            _httpContextCurrent.Value?.Context = null;
+ 
+             if (value != null)
+             {
+diff --git a/src/Shared/HttpExtensions.cs b/src/Shared/HttpExtensions.cs
+index 4a0d50de25..3e2bde30e8 100644
+--- a/src/Shared/HttpExtensions.cs
++++ b/src/Shared/HttpExtensions.cs
+@@ -58,10 +58,6 @@ internal static class HttpExtensions
+             context.SetEndpoint(endpoint: null);
+         }
+ 
+-        var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+-        if (routeValuesFeature != null)
+-        {
+-            routeValuesFeature.RouteValues = null!;
+-        }
++        context.Features.Get<IRouteValuesFeature>()?.RouteValues = null!;
+     }
+ }
+diff --git a/src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs b/src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs
+index 79ca7f05c9..d32affe119 100644
+--- a/src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs
++++ b/src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs
+@@ -18,10 +18,7 @@ public class JwtStore
+         Load();
+ 
+         // For testing.
+-        if (program is not null)
+-        {
+-            program.UserJwtsFilePath = _filePath;
+-        }
++        program?.UserJwtsFilePath = _filePath;
+     }
+ 
+     public IDictionary<string, Jwt> Jwts { get; private set; } = new Dictionary<string, Jwt>();

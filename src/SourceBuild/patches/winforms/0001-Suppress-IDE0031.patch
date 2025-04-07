@@ -1,0 +1,40 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
+Date: Mon, 7 Apr 2025 15:47:55 -0700
+Subject: [PATCH] Suppress IDE0031
+
+Backport: https://github.com/dotnet/winforms/pull/13260
+---
+ .../src/System/Private/Windows/Ole/FormatEnumerator.cs        | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/System.Private.Windows.Core/src/System/Private/Windows/Ole/FormatEnumerator.cs b/src/System.Private.Windows.Core/src/System/Private/Windows/Ole/FormatEnumerator.cs
+index d156f88ff..7137d8746 100644
+--- a/src/System.Private.Windows.Core/src/System/Private/Windows/Ole/FormatEnumerator.cs
++++ b/src/System.Private.Windows.Core/src/System/Private/Windows/Ole/FormatEnumerator.cs
+@@ -56,10 +56,12 @@ internal unsafe class FormatEnumerator : ComTypes.IEnumFORMATETC, IEnumFORMATETC
+     {
+         if (_current >= _formats.Count || celt <= 0)
+         {
++#pragma warning disable IDE0031
+             if (pceltFetched is not null)
+             {
+                 pceltFetched[0] = 0;
+             }
++#pragma warning restore IDE0031
+ 
+             return (int)HRESULT.S_FALSE;
+         }
+@@ -74,10 +76,12 @@ internal unsafe class FormatEnumerator : ComTypes.IEnumFORMATETC, IEnumFORMATETC
+             lindex = -1
+         };
+ 
++#pragma warning disable IDE0031
+         if (pceltFetched is not null)
+         {
+             pceltFetched[0] = 1;
+         }
++#pragma warning restore IDE0031
+ 
+         _current++;
+         return (int)HRESULT.S_OK;
