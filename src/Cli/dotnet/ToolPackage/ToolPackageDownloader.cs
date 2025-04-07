@@ -329,6 +329,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             Name = packageId.ToString(),
             Version = version,
             Type = LibraryType.Package,
+            //  TODO: What about DotnetToolRidPackage type?
             PackageType = [PackageType.DotnetTool]
         };
 
@@ -358,6 +359,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         managedCriteria.Add(standardCriteria);
 
         //  Create asset file
+        //  TODO: What about DotnetToolRidPackage type?
         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
         {
             AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
