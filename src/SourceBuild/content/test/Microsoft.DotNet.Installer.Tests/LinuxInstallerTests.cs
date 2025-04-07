@@ -220,7 +220,7 @@ public class LinuxInstallerTests : IDisposable
         string hostLogDir = Path.Combine(Config.ArtifactsTestResultsDirectory, "scenario-tests");
         Directory.CreateDirectory(hostLogDir);
         string containerLogDir = "/logs";
-        string containerLogPath = Path.Combine(containerLogDir, $"scenario-tests-{GetSanitatizedImageName(baseImage)}.xml");
+        string containerLogPath = Path.Combine(containerLogDir, $"scenario-tests-{GetSanitizedImageName(baseImage)}.xml");
 
         string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/ --xml {containerLogPath}";
 
@@ -399,7 +399,7 @@ public class LinuxInstallerTests : IDisposable
         return files.OrderByDescending(f => f).First();
     }
 
-    private static string GetSanitatizedImageName(string image) =>
+    private static string GetSanitizedImageName(string image) =>
         image.Replace("/", "_").Replace(":", "_").Replace(".", "_");
 
     private static async Task DownloadFileAsync(string url, string filePath)
