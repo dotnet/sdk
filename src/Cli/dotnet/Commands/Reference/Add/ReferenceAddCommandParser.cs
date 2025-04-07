@@ -25,7 +25,7 @@ internal static class ReferenceAddCommandParser
         Description = LocalizableStrings.CmdFrameworkDescription,
         HelpName = CommonLocalizableStrings.CmdFramework
 
-    }.AddCompletions(Complete.CliCompletion.TargetFrameworksFromProjectFile);
+    }.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
 

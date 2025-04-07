@@ -3,6 +3,8 @@
 
 using Microsoft.DotNet.Tools.Help;
 
+namespace Microsoft.DotNet.Cli;
+
 internal static class CliUsage
 {
     public static readonly string HelpText =

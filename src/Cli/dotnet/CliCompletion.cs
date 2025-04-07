@@ -6,7 +6,7 @@ using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using static System.Array;
 
-namespace Microsoft.DotNet.Cli.Commands.Complete;
+namespace Microsoft.DotNet.Cli;
 
 internal static class CliCompletion
 {

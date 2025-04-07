@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
@@ -195,7 +194,7 @@ internal static class RestoreCommandParser
                 Hidden = !showHelp,
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
              .AllowSingleArgPerToken()
-             .AddCompletions(Complete.CliCompletion.RunTimesFromProjectFile);
+             .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
             if (useShortOptions)
             {
