@@ -18,7 +18,7 @@ internal class SolutionRemoveCommand : CommandBase
     {
         _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
 
-        _projects = (parseResult.GetValue(SolutionRemoveParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
+        _projects = (parseResult.GetValue(SolutionRemoveCommandParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
 
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Remove);
     }

@@ -14,6 +14,7 @@ internal static class SolutionArgumentValidator
         Add,
         Remove
     }
+
     public static void ParseAndValidateArguments(string _fileOrDirectory, IReadOnlyCollection<string> _arguments, CommandType commandType, bool _inRoot = false, string relativeRoot = null)
     {
         if (_arguments.Count == 0)
@@ -36,11 +37,11 @@ internal static class SolutionArgumentValidator
             string args;
             if (_inRoot)
             {
-                args = $"--{SolutionAddParser.InRootOption.Name} ";
+                args = $"--{SolutionAddCommandParser.InRootOption.Name} ";
             }
             else if (hasRelativeRoot)
             {
-                args = $"--{SolutionAddParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
+                args = $"--{SolutionAddCommandParser.SolutionFolderOption.Name} {string.Join(" ", relativeRoot)} ";
             }
             else
             {

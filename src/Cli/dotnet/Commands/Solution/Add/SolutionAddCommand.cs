@@ -32,9 +32,9 @@ internal class SolutionAddCommand : CommandBase
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
-        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddParser.ProjectPathArgument) ?? []);
-        _inRoot = parseResult.GetValue(SolutionAddParser.InRootOption);
-        _solutionFolderPath = parseResult.GetValue(SolutionAddParser.SolutionFolderOption);
+        _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
+        _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
+        _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
     }
 

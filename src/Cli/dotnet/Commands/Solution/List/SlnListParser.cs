@@ -6,7 +6,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-public static class SolutionListParser
+public static class SolutionListCommandParser
 {
     public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders")
     {

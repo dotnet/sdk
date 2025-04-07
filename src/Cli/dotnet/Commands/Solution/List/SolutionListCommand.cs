@@ -12,7 +12,7 @@ internal class SolutionListCommand(
     ParseResult parseResult) : CommandBase(parseResult)
 {
     private readonly string _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
-    private readonly bool _displaySolutionFolders = parseResult.GetValue(SolutionListParser.SolutionFolderOption);
+    private readonly bool _displaySolutionFolders = parseResult.GetValue(SolutionListCommandParser.SolutionFolderOption);
 
     public override int Execute()
     {

@@ -38,9 +38,9 @@ internal static class SolutionCommandParser
         command.Aliases.Add(CommandAlias);
 
         command.Arguments.Add(SlnArgument);
-        command.Subcommands.Add(SolutionAddParser.GetCommand());
-        command.Subcommands.Add(SolutionListParser.GetCommand());
-        command.Subcommands.Add(SolutionRemoveParser.GetCommand());
+        command.Subcommands.Add(SolutionAddCommandParser.GetCommand());
+        command.Subcommands.Add(SolutionListCommandParser.GetCommand());
+        command.Subcommands.Add(SolutionRemoveCommandParser.GetCommand());
         command.Subcommands.Add(SolutionMigrateCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());

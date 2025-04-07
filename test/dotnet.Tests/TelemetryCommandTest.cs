@@ -364,7 +364,7 @@ namespace Microsoft.DotNet.Tests
             FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
-            InternalReportInstallSuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);
+            InternalReportInstallSuccessCommand.ProcessInputAndSendTelemetry(args, fakeTelemetry);
 
             fakeTelemetry
                 .LogEntries.Should()

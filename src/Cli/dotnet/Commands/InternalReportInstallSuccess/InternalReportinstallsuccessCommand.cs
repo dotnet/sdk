@@ -9,7 +9,7 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
 
-public class InternalReportInstallSuccess
+public class InternalReportInstallSuccessCommand
 {
     internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
 

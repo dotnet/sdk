@@ -25,7 +25,7 @@ internal static class InternalReportInstallSuccessCommandParser
 
         command.Arguments.Add(Argument);
 
-        command.SetAction(InternalReportInstallSuccess.Run);
+        command.SetAction(InternalReportInstallSuccessCommand.Run);
 
         return command;
     }
