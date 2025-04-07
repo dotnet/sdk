@@ -30,11 +30,11 @@ namespace Microsoft.DotNet.Cli
             var versionString = token.Substring(versionSeparatorIndex + 1);
             if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(versionString))
             {
-                throw new ArgumentException("Package id and version must be non-empty.");
+                throw new ArgumentException(CommonLocalizableStrings.PackageIdentityArgumentIdOrVersionIsNull);
             }
             if (!NuGetVersion.TryParse(versionString, out var version))
             {
-                throw new ArgumentException($"Invalid version string: {versionString}");
+                throw new ArgumentException(string.Format(CommonLocalizableStrings.InvalidVersion, versionString));
             }
             return new(packageId, new NuGetVersion(version));
         }
@@ -43,7 +43,7 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version.ToString()) &&
                 !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
             {
-                throw new ArgumentException("TODO: Cannot specify --version when the package argument already contains a version.");
+                throw new ArgumentException(CommonLocalizableStrings.PackageIdentityArgumentVersionOptionConflict);
             }
         }
         #endregion
