@@ -32,7 +32,7 @@ internal static class PackageRemoveCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new RemovePackageReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
 
         return command;
     }

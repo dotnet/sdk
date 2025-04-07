@@ -9,12 +9,12 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-internal class RemoveProjectToProjectReferenceCommand : CommandBase
+internal class ReferenceRemoveCommand : CommandBase
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
 
-    public RemoveProjectToProjectReferenceCommand(
+    public ReferenceRemoveCommand(
         ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?

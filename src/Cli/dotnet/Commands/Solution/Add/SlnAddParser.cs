@@ -40,7 +40,7 @@ public static class SlnAddParser
         command.Options.Add(InRootOption);
         command.Options.Add(SolutionFolderOption);
 
-        command.SetAction((parseResult) => new AddProjectToSolutionCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new SolutionAddCommand(parseResult).Execute());
 
         return command;
     }

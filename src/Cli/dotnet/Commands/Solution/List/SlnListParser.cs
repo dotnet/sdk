@@ -26,7 +26,7 @@ public static class SlnListParser
         CliCommand command = new("list", LocalizableStrings.ListAppFullName);
 
         command.Options.Add(SolutionFolderOption);
-        command.SetAction((parseResult) => new ListProjectsInSolutionCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new SolutionListCommand(parseResult).Execute());
 
         return command;
     }

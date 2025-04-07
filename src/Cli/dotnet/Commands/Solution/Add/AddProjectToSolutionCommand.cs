@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
-internal class AddProjectToSolutionCommand : CommandBase
+internal class SolutionAddCommand : CommandBase
 {
     private static readonly string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
     private static readonly string[] _defaultBuildTypes = ["Debug", "Release"];
@@ -29,7 +29,7 @@ internal class AddProjectToSolutionCommand : CommandBase
         return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(path).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
     }
 
-    public AddProjectToSolutionCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
         _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SlnAddParser.ProjectPathArgument) ?? []);

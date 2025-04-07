@@ -23,7 +23,7 @@ internal static class RemovePackageParser
         command.Arguments.Add(PackageRemoveCommandParser.CmdPackageArgument);
         command.Options.Add(PackageRemoveCommandParser.InteractiveOption);
 
-        command.SetAction((parseResult) => new RemovePackageReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new PackageRemoveCommand(parseResult).Execute());
 
         return command;
     }

@@ -44,7 +44,7 @@ internal static class ReferenceAddCommandParser
         command.Options.Add(FrameworkOption);
         command.Options.Add(InteractiveOption);
 
-        command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 
         return command;
     }

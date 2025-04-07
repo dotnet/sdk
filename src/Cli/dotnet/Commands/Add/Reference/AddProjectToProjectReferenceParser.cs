@@ -26,7 +26,7 @@ internal static class AddProjectToProjectReferenceParser
         command.Options.Add(ReferenceAddCommandParser.InteractiveOption);
         command.Options.Add(ReferenceCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 
         return command;
     }

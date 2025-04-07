@@ -10,12 +10,12 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Package.Remove.LocalizableStri
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-internal class RemovePackageReferenceCommand : CommandBase
+internal class PackageRemoveCommand : CommandBase
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
 
-    public RemovePackageReferenceCommand(
+    public PackageRemoveCommand(
         ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.HasOption(PackageCommandParser.ProjectOption) ?

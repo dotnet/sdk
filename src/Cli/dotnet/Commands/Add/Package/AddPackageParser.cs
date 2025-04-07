@@ -38,11 +38,11 @@ internal static class AddPackageParser
             // if the option is not present, we use the argument value instead.
             if (parseResult.HasOption(PackageCommandParser.ProjectOption))
             {
-                return new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute();
+                return new PackageAddCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute();
             }
             else
             {
-                return new AddPackageReferenceCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
+                return new PackageAddCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
             }
         });
 

@@ -34,7 +34,7 @@ internal static class ReferenceRemoveCommandParser
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
 
-        command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }

@@ -9,12 +9,12 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
-internal class RemoveProjectFromSolutionCommand : CommandBase
+internal class SolutionRemoveCommand : CommandBase
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _projects;
 
-    public RemoveProjectFromSolutionCommand(ParseResult parseResult) : base(parseResult)
+    public SolutionRemoveCommand(ParseResult parseResult) : base(parseResult)
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 

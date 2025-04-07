@@ -8,7 +8,7 @@ using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
-internal class ListProjectsInSolutionCommand(
+internal class SolutionListCommand(
     ParseResult parseResult) : CommandBase(parseResult)
 {
     private readonly string _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);

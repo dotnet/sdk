@@ -28,7 +28,7 @@ public static class SlnRemoveParser
 
         command.Arguments.Add(ProjectPathArgument);
 
-        command.SetAction((parseResult) => new RemoveProjectFromSolutionCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new SolutionRemoveCommand(parseResult).Execute());
 
         return command;
     }
