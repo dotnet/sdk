@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer;
 
@@ -21,7 +20,7 @@ internal static class BuildServerCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("build-server", DocsLink, LocalizableStrings.CommandDescription);
+        var command = new DocumentedCommand("build-server", DocsLink, CliCommandStrings.BuildServerCommandDescription);
 
         command.Subcommands.Add(BuildServerShutdownCommandParser.GetCommand());
 

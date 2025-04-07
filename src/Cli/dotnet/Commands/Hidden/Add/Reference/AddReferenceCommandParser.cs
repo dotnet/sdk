@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Add.Reference;
 
@@ -19,7 +18,7 @@ internal static class AddReferenceCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("reference", LocalizableStrings.AppFullName);
+        CliCommand command = new("reference", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandParser.FrameworkOption);

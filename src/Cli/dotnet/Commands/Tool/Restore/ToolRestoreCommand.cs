@@ -11,7 +11,6 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Restore;
 
@@ -98,7 +97,7 @@ internal class ToolRestoreCommand : CommandBase
             }
 
             _reporter.WriteLine(e.Message.Yellow());
-            _reporter.WriteLine(LocalizableStrings.NoToolsWereRestored.Yellow());
+            _reporter.WriteLine(CliCommandStrings.NoToolsWereRestored.Yellow());
             return 0;
         }
 
@@ -129,7 +128,7 @@ internal class ToolRestoreCommand : CommandBase
             return ToolRestoreResult.Success(
                 saveToCache: [],
                 message: string.Format(
-                    LocalizableStrings.RestoreSuccessful, package.PackageId,
+                    CliCommandStrings.RestoreSuccessful, package.PackageId,
                     package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
         }
 
@@ -151,7 +150,7 @@ internal class ToolRestoreCommand : CommandBase
             if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
             {
                 return ToolRestoreResult.Failure(
-                    string.Format(LocalizableStrings.CommandsMismatch,
+                    string.Format(CliCommandStrings.CommandsMismatch,
                         JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
                         package.PackageId,
                         toolPackage.Command.Name));
@@ -167,7 +166,7 @@ internal class ToolRestoreCommand : CommandBase
                         toolPackage.Command.Name),
                     toolPackage.Command)],
                 message: string.Format(
-                    LocalizableStrings.RestoreSuccessful,
+                    CliCommandStrings.RestoreSuccessful,
                     package.PackageId,
                     package.Version.ToNormalizedString(),
                     string.Join(" ", package.CommandNames)));
@@ -197,8 +196,8 @@ internal class ToolRestoreCommand : CommandBase
 
             _errorReporter.WriteLine(Environment.NewLine +
                                      (toolRestoreResults.Any(r => r.IsSuccess)
-                                         ? LocalizableStrings.RestorePartiallyFailed
-                                         : LocalizableStrings.RestoreFailed).Red());
+                                         ? CliCommandStrings.RestorePartiallyFailed
+                                         : CliCommandStrings.RestoreFailed).Red());
 
             return 1;
         }
@@ -207,7 +206,7 @@ internal class ToolRestoreCommand : CommandBase
             _reporter.WriteLine(string.Join(Environment.NewLine,
                 toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
             _reporter.WriteLine();
-            _reporter.WriteLine(LocalizableStrings.LocalToolsRestoreWasSuccessful.Green());
+            _reporter.WriteLine(CliCommandStrings.LocalToolsRestoreWasSuccessful.Green());
 
             return 0;
         }
@@ -277,11 +276,11 @@ internal class ToolRestoreCommand : CommandBase
             .GroupBy(packageIdAndCommandName => packageIdAndCommandName.CommandName)
             .Where(grouped => grouped.Count() > 1)
             .Select(nonUniquePackageIdAndCommandNames =>
-                string.Format(LocalizableStrings.PackagesCommandNameCollisionConclusion,
+                string.Format(CliCommandStrings.PackagesCommandNameCollisionConclusion,
                     string.Join(Environment.NewLine,
                         nonUniquePackageIdAndCommandNames.Select(
                             p => "\t" + string.Format(
-                                LocalizableStrings.PackagesCommandNameCollisionForOnePackage,
+                                CliCommandStrings.PackagesCommandNameCollisionForOnePackage,
                                 p.CommandName.Value,
                                 p.PackageId.ToString())))))];
 
@@ -342,7 +341,7 @@ internal class ToolRestoreCommand : CommandBase
             ToolPackageException toolPackageException)
         {
             return new ToolRestoreResult(null, false,
-                string.Format(LocalizableStrings.PackageFailedToRestore,
+                string.Format(CliCommandStrings.PackageFailedToRestore,
                     packageId.ToString(), toolPackageException.ToString()));
         }
     }

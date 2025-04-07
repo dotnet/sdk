@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
@@ -37,7 +36,7 @@ internal class PackageListCommand(
         mutexOptionCount += parseResult.HasOption(PackageListCommandParser.VulnerableOption) ? 1 : 0;
         if (mutexOptionCount > 1)
         {
-            throw new GracefulException(LocalizableStrings.OptionsCannotBeCombined);
+            throw new GracefulException(CliCommandStrings.OptionsCannotBeCombined);
         }
     }
 
@@ -74,7 +73,7 @@ internal class PackageListCommand(
             //If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
             if (possibleSolutionPath.Count() > 1)
             {
-                throw new GracefulException(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, resultPath);
+                throw new GracefulException(CliStrings.MoreThanOneSolutionInDirectory, resultPath);
             }
             //If a single solution is found, use it.
             else if (possibleSolutionPath.Count() == 1)
@@ -91,7 +90,7 @@ internal class PackageListCommand(
                 //No projects found throws an error that no sln nor projs were found
                 if (possibleProjectPath.Count() == 0)
                 {
-                    throw new GracefulException(LocalizableStrings.NoProjectsOrSolutions, resultPath);
+                    throw new GracefulException(CliCommandStrings.NoProjectsOrSolutions, resultPath);
                 }
                 //A single project found, use it
                 else if (possibleProjectPath.Count() == 1)
@@ -101,14 +100,14 @@ internal class PackageListCommand(
                 //More than one project found. Not sure which one to choose
                 else
                 {
-                    throw new GracefulException(CommonLocalizableStrings.MoreThanOneProjectInDirectory, resultPath);
+                    throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, resultPath);
                 }
             }
         }
 
         if (!File.Exists(resultPath))
         {
-            throw new GracefulException(LocalizableStrings.FileNotFound, resultPath);
+            throw new GracefulException(CliCommandStrings.PackageListFileNotFound, resultPath);
         }
 
         return resultPath;

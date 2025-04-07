@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
@@ -24,7 +23,7 @@ internal class SolutionListCommand(
         }
         catch (Exception ex)
         {
-            throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+            throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
         }
     }
 
@@ -44,13 +43,13 @@ internal class SolutionListCommand(
         }
         if (paths.Length == 0)
         {
-            Reporter.Output.WriteLine(CommonLocalizableStrings.NoProjectsFound);
+            Reporter.Output.WriteLine(CliStrings.NoProjectsFound);
         }
         else
         {
             Array.Sort(paths);
 
-            string header = _displaySolutionFolders ? LocalizableStrings.SolutionFolderHeader : LocalizableStrings.ProjectsHeader;
+            string header = _displaySolutionFolders ? CliCommandStrings.SolutionFolderHeader : CliCommandStrings.ProjectsHeader;
             Reporter.Output.WriteLine(header);
             Reporter.Output.WriteLine(new string('-', header.Length));
             foreach (string slnProject in paths)

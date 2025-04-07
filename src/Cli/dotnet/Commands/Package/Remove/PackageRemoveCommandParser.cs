@@ -3,15 +3,14 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Package.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
 internal static class PackageRemoveCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(Tools.Package.Add.LocalizableStrings.CmdPackage)
+    public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
     {
-        Description = LocalizableStrings.AppHelpText,
+        Description = CliCommandStrings.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
     };
 
@@ -26,7 +25,7 @@ internal static class PackageRemoveCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("remove", LocalizableStrings.AppFullName);
+        var command = new CliCommand("remove", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(InteractiveOption);

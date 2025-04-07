@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Add.LocalizableStrings;
 using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.Add;
@@ -45,7 +44,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
             catch (IOException ioex)
             {
                 // Catch IOException from Path.GetTempFileName() and throw a graceful exception to the user.
-                throw new GracefulException(string.Format(LocalizableStrings.CmdDGFileIOException, projectFilePath), ioex);
+                throw new GracefulException(string.Format(CliCommandStrings.CmdDGFileIOException, projectFilePath), ioex);
             }
 
             GetProjectDependencyGraph(projectFilePath, tempDgFilePath);
@@ -88,7 +87,7 @@ internal class PackageAddCommand(ParseResult parseResult, string fileOrDirectory
 
         if (result != 0)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.CmdDGFileException, projectFilePath));
+            throw new GracefulException(string.Format(CliCommandStrings.CmdDGFileException, projectFilePath));
         }
     }
 

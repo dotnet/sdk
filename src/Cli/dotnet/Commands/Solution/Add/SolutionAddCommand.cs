@@ -42,13 +42,13 @@ internal class SolutionAddCommand : CommandBase
     {
         if (_projects.Count == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
+            throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToAdd);
         }
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
 
         try
         {
-            PathUtility.EnsureAllPathsExist(_projects, CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
+            PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
             IEnumerable<string> fullProjectPaths = _projects.Select(project =>
             {
                 var fullPath = Path.GetFullPath(project);
@@ -62,7 +62,7 @@ internal class SolutionAddCommand : CommandBase
             {
                 if (ex is SolutionException || ex.InnerException is SolutionException)
                 {
-                    throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                    throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
                 }
                 throw new GracefulException(ex.Message, ex);
             }
@@ -120,11 +120,11 @@ internal class SolutionAddCommand : CommandBase
             }
             catch (InvalidProjectFileException ex)
             {
-                Reporter.Error.WriteLine(string.Format(CommonLocalizableStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
+                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
             }
             catch (SolutionArgumentException ex) when (solution.FindProject(relativePath) != null || ex.Type == SolutionErrorType.DuplicateProjectName)
             {
-                Reporter.Output.WriteLine(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
+                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
             }
         }
         await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
@@ -134,6 +134,7 @@ internal class SolutionAddCommand : CommandBase
     {
         // Open project instance to see if it is a valid project
         ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
+        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
         SolutionProjectModel project;
         try
         {
@@ -142,16 +143,15 @@ internal class SolutionAddCommand : CommandBase
         catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
         {
             // If guid is not identified by vs-solutionpersistence, check in project element itself
-            var guid = projectRootElement.GetProjectTypeGuid();
+            var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
             if (string.IsNullOrEmpty(guid))
             {
-                Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
+                Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullPath);
                 return;
             }
             project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
         }
         // Add settings based on existing project instance
-        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
         string projectInstanceId = projectInstance.GetProjectId();
         if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
         {
@@ -174,6 +174,6 @@ internal class SolutionAddCommand : CommandBase
                 buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
-        Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
+        Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
     }
 }

@@ -3,8 +3,10 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -187,7 +189,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
                 default:
                     // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
             }
         }
         catch (Exception ex)

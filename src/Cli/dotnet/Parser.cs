@@ -130,7 +130,7 @@ public static class Parser
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
 
-                option.Description = CommonLocalizableStrings.ShowHelpDescription;
+                option.Description = CliStrings.ShowHelpDescription;
             }
         }
 
@@ -200,7 +200,7 @@ public static class Parser
         else
         {
             replacementTokens = null;
-            errorMessage = string.Format(CommonLocalizableStrings.ResponseFileNotFound, tokenToReplace);
+            errorMessage = string.Format(CliStrings.ResponseFileNotFound, tokenToReplace);
             return false;
         }
     }
@@ -221,21 +221,29 @@ public static class Parser
 
         if (exception is GracefulException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else if (exception is CommandParsingException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
             parseResult.ShowHelp();
+        }
+        else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else
         {
             Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-            Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
 
         return 1;
@@ -282,7 +290,7 @@ public static class Parser
                 builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
             }
 
-            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CommonLocalizableStrings.ShortWorkloadSearchVersionDescription);
+            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
         }
 
         public static void additionalOption(HelpContext context)
@@ -302,7 +310,7 @@ public static class Parser
                 return;
             }
 
-            context.Output.WriteLine(CommonLocalizableStrings.MSBuildAdditionalOptionTitle);
+            context.Output.WriteLine(CliStrings.MSBuildAdditionalOptionTitle);
             context.HelpBuilder.WriteColumns(options, context);
             context.Output.WriteLine();
         }
@@ -369,10 +377,10 @@ public static class Parser
 
                     for (int i = 0; i < listCommand.Arguments.Count; i++)
                     {
-                        if (listCommand.Arguments[i].Name == CommonLocalizableStrings.SolutionOrProjectArgumentName)
+                        if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CommonLocalizableStrings.ProjectArgumentName, CommonLocalizableStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }

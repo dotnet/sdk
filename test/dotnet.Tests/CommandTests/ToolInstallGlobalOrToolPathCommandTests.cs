@@ -6,6 +6,7 @@
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
@@ -18,8 +19,6 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using NuGetPackageDownloaderLocalizableStrings = Microsoft.DotNet.Cli.NuGetPackageDownloader.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -317,7 +316,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Contain(
                     ErrorMessage +
                     Environment.NewLine +
-                    string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, PackageId));
+                    string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, PackageId));
 
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
@@ -339,7 +338,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    CommonLocalizableStrings.ShellShimConflict,
+                    CliStrings.ShellShimConflict,
                     ToolCommandName));
 
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
@@ -365,9 +364,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.InvalidToolConfiguration,
+                        CliCommandStrings.InvalidToolConfiguration,
                         "Simulated error") + Environment.NewLine +
-                    string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, PackageId)
+                    string.Format(CliCommandStrings.ToolInstallationFailedContactAuthor, PackageId)
                 );
         }
 
@@ -388,7 +387,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -412,7 +411,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .NotContain(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -437,7 +436,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             action
                 .Should().Throw<GracefulException>()
                 .WithMessage(string.Format(
-                    LocalizableStrings.InvalidNuGetVersionRange,
+                    CliCommandStrings.ToolInstallInvalidNuGetVersionRange,
                     invalidVersion));
         }
 
@@ -460,7 +459,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -485,7 +484,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -493,7 +492,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
 
-            _reporter.Lines.Should().Equal(string.Format(LocalizableStrings.ToolAlreadyInstalled, PackageId, PackageVersion).Green());
+            _reporter.Lines.Should().Equal(string.Format(CliCommandStrings.ToolAlreadyInstalled, PackageId, PackageVersion).Green());
         }
 
         [Fact]
@@ -516,7 +515,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -538,7 +537,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    CliCommandStrings.ToolUpdateUpdateSucceeded,
                     PackageId,
                     PackageVersion,
                     HigherPackageVersion).Green());
@@ -564,7 +563,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -586,7 +585,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings.UpdateSucceeded,
+                    CliCommandStrings.ToolUpdateUpdateSucceeded,
                     PackageId,
                     PackageVersion,
                     LowerPackageVersion).Green());
@@ -612,7 +611,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -651,7 +650,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -730,7 +729,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Contain(l => l == string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     "2.0.1-preview1").Green());
@@ -856,8 +855,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    LocalizableStrings.ToolInstallationRestoreFailed +
-                    Environment.NewLine + string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, PackageId));
+                    CliCommandStrings.ToolInstallationRestoreFailed +
+                    Environment.NewLine + string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, PackageId));
 
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
@@ -881,7 +880,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Lines
                 .Should()
                 .Equal(string.Format(
-                    LocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ToolCommandName,
                     PackageId,
                     PackageVersion).Green());
@@ -916,7 +915,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                  reporter: _reporter);
 
             toolInstallGlobalOrToolPathCommand.Execute().Should().Be(0);
-            _reporter.Lines.Should().NotContain(l => l.Contains(NuGetPackageDownloaderLocalizableStrings.NuGetPackageSignatureVerificationSkipped));
+            _reporter.Lines.Should().NotContain(l => l.Contains(CliStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
         [Fact]

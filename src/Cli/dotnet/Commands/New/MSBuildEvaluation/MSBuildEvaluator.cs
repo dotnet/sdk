@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
@@ -159,7 +158,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
             if (targetFrameworks == null)
             {
                 _logger?.LogDebug("Project is SDK style, but does not specify the framework.");
-                return result = MSBuildEvaluationResult.CreateFailure(projectPath, string.Format(LocalizableStrings.MSBuildEvaluator_Error_NoTargetFramework, projectPath));
+                return result = MSBuildEvaluationResult.CreateFailure(projectPath, string.Format(CliCommandStrings.MSBuildEvaluator_Error_NoTargetFramework, projectPath));
             }
 
             //For multi-target project, we need to do additional evaluation for each target framework.

@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Help.LocalizableStrings;
 using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;
 
 namespace Microsoft.DotNet.Cli.Commands.Help;
@@ -95,7 +94,7 @@ public class HelpCommand(string[] helpArgs)
         {
             Reporter.Error.WriteLine(
                 string.Format(
-                    LocalizableStrings.CommandDoesNotExist,
+                    CliCommandStrings.CommandDoesNotExist,
                     helpArgs).Red());
             Reporter.Output.WriteLine(CliUsage.HelpText);
             return 1;

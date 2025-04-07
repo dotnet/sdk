@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Config.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
@@ -61,7 +60,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             {
                 if (shouldUseWorkloadSets == false)
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_WorkloadSet, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_Manifests).Yellow());
                 }
                 else
                 {
@@ -72,7 +71,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
             {
                 if (shouldUseWorkloadSets == true)
                 {
-                    Reporter.WriteLine(string.Format(LocalizableStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.UpdateModeDoesNotMatchGlobalJson, WorkloadConfigCommandParser.UpdateMode_Manifests, globalJsonPath, WorkloadConfigCommandParser.UpdateMode_WorkloadSet).Yellow());
                 }
                 else
                 {

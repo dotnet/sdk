@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.List.Reference;
 
@@ -20,7 +19,7 @@ internal static class ListReferenceCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        var command = new CliCommand("reference", CliCommandStrings.ReferenceListAppFullName);
 
         command.Arguments.Add(Argument);
 
