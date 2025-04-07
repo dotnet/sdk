@@ -29,14 +29,41 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_ToolsSettingsFilePath>$(IntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
     <SuppressDependenciesWhenPacking Condition=" '$(PackAsTool)' == 'true' ">true</SuppressDependenciesWhenPacking>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">_PublishBuildAlternative</_PackToolPublishDependency>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+
   </PropertyGroup>
 
-  <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;$(_PackToolPublishDependency);_PackToolValidation" Condition=" '$(PackAsTool)' == 'true' ">
+
+
+  <Target Name="SetupPackToolDependencies">
+    <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
+       (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
+    <PropertyGroup Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">
+      <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
+                                                   ('@(ToolPackageRuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+      <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'">
+      <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">_PublishBuildAlternative</_PackToolPublishDependency>
+      <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    </PropertyGroup>    
+  </Target>
+
+  <Target Name="PackToolImplementation" Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'">
+
     <ItemGroup>
       <_GeneratedFiles Include="$(PublishDepsFilePath)" Condition="'$(GenerateDependencyFile)' != 'true' or '$(_UseBuildDependencyFile)' == 'true'" />
       <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
+    </ItemGroup>
+    
+  </Target>
+
+  <!-- This indirection target essentially allows one target dependency (SetupPackToolDependencies) of PackTool modify the dependencies of PackTool. -->
+  <Target Name="PackToPublishDependencyIndirection"
+          DependsOnTargets="$(_PackToolPublishDependency)"/>
+  
+  <Target Name="PackTool" DependsOnTargets="SetupPackToolDependencies;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
+    <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
@@ -64,6 +91,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
     <ToolEntryPoint Condition=" '$(ToolEntryPoint)' == '' ">$(TargetFileName)</ToolEntryPoint>
+    <ToolCommandRunner Condition=" '$(ToolCommandRunner)' == ''">dotnet</ToolCommandRunner>
+    <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
   </PropertyGroup>
@@ -72,6 +101,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolEntryPoint)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandName)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandRunner)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolRuntimeIdentifier)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(PackageId)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(Version)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="@(ToolPackageRuntimeIdentifier->'%(Identity)%(Id)%(Version)')" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateToolsSettingsFileInputCacheToHash)">
@@ -98,6 +132,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateToolsSettingsFile
        EntryPointRelativePath="$(ToolEntryPoint)"
        CommandName="$(ToolCommandName)"
+       CommandRunner="$(ToolCommandRunner)"
+       RuntimeIdentifier="$(ToolRuntimeIdentifier)"
+       ToolPackageId="$(PackageId)"
+       ToolPackageVersion="$(Version)"
+       ToolPackageRuntimeIdentifiers="@(ToolPackageRuntimeIdentifier)"
        ToolsSettingsFilePath="$(_ToolsSettingsFilePath)" />
   </Target>
 
