@@ -1,18 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 string path = Path.Combine(dotnetRoot, "metadata", "workloads", version.ToString(), "InstalledWorkloads");
                 Directory.CreateDirectory(path);
-                File.Create(Path.Combine(path, "6.0.100"));
+                File.Create(Path.Combine(path, "6.0.100")).Close();
             }
 
             IEnumerable<SdkFeatureBand> featureBands = installer.GetWorkloadInstallationRecordRepository().GetFeatureBandsWithInstallationRecords();
@@ -357,7 +358,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write workload install record
             var workloadsRecordPath = Path.Combine(dotnetRoot, "metadata", "workloads", version, "InstalledWorkloads");
             Directory.CreateDirectory(workloadsRecordPath);
-            File.Create(Path.Combine(workloadsRecordPath, "android-sdk-workload"));
+            File.Create(Path.Combine(workloadsRecordPath, "android-sdk-workload")).Close();
 
             var downloads = installer.GetDownloads(new[] { new WorkloadId("android-sdk-workload"), new WorkloadId("android-buildtools-workload") }, new SdkFeatureBand(version), false).ToList();
 
@@ -384,7 +385,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             // Write mock cache
             Directory.CreateDirectory(cachePath);
             var nupkgPath = Path.Combine(cachePath, $"{packId}.{packVersion}.nupkg");
-            File.Create(nupkgPath);
+            File.Create(nupkgPath).Close();
 
             CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath)));
             var mockNugetInstaller = nugetInstaller as MockNuGetPackageDownloader;
@@ -410,11 +411,11 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             var version = "6.0.100";
             var cachePath = Path.Combine(dotnetRoot, "MockCache");
 
-            var exceptionThrown = Assert.Throws<Exception>(() =>
+            var exceptionThrown = Assert.Throws<AggregateException>(() =>
                 CliTransaction.RunNew(context => installer.InstallWorkloads(new[] { new WorkloadId("android-sdk-workload") }, new SdkFeatureBand(version), context, new DirectoryPath(cachePath))));
-            exceptionThrown.Message.Should().Contain(packId);
-            exceptionThrown.Message.Should().Contain(packVersion);
-            exceptionThrown.Message.Should().Contain(cachePath);
+            exceptionThrown.InnerException.Message.Should().Contain(packId);
+            exceptionThrown.InnerException.Message.Should().Contain(packVersion);
+            exceptionThrown.InnerException.Message.Should().Contain(cachePath);
         }
 
         private (string, FileBasedInstaller, INuGetPackageDownloader, Func<string, IWorkloadResolver>) GetTestInstaller([CallerMemberName] string testName = "", bool failingInstaller = false, string identifier = "", bool manifestDownload = false,

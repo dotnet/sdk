@@ -1,5 +1,7 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable disable
 
 using Microsoft.Build.Framework;
 
@@ -18,19 +20,19 @@ public class UpdateServiceWorkerFileWithVersion : Task
 
     public override bool Execute()
     {
-        if(!File.Exists(ServiceWorkerSource))
+        if (!File.Exists(ServiceWorkerSource))
         {
             Log.LogError("ServiceWorkerSource does not exist: {0}", ServiceWorkerSource);
             return false;
         }
 
         Log.LogMessage(MessageImportance.Low, "Reading ServiceWorkerSource from disk: {0}", ServiceWorkerSource);
-        string sourceContent = File.ReadAllText(ServiceWorkerSource);
+        var sourceContent = File.ReadAllText(ServiceWorkerSource);
 
-        string versionedContent = $"/* Manifest version: {ManifestVersion} */{Environment.NewLine}{sourceContent}";
+        var versionedContent = $"/* Manifest version: {ManifestVersion} */{Environment.NewLine}{sourceContent}";
 
         Log.LogMessage(MessageImportance.Low, "Reading ServiceWorkerDestination from disk: {0}", ServiceWorkerDestination);
-        string destinationContent = File.Exists(ServiceWorkerDestination) ? File.ReadAllText(ServiceWorkerDestination) : null;
+        var destinationContent = File.Exists(ServiceWorkerDestination) ? File.ReadAllText(ServiceWorkerDestination) : null;
 
         if (!string.Equals(destinationContent, versionedContent, StringComparison.Ordinal))
         {

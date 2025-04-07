@@ -1,0 +1,19 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Проект тестирования NUnit Playwright",
+  "description": "Проект, содержащий тесты Playwright с использованием инфраструктуры тестирования NUnit, которая может работать на .NET в Windows, Linux и MacOS.",
+  "symbols/TargetFrameworkOverride/description": "Переопределяет целевую платформу",
+  "symbols/TargetFrameworkOverride/displayName": "Переопределение целевой платформы",
+  "symbols/Framework/description": "Целевая платформа для проекта.",
+  "symbols/Framework/displayName": "Платформа",
+  "symbols/Framework/choices/net10.0/description": "Целевая среда net10.0",
+  "symbols/EnablePack/description": "Следует ли включить упаковку (через \"dotnet pack\") для проекта.",
+  "symbols/EnablePack/displayName": "Включить пакет",
+  "symbols/skipRestore/description": "Если указано, пропускает автоматическое восстановление проекта при создании.",
+  "symbols/skipRestore/displayName": "Пропустить восстановление",
+  "symbols/langVersion/description": "Задает свойство LangVersion в создаваемом файле проекта.",
+  "symbols/langVersion/displayName": "Версия языка",
+  "postActions/restoreNugetPackages/description": "Восстановление пакетов NuGet, необходимых для этого проекта.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "Выполнить команду \"dotnet restore\"",
+  "postActions/openInEditor/description": "Открывает файл Class1.cs в редакторе"
+}

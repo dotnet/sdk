@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Utils;
 using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
@@ -373,7 +375,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile.Replace("\'{0}\'", "").Split(" ");
+            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
+                .Replace("\'{0}\'", "")
+                .Split(" ")
+                .Where(word => !string.IsNullOrEmpty(word))
+                .ToArray();
+
             runResult
                 .Should()
                 .Pass()
@@ -691,7 +698,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItDoesNotShowImportantLevelMessageByDefault()
+        public void ItDoesShowImportantLevelMessageByDefault()
         {
             var testAppName = "MSBuildTestApp";
             var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
@@ -702,6 +709,24 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute();
 
+            // this message should show because interactivity (and therefore nuget auth) is the default
+            result.Should().Pass()
+                .And.HaveStdOutContaining("Important text");
+        }
+
+        [Fact]
+        public void ItDoesNotShowImportantLevelMessageByDefaultWhenInteractivityDisabled()
+        {
+            var testAppName = "MSBuildTestApp";
+            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+                .WithSource()
+                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
+
+            var result = new DotnetCommand(Log, "run", "--interactive", "false")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            // this message should show because interactivity (and therefore nuget auth) is the default
             result.Should().Pass()
                 .And.NotHaveStdOutContaining("Important text");
         }
@@ -949,7 +974,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testInstance = _testAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
                 .WithSource();
 
-            // 
+            //
             var dotnetLaunchProfile = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? "DOTNET_LAUNCH_profile"
                 : "DOTNET_LAUNCH_PROFILE";

@@ -1,0 +1,87 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- This project is built and run as part of the VMR and by sdk-diff-tests.yml and vmr-license-scan.yml. -->
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
+    <SourceBuildTestsConsoleVerbosity Condition="'$(SourceBuildTestsConsoleVerbosity)' == ''">normal</SourceBuildTestsConsoleVerbosity>
+    <VSTestLogger>console%3bverbosity=$(SourceBuildTestsConsoleVerbosity);trx%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+    <!-- Multiple loggers are specified so that results are captured in trx and pipelines can fail with AzDO pipeline warnings
+         Workaround https://github.com/dotnet/source-build/issues/4003 by disabling VSTestUseMSBuildOutput -->
+    <VSTestUseMSBuildOutput>false</VSTestUseMSBuildOutput>
+    <SetRuntimeConfigOptionsDependsOn Condition="'$(SkipPrepareSdkArchive)' != 'true'"></SetRuntimeConfigOptionsDependsOn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(TasksDir)Microsoft.DotNet.UnifiedBuild.Tasks\PdbUtilities.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" Condition="'$(SkipPrepareSdkArchive)' != 'true'" />
+    <ProjectReference Include="..\TestUtilities\TestUtilities.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets/**"
+             CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <Target Name="SetRuntimeConfigOptions"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup Condition="'$(SourceBuiltArtifactsPath)' == ''">
+      <SourceBuiltArtifactsItem Include="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <SourceBuiltArtifactsPath Condition="'$(SourceBuiltArtifactsPath)' == ''">%(SourceBuiltArtifactsItem.Identity)</SourceBuiltArtifactsPath>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Required values -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LogsDirectory">
+        <Value>$(ArtifactsTestResultsDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).DotNetDirectory">
+        <Value>$(DotNetSdkExtractDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TargetRid">
+        <Value>$(TargetRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PortableRid">
+        <Value>$(PortableRid)</Value>
+      </RuntimeHostConfigurationOption>
+
+      <!-- Optional values -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).CustomPackagesPath">
+        <Value>$(SourceBuildTestsCustomSourceBuiltPackagesPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ExcludeOmniSharpTests">
+        <Value>$(SourceBuildTestsExcludeOmniSharpTests)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LicenseScanPath">
+        <Value>$(SourceBuildTestsLicenseScanPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).MsftSdkTarballPath">
+        <Value>$(MsftSdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PoisonReportPath"
+                                      Condition="'$(EnablePoison)' == 'true'">
+        <Value>$(PoisonUsageReportFile)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SdkTarballPath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
+        <Value>$(SourceBuiltArtifactsPath)</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
+  </Target>
+
+</Project>

@@ -216,9 +216,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
         }
 
-        private string ExtractVersion(string stdOut)
+        private string ExtractVersion(string? stdOut)
         {
-            var match = Regex.Match(stdOut, @"Package version:\s*(\S+)");
+            var match = Regex.Match(stdOut ?? string.Empty, @"Package version:\s*(\S+)");
             if (match.Success)
             {
                 return match.Groups[1].Value;

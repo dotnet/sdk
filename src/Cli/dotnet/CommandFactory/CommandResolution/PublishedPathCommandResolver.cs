@@ -2,81 +2,75 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class PublishedPathCommandResolver(
+    IEnvironmentProvider environment,
+    IPublishedPathCommandSpecFactory commandSpecFactory) : ICommandResolver
 {
-    public class PublishedPathCommandResolver : ICommandResolver
+    private const string PublishedPathCommandResolverName = "PublishedPathCommandResolver";
+
+    private readonly IEnvironmentProvider _environment = environment;
+    private readonly IPublishedPathCommandSpecFactory _commandSpecFactory = commandSpecFactory;
+
+    public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
-        private const string PublishedPathCommandResolverName = "PublishedPathCommandResolver";
+        var publishDirectory = commandResolverArguments.OutputPath;
+        var commandName = commandResolverArguments.CommandName;
+        var applicationName = commandResolverArguments.ApplicationName;
 
-        private readonly IEnvironmentProvider _environment;
-        private readonly IPublishedPathCommandSpecFactory _commandSpecFactory;
-
-        public PublishedPathCommandResolver(
-            IEnvironmentProvider environment,
-            IPublishedPathCommandSpecFactory commandSpecFactory)
+        if (publishDirectory == null || commandName == null || applicationName == null)
         {
-            _environment = environment;
-            _commandSpecFactory = commandSpecFactory;
+            return null;
         }
 
-        public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
+        var commandPath = ResolveCommandPath(publishDirectory, commandName);
+
+        if (commandPath == null)
         {
-            var publishDirectory = commandResolverArguments.OutputPath;
-            var commandName = commandResolverArguments.CommandName;
-            var applicationName = commandResolverArguments.ApplicationName;
-
-            if (publishDirectory == null || commandName == null || applicationName == null)
-            {
-                return null;
-            }
-
-            var commandPath = ResolveCommandPath(publishDirectory, commandName);
-
-            if (commandPath == null)
-            {
-                return null;
-            }
-
-            var depsFilePath = Path.Combine(publishDirectory, $"{applicationName}.deps.json");
-            if (!File.Exists(depsFilePath))
-            {
-                Reporter.Verbose.WriteLine(string.Format(
-                    LocalizableStrings.DoesNotExist,
-                    PublishedPathCommandResolverName,
-                    depsFilePath));
-                return null;
-            }
-
-            var runtimeConfigPath = Path.Combine(publishDirectory, $"{applicationName}.runtimeconfig.json");
-            if (!File.Exists(runtimeConfigPath))
-            {
-                Reporter.Verbose.WriteLine(string.Format(
-                    LocalizableStrings.DoesNotExist,
-                    PublishedPathCommandResolverName,
-                    runtimeConfigPath));
-                return null;
-            }
-
-            return _commandSpecFactory.CreateCommandSpecFromPublishFolder(
-                    commandPath,
-                    commandResolverArguments.CommandArguments.OrEmptyIfNull(),
-                    depsFilePath,
-                    runtimeConfigPath);
+            return null;
         }
 
-        private string ResolveCommandPath(string publishDirectory, string commandName)
+        var depsFilePath = Path.Combine(publishDirectory, $"{applicationName}.deps.json");
+        if (!File.Exists(depsFilePath))
         {
-            if (!Directory.Exists(publishDirectory))
-            {
-                Reporter.Verbose.WriteLine(string.Format(
-                    LocalizableStrings.DoesNotExist,
-                    PublishedPathCommandResolverName,
-                    publishDirectory));
-                return null;
-            }
-
-            return _environment.GetCommandPathFromRootPath(publishDirectory, commandName, ".dll");
+            Reporter.Verbose.WriteLine(string.Format(
+                LocalizableStrings.DoesNotExist,
+                PublishedPathCommandResolverName,
+                depsFilePath));
+            return null;
         }
+
+        var runtimeConfigPath = Path.Combine(publishDirectory, $"{applicationName}.runtimeconfig.json");
+        if (!File.Exists(runtimeConfigPath))
+        {
+            Reporter.Verbose.WriteLine(string.Format(
+                LocalizableStrings.DoesNotExist,
+                PublishedPathCommandResolverName,
+                runtimeConfigPath));
+            return null;
+        }
+
+        return _commandSpecFactory.CreateCommandSpecFromPublishFolder(
+                commandPath,
+                commandResolverArguments.CommandArguments.OrEmptyIfNull(),
+                depsFilePath,
+                runtimeConfigPath);
+    }
+
+    private string ResolveCommandPath(string publishDirectory, string commandName)
+    {
+        if (!Directory.Exists(publishDirectory))
+        {
+            Reporter.Verbose.WriteLine(string.Format(
+                LocalizableStrings.DoesNotExist,
+                PublishedPathCommandResolverName,
+                publishDirectory));
+            return null;
+        }
+
+        return _environment.GetCommandPathFromRootPath(publishDirectory, commandName, ".dll");
     }
 }

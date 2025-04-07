@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -49,8 +51,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Source = "MyPackage",
                 Assets = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All"),
-                    CreateCandidate("wwwroot\\candidate.other.js", "MyPackage", "Discovered", "candidate.js", "Build", "All")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All"),
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.other.js"), "MyPackage", "Discovered", "candidate.js", "Build", "All")
                 },
                 AssetKind = "Build",
                 ProjectMode = "Default"
@@ -79,9 +81,9 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 Source = "MyPackage",
                 Assets = new[]
                 {
-                    CreateCandidate("wwwroot\\candidate.js", "MyPackage", "Discovered", "candidate.js", "All", "All"),
-                    CreateCandidate("wwwroot\\candidate.other.js", "MyPackage", "Discovered", "candidate.js", "Build", "All"),
-                    CreateCandidate("wwwroot\\candidate.publish.js", "MyPackage", "Discovered", "candidate.js", "Publish", "All")
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All"),
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.other.js"), "MyPackage", "Discovered", "candidate.js", "Build", "All"),
+                    CreateCandidate(Path.Combine("wwwroot", "candidate.publish.js"), "MyPackage", "Discovered", "candidate.js", "Publish", "All")
                 },
                 AssetKind = "Build",
                 ProjectMode = "Default"
@@ -273,7 +275,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             task.StaticWebAssets.Should().HaveCount(1);
         }
 
-        private ITaskItem CreateCandidate(
+        private static ITaskItem CreateCandidate(
             string itemSpec,
             string sourceId,
             string sourceType,
@@ -301,6 +303,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 // Add these to avoid accessing the disk to compute them
                 Integrity = "integrity",
                 Fingerprint = "fingerprint",
+                LastWriteTime = DateTime.UtcNow,
+                FileLength = 10,
             };
 
             result.ApplyDefaults();

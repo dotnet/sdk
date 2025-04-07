@@ -7,7 +7,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
     {
         private Dictionary<string, int> packageRanks;
 
-        public PackageRank(string[] packageIds)
+        public PackageRank(string[]? packageIds)
         {
             var numPackages = packageIds?.Length ?? 0;
 
@@ -16,9 +16,9 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
 
             for (int i = numPackages - 1; i >= 0; i--)
             {
-                var preferredPackageId = packageIds[i].Trim();
+                var preferredPackageId = packageIds?[i].Trim();
 
-                if (preferredPackageId.Length != 0)
+                if (preferredPackageId is not null && preferredPackageId.Length != 0)
                 {
                     // overwrite any duplicates, lowest rank will win.
                     packageRanks[preferredPackageId] = i;
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Build.Tasks.ConflictResolution
         /// </summary>
         /// <param name="packageId">id of package</param>
         /// <returns>rank of package</returns>
-        public int GetPackageRank(string packageId)
+        public int GetPackageRank(string? packageId)
         {
             int rank;
             if (packageId != null && packageRanks.TryGetValue(packageId, out rank))

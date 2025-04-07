@@ -1,0 +1,176 @@
+<Build PublishingVersion="3" Name="dotnet-dotnet" BuildId="20250306.10" Branch="refs/heads/rid-specific-publish" Commit="5abbbba42e04d26068d1ff5f24de662e682b851e" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/rid-specific-publish" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2656964" AzureDevOpsBuildNumber="20250306.10" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2656964/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false" VerticalName="OSX_x64">
+  <Package Id="Microsoft.Arcade.Common" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.AspNetCore.App.Runtime.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Package Id="Microsoft.Cci.Extensions" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.CodeAnalysis.LanguageServer.osx-x64" Version="4.14.0-3.25156.110" CouldBeStable="false" RepoOrigin="roslyn" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.AsmDiff" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Packaging" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.TargetFramework" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.VisualStudio" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Workloads" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.CMake.Sdk" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.CodeAnalysis" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Deployment.Tasks.Links" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.GenAPI" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.GenFacades" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Git.IssueManager" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Helix.Client" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Helix.JobSender" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Internal.SymbolHelper" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.MacOsPkg.Cli" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.MacOsPkg.Core" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.NuGetRepack.Tasks" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.PackageTesting" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SignCheck" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SignCheckTask" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SourceBuild.Tasks" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CmdLine" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CodeGenerator" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.MSBuild" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.Tar" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.VersionTools" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.VersionTools.Cli" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.VersionTools.Tasks" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Package Id="Microsoft.NETCore.App.Crossgen2.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Host.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-arm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-x86" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.browser-wasm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.ios-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.maccatalyst-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.maccatalyst-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvos-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-arm64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.wasi-wasm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.Mono.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.NativeAOT.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="Microsoft.NETCore.App.Runtime.osx-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.Microsoft.DotNet.ILCompiler" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.Microsoft.NETCore.DotNetAppHost" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.Microsoft.NETCore.ILAsm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.Microsoft.NETCore.ILDAsm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.Microsoft.NETCore.TestHost" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="runtime.osx-x64.runtime.native.System.IO.Ports" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Package Id="rzls.osx-x64" Version="9.0.0-preview.25156.110" CouldBeStable="false" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-runtime-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-runtime-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-runtime-composite-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-runtime-composite-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-targeting-pack-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-targeting-pack-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10//Microsoft.CodeAnalysis.LanguageServer.osx-x64.4.14.0-3.25156.110.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.AspNetCore.App.Runtime.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Crossgen2.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Host.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-arm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.android-x86.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.browser-wasm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.ios-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.iossimulator-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.maccatalyst-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.maccatalyst-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvos-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-arm64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.tvossimulator-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.osx-x64.Cross.wasi-wasm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.Mono.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.NativeAOT.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.osx-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.Microsoft.DotNet.ILCompiler.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.Microsoft.NETCore.DotNetAppHost.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.Microsoft.NETCore.ILAsm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.Microsoft.NETCore.ILDAsm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.Microsoft.NETCore.TestHost.10.0.0-preview.3.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.osx-x64.runtime.native.System.IO.Ports.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/rzls.osx-x64.9.0.0-preview.25156.110.symbols.nupkg" RepoOrigin="razor" Visibility="External" />
+  <Blob Id="assets/symbols/Microsoft.Arcade.Common.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.Cci.Extensions.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Arcade.Sdk.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.AsmDiff.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Archives.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Feed.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Installers.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Packaging.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.TargetFramework.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Templating.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.VisualStudio.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Build.Tasks.Workloads.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.CMake.Sdk.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.CodeAnalysis.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Deployment.Tasks.Links.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenAPI.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.GenFacades.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Git.IssueManager.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.Client.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.JobSender.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Helix.Sdk.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Internal.SymbolHelper.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.MacOsPkg.Cli.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.MacOsPkg.Core.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.NuGetRepack.Tasks.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.PackageTesting.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SharedFramework.Sdk.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SignCheck.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SignCheckTask.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SignTool.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SourceBuild.Tasks.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.CmdLine.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.CodeGenerator.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.SwaggerGenerator.MSBuild.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.Tar.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.Cli.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.VersionTools.Tasks.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="assets/symbols/Microsoft.DotNet.XliffTasks.10.0.0-beta.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-apphost-pack-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-apphost-pack-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-apphost-pack-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-apphost-pack-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-crossgen2-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-crossgen2-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-host-internal-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-host-internal-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-hostfxr-internal-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-hostfxr-internal-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-nethost-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-nethost-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-nethost-symbols-osx-x64-10.0.0-preview.3.25156.110.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-nethost-symbols-osx-x64-10.0.0-preview.3.25156.110.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-10.0.0-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-10.0.0-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-internal-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-runtime-internal-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-targeting-pack-10.0.0-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Runtime/10.0.0-preview.3.25156.110/dotnet-targeting-pack-10.0.0-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-10.0.100-preview.3.25156.110-osx-x64.pkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-10.0.100-preview.3.25156.110-osx-x64.pkg.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-10.0.100-preview.3.25156.110-osx-x64.tar.gz" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-10.0.100-preview.3.25156.110-osx-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-internal-10.0.100-preview.3.25156.110-osx-x64.pkg" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/dotnet-sdk-internal-10.0.100-preview.3.25156.110-osx-x64.pkg.sha512" NonShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/osx_x64_Release_version_badge.svg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/osx_x64_Release_version_badge.svg.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/productCommit-osx-x64.json" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/productCommit-osx-x64.json.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/productCommit-osx-x64.txt" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25156.110/productCommit-osx-x64.txt.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+</Build>

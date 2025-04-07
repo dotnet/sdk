@@ -6,6 +6,7 @@ buildtargets
 classlib
 console
 editorconfig
+gitattributes
 gitignore
 globaljson
 grpc
