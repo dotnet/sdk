@@ -711,9 +711,9 @@
       <Sha>5fa9337a84a52e9bd185d04d156eccbdcf592f74</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.IO.Redist" Version="6.0.1">
+    <Dependency Name="Microsoft.IO.Redist" Version="6.1.0">
       <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>e77011b31a3e5c47d931248a64b47f9b2d47853d</Sha>
+      <Sha>9d5a6a9aa463d6d10b0b0ba6d5982cc82f363dc3</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25204.5">
       <Uri>https://github.com/microsoft/testfx</Uri>
