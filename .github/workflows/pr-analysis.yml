@@ -1,0 +1,14 @@
+name: PR Analysis
+on:
+  pull_request:
+    types: [opened, synchronize, labeled, unlabeled]
+permissions:
+  contents: read
+  pull-requests: read
+jobs:
+  allowed-labels:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Return error if branch is in lockdown or 'do not merge' label is present
+        run: echo "Labels on this PR prevent it from being merged. Please contact the repo owners for more information." && exit 1
+        if: ${{ contains(github.event.pull_request.labels.*.name, 'Branch Lockdown') || contains(github.event.pull_request.labels.*.name, 'DO NOT MERGE') }}
