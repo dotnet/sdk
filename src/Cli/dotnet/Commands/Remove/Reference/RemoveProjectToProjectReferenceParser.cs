@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Reference.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Remove.Reference;
 
 internal static class RemoveProjectToProjectReferenceParser
 {
@@ -18,7 +17,7 @@ internal static class RemoveProjectToProjectReferenceParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        var command = new CliCommand("reference", CliCommandStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);

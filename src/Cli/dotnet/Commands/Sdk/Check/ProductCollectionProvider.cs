@@ -4,7 +4,7 @@
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 public class ProductCollectionProvider : IProductCollectionProvider
 {
@@ -18,7 +18,7 @@ public class ProductCollectionProvider : IProductCollectionProvider
         }
         catch (Exception e)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.ReleasesLibraryFailed, e.Message));
+            throw new GracefulException(string.Format(CliCommandStrings.ReleasesLibraryFailed, e.Message));
         }
     }
 
@@ -30,7 +30,7 @@ public class ProductCollectionProvider : IProductCollectionProvider
         }
         catch (Exception e)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.ReleasesLibraryFailed, e.Message));
+            throw new GracefulException(string.Format(CliCommandStrings.ReleasesLibraryFailed, e.Message));
         }
     }
 }

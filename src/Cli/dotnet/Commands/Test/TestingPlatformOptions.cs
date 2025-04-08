@@ -3,81 +3,86 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestingPlatformOptions
 {
     public static readonly CliOption<string> ProjectOption = new("--project")
     {
-        Description = LocalizableStrings.CmdProjectDescription,
-        HelpName = LocalizableStrings.CmdProjectPathName,
+        Description = CliCommandStrings.CmdProjectDescription,
+        HelpName = CliCommandStrings.CmdProjectPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly CliOption<string> SolutionOption = new("--solution")
     {
-        Description = LocalizableStrings.CmdSolutionDescription,
-        HelpName = LocalizableStrings.CmdSolutionPathName,
+        Description = CliCommandStrings.CmdSolutionDescription,
+        HelpName = CliCommandStrings.CmdSolutionPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly CliOption<string> DirectoryOption = new("--directory")
     {
-        Description = LocalizableStrings.CmdDirectoryDescription,
-        HelpName = LocalizableStrings.CmdDirectoryPathName,
+        Description = CliCommandStrings.CmdDirectoryDescription,
+        HelpName = CliCommandStrings.CmdDirectoryPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly CliOption<string> TestModulesFilterOption = new("--test-modules")
     {
-        Description = LocalizableStrings.CmdTestModulesDescription,
-        HelpName = LocalizableStrings.CmdExpressionName
+        Description = CliCommandStrings.CmdTestModulesDescription,
+        HelpName = CliCommandStrings.CmdExpressionName
     };
 
     public static readonly CliOption<string> TestModulesRootDirectoryOption = new("--root-directory")
     {
-        Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription,
-        HelpName = LocalizableStrings.CmdRootPathName,
+        Description = CliCommandStrings.CmdTestModulesRootDirectoryDescription,
+        HelpName = CliCommandStrings.CmdRootPathName,
     };
 
     public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
-        Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        HelpName = LocalizableStrings.CmdNumberName
+        Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,
+        HelpName = CliCommandStrings.CmdNumberName
     };
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
-    public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly CliOption<bool> NoBuildOption = new("--no-build")
     {
-        Description = LocalizableStrings.CmdNoBuildDescription
-    }.ForwardAs("-property:MTPNoBuild=true");
+        Description = CliCommandStrings.CmdNoBuildDescription
+    };
 
     public static readonly CliOption<bool> NoAnsiOption = new("--no-ansi")
     {
-        Description = LocalizableStrings.CmdNoAnsiDescription,
+        Description = CliCommandStrings.CmdNoAnsiDescription,
+        Arity = ArgumentArity.Zero
+    };
+
+    public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    {
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> NoProgressOption = new("--no-progress")
     {
-        Description = LocalizableStrings.CmdNoProgressDescription,
+        Description = CliCommandStrings.CmdNoProgressDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<OutputOptions> OutputOption = new("--output")
     {
-        Description = LocalizableStrings.CmdTestOutputDescription,
+        Description = CliCommandStrings.CmdTestOutputDescription,
         Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly CliOption<string> ListTestsOption = new("--list-tests")
     {
-        Description = LocalizableStrings.CmdListTestsDescription,
+        Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     };
 

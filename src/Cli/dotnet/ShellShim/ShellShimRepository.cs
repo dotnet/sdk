@@ -22,14 +22,14 @@ internal class ShellShimRepository(
     {
         if (string.IsNullOrEmpty(targetExecutablePath.Value))
         {
-            throw new ShellShimException(CommonLocalizableStrings.CannotCreateShimForEmptyExecutablePath);
+            throw new ShellShimException(CliStrings.CannotCreateShimForEmptyExecutablePath);
         }
 
         if (ShimExists(commandName))
         {
             throw new ShellShimException(
                 string.Format(
-                    CommonLocalizableStrings.ShellShimConflict,
+                    CliStrings.ShellShimConflict,
                     commandName));
         }
 
@@ -58,13 +58,13 @@ internal class ShellShimRepository(
                 catch (FilePermissionSettingException ex)
                 {
                     throw new ShellShimException(
-                            string.Format(CommonLocalizableStrings.FailedSettingShimPermissions, ex.Message));
+                            string.Format(CliStrings.FailedSettingShimPermissions, ex.Message));
                 }
                 catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
                 {
                     throw new ShellShimException(
                         string.Format(
-                            CommonLocalizableStrings.FailedToCreateShellShim,
+                            CliStrings.FailedToCreateShellShim,
                             commandName,
                             ex.Message
                         ),
@@ -99,7 +99,7 @@ internal class ShellShimRepository(
                 {
                     throw new ShellShimException(
                         string.Format(
-                            CommonLocalizableStrings.FailedToRemoveShellShim,
+                            CliStrings.FailedToRemoveShellShim,
                             commandName.ToString(),
                             ex.Message
                         ),
@@ -163,17 +163,13 @@ internal class ShellShimRepository(
 
         if (packagedShims != null && packagedShims.Count > 0)
         {
-            FilePath[] candidatepackagedShim =
-                packagedShims
-                    .Where(s => string.Equals(
-                        Path.GetFileName(s.Value),
-                        Path.GetFileName(GetShimPath(commandName).Value))).ToArray();
+            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetShimPath(commandName).Value)))];
 
             if (candidatepackagedShim.Length > 1)
             {
                 throw new ShellShimException(
                     string.Format(
-                        CommonLocalizableStrings.MoreThanOnePackagedShimAvailable,
+                        CliStrings.MoreThanOnePackagedShimAvailable,
                         string.Join(';', candidatepackagedShim)));
             }
 

@@ -11,7 +11,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
 {
     private const string PackagedCommandSpecFactoryName = "packagedcommandspecfactory";
 
-    private Action<string, IList<string>> _addAdditionalArguments;
+    private readonly Action<string, IList<string>> _addAdditionalArguments;
 
     internal PackagedCommandSpecFactory(Action<string, IList<string>> addAdditionalArguments = null)
     {
@@ -28,7 +28,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         string runtimeConfigPath)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.AttemptingToFindCommand,
+            CliStrings.AttemptingToFindCommand,
             PackagedCommandSpecFactoryName,
             commandName,
             toolLibrary.Name));
@@ -39,7 +39,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (toolAssembly == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.FailedToFindToolAssembly,
+                CliStrings.FailedToFindToolAssembly,
                 PackagedCommandSpecFactoryName,
                 commandName));
 
@@ -51,7 +51,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (!File.Exists(commandPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.FailedToFindCommandPath,
+                CliStrings.FailedToFindCommandPath,
                 PackagedCommandSpecFactoryName,
                 commandPath));
 
@@ -66,7 +66,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
             runtimeConfigPath);
     }
 
-    private string GetCommandFilePath(
+    private static string GetCommandFilePath(
         LockFile lockFile,
         LockFileTargetLibrary toolLibrary,
         LockFileItem runtimeAssembly)
@@ -76,7 +76,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         if (packageDirectory == null)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.CommandAssembliesNotFound,
+                CliStrings.CommandAssembliesNotFound,
                 toolLibrary.Name));
         }
 
@@ -116,12 +116,11 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         IEnumerable<string> packageFolders,
         string runtimeConfigPath)
     {
-        var host = string.Empty;
         var arguments = new List<string>();
 
         var muxer = new Muxer();
 
-        host = muxer.MuxerPath;
+        string host = muxer.MuxerPath;
         if (host == null)
         {
             throw new Exception(LocalizableStrings.UnableToLocateDotnetMultiplexer);
@@ -158,7 +157,7 @@ public class PackagedCommandSpecFactory : IPackagedCommandSpecFactory
         return CreateCommandSpec(host, arguments);
     }
 
-    private CommandSpec CreateCommandSpec(
+    private static CommandSpec CreateCommandSpec(
         string commandPath,
         IEnumerable<string> commandArguments)
     {

@@ -3,14 +3,12 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.CommandLine;
-using System.IO;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.DotNet.Tools.Project.Convert;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
@@ -22,13 +20,13 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         string file = Path.GetFullPath(_file);
         if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
         {
-            throw new GracefulException(LocalizableStrings.InvalidFilePath, file);
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
         string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
-            throw new GracefulException(LocalizableStrings.DirectoryAlreadyExists, targetDirectory);
+            throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
 
         // Find directives (this can fail, so do this before creating the target directory).

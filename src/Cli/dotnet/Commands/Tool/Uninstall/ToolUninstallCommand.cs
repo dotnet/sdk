@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
-namespace Microsoft.DotNet.Tools.Tool.Uninstall;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal class ToolUninstallCommand(
     ParseResult result,
@@ -25,7 +24,7 @@ internal class ToolUninstallCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 

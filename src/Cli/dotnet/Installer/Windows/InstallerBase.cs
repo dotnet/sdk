@@ -4,8 +4,8 @@
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -94,7 +94,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
@@ -153,7 +153,7 @@ internal abstract class InstallerBase(InstallElevationContextBase elevationConte
     /// </summary>
     /// <param name="response">The response message to examine.</param>
     /// <exception cref="WorkloadException"/>
-    protected void ExitOnFailure(InstallResponseMessage response, string message)
+    protected static void ExitOnFailure(InstallResponseMessage response, string message)
     {
         if (response.HResult < 0)
         {

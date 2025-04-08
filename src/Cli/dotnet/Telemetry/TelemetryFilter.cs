@@ -3,6 +3,13 @@
 
 using System.CommandLine;
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.Pack;
+using Microsoft.DotNet.Cli.Commands.Publish;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -63,18 +70,17 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
             ));
         }
 
-        return result
-            .Select(r =>
+        return [.. result.Select(r =>
+        {
+            if (r.EventName == ExceptionEventName)
             {
-                if (r.EventName == ExceptionEventName)
-                {
-                    return r;
-                }
-                else
-                {
-                    return r.WithAppliedToPropertiesValue(_hash);
-                }
-            }).ToList();
+                return r;
+            }
+            else
+            {
+                return r.WithAppliedToPropertiesValue(_hash);
+            }
+        })];
     }
 
     private static List<IParseResultLogRule> ParseResultLogRules =>
@@ -186,7 +192,7 @@ internal class TelemetryFilter(Func<string, string> hash) : ITelemetryFilter
         return s;
     }
 
-    private Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
+    private static Dictionary<string, double> RemoveZeroTimes(Dictionary<string, double> measurements)
     {
         if (measurements != null)
         {

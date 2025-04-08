@@ -3,12 +3,12 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Add;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.Tools.Reference.Add;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
@@ -29,11 +29,8 @@ internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : Co
 
         var arguments = _parseResult.GetValue(ReferenceAddCommandParser.ProjectPathArgument).ToList().AsReadOnly();
         PathUtility.EnsureAllPathsExist(arguments,
-            CommonLocalizableStrings.CouldNotFindProjectOrDirectory, true);
-        List<MsbuildProject> refs =
-            arguments
-                .Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))
-                .ToList();
+            CliStrings.CouldNotFindProjectOrDirectory, true);
+        List<MsbuildProject> refs = [.. arguments.Select((r) => MsbuildProject.FromFileOrDirectory(projects, r, interactive))];
 
         if (string.IsNullOrEmpty(frameworkString))
         {
@@ -57,7 +54,7 @@ internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : Co
             if (!msbuildProj.IsTargetingFramework(framework))
             {
                 Reporter.Error.WriteLine(string.Format(
-                                             CommonLocalizableStrings.ProjectDoesNotTargetFramework,
+                                             CliStrings.ProjectDoesNotTargetFramework,
                                              msbuildProj.ProjectRootElement.FullPath,
                                              frameworkString));
                 return 1;
@@ -93,7 +90,7 @@ internal class AddProjectToProjectReferenceCommand(ParseResult parseResult) : Co
     private static string GetProjectNotCompatibleWithFrameworksDisplayString(MsbuildProject project, IEnumerable<string> frameworksDisplayStrings)
     {
         var sb = new StringBuilder();
-        sb.AppendLine(string.Format(CommonLocalizableStrings.ProjectNotCompatibleWithFrameworks, project.ProjectRootElement.FullPath));
+        sb.AppendLine(string.Format(CliStrings.ProjectNotCompatibleWithFrameworks, project.ProjectRootElement.FullPath));
         foreach (var tfm in frameworksDisplayStrings)
         {
             sb.AppendLine($"    - {tfm}");

@@ -3,41 +3,40 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Search.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package.Search;
 
 internal static class PackageSearchCommandParser
 {
     public static readonly CliArgument<string> SearchTermArgument = new CliArgument<string>("SearchTerm")
     {
-        HelpName = LocalizableStrings.SearchTermArgumentName,
-        Description = LocalizableStrings.SearchTermDescription,
+        HelpName = CliCommandStrings.PackageSearchSearchTermArgumentName,
+        Description = CliCommandStrings.PackageSearchSearchTermDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
     public static readonly CliOption Sources = new ForwardedOption<IEnumerable<string>>("--source")
     {
-        Description = LocalizableStrings.SourceDescription,
-        HelpName = LocalizableStrings.SourceArgumentName
+        Description = CliCommandStrings.SourceDescription,
+        HelpName = CliCommandStrings.SourceArgumentName
     }.ForwardAsManyArgumentsEachPrefixedByOption("--source")
     .AllowSingleArgPerToken();
 
     public static readonly CliOption<string> Take = new ForwardedOption<string>("--take")
     {
-        Description = LocalizableStrings.TakeDescription,
-        HelpName = LocalizableStrings.TakeArgumentName
+        Description = CliCommandStrings.PackageSearchTakeDescription,
+        HelpName = CliCommandStrings.PackageSearchTakeArgumentName
     }.ForwardAsSingle(o => $"--take:{o}");
 
     public static readonly CliOption<string> Skip = new ForwardedOption<string>("--skip")
     {
-        Description = LocalizableStrings.SkipDescription,
-        HelpName = LocalizableStrings.SkipArgumentName
+        Description = CliCommandStrings.PackageSearchSkipDescription,
+        HelpName = CliCommandStrings.PackageSearchSkipArgumentName
     }.ForwardAsSingle(o => $"--skip:{o}");
 
     public static readonly CliOption<bool> ExactMatch = new ForwardedOption<bool>("--exact-match")
     {
-        Description = LocalizableStrings.ExactMatchDescription,
+        Description = CliCommandStrings.ExactMatchDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--exact-match");
 
@@ -45,26 +44,26 @@ internal static class PackageSearchCommandParser
 
     public static readonly CliOption<bool> Prerelease = new ForwardedOption<bool>("--prerelease")
     {
-        Description = LocalizableStrings.PrereleaseDescription,
+        Description = CliCommandStrings.PackageSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 
     public static readonly CliOption<string> ConfigFile = new ForwardedOption<string>("--configfile")
     {
-        Description = LocalizableStrings.ConfigFileDescription,
-        HelpName = LocalizableStrings.ConfigFileArgumentName
+        Description = CliCommandStrings.ConfigFileDescription,
+        HelpName = CliCommandStrings.ConfigFileArgumentName
     }.ForwardAsSingle(o => $"--configfile:{o}");
 
     public static readonly CliOption<string> Format = new ForwardedOption<string>("--format")
     {
-        Description = LocalizableStrings.FormatDescription,
-        HelpName = LocalizableStrings.FormatArgumentName
+        Description = CliCommandStrings.FormatDescription,
+        HelpName = CliCommandStrings.FormatArgumentName
     }.ForwardAsSingle(o => $"--format:{o}");
 
     public static readonly CliOption<string> Verbosity = new ForwardedOption<string>("--verbosity")
     {
-        Description = LocalizableStrings.VerbosityDescription,
-        HelpName = LocalizableStrings.VerbosityArgumentName
+        Description = CliCommandStrings.VerbosityDescription,
+        HelpName = CliCommandStrings.VerbosityArgumentName
     }.ForwardAsSingle(o => $"--verbosity:{o}");
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -76,7 +75,7 @@ internal static class PackageSearchCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand searchCommand = new("search", LocalizableStrings.CommandDescription);
+        CliCommand searchCommand = new("search", CliCommandStrings.PackageSearchCommandDescription);
 
         searchCommand.Arguments.Add(SearchTermArgument);
         searchCommand.Options.Add(Sources);

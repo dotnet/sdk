@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using CleanCommand = Microsoft.DotNet.Tools.Clean.CleanCommand;
+using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

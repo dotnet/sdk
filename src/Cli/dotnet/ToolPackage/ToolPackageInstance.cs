@@ -53,10 +53,10 @@ internal class ToolPackageInstance : IToolPackage
     private const string AssetsFileName = "project.assets.json";
     private const string ToolSettingsFileName = "DotnetToolSettings.xml";
 
-    private Lazy<RestoredCommand> _command;
-    private Lazy<ToolConfiguration> _toolConfiguration;
-    private Lazy<LockFile> _lockFile;
-    private Lazy<IReadOnlyList<FilePath>> _packagedShims;
+    private readonly Lazy<RestoredCommand> _command;
+    private readonly Lazy<ToolConfiguration> _toolConfiguration;
+    private readonly Lazy<LockFile> _lockFile;
+    private readonly Lazy<IReadOnlyList<FilePath>> _packagedShims;
 
     public ToolPackageInstance(PackageId id,
         NuGetVersion version,
@@ -90,7 +90,7 @@ internal class ToolPackageInstance : IToolPackage
             {
                 throw new ToolConfigurationException(
                     string.Format(
-                        CommonLocalizableStrings.MissingToolEntryPointFile,
+                        CliStrings.MissingToolEntryPointFile,
                         configuration.ToolAssemblyEntryPoint,
                         configuration.CommandName));
             }
@@ -105,7 +105,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
         }
@@ -131,7 +131,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
         }
@@ -148,7 +148,7 @@ internal class ToolPackageInstance : IToolPackage
         {
             throw new ToolPackageException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToReadNuGetLockFile,
+                    CliStrings.FailedToReadNuGetLockFile,
                     Id,
                     ex.Message),
                 ex);
@@ -160,7 +160,7 @@ internal class ToolPackageInstance : IToolPackage
 
         if (filesUnderShimsDirectory == null)
         {
-            return Array.Empty<FilePath>();
+            return [];
         }
 
         IEnumerable<string> allAvailableShimRuntimeIdentifiers = filesUnderShimsDirectory
@@ -169,19 +169,15 @@ internal class ToolPackageInstance : IToolPackage
 
         if (new FrameworkDependencyFile().TryGetMostFitRuntimeIdentifier(
             DotnetFiles.VersionFileObject.BuildRid,
-            allAvailableShimRuntimeIdentifiers.ToArray(),
+            [.. allAvailableShimRuntimeIdentifiers],
             out var mostFitRuntimeIdentifier))
         {
-            return library
-                       ?.ToolsAssemblies
-                       ?.Where(l =>
-                           LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
-                       .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray()
-                   ?? Array.Empty<FilePath>();
+            return library?.ToolsAssemblies?.Where(l => LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
+                .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray() ?? [];
         }
         else
         {
-            return Array.Empty<FilePath>();
+            return [];
         }
     }
 
@@ -191,7 +187,7 @@ internal class ToolPackageInstance : IToolPackage
         if (dotnetToolSettings == null)
         {
             throw new ToolConfigurationException(
-                CommonLocalizableStrings.MissingToolSettingsFile);
+                CliStrings.MissingToolSettingsFile);
         }
 
         var toolConfigurationPath =

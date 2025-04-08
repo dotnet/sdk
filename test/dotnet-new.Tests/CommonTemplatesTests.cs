@@ -3,8 +3,8 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 using Microsoft.TemplateEngine.TestHelper;

@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Captures <see cref="TestProgressState"/> that was rendered to screen, so we can only partially update the screen on next update.
@@ -29,6 +29,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         int passed = progress.PassedTests;
         int failed = progress.FailedTests;
         int skipped = progress.SkippedTests;
+        int retried = progress.RetriedFailedTests;
         int charsTaken = 0;
 
         terminal.Append('[');
@@ -62,6 +63,20 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         terminal.Append(skippedText);
         charsTaken += skippedText.Length;
         terminal.ResetColor();
+
+        if (retried > 0)
+        {
+            terminal.Append('/');
+            charsTaken++;
+            terminal.SetColor(TerminalColor.Gray);
+            terminal.Append('r');
+            charsTaken++;
+            string retriedText = retried.ToString(CultureInfo.CurrentCulture);
+            terminal.Append(retriedText);
+            charsTaken += retriedText.Length;
+            terminal.ResetColor();
+        }
+
         terminal.Append(']');
         charsTaken++;
 
@@ -90,7 +105,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
             lengthNeeded++; // for ')'
 
-            if ((charsTaken + lengthNeeded) < nonReservedWidth)
+            if (charsTaken + lengthNeeded < nonReservedWidth)
             {
                 terminal.Append(" (");
                 if (progress.TargetFramework != null)
@@ -306,16 +321,14 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         // Note: We want to render the list of active tests, but this can easily fill up the full screen.
         // As such, we should balance the number of active tests shown per project.
         // We do this by distributing the remaining lines for each projects.
-        TestProgressState[] progressItems = progress.OfType<TestProgressState>().ToArray();
+        TestProgressState[] progressItems = [.. progress.OfType<TestProgressState>()];
         int linesToDistribute = (int)(Height * 0.7) - 1 - progressItems.Length;
         var detailItems = new IEnumerable<TestDetailState>[progressItems.Length];
         IEnumerable<int> sortedItemsIndices = Enumerable.Range(0, progressItems.Length).OrderBy(i => progressItems[i].TestNodeResultsState?.Count ?? 0);
 
         foreach (int sortedItemIndex in sortedItemsIndices)
         {
-            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(
-                linesToDistribute / progressItems.Length)
-                ?? Array.Empty<TestDetailState>();
+            detailItems[sortedItemIndex] = progressItems[sortedItemIndex].TestNodeResultsState?.GetRunningTasks(linesToDistribute / progressItems.Length) ?? [];
         }
 
         for (int progressI = 0; progressI < progressItems.Length; progressI++)

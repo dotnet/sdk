@@ -3,24 +3,23 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Workloads.Workload.Update;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 {
     private readonly bool _adManifestOnlyOption;
     private readonly bool _printRollbackDefinitionOnly;
     private readonly bool _fromPreviousSdk;
-    private WorkloadHistoryRecorder _recorder;
+    private readonly WorkloadHistoryRecorder _recorder;
     private readonly bool _isRestoring;
     private readonly bool _shouldShutdownInstaller;
     public WorkloadUpdateCommand(
@@ -39,7 +38,6 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
               tempDirPath: tempDirPath, shouldUseWorkloadSetsFromGlobalJson: shouldUseWorkloadSetsFromGlobalJson)
 
     {
-        
         _fromPreviousSdk = parseResult.GetValue(WorkloadUpdateCommandParser.FromPreviousSdkOption);
         _adManifestOnlyOption = parseResult.GetValue(WorkloadUpdateCommandParser.AdManifestOnlyOption);
         _printRollbackDefinitionOnly = parseResult.GetValue(WorkloadUpdateCommandParser.PrintRollbackOption);
@@ -78,12 +76,12 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             }
             catch (Exception e)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
         }
         else if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
                 filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
@@ -106,7 +104,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
                     new DirectoryPath(_fromCacheOption))
                 .Wait();
             Reporter.WriteLine();
-            Reporter.WriteLine(LocalizableStrings.WorkloadUpdateAdManifestsSucceeded);
+            Reporter.WriteLine(CliCommandStrings.WorkloadUpdateAdManifestsSucceeded);
         }
         else if (_printRollbackDefinitionOnly)
         {
@@ -133,7 +131,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
             catch (Exception e)
             {
                 // Don't show entire stack trace
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadUpdateFailed, e.Message), e, isUserError: false);
             }
         }
 
@@ -174,7 +172,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         _workloadManifestUpdater.DeleteUpdatableWorkloadsFile();
 
         Reporter.WriteLine();
-        Reporter.WriteLine(string.Format(LocalizableStrings.UpdateSucceeded, string.Join(" ", workloadIds)));
+        Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUpdateUpdateSucceeded, string.Join(" ", workloadIds)));
         Reporter.WriteLine();
     }
 
@@ -226,7 +224,7 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
 
         if (workloads == null || !workloads.Any())
         {
-            reporter.WriteLine(LocalizableStrings.NoWorkloadsToUpdate);
+            reporter.WriteLine(CliCommandStrings.NoWorkloadsToUpdate);
         }
 
         return workloads;
@@ -237,12 +235,12 @@ internal class WorkloadUpdateCommand : InstallingWorkloadCommand
         var transaction = new CliTransaction();
         transaction.RollbackStarted = () =>
         {
-            Reporter.WriteLine(LocalizableStrings.RollingBackInstall);
+            Reporter.WriteLine(CliCommandStrings.WorkloadUpdateRollingBackInstall);
         };
         // Don't hide the original error if roll back fails, but do log the rollback failure
         transaction.RollbackFailed = ex =>
         {
-            Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message));
+            Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadUpdateRollBackFailedMessage, ex.Message));
         };
 
         transaction.Run(context => a(context));

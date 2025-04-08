@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -14,7 +13,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal class WorkloadInstallCommand : InstallingWorkloadCommand
 {
@@ -45,7 +44,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             _workloadIds = unprocessedWorkloadIds.Select(id => id.Split('@')[0]).ToList().AsReadOnly();
             if (SpecifiedWorkloadSetVersionOnCommandLine)
             {
-                throw new GracefulException(LocalizableStrings.CannotSpecifyVersionAndWorkloadIdsByComponent, isUserError: true);
+                throw new GracefulException(CliCommandStrings.CannotSpecifyVersionAndWorkloadIdsByComponent, isUserError: true);
             }
 
             _workloadSetVersionFromCommandLine = unprocessedWorkloadIds;
@@ -75,7 +74,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
             {
                 var exceptionMessage = _workloadResolver.IsPlatformIncompatibleWorkload(new WorkloadId(workloadId)) ?
-                    LocalizableStrings.WorkloadNotSupportedOnPlatform : LocalizableStrings.WorkloadNotRecognized;
+                    CliCommandStrings.WorkloadNotSupportedOnPlatform : CliCommandStrings.WorkloadNotRecognized;
 
                 throw new GracefulException(string.Format(exceptionMessage, workloadId), isUserError: false);
             }
@@ -87,7 +86,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         bool usedRollback = !string.IsNullOrWhiteSpace(_fromRollbackDefinition);
         if (_printDownloadLinkOnly)
         {
-            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader(
+            var packageDownloader = IsPackageDownloaderProvided ? PackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(
                 TempPackagesDirectory,
                 filePermissionSetter: null,
                 new FirstPartyNuGetPackageSigningVerifier(),
@@ -124,24 +123,24 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             }
             catch (Exception e)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadInstallWorkloadCacheDownloadFailed, e.Message), e, isUserError: false);
             }
         }
         else if (_skipManifestUpdate && usedRollback)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndRollback,
+            throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndRollback,
                 WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.FromRollbackFileOption.Name), isUserError: true);
         }
         else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionOnCommandLine)
         {
-            throw new GracefulException(string.Format(LocalizableStrings.CannotCombineSkipManifestAndVersion,
+            throw new GracefulException(string.Format(CliCommandStrings.CannotCombineSkipManifestAndVersion,
                 WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, InstallingWorkloadCommandParser.VersionOption.Name), isUserError: true);
         }
-        else if ((_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson) &&
+        else if (_skipManifestUpdate && SpecifiedWorkloadSetVersionInGlobalJson &&
             !IsRunningRestore)  //  When running restore, we first update workloads, then query the projects to figure out what workloads should be installed, then run the install command.
                                 //  When we run the install command we set skipManifestUpdate to true as an optimization to avoid trying to update twice
         {
-            throw new GracefulException(string.Format(LocalizableStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
+            throw new GracefulException(string.Format(CliCommandStrings.CannotUseSkipManifestWithGlobalJsonWorkloadVersion,
                 WorkloadInstallCommandParser.SkipManifestUpdateOption.Name, _globalJsonPath), isUserError: true);
         }
         else
@@ -171,7 +170,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
                 }
 
                 // Don't show entire stack trace
-                throw new GracefulException(string.Format(LocalizableStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
+                throw new GracefulException(string.Format(CliCommandStrings.WorkloadInstallationFailed, e.Message), e, isUserError: false);
             }
         }
 
@@ -218,7 +217,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             {
                 if (Verbosity != VerbosityOptions.quiet && Verbosity != VerbosityOptions.q)
                 {
-                    Reporter.WriteLine(LocalizableStrings.CheckForUpdatedWorkloadManifests);
+                    Reporter.WriteLine(CliCommandStrings.CheckForUpdatedWorkloadManifests);
                 }
                 UpdateWorkloadManifests(recorder, context, offlineCache);
             }
@@ -229,7 +228,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
             if (previouslyInstalledWorkloads.Any())
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
+                Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadAlreadyInstalled, string.Join(" ", previouslyInstalledWorkloads)).Yellow());
             }
             workloadIds = workloadIds.Concat(installedWorkloads).Distinct();
             workloadIds = WriteSDKInstallRecordsForVSWorkloads(workloadIds);
@@ -258,7 +257,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion), offlineCache);
 
             Reporter.WriteLine();
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
+            Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadInstallInstallationSucceeded, string.Join(" ", newWorkloadInstallRecords)));
             Reporter.WriteLine();
 
         });
@@ -273,7 +272,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         catch (Exception e)
         {
             // Garbage collection failed, warn user
-            reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectionFailed,
+            reporter.WriteLine(string.Format(CliCommandStrings.GarbageCollectionFailed,
                 verbosity.IsDetailedOrDiagnostic() ? e.ToString() : e.Message).Yellow());
         }
     }
@@ -303,9 +302,9 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
     {
         new CliTransaction()
         {
-            RollbackStarted = () => Reporter.WriteLine(LocalizableStrings.RollingBackInstall),
+            RollbackStarted = () => Reporter.WriteLine(CliCommandStrings.WorkloadInstallRollingBackInstall),
             // Don't hide the original error if roll back fails, but do log the rollback failure
-            RollbackFailed = ex => Reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, ex.Message))
+            RollbackFailed = ex => Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadInstallRollBackFailedMessage, ex.Message))
         }.Run(context => a(context));
     }
 }
