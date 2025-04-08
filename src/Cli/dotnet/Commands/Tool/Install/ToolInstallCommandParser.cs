@@ -6,10 +6,6 @@ using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Workloads.Workload;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;

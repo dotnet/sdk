@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
-                Description = CommonLocalizableStrings.PackageIdentityArgumentDescription,
+                Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = ParsePackageIdentity,
                 Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
             };
@@ -38,11 +38,11 @@ namespace Microsoft.DotNet.Cli
             var versionString = token.Substring(versionSeparatorIndex + 1);
             if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(versionString))
             {
-                throw new GracefulException(CommonLocalizableStrings.PackageIdentityArgumentIdOrVersionIsNull);
+                throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
             }
             if (!NuGetVersion.TryParse(versionString, out var version))
             {
-                throw new GracefulException(string.Format(CommonLocalizableStrings.InvalidVersion, versionString));
+                throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
             return new(packageId, new NuGetVersion(version));
         }
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Cli
             if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version.ToString()) &&
                 !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
             {
-                throw new GracefulException(CommonLocalizableStrings.PackageIdentityArgumentVersionOptionConflict);
+                throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
             }
         }
         #endregion

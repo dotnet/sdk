@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
@@ -15,7 +14,7 @@ internal static class ToolUninstallCommandParser
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
         HelpName = "PACKAGE_ID",
-        Description = CommonLocalizableStrings.PackageReference,
+        Description = CliStrings.PackageReference,
     };
 
     public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
