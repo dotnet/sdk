@@ -176,6 +176,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             MetadataReferences = loader.MetadataReferences,
             DiagnosticOptions = _diagnosticOptions,
             SyntaxRewriters = [
+                // IMPORTANT: The order of these elements matters!
                 new TypeDeclarationCSharpSyntaxRewriter(_addPartialModifier), // This must be visited BEFORE GlobalPrefixRemover as it depends on the 'global::' prefix to be found
                 GlobalPrefixRemover.Singleton, // And then call this ASAP afterwards so there are fewer identifiers to visit
                 PrimitiveSimplificationRewriter.Singleton,
@@ -643,7 +644,11 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
     private static IEnumerable<T> GetMembersOfType<T>(SyntaxNode node) where T : MemberDeclarationSyntax => node
         .ChildNodes()
-        .Where(n => n is T m && IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(m))
+        .Where(n => n is T m &&
+                    // Interface members have no visibility modifiers
+                    (node.IsKind(SyntaxKind.InterfaceDeclaration) ||
+                     // For the rest of the types, analyze each member directly
+                     IsEnumMemberOrHasPublicOrProtectedModifierOrIsDestructor(m)))
         .Cast<T>();
 
     private string GetAttributeDocId(IMethodSymbol attributeConstructorSymbol, AttributeSyntax attribute, SemanticModel model)

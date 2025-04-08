@@ -25,6 +25,8 @@ public class DiffInterfaceTests : DiffBaseTests
                     }
                     public interface IMyInterface
                     {
+                        int MyMethod();
+                        long MyProperty { get; }
                     }
                 }
                 """,
@@ -33,6 +35,8 @@ public class DiffInterfaceTests : DiffBaseTests
                   {
                 +     public interface IMyInterface
                 +     {
+                +         int MyMethod();
+                +         long MyProperty { get; }
                 +     }
                   }
                 """);
@@ -44,6 +48,8 @@ public class DiffInterfaceTests : DiffBaseTests
                 {
                     public interface IMyBeforeInterface
                     {
+                        int MyMethod();
+                        long MyProperty { get; }
                     }
                 }
                 """,
@@ -52,6 +58,8 @@ public class DiffInterfaceTests : DiffBaseTests
                 {
                     public interface IMyAfterInterface
                     {
+                        int MyMethod();
+                        long MyProperty { get; }
                     }
                 }
                 """,
@@ -60,9 +68,13 @@ public class DiffInterfaceTests : DiffBaseTests
                   {
                 -     public interface IMyBeforeInterface
                 -     {
+                -         int MyMethod();
+                -         long MyProperty { get; }
                 -     }
                 +     public interface IMyAfterInterface
                 +     {
+                +         int MyMethod();
+                +         long MyProperty { get; }
                 +     }
                   }
                 """);
@@ -77,6 +89,8 @@ public class DiffInterfaceTests : DiffBaseTests
                     }
                     public interface IMyInterface
                     {
+                        int MyMethod();
+                        long MyProperty { get; }
                     }
                 }
                 """,
@@ -93,7 +107,44 @@ public class DiffInterfaceTests : DiffBaseTests
                   {
                 -     public interface IMyInterface
                 -     {
+                +         int MyMethod();
+                +         long MyProperty { get; }
                 -     }
+                  }
+                """);
+
+    [Fact(Skip = "The resulting inheritance shows more than expected but not wrong, and does not show the nullability constraing")]
+    // Shows: public interface IMyInterface<TKey, TValue> : System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.ICollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.Generic.IEnumerable<System.Collections.Generic.KeyValuePair<TKey, TValue>>, System.Collections.IEnumerable, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyCollection<System.Collections.Generic.KeyValuePair<TKey, TValue>>
+    public Task InterfaceAddWithTypeConstraints() => RunTestAsync(
+                beforeCode: """
+                using System.Collections.Generic;
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                }
+                """,
+                afterCode: """
+                using System.Collections.Generic;
+                namespace MyNamespace
+                {
+                    public struct MyStruct
+                    {
+                    }
+                    public interface IMyInterface<TKey, TValue> : IDictionary<TKey, TValue>, IReadOnlyDictionary<TKey, TValue> where TKey : notnull
+                    {
+                        bool ContainsValue(TValue value);
+                    }
+                }
+                """,
+                expectedCode: """
+                  namespace MyNamespace
+                  {
+                +     public interface IMyInterface<TKey, TValue> : System.Collections.Generic.IDictionary<TKey, TValue>, System.Collections.Generic.IReadOnlyDictionary<TKey, TValue> where TKey : notnull
+                +     {
+                +         bool ContainsValue(TValue value);
+                +     }
                   }
                 """);
 
