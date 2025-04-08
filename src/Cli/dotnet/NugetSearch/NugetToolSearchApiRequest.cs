@@ -27,13 +27,13 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
             {
                 throw new NugetSearchApiRequestException(
                     string.Format(
-                        LocalizableStrings.RetriableNugetSearchFailure,
+                        CliStrings.RetriableNugetSearchFailure,
                         queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
             }
 
             throw new NugetSearchApiRequestException(
                 string.Format(
-                    LocalizableStrings.NonRetriableNugetSearchFailure,
+                    CliStrings.NonRetriableNugetSearchFailure,
                     queryUrl.AbsoluteUri, response.ReasonPhrase, response.StatusCode));
         }
 
@@ -53,7 +53,7 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         query["packageType"] = "dotnettool";
 
         // This is a field for internal nuget back
-        // compactabiliy should be "2.0.0" for all new API usage
+        // compatibility should be "2.0.0" for all new API usage
         query["semVerLevel"] = "2.0.0";
 
         if (skip.HasValue)

@@ -411,6 +411,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         sign: ${{ variables.signEnabled }}
+        signDac: ${{ variables.signDacEnabled }}
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x64
@@ -422,6 +423,7 @@ stages:
         isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
         vmrBranch: ${{ variables.VmrBranch }}
         sign: ${{ variables.signEnabled }}
+        signDac: ${{ variables.signDacEnabled }}
         pool: ${{ parameters.pool_Windows }}
         targetOS: windows
         targetArchitecture: x86
@@ -530,7 +532,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm64
 
@@ -544,7 +545,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: arm
 
@@ -558,7 +558,6 @@ stages:
             container:
               name: ${{ variables.linuxBionicCrossContainerName }}
               image: ${{ variables.linuxBionicCrossContainerImage }}
-            crossRootFs: '/crossrootfs/x64'
             targetOS: linux-bionic
             targetArchitecture: x64
 
@@ -833,6 +832,7 @@ stages:
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
             sign: ${{ variables.signEnabled }}
+            signDac: ${{ variables.signDacEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: arm64
@@ -894,6 +894,8 @@ stages:
             buildName: Windows
             isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
             vmrBranch: ${{ variables.VmrBranch }}
+            sign: ${{ variables.signEnabled }}
+            signDac: ${{ variables.signDacEnabled }}
             pool: ${{ parameters.pool_Windows }}
             targetOS: windows
             targetArchitecture: x86

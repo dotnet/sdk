@@ -2,14 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -64,14 +65,14 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
-               .Contain(Tools.Tool.Common.LocalizableStrings.NoManifestGuide);
+               .Contain(CliCommandStrings.ToolCommonNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(Cli.ToolManifest.LocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(Cli.ToolManifest.LocalizableStrings.ListOfSearched, ""));
+                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]
@@ -84,7 +85,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                .And.Message.Should()
-               .Contain(string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageIdDotnsay));
+               .Contain(string.Format(CliCommandStrings.NoManifestFileContainPackageId, _packageIdDotnsay));
         }
 
         [Fact]
@@ -133,7 +134,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UninstallLocalToolSucceeded,
+                        CliCommandStrings.UninstallLocalToolSucceeded,
                         _packageIdDotnsay,
                         _manifestFilePath).Green());
         }

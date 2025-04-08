@@ -41,7 +41,7 @@ public partial class DefineStaticWebAssets : Task
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
         var fingerprintPatternsHash = HashingUtils.ComputeHash(memoryStream, FingerprintPatterns ?? [], patternMetadata);
 
-        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides, nameof(ITaskItem.GetMetadata));
+        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides ?? []);
 
 #if NET9_0_OR_GREATER
         Span<string> candidateAssetMetadata = [
@@ -265,6 +265,8 @@ public partial class DefineStaticWebAssets : Task
     }
 
     [JsonSerializable(typeof(DefineStaticWebAssetsCache))]
-    [JsonSourceGenerationOptions(WriteIndented = false)]
+    [JsonSourceGenerationOptions(
+        GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
+        WriteIndented = false)]
     internal partial class DefineStaticWebAssetsSerializerContext : JsonSerializerContext { }
 }

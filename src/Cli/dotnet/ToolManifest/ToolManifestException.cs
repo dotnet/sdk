@@ -5,10 +5,6 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
 
-internal class ToolManifestException : GracefulException
+internal class ToolManifestException(string message) : GracefulException([message], null, false)
 {
-    public ToolManifestException(string message) : base(new[] { message }, null, false)
-    {
-
-    }
 }

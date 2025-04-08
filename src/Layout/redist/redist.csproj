@@ -10,7 +10,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <!-- do not import analyzer assemblies from the sdk as they will be double loaded -->
     <EnableNETAnalyzers>false</EnableNETAnalyzers>
-    <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GereateLayout.targets. -->
+    <!-- Disable the fast up-to-date check as it relies on the redist.dll, which we delete as part of the build process in GenerateLayout.targets. -->
     <!-- Property info: https://github.com/dotnet/project-system/blob/main/docs/up-to-date-check.md#disabling-the-up-to-date-check -->
     <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
     <!-- NETSDK1205: The Microsoft.Net.Compilers.Toolset.Framework package should not be set directly. -->
@@ -31,9 +31,9 @@
     <PackageReference Include="Microsoft.TestPlatform.Build" />
     <PackageReference Condition=" '$(DotNetBuildSourceOnly)' != 'true' " Include="NuGet.Localization" />
     <PackageReference Include="NuGet.ProjectModel" />
-    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
-    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeStyle" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.FSharp.Compiler" ExcludeAssets="All" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" GeneratePathProperty="true" />
     <PackageDownload Include="Microsoft.Net.Compilers.Toolset" Version="[$(MicrosoftNetCompilersToolsetVersion)]" />
@@ -92,7 +92,7 @@
        To break the cycle we remove all analyzers before this compiles. -->
   <Target Name="RemoveAnalyzers" BeforeTargets="CoreCompile">
     <ItemGroup>
-      <Analyzer Remove="@(Analyzer)"/>
+      <Analyzer Remove="@(Analyzer)" />
     </ItemGroup>
   </Target>
 
