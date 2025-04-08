@@ -1,4 +1,4 @@
-using Microsoft.Arcade.Common;
+﻿using Microsoft.Arcade.Common;
 using Microsoft.DotNet.Build.Manifest;
 using NuGet.Packaging;
 using System.Collections.Concurrent;
