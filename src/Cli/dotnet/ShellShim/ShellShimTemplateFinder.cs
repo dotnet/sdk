@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
@@ -46,7 +45,7 @@ internal class ShellShimTemplateFinder(
 
         if (!validRids.Contains(rid))
         {
-            throw new GracefulException(string.Format(LocalizableStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
+            throw new GracefulException(string.Format(CliStrings.InvalidRuntimeIdentifier, rid, string.Join(" ", validRids)));
         }
 
         var packageId = new PackageId($"microsoft.netcore.app.host.{rid}");

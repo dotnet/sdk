@@ -10,6 +10,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <RootNamespace>Microsoft.DotNet.Cli.Sln</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -19,8 +20,8 @@
 
   <ItemGroup>
     <!-- Use string resources from product in order to validate test output. -->
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CommonLocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\Commands\Solution\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
   <ItemGroup>

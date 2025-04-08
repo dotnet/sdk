@@ -8,9 +8,9 @@ using Microsoft.DotNet.Cli.Commands.Workload;
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli;
 
-static class WorkloadFileBasedInstall
+internal static class WorkloadFileBasedInstall
 {
     public static bool IsUserLocal(string? dotnetDir, string? sdkFeatureBand)
         => dotnetDir is not null && File.Exists(GetUserInstallFilePath(dotnetDir, sdkFeatureBand));
