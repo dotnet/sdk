@@ -37,6 +37,11 @@
         <target state="translated">Spécifiez un ID de package d'outil à mettre à jour.</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateAllOptionDescription">
+        <source>Update all tools.</source>
+        <target state="translated">Mettez à jour tous les outils.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateLocaToolSucceededVersionNoChange">
         <source>Tool '{0}' is up to date (version '{1}' manifest file {2}) .</source>
         <target state="translated">L'outil '{0}' est à jour (version '{1}', fichier manifeste {2}).</target>
@@ -65,6 +70,16 @@
       <trans-unit id="UpdateToLowerVersion">
         <source>The requested version {0} is lower than existing version {1}.</source>
         <target state="translated">La version demandée {0} est inférieure à la version existante {1}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndPackageId">
+        <source>One must specify either package ID or use the update all option (--all).</source>
+        <target state="translated">Vous devez spécifier l’ID de package ou utiliser l’option Mettre à jour tout (--all).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateToolCommandInvalidAllAndVersion">
+        <source>The version option (--version) and the update all option (--all) cannot be used together. Specify only one of the options: {0}.</source>
+        <target state="translated">L’option de version (--version) et l’option mettre à jour toutes (--all) ne peuvent pas être utilisées ensemble. Spécifiez une seule des options :{0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateToolCommandInvalidGlobalAndLocalAndToolPath">
