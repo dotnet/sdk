@@ -3,10 +3,8 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Workloads.Workload.List;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal static class WorkloadListCommandParser
 {
@@ -17,12 +15,12 @@ internal static class WorkloadListCommandParser
 
     public static readonly CliOption<string> TempDirOption = new CliOption<string>("--temp-dir")
     {
-        Description = Workloads.Workload.Install.LocalizableStrings.TempDirOptionDescription
+        Description = CliCommandStrings.TempDirOptionDescription
     }.Hide();
 
     public static readonly CliOption<bool> IncludePreviewsOption = new CliOption<bool>("--include-previews")
     {
-        Description = Workloads.Workload.Install.LocalizableStrings.IncludePreviewOptionDescription
+        Description = CliCommandStrings.IncludePreviewOptionDescription
     }.Hide();
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -34,7 +32,7 @@ internal static class WorkloadListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        CliCommand command = new("list", CliCommandStrings.WorkloadListCommandDescription);
         command.Options.Add(MachineReadableOption);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);
         command.Options.Add(VersionOption);

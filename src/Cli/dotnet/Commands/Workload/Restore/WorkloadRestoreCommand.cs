@@ -4,31 +4,22 @@
 using System.CommandLine;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Update;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Restore;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
-internal class WorkloadRestoreCommand : WorkloadCommandBase
+internal class WorkloadRestoreCommand(
+    ParseResult result,
+    IReporter reporter = null) : WorkloadCommandBase(result, reporter: reporter)
 {
-    private readonly ParseResult _result;
-    private readonly IEnumerable<string> _slnOrProjectArgument;
-
-    public WorkloadRestoreCommand(
-        ParseResult result,
-        IFileSystem fileSystem = null,
-        IReporter reporter = null)
-        : base(result, reporter: reporter)
-    {
-        _result = result;
-        _slnOrProjectArgument =
+    private readonly ParseResult _result = result;
+    private readonly IEnumerable<string> _slnOrProjectArgument =
             result.GetValue(RestoreCommandParser.SlnOrProjectArgument);
-    }
 
     public override int Execute()
     {
@@ -56,7 +47,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
             new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
+            Reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
             new WorkloadInstallCommand(_result,
                 workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly(),
@@ -71,7 +62,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
         return 0;
     }
 
-    private static string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
+    private static readonly string GetRequiredWorkloadsTargetName = "_GetRequiredWorkloads";
 
     private List<WorkloadId> RunTargetToGetWorkloadIds(IEnumerable<string> allProjects)
     {
@@ -93,14 +84,14 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
                 loggers: [
                     new ConsoleLogger(Verbosity.ToLoggerVerbosity())
                 ],
-                remoteLoggers: Enumerable.Empty<ForwardingLoggerRecord>(),
+                remoteLoggers: [],
                 targetOutputs: out var targetOutputs);
 
             if (buildResult == false)
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.FailedToRunTarget,
+                        CliCommandStrings.FailedToRunTarget,
                         projectFile),
                     isUserError: false);
             }
@@ -109,7 +100,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
             allWorkloadId.AddRange(targetResult.Items.Select(item => new WorkloadId(item.ItemSpec)));
         }
 
-        allWorkloadId = allWorkloadId.Distinct().ToList();
+        allWorkloadId = [.. allWorkloadId.Distinct()];
         return allWorkloadId;
     }
 
@@ -121,17 +112,17 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false).ToList();
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
         {
-            slnFiles = slnOrProjectArgument
+            slnFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetFullPath).ToList();
-            projectFiles = slnOrProjectArgument
+                .Select(Path.GetFullPath)];
+            projectFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
-                .Select(Path.GetFullPath).ToList();
+                .Select(Path.GetFullPath)];
         }
 
         foreach (string solutionFilePath in slnFiles)
@@ -144,7 +135,7 @@ internal class WorkloadRestoreCommand : WorkloadCommandBase
         if (projectFiles.Count == 0)
         {
             throw new GracefulException(
-                LocalizableStrings.CouldNotFindAProject,
+                CliCommandStrings.CouldNotFindAProject,
                 currentDirectory, "--project");
         }
 

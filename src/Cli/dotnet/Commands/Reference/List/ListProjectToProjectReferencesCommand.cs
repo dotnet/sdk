@@ -3,11 +3,11 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.List;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Reference.List;
+namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
 internal class ListProjectToProjectReferencesCommand : CommandBase
 {
@@ -31,14 +31,14 @@ internal class ListProjectToProjectReferencesCommand : CommandBase
         if (!p2ps.Any())
         {
             Reporter.Output.WriteLine(string.Format(
-                                          CommonLocalizableStrings.NoReferencesFound,
-                                          CommonLocalizableStrings.P2P,
+                                          CliStrings.NoReferencesFound,
+                                          CliStrings.P2P,
                                           _fileOrDirectory));
             return 0;
         }
 
-        Reporter.Output.WriteLine($"{CommonLocalizableStrings.ProjectReferenceOneOrMore}");
-        Reporter.Output.WriteLine(new string('-', CommonLocalizableStrings.ProjectReferenceOneOrMore.Length));
+        Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
+        Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
         foreach (var p2p in p2ps)
         {
             Reporter.Output.WriteLine(p2p.Include);

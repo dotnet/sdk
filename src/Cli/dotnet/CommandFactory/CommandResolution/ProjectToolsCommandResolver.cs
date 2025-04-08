@@ -10,24 +10,16 @@ using ConcurrencyUtilities = NuGet.Common.ConcurrencyUtilities;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class ProjectToolsCommandResolver : ICommandResolver
+public class ProjectToolsCommandResolver(
+    IPackagedCommandSpecFactory packagedCommandSpecFactory,
+    IEnvironmentProvider environment) : ICommandResolver
 {
     private const string ProjectToolsCommandResolverName = "projecttoolscommandresolver";
 
-    private List<string> _allowedCommandExtensions;
-    private IPackagedCommandSpecFactory _packagedCommandSpecFactory;
+    private readonly List<string> _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
+    private readonly IPackagedCommandSpecFactory _packagedCommandSpecFactory = packagedCommandSpecFactory;
 
-    private IEnvironmentProvider _environment;
-
-    public ProjectToolsCommandResolver(
-        IPackagedCommandSpecFactory packagedCommandSpecFactory,
-        IEnvironmentProvider environment)
-    {
-        _packagedCommandSpecFactory = packagedCommandSpecFactory;
-        _environment = environment;
-
-        _allowedCommandExtensions = [FileNameSuffixes.DotNet.DynamicLib];
-    }
+    private readonly IEnvironmentProvider _environment = environment;
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
@@ -35,7 +27,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             || commandResolverArguments.ProjectDirectory == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.InvalidCommandResolverArguments,
+                CliStrings.InvalidCommandResolverArguments,
                 ProjectToolsCommandResolverName));
 
             return null;
@@ -58,7 +50,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         if (project == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DidNotFindProject, ProjectToolsCommandResolverName));
+                CliStrings.DidNotFindProject, ProjectToolsCommandResolverName));
 
             return null;
         }
@@ -79,7 +71,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         IProject project)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.ResolvingCommandSpec,
+            CliStrings.ResolvingCommandSpec,
             ProjectToolsCommandResolverName,
             toolsLibraries.Count()));
 
@@ -98,7 +90,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         }
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.FailedToResolveCommandSpec,
+            CliStrings.FailedToResolveCommandSpec,
             ProjectToolsCommandResolverName));
 
         return null;
@@ -111,13 +103,13 @@ public class ProjectToolsCommandResolver : ICommandResolver
         IProject project)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.AttemptingToResolveCommandSpec,
+            CliStrings.AttemptingToResolveCommandSpec,
             ProjectToolsCommandResolverName,
             toolLibraryRange.Name));
 
         var possiblePackageRoots = GetPossiblePackageRoots(project).ToList();
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.NuGetPackagesRoot,
+            CliStrings.NuGetPackagesRoot,
             ProjectToolsCommandResolverName,
             string.Join(Environment.NewLine, possiblePackageRoots.Select((p) => $"- {p}"))));
 
@@ -156,7 +148,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         }
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.FoundToolLockFile,
+            CliStrings.FoundToolLockFile,
             ProjectToolsCommandResolverName,
             toolLockFile.Path));
 
@@ -167,7 +159,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         if (toolLibrary == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.LibraryNotFoundInLockFile,
+                CliStrings.LibraryNotFoundInLockFile,
                 ProjectToolsCommandResolverName));
 
             return null;
@@ -183,7 +175,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             project.ToolDepsJsonGeneratorProject);
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.AttemptingToCreateCommandSpec,
+            CliStrings.AttemptingToCreateCommandSpec,
             ProjectToolsCommandResolverName));
 
         var commandSpec = _packagedCommandSpecFactory.CreateCommandSpecFromLibrary(
@@ -198,7 +190,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         if (commandSpec == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.CommandSpecIsNull,
+                CliStrings.CommandSpecIsNull,
                 ProjectToolsCommandResolverName));
         }
 
@@ -207,14 +199,14 @@ public class ProjectToolsCommandResolver : ICommandResolver
         return commandSpec;
     }
 
-    private IEnumerable<string> GetPossiblePackageRoots(IProject project)
+    private static IEnumerable<string> GetPossiblePackageRoots(IProject project)
     {
         if (project.TryGetLockFile(out LockFile lockFile))
         {
             return lockFile.PackageFolders.Select((packageFolder) => packageFolder.Path);
         }
 
-        return Enumerable.Empty<string>();
+        return [];
     }
 
     private LockFile GetToolLockFile(
@@ -270,7 +262,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         return true;
     }
 
-    private string GetToolLockFilePath(
+    private static string GetToolLockFilePath(
         SingleProjectInfo toolLibrary,
         NuGetFramework framework,
         string nugetPackagesRoot)
@@ -295,7 +287,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             toolLibrary.Name + FileNameSuffixes.DepsJson);
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.ExpectDepsJsonAt,
+            CliStrings.ExpectDepsJsonAt,
             ProjectToolsCommandResolverName,
             depsJsonPath));
 
@@ -327,11 +319,11 @@ public class ProjectToolsCommandResolver : ICommandResolver
         if (string.IsNullOrEmpty(toolDepsJsonGeneratorProject) ||
             !File.Exists(toolDepsJsonGeneratorProject))
         {
-            throw new GracefulException(LocalizableStrings.DepsJsonGeneratorProjectNotSet);
+            throw new GracefulException(CliStrings.DepsJsonGeneratorProjectNotSet);
         }
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.GeneratingDepsJson,
+            CliStrings.GeneratingDepsJson,
             depsPath));
 
         var tempDepsFile = Path.Combine(PathUtilities.CreateTempSubdirectory(), Path.GetRandomFileName());
@@ -385,7 +377,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             Path.Combine(AppContext.BaseDirectory, "MSBuild.dll") :
             msBuildExePath;
 
-        Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.MSBuildArgs,
+        Reporter.Verbose.WriteLine(string.Format(CliStrings.MSBuildArgs,
             ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args)));
 
         int result;
@@ -426,10 +418,10 @@ public class ProjectToolsCommandResolver : ICommandResolver
         if (result != 0)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.UnableToGenerateDepsJson,
+                CliStrings.UnableToGenerateDepsJson,
                 stdOut + Environment.NewLine + stdErr));
 
-            throw new GracefulException(string.Format(LocalizableStrings.UnableToGenerateDepsJson, toolDepsJsonGeneratorProject));
+            throw new GracefulException(string.Format(CliStrings.UnableToGenerateDepsJson, toolDepsJsonGeneratorProject));
         }
 
         try
@@ -439,7 +431,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
         catch (Exception e)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.UnableToGenerateDepsJson,
+                CliStrings.UnableToGenerateDepsJson,
                 e.Message));
 
             try
@@ -449,7 +441,7 @@ public class ProjectToolsCommandResolver : ICommandResolver
             catch (Exception e2)
             {
                 Reporter.Verbose.WriteLine(string.Format(
-                    LocalizableStrings.UnableToDeleteTemporaryDepsJson,
+                    CliStrings.UnableToDeleteTemporaryDepsJson,
                     e2.Message));
             }
         }

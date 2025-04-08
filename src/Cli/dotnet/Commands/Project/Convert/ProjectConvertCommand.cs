@@ -4,37 +4,30 @@
 #nullable enable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-namespace Microsoft.DotNet.Tools.Project.Convert;
+namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
-internal sealed class ProjectConvertCommand : CommandBase
+internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
-    private readonly string _file;
-    private readonly string? _outputDirectory;
-    private readonly bool _force;
-
-    public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
-    {
-        _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
-        _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
-        _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
-    }
+    private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
+    private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
+    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
 
     public override int Execute()
     {
         string file = Path.GetFullPath(_file);
         if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
         {
-            throw new GracefulException(LocalizableStrings.InvalidFilePath, file);
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
         string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
-            throw new GracefulException(LocalizableStrings.DirectoryAlreadyExists, targetDirectory);
+            throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
 
         // Find directives (this can fail, so do this before creating the target directory).

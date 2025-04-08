@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Reference.List;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Reference.List;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.List.Reference;
 
 internal static class ListProjectToProjectReferencesCommandParser
 {
@@ -20,7 +19,7 @@ internal static class ListProjectToProjectReferencesCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("reference", LocalizableStrings.AppFullName);
+        var command = new CliCommand("reference", CliCommandStrings.ReferenceListAppFullName);
 
         command.Arguments.Add(Argument);
 

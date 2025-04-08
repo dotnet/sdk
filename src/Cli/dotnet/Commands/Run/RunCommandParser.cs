@@ -3,47 +3,45 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Run;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal static class RunCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-run";
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.RunConfigurationOptionDescription);
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
     public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
 
     public static readonly CliOption<string> ProjectOption = new("--project")
     {
-        Description = LocalizableStrings.CommandOptionProjectDescription
+        Description = CliCommandStrings.CommandOptionProjectDescription
     };
 
     public static readonly CliOption<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly CliOption<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
-        Description = LocalizableStrings.CommandOptionLaunchProfileDescription
+        Description = CliCommandStrings.CommandOptionLaunchProfileDescription
     };
 
     public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
     {
-        Description = LocalizableStrings.CommandOptionNoLaunchProfileDescription,
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
     {
-        Description = LocalizableStrings.CommandOptionNoLaunchProfileArgumentsDescription
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
     };
 
     public static readonly CliOption<bool> NoBuildOption = new("--no-build")
     {
-        Description = LocalizableStrings.CommandOptionNoBuildDescription,
+        Description = CliCommandStrings.CommandOptionNoBuildDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -57,7 +55,7 @@ internal static class RunCommandParser
 
     public static readonly CliArgument<string[]> ApplicationArguments = new("applicationArguments")
     {
-        DefaultValueFactory = _ => Array.Empty<string>(),
+        DefaultValueFactory = _ => [],
         Description = "Arguments passed to the application that is being run."
     };
 
@@ -70,11 +68,11 @@ internal static class RunCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("run", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("run", DocsLink, CliCommandStrings.RunAppFullName);
 
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
+        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.RunRuntimeOptionDescription));
         command.Options.Add(ProjectOption);
         command.Options.Add(PropertyOption);
         command.Options.Add(LaunchProfileOption);

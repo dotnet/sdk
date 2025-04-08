@@ -3,17 +3,12 @@
 
 namespace Microsoft.DotNet.Cli;
 
-internal class TopLevelCommandParserResult
+internal class TopLevelCommandParserResult(string command)
 {
     public static TopLevelCommandParserResult Empty
     {
         get { return new TopLevelCommandParserResult(string.Empty); }
     }
 
-    public string Command { get; }
-
-    public TopLevelCommandParserResult(string command)
-    {
-        Command = command;
-    }
+    public string Command { get; } = command;
 }

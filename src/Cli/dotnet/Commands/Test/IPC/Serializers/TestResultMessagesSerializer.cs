@@ -2,8 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 /*
   |---FieldCount---| 2 bytes
@@ -323,7 +324,7 @@ internal sealed class TestResultMessagesSerializer : BaseSerializer, INamedPipeS
             exceptionMessages.Add(new ExceptionMessage(errorMessage, errorType, stackTrace));
         }
 
-        return exceptionMessages.ToArray();
+        return [.. exceptionMessages];
     }
 
     public void Serialize(object objectToSerialize, Stream stream)

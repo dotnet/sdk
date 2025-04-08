@@ -1,26 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.Tools.Tool.Search;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-internal class SearchResultPrinter
+internal class SearchResultPrinter(IReporter reporter)
 {
-    private readonly IReporter _reporter;
-
-    public SearchResultPrinter(IReporter reporter)
-    {
-        _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
-    }
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
 
     public void Print(bool isDetailed, IReadOnlyCollection<SearchResultPackage> searchResultPackages)
     {
         if (searchResultPackages.Count == 0)
         {
-            _reporter.WriteLine(LocalizableStrings.NoResult);
+            _reporter.WriteLine(CliCommandStrings.NoResult);
             return;
         }
 
@@ -28,19 +22,19 @@ internal class SearchResultPrinter
         {
             var table = new PrintableTable<SearchResultPackage>();
             table.AddColumn(
-                LocalizableStrings.PackageId,
+                CliCommandStrings.PackageId,
                 p => p.Id.ToString());
             table.AddColumn(
-                LocalizableStrings.LatestVersion,
+                CliCommandStrings.LatestVersion,
                 p => p.LatestVersion);
             table.AddColumn(
-                LocalizableStrings.Authors,
+                CliCommandStrings.Authors,
                 p => p.Authors == null ? "" : string.Join(", ", p.Authors));
             table.AddColumn(
-                LocalizableStrings.Downloads,
+                CliCommandStrings.Downloads,
                 p => p.TotalDownloads.ToString());
             table.AddColumn(
-                LocalizableStrings.Verified,
+                CliCommandStrings.Verified,
                 p => p.Verified ? "x" : "");
 
             table.PrintRows(searchResultPackages, l => _reporter.WriteLine(l));
@@ -51,39 +45,39 @@ internal class SearchResultPrinter
             {
                 _reporter.WriteLine("----------------".Bold());
                 _reporter.WriteLine(p.Id.ToString());
-                _reporter.WriteLine($"{LocalizableStrings.LatestVersion}: ".Bold() + p.LatestVersion);
+                _reporter.WriteLine($"{CliCommandStrings.LatestVersion}: ".Bold() + p.LatestVersion);
                 if (p.Authors != null)
                 {
-                    _reporter.WriteLine($"{LocalizableStrings.Authors}: ".Bold() + string.Join(", ", p.Authors));
+                    _reporter.WriteLine($"{CliCommandStrings.Authors}: ".Bold() + string.Join(", ", p.Authors));
                 }
 
                 if (p.Tags != null)
                 {
-                    _reporter.WriteLine($"{LocalizableStrings.Tags}: ".Bold() + string.Join(", ", p.Tags));
+                    _reporter.WriteLine($"{CliCommandStrings.Tags}: ".Bold() + string.Join(", ", p.Tags));
                 }
 
-                _reporter.WriteLine($"{LocalizableStrings.Downloads}: ".Bold() + p.TotalDownloads);
+                _reporter.WriteLine($"{CliCommandStrings.Downloads}: ".Bold() + p.TotalDownloads);
 
 
-                _reporter.WriteLine($"{LocalizableStrings.Verified}: ".Bold() + p.Verified.ToString());
+                _reporter.WriteLine($"{CliCommandStrings.Verified}: ".Bold() + p.Verified.ToString());
 
                 if (!string.IsNullOrWhiteSpace(p.Summary))
                 {
-                    _reporter.WriteLine($"{LocalizableStrings.Summary}: ".Bold() + p.Summary);
+                    _reporter.WriteLine($"{CliCommandStrings.Summary}: ".Bold() + p.Summary);
                 }
 
                 if (!string.IsNullOrWhiteSpace(p.Description))
                 {
-                    _reporter.WriteLine($"{LocalizableStrings.Description}: ".Bold() + p.Description);
+                    _reporter.WriteLine($"{CliCommandStrings.Description}: ".Bold() + p.Description);
                 }
 
                 if (p.Versions.Count != 0)
                 {
-                    _reporter.WriteLine($"{LocalizableStrings.Versions}: ".Bold());
+                    _reporter.WriteLine($"{CliCommandStrings.Versions}: ".Bold());
                     foreach (SearchResultPackageVersion version in p.Versions)
                     {
                         _reporter.WriteLine(
-                            $"\t{version.Version}" + $" {LocalizableStrings.Downloads}: ".Bold() + version.Downloads);
+                            $"\t{version.Version}" + $" {CliCommandStrings.Downloads}: ".Bold() + version.Downloads);
                     }
                 }
 

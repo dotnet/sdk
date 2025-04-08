@@ -3,7 +3,7 @@
 
 using System.Globalization;
 
-namespace Microsoft.Testing.Platform.OutputDevice;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal static class TargetFrameworkParser
 {
@@ -19,7 +19,7 @@ internal static class TargetFrameworkParser
         if (frameworkDescription.StartsWith(netFramework, ignoreCase: false, CultureInfo.InvariantCulture))
         {
             // .NET Framework 4.7.2
-            if (frameworkDescription.Length < (netFramework.Length + 6))
+            if (frameworkDescription.Length < netFramework.Length + 6)
             {
                 return frameworkDescription;
             }
@@ -55,7 +55,7 @@ internal static class TargetFrameworkParser
         if (frameworkDescription.StartsWith(netCore, ignoreCase: false, CultureInfo.InvariantCulture))
         {
             // .NET Core 3.1
-            return frameworkDescription.Length >= (netCore.Length + 4)
+            return frameworkDescription.Length >= netCore.Length + 4
                 ? $"netcoreapp{frameworkDescription[netCore.Length + 1]}.{frameworkDescription[netCore.Length + 3]}"
                 : frameworkDescription;
         }

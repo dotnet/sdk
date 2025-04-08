@@ -3,28 +3,19 @@
 
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.Platform.OutputDevice;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler : IDisposable
+internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output) : IDisposable
 {
-    private readonly BuildOptions _buildOptions;
-    private readonly TestApplicationActionQueue _actionQueue;
-    private readonly TerminalTestReporter _output;
+    private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
+    private readonly TerminalTestReporter _output = output;
 
     private readonly ConcurrentBag<TestApplication> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
-
-    public MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
-    {
-        _buildOptions = buildOptions;
-        _actionQueue = actionQueue;
-        _output = output;
-    }
 
     public bool RunMSBuild()
     {
@@ -55,7 +46,7 @@ internal sealed class MSBuildHandler : IDisposable
 
         if (msBuildExitCode != ExitCode.Success)
         {
-            _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
+            _output.WriteMessage(string.Format(CliCommandStrings.CmdMSBuildProjectsPropertiesErrorDescription, msBuildExitCode));
             return false;
         }
 
@@ -99,9 +90,11 @@ internal sealed class MSBuildHandler : IDisposable
 
             _output.WriteMessage(
                 string.Format(
-                    Tools.Test.LocalizableStrings.CmdUnsupportedVSTestTestApplicationsDescription,
+                    CliCommandStrings.CmdUnsupportedVSTestTestApplicationsDescription,
                     string.Join(Environment.NewLine, vsTestTestProjects.Select(module => Path.GetFileName(module.ProjectFullPath)))),
                 new SystemConsoleColor { ConsoleColor = ConsoleColor.Red });
+
+            _output.DisableTestRunSummary();
 
             return;
         }
@@ -144,7 +137,7 @@ internal sealed class MSBuildHandler : IDisposable
         return (projects, isBuiltOrRestored);
     }
 
-    private void LogProjectProperties(IEnumerable<TestModule> modules)
+    private static void LogProjectProperties(IEnumerable<TestModule> modules)
     {
         if (!Logger.TraceEnabled)
         {

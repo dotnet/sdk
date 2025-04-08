@@ -2,23 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.FileSystemGlobbing;
-using Microsoft.Testing.Platform.OutputDevice;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestModulesFilterHandler
+internal sealed class TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
 {
-    private readonly TestApplicationActionQueue _actionQueue;
-    private readonly TerminalTestReporter _output;
-
-    public TestModulesFilterHandler(TestApplicationActionQueue actionQueue, TerminalTestReporter output)
-    {
-        _actionQueue = actionQueue;
-        _output = output;
-    }
+    private readonly TestApplicationActionQueue _actionQueue = actionQueue;
+    private readonly TerminalTestReporter _output = output;
 
     public bool RunWithTestModulesFilter(ParseResult parseResult, BuildOptions buildOptions)
     {
@@ -35,7 +29,7 @@ internal sealed class TestModulesFilterHandler
             // If the root directory is not valid, we simply return
             if (string.IsNullOrEmpty(rootDirectory) || !Directory.Exists(rootDirectory))
             {
-                _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdNonExistentRootDirectoryErrorDescription, rootDirectory),
+                _output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentRootDirectoryErrorDescription, rootDirectory),
                     new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
                 return false;
             }
@@ -46,14 +40,14 @@ internal sealed class TestModulesFilterHandler
         // If no matches were found, we simply return
         if (!testModulePaths.Any())
         {
-            _output.WriteMessage(string.Format(Tools.Test.LocalizableStrings.CmdNoTestModulesErrorDescription, testModules, rootDirectory),
+            _output.WriteMessage(string.Format(CliCommandStrings.CmdNoTestModulesErrorDescription, testModules, rootDirectory),
                 new SystemConsoleColor() { ConsoleColor = ConsoleColor.Yellow });
             return false;
         }
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, true, true), buildOptions);
+            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null), buildOptions);
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }
@@ -68,6 +62,6 @@ internal sealed class TestModulesFilterHandler
         Matcher matcher = new();
         matcher.AddIncludePatterns(testModulePatterns);
 
-        return MatcherExtensions.GetResultsInFullPath(matcher, rootDirectory);
+        return matcher.GetResultsInFullPath(rootDirectory);
     }
 }

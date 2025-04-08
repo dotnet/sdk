@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Reference.Add;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Reference;
+using Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Add.Reference;
 
 internal static class AddProjectToProjectReferenceParser
 {
@@ -18,7 +18,7 @@ internal static class AddProjectToProjectReferenceParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("reference", LocalizableStrings.AppFullName);
+        CliCommand command = new("reference", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandParser.FrameworkOption);

@@ -2,16 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Clean;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Elevate;
+using Microsoft.DotNet.Cli.Commands.Workload.History;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.Commands.Workload.Repair;
+using Microsoft.DotNet.Cli.Commands.Workload.Restore;
+using Microsoft.DotNet.Cli.Commands.Workload.Search;
+using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
-using CommonStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadCommandParser
 {
@@ -21,13 +29,13 @@ internal static class WorkloadCommandParser
 
     public static readonly CliOption<bool> InfoOption = new("--info")
     {
-        Description = CommonStrings.WorkloadInfoDescription,
+        Description = CliCommandStrings.WorkloadInfoDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<bool> VersionOption = new("--version")
     {
-        Description = CommonStrings.WorkloadVersionDescription,
+        Description = CliCommandStrings.WorkloadVersionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -45,28 +53,28 @@ internal static class WorkloadCommandParser
         var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
         // The explicit space here is intentional, as it's easy to miss in localization and crucial for parsing
-        return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + Workloads.Workload.List.LocalizableStrings.WorkloadVersionNotInstalledShort);
+        return versionInfo.Version + (versionInfo.IsInstalled ? string.Empty : ' ' + CliCommandStrings.WorkloadVersionNotInstalledShort);
     }
 
     internal static void ShowWorkloadsInfo(ParseResult parseResult = null, WorkloadInfoHelper workloadInfoHelper = null, IReporter reporter = null, string dotnetDir = null, bool showVersion = true)
     {
         workloadInfoHelper ??= new WorkloadInfoHelper(parseResult != null ? parseResult.HasOption(SharedOptions.InteractiveOption) : false);
-        reporter ??= Utils.Reporter.Output;
+        reporter ??= Reporter.Output;
         var versionInfo = workloadInfoHelper.ManifestProvider.GetWorkloadVersion();
 
         void WriteUpdateModeAndAnyError(string indent = "")
         {
             var useWorkloadSets = InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(workloadInfoHelper._currentSdkFeatureBand, workloadInfoHelper.UserLocalPath), "default.json")).ShouldUseWorkloadSets();
             var workloadSetsString = useWorkloadSets ? "workload sets" : "loose manifests";
-            reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
+            reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadManifestInstallationConfiguration, workloadSetsString));
 
             if (!versionInfo.IsInstalled)
             {
-                reporter.WriteLine(indent + string.Format(CommonStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
+                reporter.WriteLine(indent + string.Format(CliCommandStrings.WorkloadSetFromGlobalJsonNotInstalled, versionInfo.Version, versionInfo.GlobalJsonPath));
             }
             else if (versionInfo.WorkloadSetsEnabledWithoutWorkloadSet)
             {
-                reporter.WriteLine(indent + CommonStrings.ShouldInstallAWorkloadSet);
+                reporter.WriteLine(indent + CliCommandStrings.ShouldInstallAWorkloadSet);
             }
         }
         
@@ -86,7 +94,7 @@ internal static class WorkloadCommandParser
 
             if (installedWorkloads.Count == 0)
             {
-                reporter.WriteLine(CommonStrings.NoWorkloadsInstalledInfoWarning);
+                reporter.WriteLine(CliCommandStrings.NoWorkloadsInstalledInfoWarning);
             }
             else
             {
@@ -102,17 +110,17 @@ internal static class WorkloadCommandParser
 
                     reporter.WriteLine($" [{workload.Key}]");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadSourceColumn}:");
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadSourceColumn}:");
                     reporter.WriteLine($" {workload.Value,align}");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadManifestVersionColumn}:");
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadManifestVersionColumn}:");
                     reporter.WriteLine($"    {workloadManifest.Version + '/' + workloadFeatureBand,align}");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadManifestPathColumn}:");
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadManifestPathColumn}:");
                     reporter.WriteLine($"       {workloadManifest.ManifestPath,align}");
 
-                    reporter.Write($"{separator}{CommonStrings.WorkloadInstallTypeColumn}:");
-                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Utils.Product.Version), dotnetPath).ToString(),align}"
+                    reporter.Write($"{separator}{CliCommandStrings.WorkloadInstallTypeColumn}:");
+                    reporter.WriteLine($"       {WorkloadInstallType.GetWorkloadInstallType(new SdkFeatureBand(Product.Version), dotnetPath).ToString(),align}"
                     );
                     reporter.WriteLine("");
                 }
@@ -144,7 +152,7 @@ internal static class WorkloadCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("workload", DocsLink, CommonStrings.CommandDescription);
+        DocumentedCommand command = new("workload", DocsLink, CliCommandStrings.WorkloadCommandDescription);
 
         command.Subcommands.Add(WorkloadInstallCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadUpdateCommandParser.GetCommand());
@@ -162,7 +170,7 @@ internal static class WorkloadCommandParser
         {
             if (commandResult.GetResult(InfoOption) is null && commandResult.GetResult(VersionOption) is null && !commandResult.Children.Any(child => child is System.CommandLine.Parsing.CommandResult))
             {
-                commandResult.AddError(CommonLocalizableStrings.RequiredCommandNotPassed);
+                commandResult.AddError(CliStrings.RequiredCommandNotPassed);
             }
         });
 

@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
 
-namespace Microsoft.DotNet.Tools.Sln.Remove;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Remove;
 
 internal class RemoveProjectFromSolutionCommand : CommandBase
 {
@@ -19,7 +18,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
     {
         _fileOrDirectory = parseResult.GetValue(SlnCommandParser.SlnArgument);
 
-        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? Array.Empty<string>()).ToList().AsReadOnly();
+        _projects = (parseResult.GetValue(SlnRemoveParser.ProjectPathArgument) ?? []).ToList().AsReadOnly();
 
         SlnArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SlnArgumentValidator.CommandType.Remove);
     }
@@ -29,7 +28,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
         if (_projects.Count == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
+            throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToRemove);
         }
 
         try
@@ -49,13 +48,13 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
         {
             if (ex is SolutionException || ex.InnerException is SolutionException)
             {
-                throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
             }
             throw new GracefulException(ex.Message, ex);
         }
     }
 
-    private async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    private static async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
         SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
@@ -81,13 +80,13 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
             // If project is still not found, print error
             if (project is null)
             {
-                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
             }
             // If project is found, remove it
             else
             {
                 solution.RemoveProject(project);
-                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
+                Reporter.Output.WriteLine(CliStrings.ProjectRemovedFromTheSolution, projectPath);
             }
         }
 

@@ -5,18 +5,15 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ShellShim;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using InstallLocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -54,7 +51,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And
                 .Message
                 .Should()
-                .Be(string.Format(LocalizableStrings.ToolNotInstalled, packageId));
+                .Be(string.Format(CliCommandStrings.ToolUninstallToolNotInstalled, packageId));
         }
 
         [Fact]
@@ -67,7 +64,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -91,7 +88,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Single()
                 .Should()
                 .Contain(string.Format(
-                    LocalizableStrings.UninstallSucceeded,
+                    CliCommandStrings.ToolUninstallUninstallSucceeded,
                     PackageId,
                     PackageVersion));
 
@@ -109,7 +106,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -161,7 +158,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Single()
                 .Should()
                 .Contain(string.Format(
-                    LocalizableStrings.UninstallSucceeded,
+                    CliCommandStrings.ToolUninstallUninstallSucceeded,
                     PackageId,
                     PackageVersion));
 
@@ -179,7 +176,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Last()
                 .Should()
                 .Contain(string.Format(
-                    InstallLocalizableStrings.InstallationSucceeded,
+                    CliCommandStrings.ToolInstallInstallationSucceeded,
                     ProjectRestorerMock.DefaultToolCommandName,
                     PackageId,
                     PackageVersion));
@@ -204,7 +201,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Message
                 .Should()
                 .Be(string.Format(
-                    CommonLocalizableStrings.FailedToUninstallToolPackage,
+                    CliStrings.FailedToUninstallToolPackage,
                     PackageId,
                     "simulated error"));
 
@@ -225,7 +222,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .And
                 .Message
                 .Should()
-                .Be(string.Format(LocalizableStrings.InvalidToolPathOption, toolPath));
+                .Be(string.Format(CliCommandStrings.ToolUninstallInvalidToolPathOption, toolPath));
         }
 
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options)

@@ -2,17 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal class ToolInstallLocalCommand : CommandBase
 {
@@ -50,7 +50,7 @@ internal class ToolInstallLocalCommand : CommandBase
 
         _createManifestIfNeeded = parseResult.GetValue(ToolInstallCommandParser.CreateManifestIfNeededOption);
 
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         _toolManifestFinder = toolManifestFinder ??
                               new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
@@ -58,7 +58,7 @@ internal class ToolInstallLocalCommand : CommandBase
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
         restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-            NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
+            NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
 
@@ -124,7 +124,7 @@ internal class ToolInstallLocalCommand : CommandBase
             throw new GracefulException(
                 [
                     string.Format(
-                        Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
+                        CliCommandStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
@@ -135,7 +135,7 @@ internal class ToolInstallLocalCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                    CliCommandStrings.UpdateLocaToolSucceededVersionNoChange,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
@@ -149,7 +149,7 @@ internal class ToolInstallLocalCommand : CommandBase
                 [toolDownloadedPackage.Command.Name]);
             _reporter.WriteLine(
                 string.Format(
-                    Update.LocalizableStrings.UpdateLocalToolSucceeded,
+                    CliCommandStrings.UpdateLocalToolSucceeded,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),
@@ -181,7 +181,7 @@ internal class ToolInstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.LocalToolInstallationSucceeded,
+                CliCommandStrings.LocalToolInstallationSucceeded,
                 toolDownloadedPackage.Command.Name,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version.ToNormalizedString(),
@@ -201,7 +201,7 @@ internal class ToolInstallLocalCommand : CommandBase
         catch (ToolManifestCannotBeFoundException e)
         {
             throw new GracefulException(
-                [e.Message, LocalizableStrings.NoManifestGuide],
+                [e.Message, CliCommandStrings.ToolInstallNoManifestGuide],
                 verboseMessages: [e.VerboseMessage],
                 isUserError: false);
         }

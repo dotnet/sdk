@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Uninstall;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Uninstall.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 
 internal static class WorkloadUninstallCommandParser
 {
@@ -22,7 +21,7 @@ internal static class WorkloadUninstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        CliCommand command = new("uninstall", CliCommandStrings.WorkloadUninstallCommandDescription);
         command.Arguments.Add(WorkloadIdArgument);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
         command.Options.Add(CommonOptions.VerbosityOption);

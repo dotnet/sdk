@@ -2,40 +2,27 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Common;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-internal class ToolInstallCommand : CommandBase
+internal class ToolInstallCommand(
+    ParseResult parseResult,
+    ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
+    ToolInstallLocalCommand toolInstallLocalCommand = null) : CommandBase(parseResult)
 {
-    private readonly ToolInstallLocalCommand _toolInstallLocalCommand;
-    private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand;
-    private readonly bool _global;
-    private readonly string _toolPath;
-    private readonly string _framework;
-
-    public ToolInstallCommand(
-        ParseResult parseResult,
-        ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
-        ToolInstallLocalCommand toolInstallLocalCommand = null)
-        : base(parseResult)
-    {
-        _toolInstallLocalCommand = toolInstallLocalCommand;
-
-        _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
-
-        _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-        _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
-        _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
-    }
+    private readonly ToolInstallLocalCommand _toolInstallLocalCommand = toolInstallLocalCommand;
+    private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
+    private readonly bool _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
+    private readonly string _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
+    private readonly string _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
 
     public override int Execute()
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
@@ -50,7 +37,7 @@ internal class ToolInstallCommand : CommandBase
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption));
+                        CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption));
             }
 
             return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();

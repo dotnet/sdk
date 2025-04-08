@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.NuGet;
 
-namespace Microsoft.DotNet.Tools.Package.Remove;
+namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
 internal class RemovePackageReferenceCommand : CommandBase
 {
@@ -27,14 +27,13 @@ internal class RemovePackageReferenceCommand : CommandBase
         }
         if (_arguments.Count != 1)
         {
-            throw new GracefulException(LocalizableStrings.SpecifyExactlyOnePackageReference);
+            throw new GracefulException(CliCommandStrings.PackageRemoveSpecifyExactlyOnePackageReference);
         }
     }
 
     public override int Execute()
     {
-        var projectFilePath = string.Empty;
-
+        string projectFilePath;
         if (!File.Exists(_fileOrDirectory))
         {
             projectFilePath = MsbuildProject.GetProjectFileFromDirectory(_fileOrDirectory).FullName;
@@ -66,6 +65,6 @@ internal class RemovePackageReferenceCommand : CommandBase
             .OptionValuesToBeForwarded(PackageRemoveCommandParser.GetCommand())
             .SelectMany(a => a.Split(' ')));
 
-        return args.ToArray();
+        return [.. args];
     }
 }

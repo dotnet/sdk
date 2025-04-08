@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Utils;
-using UpdateToolsLocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools.Tool.Common;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 internal class ToolAppliedOption
 {
@@ -22,7 +21,7 @@ internal class ToolAppliedOption
 
     public static CliOption<bool> UpdateAllOption = new("--all")
     {
-        Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription,
+        Description = CliCommandStrings.UpdateAllOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -32,12 +31,12 @@ internal class ToolAppliedOption
 
     public static CliOption<string> ToolPathOption = new("--tool-path")
     {
-        HelpName = Install.LocalizableStrings.ToolPathOptionName
+        HelpName = CliCommandStrings.ToolInstallToolPathOptionName
     };
 
     public static CliOption<string> ToolManifestOption = new("--tool-manifest")
     {
-        HelpName = Install.LocalizableStrings.ManifestPathOptionName,
+        HelpName = CliCommandStrings.ToolInstallManifestPathOptionName,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -101,7 +100,7 @@ internal class ToolAppliedOption
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
         }
     }
 

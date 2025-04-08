@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using RunStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Project.Convert.Tests;
 
@@ -587,7 +587,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyConversionThrows(
             inputCSharp: source,
-            expectedWildcardPattern: string.Format(RunStrings.CannotConvertDirective, "/app/Program.cs:5"));
+            expectedWildcardPattern: string.Format(CliCommandStrings.CannotConvertDirective, "/app/Program.cs:5"));
 
         VerifyConversion(
             inputCSharp: source,
@@ -635,7 +635,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyConversionThrows(
             inputCSharp: source,
-            expectedWildcardPattern: string.Format(RunStrings.CannotConvertDirective, "/app/Program.cs:5"));
+            expectedWildcardPattern: string.Format(CliCommandStrings.CannotConvertDirective, "/app/Program.cs:5"));
 
         VerifyConversion(
             inputCSharp: source,
