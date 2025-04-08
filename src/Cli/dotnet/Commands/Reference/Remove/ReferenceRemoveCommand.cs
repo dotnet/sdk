@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli.Commands.Remove;
+using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 

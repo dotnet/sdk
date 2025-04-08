@@ -5,7 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 
-namespace Microsoft.DotNet.Cli.Commands.Add.Reference;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 
 internal static class AddReferenceCommandParser
 {

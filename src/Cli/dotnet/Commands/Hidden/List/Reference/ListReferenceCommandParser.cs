@@ -4,7 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
 
-namespace Microsoft.DotNet.Cli.Commands.List.Reference;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 
 internal static class ListReferenceCommandParser
 {

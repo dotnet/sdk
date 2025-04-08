@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 
 public class InternalReportInstallSuccessCommand
 {

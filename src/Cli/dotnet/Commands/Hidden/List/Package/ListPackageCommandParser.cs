@@ -4,7 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package.List;
 
-namespace Microsoft.DotNet.Cli.Commands.List.Package;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
 
 internal static class ListPackageCommandParser
 {

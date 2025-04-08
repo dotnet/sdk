@@ -4,7 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
-namespace Microsoft.DotNet.Cli.Commands.Remove.Reference;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 
 internal static class RemoveReferenceCommandParser
 {

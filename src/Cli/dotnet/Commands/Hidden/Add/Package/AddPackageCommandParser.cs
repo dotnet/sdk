@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli.Commands.Add.Package;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 
 internal static class AddPackageCommandParser
 {

@@ -2,11 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Add.Package;
-using Microsoft.DotNet.Cli.Commands.Add.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli.Commands.Add;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
 
 internal static class AddCommandParser
 {

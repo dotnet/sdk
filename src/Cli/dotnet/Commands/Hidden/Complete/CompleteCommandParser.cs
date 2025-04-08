@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Cli.Commands.Complete;
+namespace Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 
 internal static class CompleteCommandParser
 {

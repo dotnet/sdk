@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine.Parsing;
-using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Utils;
 using Parser = Microsoft.DotNet.Cli.Parser;
