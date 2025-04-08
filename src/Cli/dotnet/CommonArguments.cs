@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Cli
         }
         public static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
         {
-            if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version.ToString()) &&
+            if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version?.ToString()) &&
                 !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
             {
                 throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
