@@ -4,6 +4,16 @@ parameters:
   type: string
   default: ''
 
+- name: desiredSigning
+  displayName: Signed/unsigned/default signing parameters
+  type: string
+  default: ''
+
+- name: desiredIBC
+  displayName: IBC on/IBC off/default IBC parameters
+  type: string
+  default: ''
+
 variables:
 - ${{ if ne(parameters.vmrBranch, '') }}:
   - name: VmrBranch
@@ -12,38 +22,161 @@ variables:
   - name: VmrBranch
     value: ${{ replace(replace(variables['Build.SourceBranch'], 'refs/heads/', ''), 'refs/pull/', '') }}
 
-- name: almaLinuxContainer
+- name: _TeamName
+  value: DotNetCore
+
+- name: defaultContainerOptions
+  value: --privileged
+
+- name: isOfficialBuild
+  value: ${{ and(eq(variables['System.TeamProject'], 'internal'), notin(variables['Build.Reason'], 'PullRequest')) }}
+
+## Note: The use of if expressons underneath the variable is necessary to get the updated isOfficialBuild value
+- ${{ if eq(parameters.desiredIBC, 'Enabled') }}:
+  - name: ibcEnabled
+    value: true
+- ${{ elseif eq(parameters.desiredIBC, 'Disabled') }}:
+  - name: ibcEnabled
+    value: false
+- ${{ elseif or(startsWith(parameters.desiredIBC, 'Default'), eq(parameters.desiredIBC, '')) }}:
+  # Enable IBC on the internal project if the, branch is a main or release branch
+  - ${{ if and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+    # IBC disabled until Mismatched MVIDs issue resolved. https://github.com/dotnet/source-build/issues/4954
+    - name: ibcEnabled
+      value: false
+  # No IBC otherwise.
+  - ${{ else }}:
+    - name: ibcEnabled
+      value: false
+- ${{ else }}:
+  - name: ibcEnabled
+    value: false
+
+- name: officialBuildParameter
+  ${{ if eq(variables['isOfficialBuild'], true) }}:
+    value: /p:OfficialBuildId=$(Build.BuildNumber)
+  ${{ else }}:
+    value: ''
+
+- ${{ if eq(parameters.desiredSigning, 'Signed') }}:
+  - name: signEnabled
+    value: true
+- ${{ elseif eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signEnabled
+    value: false
+- ${{ elseif or(startsWith(parameters.desiredSigning, 'Default'), eq(parameters.desiredSigning, '')) }}:
+  # Always sign on the public project (will be dry-run signing)
+  - ${{ if eq(variables['System.TeamProject'], 'public') }}:
+    - name: signEnabled
+      value: true
+  # Always sign in pull requests (dry run)
+  - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
+    - name: signEnabled
+      value: true
+  # Pass sign on the internal project if the, branch is a main or release branch
+  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+    - name: signEnabled
+      value: true
+  # Do not sign otherwise.
+  - ${{ else }}:
+    - name: signEnabled
+      value: false
+- ${{ else }}:
+  - name: signEnabled
+    value: false
+
+# If signing is disabled, don't sign the DAC.
+- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signDacEnabled
+    value: false
+# Otherwise, sign if the branch is a release branch.
+# We can't sign the DAC in main because the certificates are locked down.
+- ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/reltest/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+  - name: signDacEnabled
+    value: true
+- ${{ else }}:
+  - name: signDacEnabled
+    value: false
+
+- name: almaLinuxContainerName
+  value: almaLinuxContainer
+- name: almaLinuxContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:almalinux-8-source-build
-- name: alpineContainer
+
+- name: alpineContainerName
+  value: alpineContainer
+- name: alpineContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-amd64
-- name: centOSStreamContainer
+
+- name: centOSStreamContainerName
+  value: centOSStreamContainer
+- name: centOSStreamContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-- name: fedoraContainer
+
+- name: fedoraContainerName
+  value: fedoraContainer
+- name: fedoraContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-41
-- name: ubuntuContainer
+
+- name: ubuntuContainerName
+  value: ubuntuContainer
+- name: ubuntuContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04
-- name: ubuntuArmContainer
+
+- name: ubuntuArmContainerName
+  value: ubuntuArmContainer
+- name: ubuntuArmContainerImage
   value: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-arm64
-- name: azurelinuxX64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-net9.0
-- name: azurelinuxArmCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-net9.0
-- name: azurelinuxArm64CrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-net9.0
-- name: azurelinuxX64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-amd64-alpine-net9.0
-- name: azurelinuxArmAlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm-alpine-net9.0
-- name: azurelinuxArm64AlpineCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-arm64-alpine-net9.0
-- name: androidCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-cross-android-amd64-net9.0
-- name: linuxBionicCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-android-openssl-net9.0
-- name: browserCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
-- name: wasiCrossContainer
-  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-webassembly-amd64-net9.0
+
+- name: azurelinuxX64CrossContainerName
+  value: azurelinuxX64CrossContainer
+- name: azurelinuxX64CrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64
+
+- name: azurelinuxArmCrossContainerName
+  value: azurelinuxArmCrossContainer
+- name: azurelinuxArmCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm
+
+- name: azurelinuxArm64CrossContainerName
+  value: azurelinuxArm64CrossContainer
+- name: azurelinuxArm64CrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+
+- name: azurelinuxX64MuslCrossContainerName
+  value: azurelinuxX64MuslCrossContainer
+- name: azurelinuxX64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-amd64-musl
+
+- name: azurelinuxArmMuslCrossContainerName
+  value: azurelinuxArmMuslCrossContainer
+- name: azurelinuxArmMuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm-musl
+
+- name: azurelinuxArm64MuslCrossContainerName
+  value: azurelinuxArm64MuslCrossContainer
+- name: azurelinuxArm64MuslCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64-musl
+
+- name: androidCrossContainerName
+  value: androidCrossContainer
+- name: androidCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-amd64
+
+- name: linuxBionicCrossContainerName
+  value: linuxBionicCrossContainer
+- name: linuxBionicCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-android-openssl-amd64
+
+- name: browserCrossContainerName
+  value: browserCrossContainer
+- name: browserCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
+
+- name: wasiCrossContainerName
+  value: wasiCrossContainer
+- name: wasiCrossContainerImage
+  value: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-webassembly-amd64
 
 - name: almaLinuxName
   value: AlmaLinux8
@@ -87,7 +220,7 @@ variables:
   - name: poolName_LinuxArm64
     value: Docker-Linux-Arm-Public
   - name: poolImage_Mac
-    value: macos-12
+    value: macos-13
   - name: poolImage_Windows
     value: windows.vs2022preview.amd64.open
 - ${{ else }}:

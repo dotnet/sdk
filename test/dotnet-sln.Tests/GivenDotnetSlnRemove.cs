@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
@@ -19,7 +18,7 @@ Usage:
 
 Arguments:
   <SLN_FILE>        The solution file to operate on. If not specified, the command will search the current directory for one. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
-  <PROJECT_PATH>    The paths to the projects to remove from the solution.
+  <PROJECT_PATH>    The project paths or names to remove from the solution.
 
 Options:
   -?, -h, --help    Show command line help.";
@@ -49,8 +48,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "remove");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -63,7 +62,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, commandName);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Theory]
@@ -84,7 +83,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, solutionName, "remove", "p.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindSolutionOrDirectory, solutionName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -105,7 +104,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"InvalidSolution{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -131,7 +130,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -151,7 +150,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
+            cmd.StdErr.Should().Be(CliStrings.SpecifyAtLeastOneProjectToRemove);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -170,7 +169,7 @@ Options:
                 .WithWorkingDirectory(solutionPath)
                 .Execute(solutionCommand, "remove", "App.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -189,7 +188,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "remove", projectToRemove);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -211,7 +210,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", "referenceDoesNotExistInSln.csproj");
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "referenceDoesNotExistInSln.csproj"));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectNotFoundInTheSolution, "referenceDoesNotExistInSln.csproj"));
             File.ReadAllText(solutionPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);
         }
@@ -240,7 +239,38 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectRemovedFromTheSolution, projectToRemove));
+
+            solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionProjects.Single().FilePath.Should().Be(Path.Combine("App", "App.csproj"));
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenPassedAReferenceWithoutExtensionItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new InvalidOperationException($"Unable to get solution serializer for {solutionPath}.");
+            SolutionModel solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
+
+            solution.SolutionProjects.Count.Should().Be(2);
+
+            var projectToRemove = "Lib";
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectRemovedFromTheSolution, Path.Combine(projectToRemove, "Lib.csproj")));
 
             solution = await serializer.OpenAsync(solutionPath, CancellationToken.None);
             solution.SolutionProjects.Count.Should().Be(1);
@@ -266,7 +296,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", projectToRemove);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectRemovedFromTheSolution, projectToRemove));
 
             var templateContents = GetSolutionFileTemplateContents($"ExpectedSlnContentsAfterRemoveProjectInSolutionWithNestedSolutionItems{solutionExtension}");
             File.ReadAllText(solutionPath)
@@ -274,7 +304,7 @@ Options:
                 .BeVisuallyEquivalentTo(templateContents);
         }
 
-        [Theory(Skip = "vs-solutionpersistence does not allow duplicate references.")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47860")]
         [InlineData("sln")]
         [InlineData("solution")]
         public async Task WhenDuplicateReferencesArePresentItRemovesThemAll(string solutionCommand)
@@ -295,7 +325,7 @@ Options:
                 .Execute(solutionCommand, "App.sln", "remove", projectToRemove);
             cmd.Should().Pass();
 
-            string outputText = string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove);
+            string outputText = string.Format(CliStrings.ProjectRemovedFromTheSolution, projectToRemove);
             outputText += Environment.NewLine + outputText;
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
@@ -329,9 +359,9 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "remove", "idontexist.csproj", projectToRemove, "idontexisteither.csproj");
             cmd.Should().Pass();
 
-            string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "idontexist.csproj")}
-{string.Format(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectToRemove)}
-{string.Format(CommonLocalizableStrings.ProjectNotFoundInTheSolution, "idontexisteither.csproj")}";
+            string outputText = $@"{string.Format(CliStrings.ProjectNotFoundInTheSolution, "idontexist.csproj")}
+{string.Format(CliStrings.ProjectRemovedFromTheSolution, projectToRemove)}
+{string.Format(CliStrings.ProjectNotFoundInTheSolution, "idontexisteither.csproj")}";
 
             cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
 
@@ -418,7 +448,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
-                    CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
+                    CliStrings.CouldNotFindAnyProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToRemove)));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
@@ -442,7 +472,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(
                 string.Format(
-                    CommonLocalizableStrings.MoreThanOneProjectInDirectory,
+                    CliStrings.MoreThanOneProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToRemove)));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
@@ -644,8 +674,8 @@ Options:
                 .Execute(solutionCommand, "remove", $"App{solutionExtension}", projectArg);
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
-                + CommonLocalizableStrings.DidYouMean + Environment.NewLine
+                string.Format(CliStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
+                + CliStrings.DidYouMean + Environment.NewLine
                  + $"  dotnet solution App{solutionExtension} remove {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");

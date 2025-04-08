@@ -1,12 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using ManifestReaderTests;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.List;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using ListStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
@@ -35,7 +36,8 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             command.Execute();
 
             // Expected number of lines for table headers
-            _reporter.Lines.Count.Should().Be(6);
+            // Expecting a workload set adds two lines
+            _reporter.Lines.Count.Should().Be(8);
         }
 
         [WindowsOnlyFact]
@@ -109,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
             command.Execute();
 
             // Workloads 1 and 3 should have updates
-            _reporter.Lines.Should().Contain(string.Format(ListStrings.WorkloadUpdatesAvailable, "mock-workload-1 mock-workload-3"));
+            _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.WorkloadListWorkloadUpdatesAvailable, "mock-workload-1 mock-workload-3"));
         }
     }
 }

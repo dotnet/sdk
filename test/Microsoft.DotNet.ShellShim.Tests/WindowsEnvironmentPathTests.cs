@@ -1,8 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 
 namespace Microsoft.DotNet.ShellShim.Tests
 {
@@ -46,7 +49,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             _windowsEnvironmentPath.PrintAddPathInstructionIfPathDoesNotExist();
 
-            _reporter.Lines.Should().Equal(CommonLocalizableStrings.EnvironmentPathWindowsNeedReopen);
+            _reporter.Lines.Should().Equal(CliStrings.EnvironmentPathWindowsNeedReopen);
         }
 
         [Fact]
@@ -80,7 +83,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             _reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathWindowsManualInstructions,
+                    CliStrings.EnvironmentPathWindowsManualInstructions,
                     _toolsPath));
         }
 

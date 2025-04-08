@@ -10,23 +10,15 @@ function InitializeCustomSDKToolset {
 
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them in source build.
-  if ($env:DotNetBuildFromSource -eq "true" -or $productBuild -or $properties -like "*DotNetBuildRepo=true*") {
+  if ($productBuild -or $properties -like "*DotNetBuildRepo=true*") {
     return
   }
 
   $cli = InitializeDotnetCli -install:$true
-  if (-not ($env:PROCESSOR_ARCHITECTURE -like "arm64"))
-  {
-  InstallDotNetSharedFramework "1.0.5"
-  InstallDotNetSharedFramework "1.1.2"
-  InstallDotNetSharedFramework "2.1.0"
-  InstallDotNetSharedFramework "2.2.8"
-  }
-  InstallDotNetSharedFramework "3.1.0"
-  InstallDotNetSharedFramework "5.0.0"
   InstallDotNetSharedFramework "6.0.0"
   InstallDotNetSharedFramework "7.0.0"
   InstallDotNetSharedFramework "8.0.0"
+  InstallDotNetSharedFramework "9.0.0"
 
   CreateBuildEnvScripts
   CreateVSShortcut
@@ -51,6 +43,8 @@ function CreateBuildEnvScripts()
 @echo off
 title SDK Build ($RepoRoot)
 set DOTNET_MULTILEVEL_LOOKUP=0
+REM https://aka.ms/vs/unsigned-dotnet-debugger-lib
+set VSDebugger_ValidateDotnetDebugLibSignatures=0
 
 set DOTNET_ROOT=$env:DOTNET_INSTALL_DIR
 set DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR=$env:DOTNET_INSTALL_DIR
@@ -68,6 +62,8 @@ DOSKEY killdotnet=taskkill /F /IM dotnet.exe /T ^& taskkill /F /IM VSTest.Consol
   $scriptContents = @"
 `$host.ui.RawUI.WindowTitle = "SDK Build ($RepoRoot)"
 `$env:DOTNET_MULTILEVEL_LOOKUP=0
+# https://aka.ms/vs/unsigned-dotnet-debugger-lib
+`$env:VSDebugger_ValidateDotnetDebugLibSignatures=0
 
 `$env:DOTNET_ROOT="$env:DOTNET_INSTALL_DIR"
 `$env:DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR="$env:DOTNET_INSTALL_DIR"

@@ -3,17 +3,16 @@
 
 using NuGet.ProjectModel;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public interface IPackagedCommandSpecFactory
 {
-    public interface IPackagedCommandSpecFactory
-    {
-        CommandSpec CreateCommandSpecFromLibrary(
-            LockFileTargetLibrary toolLibrary,
-            string commandName,
-            IEnumerable<string> commandArguments,
-            IEnumerable<string> allowedExtensions,
-            LockFile lockFile,
-            string depsFilePath,
-            string runtimeConfigPath);
-    }
+    CommandSpec CreateCommandSpecFromLibrary(
+        LockFileTargetLibrary toolLibrary,
+        string commandName,
+        IEnumerable<string> commandArguments,
+        IEnumerable<string> allowedExtensions,
+        LockFile lockFile,
+        string depsFilePath,
+        string runtimeConfigPath);
 }

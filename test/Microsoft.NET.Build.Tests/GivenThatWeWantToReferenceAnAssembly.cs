@@ -10,9 +10,9 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "net40")]
-        [InlineData("netcoreapp2.0", "netstandard1.5")]
-        [InlineData("netcoreapp2.0", "netcoreapp1.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net8.0")]
         public void ItRunsAppsDirectlyReferencingAssemblies(
             string referencerTarget,
             string dependencyTarget)
@@ -199,9 +199,9 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "net40")]
-        [InlineData("netcoreapp2.0", "netstandard1.5")]
-        [InlineData("netcoreapp2.0", "netcoreapp1.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "net8.0")]
         public void ItRunsAppsDirectlyReferencingAssembliesWhichReferenceAssemblies(
             string referencerTarget,
             string dllDependencyTarget)
@@ -422,9 +422,9 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "net40")]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard1.5")]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp1.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssemblies(
             string referencerTarget,
             string dependencyTarget,
@@ -647,9 +647,9 @@ public static class Program
         }
 
         [Theory]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "net40")]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "netstandard1.5")]
-        [InlineData("netcoreapp2.0", "netstandard2.0", "netcoreapp1.0")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net40")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "netstandard1.5")]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "netstandard2.0", "net8.0")]
         public void ItRunsAppsReferencingAProjectDirectlyReferencingAssembliesWhichReferenceAssemblies(
             string referencerTarget,
             string dependencyTarget,

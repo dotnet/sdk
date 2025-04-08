@@ -4,14 +4,13 @@
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory;
+
+public interface ICommandFactory
 {
-    public interface ICommandFactory
-    {
-        ICommand Create(
-            string commandName,
-            IEnumerable<string> args,
-            NuGetFramework framework = null,
-            string configuration = Constants.DefaultConfiguration);
-    }
+    ICommand Create(
+        string commandName,
+        IEnumerable<string> args,
+        NuGetFramework framework = null,
+        string configuration = Constants.DefaultConfiguration);
 }

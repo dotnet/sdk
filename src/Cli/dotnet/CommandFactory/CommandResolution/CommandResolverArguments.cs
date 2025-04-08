@@ -3,28 +3,27 @@
 
 using NuGet.Frameworks;
 
-namespace Microsoft.DotNet.CommandFactory
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+
+public class CommandResolverArguments
 {
-    public class CommandResolverArguments
-    {
-        public string CommandName { get; set; }
+    public string CommandName { get; set; }
 
-        public IEnumerable<string> CommandArguments { get; set; }
+    public IEnumerable<string> CommandArguments { get; set; }
 
-        public NuGetFramework Framework { get; set; }
+    public NuGetFramework Framework { get; set; }
 
-        public string OutputPath { get; set; }
+    public string OutputPath { get; set; }
 
-        public string ProjectDirectory { get; set; }
+    public string ProjectDirectory { get; set; }
 
-        public string Configuration { get; set; }
+    public string Configuration { get; set; }
 
-        public IEnumerable<string> InferredExtensions { get; set; }
+    public IEnumerable<string> InferredExtensions { get; set; }
 
-        public string BuildBasePath { get; set; }
+    public string BuildBasePath { get; set; }
 
-        public string DepsJsonFile { get; set; }
+    public string DepsJsonFile { get; set; }
 
-        public string ApplicationName { get; set; }
-    }
+    public string ApplicationName { get; set; }
 }

@@ -1,0 +1,76 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$(__DistroRid)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</HostRid>
+    <HostRid Condition="'$(HostRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</HostRid>
+
+    <IsDebianBaseDistro Condition="$(HostRid.StartsWith('ubuntu')) or $(HostRid.StartsWith('debian'))">true</IsDebianBaseDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('rhel'))">true</IsRPMBasedDistro>
+    <IsRPMBasedDistro Condition="$(HostRid.StartsWith('centos'))">true</IsRPMBasedDistro>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ArchiveExtension>.tar.gz</ArchiveExtension>
+    <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
+
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.msi</InstallerExtension>
+    <InstallerExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">.pkg</InstallerExtension>
+    <InstallerExtension Condition="'$(IsDebianBaseDistro)' == 'true'">.deb</InstallerExtension>
+    <InstallerExtension Condition="'$(IsRPMBasedDistro)' == 'true'">.rpm</InstallerExtension>
+
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.exe</BundleExtension>
+    <BundleExtension Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsDebianBaseDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+    <BundleExtension Condition="'$(IsRPMBasedDistro)' == 'true'">$(InstallerExtension)</BundleExtension>
+
+    <ExeExtension>.exe</ExeExtension>
+    <ExeExtension Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))"></ExeExtension>
+
+    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
+    <ProductMonikerRid>$(TargetRid)</ProductMonikerRid>
+
+    <PortableOSName Condition="'$(PortableOSName)' == ''">$(OSName)</PortableOSName>
+    <PortableRid>$(PortableOSName)-$(TargetArchitecture)</PortableRid>
+    <PortableProductMonikerRid>$(PortableRid)</PortableProductMonikerRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SkipBuildingInstallers Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="'$(PgoInstrument)' == 'true'">true</SkipBuildingInstallers>
+    <SkipBuildingInstallers Condition="
+      (
+       $(TargetRid.StartsWith('freebsd')) or
+       $(TargetRid.StartsWith('illumos')) or
+       $(TargetRid.StartsWith('linux-musl'))
+      )">true</SkipBuildingInstallers>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '2' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
+    <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+
+    <!-- Use the portable "linux-x64" Rid when downloading Linux shared framework compressed file. -->
+    <UsePortableLinuxSharedFramework Condition="'$(UsePortableLinuxSharedFramework)' == '' and '$(IsLinux)' == 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</UsePortableLinuxSharedFramework>
+    <HighEntropyVA>true</HighEntropyVA>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <NetRuntimeRid Condition="'$(NetRuntimeRid)' == ''">$(HostRid)</NetRuntimeRid>
+    <NetRuntimeRid Condition="('$(OSName)' == 'win' or '$(OSName)' == 'osx' or '$(OSName)' == 'freebsd' or '$(OSName)' == 'illumos' or '$(OSName)' == 'solaris') and '$(DotNetBuildSourceOnly)' != 'true'">$(OSName)-$(TargetArchitecture)</NetRuntimeRid>
+    <NetRuntimeRid Condition="'$(DotNetBuild)' != 'true' and $(NetRuntimeRid.StartsWith('mariner.2.0'))">$(HostRid.Replace('mariner.2.0', 'cm.2'))</NetRuntimeRid>
+
+    <SharedFrameworkRid>$(NetRuntimeRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition="$(ProductMonikerRid.StartsWith('linux-musl'))">$(ProductMonikerRid)</SharedFrameworkRid>
+    <SharedFrameworkRid Condition=" '$(UsePortableLinuxSharedFramework)' == 'true' ">linux-$(TargetArchitecture)</SharedFrameworkRid>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)pkg\</SdkPkgSourcesRootDirectory>
+  </PropertyGroup>
+
+</Project>
