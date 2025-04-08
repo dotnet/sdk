@@ -117,9 +117,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 {
                     result.StdOut
                         .Should().Contain("Test run summary: Failed!")
-                        .And.Contain("total: 1")
+                        .And.Contain("total: 2")
                         .And.Contain("succeeded: 0")
-                        .And.Contain("failed: 1")
+                        .And.Contain("failed: 2")
                         .And.Contain("skipped: 0")
                         .And.Contain("This is run in parallel!");
                 }
