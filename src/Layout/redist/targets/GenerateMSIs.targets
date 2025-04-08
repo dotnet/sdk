@@ -265,7 +265,7 @@
       <_Manifests Include="@(BundledManifests)">
         <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
-      <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="'@(BuiltinManifestMsiPackages) != ''">
+      <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="'@(BuiltinManifestMsiPackages)' != ''">
         <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(BuiltinManifestMsiPackages.UnzipDestinationFolder)\data\', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
     </ItemGroup>
