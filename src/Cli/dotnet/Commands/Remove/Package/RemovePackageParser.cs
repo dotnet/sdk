@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Package.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.Remove.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Package.Remove;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Remove.Package;
 
 internal static class RemovePackageParser
 {
@@ -18,7 +17,7 @@ internal static class RemovePackageParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("package", LocalizableStrings.AppFullName);
+        var command = new CliCommand("package", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(PackageRemoveCommandParser.CmdPackageArgument);
         command.Options.Add(PackageRemoveCommandParser.InteractiveOption);

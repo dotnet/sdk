@@ -147,7 +147,8 @@
         },
         {
             "name": "sourcelink",
-            "defaultRemote": "https://github.com/dotnet/sourcelink"
+            "defaultRemote": "https://github.com/dotnet/sourcelink",
+            "disableSynchronization": true
         },
         {
             "name": "symreader",
@@ -156,10 +157,6 @@
         {
             "name": "templating",
             "defaultRemote": "https://github.com/dotnet/templating"
-        },
-        {
-            "name": "testfx",
-            "defaultRemote": "https://github.com/microsoft/testfx"
         },
         {
             "name": "vstest",
@@ -183,7 +180,8 @@
             "name": "xliff-tasks",
             "defaultRemote": "https://github.com/dotnet/xliff-tasks",
             "ignoreDefaults": true,
-            "exclude": [ "**/*" ]
+            "exclude": [ "**/*" ],
+            "disableSynchronization": true
         },
         {
             "name": "winforms",

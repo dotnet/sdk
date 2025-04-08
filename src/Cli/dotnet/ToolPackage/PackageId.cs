@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal struct PackageId(string id) : IEquatable<PackageId>, IComparable<PackageId>
 {
-    private string _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
+    private readonly string _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
 
     public bool Equals(PackageId other)
     {

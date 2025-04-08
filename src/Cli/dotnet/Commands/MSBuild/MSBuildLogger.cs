@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Tools.MSBuild;
+namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
@@ -61,7 +61,7 @@ public sealed class MSBuildLogger : INodeLogger
                 // When senders in different process running at the same
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
-                _telemetry = new Telemetry(
+                _telemetry = new Telemetry.Telemetry(
                     _sentinel,
                     sessionId,
                     senderCount: 0);
@@ -138,17 +138,17 @@ public sealed class MSBuildLogger : INodeLogger
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
+                    toBeHashed: [],
                     toBeMeasured: ["FileLoggersCount"]);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
                     toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"],
-                    toBeMeasured: Array.Empty<string>());
+                    toBeMeasured: []);
                 break;
             case BuildcheckRunEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
+                    toBeHashed: [],
                     toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             case BuildcheckRuleStatsEventName:
@@ -164,7 +164,7 @@ public sealed class MSBuildLogger : INodeLogger
             case SdkContainerPublishBaseImageInferenceEventName:
             case SdkContainerPublishSuccessEventName:
             case SdkContainerPublishErrorEventName:
-                TrackEvent(telemetry, args.EventName, args.Properties, Array.Empty<string>(), Array.Empty<string>());
+                TrackEvent(telemetry, args.EventName, args.Properties, [], []);
                 break;
             default:
                 // Ignore unknown events

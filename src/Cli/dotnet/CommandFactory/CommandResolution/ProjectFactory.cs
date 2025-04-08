@@ -12,7 +12,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
 {
     private const string ProjectFactoryName = "projectfactory";
 
-    private IEnvironmentProvider _environment = environment;
+    private readonly IEnvironmentProvider _environment = environment;
 
     public IProject GetProject(
         string projectDirectory,
@@ -33,14 +33,14 @@ internal class ProjectFactory(IEnvironmentProvider environment)
             msBuildExePath;
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildExePath,
+            CliStrings.MSBuildExePath,
             ProjectFactoryName,
             msBuildExePath));
 
         string msBuildProjectPath = GetMSBuildProjPath(projectDirectory);
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildProjectPath,
+            CliStrings.MSBuildProjectPath,
             ProjectFactoryName,
             msBuildProjectPath));
 
@@ -61,7 +61,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
         }
     }
 
-    private string GetMSBuildProjPath(string projectDirectory)
+    private static string GetMSBuildProjPath(string projectDirectory)
     {
         IEnumerable<string> projectFiles = Directory
             .GetFiles(projectDirectory, "*.*proj")
@@ -74,7 +74,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
         else if (projectFiles.Count() > 1)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.MultipleProjectFilesFound,
+                CliStrings.MultipleProjectFilesFound,
                 projectDirectory));
         }
 

@@ -2,12 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
 
 #if !DOT_NET_BUILD_FROM_SOURCE
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
 #endif
 
-using Microsoft.DotNet.Workloads.Workload;
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -22,7 +22,7 @@ internal class MsiPackageCache(InstallElevationContextBase elevationContext, ISe
     /// <summary>
     /// Determines whether revocation checks can go online.
     /// </summary>
-    private bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
+    private readonly bool _allowOnlineRevocationChecks = SignCheck.AllowOnlineRevocationChecks();
 
     /// <summary>
     /// The root directory of the package cache where MSI workload packs are stored.

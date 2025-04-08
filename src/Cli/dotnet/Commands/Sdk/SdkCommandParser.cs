@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Sdk.Check;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Sdk.Check;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sdk.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Sdk;
 
 internal static class SdkCommandParser
 {
@@ -21,7 +20,7 @@ internal static class SdkCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new("sdk", DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new("sdk", DocsLink, CliCommandStrings.SdkAppFullName);
         command.Subcommands.Add(SdkCheckCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());

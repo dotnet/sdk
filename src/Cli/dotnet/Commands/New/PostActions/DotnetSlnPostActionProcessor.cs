@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.DotNet.Tools.New.PostActionProcessors;
+namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
 internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, string?, bool?, bool>? addProjToSolutionCallback = null) : PostActionProcessorBase
 {
@@ -31,7 +31,7 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         List<string> filesToAdd = [];
         projectFiles = [];
 
-        if ((actionConfig.Args != null) && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))
+        if (actionConfig.Args != null && actionConfig.Args.TryGetValue("primaryOutputIndexes", out string? projectIndexes))
         {
             foreach (string indexString in projectIndexes.Split([';'], StringSplitOptions.RemoveEmptyEntries))
             {
@@ -70,7 +70,7 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
         IReadOnlyList<string> nearestSlnFilesFound = FindSolutionFilesAtOrAbovePath(environment.Host.FileSystem, outputBasePath);
         if (nearestSlnFilesFound.Count != 1)
         {
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Error_NoSolutionFile);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Error_NoSolutionFile);
             return false;
         }
 
@@ -80,13 +80,13 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
             //If the author didn't opt in to the new behavior by specifying "projectFiles", use the old behavior
             if (!TryGetProjectFilesToAdd(action, templateCreationResult, outputBasePath, out projectFiles))
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Error_NoProjectsToAdd);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Error_NoProjectsToAdd);
                 return false;
             }
         }
         if (projectFiles.Count == 0)
         {
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Error_NoProjectsToAdd);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Error_NoProjectsToAdd);
             return false;
         }
 
@@ -95,17 +95,17 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
 
         if (!string.IsNullOrWhiteSpace(solutionFolder) && inRoot is true)
         {
-            Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified);
+            Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified);
             return false;
         }
 
         if (inRoot is true)
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddProjToSln_InRoot_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0]));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddProjToSln_InRoot_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0]));
         }
         else
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_AddProjToSln_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0], solutionFolder));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_AddProjToSln_Running, string.Join(" ", projectFiles), nearestSlnFilesFound[0], solutionFolder));
         }
         return AddProjectsToSolution(nearestSlnFilesFound[0], projectFiles, solutionFolder, inRoot);
     }
@@ -117,18 +117,18 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
             bool succeeded = _addProjToSolutionCallback(solutionPath, projectsToAdd, solutionFolder, inRoot);
             if (!succeeded)
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Failed_NoReason);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Failed_NoReason);
             }
             else
             {
-                Reporter.Output.WriteLine(LocalizableStrings.PostAction_AddProjToSln_Succeeded);
+                Reporter.Output.WriteLine(CliCommandStrings.PostAction_AddProjToSln_Succeeded);
             }
             return succeeded;
 
         }
         catch (Exception e)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_AddProjToSln_Failed, e.Message));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_AddProjToSln_Failed, e.Message));
             return false;
         }
     }

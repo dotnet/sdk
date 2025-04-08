@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Package.List;
-using LocalizableStrings = Microsoft.DotNet.Tools.Package.List.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Package.List;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.List.Package;
 
 internal static class ListPackageReferencesCommandParser
 {
@@ -18,7 +17,7 @@ internal static class ListPackageReferencesCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("package", LocalizableStrings.AppFullName);
+        CliCommand command = new("package", CliCommandStrings.PackageListAppFullName);
 
         command.Options.Add(PackageListCommandParser.VerbosityOption);
         command.Options.Add(PackageListCommandParser.OutdatedOption);

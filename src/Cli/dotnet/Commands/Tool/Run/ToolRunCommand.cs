@@ -2,14 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Run;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal class ToolRunCommand(
     ParseResult result,
@@ -34,7 +33,7 @@ internal class ToolRunCommand(
 
         if (commandspec == null)
         {
-            throw new GracefulException([string.Format(LocalizableStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
         var result = CommandFactoryUsingResolver.Create(commandspec).Execute();

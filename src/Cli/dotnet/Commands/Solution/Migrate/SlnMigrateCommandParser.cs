@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Solution.Migrate;
 
 public static class SlnMigrateCommandParser
 {
@@ -17,7 +16,7 @@ public static class SlnMigrateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("migrate", LocalizableStrings.MigrateAppFullName);
+        CliCommand command = new("migrate", CliCommandStrings.MigrateAppFullName);
 
         command.Arguments.Add(SlnCommandParser.SlnArgument);
 

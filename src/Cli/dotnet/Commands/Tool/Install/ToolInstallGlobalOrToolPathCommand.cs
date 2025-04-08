@@ -3,23 +3,22 @@
 
 using System.CommandLine;
 using System.Transactions;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
-using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal delegate IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null);
 
@@ -31,7 +30,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 {
     private readonly IEnvironmentPathInstruction _environmentPathInstruction;
     private readonly IReporter _reporter;
-    private CreateShellShimRepository _createShellShimRepository;
+    private readonly CreateShellShimRepository _createShellShimRepository;
     private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
     private readonly ShellShimTemplateFinder _shellShimTemplateFinder;
     private readonly IToolPackageStoreQuery _store;
@@ -45,7 +44,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     private readonly VerbosityOptions _verbosity;
     private readonly string _toolPath;
     private readonly string _architectureOption;
-    private IEnumerable<string> _forwardRestoreArguments;
+    private readonly IEnumerable<string> _forwardRestoreArguments;
     private readonly bool _allowRollForward;
     private readonly bool _allowPackageDowngrade;
     private readonly bool _updateAll;
@@ -90,10 +89,10 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
         var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
         restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-            NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
+            NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
-        nugetPackageDownloader ??= new NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
+        nugetPackageDownloader ??= new NuGetPackageDownloader.NuGetPackageDownloader(tempDir, verboseLogger: new NullLogger(), restoreActionConfig: restoreActionConfig, verbosityOptions: _verbosity, verifySignatures: verifySignatures ?? true);
         _shellShimTemplateFinder = new ShellShimTemplateFinder(nugetPackageDownloader, tempDir, packageSourceLocation);
         _store = store;
 
@@ -104,7 +103,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                                               ToolPackageFactory.CreateToolPackageStoresAndDownloaderAndUninstaller;
         _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
 
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
     }
 
     public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
@@ -167,7 +166,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
+                _reporter.WriteLine(string.Format(CliCommandStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
                 return 0;
             }   
         }
@@ -205,7 +204,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 if (string.IsNullOrEmpty(_framework) && newInstalledPackage.Frameworks.Count() > 0)
                 {
                     framework = newInstalledPackage.Frameworks
-                        .Where(f => f.Version < (new NuGetVersion(Product.Version)).Version)
+                        .Where(f => f.Version < new NuGetVersion(Product.Version).Version)
                         .MaxBy(f => f.Version);
                 }
                 else
@@ -250,16 +249,16 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
     private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)
     {
-        return oldPackageNullable != null && (oldPackageNullable.Version == nuGetVersion);
+        return oldPackageNullable != null && oldPackageNullable.Version == nuGetVersion;
     }
 
     private static void EnsureVersionIsHigher(IToolPackage oldPackageNullable, IToolPackage newInstalledPackage, bool allowDowngrade)
     {
-        if (oldPackageNullable != null && (newInstalledPackage.Version < oldPackageNullable.Version && !allowDowngrade))
+        if (oldPackageNullable != null && newInstalledPackage.Version < oldPackageNullable.Version && !allowDowngrade)
         {
             throw new GracefulException(
                 [
-                    string.Format(Update.LocalizableStrings.UpdateToLowerVersion,
+                    string.Format(CliCommandStrings.UpdateToLowerVersion,
                         newInstalledPackage.Version.ToNormalizedString(),
                         oldPackageNullable.Version.ToNormalizedString())
                 ],
@@ -273,12 +272,12 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.NuGetConfigurationFileDoesNotExist,
+                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
                     Path.GetFullPath(_configFilePath)));
         }
     }
 
-    private void RunWithHandlingInstallError(Action installAction, PackageId packageId)
+    private static void RunWithHandlingInstallError(Action installAction, PackageId packageId)
     {
         try
         {
@@ -289,7 +288,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(Update.LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 InstallToolCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -302,7 +301,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         }
     }
 
-    private void RunWithHandlingUninstallError(Action uninstallAction, PackageId packageId)
+    private static void RunWithHandlingUninstallError(Action uninstallAction, PackageId packageId)
     {
         try
         {
@@ -313,7 +312,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         {
             var message = new List<string>
             {
-                string.Format(Update.LocalizableStrings.UpdateToolFailed, packageId)
+                string.Format(CliCommandStrings.UpdateToolFailed, packageId)
             };
             message.AddRange(
                 ToolUninstallCommandLowLevelErrorConverter.GetUserFacingMessages(ex, packageId));
@@ -336,7 +335,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         return configFile;
     }
 
-    private IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
+    private static IToolPackage GetOldPackage(IToolPackageStoreQuery toolPackageStoreQuery, PackageId packageId)
     {
         IToolPackage oldPackageNullable;
         try
@@ -349,7 +348,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 messages:
                 [
                     string.Format(
-                        Update.LocalizableStrings.ToolHasMultipleVersionsInstalled,
+                        CliCommandStrings.ToolUpdateToolHasMultipleVersionsInstalled,
                         packageId),
                 ],
                 isUserError: false);
@@ -366,7 +365,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        LocalizableStrings.InstallationSucceeded,
+                        CliCommandStrings.ToolInstallInstallationSucceeded,
                         newInstalledPackage.Command.Name,
                         newInstalledPackage.Id,
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -375,7 +374,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        Update.LocalizableStrings.UpdateSucceeded,
+                        CliCommandStrings.ToolUpdateUpdateSucceeded,
                         newInstalledPackage.Id,
                         oldPackage.Version.ToNormalizedString(),
                         newInstalledPackage.Version.ToNormalizedString()).Green());
@@ -384,10 +383,9 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        (
+                        
                         newInstalledPackage.Version.IsPrerelease ?
-                        Update.LocalizableStrings.UpdateSucceededPreVersionNoChange : Update.LocalizableStrings.UpdateSucceededStableVersionNoChange
-                        ),
+                        CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
             }
         }

@@ -29,7 +29,7 @@ public class ToolPathCalculator(string packagesDirectory)
         if (bestVersion == null)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.VersionForPackageCouldNotBeResolved,
+                CliStrings.VersionForPackageCouldNotBeResolved,
                 packageId));
         }
 
@@ -70,7 +70,7 @@ public class ToolPathCalculator(string packagesDirectory)
         var toolBase = GetBaseToolPath(packageId);
         if (!Directory.Exists(toolBase))
         {
-            return Enumerable.Empty<NuGetVersion>();
+            return [];
         }
 
         var versionDirectories = Directory.EnumerateDirectories(toolBase);
@@ -79,7 +79,7 @@ public class ToolPathCalculator(string packagesDirectory)
         {
             var version = Path.GetFileName(versionDirectory);
 
-            NuGetVersion nugetVersion = null;
+            NuGetVersion nugetVersion;
             NuGetVersion.TryParse(version, out nugetVersion);
 
             if (nugetVersion != null)

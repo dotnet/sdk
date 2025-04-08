@@ -41,10 +41,7 @@ public class Telemetry : ITelemetry
             return;
         }
 
-        if (environmentProvider == null)
-        {
-            environmentProvider = new EnvironmentProvider();
-        }
+        environmentProvider ??= new EnvironmentProvider();
 
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault)
                     && PermissionExists(sentinel);
@@ -79,7 +76,7 @@ public class Telemetry : ITelemetry
         DisabledForTests = false;
     }
 
-    private bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
+    private static bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
     {
         if (sentinel == null)
         {

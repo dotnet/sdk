@@ -36,7 +36,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.AttemptingToResolve,
+            CliStrings.AttemptingToResolve,
             ProjectDependenciesCommandResolverName,
             commandResolverArguments.CommandName));
 
@@ -46,7 +46,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
             || commandResolverArguments.CommandName == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.InvalidCommandResolverArguments,
+                CliStrings.InvalidCommandResolverArguments,
                 ProjectDependenciesCommandResolverName));
 
             return null;
@@ -84,7 +84,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (project == null)
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DidNotFindAMatchingProject,
+                CliStrings.DidNotFindAMatchingProject,
                 ProjectDependenciesCommandResolverName,
                 projectDirectory));
             return null;
@@ -95,7 +95,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (!File.Exists(depsFilePath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 ProjectDependenciesCommandResolverName,
                 depsFilePath));
             return null;
@@ -106,7 +106,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (!File.Exists(runtimeConfigPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 ProjectDependenciesCommandResolverName,
                 runtimeConfigPath));
             return null;
@@ -129,7 +129,7 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         return commandSpec;
     }
 
-    private LockFileTargetLibrary GetToolLibraryForContext(
+    private static LockFileTargetLibrary GetToolLibraryForContext(
         LockFile lockFile, string commandName, NuGetFramework targetFramework)
     {
         var toolLibraries = lockFile.Targets
@@ -141,19 +141,19 @@ public class ProjectDependenciesCommandResolver : ICommandResolver
         if (toolLibraries?.Count() > 1)
         {
             throw new InvalidOperationException(string.Format(
-                LocalizableStrings.AmbiguousCommandName,
+                CliStrings.AmbiguousCommandName,
                 commandName));
         }
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.ToolLibraryFound,
+            CliStrings.ToolLibraryFound,
             ProjectDependenciesCommandResolverName,
             toolLibraries?.Count() > 0));
 
         return toolLibraries?.FirstOrDefault();
     }
 
-    private IEnumerable<string> GetAllowedCommandExtensionsFromEnvironment(IEnvironmentProvider environment)
+    private static IEnumerable<string> GetAllowedCommandExtensionsFromEnvironment(IEnvironmentProvider environment)
     {
         var allowedCommandExtensions = new List<string>();
         allowedCommandExtensions.AddRange(environment.ExecutableExtensions);

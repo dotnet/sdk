@@ -2,10 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Elevate;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
 internal static class WorkloadElevateCommandParser
 {
@@ -18,7 +16,7 @@ internal static class WorkloadElevateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("elevate", LocalizableStrings.CommandDescription)
+        CliCommand command = new("elevate", CliCommandStrings.WorkloadElevateCommandDescription)
         {
             Hidden = true
         };

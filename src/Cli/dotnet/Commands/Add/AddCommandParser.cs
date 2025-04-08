@@ -2,18 +2,19 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Add.Reference;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Add.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Add;
 
 internal static class AddCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-add";
 
-    public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CommonLocalizableStrings.ProjectArgumentName)
+    public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CliStrings.ProjectArgumentName)
     {
-        Description = CommonLocalizableStrings.ProjectArgumentDescription
+        Description = CliStrings.ProjectArgumentDescription
     }.DefaultToCurrentDirectory();
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -25,7 +26,7 @@ internal static class AddCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("add", DocsLink, LocalizableStrings.NetAddCommand)
+        var command = new DocumentedCommand("add", DocsLink, CliCommandStrings.NetAddCommand)
         {
             Hidden = true
         };

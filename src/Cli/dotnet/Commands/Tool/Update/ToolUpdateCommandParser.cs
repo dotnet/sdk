@@ -2,18 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Update;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription,
+        HelpName = CliCommandStrings.ToolUpdatePackageIdArgumentName,
+        Description = CliCommandStrings.ToolUpdatePackageIdArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -30,7 +29,7 @@ internal static class ToolUpdateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("update", LocalizableStrings.CommandDescription);
+        CliCommand command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
 

@@ -3,13 +3,13 @@
 
 using System.Text.Json;
 
-namespace Microsoft.DotNet.Tools.Run.LaunchSettings;
+namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
 internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
 {
     public static readonly string CommandNameValue = "Project";
 
-    public string CommandName => CommandNameValue;
+    public static string CommandName => CommandNameValue;
 
     public LaunchSettingsApplyResult TryGetLaunchSettings(string? launchProfileName, JsonElement model)
     {
@@ -24,7 +24,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (!TryGetStringValue(property.Value, out var commandLineArgsValue))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToString, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
                 }
 
                 config.CommandLineArgs = commandLineArgsValue;
@@ -33,7 +33,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (!TryGetBooleanValue(property.Value, out var launchBrowserValue))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToBoolean, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToBoolean, property.Name));
                 }
 
                 config.LaunchBrowser = launchBrowserValue;
@@ -42,7 +42,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (!TryGetStringValue(property.Value, out var launchUrlValue))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToString, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
                 }
 
                 config.LaunchUrl = launchUrlValue;
@@ -51,7 +51,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (!TryGetStringValue(property.Value, out var applicationUrlValue))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToString, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
                 }
 
                 config.ApplicationUrl = applicationUrlValue;
@@ -60,7 +60,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (!TryGetStringValue(property.Value, out var dotNetRunMessages))
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.CouldNotConvertToString, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.CouldNotConvertToString, property.Name));
                 }
 
                 config.DotNetRunMessages = dotNetRunMessages;
@@ -69,7 +69,7 @@ internal class ProjectLaunchSettingsProvider : ILaunchSettingsProvider
             {
                 if (property.Value.ValueKind != JsonValueKind.Object)
                 {
-                    return new LaunchSettingsApplyResult(false, string.Format(LocalizableStrings.ValueMustBeAnObject, property.Name));
+                    return new LaunchSettingsApplyResult(false, string.Format(CliCommandStrings.ValueMustBeAnObject, property.Name));
                 }
 
                 foreach (var environmentVariable in property.Value.EnumerateObject())

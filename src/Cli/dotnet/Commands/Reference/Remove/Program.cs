@@ -3,11 +3,11 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Remove;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Reference.Remove;
+namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal class RemoveProjectToProjectReferenceCommand : CommandBase
 {
@@ -24,7 +24,7 @@ internal class RemoveProjectToProjectReferenceCommand : CommandBase
 
         if (_arguments.Count == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneReferenceToRemove);
+            throw new GracefulException(CliStrings.SpecifyAtLeastOneReferenceToRemove);
         }
     }
 

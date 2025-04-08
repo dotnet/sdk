@@ -1,15 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadIntegrityChecker
 {
@@ -19,7 +17,7 @@ internal static class WorkloadIntegrityChecker
         var sdkFeatureBand = new SdkFeatureBand(creationResult.SdkVersion);
         var verifySignatures = WorkloadCommandBase.ShouldVerifySignatures();
         var tempPackagesDirectory = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
-        var packageDownloader = new NuGetPackageDownloader(
+        var packageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
             tempPackagesDirectory,
             verboseLogger: new NullLogger(),
             verifySignatures: verifySignatures);
@@ -38,7 +36,7 @@ internal static class WorkloadIntegrityChecker
 
         if (installedWorkloads.Any())
         {
-            reporter.WriteLine(LocalizableStrings.WorkloadIntegrityCheck);
+            reporter.WriteLine(CliCommandStrings.WorkloadIntegrityCheck);
             CliTransaction.RunNew(context => installer.InstallWorkloads(installedWorkloads, sdkFeatureBand, context));
             reporter.WriteLine("----------------");
         }

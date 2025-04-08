@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class CliConstants
 {
@@ -94,4 +94,5 @@ internal static class ProjectProperties
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
+    internal const string AppDesignerFolder = "AppDesignerFolder";
 }

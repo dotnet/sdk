@@ -16,7 +16,7 @@ public class PathCommandResolverPolicy : ICommandResolverPolicy
     {
         var environment = new EnvironmentProvider();
 
-        var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
+        IPlatformCommandSpecFactory platformCommandSpecFactory;
         if (OperatingSystem.IsWindows())
         {
             platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();

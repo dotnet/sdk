@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Package.Add;
+using Microsoft.DotNet.Cli.Commands.Package.List;
+using Microsoft.DotNet.Cli.Commands.Package.Remove;
+using Microsoft.DotNet.Cli.Commands.Package.Search;
 using Microsoft.DotNet.Cli.Extensions;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Package;
 
 internal class PackageCommandParser
 {
@@ -14,7 +18,7 @@ internal class PackageCommandParser
     {
         Recursive = true,
         DefaultValueFactory = _ => Environment.CurrentDirectory,
-        Description = CommonLocalizableStrings.ProjectArgumentDescription
+        Description = CliStrings.ProjectArgumentDescription
     };
 
     public static CliCommand GetCommand()

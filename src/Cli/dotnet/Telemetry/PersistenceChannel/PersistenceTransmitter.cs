@@ -77,6 +77,6 @@ internal class PersistenceTransmitter : IDisposable
             stoppedTasks.Add(sender.StopAsync());
         }
 
-        Task.WaitAll(stoppedTasks.ToArray());
+        Task.WaitAll([.. stoppedTasks]);
     }
 }
