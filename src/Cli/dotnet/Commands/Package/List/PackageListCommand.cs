@@ -57,14 +57,7 @@ internal class PackageListCommand(
             args.Add("-verbosity:minimal");
         }
 
-        if (interactive)
-        {
-            args.Add("-interactive:true");
-        }
-        else
-        {
-            args.Add("-interactive:false");
-        }
+        args.Add($"-interactive:{interactive.ToString().ToLower()}");
 
         MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
 
