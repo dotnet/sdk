@@ -74,7 +74,7 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption NoRestore = new CliOption<bool>("--no-restore")
     {
-        Description = LocalizableStrings.CmdNoRestoreDescription,
+        Description = CliCommandStrings.CmdNoRestoreDescription,
         Arity = ArgumentArity.Zero
     };
 

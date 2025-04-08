@@ -6,12 +6,8 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-<<<<<<< HEAD:src/Cli/dotnet/Commands/Package/List/PackageListCommand.cs
-=======
-using Microsoft.DotNet.Tools.NuGet;
 using System.Globalization;
-using Microsoft.DotNet.Tools.MSBuild;
->>>>>>> 27439c5902 (dotnet list package restores):src/Cli/dotnet/Commands/Package/List/ListPackageReferencesCommand.cs
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
@@ -92,7 +88,7 @@ internal class PackageListCommand(
    "version": 1,
    "problems": [
       {
-         "text": "{{String.Format(CultureInfo.CurrentCulture, LocalizableStrings.Error_restore)}}",
+         "text": "{{String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore)}}",
          "level": "error"
       }
    ]
@@ -123,14 +119,9 @@ internal class PackageListCommand(
         {
             "package",
             "list",
-            GetProjectOrSolution()
+            projectOrSolution
         };
 
-<<<<<<< HEAD:src/Cli/dotnet/Commands/Package/List/PackageListCommand.cs
-=======
-        args.Add(projectOrSolution);
-
->>>>>>> 27439c5902 (dotnet list package restores):src/Cli/dotnet/Commands/Package/List/ListPackageReferencesCommand.cs
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
 
         EnforceOptionRules(_parseResult);

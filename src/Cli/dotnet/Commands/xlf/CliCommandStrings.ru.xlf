@@ -561,6 +561,11 @@ This is equivalent to deleting project.assets.json.</target>
         <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoRestoreDescription">
+        <source>Do not restore before running the command.</source>
+        <target state="new">Do not restore before running the command.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
         <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
         <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
@@ -1060,6 +1065,11 @@ Make the profile names distinct.</source>
 {0}
 Make the profile names distinct.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="Error_restore">
+        <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
+        <target state="new">Restore failed. Run `dotnet restore` for more details on the issue.</target>
+        <note>{Locked="dotnet restore"}</note>
       </trans-unit>
       <trans-unit id="ExactMatchDescription">
         <source>Require that the search term exactly match the name of the package. Causes `--take` and `--skip` options to be ignored.</source>
