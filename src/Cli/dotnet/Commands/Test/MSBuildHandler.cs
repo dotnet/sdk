@@ -9,13 +9,13 @@ using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output) : IDisposable
+internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationActionQueue actionQueue, TerminalTestReporter output)
 {
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
 
-    private readonly ConcurrentBag<TestApplication> _testApplications = [];
+    private readonly ConcurrentBag<NonParallelizedTestModuleGroup> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
 
     public bool RunMSBuild()
@@ -64,7 +64,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             return ExitCode.GenericFailure;
         }
 
-        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
+        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
         InitializeTestApplications(projects);
 
@@ -73,17 +73,17 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
     private int RunBuild(string filePath, bool isSolution)
     {
-        (IEnumerable<TestModule> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
+        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
 
         InitializeTestApplications(projects);
 
         return restored ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
-    private void InitializeTestApplications(IEnumerable<TestModule> modules)
+    private void InitializeTestApplications(IEnumerable<NonParallelizedTestModuleGroup> moduleGroups)
     {
         // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
-        IEnumerable<TestModule> vsTestTestProjects = modules.Where(module => !module.IsTestingPlatformApplication);
+        IEnumerable<TestModule> vsTestTestProjects = moduleGroups.SelectMany(group => group.GetVSTestAndNotMTPModules());
 
         if (vsTestTestProjects.Any())
         {
@@ -100,16 +100,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             return;
         }
 
-        foreach (TestModule module in modules)
+        foreach (NonParallelizedTestModuleGroup moduleGroup in moduleGroups)
         {
-            if (!module.IsTestProject && !module.IsTestingPlatformApplication)
-            {
-                // This should never happen. We should only ever create TestModule if it's a test project.
-                throw new UnreachableException($"This program location is thought to be unreachable. Class='{nameof(MSBuildHandler)}' Method='{nameof(InitializeTestApplications)}'");
-            }
-
-            var testApp = new TestApplication(module, _buildOptions);
-            _testApplications.Add(testApp);
+            _testApplications.Add(moduleGroup);
         }
     }
 
@@ -127,9 +120,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return true;
     }
 
-    private (IEnumerable<TestModule> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
+    private (IEnumerable<NonParallelizedTestModuleGroup> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
     {
-        (IEnumerable<TestModule> projects, bool isBuiltOrRestored) = isSolution ?
+        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool isBuiltOrRestored) = isSolution ?
             MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
             MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
 
@@ -138,7 +131,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return (projects, isBuiltOrRestored);
     }
 
-    private static void LogProjectProperties(IEnumerable<TestModule> modules)
+    private static void LogProjectProperties(IEnumerable<NonParallelizedTestModuleGroup> moduleGroups)
     {
         if (!Logger.TraceEnabled)
         {
@@ -147,26 +140,21 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
         var logMessageBuilder = new StringBuilder();
 
-        foreach (var module in modules)
+        foreach (var moduleGroup in moduleGroups)
         {
-            logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.RunCommand}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.RunArguments}: {module.RunProperties.RunArguments}");
-            logMessageBuilder.AppendLine($"{ProjectProperties.RunWorkingDirectory}: {module.RunProperties.RunWorkingDirectory}");
-            logMessageBuilder.AppendLine();
+            foreach (var module in moduleGroup)
+            {
+                logMessageBuilder.AppendLine($"{ProjectProperties.ProjectFullPath}: {module.ProjectFullPath}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestProject}: {module.IsTestProject}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.IsTestingPlatformApplication}: {module.IsTestingPlatformApplication}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.TargetFramework}: {module.TargetFramework}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunCommand}: {module.RunProperties.RunCommand}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunArguments}: {module.RunProperties.RunArguments}");
+                logMessageBuilder.AppendLine($"{ProjectProperties.RunWorkingDirectory}: {module.RunProperties.RunWorkingDirectory}");
+                logMessageBuilder.AppendLine();
+            }
         }
 
         Logger.LogTrace(() => logMessageBuilder.ToString());
-    }
-
-    public void Dispose()
-    {
-        foreach (var testApplication in _testApplications)
-        {
-            testApplication.Dispose();
-        }
     }
 }
