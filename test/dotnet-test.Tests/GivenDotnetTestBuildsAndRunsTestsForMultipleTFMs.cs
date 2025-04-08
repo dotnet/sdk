@@ -98,6 +98,45 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RunProjectWithMultipleTFMs_ParallelizationTest_RunInParallelShouldFail(bool testTfmsInParallel)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CommonOptions.PropertiesOption.Name, $"TestTfmsInParallel={testTfmsInParallel}");
+
+            if (testTfmsInParallel)
+            {
+                if (!TestContext.IsLocalized())
+                {
+                    result.StdOut
+                        .Should().Contain("Test run summary: Failed!")
+                        .And.Contain("total: 1")
+                        .And.Contain("succeeded: 0")
+                        .And.Contain("failed: 1")
+                        .And.Contain("skipped: 0")
+                        .And.Contain("This is run in parallel!");
+                }
+                else
+                {
+                    result.StdOut
+                        .Should().Contain("This is run in parallel!");
+                }
+
+                result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            }
+            else
+            {
+                result.ExitCode.Should().Be(ExitCodes.Success);
+            }
+        }
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
