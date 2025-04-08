@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Reference;
 
-internal static class RemoveReferenceParser
+internal static class RemoveReferenceCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 

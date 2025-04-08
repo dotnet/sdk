@@ -6,7 +6,7 @@ using Microsoft.DotNet.Cli.Commands.Package.Remove;
 
 namespace Microsoft.DotNet.Cli.Commands.Remove.Package;
 
-internal static class RemovePackageParser
+internal static class RemovePackageCommandParser
 {
     private static readonly CliCommand Command = ConstructCommand();
 
