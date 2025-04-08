@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -65,9 +66,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         }
         """;
 
-    private static readonly string s_runCommandExceptionNoProjects =
-        "Couldn't find a project to run.";
-
     private static bool HasCaseInsensitiveFileSystem
     {
         get
@@ -107,7 +105,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         else
         {
             result.Should().Fail()
-                .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+                .And.HaveStdErrContaining(string.Format(
+                    CliCommandStrings.RunCommandExceptionNoProjects,
+                    testInstance.Path,
+                    RunCommandParser.ProjectOption.Name));
         }
     }
 
@@ -132,7 +133,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         else
         {
             result.Should().Fail()
-                .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+                .And.HaveStdErrContaining(string.Format(
+                    CliCommandStrings.RunCommandExceptionNoProjects,
+                    testInstance.Path,
+                    RunCommandParser.ProjectOption.Name));
         }
     }
 
@@ -189,7 +193,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -205,7 +212,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -246,7 +256,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     [Fact]
@@ -281,7 +294,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -313,7 +329,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -390,11 +409,16 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         var dirName = Path.GetFileName(testInstance.Path);
 
+        var workDir = Path.GetDirectoryName(testInstance.Path)!;
+
         new DotnetCommand(Log, "run", $"{dirName}/App.csproj")
-            .WithWorkingDirectory(Path.GetDirectoryName(testInstance.Path)!)
+            .WithWorkingDirectory(workDir)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                workDir,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -488,7 +512,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(s_runCommandExceptionNoProjects);
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionNoProjects,
+                testInstance.Path,
+                RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
@@ -599,9 +626,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("""
-                Invalid binary logger parameter(s): "test.test"
-                """);
+            .And.HaveStdErrContaining("test.test"); // Invalid binary logger parameter(s): "test.test"
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
