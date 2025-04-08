@@ -8,11 +8,7 @@ using Microsoft.DotNet.Build.Manifest;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Xml.Linq;
-using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.UnifiedBuild.Tasks
 {

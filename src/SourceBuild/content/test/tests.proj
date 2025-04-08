@@ -21,8 +21,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Shared tests - applicable to unified-build and source-build. -->
-    <ProjectReference Include="Microsoft.DotNet.Tests\Microsoft.DotNet.Tests.csproj" />
+    <!-- Unified build Task tests - applicable to unified-build and source-build. -->
+    <ProjectReference Include="Microsoft.DotNet.UnifiedBuild.Tasks.Tests\Microsoft.DotNet.UnifiedBuild.Tasks.Tests.csproj" />
     <!-- Source-build specific tests. -->
     <ProjectReference Include="Microsoft.DotNet.SourceBuild.Tests\Microsoft.DotNet.SourceBuild.Tests.csproj"
                       Condition="'$(DotNetBuildSourceOnly)' == 'true'" />

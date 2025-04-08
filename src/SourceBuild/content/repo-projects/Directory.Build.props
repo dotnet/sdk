@@ -107,9 +107,9 @@
     <!-- TODO: Remove the DotNetBuildSourceOnly condition when the default build behavior for source-only builds changes to dev.
          https://github.com/dotnet/source-build/issues/4855 -->
     <CommonArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or '$(DotNetBuildSourceOnly)' == 'true'">$(FlagParameterPrefix)ci</CommonArgs>
-    <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
 
     <!-- Pass down configuration properties -->
+    <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
     <CommonArgs>$(CommonArgs) /p:TargetRid=$(TargetRid)</CommonArgs>
 
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
@@ -140,6 +140,8 @@
     <!-- Pass the repository URL in globally so that we redirect sourcelink package information to the VMR repo. -->
     <DotNetRepositoryUrl>https://github.com/dotnet/dotnet</DotNetRepositoryUrl>
     <BuildArgs>$(BuildArgs) /p:RepositoryUrl=$(DotNetRepositoryUrl)</BuildArgs>
+    <!-- Force v4 publishing across all repositories. -->
+    <BuildArgs>$(BuildArgs) /p:PublishingVersion=4</BuildArgs>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:SourceBuiltSymbolsDir=$(IntermediateSymbolsRepoDir)</BuildArgs>

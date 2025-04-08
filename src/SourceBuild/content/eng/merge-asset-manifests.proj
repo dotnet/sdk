@@ -17,7 +17,6 @@
 
     <Error Text="Couldn't find any repository asset manifest file. Make sure to build the repositories before invoking this target." Condition="'@(RepoAssetManifest)' == ''" />
 
-    <!-- It's OK for the VmrBuildNumber to be empty -->
     <Microsoft.DotNet.UnifiedBuild.Tasks.MergeAssetManifests 
       AssetManifest="@(RepoAssetManifest)" 
       MergedAssetManifestOutputPath="$(MergedAssetManifestOutputPath)"
