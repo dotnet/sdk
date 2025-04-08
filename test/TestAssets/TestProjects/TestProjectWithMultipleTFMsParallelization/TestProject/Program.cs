@@ -59,23 +59,11 @@ namespace TestProjectWithNetFM
 				return;
 			}
 
-			if (!processPath.Contains("TestProjectWithMultipleTFMsParallelization"))
-			{
-				await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-				{
-					Uid = "Test0",
-					DisplayName = "Test0",
-					Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception($"Process path is unexpected. Found: '{processPath}'."), "")),
-				}));
-
-				context.Complete();
-				return;	
-			}
-
 			await Task.Delay(5000);
 			
 			var processes = Process.GetProcessesByName(currentProcess.ProcessName);
-			if (processes.Where(p => p.Id != Process.GetCurrentProcess().Id && p.MainModule is not null && p.MainModule.FileName.Contains("TestProjectWithMultipleTFMsParallelization")).Any())
+			var pathPrefix = Path.GetDirectoryName(Path.GetDirectoryName(processPath));
+			if (processes.Where(p => p.Id != Process.GetCurrentProcess().Id && p.MainModule is not null && p.MainModule.FileName.StartsWith(pathPrefix!)).Any())
 			{
 				await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
 				{
