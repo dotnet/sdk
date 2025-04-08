@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
@@ -21,7 +20,7 @@ internal class ToolSearchCommand(
         var isDetailed = _parseResult.GetValue(ToolSearchCommandParser.DetailOption);
         if (!PathUtility.CheckForNuGetInNuGetConfig())
         {
-            Reporter.Output.WriteLine(LocalizableStrings.NeedNuGetInConfig);
+            Reporter.Output.WriteLine(CliCommandStrings.NeedNuGetInConfig);
             return 0;
         }
 

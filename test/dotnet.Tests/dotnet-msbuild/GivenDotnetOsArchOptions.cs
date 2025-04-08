@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             {
                 var msbuildPath = "<msbuildpath>";
                 var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--os", "os", "--runtime", "rid"], msbuildPath));
-                exceptionThrown.Message.Should().Be(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndOsOptions);
+                exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
             });
         }
 
@@ -108,7 +108,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             {
                 var msbuildPath = "<msbuildpath>";
                 var exceptionThrown = Assert.Throws<GracefulException>(() => BuildCommand.FromArgs(["--arch", "arch", "--runtime", "rid"], msbuildPath));
-                exceptionThrown.Message.Should().Be(CommonLocalizableStrings.CannotSpecifyBothRuntimeAndArchOptions);
+                exceptionThrown.Message.Should().Be(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
             });
         }
 

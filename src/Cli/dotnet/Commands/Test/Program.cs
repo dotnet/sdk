@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -129,7 +128,7 @@ public class TestCommand(
         List<string> convertedArgs = new VSTestArgumentConverter().Convert(args, out List<string> ignoredArgs);
         if (ignoredArgs.Any())
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.IgnoredArgumentsMessage, string.Join(" ", ignoredArgs)).Yellow());
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.IgnoredArgumentsMessage, string.Join(" ", ignoredArgs)).Yellow());
         }
 
         // merge the args settings, we don't need to escape

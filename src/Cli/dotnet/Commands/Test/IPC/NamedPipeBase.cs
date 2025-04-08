@@ -6,8 +6,9 @@
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal abstract class NamedPipeBase
 {

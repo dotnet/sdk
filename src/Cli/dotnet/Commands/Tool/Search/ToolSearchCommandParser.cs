@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
@@ -10,31 +9,31 @@ internal static class ToolSearchCommandParser
 {
     public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
     {
-        HelpName = LocalizableStrings.SearchTermArgumentName,
-        Description = LocalizableStrings.SearchTermDescription
+        HelpName = CliCommandStrings.ToolSearchSearchTermArgumentName,
+        Description = CliCommandStrings.ToolSearchSearchTermDescription
     };
 
     public static readonly CliOption<bool> DetailOption = new("--detail")
     {
-        Description = LocalizableStrings.DetailDescription,
+        Description = CliCommandStrings.DetailDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static readonly CliOption<string> SkipOption = new("--skip")
     {
-        Description = LocalizableStrings.SkipDescription,
-        HelpName = LocalizableStrings.SkipArgumentName
+        Description = CliCommandStrings.ToolSearchSkipDescription,
+        HelpName = CliCommandStrings.ToolSearchSkipArgumentName
     };
 
     public static readonly CliOption<string> TakeOption = new("--take")
     {
-        Description = LocalizableStrings.TakeDescription,
-        HelpName = LocalizableStrings.TakeArgumentName
+        Description = CliCommandStrings.ToolSearchTakeDescription,
+        HelpName = CliCommandStrings.ToolSearchTakeArgumentName
     };
 
     public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
     {
-        Description = LocalizableStrings.PrereleaseDescription,
+        Description = CliCommandStrings.ToolSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -47,7 +46,7 @@ internal static class ToolSearchCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("search", LocalizableStrings.CommandDescription);
+        CliCommand command = new("search", CliCommandStrings.ToolSearchCommandDescription);
 
         command.Arguments.Add(SearchTermArgument);
 

@@ -88,7 +88,7 @@ internal class BuildServerProvider(
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.FailedToReadPidFile,
+                    CliStrings.FailedToReadPidFile,
                     path.Value,
                     ex.Message).Yellow());
             return null;

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.History;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
@@ -17,7 +16,7 @@ internal static class WorkloadHistoryCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("history", LocalizableStrings.CommandDescription);
+        var command = new CliCommand("history", CliCommandStrings.WorkloadHistoryCommandDescription);
 
         command.SetAction(parseResult => new WorkloadHistoryCommand(parseResult).Execute());
 

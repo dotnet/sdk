@@ -4,7 +4,7 @@
 using System.Buffers;
 using System.IO.Pipes;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeClient(string name) : NamedPipeBase, IClient
 {

@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <TestHostFolder>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</TestHostFolder>
-    <TestHostDotNet>$(TestHostFolder)$([System.IO.Path]::GetFileName('$(DotNetTool)'))</TestHostDotNet>
   </PropertyGroup>
 
   <Target Name="OverlaySdkOnLKG" AfterTargets="Build" DependsOnTargets="GenerateInstallerLayout">

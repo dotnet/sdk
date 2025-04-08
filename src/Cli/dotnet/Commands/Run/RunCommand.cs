@@ -9,16 +9,14 @@ using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.Tools.Run;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 public partial class RunCommand
 {
@@ -102,7 +100,7 @@ public partial class RunCommand
         {
             if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
             {
-                Reporter.Output.WriteLine(LocalizableStrings.RunCommandBuilding);
+                Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
             EnsureProjectIsBuilt(out projectFactory);
@@ -134,7 +132,7 @@ public partial class RunCommand
         catch (InvalidProjectFileException e)
         {
             throw new GracefulException(
-                string.Format(LocalizableStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
+                string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                 e);
         }
     }
@@ -179,17 +177,17 @@ public partial class RunCommand
         {
             if (!string.IsNullOrEmpty(LaunchProfile))
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
             }
             return true;
         }
 
         if (Verbosity?.IsQuiet() != true)
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        string profileName = string.IsNullOrEmpty(LaunchProfile) ? LocalizableStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
+        string profileName = string.IsNullOrEmpty(LaunchProfile) ? CliCommandStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
 
         try
         {
@@ -197,7 +195,7 @@ public partial class RunCommand
             var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
             if (!applyResult.Success)
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
             }
             else
             {
@@ -206,7 +204,7 @@ public partial class RunCommand
         }
         catch (IOException ex)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
             Reporter.Error.WriteLine(ex.Message.Bold().Red());
             return false;
         }
@@ -272,7 +270,7 @@ public partial class RunCommand
         if (buildResult != 0)
         {
             Reporter.Error.WriteLine();
-            throw new GracefulException(LocalizableStrings.RunCommandException);
+            throw new GracefulException(CliCommandStrings.RunCommandException);
         }
     }
 
@@ -376,7 +374,7 @@ public partial class RunCommand
 
             if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out _))
             {
-                throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
+                throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
         }
     }
@@ -415,13 +413,13 @@ public partial class RunCommand
             string targetFramework = project.GetPropertyValue("TargetFramework");
             if (string.IsNullOrEmpty(targetFramework))
             {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
             }
         }
 
         throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.RunCommandExceptionUnableToRun,
+                    CliCommandStrings.RunCommandExceptionUnableToRun,
                     "dotnet run",
                     "OutputType",
                     project.GetPropertyValue("OutputType")));
@@ -448,7 +446,7 @@ public partial class RunCommand
 
         if (entryPointFilePath is null && projectFilePath is null)
         {
-            throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
+            throw new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
         }
 
         return projectFilePath;
@@ -464,7 +462,7 @@ public partial class RunCommand
 
             if (projectFiles.Length > 1)
             {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionMultipleProjects, directory);
             }
 
             return projectFiles[0];

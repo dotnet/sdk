@@ -9,12 +9,8 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
-
-using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
@@ -41,7 +37,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();
@@ -92,7 +88,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             }
             catch (NuGetPackageNotFoundException)
             {
-                Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
+                Utils.Reporter.Error.WriteLine(string.Format(CliCommandStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
                 return 0;
             }
 
@@ -118,7 +114,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
             if (!versions.Any())
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, string.Join(' ', _workloadVersion)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadVersionWithSpecifiedManifestNotFound, string.Join(' ', _workloadVersion)));
             }
             else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
@@ -143,9 +139,9 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             else
             {
                 PrintableTable<KeyValuePair<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)>> table = new();
-                table.AddColumn(LocalizableStrings.WorkloadManifestIdColumn, manifest => manifest.Key.ToString());
-                table.AddColumn(LocalizableStrings.WorkloadManifestFeatureBandColumn, manifest => manifest.Value.FeatureBand.ToString());
-                table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, manifest => manifest.Value.Version.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestIdColumn, manifest => manifest.Key.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestFeatureBandColumn, manifest => manifest.Value.FeatureBand.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestVersionColumn, manifest => manifest.Value.Version.ToString());
                 table.PrintRows(workloadSet.ManifestVersions, l => Reporter.WriteLine(l));
             }
         }
@@ -184,7 +180,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         }
         catch (NuGetPackageNotFoundException)
         {
-            Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
+            Utils.Reporter.Error.WriteLine(string.Format(CliCommandStrings.NoWorkloadVersionsFound, featureBand));
             return null;
         }
 

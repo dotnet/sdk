@@ -429,7 +429,7 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact]
+        [WindowsOnlyFact] // fails on Unix platforms, see https://github.com/dotnet/sdk/issues/48202
         public void It_retries_on_failure_to_create_apphost()
         {
             var testProject = new TestProject()

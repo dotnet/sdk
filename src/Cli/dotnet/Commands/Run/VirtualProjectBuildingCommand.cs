@@ -16,11 +16,9 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.
@@ -183,7 +181,12 @@ internal sealed class VirtualProjectBuildingCommand
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(
+                projectFileWriter,
+                _directives,
+                isVirtualProject: true,
+                targetFilePath: _targetFilePath,
+                artifactsPath: GetArtifactsPath(EntryPointFileFullPath));
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -192,14 +195,34 @@ internal sealed class VirtualProjectBuildingCommand
             projectRoot.FullPath = projectFileFullPath;
             return projectRoot;
         }
+
+        static string GetArtifactsPath(string entryPointFilePath)
+        {
+            // We want a location where permissions are expected to be restricted to the current user.
+            string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? Path.GetTempPath()
+                : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+            // Include entry point file name so the directory name is not completely opaque.
+            string fileName = Path.GetFileNameWithoutExtension(entryPointFilePath);
+            string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFilePath);
+            string directoryName = $"{fileName}-{hash}";
+
+            return Path.Join(directory, "dotnet", "runfile", directoryName);
+        }
     }
 
     public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
     {
-        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null);
+        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null, artifactsPath: null);
     }
 
-    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool isVirtualProject, string? targetFilePath)
+    private static void WriteProjectFile(
+        TextWriter writer,
+        ImmutableArray<CSharpDirective> directives,
+        bool isVirtualProject,
+        string? targetFilePath,
+        string? artifactsPath)
     {
         int processedDirectives = 0;
 
@@ -217,8 +240,15 @@ internal sealed class VirtualProjectBuildingCommand
 
         if (isVirtualProject)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+
             writer.WriteLine($"""
                 <Project>
+
+                  <PropertyGroup>
+                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                  </PropertyGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
@@ -496,7 +526,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
-            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
+            _ => throw new GracefulException(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
         };
     }
 
@@ -516,7 +546,7 @@ internal abstract class CSharpDirective
         {
             if (string.IsNullOrWhiteSpace(firstPart))
             {
-                throw new GracefulException(LocalizableStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
             }
 
             return firstPart;
@@ -572,7 +602,7 @@ internal abstract class CSharpDirective
 
             if (propertyValue is null)
             {
-                throw new GracefulException(LocalizableStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
             }
 
             try
@@ -581,7 +611,7 @@ internal abstract class CSharpDirective
             }
             catch (XmlException ex)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
+                throw new GracefulException(string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
             }
 
             return new Property

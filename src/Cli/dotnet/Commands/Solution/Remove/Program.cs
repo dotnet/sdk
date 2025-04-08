@@ -28,7 +28,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
         string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
         if (_projects.Count == 0)
         {
-            throw new GracefulException(CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove);
+            throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToRemove);
         }
 
         try
@@ -48,7 +48,7 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
         {
             if (ex is SolutionException || ex.InnerException is SolutionException)
             {
-                throw new GracefulException(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
+                throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
             }
             throw new GracefulException(ex.Message, ex);
         }
@@ -80,13 +80,13 @@ internal class RemoveProjectFromSolutionCommand : CommandBase
             // If project is still not found, print error
             if (project is null)
             {
-                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectNotFoundInTheSolution, projectPath);
+                Reporter.Output.WriteLine(CliStrings.ProjectNotFoundInTheSolution, projectPath);
             }
             // If project is found, remove it
             else
             {
                 solution.RemoveProject(project);
-                Reporter.Output.WriteLine(CommonLocalizableStrings.ProjectRemovedFromTheSolution, projectPath);
+                Reporter.Output.WriteLine(CliStrings.ProjectRemovedFromTheSolution, projectPath);
             }
         }
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Globalization;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -153,7 +152,7 @@ internal sealed class AnsiTerminal(IConsole console, string? baseDirectory) : IT
     {
         if (_isBatching)
         {
-            throw new InvalidOperationException(LocalizableStrings.ConsoleIsAlreadyInBatchingMode);
+            throw new InvalidOperationException(CliCommandStrings.ConsoleIsAlreadyInBatchingMode);
         }
 
         _stringBuilder.Clear();

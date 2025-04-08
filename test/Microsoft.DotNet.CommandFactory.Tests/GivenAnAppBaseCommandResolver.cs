@@ -5,7 +5,6 @@
 
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.CommandFactory;
 
 namespace Microsoft.DotNet.Tests
 {

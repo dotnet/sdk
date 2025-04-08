@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 throw new ToolPackageException(
                     string.Format(
-                        CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                        CliStrings.FailedToRetrieveToolConfiguration,
                         Id,
                         ex.Message),
                     ex);

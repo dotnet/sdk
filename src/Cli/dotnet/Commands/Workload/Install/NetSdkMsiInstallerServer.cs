@@ -7,10 +7,7 @@ using System.Security;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.DotNet.Cli.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
@@ -165,14 +162,14 @@ internal class NetSdkMsiInstallerServer : MsiInstallerBase
     {
         if (!WindowsUtils.IsAdministrator())
         {
-            throw new UnauthorizedAccessException(LocalizableStrings.InsufficientPrivilegeToStartServer);
+            throw new UnauthorizedAccessException(CliCommandStrings.InsufficientPrivilegeToStartServer);
         }
 
         // Best effort to verify that the server was not started indirectly or being spoofed.
         if (ParentProcess == null || ParentProcess.StartTime > CurrentProcess.StartTime ||
             !string.Equals(ParentProcess.MainModule.FileName, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
         {
-            throw new SecurityException(string.Format(LocalizableStrings.NoTrustWithParentPID, ParentProcess?.Id));
+            throw new SecurityException(string.Format(CliCommandStrings.NoTrustWithParentPID, ParentProcess?.Id));
         }
 
         // Configure pipe DACLs

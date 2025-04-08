@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
@@ -72,16 +71,16 @@ internal class ToolListLocalCommand : CommandBase
     {
         var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
         table.AddColumn(
-            LocalizableStrings.PackageIdColumn,
+            CliCommandStrings.ToolListPackageIdColumn,
             p => p.toolManifestPackage.PackageId.ToString());
         table.AddColumn(
-            LocalizableStrings.VersionColumn,
+            CliCommandStrings.ToolListVersionColumn,
             p => p.toolManifestPackage.Version.ToNormalizedString());
         table.AddColumn(
-            LocalizableStrings.CommandsColumn,
+            CliCommandStrings.ToolListCommandsColumn,
             p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
         table.AddColumn(
-            LocalizableStrings.ManifestFileColumn,
+            CliCommandStrings.ManifestFileColumn,
             p => p.SourceManifest.Value);
         table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
     }

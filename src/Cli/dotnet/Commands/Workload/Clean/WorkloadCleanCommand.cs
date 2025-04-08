@@ -8,9 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Clean.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
@@ -37,7 +35,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadUninstallCommandParser.VersionOption)))
         {
-            throw new GracefulException(Workloads.Workload.Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();
@@ -95,7 +93,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
 
                     if (!Path.Exists(bandedDotnetPath))
                     {
-                        Reporter.WriteLine(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
+                        Reporter.WriteLine(string.Format(CliCommandStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
                         continue;
                     }
 
@@ -107,7 +105,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
                     VisualStudioWorkloads.GetInstalledWorkloads(bandedResolver, vsWorkloads, _cleanAll ? null : new SdkFeatureBand(sdkVersion));
                     foreach (var vsWorkload in vsWorkloads.AsEnumerable())
                     {
-                        vsWorkloadUninstallWarnings.Add(string.Format(LocalizableStrings.VSWorkloadNotRemoved, $"{vsWorkload.Key}", $"{vsWorkload.Value}"));
+                        vsWorkloadUninstallWarnings.Add(string.Format(CliCommandStrings.VSWorkloadNotRemoved, $"{vsWorkload.Key}", $"{vsWorkload.Value}"));
                     }
                 }
                 catch (WorkloadManifestException ex)
@@ -115,7 +113,7 @@ internal class WorkloadCleanCommand : WorkloadCommandBase
                     // Limitation: We don't know the dotnetPath of the other feature bands when making the manifestProvider and resolvers.
                     // This can cause the manifest resolver to fail as it may look for manifests in an invalid path.
                     // It can theoretically be customized, but that is not currently supported for workloads with VS.
-                    Reporter.WriteLine(string.Format(LocalizableStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
+                    Reporter.WriteLine(string.Format(CliCommandStrings.CannotAnalyzeVSWorkloadBand, sdkVersion, _dotnetPath, defaultDotnetWinPath).Yellow());
                     Utils.Reporter.Verbose.WriteLine(ex.Message);
                 }
             }

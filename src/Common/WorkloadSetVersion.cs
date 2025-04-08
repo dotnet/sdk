@@ -4,9 +4,9 @@
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli;
 
-static class WorkloadSetVersion
+internal static class WorkloadSetVersion
 {
     private static string[] SeparateCoreComponents(string workloadSetVersion, out string[] sections)
     {

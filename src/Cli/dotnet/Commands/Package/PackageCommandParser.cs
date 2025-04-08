@@ -18,7 +18,7 @@ internal class PackageCommandParser
     {
         Recursive = true,
         DefaultValueFactory = _ => Environment.CurrentDirectory,
-        Description = CommonLocalizableStrings.ProjectArgumentDescription
+        Description = CliStrings.ProjectArgumentDescription
     };
 
     public static CliCommand GetCommand()

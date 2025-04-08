@@ -56,3 +56,15 @@ steps:
       mergeTestResults: true
       publishRunAttachments: true
       testRunTitle: Tests_$(Agent.JobName)
+
+  - task: PublishTestResults@2
+    displayName: Publish Scenario Test Results
+    condition: succeededOrFailed()
+    continueOnError: true
+    inputs:
+      testRunner: xUnit
+      testResultsFiles: 'artifacts/TestResults/**/scenario-tests/*.xml'
+      searchFolder: $(Build.SourcesDirectory)
+      mergeTestResults: true
+      publishRunAttachments: true
+      testRunTitle: ScenarioTests_$(Agent.JobName)

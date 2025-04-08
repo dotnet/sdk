@@ -37,7 +37,7 @@ public class PublishedPathCommandResolver(
         if (!File.Exists(depsFilePath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 depsFilePath));
             return null;
@@ -47,7 +47,7 @@ public class PublishedPathCommandResolver(
         if (!File.Exists(runtimeConfigPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 runtimeConfigPath));
             return null;
@@ -65,7 +65,7 @@ public class PublishedPathCommandResolver(
         if (!Directory.Exists(publishDirectory))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 publishDirectory));
             return null;

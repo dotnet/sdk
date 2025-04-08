@@ -56,7 +56,7 @@ internal class NugetSearchApiParameter
         {
             throw new GracefulException(
                 string.Format(
-                    Tools.Tool.Search.LocalizableStrings.InvalidInputTypeInteger,
+                    CliStrings.InvalidInputTypeInteger,
                     alias));
         }
     }

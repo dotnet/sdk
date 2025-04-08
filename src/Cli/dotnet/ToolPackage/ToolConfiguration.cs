@@ -12,14 +12,14 @@ internal class ToolConfiguration
     {
         if (string.IsNullOrWhiteSpace(commandName))
         {
-            throw new ToolConfigurationException(CommonLocalizableStrings.ToolSettingsMissingCommandName);
+            throw new ToolConfigurationException(CliStrings.ToolSettingsMissingCommandName);
         }
 
         if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsMissingEntryPoint,
+                    CliStrings.ToolSettingsMissingEntryPoint,
                     commandName));
         }
 
@@ -38,7 +38,7 @@ internal class ToolConfiguration
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsInvalidCommandName,
+                    CliStrings.ToolSettingsInvalidCommandName,
                     commandName,
                     string.Join(", ", invalidCharacters.Select(c => $"'{c}'"))));
         }
@@ -50,7 +50,7 @@ internal class ToolConfiguration
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsInvalidLeadingDotCommandName,
+                    CliStrings.ToolSettingsInvalidLeadingDotCommandName,
                     commandName));
         }
     }

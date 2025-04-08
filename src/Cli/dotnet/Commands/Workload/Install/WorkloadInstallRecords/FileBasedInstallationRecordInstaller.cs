@@ -3,7 +3,7 @@
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 
 internal class FileBasedInstallationRecordRepository(string workloadMetadataDir) : IWorkloadInstallationRecordRepository
 {

@@ -5,7 +5,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Newtonsoft.Json;
 using NuGet.Frameworks;

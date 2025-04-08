@@ -3,7 +3,6 @@
 
 using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 

@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Elevate.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
@@ -32,7 +31,7 @@ internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommand
         }
         else
         {
-            throw new GracefulException(LocalizableStrings.RequiresWindows, isUserError: false);
+            throw new GracefulException(CliCommandStrings.RequiresWindows, isUserError: false);
         }
 
         return 0;

@@ -5,7 +5,7 @@
 using System.Buffers;
 #endif
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 internal abstract class BaseSerializer
 {

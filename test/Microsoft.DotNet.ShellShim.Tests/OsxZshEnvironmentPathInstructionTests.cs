@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Tools;
 using Moq;
 
 namespace Microsoft.DotNet.ShellShim.Tests
@@ -39,7 +38,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     toolsPath.Path));
         }
 
@@ -96,7 +95,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             reporter.Lines.Should().Equal(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     toolsPath.Path));
         }
     }

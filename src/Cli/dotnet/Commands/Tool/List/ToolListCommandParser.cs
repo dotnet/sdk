@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
@@ -12,8 +11,8 @@ internal static class ToolListCommandParser
 {
     public static readonly CliArgument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription,
+        HelpName = CliCommandStrings.ToolListPackageIdArgumentName,
+        Description = CliCommandStrings.ToolListPackageIdArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne,
     };
 
@@ -38,13 +37,13 @@ internal static class ToolListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        CliCommand command = new("list", CliCommandStrings.ToolListCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
-        command.Options.Add(ToolListFormatOption.WithHelpDescription(command, LocalizableStrings.ToolListFormatOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolListGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolListLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolListToolPathOptionDescription));
+        command.Options.Add(ToolListFormatOption.WithHelpDescription(command, CliCommandStrings.ToolListFormatOptionDescription));
 
         command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 

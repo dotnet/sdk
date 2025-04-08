@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
@@ -13,12 +12,12 @@ internal static class WorkloadUpdateCommandParser
 
     public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
     {
-        Description = LocalizableStrings.FromPreviousSdkOptionDescription
+        Description = CliCommandStrings.FromPreviousSdkOptionDescription
     };
 
     public static readonly CliOption<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
     {
-        Description = LocalizableStrings.AdManifestOnlyOptionDescription,
+        Description = CliCommandStrings.AdManifestOnlyOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -30,12 +29,12 @@ internal static class WorkloadUpdateCommandParser
 
     public static readonly CliOption<int> FromHistoryOption = new("--from-history")
     {
-        Description = LocalizableStrings.FromHistoryOptionDescription
+        Description = CliCommandStrings.FromHistoryOptionDescription
     };
 
     public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
     {
-        Description = LocalizableStrings.HistoryManifestOnlyOptionDescription
+        Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
     private static readonly CliCommand Command = ConstructCommand();
@@ -47,7 +46,7 @@ internal static class WorkloadUpdateCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("update", LocalizableStrings.CommandDescription);
+        CliCommand command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
 
         InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

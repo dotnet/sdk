@@ -4,7 +4,6 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
@@ -14,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 /// </summary>
 internal class ProjectContextSymbolSource : IBindSymbolSource
 {
-    public string DisplayName => LocalizableStrings.ProjectContextSymbolSource_DisplayName;
+    public string DisplayName => CliCommandStrings.ProjectContextSymbolSource_DisplayName;
 
     public string? SourcePrefix => "msbuild";
 

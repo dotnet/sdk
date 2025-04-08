@@ -20,7 +20,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         private readonly string[] ConsoleLoggerOutputDetailed = new[] { "--logger", "console;verbosity=detailed" };
 
-
         private readonly string[] EnvironmentVariables = new[] {
             EnvironmentOption, EnvironmentVariable1,
             EnvironmentOption, EnvironmentVariable2,

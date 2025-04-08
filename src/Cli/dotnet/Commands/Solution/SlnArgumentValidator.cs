@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.Commands.Solution.Add;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Solution;
 
@@ -18,7 +17,7 @@ internal static class SlnArgumentValidator
     {
         if (_arguments.Count == 0)
         {
-            string message = commandType == CommandType.Add ? CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd : CommonLocalizableStrings.SpecifyAtLeastOneProjectToRemove;
+            string message = commandType == CommandType.Add ? CliStrings.SpecifyAtLeastOneProjectToAdd : CliStrings.SpecifyAtLeastOneProjectToRemove;
             throw new GracefulException(message);
         }
 
@@ -27,7 +26,7 @@ internal static class SlnArgumentValidator
         if (_inRoot && hasRelativeRoot)
         {
             // These two options are mutually exclusive
-            throw new GracefulException(LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
+            throw new GracefulException(CliCommandStrings.SolutionFolderAndInRootMutuallyExclusive);
         }
 
         var slnFile = _arguments.FirstOrDefault(path => path.HasExtension(".sln") || path.HasExtension(".slnx"));
@@ -51,8 +50,8 @@ internal static class SlnArgumentValidator
             string command = commandType == CommandType.Add ? "add" : "remove";
             throw new GracefulException(
             [
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
-                CommonLocalizableStrings.DidYouMean,
+                string.Format(CliStrings.SolutionArgumentMisplaced, slnFile),
+                CliStrings.DidYouMean,
                 $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
             ]);
         }

@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.History.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
@@ -44,17 +43,17 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
 
         if (displayRecords.Count == 0)
         {
-            Reporter.WriteLine(LocalizableStrings.NoHistoryFound);
+            Reporter.WriteLine(CliCommandStrings.NoHistoryFound);
         }
         else
         {
             var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
-            table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Command, r => r.Command);
-            table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? []));
-            table.AddColumn(LocalizableStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
-            table.AddColumn(LocalizableStrings.WorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
+            table.AddColumn(CliCommandStrings.Id, r => r.ID?.ToString() ?? "");
+            table.AddColumn(CliCommandStrings.Date, r => r.TimeStarted?.ToString() ?? "");
+            table.AddColumn(CliCommandStrings.Command, r => r.Command);
+            table.AddColumn(CliCommandStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? []));
+            table.AddColumn(CliCommandStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
+            table.AddColumn(CliCommandStrings.WorkloadHistoryWorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
 
             Reporter.WriteLine();
             table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
@@ -62,7 +61,7 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
 
             if (unknownRecordsPresent)
             {
-                Reporter.WriteLine(LocalizableStrings.UnknownRecordsInformationalMessage);
+                Reporter.WriteLine(CliCommandStrings.UnknownRecordsInformationalMessage);
                 Reporter.WriteLine();
             }
         }

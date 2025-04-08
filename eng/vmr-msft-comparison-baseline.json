@@ -10,6 +10,48 @@
     "justification": "mscordaccoree's version is baked into the file name and varies build to build."
   },
   {
+    "issueType": "MissingPackageContent",
+    "idMatch": ".*\\.Msi\\.(arm64|x64|x86)",
+    "descriptionMatch": "(useSharedDesignerContext.txt|THIRD-PARTY-NOTICES.TXT)",
+    "justification": "Inadvertent additional file added by the workloads build in the runtime repo, not needed in the VMR. The real file is contained in the wrapped nuget."
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": ".*\\.Msi\\.(arm64|x64|x86)",
+    "descriptionMatch": "data\\/.*-(arm64|x64|x86)\\.msi",
+    "justification": "Unstable random guid in the filename for the .msi wrapping nuget from the workloads build."
+  },
+  {
+    "issueType": "ExtraPackageContent",
+    "idMatch": ".*\\.Msi\\.(arm64|x64|x86)",
+    "descriptionMatch": "data\\/.*-(arm64|x64|x86)\\.msi",
+    "justification": "Unstable random guid in the filename for the .msi wrapping nuget from the workloads build."
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": ".*Workload\\.VSDrop\\..*\\.zip",
+    "descriptionMatch": "[0-9a-f]*-(arm64|x64|x86)\\.msi",
+    "justification": "Unstable random guid in the filename for the .msi wrapping nuget from the workloads build."
+  },
+  {
+    "issueType": "ExtraPackageContent",
+    "idMatch": ".*Workload\\.VSDrop\\..*\\.zip",
+    "descriptionMatch": "[0-9a-f]*-(arm64|x64|x86)\\.msi",
+    "justification": "Unstable random guid in the filename for the .msi wrapping nuget from the workloads build."
+  },
+  {
+    "issueType": "MissingPackageContent",
+    "idMatch": ".*Workload\\.VSDrop\\..*\\.zip",
+    "descriptionMatch": "[0-9a-f]*\\.json",
+    "justification": "Unstable random guid in the filename for the .json from the workloads build."
+  },
+  {
+    "issueType": "ExtraPackageContent",
+    "idMatch": ".*Workload\\.VSDrop\\..*\\.zip",
+    "descriptionMatch": "[0-9a-f]*\\.json",
+    "justification": "Unstable random guid in the filename for the .json from the workloads build."
+  },
+  {
     "issueType": "AssemblyVersionMismatch",
     "descriptionMatch": ".resources.dll",
     "allowRevisionOnlyVariance": true,

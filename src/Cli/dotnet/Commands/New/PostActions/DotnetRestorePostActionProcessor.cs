@@ -4,7 +4,6 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
@@ -26,7 +25,7 @@ internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallb
             //If the author didn't opt in to the new behavior by specifying "projectFiles", use the old behavior - primary outputs
             if (templateCreationResult.PrimaryOutputs.Count == 0)
             {
-                Reporter.Output.WriteLine(LocalizableStrings.PostAction_Restore_Error_NoProjectsToRestore);
+                Reporter.Output.WriteLine(CliCommandStrings.PostAction_Restore_Error_NoProjectsToRestore);
                 return true;
             }
             targetFiles = templateCreationResult.PrimaryOutputs.Select(output => Path.GetFullPath(output.Path, outputBasePath));
@@ -34,7 +33,7 @@ internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallb
 
         if (!targetFiles.Any())
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_Restore_Error_FailedToDetermineProjectToRestore));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_Restore_Error_FailedToDetermineProjectToRestore));
             return false;
         }
 
@@ -49,21 +48,21 @@ internal class DotnetRestorePostActionProcessor(Func<string, bool>? restoreCallb
     {
         try
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.PostAction_Restore_Running, pathToRestore));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.PostAction_Restore_Running, pathToRestore));
             bool succeeded = _restoreCallback(pathToRestore);
             if (!succeeded)
             {
-                Reporter.Error.WriteLine(LocalizableStrings.PostAction_Restore_Failed);
+                Reporter.Error.WriteLine(CliCommandStrings.PostAction_Restore_Failed);
             }
             else
             {
-                Reporter.Output.WriteLine(LocalizableStrings.PostAction_Restore_Succeeded);
+                Reporter.Output.WriteLine(CliCommandStrings.PostAction_Restore_Succeeded);
             }
             return succeeded;
         }
         catch (Exception e)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.PostAction_Restore_RestoreFailed, e.Message));
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.PostAction_Restore_RestoreFailed, e.Message));
             return false;
         }
     }

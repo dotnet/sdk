@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -19,7 +18,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
+                    CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
                     packageVersion));
         }
 
@@ -40,7 +39,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.InvalidNuGetVersionRange,
+                    CliCommandStrings.ToolInstallInvalidNuGetVersionRange,
                     packageVersion));
         }
         return versionRange;
