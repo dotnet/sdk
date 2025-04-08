@@ -10,9 +10,7 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
@@ -456,7 +454,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             a.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 
@@ -589,7 +587,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             secondCall.Should().Throw<ToolPackageException>().Where(
                 ex => ex.Message ==
                       string.Format(
-                          CommonLocalizableStrings.ToolPackageConflictPackageId,
+                          CliStrings.ToolPackageConflictPackageId,
                           TestPackageId,
                           TestPackageVersion));
 

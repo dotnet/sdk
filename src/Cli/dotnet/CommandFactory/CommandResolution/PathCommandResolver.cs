@@ -5,11 +5,9 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class PathCommandResolver : AbstractPathBasedCommandResolver
+public class PathCommandResolver(IEnvironmentProvider environment,
+    IPlatformCommandSpecFactory commandSpecFactory) : AbstractPathBasedCommandResolver(environment, commandSpecFactory)
 {
-    public PathCommandResolver(IEnvironmentProvider environment,
-        IPlatformCommandSpecFactory commandSpecFactory) : base(environment, commandSpecFactory) { }
-
     internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
     {
         return _environment.GetCommandPath(commandResolverArguments.CommandName);

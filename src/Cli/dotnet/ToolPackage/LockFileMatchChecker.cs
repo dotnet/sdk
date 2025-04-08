@@ -44,7 +44,7 @@ internal class LockFileMatcher
 
     private static bool SubPathMatchesTargetFilePath(string[] pathInLockFilePathInArray, string[] targetInArray)
     {
-        string[] pathAfterToolsTfmRid = pathInLockFilePathInArray.Skip(3).ToArray();
+        string[] pathAfterToolsTfmRid = [.. pathInLockFilePathInArray.Skip(3)];
         return !targetInArray
             .Where((directoryOnEveryLevel, i) => directoryOnEveryLevel != pathAfterToolsTfmRid[i])
             .Any();
@@ -71,7 +71,7 @@ internal class LockFileMatcher
     {
         if (string.IsNullOrEmpty(path))
         {
-            return new string[0];
+            return [];
         }
 
         return path.Split('\\', '/');

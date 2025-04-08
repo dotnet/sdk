@@ -4,8 +4,9 @@ This document provides guidelines for introducing new diagnostics or breaking ch
 
 ## General guidance
 
-In general, we want to make updating the .NET SDK as smooth as possible for developers. This means:
+In general, we want to make updating the .NET SDK as smooth as possible for developers. This extends to .NET tooling such as IDEs and code editors which may have a different release schedule and cadence. For example, the .NET 9 SDK (which was a new major version) was released with Visual Studio 17.12 (which was a new minor version). In this example, breaking changes in the .NET 9 SDK could disproportionally impact Visual Studio users who are expecting incremental, non-breaking, changes in the new minor version. Same applies to other IDEs and code editors from the wider .NET community.
 
+This means:
 * Introducing new changes in a staged/gradual way.
 * Tying new analyzers/diagnostics to a mechanism that requires explicit opt-in.
 * Providing a way to opt out of a change entirely.
@@ -84,5 +85,5 @@ Specific example: NuGet warnings for vulnerable transitive dependencies were int
 
 * Create an issue in the appropriate GitHub repository to track the change, if one does not already exist.
 * Add the breaking-change label to the issue. This label should be available in all .NET repositories that ship as part of the .NET SDK. If the label is not available, please file an issue in [dotnet/sdk](https://github.com/dotnet/sdk).
-* The issue will trigger a message with instructions to add documentation. In addition, you are invited to work with the SDK team to publish a blog post for the change. 
 * Consider creating and pinning an issue in the appropriate GitHub repository where the community can provide feedback.
+* Once a Pull Request is submitted for the issue, add the breaking-change label to the Pull Request as well. This will trigger a message with instructions. In addition, you are invited to work with the SDK team to publish a blog post for the change. 

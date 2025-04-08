@@ -31,7 +31,7 @@ internal static class ToolConfigurationDeserializer
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsInvalidXml,
+                    CliStrings.ToolSettingsInvalidXml,
                     ex.InnerException.Message),
                 ex.InnerException);
         }
@@ -39,7 +39,7 @@ internal static class ToolConfigurationDeserializer
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToRetrieveToolConfiguration,
                     ex.Message),
                 ex);
         }
@@ -48,14 +48,14 @@ internal static class ToolConfigurationDeserializer
 
         if (dotNetCliTool.Commands.Length != 1)
         {
-            throw new ToolConfigurationException(CommonLocalizableStrings.ToolSettingsMoreThanOneCommand);
+            throw new ToolConfigurationException(CliStrings.ToolSettingsMoreThanOneCommand);
         }
 
         if (dotNetCliTool.Commands[0].Runner != "dotnet")
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsUnsupportedRunner,
+                    CliStrings.ToolSettingsUnsupportedRunner,
                     dotNetCliTool.Commands[0].Name,
                     dotNetCliTool.Commands[0].Runner));
         }
@@ -68,22 +68,22 @@ internal static class ToolConfigurationDeserializer
 
     private static List<string> GenerateWarningAccordingToVersionAttribute(DotNetCliTool dotNetCliTool)
     {
-        List<string> warnings = new();
+        List<string> warnings = [];
         if (string.IsNullOrWhiteSpace(dotNetCliTool.Version))
         {
-            warnings.Add(CommonLocalizableStrings.FormatVersionIsMissing);
+            warnings.Add(CliStrings.FormatVersionIsMissing);
         }
         else
         {
             if (!int.TryParse(dotNetCliTool.Version, out int version))
             {
-                warnings.Add(CommonLocalizableStrings.FormatVersionIsMalformed);
+                warnings.Add(CliStrings.FormatVersionIsMalformed);
             }
             else
             {
                 if (version > SupportedVersion)
                 {
-                    warnings.Add(CommonLocalizableStrings.FormatVersionIsHigher);
+                    warnings.Add(CliStrings.FormatVersionIsHigher);
                 }
             }
         }

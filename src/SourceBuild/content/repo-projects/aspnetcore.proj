@@ -20,7 +20,10 @@
     <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) -msbuildEngine vs</BuildArgs>
     <ForceDotNetMSBuildEngine>false</ForceDotNetMSBuildEngine>
 
+    <!-- Pass TargetArchitecture in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetArchitecture>true</SkipSetTargetArchitecture>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+
     <BuildArgs>$(BuildArgs) /p:TargetRuntimeIdentifier=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:CrossArchitectureInstallerBasePath=$(ArtifactsAssetsDir)</BuildArgs>

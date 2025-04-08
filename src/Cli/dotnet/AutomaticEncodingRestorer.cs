@@ -12,11 +12,11 @@ namespace Microsoft.DotNet.Cli;
 /// </summary>
 internal class AutomaticEncodingRestorer : IDisposable
 {
-    Encoding _originalOutputEncoding = null;
-    Encoding _originalInputEncoding = null;
+    private readonly Encoding _originalOutputEncoding = null;
+    private readonly Encoding _originalInputEncoding = null;
 
-    bool outputEncodingAccessible = false;
-    bool inputEncodingAccessible = false;
+    private readonly bool outputEncodingAccessible = false;
+    private readonly bool inputEncodingAccessible = false;
 
     public AutomaticEncodingRestorer()
     {

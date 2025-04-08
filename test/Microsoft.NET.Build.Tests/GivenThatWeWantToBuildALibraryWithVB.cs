@@ -27,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
 
-            var outputDirectory = buildCommand.GetOutputDirectory("netstandard1.5");
+            var outputDirectory = buildCommand.GetOutputDirectory("netstandard2.0");
 
             outputDirectory.Should().OnlyHaveFiles(new[] {
                 "TestLibrary.dll",
@@ -78,7 +78,7 @@ namespace Microsoft.NET.Build.Tests
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
 
-            string targetFramework = "netstandard1.6";
+            string targetFramework = "netstandard2.0";
 
             var testAsset = testAssetsManager
                 .CopyTestAsset("AppWithLibraryVB", callingMethod)
@@ -159,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
             var libraryProjectDirectory = Path.Combine(testAsset.TestRoot, "TestLibrary");
 
             var getValuesCommand = new GetValuesCommand(Log, libraryProjectDirectory,
-                "netstandard1.5", "FinalDefineConstants")
+                "netstandard2.0", "FinalDefineConstants")
             {
                 ShouldCompile = true,
                 Configuration = configuration
@@ -172,16 +172,14 @@ namespace Microsoft.NET.Build.Tests
 
             var definedConstants = ExpandSequence(getValuesCommand.GetValues()).ToList();
 
-            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD1_5=-1", "NETSTANDARD1_0_OR_GREATER=-1",
-                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1" }));
+            definedConstants.Should().BeEquivalentTo(expectedDefines.Concat(new[] { "PLATFORM=\"AnyCPU\"", "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1",
+                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1" }));
         }
 
         [Theory]
-        [InlineData(".NETStandard,Version=v1.0", new[] { "NETSTANDARD=-1", "NETSTANDARD1_0=-1", "NETSTANDARD1_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.3", new[] { "NETSTANDARD=-1", "NETSTANDARD1_3=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("netstandard1.6", new[] { "NETSTANDARD=-1", "NETSTANDARD1_6=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1",
-            "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "_MyType=\"Empty\"" })]
-        [InlineData("net45", new[] { "NETFRAMEWORK=-1", "NET45=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1" })]
+        [InlineData(".NETStandard,Version=v2.0", new[] { "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1",
+                "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
+        [InlineData("netstandard2.0", new[] { "NETSTANDARD=-1", "NETSTANDARD2_0=-1", "NETSTANDARD1_0_OR_GREATER=-1", "NETSTANDARD1_1_OR_GREATER=-1", "NETSTANDARD1_2_OR_GREATER=-1", "NETSTANDARD1_3_OR_GREATER=-1", "NETSTANDARD1_4_OR_GREATER=-1", "NETSTANDARD1_5_OR_GREATER=-1", "NETSTANDARD1_6_OR_GREATER=-1", "NETSTANDARD2_0_OR_GREATER=-1", "_MyType=\"Empty\"" })]
         [InlineData("net461", new[] { "NETFRAMEWORK=-1", "NET461=-1", "NET20_OR_GREATER=-1", "NET30_OR_GREATER=-1", "NET35_OR_GREATER=-1", "NET40_OR_GREATER=-1", "NET45_OR_GREATER=-1", "NET451_OR_GREATER=-1",
             "NET452_OR_GREATER=-1", "NET46_OR_GREATER=-1", "NET461_OR_GREATER=-1" })]
         [InlineData("netcoreapp1.0", new[] { "NETCOREAPP=-1", "NETCOREAPP1_0=-1", "_MyType=\"Empty\"", "NETCOREAPP1_0_OR_GREATER=-1" })]

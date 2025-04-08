@@ -1,4 +1,5 @@
-﻿using Microsoft.DotNet.Build.Manifest;
+using Microsoft.Arcade.Common;
+using Microsoft.DotNet.Build.Manifest;
 using NuGet.Packaging;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;

@@ -16,7 +16,7 @@ internal class RazorServer(
 
     public int ProcessId => PidFile.ProcessId;
 
-    public string Name => LocalizableStrings.RazorServer;
+    public string Name => CliStrings.RazorServer;
 
     public RazorPidFile PidFile { get; } = pidFile ?? throw new ArgumentNullException(nameof(pidFile));
 
@@ -33,13 +33,13 @@ internal class RazorServer(
         var command = _commandFactory
             .Create(
                 "exec",
-                new string[] {
+                [
                     PidFile.ServerPath.Value,
                     "shutdown",
                     "-w",   // Wait for exit
                     "-p",   // Pipe name
                     PidFile.PipeName
-                })
+                ])
             .CaptureStdOut()
             .CaptureStdErr();
 
@@ -48,7 +48,7 @@ internal class RazorServer(
         {
             throw new BuildServerException(
                 string.Format(
-                    LocalizableStrings.ShutdownCommandFailed,
+                    CliStrings.ShutdownCommandFailed,
                     result.StdErr));
         }
 

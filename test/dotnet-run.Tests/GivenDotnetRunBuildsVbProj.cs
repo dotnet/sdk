@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.TemplateEngine.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
@@ -25,7 +25,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute("--launch-profile", "test");
 
-            string[] expectedErrorWords = LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile.Replace("\'{0}\'", "").Split(" ");
+            string[] expectedErrorWords = CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile
+                .Replace("\'{0}\'", "")
+                .Split(" ")
+                .Where(word => !string.IsNullOrEmpty(word))
+                .ToArray();
+
             runResult
                 .Should()
                 .Pass()
@@ -46,7 +51,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(testInstance.Path)
                 .Execute("--launch-profile", "first");
 
-            string expectedError = string.Format(LocalizableStrings.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
+            string expectedError = string.Format(CliCommandStrings.DuplicateCaseInsensitiveLaunchProfileNames, "\tfirst," + (OperatingSystem.IsWindows() ? "\r" : "") + "\n\tFIRST");
             runResult
                 .Should()
                 .Fail()
@@ -69,7 +74,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdErrContaining(string.Format(LocalizableStrings.LaunchProfileDoesNotExist, invalidLaunchProfileName));
+                .HaveStdErrContaining(string.Format(CliCommandStrings.LaunchProfileDoesNotExist, invalidLaunchProfileName));
         }
 
         [Theory]
@@ -107,7 +112,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute();
 
             cmd.Should().Pass()
-                .And.NotHaveStdOutContaining(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.NotHaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
@@ -127,7 +132,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("-v:m");
 
             cmd.Should().Pass()
-                .And.HaveStdOutContaining(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
+                .And.HaveStdOutContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath))
                 .And.HaveStdOutContaining("First");
 
             cmd.StdErr.Should().BeEmpty();
@@ -147,7 +152,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute("--launch-profile", "Third")
                 .Should().Pass()
                          .And.HaveStdOutContaining("(NO MESSAGE)")
-                         .And.HaveStdErrContaining(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
+                         .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, "Third", "").Trim());
         }
     }
 }

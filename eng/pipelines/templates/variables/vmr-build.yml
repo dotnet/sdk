@@ -85,6 +85,19 @@ variables:
   - name: signEnabled
     value: false
 
+# If signing is disabled, don't sign the DAC.
+- ${{ if eq(parameters.desiredSigning, 'Unsigned') }}:
+  - name: signDacEnabled
+    value: false
+# Otherwise, sign if the branch is a release branch.
+# We can't sign the DAC in main because the certificates are locked down.
+- ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/reltest/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+  - name: signDacEnabled
+    value: true
+- ${{ else }}:
+  - name: signDacEnabled
+    value: false
+
 - name: almaLinuxContainerName
   value: almaLinuxContainer
 - name: almaLinuxContainerImage
