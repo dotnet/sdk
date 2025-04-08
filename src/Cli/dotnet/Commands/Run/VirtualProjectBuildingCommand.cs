@@ -419,19 +419,20 @@ internal sealed class VirtualProjectBuildingCommand
 
             if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             {
+                Debug.Assert(previousWhiteSpaceSpan.IsEmpty);
                 previousWhiteSpaceSpan = trivia.FullSpan;
                 continue;
             }
 
             if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
             {
-                Debug.Assert(previousWhiteSpaceSpan.IsEmpty, "#! should be at the first character");
-                builder.Add(new CSharpDirective.Shebang { Span = trivia.FullSpan });
+                TextSpan span = getFullSpan(previousWhiteSpaceSpan, trivia);
+
+                builder.Add(new CSharpDirective.Shebang { Span = span });
             }
             else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
             {
-                // Include the preceding whitespace in the span, i.e., span will be the whole line.
-                var span = previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
+                TextSpan span = getFullSpan(previousWhiteSpaceSpan, trivia);
 
                 var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { EndOfDirectiveToken.LeadingTrivia: [{ RawKind: (int)SyntaxKind.PreprocessingMessageTrivia } messageTrivia] }
                     ? messageTrivia.ToString().AsSpan().Trim()
@@ -471,6 +472,12 @@ internal sealed class VirtualProjectBuildingCommand
 
         // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
+
+        static TextSpan getFullSpan(TextSpan previousWhiteSpaceSpan, SyntaxTrivia trivia)
+        {
+            // Include the preceding whitespace in the span, i.e., span will be the whole line.
+            return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
+        }
 
         static void reportErrorFor(SourceFile sourceFile, SyntaxTrivia trivia)
         {
