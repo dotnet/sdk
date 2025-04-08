@@ -65,26 +65,25 @@ namespace TestProjectWithNetFM
 			var pathPrefix = Path.GetDirectoryName(Path.GetDirectoryName(processPath));
 			if (processes.Where(p => p.Id != Process.GetCurrentProcess().Id && p.MainModule is not null && p.MainModule.FileName.StartsWith(pathPrefix!)).Any())
 			{
-				await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-				{
-					Uid = "Test0",
-					DisplayName = "Test0",
-					Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
-				}));
+                await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
+                {
+                    Uid = "Test0",
+                    DisplayName = "Test0",
+                    Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception("This is run in parallel!"), "")),
+                }));
 			}
 			else
 			{
-				await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
-				{
-					Uid = "Test0",
-					DisplayName = "Test0",
-					Properties = new PropertyBag(new FailedTestNodeStateProperty(new Exception("This is run in parallel!"), "")),
-				}));
-			}
+                await context.MessageBus.PublishAsync(this, new TestNodeUpdateMessage(context.Request.Session.SessionUid, new TestNode()
+                {
+                    Uid = "Test0",
+                    DisplayName = "Test0",
+                    Properties = new PropertyBag(new PassedTestNodeStateProperty("OK")),
+                }));
+            }
 
 			await Task.Delay(5000);
 
-			
 			context.Complete();
 		}
 	}
