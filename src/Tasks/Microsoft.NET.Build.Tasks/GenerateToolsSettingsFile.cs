@@ -69,11 +69,7 @@ namespace Microsoft.NET.Build.Tasks
                     var packageNode = new XElement("RuntimeIdentifierPackage");
                     packageNode.Add(new XAttribute("RuntimeIdentifier", toolPackageRuntimeIdentifier));
 
-                    string ridPackageId = runtimeIdentifierPackage.GetMetadata("Id");
-                    if (string.IsNullOrEmpty(ridPackageId))
-                    {
-                        ridPackageId = toolPackageId + "." + toolPackageRuntimeIdentifier;
-                    }
+                    string ridPackageId = toolPackageId + "." + toolPackageRuntimeIdentifier;
                     packageNode.Add(new XAttribute("Id", ridPackageId));
 
                     string ridPackageVersion = runtimeIdentifierPackage.GetMetadata("Version");
