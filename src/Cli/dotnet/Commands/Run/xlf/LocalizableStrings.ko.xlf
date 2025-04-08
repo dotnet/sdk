@@ -12,6 +12,11 @@
         <target state="translated">.NET 앱을 실행하는 데 사용하는 명령입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotConvertDirective">
+        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="new">Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+      </trans-unit>
       <trans-unit id="CommandOptionFrameworkDescription">
         <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
         <target state="translated">지정된 프레임워크를 사용하여 앱을 빌드 및 실행합니다. 프로젝트 파일에서 프레임워크를 지정해야 합니다. </target>

@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools;
+using RunStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Project.Convert.Tests;
 
@@ -576,14 +577,21 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_AfterToken()
     {
+        string source = """
+            #:property Prop 1
+            #define X
+            #:property Prop 2
+            Console.WriteLine();
+            #:property Prop 3
+            """;
+
+        VerifyConversionThrows(
+            inputCSharp: source,
+            expectedWildcardPattern: string.Format(RunStrings.CannotConvertDirective, "/app/Program.cs:5"));
+
         VerifyConversion(
-            inputCSharp: """
-                #:property Prop 1
-                #define X
-                #:property Prop 2
-                Console.WriteLine();
-                #:property Prop 3
-                """,
+            inputCSharp: source,
+            force: true,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -615,16 +623,23 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives_AfterIf()
     {
+        string source = """
+            #:property Prop 1
+            #define X
+            #:property Prop 2
+            #if X
+            #:property Prop 3
+            #endif
+            #:property Prop 4
+            """;
+
+        VerifyConversionThrows(
+            inputCSharp: source,
+            expectedWildcardPattern: string.Format(RunStrings.CannotConvertDirective, "/app/Program.cs:5"));
+
         VerifyConversion(
-            inputCSharp: """
-                #:property Prop 1
-                #define X
-                #:property Prop 2
-                #if X
-                #:property Prop 3
-                #endif
-                #:property Prop 4
-                """,
+            inputCSharp: source,
+            force: true,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
 
@@ -701,10 +716,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp)
+    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile);
+        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: force);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives);
         actualProject = projectWriter.ToString();
@@ -714,16 +729,16 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <param name="expectedCSharp">
     /// <see langword="null"/> means the conversion should not touch the C# content.
     /// </param>
-    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp)
+    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false)
     {
-        Convert(inputCSharp, out var actualProject, out var actualCSharp);
+        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force);
         actualProject.Should().Be(expectedProject);
         actualCSharp.Should().Be(expectedCSharp);
     }
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        var convert = () => Convert(inputCSharp, out _, out _);
+        var convert = () => Convert(inputCSharp, out _, out _, force: false);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 }

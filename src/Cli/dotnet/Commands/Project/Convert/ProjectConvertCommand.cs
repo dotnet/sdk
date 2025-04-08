@@ -3,9 +3,7 @@
 
 #nullable enable
 
-using System.Collections.Immutable;
 using System.CommandLine;
-using System.IO;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
@@ -16,11 +14,13 @@ internal sealed class ProjectConvertCommand : CommandBase
 {
     private readonly string _file;
     private readonly string? _outputDirectory;
+    private readonly bool _force;
 
     public ProjectConvertCommand(ParseResult parseResult) : base(parseResult)
     {
         _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
         _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
+        _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
     }
 
     public override int Execute()
@@ -39,7 +39,7 @@ internal sealed class ProjectConvertCommand : CommandBase
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile);
+        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: _force);
 
         Directory.CreateDirectory(targetDirectory);
 

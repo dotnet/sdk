@@ -139,7 +139,7 @@ internal sealed class VirtualProjectBuildingCommand
         Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
 
         var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile);
+        _directives = FindDirectives(sourceFile, reportErrors: false);
 
         return this;
     }
@@ -397,9 +397,14 @@ internal sealed class VirtualProjectBuildingCommand
         static string EscapeValue(string value) => SecurityElement.Escape(value);
     }
 
+    public static ImmutableArray<CSharpDirective> FindDirectivesForConversion(SourceFile sourceFile, bool force)
+    {
+        return FindDirectives(sourceFile, reportErrors: !force);
+    }
+
 #pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 #pragma warning disable RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile)
+    private static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportErrors)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
@@ -444,8 +449,39 @@ internal sealed class VirtualProjectBuildingCommand
             previousWhiteSpaceSpan = default;
         }
 
+        // In conversion mode, we want to report errors for any invalid directives in the rest of the file
+        // so users don't end up with invalid directives in the converted project.
+        if (reportErrors)
+        {
+            tokenizer.ResetTo(result);
+
+            do
+            {
+                result = tokenizer.ParseNextToken();
+
+                foreach (var trivia in result.Token.LeadingTrivia)
+                {
+                    reportErrorFor(sourceFile, trivia);
+                }
+
+                foreach (var trivia in result.Token.TrailingTrivia)
+                {
+                    reportErrorFor(sourceFile, trivia);
+                }
+            }
+            while (!result.Token.IsKind(SyntaxKind.EndOfFileToken));
+        }
+
         // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
+
+        static void reportErrorFor(SourceFile sourceFile, SyntaxTrivia trivia)
+        {
+            if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                throw new GracefulException(LocalizableStrings.CannotConvertDirective, sourceFile.GetLocationString(trivia.Span));
+            }
+        }
     }
 #pragma warning restore RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
 #pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental

@@ -123,6 +123,9 @@
   <data name="CmdFileDescription" xml:space="preserve">
     <value>Path to the file-based program.</value>
   </data>
+  <data name="CmdOptionForceDescription" xml:space="preserve">
+    <value>Force conversion even if there are malformed directives.</value>
+  </data>
   <data name="InvalidFilePath" xml:space="preserve">
     <value>The specified file must exist and have '.cs' file extension: '{0}'</value>
     <comment>{Locked=".cs"}</comment>

@@ -664,6 +664,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
+                                            '--force[Force conversion even if there are malformed directives.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \

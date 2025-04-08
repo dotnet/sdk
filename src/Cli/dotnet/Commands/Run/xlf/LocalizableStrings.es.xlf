@@ -12,6 +12,11 @@
         <target state="translated">Comando para ejecutar aplicaciones de .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotConvertDirective">
+        <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
+        <target state="new">Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <note>{Locked="--force"}. {0} is the file path and line number.</note>
+      </trans-unit>
       <trans-unit id="CommandOptionFrameworkDescription">
         <source>Build and run the app using the specified framework. The framework has to be specified in the project file. </source>
         <target state="translated">Compila y ejecuta la aplicación con la plataforma especificada. La plataforma se debe especificar en el archivo de proyecto. </target>
