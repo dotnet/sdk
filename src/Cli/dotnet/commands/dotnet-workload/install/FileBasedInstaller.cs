@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string workloadSetPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out SdkFeatureBand workloadSetFeatureBand);
             var workloadSetPackageId = GetManifestPackageId(new ManifestId(WorkloadManifestUpdater.WorkloadSetManifestId), workloadSetFeatureBand);
 
-            var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            var workloadSetPath = Path.Combine(_workloadRootDir, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
 
             try
             {
