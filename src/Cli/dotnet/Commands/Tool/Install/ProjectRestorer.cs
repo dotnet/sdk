@@ -1,13 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal class ProjectRestorer(IReporter reporter = null,
     IEnumerable<string> additionalRestoreArguments = null) : IProjectRestorer
@@ -50,7 +49,7 @@ internal class ProjectRestorer(IReporter reporter = null,
         var result = command.Execute();
         if (result.ExitCode != 0)
         {
-            throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+            throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
         }
     }
 
@@ -63,7 +62,7 @@ internal class ProjectRestorer(IReporter reporter = null,
     private string GetDefaultVerbosity()
     {
         var defaultVerbosity = "quiet";
-        if ((_additionalRestoreArguments != null)
+        if (_additionalRestoreArguments != null
             && _additionalRestoreArguments.Contains(Constants.RestoreInteractiveOption, StringComparer.Ordinal))
         {
             defaultVerbosity = "minimal";

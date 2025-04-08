@@ -2,17 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Tools.Tool.Run;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal static class ToolRunCommandParser
 {
     public static readonly CliArgument<string> CommandNameArgument = new("commandName")
     {
-        HelpName = LocalizableStrings.CommandNameArgumentName,
-        Description = LocalizableStrings.CommandNameArgumentDescription
+        HelpName = CliCommandStrings.CommandNameArgumentName,
+        Description = CliCommandStrings.CommandNameArgumentDescription
     };
 
     public static readonly CliArgument<IEnumerable<string>> CommandArgument = new("toolArguments")
@@ -22,7 +20,7 @@ internal static class ToolRunCommandParser
 
     public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription,
+        Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -35,7 +33,7 @@ internal static class ToolRunCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("run", LocalizableStrings.CommandDescription);
+        CliCommand command = new("run", CliCommandStrings.ToolRunCommandDescription);
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);

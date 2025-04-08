@@ -21,7 +21,7 @@ public class ApplyCompressionNegotiation : Task
 
     public override bool Execute()
     {
-        var assetsById = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity);
+        var assetsById = StaticWebAsset.ToAssetDictionary(CandidateAssets);
 
         var endpointsByAsset = CandidateEndpoints.Select(StaticWebAssetEndpoint.FromTaskItem)
             .GroupBy(e => e.AssetFile)

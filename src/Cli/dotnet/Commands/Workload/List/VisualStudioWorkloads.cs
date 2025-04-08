@@ -3,13 +3,12 @@
 
 using System.Runtime.Versioning;
 using Microsoft.Deployment.DotNet.Releases;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.VisualStudio.Setup.Configuration;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 /// <summary>
 /// Provides functionality to query the status of .NET workloads in Visual Studio.
@@ -186,13 +185,13 @@ internal static class VisualStudioWorkloads
             if (workloadsToWriteRecordsFor.Any())
             {
                 reporter.WriteLine(
-                    string.Format(LocalizableStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
+                    string.Format(CliCommandStrings.WriteCLIRecordForVisualStudioWorkloadMessage,
                     string.Join(", ", workloadsToWriteRecordsFor.Select(w => w.ToString()).ToArray()))
                 );
 
                 ((NetSdkMsiInstallerClient)workloadInstaller).WriteWorkloadInstallRecords(workloadsToWriteRecordsFor);
 
-                return workloadsWithExistingInstallRecords.Concat(workloadsToWriteRecordsFor).ToList();
+                return [.. workloadsWithExistingInstallRecords, .. workloadsToWriteRecordsFor];
             }
         }
 

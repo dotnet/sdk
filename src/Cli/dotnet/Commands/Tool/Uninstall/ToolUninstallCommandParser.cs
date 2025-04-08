@@ -2,12 +2,11 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Uninstall;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal static class ToolUninstallCommandParser
 {
@@ -30,13 +29,13 @@ internal static class ToolUninstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        CliCommand command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallToolPathOptionDescription));
+        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallManifestPathOptionDescription));
 
         command.SetAction((parseResult) => new ToolUninstallCommand(parseResult).Execute());
 

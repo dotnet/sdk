@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Tools.Tool.Search;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 internal class ToolSearchCommand(
     ParseResult result,
@@ -21,7 +20,7 @@ internal class ToolSearchCommand(
         var isDetailed = _parseResult.GetValue(ToolSearchCommandParser.DetailOption);
         if (!PathUtility.CheckForNuGetInNuGetConfig())
         {
-            Reporter.Output.WriteLine(LocalizableStrings.NeedNuGetInConfig);
+            Reporter.Output.WriteLine(CliCommandStrings.NeedNuGetInConfig);
             return 0;
         }
 

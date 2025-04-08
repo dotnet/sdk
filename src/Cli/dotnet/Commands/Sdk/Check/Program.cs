@@ -3,12 +3,11 @@
 
 using System.CommandLine;
 using System.Text.Json;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 using EnvironmentProvider = Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 public class SdkCheckCommand : CommandBase
 {
@@ -57,7 +56,7 @@ public class SdkCheckCommand : CommandBase
                 _reporter.WriteLine();
                 runtimeFormatter.PrintRuntimeInfo();
                 _reporter.WriteLine();
-                _reporter.WriteLine(LocalizableStrings.CommandFooter);
+                _reporter.WriteLine(CliCommandStrings.CommandFooter);
                 _reporter.WriteLine();
             }
             catch (HostFxrResolutionException hostfxrResolutionException)
@@ -65,10 +64,10 @@ public class SdkCheckCommand : CommandBase
                 switch (hostfxrResolutionException)
                 {
                     case HostFxrRuntimePropertyNotSetException:
-                        throw new GracefulException([LocalizableStrings.RuntimePropertyNotFound], [], isUserError: false);
+                        throw new GracefulException([CliCommandStrings.RuntimePropertyNotFound], [], isUserError: false);
 
                     case HostFxrNotFoundException hostFxrNotFoundException:
-                        throw new GracefulException([LocalizableStrings.HostFxrCouldNotBeLoaded], [hostFxrNotFoundException.Message], isUserError: false);
+                        throw new GracefulException([CliCommandStrings.HostFxrCouldNotBeLoaded], [hostFxrNotFoundException.Message], isUserError: false);
                 }
             }
         }

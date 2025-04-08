@@ -15,7 +15,7 @@ internal sealed class PerformanceLogEventListener : EventListener
         internal EventLevel Level { get; set; }
     }
 
-    private static ProviderConfiguration[] s_config =
+    private static readonly ProviderConfiguration[] s_config =
     [
         new ProviderConfiguration()
         {

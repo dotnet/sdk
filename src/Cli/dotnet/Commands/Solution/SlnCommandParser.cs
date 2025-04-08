@@ -2,10 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Solution.Add;
+using Microsoft.DotNet.Cli.Commands.Solution.List;
+using Microsoft.DotNet.Cli.Commands.Solution.Migrate;
+using Microsoft.DotNet.Cli.Commands.Solution.Remove;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Solution;
 
 internal static class SlnCommandParser
 {
@@ -13,10 +16,10 @@ internal static class SlnCommandParser
 
     public static readonly string CommandName = "solution";
     public static readonly string CommandAlias = "sln";
-    public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(LocalizableStrings.SolutionArgumentName)
+    public static readonly CliArgument<string> SlnArgument = new CliArgument<string>(CliCommandStrings.SolutionArgumentName)
     {
-        HelpName = LocalizableStrings.SolutionArgumentName,
-        Description = LocalizableStrings.SolutionArgumentDescription,
+        HelpName = CliCommandStrings.SolutionArgumentName,
+        Description = CliCommandStrings.SolutionArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne
     }.DefaultToCurrentDirectory();
 
@@ -29,7 +32,7 @@ internal static class SlnCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        DocumentedCommand command = new(CommandName, DocsLink, LocalizableStrings.AppFullName);
+        DocumentedCommand command = new(CommandName, DocsLink, CliCommandStrings.SolutionAppFullName);
 
         command.Aliases.Add(CommandAlias);
 

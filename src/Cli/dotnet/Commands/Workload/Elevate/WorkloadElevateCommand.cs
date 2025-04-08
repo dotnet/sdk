@@ -2,10 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 
-namespace Microsoft.DotNet.Workloads.Workload.Elevate;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Elevate;
 
 internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommandBase(parseResult)
 {
@@ -31,7 +31,7 @@ internal class WorkloadElevateCommand(ParseResult parseResult) : WorkloadCommand
         }
         else
         {
-            throw new GracefulException(LocalizableStrings.RequiresWindows, isUserError: false);
+            throw new GracefulException(CliCommandStrings.RequiresWindows, isUserError: false);
         }
 
         return 0;

@@ -5,11 +5,9 @@ using System.Collections.Concurrent;
 using System.CommandLine.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli;
-using Microsoft.Testing.Platform.Helpers;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
+using Microsoft.CodeAnalysis;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Terminal test reporter that outputs test progress and is capable of writing ANSI or non-ANSI output via the given terminal.
@@ -50,6 +48,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
+    private bool _isRetry;
     private DateTimeOffset? _testExecutionStartTime;
 
     private DateTimeOffset? _testExecutionEndTime;
@@ -151,28 +150,57 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress = terminalWithProgress;
     }
 
-    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp)
+    public void TestExecutionStarted(DateTimeOffset testStartTime, int workerCount, bool isDiscovery, bool isHelp, bool isRetry)
     {
         _isDiscovery = isDiscovery;
         _isHelp = isHelp;
+        _isRetry = isRetry;
         _testExecutionStartTime = testStartTime;
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId, string? instanceId)
     {
+        var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
+        assemblyRun.Tries.Add(instanceId);
+
+        // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
+        // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
+        // least show (try 2) etc. So user is still aware there is retry going on, and counts of tests won't break.
+        _isRetry |= assemblyRun.Tries.Count > 1;
+
+        if (_isRetry)
+        {
+            // When we are retrying the new assembly run should ignore all previously failed tests and
+            // clear all errors. We restarted the run and will retry all failed tests.
+            //
+            // In case of folded dynamic data tests we do not know how many tests we will get in each run,
+            // if more or less, or the same amount as before,and we also will rerun tests that passed previously
+            // because we are unable to run just a single test from that dynamic data source.
+            // This will cause the total number of tests to differ between runs, and there is nothing we can do about it.
+            assemblyRun.TotalTests -= assemblyRun.FailedTests;
+            assemblyRun.RetriedFailedTests += assemblyRun.FailedTests;
+            assemblyRun.FailedTests = 0;
+            assemblyRun.ClearAllMessages();
+        }
+
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
             _terminalWithProgress.WriteToTerminal(terminal =>
             {
-                terminal.Append(_isDiscovery ? LocalizableStrings.DiscoveringTestsFrom : LocalizableStrings.RunningTestsFrom);
+                if (_isRetry)
+                {
+                    terminal.SetColor(TerminalColor.DarkGray);
+                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.Tries.Count)}) ");
+                    terminal.ResetColor();
+                }
+
+                terminal.Append(_isDiscovery ? CliCommandStrings.DiscoveringTestsFrom : CliCommandStrings.RunningTestsFrom);
                 terminal.Append(' ');
                 AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
                 terminal.AppendLine();
             });
         }
-
-        GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
     }
 
     private TestProgressState GetOrAddAssemblyRun(string assembly, string? targetFramework, string? architecture, string? executionId)
@@ -194,14 +222,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _disableTestRunSummary = true;
     }
 
-    public void TestExecutionCompleted(DateTimeOffset endTime)
+    public void TestExecutionCompleted(DateTimeOffset endTime, int? exitCode)
     {
         _testExecutionEndTime = endTime;
         _terminalWithProgress.StopShowingProgress();
 
         if (!_isHelp && !_disableTestRunSummary)
         {
-            _terminalWithProgress.WriteToTerminal(_isDiscovery ? AppendTestDiscoverySummary : AppendTestRunSummary);
+            if (_isDiscovery)
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestDiscoverySummary(terminal, exitCode));
+            }
+            else
+            {
+                _terminalWithProgress.WriteToTerminal(terminal => AppendTestRunSummary(terminal, exitCode));
+            }
         }
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
@@ -211,7 +246,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _testExecutionEndTime = null;
     }
 
-    private void AppendTestRunSummary(ITerminal terminal)
+    private void AppendTestRunSummary(ITerminal terminal, int? exitCode)
     {
         IEnumerable<IGrouping<bool, TestRunArtifact>> artifactGroups = _artifacts.GroupBy(a => a.OutOfProcess);
 
@@ -224,14 +259,14 @@ internal sealed partial class TerminalTestReporter : IDisposable
         foreach (IGrouping<bool, TestRunArtifact> artifactGroup in artifactGroups)
         {
             terminal.Append(SingleIndentation);
-            terminal.AppendLine(artifactGroup.Key ? LocalizableStrings.OutOfProcessArtifactsProduced : LocalizableStrings.InProcessArtifactsProduced);
+            terminal.AppendLine(artifactGroup.Key ? CliCommandStrings.OutOfProcessArtifactsProduced : CliCommandStrings.InProcessArtifactsProduced);
             foreach (TestRunArtifact artifact in artifactGroup)
             {
                 terminal.Append(DoubleIndentation);
                 terminal.Append("- ");
                 if (!String.IsNullOrWhiteSpace(artifact.TestName))
                 {
-                    terminal.Append(LocalizableStrings.ForTest);
+                    terminal.Append(CliCommandStrings.ForTest);
                     terminal.Append(" '");
                     terminal.Append(artifact.TestName);
                     terminal.Append("': ");
@@ -255,28 +290,28 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
 
-        terminal.Append(LocalizableStrings.TestRunSummary);
+        terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
 
         if (_wasCancelled)
         {
-            terminal.Append(LocalizableStrings.Aborted);
+            terminal.Append(CliCommandStrings.Aborted);
         }
         else if (notEnoughTests)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, LocalizableStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
         else if (allTestsWereSkipped)
         {
-            terminal.Append(LocalizableStrings.ZeroTestsRan);
+            terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
         else if (anyTestFailed || anyAssemblyFailed)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", LocalizableStrings.Failed));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
         else
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", LocalizableStrings.Passed));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Passed));
         }
 
         if (!_options.ShowAssembly && _assemblies.Count == 1)
@@ -305,6 +340,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         int failed = _assemblies.Values.Sum(t => t.FailedTests);
         int passed = _assemblies.Values.Sum(t => t.PassedTests);
         int skipped = _assemblies.Values.Sum(t => t.SkippedTests);
+        int retried = _assemblies.Values.Sum(t => t.RetriedFailedTests);
         int error = _assemblies.Values.Sum(t => !t.Success && (t.TotalTests == 0 || t.FailedTests == 0) ? 1 : 0);
         TimeSpan runDuration = _testExecutionStartTime != null && _testExecutionEndTime != null ? (_testExecutionEndTime - _testExecutionStartTime).Value : TimeSpan.Zero;
 
@@ -315,6 +351,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         string errorText = $"{SingleIndentation}error: {error}";
         string totalText = $"{SingleIndentation}total: {total}";
+        string retriedText = $" (+{retried} retried)";
         string failedText = $"{SingleIndentation}failed: {failed}";
         string passedText = $"{SingleIndentation}succeeded: {passed}";
         string skippedText = $"{SingleIndentation}skipped: {skipped}";
@@ -329,7 +366,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         terminal.ResetColor();
-        terminal.AppendLine(totalText);
+        terminal.Append(totalText);
+        if (retried > 0)
+        {
+            terminal.SetColor(TerminalColor.DarkGray);
+            terminal.Append(retriedText);
+            terminal.ResetColor();
+        }
+        terminal.AppendLine();
+
         if (colorizeFailed)
         {
             terminal.SetColor(TerminalColor.Red);
@@ -369,6 +414,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.Append(durationText);
         AppendLongDuration(terminal, runDuration, wrapInParentheses: false, colorize: false);
         terminal.AppendLine();
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+    }
+
+    private void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
+    {
+        // When we crash with exception we don't have any predetermined exit code, and won't write our helper message to point users to exit code overview.
+        // When we succeed we also don't point users to exit code overview.
+        if (exitCode == null || exitCode == 0)
+        {
+            return;
+        }
+
+        terminal.AppendLine(string.Format(isRun ? CliCommandStrings.TestRunExitCode : CliCommandStrings.TestDiscoveryExitCode, exitCode));
     }
 
     /// <summary>
@@ -382,10 +441,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
             // If the build failed, we print one of three red strings.
             string text = (countErrors > 0, countWarnings > 0) switch
             {
-                (true, true) => string.Format(CultureInfo.CurrentCulture, LocalizableStrings.FailedWithErrorsAndWarnings, countErrors, countWarnings),
-                (true, _) => string.Format(CultureInfo.CurrentCulture, LocalizableStrings.FailedWithErrors, countErrors),
-                (false, true) => string.Format(CultureInfo.CurrentCulture, LocalizableStrings.FailedWithWarnings, countWarnings),
-                _ => LocalizableStrings.FailedLowercase,
+                (true, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrorsAndWarnings, countErrors, countWarnings),
+                (true, _) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithErrors, countErrors),
+                (false, true) => string.Format(CultureInfo.CurrentCulture, CliCommandStrings.FailedWithWarnings, countWarnings),
+                _ => CliCommandStrings.FailedLowercase,
             };
             terminal.Append(text);
             terminal.ResetColor();
@@ -399,42 +458,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
         else
         {
             terminal.SetColor(TerminalColor.Green);
-            terminal.Append(LocalizableStrings.PassedLowercase);
+            terminal.Append(CliCommandStrings.PassedLowercase);
             terminal.ResetColor();
         }
-    }
-
-    internal void TestCompleted(
-       string assembly,
-       string? targetFramework,
-       string? architecture,
-       string? executionId,
-       string testNodeUid,
-       string displayName,
-       TestOutcome outcome,
-       TimeSpan duration,
-       string? errorMessage,
-       Exception? exception,
-       string? expected,
-       string? actual,
-       string? standardOutput,
-       string? errorOutput)
-    {
-        FlatException[] flatExceptions = ExceptionFlattener.Flatten(errorMessage, exception);
-        TestCompleted(
-            assembly,
-            targetFramework,
-            architecture,
-            executionId,
-            testNodeUid,
-            displayName,
-            outcome,
-            duration,
-            flatExceptions,
-            expected,
-            actual,
-            standardOutput,
-            errorOutput);
     }
 
     internal void TestCompleted(
@@ -442,6 +468,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string? executionId,
+        string instanceId,
         string testNodeUid,
         string displayName,
         TestOutcome outcome,
@@ -453,6 +480,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? errorOutput)
     {
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
+        var attempt = asm.Tries.Count;
 
         if (_options.ShowActiveTests)
         {
@@ -478,12 +506,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 break;
         }
 
+        if (_isRetry && asm.Tries.Count > 1 && outcome == TestOutcome.Passed)
+        {
+            // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
+            // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
+            // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
+            asm.FlakyTests.Add(testNodeUid);
+            
+        }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
         {
             _terminalWithProgress.WriteToTerminal(terminal => RenderTestCompleted(
                 terminal,
                 assembly,
+                attempt,
                 targetFramework,
                 architecture,
                 displayName,
@@ -506,6 +543,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     internal /* for testing */ void RenderTestCompleted(
         ITerminal terminal,
         string assembly,
+        int attempt,
         string? targetFramework,
         string? architecture,
         string displayName,
@@ -531,15 +569,20 @@ internal sealed partial class TerminalTestReporter : IDisposable
         };
         string outcomeText = outcome switch
         {
-            TestOutcome.Fail or TestOutcome.Error => LocalizableStrings.FailedLowercase,
-            TestOutcome.Skipped => LocalizableStrings.SkippedLowercase,
-            TestOutcome.Canceled or TestOutcome.Timeout => $"{LocalizableStrings.FailedLowercase} ({LocalizableStrings.CancelledLowercase})",
-            TestOutcome.Passed => LocalizableStrings.PassedLowercase,
+            TestOutcome.Fail or TestOutcome.Error => CliCommandStrings.FailedLowercase,
+            TestOutcome.Skipped => CliCommandStrings.SkippedLowercase,
+            TestOutcome.Canceled or TestOutcome.Timeout => $"{CliCommandStrings.FailedLowercase} ({CliCommandStrings.CancelledLowercase})",
+            TestOutcome.Passed => CliCommandStrings.PassedLowercase,
             _ => throw new NotSupportedException(),
         };
 
         terminal.SetColor(color);
         terminal.Append(outcomeText);
+        if (_isRetry)
+        {
+            terminal.SetColor(TerminalColor.DarkGray);
+            terminal.Append($" ({string.Format(CliCommandStrings.Try, attempt)})");
+        }
         terminal.ResetColor();
         terminal.Append(' ');
         terminal.Append(displayName);
@@ -550,7 +593,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.AppendLine();
             terminal.Append(SingleIndentation);
-            terminal.Append(LocalizableStrings.FromFile);
+            terminal.Append(CliCommandStrings.FromFile);
             terminal.Append(' ');
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly, targetFramework, architecture);
         }
@@ -622,10 +665,10 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         terminal.SetColor(TerminalColor.Red);
         terminal.Append(SingleIndentation);
-        terminal.AppendLine(LocalizableStrings.Expected);
+        terminal.AppendLine(CliCommandStrings.Expected);
         AppendIndentedLine(terminal, expected, DoubleIndentation);
         terminal.Append(SingleIndentation);
-        terminal.AppendLine(LocalizableStrings.Actual);
+        terminal.AppendLine(CliCommandStrings.Actual);
         AppendIndentedLine(terminal, actual, DoubleIndentation);
         terminal.ResetColor();
     }
@@ -658,11 +701,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         terminal.SetColor(TerminalColor.DarkGray);
         terminal.Append(SingleIndentation);
-        terminal.AppendLine(LocalizableStrings.StandardOutput);
+        terminal.AppendLine(CliCommandStrings.StandardOutput);
         string? standardOutputWithoutSpecialChars = NormalizeSpecialCharacters(standardOutput);
         AppendIndentedLine(terminal, standardOutputWithoutSpecialChars, DoubleIndentation);
         terminal.Append(SingleIndentation);
-        terminal.AppendLine(LocalizableStrings.StandardError);
+        terminal.AppendLine(CliCommandStrings.StandardError);
         string? standardErrorWithoutSpecialChars = NormalizeSpecialCharacters(standardError);
         AppendIndentedLine(terminal, standardErrorWithoutSpecialChars, DoubleIndentation);
         terminal.ResetColor();
@@ -696,7 +739,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         if (match.Success)
         {
             bool weHaveFilePathAndCodeLine = !String.IsNullOrWhiteSpace(match.Groups["code"].Value);
-            terminal.Append(LocalizableStrings.StackFrameAt);
+            terminal.Append(CliCommandStrings.StackFrameAt);
             terminal.Append(' ');
 
             if (weHaveFilePathAndCodeLine)
@@ -711,7 +754,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             if (weHaveFilePathAndCodeLine)
             {
                 terminal.Append(' ');
-                terminal.Append(LocalizableStrings.StackFrameIn);
+                terminal.Append(CliCommandStrings.StackFrameIn);
                 terminal.Append(' ');
                 if (!String.IsNullOrWhiteSpace(match.Groups["file"].Value))
                 {
@@ -785,22 +828,24 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             AppendExecutableSummary(terminal, exitCode, outputData, errorData);
-            terminal.AppendLine();
         });
     }
 
     private static void AppendExecutableSummary(ITerminal terminal, int? exitCode, string? outputData, string? errorData)
     {
-        terminal.AppendLine();
-        terminal.Append(LocalizableStrings.ExitCode);
+        terminal.Append(CliCommandStrings.ExitCode);
         terminal.Append(": ");
         terminal.AppendLine(exitCode?.ToString(CultureInfo.CurrentCulture) ?? "<null>");
-        terminal.Append(LocalizableStrings.StandardOutput);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(outputData) ? string.Empty : outputData);
-        terminal.Append(LocalizableStrings.StandardError);
-        terminal.AppendLine(":");
-        terminal.AppendLine(String.IsNullOrWhiteSpace(errorData) ? string.Empty : errorData);
+        AppendOutputWhenPresent(CliCommandStrings.StandardOutput, outputData);
+        AppendOutputWhenPresent(CliCommandStrings.StandardError, errorData);
+
+        void AppendOutputWhenPresent(string description, string? output)
+        {
+            if (!string.IsNullOrWhiteSpace(output))
+            {
+                AppendIndentedLine(terminal, $"{description}: {output}", SingleIndentation);
+            }
+        }
     }
 
     private static string? NormalizeSpecialCharacters(string? text)
@@ -854,7 +899,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             terminal.AppendLine();
-            terminal.AppendLine(LocalizableStrings.CancellingTestSession);
+            terminal.AppendLine(CliCommandStrings.CancellingTestSession);
             terminal.AppendLine();
         });
     }
@@ -955,7 +1000,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
-    public void AppendTestDiscoverySummary(ITerminal terminal)
+    public void AppendTestDiscoverySummary(ITerminal terminal, int? exitCode)
     {
         terminal.AppendLine();
 
@@ -966,7 +1011,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         foreach (TestProgressState assembly in assemblies)
         {
-            terminal.Append(string.Format(CultureInfo.CurrentCulture, LocalizableStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTests.Count));
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.DiscoveredTestsInAssembly, assembly.DiscoveredTests.Count));
             terminal.Append(" - ");
             AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, assembly.Assembly, assembly.TargetFramework, assembly.Architecture);
             terminal.AppendLine();
@@ -985,11 +1030,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
         if (assemblies.Count <= 1)
         {
-            terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, LocalizableStrings.TestDiscoverySummarySingular, totalTests));
+            terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.TestDiscoverySummarySingular, totalTests));
         }
         else
         {
-            terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, LocalizableStrings.TestDiscoverySummary, totalTests, assemblies.Count));
+            terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.TestDiscoverySummary, totalTests, assemblies.Count));
         }
 
         terminal.ResetColor();
@@ -997,9 +1042,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (_wasCancelled)
         {
-            terminal.Append(LocalizableStrings.Aborted);
+            terminal.Append(CliCommandStrings.Aborted);
             terminal.AppendLine();
         }
+
+        AppendExitCodeAndUrl(terminal, exitCode, isRun: false);
     }
 
     public void AssemblyDiscoveryCompleted(int testCount) =>
@@ -1032,6 +1079,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? targetFramework,
         string? architecture,
         string testNodeUid,
+        string instanceId,
         string displayName,
         string? executionId)
     {
@@ -1059,13 +1107,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (builtInOptions.Any())
         {
-            WriteOtherOptionsSection(context, LocalizableStrings.HelpPlatformOptions, builtInOptions);
+            WriteOtherOptionsSection(context, CliCommandStrings.HelpPlatformOptions, builtInOptions);
             context.Output.WriteLine();
         }
 
         if (nonBuiltInOptions.Any())
         {
-            WriteOtherOptionsSection(context, LocalizableStrings.HelpExtensionOptions, nonBuiltInOptions);
+            WriteOtherOptionsSection(context, CliCommandStrings.HelpExtensionOptions, nonBuiltInOptions);
             context.Output.WriteLine();
         }
         WriteModulesToMissingOptionsToConsole(moduleToMissingOptions);
@@ -1137,7 +1185,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         foreach (KeyValuePair<bool, List<(string[], string[])>> groupedModules in modulesWithMissingOptions)
         {
             WriteMessage(string.Empty);
-            WriteMessage(groupedModules.Key ? LocalizableStrings.HelpUnavailableOptions : LocalizableStrings.HelpUnavailableExtensionOptions, yellow);
+            WriteMessage(groupedModules.Key ? CliCommandStrings.HelpUnavailableOptions : CliCommandStrings.HelpUnavailableExtensionOptions, yellow);
 
             foreach ((string[] modules, string[] missingOptions) in groupedModules.Value)
             {
@@ -1157,8 +1205,8 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 }
 
                 string format = modules.Length == 1
-                    ? (missingOptions.Length == 1 ? LocalizableStrings.HelpModuleIsMissingTheOptionBelow : LocalizableStrings.HelpModuleIsMissingTheOptionsBelow)
-                    : (missingOptions.Length == 1 ? LocalizableStrings.HelpModulesAreMissingTheOptionBelow : LocalizableStrings.HelpModulesAreMissingTheOptionsBelow);
+                    ? (missingOptions.Length == 1 ? CliCommandStrings.HelpModuleIsMissingTheOptionBelow : CliCommandStrings.HelpModuleIsMissingTheOptionsBelow)
+                    : (missingOptions.Length == 1 ? CliCommandStrings.HelpModulesAreMissingTheOptionBelow : CliCommandStrings.HelpModulesAreMissingTheOptionsBelow);
                 var missing = string.Format(format, moduleList);
                 WriteMessage($"{missing}\n{line}\n");
             }

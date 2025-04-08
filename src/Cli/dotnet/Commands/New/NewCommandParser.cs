@@ -3,11 +3,12 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
+using Microsoft.DotNet.Cli.Commands.New.PostActions;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.New;
-using Microsoft.DotNet.Tools.New.PostActionProcessors;
-using Microsoft.DotNet.Workloads.Workload.List;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
@@ -16,10 +17,8 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.TemplateEngine.MSBuildEvaluation;
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal static class NewCommandParser
 {
@@ -35,7 +34,7 @@ internal static class NewCommandParser
     private static readonly CliOption<bool> s_disableSdkTemplatesOption = new CliOption<bool>("--debug:disable-sdk-templates")
     {
         DefaultValueFactory = static _ => false,
-        Description = LocalizableStrings.DisableSdkTemplates_OptionDescription,
+        Description = CliCommandStrings.DisableSdkTemplates_OptionDescription,
         Recursive = true
     }.Hide();
 
@@ -43,22 +42,22 @@ internal static class NewCommandParser
         "--debug:disable-project-context")
     {
         DefaultValueFactory = static _ => false,
-        Description = LocalizableStrings.DisableProjectContextEval_OptionDescription,
+        Description = CliCommandStrings.DisableProjectContextEval_OptionDescription,
         Recursive = true
     }.Hide();
 
     private static readonly CliOption<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
     {
         DefaultValueFactory = _ => DefaultVerbosity,
-        Description = LocalizableStrings.Verbosity_OptionDescription,
-        HelpName = CommonLocalizableStrings.LevelArgumentName,
+        Description = CliCommandStrings.Verbosity_OptionDescription,
+        HelpName = CliStrings.LevelArgumentName,
         Recursive = true
     };
 
     private static readonly CliOption<bool> s_diagnosticOption =
         CommonOptionsFactory
             .CreateDiagnosticsOption(recursive: true)
-            .WithDescription(LocalizableStrings.Diagnostics_OptionDescription);
+            .WithDescription(CliCommandStrings.Diagnostics_OptionDescription);
 
     internal static readonly CliCommand s_command = GetCommand();
 

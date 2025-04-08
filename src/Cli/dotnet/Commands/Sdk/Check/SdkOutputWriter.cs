@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 internal class SdkOutputWriter(
     IEnumerable<NetSdkInfo> sdkInfo,
@@ -14,15 +13,15 @@ internal class SdkOutputWriter(
     IProductCollectionProvider productCollectionProvider,
     IReporter reporter) : BundleOutputWriter(productCollection, productCollectionProvider, reporter)
 {
-    private IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
+    private readonly IEnumerable<NetSdkInfo> _sdkInfo = sdkInfo;
 
     public void PrintSdkInfo()
     {
-        _reporter.WriteLine(LocalizableStrings.SdkSectionHeader);
+        _reporter.WriteLine(CliCommandStrings.SdkSectionHeader);
 
         var table = new PrintableTable<NetSdkInfo>();
-        table.AddColumn(LocalizableStrings.VersionColumnHeader, sdk => sdk.Version.ToString());
-        table.AddColumn(LocalizableStrings.StatusColumnHeader, sdk => GetSdkStatusMessage(sdk));
+        table.AddColumn(CliCommandStrings.VersionColumnHeader, sdk => sdk.Version.ToString());
+        table.AddColumn(CliCommandStrings.StatusColumnHeader, sdk => GetSdkStatusMessage(sdk));
 
         table.PrintRows(_sdkInfo.OrderBy(sdk => sdk.Version), l => _reporter.WriteLine(l));
 
@@ -30,7 +29,7 @@ internal class SdkOutputWriter(
         {
             _reporter.WriteLine();
             // advertise newest feature band
-            _reporter.WriteLine(string.Format(LocalizableStrings.NewFeatureBandMessage, NewestFeatureBandAvailable()));
+            _reporter.WriteLine(string.Format(CliCommandStrings.NewFeatureBandMessage, NewestFeatureBandAvailable()));
         }
     }
 
@@ -41,23 +40,23 @@ internal class SdkOutputWriter(
         bool sdkPatchExists = NewerSdkPatchExists(sdk);
         if (isEndOfLife == true)
         {
-            return string.Format(LocalizableStrings.OutOfSupportMessage, $"{sdk.Version.Major}.{sdk.Version.Minor}");
+            return string.Format(CliCommandStrings.OutOfSupportMessage, $"{sdk.Version.Major}.{sdk.Version.Minor}");
         }
         else if (isMaintenance == true)
         {
-            return string.Format(LocalizableStrings.MaintenanceMessage, $"{sdk.Version.Major}.{sdk.Version.Minor}");
+            return string.Format(CliCommandStrings.MaintenanceMessage, $"{sdk.Version.Major}.{sdk.Version.Minor}");
         }
         else if (sdkPatchExists)
         {
-            return string.Format(LocalizableStrings.NewPatchAvailableMessage, NewestSdkPatchVersion(sdk));
+            return string.Format(CliCommandStrings.NewPatchAvailableMessage, NewestSdkPatchVersion(sdk));
         }
         else if (isEndOfLife == false && isMaintenance == false && !sdkPatchExists)
         {
-            return LocalizableStrings.BundleUpToDateMessage;
+            return CliCommandStrings.BundleUpToDateMessage;
         }
         else
         {
-            return LocalizableStrings.VersionCheckFailure;
+            return CliCommandStrings.VersionCheckFailure;
         }
     }
 

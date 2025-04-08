@@ -3,21 +3,20 @@
 
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Repair;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
 internal class WorkloadRepairCommand : WorkloadCommandBase
 {
     private readonly PackageSourceLocation _packageSourceLocation;
     private readonly IInstaller _workloadInstaller;
     protected readonly IWorkloadResolverFactory _workloadResolverFactory;
-    private IWorkloadResolver _workloadResolver;
+    private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly string _dotnetPath;
     private readonly string _userProfileDir;
@@ -40,7 +39,7 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(parseResult.GetValue(WorkloadRepairCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = _workloadResolverFactory.Create();
@@ -72,25 +71,25 @@ internal class WorkloadRepairCommand : WorkloadCommandBase
 
                 if (!workloadIds.Any())
                 {
-                    Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
+                    Reporter.WriteLine(CliCommandStrings.NoWorkloadsToRepair);
                     return;
                 }
 
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
                 ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
 
                 WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
 
                 Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.RepairSucceeded, string.Join(" ", workloadIds)));
                 Reporter.WriteLine();
             });
         }
         catch (Exception e)
         {
             // Don't show entire stack trace
-            throw new GracefulException(string.Format(LocalizableStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadRepairFailed, e.Message), e, isUserError: false);
         }
         finally
         {

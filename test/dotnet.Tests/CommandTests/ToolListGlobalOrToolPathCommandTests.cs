@@ -4,14 +4,14 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Moq;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
              .And
              .Message
              .Should()
-             .Be(string.Format(LocalizableStrings.InvalidToolPathOption, toolPath));
+             .Be(string.Format(CliCommandStrings.ToolListInvalidToolPathOption, toolPath));
         }
 
         [Fact]
@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(
                 EnumerateExpectedTableLines(store.Object).Prepend(
                     string.Format(
-                        LocalizableStrings.InvalidPackageWarning,
+                        CliCommandStrings.ToolListInvalidPackageWarning,
                         "another.tool",
                         "broken").Yellow()));
         }
@@ -352,9 +352,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 ).OrderBy(package => package.Id);
             var columnDelimiter = PrintableTable<IToolPackageStoreQuery>.ColumnDelimiter;
 
-            int packageIdColumnWidth = LocalizableStrings.PackageIdColumn.Length;
-            int versionColumnWidth = LocalizableStrings.VersionColumn.Length;
-            int commandsColumnWidth = LocalizableStrings.CommandsColumn.Length;
+            int packageIdColumnWidth = CliCommandStrings.ToolListPackageIdColumn.Length;
+            int versionColumnWidth = CliCommandStrings.ToolListVersionColumn.Length;
+            int commandsColumnWidth = CliCommandStrings.ToolListCommandsColumn.Length;
             foreach (var package in packages)
             {
                 packageIdColumnWidth = Math.Max(packageIdColumnWidth, package.Id.ToString().Length);
@@ -364,11 +364,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             yield return string.Format(
                 "{0}{1}{2}{3}{4}",
-                LocalizableStrings.PackageIdColumn.PadRight(packageIdColumnWidth),
+                CliCommandStrings.ToolListPackageIdColumn.PadRight(packageIdColumnWidth),
                 columnDelimiter,
-                LocalizableStrings.VersionColumn.PadRight(versionColumnWidth),
+                CliCommandStrings.ToolListVersionColumn.PadRight(versionColumnWidth),
                 columnDelimiter,
-                LocalizableStrings.CommandsColumn.PadRight(commandsColumnWidth));
+                CliCommandStrings.ToolListCommandsColumn.PadRight(commandsColumnWidth));
 
             yield return new string(
                 '-',

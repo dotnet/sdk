@@ -2,11 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ParseResultExtension
 {
@@ -19,7 +18,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
+                    CliCommandStrings.PrereleaseAndVersionAreNotSupportedAtTheSameTime,
                     packageVersion));
         }
 
@@ -40,7 +39,7 @@ internal static class ParseResultExtension
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.InvalidNuGetVersionRange,
+                    CliCommandStrings.ToolInstallInvalidNuGetVersionRange,
                     packageVersion));
         }
         return versionRange;

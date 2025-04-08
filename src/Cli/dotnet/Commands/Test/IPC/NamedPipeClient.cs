@@ -4,7 +4,7 @@
 using System.Buffers;
 using System.IO.Pipes;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeClient(string name) : NamedPipeBase, IClient
 {
@@ -14,11 +14,10 @@ internal sealed class NamedPipeClient(string name) : NamedPipeBase, IClient
     private readonly MemoryStream _serializationBuffer = new();
     private readonly MemoryStream _messageBuffer = new();
     private readonly byte[] _readBuffer = new byte[250000];
-    private readonly string _pipeName = name;
 
     private bool _disposed;
 
-    public string PipeName => _pipeName;
+    public string PipeName { get; } = name;
 
     public bool IsConnected => _namedPipeClientStream.IsConnected;
 

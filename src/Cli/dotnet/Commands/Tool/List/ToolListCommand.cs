@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Tools.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal class ToolListCommand(
     ParseResult result,
@@ -22,7 +21,7 @@ internal class ToolListCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
 
         if (_parseResult.GetValue(ToolListCommandParser.GlobalOption)
             || _parseResult.GetResult(ToolListCommandParser.ToolPathOption) is not null)

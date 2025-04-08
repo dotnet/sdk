@@ -4,34 +4,33 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal static class WorkloadCommandNuGetRestoreActionConfigOptions
 {
     public static CliOption<bool> DisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
     {
-        Description = LocalizableStrings.CmdDisableParallelOptionDescription,
+        Description = CliCommandStrings.CmdDisableParallelOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static CliOption<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
     {
-        Description = LocalizableStrings.CmdNoCacheOptionDescription,
+        Description = CliCommandStrings.CmdNoCacheOptionDescription,
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
     public static CliOption<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
     {
-        Description = LocalizableStrings.CmdNoCacheOptionDescription,
+        Description = CliCommandStrings.CmdNoCacheOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
     public static CliOption<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
     {
-        Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription,
+        Description = CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
@@ -39,31 +38,31 @@ internal static class WorkloadCommandNuGetRestoreActionConfigOptions
 
     public static CliOption<bool> HiddenDisableParallelOption = new ForwardedOption<bool>("--disable-parallel")
     {
-        Description = LocalizableStrings.CmdDisableParallelOptionDescription,
+        Description = CliCommandStrings.CmdDisableParallelOptionDescription,
         Arity = ArgumentArity.Zero
     }.Hide();
 
     public static CliOption<bool> HiddenNoCacheOption = new ForwardedOption<bool>("--no-cache")
     {
-        Description = LocalizableStrings.CmdNoCacheOptionDescription,
+        Description = CliCommandStrings.CmdNoCacheOptionDescription,
         Arity = ArgumentArity.Zero
     }.Hide();
 
     public static CliOption<bool> HiddenNoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
     {
-        Description = LocalizableStrings.CmdNoCacheOptionDescription,
+        Description = CliCommandStrings.CmdNoCacheOptionDescription,
         Arity = ArgumentArity.Zero
     }.Hide();
 
     public static CliOption<bool> HiddenIgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
     {
-        Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription,
+        Description = CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription,
         Arity = ArgumentArity.Zero
     }.Hide();
 
     public static CliOption<bool> HiddenInteractiveRestoreOption = new ForwardedOption<bool>("--interactive")
     {
-        Description = CommonLocalizableStrings.CommandInteractiveOptionDescription,
+        Description = CliStrings.CommandInteractiveOptionDescription,
     }.Hide();
 
     public static RestoreActionConfig ToRestoreActionConfig(this ParseResult parseResult)

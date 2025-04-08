@@ -4,15 +4,14 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.History;
 using System.Reflection;
 using NuGet.Packaging;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {

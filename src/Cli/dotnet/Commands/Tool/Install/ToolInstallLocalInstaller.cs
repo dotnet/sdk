@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -10,7 +9,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal class ToolInstallLocalInstaller
 {
@@ -51,7 +50,7 @@ internal class ToolInstallLocalInstaller
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.NuGetConfigurationFileDoesNotExist,
+                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
                     Path.GetFullPath(_configFilePath)));
         }
 

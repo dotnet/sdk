@@ -5,13 +5,41 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.Reflection;
+using Microsoft.DotNet.Cli.Commands.Add;
+using Microsoft.DotNet.Cli.Commands.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.BuildServer;
+using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.Complete;
+using Microsoft.DotNet.Cli.Commands.Format;
+using Microsoft.DotNet.Cli.Commands.Fsi;
+using Microsoft.DotNet.Cli.Commands.Help;
+using Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.List;
+using Microsoft.DotNet.Cli.Commands.List.Reference;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.New;
+using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Pack;
+using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Commands.Package.Add;
+using Microsoft.DotNet.Cli.Commands.Project;
+using Microsoft.DotNet.Cli.Commands.Publish;
+using Microsoft.DotNet.Cli.Commands.Reference;
+using Microsoft.DotNet.Cli.Commands.Remove;
+using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Sdk;
+using Microsoft.DotNet.Cli.Commands.Solution;
+using Microsoft.DotNet.Cli.Commands.Store;
+using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Commands.Tool;
+using Microsoft.DotNet.Cli.Commands.VSTest;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Format;
-using Microsoft.DotNet.Tools.Help;
-using Microsoft.DotNet.Tools.MSBuild;
-using Microsoft.DotNet.Tools.NuGet;
 using Microsoft.TemplateEngine.Cli;
 
 namespace Microsoft.DotNet.Cli;
@@ -102,7 +130,7 @@ public static class Parser
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
 
-                option.Description = CommonLocalizableStrings.ShowHelpDescription;
+                option.Description = CliStrings.ShowHelpDescription;
             }
         }
 
@@ -165,14 +193,14 @@ public static class Parser
                     .Select(x => x.Trim())
                     // Remove empty lines
                     .Where(line => line.Length > 0);
-            replacementTokens = trimmedLines.ToArray();
+            replacementTokens = [.. trimmedLines];
             errorMessage = null;
             return true;
         }
         else
         {
             replacementTokens = null;
-            errorMessage = string.Format(CommonLocalizableStrings.ResponseFileNotFound, tokenToReplace);
+            errorMessage = string.Format(CliStrings.ResponseFileNotFound, tokenToReplace);
             return false;
         }
     }
@@ -191,23 +219,31 @@ public static class Parser
             exception = exception.InnerException;
         }
 
-        if (exception is Utils.GracefulException)
+        if (exception is GracefulException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else if (exception is CommandParsingException)
         {
-            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                ? exception.ToString().Red().Bold()
-                : exception.Message.Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
             parseResult.ShowHelp();
+        }
+        else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
         else
         {
             Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-            Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                exception.ToString().Red().Bold() :
+                exception.Message.Red().Bold());
         }
 
         return 1;
@@ -254,10 +290,10 @@ public static class Parser
                 builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
             }
 
-            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CommonLocalizableStrings.ShortWorkloadSearchVersionDescription);
+            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
         }
 
-        public void additionalOption(HelpContext context)
+        public static void additionalOption(HelpContext context)
         {
             List<TwoColumnHelpRow> options = [];
             HashSet<CliOption> uniqueOptions = [];
@@ -274,7 +310,7 @@ public static class Parser
                 return;
             }
 
-            context.Output.WriteLine(CommonLocalizableStrings.MSBuildAdditionalOptionTitle);
+            context.Output.WriteLine(CliStrings.MSBuildAdditionalOptionTitle);
             context.HelpBuilder.WriteColumns(options, context);
             context.Output.WriteLine();
         }
@@ -310,14 +346,14 @@ public static class Parser
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
-                var argumetns = context.ParseResult.GetValue(FormatCommandParser.Arguments);
-                new DotnetFormatForwardingApp(argumetns.Concat(helpArgs).ToArray()).Execute();
+                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                new DotnetFormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-            else if (command is Microsoft.TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
+            else if (command is TemplateEngine.Cli.Commands.ICustomHelp helpCommand)
             {
                 var blocks = helpCommand.CustomHelpLayout();
                 foreach (var block in blocks)
@@ -341,10 +377,10 @@ public static class Parser
 
                     for (int i = 0; i < listCommand.Arguments.Count; i++)
                     {
-                        if (listCommand.Arguments[i].Name == CommonLocalizableStrings.SolutionOrProjectArgumentName)
+                        if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
                             // Name is immutable now, so we create a new Argument with the right name..
-                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CommonLocalizableStrings.ProjectArgumentName, CommonLocalizableStrings.ProjectArgumentDescription);
+                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
                         }
                     }
                 }

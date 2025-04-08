@@ -7,7 +7,7 @@ using Microsoft.DotNet.NativeWrapper;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Utils;
 
-namespace Microsoft.DotNet.Tools.New;
+namespace Microsoft.DotNet.Cli.Commands.New;
 
 internal class SdkInfoProvider : ISdkInfoProvider
 {
@@ -51,10 +51,7 @@ internal class SdkInfoProvider : ISdkInfoProvider
         catch (Exception e) when (e is HostFxrRuntimePropertyNotSetException or HostFxrNotFoundException)
         {
             string sdkDir = Path.Combine(dotnetDir, "sdk");
-            sdks =
-                Directory.Exists(sdkDir)
-                    ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion)
-                    : Enumerable.Empty<string>();
+            sdks = Directory.Exists(sdkDir) ? Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(IsValidFxVersion) : [];
         }
         return Task.FromResult(sdks);
     }
@@ -64,11 +61,11 @@ internal class SdkInfoProvider : ISdkInfoProvider
     {
         if (viableInstalledVersions.Any())
         {
-            return string.Format(LocalizableStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
+            return string.Format(CliCommandStrings.SdkInfoProvider_Message_SwitchSdk, viableInstalledVersions.ToCsvString());
         }
         else
         {
-            return string.Format(LocalizableStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
+            return string.Format(CliCommandStrings.SdkInfoProvider_Message_InstallSdk, supportedVersions.ToCsvString());
         }
     }
 
