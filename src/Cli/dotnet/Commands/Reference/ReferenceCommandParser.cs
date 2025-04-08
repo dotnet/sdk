@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.Reference.Add;
 using Microsoft.DotNet.Cli.Commands.Reference.List;
 using Microsoft.DotNet.Cli.Commands.Reference.Remove;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Remove.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference;
 
@@ -16,7 +15,7 @@ internal static class ReferenceCommandParser
 
     public static readonly CliOption<string> ProjectOption = new CliOption<string>("--project")
     {
-        Description = CommonLocalizableStrings.ProjectArgumentDescription,
+        Description = CliStrings.ProjectArgumentDescription,
         Recursive = true
     };
 
@@ -29,7 +28,7 @@ internal static class ReferenceCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new DocumentedCommand("reference", DocsLink, LocalizableStrings.NetRemoveCommand);
+        var command = new DocumentedCommand("reference", DocsLink, CliCommandStrings.NetRemoveCommand);
 
         command.Subcommands.Add(ReferenceAddCommandParser.GetCommand());
         command.Subcommands.Add(ReferenceListCommandParser.GetCommand());

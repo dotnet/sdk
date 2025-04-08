@@ -115,14 +115,14 @@
       <Sha>4d134c60c26c0c18f622dfc51424ff16d182cef5</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25181.1">
+    <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25207.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>e165bbea9e27ceb4c8b91c22bd0c564ff1dc8b25</Sha>
+      <Sha>4ba36db1f42f33a66d9677f0b9d589d39b204a9c</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25181.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="9.0.300-beta.25207.2">
       <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>e165bbea9e27ceb4c8b91c22bd0c564ff1dc8b25</Sha>
+      <Sha>4ba36db1f42f33a66d9677f0b9d589d39b204a9c</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.14.0-3.25179.1">
@@ -278,26 +278,26 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>9559b2a8c2961fd72d2e687a2b3f8f148aa33eb5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25207.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25207.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>510e50f19f8158b4da4b3ca480c48c5ec7fcc5d0</Sha>
+      <Sha>cb42cd1721bee763c68e099598d0a5458eb8e05b</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25207.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25207.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>510e50f19f8158b4da4b3ca480c48c5ec7fcc5d0</Sha>
+      <Sha>cb42cd1721bee763c68e099598d0a5458eb8e05b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25207.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25207.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>510e50f19f8158b4da4b3ca480c48c5ec7fcc5d0</Sha>
+      <Sha>cb42cd1721bee763c68e099598d0a5458eb8e05b</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25207.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25207.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>510e50f19f8158b4da4b3ca480c48c5ec7fcc5d0</Sha>
+      <Sha>cb42cd1721bee763c68e099598d0a5458eb8e05b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.4.25207.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
+    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.4.25207.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>72af9a57bbfb4aac9bdc554d860ab320ac73c587</Sha>
+      <Sha>b9ab83eac5f872bb10046f75e7f041b8cbf034da</Sha>
     </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-preview.4.25181.4">
       <Uri>https://github.com/dotnet/aspnetcore</Uri>
@@ -449,9 +449,9 @@
       <Uri>https://github.com/dotnet/winforms</Uri>
       <Sha>851d52d40106085344b1dd572f5e2d9b03a79238</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.4.25207.3" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.4.25207.5" CoherentParentDependency="Microsoft.WindowsDesktop.App.Runtime.win-x64">
       <Uri>https://github.com/dotnet/wpf</Uri>
-      <Sha>72af9a57bbfb4aac9bdc554d860ab320ac73c587</Sha>
+      <Sha>b9ab83eac5f872bb10046f75e7f041b8cbf034da</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Web.Xdt" Version="10.0.0-preview.25201.1">
       <Uri>https://github.com/dotnet/xdt</Uri>

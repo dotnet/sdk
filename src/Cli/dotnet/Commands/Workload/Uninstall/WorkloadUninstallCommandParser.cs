@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 
@@ -22,7 +21,7 @@ internal static class WorkloadUninstallCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        CliCommand command = new("uninstall", CliCommandStrings.WorkloadUninstallCommandDescription);
         command.Arguments.Add(WorkloadIdArgument);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
         command.Options.Add(CommonOptions.VerbosityOption);

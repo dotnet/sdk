@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
@@ -83,17 +82,17 @@ internal class ToolUpdateCommand : CommandBase
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
         ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndVersion);
 
         EnsureEitherUpdateAllOrUpdateOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

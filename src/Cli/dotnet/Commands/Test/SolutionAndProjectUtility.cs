@@ -6,11 +6,9 @@ using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
-using Microsoft.DotNet.Tools.Test;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -26,7 +24,7 @@ internal static class SolutionAndProjectUtility
 
         if (!Directory.Exists(directory))
         {
-            return (false, string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, directory));
+            return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
         }
 
         var solutionPaths = GetSolutionFilePaths(directory);
@@ -34,7 +32,7 @@ internal static class SolutionAndProjectUtility
         // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
         if (solutionPaths.Length > 1)
         {
-            return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
         }
 
         if (solutionPaths.Length == 1)
@@ -48,7 +46,7 @@ internal static class SolutionAndProjectUtility
                 return (true, string.Empty);
             }
 
-            return (false, LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+            return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
         }
         else  // If no solutions are found, look for a project file
         {
@@ -60,7 +58,7 @@ internal static class SolutionAndProjectUtility
 
                 if (solutionFilterPaths.Length == 0)
                 {
-                    return (false, LocalizableStrings.CmdNoProjectOrSolutionFileErrorDescription);
+                    return (false, CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
                 }
 
                 if (solutionFilterPaths.Length == 1)
@@ -71,7 +69,7 @@ internal static class SolutionAndProjectUtility
                 }
                 else
                 {
-                    return (false, LocalizableStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+                    return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
                 }
             }
 
@@ -81,7 +79,7 @@ internal static class SolutionAndProjectUtility
                 return (true, string.Empty);
             }
 
-            return (false, string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, directory));
+            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
         }
     }
 
@@ -207,7 +205,7 @@ internal static class SolutionAndProjectUtility
         var result = LaunchSettingsManager.TryApplyLaunchSettings(File.ReadAllText(launchSettingsPath), profileName);
         if (!result.Success)
         {
-            Reporter.Error.WriteLine(string.Format(Tools.Run.LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 

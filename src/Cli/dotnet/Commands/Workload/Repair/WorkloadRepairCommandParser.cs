@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
@@ -24,7 +23,7 @@ internal static class WorkloadRepairCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("repair", LocalizableStrings.CommandDescription);
+        CliCommand command = new("repair", CliCommandStrings.WorkloadRepairCommandDescription);
 
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Workload.List;
-using Microsoft.DotNet.Tools.New;
 using Microsoft.TemplateEngine.Abstractions.Components;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
@@ -19,5 +18,5 @@ internal class WorkloadsInfoProvider(Lazy<IWorkloadsRepositoryEnumerator> worklo
             );
     }
 
-    public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads) => LocalizableStrings.WorkloadInfoProvider_Message_AddWorkloads;
+    public string ProvideConstraintRemedySuggestion(IReadOnlyList<string> supportedWorkloads) => CliCommandStrings.WorkloadInfoProvider_Message_AddWorkloads;
 }

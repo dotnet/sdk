@@ -16,11 +16,9 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
 
-namespace Microsoft.DotNet.Tools;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.
@@ -496,7 +494,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
-            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
+            _ => throw new GracefulException(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
         };
     }
 
@@ -516,7 +514,7 @@ internal abstract class CSharpDirective
         {
             if (string.IsNullOrWhiteSpace(firstPart))
             {
-                throw new GracefulException(LocalizableStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
             }
 
             return firstPart;
@@ -572,7 +570,7 @@ internal abstract class CSharpDirective
 
             if (propertyValue is null)
             {
-                throw new GracefulException(LocalizableStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
             }
 
             try
@@ -581,7 +579,7 @@ internal abstract class CSharpDirective
             }
             catch (XmlException ex)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
+                throw new GracefulException(string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
             }
 
             return new Property
