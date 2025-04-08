@@ -6,7 +6,7 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Package.List;
 
-namespace Microsoft.DotNet.Cli.Package.List.Tests
+namespace Microsoft.DotNet.Cli.Commands.Package.List.Tests
 {
     public class GivenDotnetPackageList : SdkTest
     {

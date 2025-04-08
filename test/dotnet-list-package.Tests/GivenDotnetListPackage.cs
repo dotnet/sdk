@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
                 .WithSource()
                 .Path;
 
-            new PackageListCommand(Log)
+            new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
                 .Execute()
                 .Should()
@@ -343,7 +343,7 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Instance.Parse($"dotnet list package {string.Join(' ', options)}");
-            Action checkRules = () => PackageListCommand.EnforceOptionRules(parseResult);
+            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
 
             if (throws)
             {
