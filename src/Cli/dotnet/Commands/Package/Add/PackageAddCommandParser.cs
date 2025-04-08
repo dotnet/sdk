@@ -133,7 +133,7 @@ internal static class PackageAddCommandParser
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new AddPackageReferenceCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
+        command.SetAction((parseResult) => new PackageAddCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
 
         return command;
     }

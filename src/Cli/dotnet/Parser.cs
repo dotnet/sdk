@@ -5,18 +5,20 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
 using System.Reflection;
-using Microsoft.DotNet.Cli.Commands.Add;
-using Microsoft.DotNet.Cli.Commands.Add.Package;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
-using Microsoft.DotNet.Cli.Commands.Complete;
 using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
 using Microsoft.DotNet.Cli.Commands.Help;
-using Microsoft.DotNet.Cli.Commands.InternalReportInstallSuccess;
-using Microsoft.DotNet.Cli.Commands.List;
-using Microsoft.DotNet.Cli.Commands.List.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
+using Microsoft.DotNet.Cli.Commands.Hidden.List;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
+using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -26,7 +28,6 @@ using Microsoft.DotNet.Cli.Commands.Package.Add;
 using Microsoft.DotNet.Cli.Commands.Project;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Reference;
-using Microsoft.DotNet.Cli.Commands.Remove;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Sdk;
@@ -51,7 +52,7 @@ public static class Parser
         Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
     };
 
-    public static readonly CliCommand InstallSuccessCommand = InternalReportinstallsuccessCommandParser.GetCommand();
+    public static readonly CliCommand InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
 
     // Subcommands
     public static readonly CliCommand[] Subcommands =
@@ -76,7 +77,7 @@ public static class Parser
         RemoveCommandParser.GetCommand(),
         RestoreCommandParser.GetCommand(),
         RunCommandParser.GetCommand(),
-        SlnCommandParser.GetCommand(),
+        SolutionCommandParser.GetCommand(),
         StoreCommandParser.GetCommand(),
         TestCommandParser.GetCommand(),
         ToolCommandParser.GetCommand(),
@@ -161,7 +162,7 @@ public static class Parser
             else
             {
                 // when user does not specify any args (just "dotnet"), a usage needs to be printed
-                parseResult.Configuration.Output.WriteLine(HelpUsageText.UsageText);
+                parseResult.Configuration.Output.WriteLine(CliUsage.HelpText);
                 return 0;
             }
         });
@@ -321,7 +322,7 @@ public static class Parser
             var helpArgs = new string[] { "--help" };
             if (command.Equals(RootCommand))
             {
-                Console.Out.WriteLine(HelpUsageText.UsageText);
+                Console.Out.WriteLine(CliUsage.HelpText);
                 return;
             }
 
@@ -347,7 +348,7 @@ public static class Parser
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
                 var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
-                new DotnetFormatForwardingApp([.. arguments, .. helpArgs]).Execute();
+                new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
@@ -363,7 +364,7 @@ public static class Parser
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
-                new DotnetFormatForwardingApp(helpArgs).Execute();
+                new FormatForwardingApp(helpArgs).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
             {
@@ -371,7 +372,7 @@ public static class Parser
             }
             else
             {
-                if (command.Name.Equals(ListProjectToProjectReferencesCommandParser.GetCommand().Name))
+                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
                 {
                     CliCommand listCommand = command.Parents.Single() as CliCommand;
 
@@ -384,7 +385,7 @@ public static class Parser
                         }
                     }
                 }
-                else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                 {
                     // Don't show package completions in help
                     PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
