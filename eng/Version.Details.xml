@@ -91,12 +91,12 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Workload.Emscripten.Current.Manifest-10.0.100.Transport" Version="10.0.0-preview.4.25176.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.4.25176.1">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>e7ebd8aa0424ba4dc6ac03419954c3287d891faa</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="10.0.0-preview.4.25176.1" CoherentParentDependency="Microsoft.NETCore.App.Runtime.win-x64">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="10.0.0-preview.4.25176.1">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>e7ebd8aa0424ba4dc6ac03419954c3287d891faa</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
@@ -645,6 +645,14 @@
       <Sha>6bcab7722ffc02d9a9f64e736d06bb4e4a04a94b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25207.4">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>6bcab7722ffc02d9a9f64e736d06bb4e4a04a94b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25207.4">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>6bcab7722ffc02d9a9f64e736d06bb4e4a04a94b</Sha>
+    </Dependency>
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Workloads" Version="10.0.0-beta.25207.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
       <Sha>6bcab7722ffc02d9a9f64e736d06bb4e4a04a94b</Sha>
     </Dependency>

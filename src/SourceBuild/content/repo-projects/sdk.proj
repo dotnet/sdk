@@ -32,6 +32,8 @@
 
     <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
     <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
+
+    <BuildArgs Condition="'$(BuildWorkloads)' == 'true'">$(BuildArgs) /p:BuildWorkloads=true</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -40,7 +42,6 @@
     <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="deployment-tools" />
-    <RepositoryReference Include="emsdk" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <!-- nuget-client is not compliant with Unified Build: https://github.com/dotnet/source-build/issues/4974 -->

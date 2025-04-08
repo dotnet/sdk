@@ -34,15 +34,25 @@
     <FileSignInfo Include="comhost.dll" CertificateName="None" />
     <FileSignInfo Include="singlefilehost.exe" CertificateName="None" />
 
-    <!-- .ttf and .js files come in from some older aspnetcore packages (e.g. 2.1).
+    <!-- .ttf and .otf files come in from some older aspnetcore packages (e.g. 2.1).
           These files in the 5.0 packages are NOT signed. When doing postbuild signing,
           SignTool will recognize that the files in the installer zips came from the 5.0 packages
           pulled in from aspnetcore, and aspnetcore said not to sign them. This info is not
           available for the 2.1 packages, so we need to avoid signing these in this repo. -->
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
-    <FileExtensionSignInfo Remove=".js" />
-    <FileExtensionSignInfo Include=".js" CertificateName="None" />
+
+    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <FileExtensionSignInfo Update=".js" CertificateName="None" />
+
+    <!-- Skip signing .py files because they are already signed -->
+    <FileExtensionSignInfo Update=".py" CertificateName="None" />
+    <FileExtensionSignInfo Include=".pyd" CertificateName="None" />
+    <FileExtensionSignInfo Include=".cat" CertificateName="None" />
+
+    <!-- Zero length files should not be signed because it breaks signing/ESRP. -->
+    <FileSignInfo Include="__init__.py" CertificateName="None" />
+    <FileSignInfo Include="eggs.py" CertificateName="None" />
   </ItemGroup>
 
   <!--
@@ -75,6 +85,12 @@
                        $(ArtifactsPackagesDir)**\VS.Redist.*.nupkg"
               IsShipping="$([System.String]::Copy('%(RecursiveDir)').StartsWith('Shipping'))"
               Kind="Package" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true' or '$(BuildWorkloads)' == 'true'">
+    <Artifact Include="$(VisualStudioSetupInsertionPath)\**\*.zip"
+              IsShipping="true"
+              Kind="Blob" />
   </ItemGroup>
 
   <!-- Only publish this file from win-x64 so that we don't end up with duplicates. -->
