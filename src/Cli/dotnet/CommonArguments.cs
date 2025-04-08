@@ -46,14 +46,6 @@ namespace Microsoft.DotNet.Cli
             }
             return new(packageId, new NuGetVersion(version));
         }
-        public static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
-        {
-            if (!string.IsNullOrEmpty(parseResult.GetValue(PackageIdentityArgument(false)).Version?.ToString()) &&
-                !string.IsNullOrEmpty(parseResult.GetValue(new CliOption<string>("--version"))))
-            {
-                throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
-            }
-        }
         #endregion
     }
 }
