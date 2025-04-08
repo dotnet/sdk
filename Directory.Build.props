@@ -61,8 +61,6 @@
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <CentralPackageTransitivePinningEnabled>true</CentralPackageTransitivePinningEnabled>
-
-    <BuildWorkloads Condition="'$(BuildWorkloads)' == ''">false</BuildWorkloads>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">

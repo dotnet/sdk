@@ -924,7 +924,7 @@ stages:
             targetOS: windows
             targetArchitecture: x64
             buildPass: 2
-            extraProperties: /p:DotNetBuildBuildWorkloads=true
+            extraProperties: /p:BuildWorkloads=true
             reuseBuildArtifactsFrom:
             - Windows_x64
             - Windows_x86

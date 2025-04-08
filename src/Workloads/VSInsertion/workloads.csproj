@@ -355,7 +355,7 @@
     </ItemGroup>
 
     <Error Text="Could not find expected manifest packages in $(ManifestsPackageSource)"
-           Condition="@(RuntimeManifestPackages -> Count()) == 0 or @(EmsdkManifestPackages -> Count()) == 0" />
+           Condition="'@(RuntimeManifestPackages)' == '' or '@(EmsdkManifestPackages)' == ''" />
 
     <CreateVisualStudioWorkload
           BaseIntermediateOutputPath="$(WorkloadIntermediateOutputPath)"

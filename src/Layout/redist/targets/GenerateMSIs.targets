@@ -18,12 +18,6 @@
     <GenerateSdkBundleDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">$(GenerateSdkBundleDependsOn);GenerateSdkMsi;GenerateTemplatesMsis</GenerateSdkBundleDependsOn>
   </PropertyGroup>
 
-  <!-- In the VMR build we explicitly build workloads in build pass 2.
-       In the SDK official build we build workloads as part of win-x64 -->
-  <ItemGroup Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' == 'true'">
-    <ProjectReference Include="$(RepoRoot)src\Workloads\VSInsertion\workloads.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
-  </ItemGroup>
-
   <!-- AcquireWix Properties -->
   <PropertyGroup>
     <WixDownloadUrl>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/windows/wix/Microsoft.Signed.Wix-$(MicrosoftSignedWixVersion).zip</WixDownloadUrl>
@@ -47,8 +41,8 @@
     <!-- Directory for the zipped up light command package -->
     <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
 
-    <!-- workaround so warnings-as-errors doesn't cause the missing manifest msi message to be treated as an error -->
-    <MSBuildWarningsNotAsErrors>$(MSBuildWarningsNotAsErrors);MISSING_MANIFEST_MSI</MSBuildWarningsNotAsErrors>
+    <!-- for local SDK builds we allow skipping the workload manifest msi generation to save build time, the sdk bundle won't contain the manifest msis in that case. -->
+    <AllowEmptyBuiltinWorkloadManifestMsi Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuild)' != 'true'">true</AllowEmptyBuiltinWorkloadManifestMsi>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -245,7 +239,7 @@
   <Target Name="UnzipBuiltinWorkloadManifestMsiNuPkg">
     <PropertyGroup>
       <BuiltinManifestMsiPackageSourceDirectory>$(ArtifactsShippingPackagesDir)</BuiltinManifestMsiPackageSourceDirectory>
-      <BuiltinManifestMsiPackageSourceDirectory Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuildId)' != ''">$(ArtifactsDir)downloaded-manifest-msi-packages\PackageArtifacts</BuiltinManifestMsiPackageSourceDirectory>
+      <BuiltinManifestMsiPackageSourceDirectory Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuild)' == 'true'">$(ArtifactsDir)downloaded-manifest-msi-packages\PackageArtifacts</BuiltinManifestMsiPackageSourceDirectory>
       <BuiltinManifestMsiPackageSourceDirectory Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' == '3'">$(SourceBuiltShippingPackagesDir)</BuiltinManifestMsiPackageSourceDirectory>
     </PropertyGroup>
 
@@ -254,21 +248,16 @@
       <BuiltinManifestMsiPackages Include="@(_builtinManifestMsiPackages)" UnzipDestinationFolder="$(IntermediateOutputPath)\extracted-manifests\%(Filename)" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <!-- for local SDK builds we allow skipping the workload manifest msi generation to save build time, the sdk bundle won't contain the manifest msis in that case. -->
-      <AllowEmptyBuiltinWorkloadManifestMsi Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuildId)' == ''">true</AllowEmptyBuiltinWorkloadManifestMsi>
-    </PropertyGroup>
-
-    <Warning Text="Builtin manifest msi packages were skipped, the sdk bundle won't contain the builtin manifests and workload installs will be broken."
-             Code="MISSING_MANIFEST_MSI"
-             Condition="@(BuiltinManifestMsiPackages -> Count()) == 0 and '$(AllowEmptyBuiltinWorkloadManifestMsi)' == 'true'" />
+    <Message Text="Builtin workload manifest msi packages were skipped, the SDK installer .exe bundle won't contain the builtin manifests and workload installs will be broken. Pass /p:BuildWorkloads=true to enable building them."
+             Importance="High"
+             Condition="'@(BuiltinManifestMsiPackages)' == '' and '$(AllowEmptyBuiltinWorkloadManifestMsi)' == 'true'" />
 
     <Error Text="Could not find expected builtin manifest msi packages in $(BuiltinManifestMsiPackageSourceDirectory)"
-           Condition="@(BuiltinManifestMsiPackages -> Count()) == 0 and '$(AllowEmptyBuiltinWorkloadManifestMsi)' != 'true'" />
+           Condition="'@(BuiltinManifestMsiPackages)' == '' and '$(AllowEmptyBuiltinWorkloadManifestMsi)' != 'true'" />
 
     <Unzip SourceFiles="@(BuiltinManifestMsiPackages)"
            DestinationFolder="%(BuiltinManifestMsiPackages.UnzipDestinationFolder)"
-           Condition="@(BuiltinManifestMsiPackages -> Count()) != 0" />
+           Condition="'@(BuiltinManifestMsiPackages)' != ''" />
   </Target>
 
   <Target Name="GenerateWorkloadManifestsWxs" DependsOnTargets="UnzipBuiltinWorkloadManifestMsiNuPkg">
@@ -276,7 +265,7 @@
       <_Manifests Include="@(BundledManifests)">
         <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
-      <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="@(BuiltinManifestMsiPackages -> Count()) != 0">
+      <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="'@(BuiltinManifestMsiPackages) != ''">
         <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(BuiltinManifestMsiPackages.UnzipDestinationFolder)\data\', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
     </ItemGroup>
