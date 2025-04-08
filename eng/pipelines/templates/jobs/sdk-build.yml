@@ -1,6 +1,7 @@
 parameters:
   ### GENERAL ###
   variables: {}
+  dependsOn: ''
   oneESCompat:
     templateFolderName: templates
     publishTaskPrefix: ''
@@ -27,6 +28,7 @@ parameters:
   osProperties: ''
   runtimeSourceProperties: ''
   officialBuildProperties: ''
+  downloadManifestMsiPackages: false
   ### ARCADE ###
   preSteps: []
 
@@ -51,6 +53,7 @@ jobs:
     enableSbom: ${{ parameters.enableSbom }}
     variables:
     - ${{ insert }}: ${{ parameters.variables }}
+    dependsOn: ${{ parameters.dependsOn }}
     preSteps: ${{ parameters.preSteps }}
     templateContext:
       sdl:
@@ -73,6 +76,15 @@ jobs:
       parameters:
         legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+
+    - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
+      - task: DownloadBuildArtifacts@1
+        inputs:
+          artifactName: PackageArtifacts
+          downloadPath: $(Build.SourcesDirectory)/artifacts/downloaded-manifest-msi-packages
+          itemPattern: '**/*Manifest-*.Msi.*.nupkg'
+          checkDownloadedFiles: true
+        displayName: Download Manifest msi packages
 
     ############### BUILDING ###############
     - ${{ if eq(parameters.pool.os, 'windows') }}:
