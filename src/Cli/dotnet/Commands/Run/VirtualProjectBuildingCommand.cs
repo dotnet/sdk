@@ -201,10 +201,16 @@ internal sealed class VirtualProjectBuildingCommand
         static string GetArtifactsPath(string entryPointFilePath)
         {
             // We want a location where permissions are expected to be restricted to the current user.
-            var directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? Path.GetTempPath()
                 : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-            return Path.Join(directory, "dotnet", "runfile", Sha256Hasher.HashWithNormalizedCasing(entryPointFilePath));
+
+            // Include entry point file name so the directory name is not completely opaque.
+            string fileName = Path.GetFileNameWithoutExtension(entryPointFilePath);
+            string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFilePath);
+            string directoryName = $"{fileName}-{hash}";
+
+            return Path.Join(directory, "dotnet", "runfile", directoryName);
         }
     }
 
