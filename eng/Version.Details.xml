@@ -500,15 +500,15 @@
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.620205">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.620701">
       <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>b22cfa235a532fd7e371251830f37ca024dc2112</Sha>
+      <Sha>ebe6fe9cc5b8b9c87cb218b35514bf9d04475047</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.620402">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.620702">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>14f833124983b36ac4083338d0cad6caefce2489</Sha>
+      <Sha>8a21184a27103ca3e365b21553e32f2a1c0661d3</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25181.1">
@@ -711,13 +711,13 @@
       <Sha>5fa9337a84a52e9bd185d04d156eccbdcf592f74</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25205.1">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25207.6">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>caeb6243bda815d34c4bad6631f0c931e326c054</Sha>
+      <Sha>b66a5e196c7e4ef91efdc62519ec1a0e280afcb8</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.9.0-preview.25205.1">
+    <Dependency Name="MSTest" Version="3.9.0-preview.25207.6">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>caeb6243bda815d34c4bad6631f0c931e326c054</Sha>
+      <Sha>b66a5e196c7e4ef91efdc62519ec1a0e280afcb8</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.4.25207.7">
       <Uri>https://github.com/dotnet/runtime</Uri>
