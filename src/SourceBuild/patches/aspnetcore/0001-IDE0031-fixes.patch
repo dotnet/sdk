@@ -1,15 +1,79 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: "Nikola Milosavljevic (CLR) false" <nikolam@microsoft.com>
-Date: Mon, 7 Apr 2025 16:13:05 -0700
+Date: Mon, 7 Apr 2025 19:28:29 -0700
 Subject: [PATCH] IDE0031 fixes
 
 Backport: https://github.com/dotnet/aspnetcore/pull/61244
 ---
- src/Http/Http/src/HttpContextAccessor.cs           | 8 ++------
- src/Shared/HttpExtensions.cs                       | 6 +-----
- src/Tools/dotnet-user-jwts/src/Helpers/JwtStore.cs | 5 +----
- 3 files changed, 4 insertions(+), 15 deletions(-)
+ src/Components/Server/src/Circuits/CircuitHost.cs |  5 +----
+ .../Hosting/src/Http/DefaultHttpContextFactory.cs | 15 +++------------
+ src/Http/Http/src/HttpContextAccessor.cs          |  8 ++------
+ src/Middleware/Rewrite/src/RewriteMiddleware.cs   |  6 +-----
+ .../src/UrlActions/CustomResponseAction.cs        |  7 ++-----
+ .../StaticFiles/src/StaticFileContext.cs          |  6 +-----
+ .../ModelBinding/Validation/ValidationVisitor.cs  |  7 +------
+ .../src/Filters/SaveTempDataFilter.cs             | 13 ++-----------
+ .../src/SkipStatusCodePagesAttribute.cs           |  8 ++------
+ .../Negotiate/src/NegotiateHandler.cs             |  5 +----
+ .../HttpSys/src/RequestProcessing/Request.cs      |  5 +----
+ .../HttpSys/src/RequestProcessing/Response.cs     |  5 +----
+ src/Shared/HttpExtensions.cs                      |  6 +-----
+ .../dotnet-user-jwts/src/Helpers/JwtStore.cs      |  5 +----
+ 14 files changed, 20 insertions(+), 81 deletions(-)
 
+diff --git a/src/Components/Server/src/Circuits/CircuitHost.cs b/src/Components/Server/src/Circuits/CircuitHost.cs
+index 66c636ba01..3a9bea6bd8 100644
+--- a/src/Components/Server/src/Circuits/CircuitHost.cs
++++ b/src/Components/Server/src/Circuits/CircuitHost.cs
+@@ -828,10 +828,7 @@ internal partial class CircuitHost : IAsyncDisposable
+                             operation.Descriptor.ComponentType,
+                             operation.Marker.Value.Key,
+                             operation.Descriptor.Parameters);
+-                        if (pendingTasks != null)
+-                        {
+-                            pendingTasks[i] = task;
+-                        }
++                        pendingTasks?[i] = task;
+                         break;
+                     case RootComponentOperationType.Update:
+                         // We don't need to await component updates as any unhandled exception will be reported and terminate the circuit.
+diff --git a/src/Hosting/Hosting/src/Http/DefaultHttpContextFactory.cs b/src/Hosting/Hosting/src/Http/DefaultHttpContextFactory.cs
+index a5b6541b0f..d087dc54d9 100644
+--- a/src/Hosting/Hosting/src/Http/DefaultHttpContextFactory.cs
++++ b/src/Hosting/Hosting/src/Http/DefaultHttpContextFactory.cs
+@@ -58,10 +58,7 @@ public class DefaultHttpContextFactory : IHttpContextFactory
+ 
+         httpContext.Initialize(featureCollection);
+ 
+-        if (_httpContextAccessor != null)
+-        {
+-            _httpContextAccessor.HttpContext = httpContext;
+-        }
++        _httpContextAccessor?.HttpContext = httpContext;
+ 
+         httpContext.FormOptions = _formOptions;
+         httpContext.ServiceScopeFactory = _serviceScopeFactory;
+@@ -72,18 +69,12 @@ public class DefaultHttpContextFactory : IHttpContextFactory
+     /// </summary>
+     public void Dispose(HttpContext httpContext)
+     {
+-        if (_httpContextAccessor != null)
+-        {
+-            _httpContextAccessor.HttpContext = null;
+-        }
++        _httpContextAccessor?.HttpContext = null;
+     }
+ 
+     internal void Dispose(DefaultHttpContext httpContext)
+     {
+-        if (_httpContextAccessor != null)
+-        {
+-            _httpContextAccessor.HttpContext = null;
+-        }
++        _httpContextAccessor?.HttpContext = null;
+ 
+         httpContext.Uninitialize();
+     }
 diff --git a/src/Http/Http/src/HttpContextAccessor.cs b/src/Http/Http/src/HttpContextAccessor.cs
 index f71a6ef7c0..d306a8dbeb 100644
 --- a/src/Http/Http/src/HttpContextAccessor.cs
@@ -29,6 +93,173 @@ index f71a6ef7c0..d306a8dbeb 100644
  
              if (value != null)
              {
+diff --git a/src/Middleware/Rewrite/src/RewriteMiddleware.cs b/src/Middleware/Rewrite/src/RewriteMiddleware.cs
+index d76ea33d21..7dcd2ca11b 100644
+--- a/src/Middleware/Rewrite/src/RewriteMiddleware.cs
++++ b/src/Middleware/Rewrite/src/RewriteMiddleware.cs
+@@ -77,11 +77,7 @@ public class RewriteMiddleware
+                 // An endpoint may have already been set. Since we're going to re-invoke the middleware pipeline we need to reset
+                 // the endpoint and route values to ensure things are re-calculated.
+                 context.SetEndpoint(endpoint: null);
+-                var routeValuesFeature = context.Features.Get<IRouteValuesFeature>();
+-                if (routeValuesFeature is not null)
+-                {
+-                    routeValuesFeature.RouteValues = null!;
+-                }
++                context.Features.Get<IRouteValuesFeature>()?.RouteValues = null!;
+                 return _options.BranchedNext(context);
+             }
+         }
+diff --git a/src/Middleware/Rewrite/src/UrlActions/CustomResponseAction.cs b/src/Middleware/Rewrite/src/UrlActions/CustomResponseAction.cs
+index 4c29d034ae..3954db7a70 100644
+--- a/src/Middleware/Rewrite/src/UrlActions/CustomResponseAction.cs
++++ b/src/Middleware/Rewrite/src/UrlActions/CustomResponseAction.cs
+@@ -31,11 +31,8 @@ internal sealed class CustomResponseAction : UrlAction
+ 
+         if (!string.IsNullOrEmpty(StatusDescription))
+         {
+-            var feature = context.HttpContext.Features.Get<IHttpBodyControlFeature>();
+-            if (feature != null)
+-            {
+-                feature.AllowSynchronousIO = true;
+-            }
++            context.HttpContext.Features.Get<IHttpBodyControlFeature>()?.AllowSynchronousIO = true;
++
+             var content = Encoding.UTF8.GetBytes(StatusDescription);
+             response.ContentLength = content.Length;
+             response.ContentType = "text/plain; charset=utf-8";
+diff --git a/src/Middleware/StaticFiles/src/StaticFileContext.cs b/src/Middleware/StaticFiles/src/StaticFileContext.cs
+index 69e8d8c595..48bd869249 100644
+--- a/src/Middleware/StaticFiles/src/StaticFileContext.cs
++++ b/src/Middleware/StaticFiles/src/StaticFileContext.cs
+@@ -407,11 +407,7 @@ internal struct StaticFileContext
+     // Only called when we expect to serve the body.
+     private void SetCompressionMode()
+     {
+-        var responseCompressionFeature = _context.Features.Get<IHttpsCompressionFeature>();
+-        if (responseCompressionFeature != null)
+-        {
+-            responseCompressionFeature.Mode = _options.HttpsCompression;
+-        }
++        _context.Features.Get<IHttpsCompressionFeature>()?.Mode = _options.HttpsCompression;
+     }
+ 
+     internal enum PreconditionState : byte
+diff --git a/src/Mvc/Mvc.Core/src/ModelBinding/Validation/ValidationVisitor.cs b/src/Mvc/Mvc.Core/src/ModelBinding/Validation/ValidationVisitor.cs
+index 68c71a5e48..48e1580609 100644
+--- a/src/Mvc/Mvc.Core/src/ModelBinding/Validation/ValidationVisitor.cs
++++ b/src/Mvc/Mvc.Core/src/ModelBinding/Validation/ValidationVisitor.cs
+@@ -248,12 +248,7 @@ public class ValidationVisitor
+         {
+             // If the field has an entry in ModelState, then record it as valid. Don't create
+             // extra entries if they don't exist already.
+-            var entry = ModelState[Key];
+-            if (entry != null)
+-            {
+-                entry.ValidationState = ModelValidationState.Valid;
+-            }
+-
++            ModelState[Key]?.ValidationState = ModelValidationState.Valid;
+             return true;
+         }
+     }
+diff --git a/src/Mvc/Mvc.ViewFeatures/src/Filters/SaveTempDataFilter.cs b/src/Mvc/Mvc.ViewFeatures/src/Filters/SaveTempDataFilter.cs
+index 2da398ae0e..20e78949b6 100644
+--- a/src/Mvc/Mvc.ViewFeatures/src/Filters/SaveTempDataFilter.cs
++++ b/src/Mvc/Mvc.ViewFeatures/src/Filters/SaveTempDataFilter.cs
+@@ -83,11 +83,7 @@ internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
+         // not be available.
+         if (!context.HttpContext.Response.HasStarted && context.Exception != null)
+         {
+-            var saveTempDataContext = GetTempDataContext(context.HttpContext);
+-            if (saveTempDataContext != null)
+-            {
+-                saveTempDataContext.RequestHasUnhandledException = true;
+-            }
++            GetTempDataContext(context.HttpContext)?.RequestHasUnhandledException = true;
+         }
+     }
+ 
+@@ -105,12 +101,7 @@ internal sealed class SaveTempDataFilter : IResourceFilter, IResultFilter
+         if (!context.HttpContext.Response.HasStarted)
+         {
+             SaveTempData(context.Result, _factory, context.Filters, context.HttpContext);
+-
+-            var saveTempDataContext = GetTempDataContext(context.HttpContext);
+-            if (saveTempDataContext != null)
+-            {
+-                saveTempDataContext.TempDataSaved = true;
+-            }
++            GetTempDataContext(context.HttpContext)?.TempDataSaved = true;
+         }
+     }
+ 
+diff --git a/src/Mvc/Mvc.ViewFeatures/src/SkipStatusCodePagesAttribute.cs b/src/Mvc/Mvc.ViewFeatures/src/SkipStatusCodePagesAttribute.cs
+index c0abec8fa2..ebf3a237b9 100644
+--- a/src/Mvc/Mvc.ViewFeatures/src/SkipStatusCodePagesAttribute.cs
++++ b/src/Mvc/Mvc.ViewFeatures/src/SkipStatusCodePagesAttribute.cs
+@@ -23,11 +23,7 @@ public class SkipStatusCodePagesAttribute : Attribute, IResourceFilter, ISkipSta
+     {
+         ArgumentNullException.ThrowIfNull(context);
+ 
+-        var statusCodeFeature = context.HttpContext.Features.Get<IStatusCodePagesFeature>();
+-        if (statusCodeFeature != null)
+-        {
+-            // Turn off the StatusCodePages feature.
+-            statusCodeFeature.Enabled = false;
+-        }
++        // Turn off the StatusCodePages feature.
++        context.HttpContext.Features.Get<IStatusCodePagesFeature>()?.Enabled = false;
+     }
+ }
+diff --git a/src/Security/Authentication/Negotiate/src/NegotiateHandler.cs b/src/Security/Authentication/Negotiate/src/NegotiateHandler.cs
+index b1909d52cc..ace6899428 100644
+--- a/src/Security/Authentication/Negotiate/src/NegotiateHandler.cs
++++ b/src/Security/Authentication/Negotiate/src/NegotiateHandler.cs
+@@ -126,10 +126,7 @@ public class NegotiateHandler : AuthenticationHandler<NegotiateOptions>, IAuthen
+                 Logger.Reauthenticating();
+                 _negotiateState.Dispose();
+                 _negotiateState = null;
+-                if (persistence != null)
+-                {
+-                    persistence.State = null;
+-                }
++                persistence?.State = null;
+             }
+ 
+             _negotiateState ??= Options.StateFactory.CreateInstance();
+diff --git a/src/Servers/HttpSys/src/RequestProcessing/Request.cs b/src/Servers/HttpSys/src/RequestProcessing/Request.cs
+index b32a973a5f..8e4babf7ca 100644
+--- a/src/Servers/HttpSys/src/RequestProcessing/Request.cs
++++ b/src/Servers/HttpSys/src/RequestProcessing/Request.cs
+@@ -264,10 +264,7 @@ internal sealed partial class Request
+         set
+         {
+             EnsureRequestStream();
+-            if (_nativeStream != null)
+-            {
+-                _nativeStream.MaxSize = value;
+-            }
++            _nativeStream?.MaxSize = value;
+         }
+     }
+ 
+diff --git a/src/Servers/HttpSys/src/RequestProcessing/Response.cs b/src/Servers/HttpSys/src/RequestProcessing/Response.cs
+index f2f550544e..541199729a 100644
+--- a/src/Servers/HttpSys/src/RequestProcessing/Response.cs
++++ b/src/Servers/HttpSys/src/RequestProcessing/Response.cs
+@@ -186,10 +186,7 @@ internal sealed class Response
+     // callers if they try to add them too late. E.g. after Content-Length or CompleteAsync().
+     internal void MakeTrailersReadOnly()
+     {
+-        if (_trailers != null)
+-        {
+-            _trailers.IsReadOnly = true;
+-        }
++        _trailers?.IsReadOnly = true;
+     }
+ 
+     internal void Abort()
 diff --git a/src/Shared/HttpExtensions.cs b/src/Shared/HttpExtensions.cs
 index 4a0d50de25..3e2bde30e8 100644
 --- a/src/Shared/HttpExtensions.cs
