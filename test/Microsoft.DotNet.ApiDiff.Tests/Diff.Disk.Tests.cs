@@ -93,7 +93,6 @@ public class DiffDiskTests
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
-            assembliesToExclude: [],
             outputFolderPath.DirPath,
             writeToDisk: true);
 
@@ -253,7 +252,6 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             DefaultTableOfContentsTitle,
             beforeAssemblyAndCodeFiles,
             afterAssemblyAndCodeFiles,
-            assembliesToExclude: [],
             outputFolderPath.DirPath,
             writeToDisk: true);
 
@@ -269,23 +267,28 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     [Fact]
     public async Task DiskRead_DiskWrite_ExcludeAssembly()
     {
-        using TempDirectory inputFolderPath = new();
-        using TempDirectory outputFolderPath = new();
+        using TempDirectory root = new();
+
+        DirectoryInfo inputFolderPath = new(Path.Join(root.DirPath, "inputFolder"));
+        DirectoryInfo outputFolderPath = new(Path.Join(root.DirPath, "outputFolder"));
+
+        inputFolderPath.Create();
+        outputFolderPath.Create();
 
         IDiffGenerator generator = TestDiskShared(
-            inputFolderPath.DirPath,
+            inputFolderPath.FullName,
             DefaultBeforeFriendlyName,
             DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
-            assembliesToExclude: [DefaultAssemblyName],
-            outputFolderPath.DirPath,
-            writeToDisk: true);
+            outputFolderPath.FullName,
+            writeToDisk: true,
+            filesWithAssembliesToExclude: await GetFileWithListsAsync(root, [DefaultAssemblyName]));
 
         await generator.RunAsync();
 
-        VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedEmptyTableOfContents, []);
+        VerifyDiskWrite(outputFolderPath.FullName, DefaultTableOfContentsTitle, ExpectedEmptyTableOfContents, []);
     }
 
     /// <summary>
@@ -370,7 +373,6 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             DefaultTableOfContentsTitle,
             beforeAssemblyAndCodeFiles,
             afterAssemblyAndCodeFiles,
-            assembliesToExclude: [],
             outputFolderPath.DirPath,
             writeToDisk: true);
 
@@ -396,7 +398,6 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
-            assembliesToExclude: [],
             outputFolderPath.DirPath,
             writeToDisk: false);
 
@@ -420,28 +421,33 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
     [Fact]
     public async Task DiskRead_MemoryWrite_ExcludeAssembly()
     {
-        using TempDirectory inputFolderPath = new();
-        using TempDirectory outputFolderPath = new();
+        using TempDirectory root = new();
+
+        DirectoryInfo inputFolderPath = new(Path.Join(root.DirPath, "inputFolder"));
+        DirectoryInfo outputFolderPath = new(Path.Join(root.DirPath, "outputFolder"));
+
+        inputFolderPath.Create();
+        outputFolderPath.Create();
 
         IDiffGenerator generator = TestDiskShared(
-            inputFolderPath.DirPath,
+            inputFolderPath.FullName,
             DefaultBeforeFriendlyName,
             DefaultAfterFriendlyName,
             DefaultTableOfContentsTitle,
             DefaultBeforeAssemblyAndCodeFiles,
             DefaultAfterAssemblyAndCodeFiles,
-            assembliesToExclude: [DefaultAssemblyName],
-            outputFolderPath.DirPath,
-            writeToDisk: false);
+            outputFolderPath.FullName,
+            writeToDisk: false,
+            filesWithAssembliesToExclude: await GetFileWithListsAsync(root, [DefaultAssemblyName]));
 
         await generator.RunAsync();
 
-        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
+        string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.FullName, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
 
         Assert.Equal(ExpectedEmptyTableOfContents, generator.Results[tableOfContentsMarkdownFilePath]);
 
-        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
+        string myAssemblyMarkdownFilePath = Path.Join(outputFolderPath.FullName, $"{DefaultTableOfContentsTitle}_{DefaultAssemblyName}.md");
         Assert.DoesNotContain(myAssemblyMarkdownFilePath, generator.Results.Keys);
     }
 
@@ -452,9 +458,11 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
         string tableOfContentsTitle,
         Dictionary<string, string[]> beforeAssemblyAndCodeFiles,
         Dictionary<string, string[]> afterAssemblyAndCodeFiles,
-        string[] assembliesToExclude,
         string outputFolderPath,
-        bool writeToDisk)
+        bool writeToDisk,
+        FileInfo[]? filesWithAssembliesToExclude = null,
+        FileInfo[]? filesWithAttributesToExclude = null,
+        FileInfo[]? filesWithAPIsToExclude = null)
     {
         string beforeAssembliesFolderPath = Path.Join(inputFolderPath, DefaultBeforeFriendlyName);
         string afterAssembliesFolderPath = Path.Join(inputFolderPath, DefaultAfterFriendlyName);
@@ -476,9 +484,9 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             beforeFriendlyName,
             afterFriendlyName,
             tableOfContentsTitle,
-            assembliesToExclude: assembliesToExclude,
-            attributesToExclude: null,
-            apisToExclude: null,
+            filesWithAssembliesToExclude ?? [],
+            filesWithAttributesToExclude ?? [],
+            filesWithAPIsToExclude ?? [],
             addPartialModifier: false,
             writeToDisk,
             DiffGeneratorFactory.DefaultDiagnosticOptions);
@@ -533,5 +541,21 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             string actualCode = File.ReadAllText(myAssemblyMarkdownFilePath);
             Assert.Equal(expectedMarkdown, actualCode);
         }
+    }
+
+    private Task<FileInfo[]> GetFileWithListsAsync(TempDirectory root, string[] list) => GetFilesWithListsAsync(root, [list]);
+
+    private async Task<FileInfo[]> GetFilesWithListsAsync(TempDirectory root, List<string[]> lists)
+    {
+        List<FileInfo> filesWithLists = [];
+
+        foreach (string[] list in lists)
+        {
+            FileInfo file = new(Path.Join(root.DirPath, Path.GetRandomFileName()));
+            await File.WriteAllLinesAsync(file.FullName, list);
+            filesWithLists.Add(file);
+        }
+
+        return [.. filesWithLists];
     }
 }

@@ -73,23 +73,23 @@ public static class Program
             IsRequired = true
         };
 
-        Option<string[]?> optionAssembliesToExclude = new(["--assembliesToExclude", "-eas"], () => null)
+        Option<FileInfo[]?> optionFilesWithAssembliesToExclude = new(["--assembliesToExclude", "-eas"], () => null)
         {
-            Description = "Assemblies from both before and after to exclude from the diff.",
+            Description = "An optional array of filepaths, each containing a list of assemblies that should be excluded from the diff. Each file should contain one assembly name per line, with no extensions.",
             Arity = ArgumentArity.ZeroOrMore,
             IsRequired = false,
         };
 
-        Option<string[]?> optionAttributesToExclude = new(["--attributesToExclude", "-eattrs"], () => null)
+        Option<FileInfo[]?> optionFilesWithAttributesToExclude = new(["--attributesToExclude", "-eattrs"], () => null)
         {
-            Description = "Attributes to exclude from the diff.",
+            Description = "An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line.",
             Arity = ArgumentArity.ZeroOrMore,
             IsRequired = false
         };
 
-        Option<string[]?> optionApisToExclude = new(["--apisToExclude", "-eapis"], () => null)
+        Option<FileInfo[]?> optionFilesWithApisToExclude = new(["--apisToExclude", "-eapis"], () => null)
         {
-            Description = "APIs to exclude from the diff.",
+            Description = "An optional array of filepaths, each containing a list of APIs to exclude from the diff. Each file should contain one API full name per line.",
             Arity = ArgumentArity.ZeroOrMore,
             IsRequired = false
         };
@@ -113,9 +113,9 @@ public static class Program
         rootCommand.Add(optionBeforeFriendlyName);
         rootCommand.Add(optionAfterFriendlyName);
         rootCommand.Add(optionTableOfContentsTitle);
-        rootCommand.Add(optionAssembliesToExclude);
-        rootCommand.Add(optionAttributesToExclude);
-        rootCommand.Add(optionApisToExclude);
+        rootCommand.Add(optionFilesWithAssembliesToExclude);
+        rootCommand.Add(optionFilesWithAttributesToExclude);
+        rootCommand.Add(optionFilesWithApisToExclude);
         rootCommand.Add(optionAddPartialModifier);
         rootCommand.Add(optionAttachDebugger);
 
@@ -127,9 +127,9 @@ public static class Program
                                               optionBeforeFriendlyName,
                                               optionAfterFriendlyName,
                                               optionTableOfContentsTitle,
-                                              optionAssembliesToExclude,
-                                              optionAttributesToExclude,
-                                              optionApisToExclude,
+                                              optionFilesWithAssembliesToExclude,
+                                              optionFilesWithAttributesToExclude,
+                                              optionFilesWithApisToExclude,
                                               optionAddPartialModifier,
                                               optionAttachDebugger);
 
@@ -141,9 +141,9 @@ public static class Program
     {
         var log = new ConsoleLog(MessageImportance.Normal);
 
-        string assembliesToExclude = string.Join(", ", diffConfig.AssembliesToExclude ?? []);
-        string attributesToExclude = string.Join(", ", diffConfig.AttributesToExclude ?? []);
-        string apisToExclude = string.Join(", ", diffConfig.ApisToExclude ?? []);
+        string assembliesToExclude = string.Join(", ", diffConfig.FilesWithAssembliesToExclude?.Select(a => a.FullName) ?? []);
+        string attributesToExclude = string.Join(", ", diffConfig.FilesWithAttributesToExclude?.Select(a => a.FullName) ?? []);
+        string apisToExclude = string.Join(", ", diffConfig.FilesWithApisToExclude?.Select(a => a.FullName) ?? []);
 
         // Custom ordering to match help menu.
         log.LogMessage("Selected options:");
@@ -152,9 +152,9 @@ public static class Program
         log.LogMessage($" - 'Before' reference assemblies:      {diffConfig.BeforeAssemblyReferencesFolderPath}");
         log.LogMessage($" - 'After'  reference assemblies:      {diffConfig.AfterAssemblyReferencesFolderPath}");
         log.LogMessage($" - Output:                             {diffConfig.OutputFolderPath}");
-        log.LogMessage($" - Assemblies to exclude:              {assembliesToExclude}");
-        log.LogMessage($" - Attributes to exclude:              {attributesToExclude}");
-        log.LogMessage($" - APIs to exclude:                    {apisToExclude}");
+        log.LogMessage($" - Files with assemblies to exclude:   {assembliesToExclude}");
+        log.LogMessage($" - Files with attributes to exclude:   {attributesToExclude}");
+        log.LogMessage($" - Files with APIs to exclude:         {apisToExclude}");
         log.LogMessage($" - 'Before' friendly name:             {diffConfig.BeforeFriendlyName}");
         log.LogMessage($" - 'After' friendly name:              {diffConfig.AfterFriendlyName}");
         log.LogMessage($" - Table of contents title:            {diffConfig.TableOfContentsTitle}");
@@ -176,9 +176,9 @@ public static class Program
                                                                    diffConfig.BeforeFriendlyName,
                                                                    diffConfig.AfterFriendlyName,
                                                                    diffConfig.TableOfContentsTitle,
-                                                                   diffConfig.AssembliesToExclude,
-                                                                   diffConfig.AttributesToExclude,
-                                                                   diffConfig.ApisToExclude,
+                                                                   diffConfig.FilesWithAssembliesToExclude,
+                                                                   diffConfig.FilesWithAttributesToExclude,
+                                                                   diffConfig.FilesWithApisToExclude,
                                                                    diffConfig.AddPartialModifier,
                                                                    writeToDisk: true,
                                                                    diagnosticOptions: null // TODO: If needed, add CLI option to pass specific diagnostic options

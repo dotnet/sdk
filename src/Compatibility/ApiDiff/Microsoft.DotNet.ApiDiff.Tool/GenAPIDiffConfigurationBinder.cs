@@ -17,9 +17,9 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
     private readonly Option<string> _optionBeforeFriendlyName;
     private readonly Option<string> _optionAfterFriendlyName;
     private readonly Option<string> _optionTableOfContentsTitle;
-    private readonly Option<string[]?> _optionAssembliesToExclude;
-    private readonly Option<string[]?> _optionAttributesToExclude;
-    private readonly Option<string[]?> _optionApisToExclude;
+    private readonly Option<FileInfo[]?> _optionFilesWithAssembliesToExclude;
+    private readonly Option<FileInfo[]?> _optionFilesWithAttributesToExclude;
+    private readonly Option<FileInfo[]?> _optionFilesWithApisToExclude;
     private readonly Option<bool> _optionAddPartialModifier;
     private readonly Option<bool> _optionAttachDebugger;
 
@@ -31,9 +31,9 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
                                            Option<string> optionBeforeFriendlyName,
                                            Option<string> optionAfterFriendlyName,
                                            Option<string> optionTableOfContentsTitle,
-                                           Option<string[]?> optionAssembliesToExclude,
-                                           Option<string[]?> optionAttributesToExclude,
-                                           Option<string[]?> optionApisToExclude,
+                                           Option<FileInfo[]?> optionFilesWithAssembliesToExclude,
+                                           Option<FileInfo[]?> optionFilesWithAttributesToExclude,
+                                           Option<FileInfo[]?> optionFilesWithApisToExclude,
                                            Option<bool> optionAddPartialModifier,
                                            Option<bool> optionAttachDebugger)
     {
@@ -45,9 +45,9 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
         _optionBeforeFriendlyName = optionBeforeFriendlyName;
         _optionAfterFriendlyName = optionAfterFriendlyName;
         _optionTableOfContentsTitle = optionTableOfContentsTitle;
-        _optionAssembliesToExclude = optionAssembliesToExclude;
-        _optionAttributesToExclude = optionAttributesToExclude;
-        _optionApisToExclude = optionApisToExclude;
+        _optionFilesWithAssembliesToExclude = optionFilesWithAssembliesToExclude;
+        _optionFilesWithAttributesToExclude = optionFilesWithAttributesToExclude;
+        _optionFilesWithApisToExclude = optionFilesWithApisToExclude;
         _optionAddPartialModifier = optionAddPartialModifier;
         _optionAttachDebugger = optionAttachDebugger;
     }
@@ -62,9 +62,9 @@ internal class GenAPIDiffConfigurationBinder : BinderBase<DiffConfiguration>
             BeforeFriendlyName: bindingContext.ParseResult.GetValueForOption(_optionBeforeFriendlyName) ?? throw new NullReferenceException("Null before friendly name"),
             AfterFriendlyName: bindingContext.ParseResult.GetValueForOption(_optionAfterFriendlyName) ?? throw new NullReferenceException("Null after friendly name"),
             TableOfContentsTitle: bindingContext.ParseResult.GetValueForOption(_optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title"),
-            AssembliesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAssembliesToExclude),
-            AttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionAttributesToExclude),
-            ApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionApisToExclude),
+            FilesWithAssembliesToExclude: bindingContext.ParseResult.GetValueForOption(_optionFilesWithAssembliesToExclude),
+            FilesWithAttributesToExclude: bindingContext.ParseResult.GetValueForOption(_optionFilesWithAttributesToExclude),
+            FilesWithApisToExclude: bindingContext.ParseResult.GetValueForOption(_optionFilesWithApisToExclude),
             AddPartialModifier: bindingContext.ParseResult.GetValueForOption(_optionAddPartialModifier),
             AttachDebugger: bindingContext.ParseResult.GetValueForOption(_optionAttachDebugger)
         );

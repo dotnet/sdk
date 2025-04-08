@@ -42,9 +42,9 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="beforeFriendlyName">The friendly name for the before version of the assemblies.</param>
     /// <param name="afterFriendlyName">The friendly name for the after version of the assemblies.</param>
     /// <param name="tableOfContentsTitle">The title for the table of contents.</param>
-    /// <param name="assembliesToExclude">An optional list of assemblies to avoid showing in the diff.</param>
-    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
-    /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
+    /// <param name="filesWithAssembliesToExclude">An optional array of filepaths each containing a list of assemblies to avoid showing in the diff.</param>
+    /// <param name="filesWithAttributesToExclude">An optional array of filepaths each containing a list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="filesWithApisToExclude">An optional array of filepaths each containing a list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">A value indicating whether to add the partial modifier to types.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="RunAsync"/>, the generated markdown files get added to the <see cref="RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
     /// <param name="diagnosticOptions">An optional set of diagnostic options.</param>
@@ -57,9 +57,9 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
                                     string beforeFriendlyName,
                                     string afterFriendlyName,
                                     string tableOfContentsTitle,
-                                    string[]? assembliesToExclude,
-                                    string[]? attributesToExclude,
-                                    string[]? apisToExclude,
+                                    FileInfo[]? filesWithAssembliesToExclude,
+                                    FileInfo[]? filesWithAttributesToExclude,
+                                    FileInfo[]? filesWithApisToExclude,
                                     bool addPartialModifier,
                                     bool writeToDisk,
                                     IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
@@ -74,9 +74,9 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _beforeFriendlyName = beforeFriendlyName;
         _afterFriendlyName = afterFriendlyName;
         _tableOfContentsTitle = tableOfContentsTitle;
-        _assembliesToExclude = assembliesToExclude ?? [];
-        _attributesToExclude = attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude;
-        _apisToExclude = apisToExclude ?? [];
+        _assembliesToExclude = CollectListsFromFiles(filesWithAssembliesToExclude);
+        _attributesToExclude = filesWithAttributesToExclude != null ? CollectListsFromFiles(filesWithAttributesToExclude) : DiffGeneratorFactory.DefaultAttributesToExclude;
+        _apisToExclude = CollectListsFromFiles(filesWithApisToExclude);
         _addPartialModifier = addPartialModifier;
         _writeToDisk = writeToDisk;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
@@ -165,5 +165,28 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         }
 
         _log.LogMessage($"Wrote table of contents to '{tableOfContentsFilePath}'.");
+    }
+
+    private static string[] CollectListsFromFiles(FileInfo[]? filesWithLists)
+    {
+        List<string> list = [];
+
+        if (filesWithLists != null)
+        {
+            foreach (FileInfo file in filesWithLists)
+            {
+                // This will throw if file does not exist.
+                foreach (string line in File.ReadLines(file.FullName))
+                {
+                    if (!list.Contains(line))
+                    {
+                        // Prevent duplicates.
+                        list.Add(line);
+                    }
+                }
+            }
+        }
+
+        return [.. list.Order()];
     }
 }

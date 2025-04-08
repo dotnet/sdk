@@ -15,9 +15,9 @@ public record DiffConfiguration(
     string BeforeFriendlyName,
     string AfterFriendlyName,
     string TableOfContentsTitle,
-    string[]? AssembliesToExclude,
-    string[]? AttributesToExclude,
-    string[]? ApisToExclude,
+    FileInfo[]? FilesWithAssembliesToExclude,
+    FileInfo[]? FilesWithAttributesToExclude,
+    FileInfo[]? FilesWithApisToExclude,
     bool AddPartialModifier,
     bool AttachDebugger
 );
