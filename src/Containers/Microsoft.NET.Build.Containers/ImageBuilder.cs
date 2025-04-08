@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Text.Unicode;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -21,7 +23,7 @@ internal sealed class ImageBuilder
     private readonly ManifestV2 _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
-    private readonly serializerOptions = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin) };
+    private readonly JsonSerializerOptions serializerOptions = new JsonSerializerOptions() { Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin) };
 
     /// <summary>
     /// This is a parser for ASPNETCORE_URLS based on https://github.com/dotnet/aspnetcore/blob/main/src/Http/Http/src/BindingAddress.cs
