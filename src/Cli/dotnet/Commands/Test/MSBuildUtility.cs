@@ -90,6 +90,7 @@ internal static class MSBuildUtility
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
             parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileOption),
+            parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
             otherArgs,
             msbuildArgs);
