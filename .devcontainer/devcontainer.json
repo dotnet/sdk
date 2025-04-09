@@ -11,11 +11,6 @@
       ]
     }
   },
-  "features": {
-    "ghcr.io/devcontainers/features/sshd:1": {
-        "version": "latest"
-    }
-  },
   // Use 'postCreateCommand' to run commands after the container is created.
   "postCreateCommand": "bash -i ${containerWorkspaceFolder}/.devcontainer/scripts/post-creation.sh",
   // Add the locally installed dotnet to the path to ensure that it is activated
