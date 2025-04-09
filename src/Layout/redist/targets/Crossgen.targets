@@ -54,7 +54,7 @@
 
       <RazorToolFiles Include="$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
 
-      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
+      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />
