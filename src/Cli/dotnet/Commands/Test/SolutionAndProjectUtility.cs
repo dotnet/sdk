@@ -138,6 +138,7 @@ internal static class SolutionAndProjectUtility
             var frameworks = targetFrameworks
                 .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
                 .Select(f => f.Trim())
+                .Where(f => !string.IsNullOrEmpty(f))
                 .Distinct();
             foreach (var framework in frameworks)
             {
