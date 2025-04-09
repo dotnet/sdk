@@ -222,7 +222,7 @@ public class LinuxInstallerTests : IDisposable
         string containerLogDir = "/logs";
         string containerLogPath = Path.Combine(containerLogDir, $"scenario-tests-{GetSanitizedImageName(baseImage)}.xml");
 
-        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/ --xml {containerLogPath}";
+        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/ --xml {containerLogPath} --no-traits Category=RequiresNonTargetRidPackages";
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";

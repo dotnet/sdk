@@ -5,7 +5,7 @@ using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
-internal static class ServerShutdownCommandParser
+internal static class BuildServerShutdownCommandParser
 {
     public static readonly CliOption<bool> MSBuildOption = new("--msbuild")
     {

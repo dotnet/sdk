@@ -666,6 +666,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, "Location to place the generated output.")
                 [CompletionResult]::new('--output', '-o', [CompletionResultType]::ParameterName, "Location to place the generated output.")
+                [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, "Force conversion even if there are malformed directives.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

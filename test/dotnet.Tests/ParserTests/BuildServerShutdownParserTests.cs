@@ -20,9 +20,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet build-server shutdown");
 
-            result.GetValue<bool>(ServerShutdownCommandParser.MSBuildOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.VbcsOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.RazorOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.RazorOption).Should().Be(false);
         }
 
         [Fact]
@@ -30,9 +30,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet build-server shutdown --msbuild");
 
-            result.GetValue<bool>(ServerShutdownCommandParser.MSBuildOption).Should().Be(true);
-            result.GetValue<bool>(ServerShutdownCommandParser.VbcsOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.RazorOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(true);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.RazorOption).Should().Be(false);
         }
 
         [Fact]
@@ -40,9 +40,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet build-server shutdown --vbcscompiler");
 
-            result.GetValue<bool>(ServerShutdownCommandParser.MSBuildOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.VbcsOption).Should().Be(true);
-            result.GetValue<bool>(ServerShutdownCommandParser.RazorOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(true);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.RazorOption).Should().Be(false);
         }
 
         [Fact]
@@ -50,9 +50,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet build-server shutdown --razor");
 
-            result.GetValue<bool>(ServerShutdownCommandParser.MSBuildOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.VbcsOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.RazorOption).Should().Be(true);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.RazorOption).Should().Be(true);
         }
 
         [Fact]
@@ -60,9 +60,9 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet build-server shutdown --razor --msbuild");
 
-            result.GetValue<bool>(ServerShutdownCommandParser.MSBuildOption).Should().Be(true);
-            result.GetValue<bool>(ServerShutdownCommandParser.VbcsOption).Should().Be(false);
-            result.GetValue<bool>(ServerShutdownCommandParser.RazorOption).Should().Be(true);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.MSBuildOption).Should().Be(true);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.VbcsOption).Should().Be(false);
+            result.GetValue<bool>(BuildServerShutdownCommandParser.RazorOption).Should().Be(true);
         }
     }
 }

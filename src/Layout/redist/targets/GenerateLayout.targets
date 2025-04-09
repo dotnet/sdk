@@ -444,6 +444,7 @@
   <Target Name="CopyKnownWorkloadManifestFile">
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
+      <WorkloadManifestFilesContent Include="%(BuiltinManifests.Identity)" />
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
