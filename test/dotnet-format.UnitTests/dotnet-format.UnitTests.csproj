@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\BuiltInTools\dotnet-format\dotnet-format.csproj" />
-    <ProjectReference Include="..\..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <!-- Tests depend on the SdkTargetFramework reference assemblies -->
