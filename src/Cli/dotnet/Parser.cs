@@ -42,6 +42,7 @@ namespace Microsoft.DotNet.Cli
             PackageCommandParser.GetCommand(),
             ParseCommandParser.GetCommand(),
             PublishCommandParser.GetCommand(),
+            ReferenceCommandParser.GetCommand(),
             RemoveCommandParser.GetCommand(),
             RestoreCommandParser.GetCommand(),
             RunCommandParser.GetCommand(),
@@ -177,21 +178,29 @@ namespace Microsoft.DotNet.Cli
 
             if (exception is Utils.GracefulException)
             {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
             else if (exception is CommandParsingException)
             {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? exception.ToString().Red().Bold()
-                    : exception.Message.Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
                 parseResult.ShowHelp();
+            }
+            else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+            {
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
             else
             {
                 Reporter.Error.Write("Unhandled exception: ".Red().Bold());
-                Reporter.Error.WriteLine(exception.ToString().Red().Bold());
+                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                    exception.ToString().Red().Bold() :
+                    exception.Message.Red().Bold());
             }
 
             return 1;
@@ -335,7 +344,7 @@ namespace Microsoft.DotNet.Cli
                     else if (command.Name.Equals(AddPackageParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
                     {
                         // Don't show package completions in help
-                        AddPackageParser.CmdPackageArgument.CompletionSources.Clear();
+                        PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
                     }
 
                     base.Write(context);

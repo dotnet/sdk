@@ -12,7 +12,12 @@ namespace Microsoft.DotNet.HotReload;
 
 internal interface IRequest
 {
+    RequestType Type { get; }
     ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken);
+}
+
+internal interface IUpdateRequest : IRequest
+{
 }
 
 internal enum RequestType
@@ -22,16 +27,14 @@ internal enum RequestType
     InitialUpdatesCompleted = 3,
 }
 
-internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IRequest
+internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> deltas, ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
 {
     private const byte Version = 4;
 
     public IReadOnlyList<UpdateDelta> Deltas { get; } = deltas;
     public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
+    public RequestType Type => RequestType.ManagedCodeUpdate;
 
-    /// <summary>
-    /// Called by the dotnet-watch.
-    /// </summary>
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
         await stream.WriteAsync(Version, cancellationToken);
@@ -49,9 +52,6 @@ internal readonly struct ManagedCodeUpdateRequest(IReadOnlyList<UpdateDelta> del
         await stream.WriteAsync((byte)ResponseLoggingLevel, cancellationToken);
     }
 
-    /// <summary>
-    /// Called by delta applier.
-    /// </summary>
     public static async ValueTask<ManagedCodeUpdateRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
     {
         var version = await stream.ReadByteAsync(cancellationToken);
@@ -114,25 +114,19 @@ internal readonly struct UpdateResponse(IReadOnlyCollection<(string message, Age
     }
 }
 
-internal readonly struct ClientInitializationRequest(string capabilities) : IRequest
+internal readonly struct ClientInitializationResponse(string capabilities) 
 {
     private const byte Version = 0;
 
     public string Capabilities { get; } = capabilities;
 
-    /// <summary>
-    /// Called by delta applier.
-    /// </summary>
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
         await stream.WriteAsync(Version, cancellationToken);
         await stream.WriteAsync(Capabilities, cancellationToken);
     }
 
-    /// <summary>
-    /// Called by dotnet-watch.
-    /// </summary>
-    public static async ValueTask<ClientInitializationRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
+    public static async ValueTask<ClientInitializationResponse> ReadAsync(Stream stream, CancellationToken cancellationToken)
     {
         var version = await stream.ReadByteAsync(cancellationToken);
         if (version != Version)
@@ -141,7 +135,7 @@ internal readonly struct ClientInitializationRequest(string capabilities) : IReq
         }
 
         var capabilities = await stream.ReadStringAsync(cancellationToken);
-        return new ClientInitializationRequest(capabilities);
+        return new ClientInitializationResponse(capabilities);
     }
 }
 
@@ -149,14 +143,18 @@ internal readonly struct StaticAssetUpdateRequest(
     string assemblyName,
     string relativePath,
     byte[] contents,
-    bool isApplicationProject) : IRequest
+    bool isApplicationProject,
+    ResponseLoggingLevel responseLoggingLevel) : IUpdateRequest
 {
-    private const byte Version = 1;
+    private const byte Version = 2;
 
     public string AssemblyName { get; } = assemblyName;
     public bool IsApplicationProject { get; } = isApplicationProject;
     public string RelativePath { get; } = relativePath;
     public byte[] Contents { get; } = contents;
+    public ResponseLoggingLevel ResponseLoggingLevel { get; } = responseLoggingLevel;
+
+    public RequestType Type => RequestType.StaticAssetUpdate;
 
     public async ValueTask WriteAsync(Stream stream, CancellationToken cancellationToken)
     {
@@ -165,6 +163,7 @@ internal readonly struct StaticAssetUpdateRequest(
         await stream.WriteAsync(IsApplicationProject, cancellationToken);
         await stream.WriteAsync(RelativePath, cancellationToken);
         await stream.WriteByteArrayAsync(Contents, cancellationToken);
+        await stream.WriteAsync((byte)ResponseLoggingLevel, cancellationToken);
     }
 
     public static async ValueTask<StaticAssetUpdateRequest> ReadAsync(Stream stream, CancellationToken cancellationToken)
@@ -176,14 +175,16 @@ internal readonly struct StaticAssetUpdateRequest(
         }
 
         var assemblyName = await stream.ReadStringAsync(cancellationToken);
-        var isAppProject = await stream.ReadBooleanAsync(cancellationToken);
+        var isApplicationProject = await stream.ReadBooleanAsync(cancellationToken);
         var relativePath = await stream.ReadStringAsync(cancellationToken);
         var contents = await stream.ReadByteArrayAsync(cancellationToken);
+        var responseLoggingLevel = (ResponseLoggingLevel)await stream.ReadByteAsync(cancellationToken);
 
         return new StaticAssetUpdateRequest(
             assemblyName: assemblyName,
             relativePath: relativePath,
             contents: contents,
-            isApplicationProject: isAppProject);
+            isApplicationProject,
+            responseLoggingLevel);
     }
 }
