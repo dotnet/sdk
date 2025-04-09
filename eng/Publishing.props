@@ -7,14 +7,15 @@
   </PropertyGroup>
 
   <!-- FSharp needs to push different packages to nuget.org depending on whether the SDK is preview or not,
-      To achieve this, we find the FSharp compiler package, then the stable or non-stable FSharp.Core and Compiler service
-      package contained within, depending on the stability switch of the SDK. The SDK then treats these packages as its own outputs,
-      which means they get automatically pushed on release day.
+       To achieve this, we find the FSharp compiler package, then the stable or non-stable FSharp.Core and Compiler service
+       package contained within, depending on the stability switch of the SDK. The SDK then treats these packages as its own outputs,
+       which means they get automatically pushed on release day.
 
-      These packages have already been signed by the FSharp build so we don't need to re-include them for signing. -->
+       These packages have already been signed by the FSharp build so we don't need to re-include them for signing. -->
   <PropertyGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' != 'release'">Shipping</FSharpCorePath>
     <FSharpCorePath Condition="'$(DotNetFinalVersionKind)' == 'release'">Release</FSharpCorePath>
+
     <!--
       We only want to publish the FSharp assets externally when we're publishing all artifacts, not only RID-specific ones.
       Add these packages as "Vertical" visibility when we're only publishing RID-specific packages so we don't publish this one.
@@ -22,7 +23,7 @@
     <FSharpArtifactVisibility Condition="'$(EnableDefaultRidSpecificArtifacts)' == 'true'">Vertical</FSharpArtifactVisibility>
     <FSharpArtifactVisibility Condition="'$(FSharpArtifactVisibility)' == ''">External</FSharpArtifactVisibility>
   </PropertyGroup>
-  <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true'">
+  <ItemGroup Condition="'$(EnableDefaultArtifacts)' == 'true' and ('$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1')">
     <Artifact Include="$(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Core.*.nupkg;
                        $(NuGetPackageRoot)\microsoft.fsharp.compiler\$(MicrosoftFSharpCompilerPackageVersion)\contentFiles\$(FSharpCorePath)\FSharp.Compiler.Service.*.nupkg"
               Kind="Package"
@@ -34,9 +35,16 @@
     <Artifact Update="$(ArtifactsShippingPackagesDir)dotnet-sdk-pgo-*" Visibility="External" />
   </ItemGroup>
 
+  <!-- temporarily remove the .Msi workload pack nugets in the SDK official build until we switch to the VMR, but keep the manifest .Msi packages -->
+  <ItemGroup Condition="'$(DotNetBuild)' != 'true'">
+    <MsiPackages Include="$(ArtifactsShippingPackagesDir)*.Msi.*.nupkg" />
+    <MsiPackages Remove="$(ArtifactsShippingPackagesDir)*.Manifest-*.Msi.*.nupkg" />
+    <Artifact Remove="@(MsiPackages)" />
+  </ItemGroup>
+
   <Target Name="GetNonStableProductVersion">
     <!-- Retrieve the non-stable product version. -->
-    <MSBuild Projects="$(RepoRoot)src\Layout\redist-installer\redist-installer.proj"
+    <MSBuild Projects="$(RepoRoot)src\Layout\redist\redist.csproj"
              Targets="ReturnProductVersion">
       <Output TaskParameter="TargetOutputs" PropertyName="NonStableProductVersion" />
     </MSBuild>

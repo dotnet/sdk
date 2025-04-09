@@ -1,4 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
@@ -38,6 +39,7 @@
     <Compile Include="..\dotnet-list-reference.Tests\**\*.cs" LinkBase="dotnet-list-reference" />
     <Compile Include="..\dotnet-nuget.UnitTests\**\*.cs" LinkBase="dotnet-nuget" />
     <Compile Include="..\dotnet-pack.Tests\**\*.cs" LinkBase="dotnet-pack" />
+    <Compile Include="..\dotnet-package-list.Tests\**\*.cs" LinkBase="dotnet-package-list" />
     <Compile Include="..\dotnet-project-convert.Tests\**\*.cs" LinkBase="dotnet-project-convert" />
     <Compile Include="..\dotnet-publish.Tests\**\*.cs" LinkBase="dotnet-publish" />
     <Compile Include="..\dotnet-remove-package.Tests\**\*.cs" LinkBase="dotnet-remove-package" />
@@ -139,4 +141,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 </Project>

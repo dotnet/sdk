@@ -8,10 +8,10 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Versioning;
 using Parser = Microsoft.DotNet.Cli.Parser;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {

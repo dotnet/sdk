@@ -1,7 +1,6 @@
 <Build PublishingVersion="3" Name="dotnet-dotnet" BuildId="20250306.10" Branch="refs/heads/rid-specific-publish" Commit="5abbbba42e04d26068d1ff5f24de662e682b851e" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/rid-specific-publish" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2656964" AzureDevOpsBuildNumber="20250306.10" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2656964/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false" VerticalName="AzureLinux_x64_Cross_Alpine_x64">
   <Package Id="Microsoft.Arcade.Common" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
   <Package Id="Microsoft.AspNetCore.App.Runtime.linux-musl-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
-  <Package Id="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
   <Package Id="Microsoft.Cci.Extensions" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
   <Package Id="Microsoft.CodeAnalysis.LanguageServer.linux-musl-x64" Version="4.14.0-3.25156.110" CouldBeStable="false" RepoOrigin="roslyn" Visibility="External" />
   <Package Id="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25156.110" NonShipping="true" RepoOrigin="arcade" Visibility="Internal" />
@@ -52,23 +51,6 @@
   <Package Id="Microsoft.NETCore.App.Runtime.linux-musl-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Package Id="Microsoft.NETCore.App.Runtime.Mono.linux-musl-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Package Id="Microsoft.NETCore.App.Runtime.NativeAOT.linux-musl-x64" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
-  <Package Id="NuGet.Build.Tasks" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Build.Tasks.Console" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Build.Tasks.Pack" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.CommandLine.XPlat" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Commands" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Common" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Configuration" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Credentials" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.DependencyResolver.Core" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Frameworks" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.LibraryModel" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.PackageManagement" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Packaging" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.ProjectModel" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Protocol" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Resolver" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
-  <Package Id="NuGet.Versioning" Version="6.14.0-preview.1.32767" CouldBeStable="false" RepoOrigin="nuget-client" Visibility="External" />
   <Package Id="runtime.linux-musl-x64.Microsoft.DotNet.ILCompiler" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Package Id="runtime.linux-musl-x64.Microsoft.NETCore.DotNetAppHost" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Package Id="runtime.linux-musl-x64.Microsoft.NETCore.ILAsm" Version="10.0.0-preview.3.25156.110" CouldBeStable="false" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
@@ -84,7 +66,6 @@
   <Blob Id="aspnetcore/Runtime/10.0.0-preview.3.25156.110/aspnetcore-targeting-pack-10.0.0-preview.3.25156.110-linux-musl-x64.tar.gz.sha512" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10//Microsoft.CodeAnalysis.LanguageServer.linux-musl-x64.4.14.0-3.25156.110.symbols.nupkg" RepoOrigin="roslyn" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.AspNetCore.App.Runtime.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="aspnetcore" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.Build.NuGetSdkResolver.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Crossgen2.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Host.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.AOT.linux-musl-x64.Cross.android-arm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
@@ -96,23 +77,6 @@
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.Mono.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" NonShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/Microsoft.NETCore.App.Runtime.NativeAOT.linux-musl-x64.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Build.Tasks.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Build.Tasks.Console.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Build.Tasks.Pack.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.CommandLine.XPlat.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Commands.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Common.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Configuration.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Credentials.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.DependencyResolver.Core.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Frameworks.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.LibraryModel.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.PackageManagement.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Packaging.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.ProjectModel.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Protocol.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Resolver.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
-  <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/NuGet.Versioning.6.14.0-preview.1.32767.symbols.nupkg" RepoOrigin="nuget-client" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.linux-musl-x64.Microsoft.DotNet.ILCompiler.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.linux-musl-x64.Microsoft.NETCore.DotNetAppHost.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />
   <Blob Id="assets/symbols/dotnet-dotnet/20250306.10/runtime.linux-musl-x64.Microsoft.NETCore.ILAsm.10.0.0-preview.3.25156.110.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="runtime" Visibility="External" />

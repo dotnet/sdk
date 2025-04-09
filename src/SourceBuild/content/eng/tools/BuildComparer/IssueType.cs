@@ -25,4 +25,7 @@ public enum IssueType
     AssemblyVersionMismatch,
     MissingPackageContent,
     ExtraPackageContent,
+    PackageMetadataDifference,
+    PackageTFMs,
+    PackageDependencies,
 }

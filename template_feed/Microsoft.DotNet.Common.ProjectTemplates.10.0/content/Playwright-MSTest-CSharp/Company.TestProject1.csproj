@@ -15,7 +15,7 @@
 <!--#if (CoverageTool == "coverlet")-->
 
   <ItemGroup>
-    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
   </ItemGroup>
 <!--#endif-->
 <!--#else-->
@@ -53,9 +53,9 @@
 
   <ItemGroup>
 <!--#if (CoverageTool == "coverlet")-->
-    <PackageReference Include="coverlet.collector" Version="6.0.2" />
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
 <!--#endif-->
-    <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.49.0" />
+    <PackageReference Include="Microsoft.Playwright.MSTest" Version="1.51.0" />
     <PackageReference Include="MSTest" Version="3.8.3" />
   </ItemGroup>
 

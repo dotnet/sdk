@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
-
-using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Utilities;
@@ -20,28 +18,11 @@ public class DefineStaticWebAssetEndpoints : Task
     [Required]
     public ITaskItem[] ContentTypeMappings { get; set; }
 
-    public ITaskItem[] AssetFileDetails { get; set; }
-
     [Output]
     public ITaskItem[] Endpoints { get; set; }
 
-    public Func<string, int> TestLengthResolver;
-    public Func<string, DateTime> TestLastWriteResolver;
-
-    private Dictionary<string, ITaskItem> _assetFileDetails;
-
     public override bool Execute()
     {
-        if (AssetFileDetails != null)
-        {
-            _assetFileDetails = new(AssetFileDetails.Length, OSPath.PathComparer);
-            for (var i = 0; i < AssetFileDetails.Length; i++)
-            {
-                var item = AssetFileDetails[i];
-                _assetFileDetails[item.ItemSpec] = item;
-            }
-        }
-
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
         var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
         var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
@@ -52,14 +33,11 @@ public class DefineStaticWebAssetEndpoints : Task
             CandidateAssets.Length,
             () => new ParallelWorker(
                 endpoints,
-                new List<StaticWebAssetEndpoint>(),
+                new List<StaticWebAssetEndpoint>(512),
                 CandidateAssets,
                 existingEndpointsByAssetFile,
                 Log,
-                contentTypeProvider,
-                _assetFileDetails,
-                TestLengthResolver,
-                TestLastWriteResolver),
+                contentTypeProvider),
             static (i, loop, state) => state.Process(i, loop),
             static worker => worker.Finally());
 
@@ -72,7 +50,7 @@ public class DefineStaticWebAssetEndpoints : Task
     {
         if (ExistingEndpoints != null && ExistingEndpoints.Length > 0)
         {
-            Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(OSPath.PathComparer);
+            Dictionary<string, HashSet<string>> existingEndpointsByAssetFile = new(ExistingEndpoints.Length, OSPath.PathComparer);
             var assets = new HashSet<string>(CandidateAssets.Length, OSPath.PathComparer);
             foreach (var asset in CandidateAssets)
             {
@@ -111,10 +89,7 @@ public class DefineStaticWebAssetEndpoints : Task
         ITaskItem[] candidateAssets,
         Dictionary<string, HashSet<string>> existingEndpointsByAssetFile,
         TaskLoggingHelper log,
-        ContentTypeProvider contentTypeProvider,
-        Dictionary<string, ITaskItem> assetDetails,
-        Func<string, int> testLengthResolver,
-        Func<string, DateTime> testLastWriteResolver)
+        ContentTypeProvider contentTypeProvider)
     {
         public List<StaticWebAssetEndpoint> CollectedEndpoints { get; } = collectedEndpoints;
         public List<StaticWebAssetEndpoint> CurrentEndpoints { get; } = currentEndpoints;
@@ -122,22 +97,21 @@ public class DefineStaticWebAssetEndpoints : Task
         public Dictionary<string, HashSet<string>> ExistingEndpointsByAssetFile { get; } = existingEndpointsByAssetFile;
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
-        public Dictionary<string, ITaskItem> AssetDetails { get; } = assetDetails;
-        public Func<string, int> TestLengthResolver { get; } = testLengthResolver;
-        public Func<string, DateTime> TestLastWriteResolver { get; } = testLastWriteResolver;
 
-        private List<StaticWebAssetEndpoint> CreateEndpoints(
-            List<StaticWebAsset.StaticWebAssetResolvedRoute> routes,
+        private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
+
+        private void CreateAnAddEndpoints(
             StaticWebAsset asset,
+            string length,
+            string lastModified,
             StaticWebAssetGlobMatcher.MatchContext matchContext)
         {
-            var (length, lastModified) = ResolveDetails(asset);
-            var result = new List<StaticWebAssetEndpoint>();
-            foreach (var (label, route, values) in routes)
+            foreach (var (label, route, values) in _resolvedRoutes)
             {
                 var (mimeType, cacheSetting) = ResolveContentType(asset, ContentTypeProvider, matchContext, Log);
-                List<StaticWebAssetEndpointResponseHeader> headers = [
-                        new()
+                var headers = new StaticWebAssetEndpointResponseHeader[6]
+                {
+                    new()
                     {
                         Name = "Accept-Ranges",
                         Value = "bytes"
@@ -160,37 +134,44 @@ public class DefineStaticWebAssetEndpoints : Task
                     new()
                     {
                         Name = "Last-Modified",
-                        Value = lastModified
+                        Value = lastModified,
                     },
-                ];
+                    default
+                };
 
                 if (values.ContainsKey("fingerprint"))
                 {
                     // max-age=31536000 is one year in seconds. immutable means that the asset will never change.
                     // max-age is for browsers that do not support immutable.
-                    headers.Add(new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" });
+                    headers[5] = new() { Name = "Cache-Control", Value = "max-age=31536000, immutable" };
                 }
                 else
                 {
                     // Force revalidation on non-fingerprinted assets. We can be more granular here and have rules based on the content type.
                     // These values can later be changed at runtime by modifying the endpoint. For example, it might be safer to cache images
                     // for a longer period of time than scripts or stylesheets.
-                    headers.Add(new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" });
+                    headers[5] = new() { Name = "Cache-Control", Value = !string.IsNullOrEmpty(cacheSetting) ? cacheSetting : "no-cache" };
                 }
 
-                var properties = values.Select(v => new StaticWebAssetEndpointProperty { Name = v.Key, Value = v.Value });
+                var properties = new StaticWebAssetEndpointProperty[values.Count + (values.Count > 0 ? 2 : 1)];
+                var i = 0;
+                foreach (var value in values)
+                {
+                    properties[i++] = new StaticWebAssetEndpointProperty { Name = value.Key, Value = value.Value };
+                }
+
                 if (values.Count > 0)
                 {
                     // If an endpoint has values from its route replaced, we add a label to the endpoint so that it can be easily identified.
                     // The combination of label and list of values should be unique.
                     // In this way, we can identify an endpoint resource.fingerprint.ext by its label (for example resource.ext) and its values
                     // (fingerprint).
-                    properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "label", Value = label });
+                    properties[i++] = new StaticWebAssetEndpointProperty { Name = "label", Value = label };
                 }
 
                 // We append the integrity in the format expected by the browser so that it can be opaque to the runtime.
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
-                properties = properties.Append(new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" });
+                properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
 
                 var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
@@ -198,81 +179,13 @@ public class DefineStaticWebAssetEndpoints : Task
                 {
                     Route = finalRoute,
                     AssetFile = asset.Identity,
-                    EndpointProperties = [.. properties],
-                    ResponseHeaders = [.. headers]
+                    EndpointProperties = properties,
+                    ResponseHeaders = headers
                 };
-                result.Add(endpoint);
-            }
 
-            return result;
-        }
-
-        // Last-Modified: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
-        // Directives
-        // <day-name>
-        // One of "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", or "Sun" (case-sensitive).
-        //
-        // <day>
-        // 2 digit day number, e.g. "04" or "23".
-        //
-        // <month>
-        // One of "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" (case sensitive).
-        //
-        // <year>
-        // 4 digit year number, e.g. "1990" or "2016".
-        //
-        // <hour>
-        // 2 digit hour number, e.g. "09" or "23".
-        //
-        // <minute>
-        // 2 digit minute number, e.g. "04" or "59".
-        //
-        // <second>
-        // 2 digit second number, e.g. "04" or "59".
-        //
-        // GMT
-        // Greenwich Mean Time.HTTP dates are always expressed in GMT, never in local time.
-        private (string length, string lastModified) ResolveDetails(StaticWebAsset asset)
-        {
-            if (AssetDetails != null && AssetDetails.TryGetValue(asset.Identity, out var details))
-            {
-                return (length: details.GetMetadata("FileLength"), lastModified: details.GetMetadata("LastWriteTimeUtc"));
+                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
+                CurrentEndpoints.Add(endpoint);
             }
-            else if (AssetDetails != null && AssetDetails.TryGetValue(asset.OriginalItemSpec, out var originalDetails))
-            {
-                return (length: originalDetails.GetMetadata("FileLength"), lastModified: originalDetails.GetMetadata("LastWriteTimeUtc"));
-            }
-            else if (TestLastWriteResolver != null || TestLengthResolver != null)
-            {
-                return (length: GetTestFileLength(asset), lastModified: GetTestFileLastModified(asset));
-            }
-            else
-            {
-                Log.LogMessage(MessageImportance.Normal, $"No details found for {asset.Identity}. Using file system to resolve details.");
-                var fileInfo = StaticWebAsset.ResolveFile(asset.Identity, asset.OriginalItemSpec);
-                var length = fileInfo.Length.ToString(CultureInfo.InvariantCulture);
-                var lastModified = fileInfo.LastWriteTimeUtc.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
-                return (length, lastModified);
-            }
-        }
-
-        // Only used for testing
-        private string GetTestFileLastModified(StaticWebAsset asset)
-        {
-            var lastWrite = TestLastWriteResolver != null ? TestLastWriteResolver(asset.Identity) : asset.ResolveFile().LastWriteTimeUtc;
-            return lastWrite.ToString("ddd, dd MMM yyyy HH:mm:ss 'GMT'", CultureInfo.InvariantCulture);
-        }
-
-        // Only used for testing
-        private string GetTestFileLength(StaticWebAsset asset)
-        {
-            if (TestLengthResolver != null)
-            {
-                return TestLengthResolver(asset.Identity).ToString(CultureInfo.InvariantCulture);
-            }
-
-            var fileInfo = asset.ResolveFile();
-            return fileInfo.Length.ToString(CultureInfo.InvariantCulture);
         }
 
         private static (string mimeType, string cache) ResolveContentType(StaticWebAsset asset, ContentTypeProvider contentTypeProvider, StaticWebAssetGlobMatcher.MatchContext matchContext, TaskLoggingHelper log)
@@ -303,14 +216,17 @@ public class DefineStaticWebAssetEndpoints : Task
         internal ParallelWorker Process(int i, ParallelLoopState _)
         {
             var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
-            var routes = asset.ComputeRoutes().ToList();
+            asset.ComputeRoutes(_resolvedRoutes);
+            // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
+            var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));
+            var lastWriteTime = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.LastWriteTime));
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
 
             if (ExistingEndpointsByAssetFile != null && ExistingEndpointsByAssetFile.TryGetValue(asset.Identity, out var set))
             {
-                for (var j = routes.Count - 1; j >= 0; j--)
+                for (var j = _resolvedRoutes.Count - 1; j >= 0; j--)
                 {
-                    var (_, route, _) = routes[j];
+                    var (_, route, _) = _resolvedRoutes[j];
                     // StaticWebAssets has this behavior where the base path for an asset only gets applied if the asset comes from a
                     // package or a referenced project and ignored if it comes from the current project.
                     // When we define the endpoint, we apply the path to the asset as if it was coming from the current project.
@@ -323,16 +239,12 @@ public class DefineStaticWebAssetEndpoints : Task
                     if (set.Contains(finalRoute))
                     {
                         Log.LogMessage(MessageImportance.Low, $"Skipping asset {asset.Identity} because an endpoint for it already exists at {route}.");
-                        routes.RemoveAt(j);
+                        _resolvedRoutes.RemoveAt(j);
                     }
                 }
             }
 
-            foreach (var endpoint in CreateEndpoints(routes, asset, matchContext))
-            {
-                Log.LogMessage(MessageImportance.Low, $"Adding endpoint {endpoint.Route} for asset {asset.Identity}.");
-                CurrentEndpoints.Add(endpoint);
-            }
+            CreateAnAddEndpoints(asset, length, lastWriteTime, matchContext);
 
             return this;
         }

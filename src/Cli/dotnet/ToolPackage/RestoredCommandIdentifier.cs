@@ -10,27 +10,18 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 /// <summary>
 ///     Given the following parameter, a list of RestoredCommand of a NuGet package can be uniquely identified
 /// </summary>
-internal class RestoredCommandIdentifier : IEquatable<RestoredCommandIdentifier>
+internal class RestoredCommandIdentifier(
+    PackageId packageId,
+    NuGetVersion version,
+    NuGetFramework targetFramework,
+    string runtimeIdentifier,
+    ToolCommandName commandName) : IEquatable<RestoredCommandIdentifier>
 {
-    public RestoredCommandIdentifier(
-        PackageId packageId,
-        NuGetVersion version,
-        NuGetFramework targetFramework,
-        string runtimeIdentifier,
-        ToolCommandName commandName)
-    {
-        PackageId = packageId;
-        Version = version ?? throw new ArgumentException(nameof(version));
-        TargetFramework = targetFramework ?? throw new ArgumentException(nameof(targetFramework));
-        RuntimeIdentifier = runtimeIdentifier ?? throw new ArgumentException(nameof(runtimeIdentifier));
-        CommandName = commandName;
-    }
-
-    public PackageId PackageId { get; }
-    public NuGetVersion Version { get; }
-    public NuGetFramework TargetFramework { get; }
-    public string RuntimeIdentifier { get; }
-    public ToolCommandName CommandName { get; }
+    public PackageId PackageId { get; } = packageId;
+    public NuGetVersion Version { get; } = version ?? throw new ArgumentException(nameof(version));
+    public NuGetFramework TargetFramework { get; } = targetFramework ?? throw new ArgumentException(nameof(targetFramework));
+    public string RuntimeIdentifier { get; } = runtimeIdentifier ?? throw new ArgumentException(nameof(runtimeIdentifier));
+    public ToolCommandName CommandName { get; } = commandName;
 
     public bool Equals(RestoredCommandIdentifier other)
     {

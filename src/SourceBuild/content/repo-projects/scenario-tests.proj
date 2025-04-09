@@ -36,6 +36,7 @@
       <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
       <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
       <ScenarioTestsAdditionalArgs>--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM</ScenarioTestsAdditionalArgs>
+      <ScenarioTestsAdditionalArgs Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">$(ScenarioTestsAdditionalArgs) --no-traits Category=RequiresNonTargetRidPackages</ScenarioTestsAdditionalArgs>
     </PropertyGroup>
 
     <!-- Needs to be set as an env var as the eng/common/tools parser can't handle this string. -->
@@ -48,7 +49,7 @@
 
   <Target Name="SetAzureDevOpsVariableForScenarioTests"
           Condition="'$(ContinuousIntegrationBuild)' == 'true'"
-          BeforeTargets="Test">
+          BeforeTargets="RepoTest">
     <Message Importance="High" Text="##vso[task.setvariable variable=hasScenarioTestResults]true" />
   </Target>
 

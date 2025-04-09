@@ -165,7 +165,7 @@ internal class FingerprintPatternMatcher
         }
     }
 
-    private class FingerprintPattern(ITaskItem pattern)
+    internal class FingerprintPattern(ITaskItem pattern)
     {
         StaticWebAssetGlobMatcher _matcher;
         public string Name { get; set; } = pattern.ItemSpec;

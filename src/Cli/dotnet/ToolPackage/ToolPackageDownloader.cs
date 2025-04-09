@@ -125,7 +125,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                     {
                         throw new ToolPackageException(
                             string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                CliStrings.ToolPackageConflictPackageId,
                                 packageId,
                                 packageVersion.ToNormalizedString()));
                     }
@@ -141,7 +141,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 {
                     throw new ToolPackageException(
                         string.Format(
-                            CommonLocalizableStrings.ToolPackageConflictPackageId,
+                            CliStrings.ToolPackageConflictPackageId,
                             packageId,
                             packageVersion.ToNormalizedString()));
                 }
@@ -329,7 +329,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             Name = packageId.ToString(),
             Version = version,
             Type = LibraryType.Package,
-            PackageType = new List<PackageType>() { PackageType.DotnetTool }
+            PackageType = [PackageType.DotnetTool]
         };
 
         //  Create NuGetv3LocalRepository

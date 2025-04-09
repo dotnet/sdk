@@ -25,6 +25,7 @@ public class LinuxInstallerTests : IDisposable
     private readonly string _tmpDir;
     private readonly string _contextDir;
     private readonly ITestOutputHelper _outputHelper;
+    private readonly string _excludeLinuxArch;
 
     private bool _rpmContextInitialized = false;
     private bool _debContextInitialized = false;
@@ -32,7 +33,7 @@ public class LinuxInstallerTests : IDisposable
 
     private const string NetStandard21RpmPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.rpm";
     private const string NetStandard21DebPackage = @"https://dotnetcli.blob.core.windows.net/dotnet/Runtime/3.1.0/netstandard-targeting-pack-2.1.0-x64.deb";
-    private const string RuntimeDepsRepo = "mcr.microsoft.com/dotnet/nightly/runtime-deps";
+    private const string RuntimeDepsRepo = "mcr.microsoft.com/dotnet/runtime-deps";
     private const string RuntimeDepsVersion = "10.0-preview";
 
     public static bool IncludeRpmTests => Config.TestRpmPackages;
@@ -53,13 +54,17 @@ public class LinuxInstallerTests : IDisposable
         Directory.CreateDirectory(_tmpDir);
         _contextDir = Path.Combine(_tmpDir, Path.GetRandomFileName());
         Directory.CreateDirectory(_contextDir);
+
+        _excludeLinuxArch = Config.Architecture == Architecture.X64 ?
+                                                   Architecture.Arm64.ToString().ToLower() :
+                                                   Architecture.X64.ToString().ToLower();
     }
 
     public void Dispose()
     {
         try
         {
-            //Directory.Delete(_tmpDir, recursive: true);
+            Directory.Delete(_tmpDir, recursive: true);
         }
         catch
         {
@@ -92,11 +97,21 @@ public class LinuxInstallerTests : IDisposable
 
     private void InitializeContext(PackageType packageType)
     {
+        string packageArchitecture =
+            Config.Architecture == Architecture.X64 ?
+                "x64" :
+                packageType == PackageType.Rpm ?
+                    "aarch64" :
+                    "arm64";
+
         if (packageType == PackageType.Rpm && !_rpmContextInitialized)
         {
-            // For rpm enumerate RPM packages, excluding those that contain ".cm." in the name
-            List<string> rpmPackages = Directory.GetFiles(Config.AssetsDirectory, "*.rpm", SearchOption.AllDirectories)
-                .Where(p => !Path.GetFileName(p).Contains("-cm.") && !Path.GetFileName(p).EndsWith("azl.rpm"))
+            // Copy all applicable RPM packages, excluding Mariner and Azure Linux copies
+            List<string> rpmPackages =
+                Directory.GetFiles(Config.AssetsDirectory, $"*-{packageArchitecture}*.rpm", SearchOption.AllDirectories)
+                .Where(p => !Path.GetFileName(p).Contains("-cm.") &&
+                            !Path.GetFileName(p).Contains("-azl-") &&
+                            !Path.GetFileName(p).EndsWith("azl.rpm"))
                 .ToList();
 
             foreach (string rpmPackage in rpmPackages)
@@ -104,19 +119,24 @@ public class LinuxInstallerTests : IDisposable
                 File.Copy(rpmPackage, Path.Combine(_contextDir, Path.GetFileName(rpmPackage)));
             }
 
-            DownloadFileAsync(NetStandard21RpmPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21RpmPackage))).Wait();
+            if (Config.Architecture == Architecture.X64)
+            {
+                DownloadFileAsync(NetStandard21RpmPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21RpmPackage))).Wait();
+            }
             _rpmContextInitialized = true;
         }
         else if (!_debContextInitialized)
         {
-            // Copy all DEB packages as well
-            foreach (string debPackage in Directory.GetFiles(Config.AssetsDirectory, "*.deb", SearchOption.AllDirectories))
+            // Copy all applicable DEB packages
+            foreach (string debPackage in Directory.GetFiles(Config.AssetsDirectory, $"*-{packageArchitecture}*.deb", SearchOption.AllDirectories))
             {
                 File.Copy(debPackage, Path.Combine(_contextDir, Path.GetFileName(debPackage)));
             }
 
-            // Download NetStandard 2.1 packages
-            DownloadFileAsync(NetStandard21DebPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21DebPackage))).Wait();
+            if (Config.Architecture == Architecture.X64)
+            {
+                DownloadFileAsync(NetStandard21DebPackage, Path.Combine(_contextDir, Path.GetFileName(NetStandard21DebPackage))).Wait();
+            }
             _debContextInitialized = true;
         }
 
@@ -127,7 +147,10 @@ public class LinuxInstallerTests : IDisposable
             Directory.CreateDirectory(nugetPackagesDir);
             foreach (string package in Directory.GetFiles(Config.PackagesDirectory, "*.nupkg", SearchOption.AllDirectories))
             {
-                File.Copy(package, Path.Combine(nugetPackagesDir, Path.GetFileName(package)));
+                if (ShouldCopyPackage(package.ToLower()))
+                {
+                    File.Copy(package, Path.Combine(nugetPackagesDir, Path.GetFileName(package)));
+                }
             }
 
             // Copy and update NuGet.config from scenario-tests repo
@@ -145,6 +168,24 @@ public class LinuxInstallerTests : IDisposable
             ZipFile.ExtractToDirectory(scenarioTestsPackage, Path.Combine(_contextDir, "scenario-tests"));
             _sharedContextInitialized = true;
         }
+    }
+
+    private bool ShouldCopyPackage(string package)
+    {
+        if (package.Contains(".osx-") ||
+            package.Contains(".win-") ||
+            package.Contains(".linux-musl-") ||
+            package.Contains(".linux-bionic-") ||
+            package.Contains(".mono.") ||
+            package.Contains("symbols") ||
+            package.Contains("vs.redist") ||
+            package.Contains(".linux-arm.") ||
+            package.Contains($".linux-{_excludeLinuxArch}."))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     private void InsertLocalPackagesPathToNuGetConfig(string nuGetConfig, string localPackagesPath)
@@ -174,7 +215,14 @@ public class LinuxInstallerTests : IDisposable
     {
         List<string> packageList = GetPackageList(baseImage, packageType);
         string dockerfile = GenerateDockerfile(packageList, baseImage, packageType);
-        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/";
+
+        // Define the host and container paths for the log file
+        string hostLogDir = Path.Combine(Config.ArtifactsTestResultsDirectory, "scenario-tests");
+        Directory.CreateDirectory(hostLogDir);
+        string containerLogDir = "/logs";
+        string containerLogPath = Path.Combine(containerLogDir, $"scenario-tests-{GetSanitizedImageName(baseImage)}.xml");
+
+        string testCommand = $"dotnet {GetScenarioTestsBinaryPath()} --dotnet-root /usr/share/dotnet/ --xml {containerLogPath} --no-traits Category=RequiresNonTargetRidPackages";
 
         string tag = $"test-{Path.GetRandomFileName()}";
         string output = "";
@@ -185,7 +233,10 @@ public class LinuxInstallerTests : IDisposable
             // Build docker image and run the tests
             _dockerHelper.Build(tag, dockerfile: dockerfile, contextDir: _contextDir);
             buildCompleted = true;
-            output = _dockerHelper.Run(tag, tag, testCommand);
+
+            // Mount the host log directory to the container
+            string optionalRunArgs = $"-v {hostLogDir}:{containerLogDir}";
+            output = _dockerHelper.Run(tag, tag, testCommand, optionalRunArgs: optionalRunArgs);
 
             int testResultsSummaryIndex = output.IndexOf("Tests run: ");
             if (testResultsSummaryIndex >= 0)
@@ -247,7 +298,7 @@ public class LinuxInstallerTests : IDisposable
         AddPackage(packageList, "aspnetcore-runtime-", packageType);
         AddPackage(packageList, "aspnetcore-targeting-pack-", packageType);
         AddPackage(packageList, "dotnet-apphost-pack-", packageType);
-        if (Config.Architecture == "x64")
+        if (Config.Architecture == Architecture.X64)
         {
             // netstandard package exists for x64 only
             AddPackage(packageList, "netstandard-targeting-pack-", packageType);
@@ -347,6 +398,9 @@ public class LinuxInstallerTests : IDisposable
 
         return files.OrderByDescending(f => f).First();
     }
+
+    private static string GetSanitizedImageName(string image) =>
+        image.Replace("/", "_").Replace(":", "_").Replace(".", "_");
 
     private static async Task DownloadFileAsync(string url, string filePath)
     {

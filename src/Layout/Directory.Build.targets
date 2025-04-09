@@ -3,14 +3,8 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <DownloadsFolder>$(ArtifactsObjDir)redist-downloads\</DownloadsFolder>
-
-    <SdkLayoutOutputDirectory>$(ArtifactsBinDir)redist\$(Configuration)\layouts\dotnet-toolset-internal\</SdkLayoutOutputDirectory>
-    <RedistLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet\</RedistLayoutPath>
-    <SdkOutputDirectory>$(RedistLayoutPath)sdk\$(Version)</SdkOutputDirectory>
-
-    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\dotnet\</RedistInstallerLayoutPath>
-    <SdkInternalLayoutPath>$(ArtifactsBinDir)redist-installer\$(Configuration)\i\</SdkInternalLayoutPath>
+    <DownloadsFolder>$(IntermediateOutputPath)\redist-downloads\</DownloadsFolder>
+    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-installer\</RedistInstallerLayoutPath>
     <InstallerOutputDirectory>$(RedistInstallerLayoutPath)sdk\$(Version)\</InstallerOutputDirectory>
   </PropertyGroup>
 
