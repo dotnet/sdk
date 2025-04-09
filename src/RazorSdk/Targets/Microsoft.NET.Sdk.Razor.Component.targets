@@ -240,6 +240,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          TargetType="$(OutputType)"
          ToolExe="$(CscToolExe)"
          ToolPath="$(CscToolPath)"
+         ToolsDirectory="$(RoslynToolsDirectory)"
          TreatWarningsAsErrors="$(TreatWarningsAsErrors)"
          UseHostCompilerIfAvailable="$(UseHostCompilerIfAvailable)"
          UseSharedCompilation="$(UseSharedCompilation)"
