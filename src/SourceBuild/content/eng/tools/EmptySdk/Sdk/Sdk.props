@@ -1,0 +1,14 @@
+<Project>
+
+  <PropertyGroup>
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))'))</RepoRoot>
+    <RepositoryEngineeringDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'eng'))</RepositoryEngineeringDir>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Skip importing NuGet Pack targets which are imported from the Microsoft.NET.Sdk targets -->
+    <ImportNuGetBuildTasksPackTargetsFromSdk>false</ImportNuGetBuildTasksPackTargetsFromSdk>
+  </PropertyGroup>
+
+</Project>
+

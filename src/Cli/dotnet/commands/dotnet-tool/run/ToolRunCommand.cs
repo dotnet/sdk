@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Tools.Tool.Run
                 CommandName = $"dotnet-{_toolCommandName}",
                 CommandArguments = _forwardArgument,
 
-            }, _allowRollForward); ;
+            }, _allowRollForward);
 
             if (commandspec == null)
             {

@@ -5,9 +5,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.Localization;
 using FXVersion = Microsoft.DotNet.MSBuildSdkResolver.FXVersion;
-#if USE_SYSTEM_TEXT_JSON
 using System.Text.Json.Serialization;
-#endif
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
@@ -117,7 +115,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             InitializeManifests();
         }
 
-        public string? GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
+        public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => _manifestProvider.GetWorkloadVersion();
 
         private void LoadManifestsFromProvider(IWorkloadManifestProvider manifestProvider)
         {
@@ -161,7 +159,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                         else
                         {
                             throw new WorkloadManifestCompositionException(Strings.ManifestDependencyMissing, dependency.Key, manifest.Id, manifest.ManifestPath);
-                    }
+                        }
                     }
                 }
 
@@ -261,7 +259,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             _directoryExistOverride = directoryExists;
         }
 
-        private PackInfo CreatePackInfo(WorkloadPack pack, string aliasedPath, WorkloadPackId resolvedPackageId) => new PackInfo(
+        private PackInfo CreatePackInfo(WorkloadPack pack, string aliasedPath, WorkloadPackId resolvedPackageId) => new(
                 pack.Id,
                 pack.Version,
                 pack.Kind,
@@ -402,10 +400,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 return GetPacksInWorkload(workload, value.manifest).Select(p => p.packId);
             }
-
-#nullable disable
             return workload.Packs ?? Enumerable.Empty<WorkloadPackId>();
-#nullable restore
         }
 
         public IEnumerable<WorkloadInfo> GetExtendedWorkloads(IEnumerable<WorkloadId> workloadIds)
@@ -470,7 +465,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
         internal IEnumerable<(WorkloadPackId packId, WorkloadDefinition referencingWorkload, WorkloadManifest workloadDefinedIn)> GetPacksInWorkload(WorkloadDefinition workload, WorkloadManifest manifest)
         {
-            foreach((WorkloadDefinition w, WorkloadManifest m) in EnumerateWorkloadWithExtends(workload, manifest))
+            foreach ((WorkloadDefinition w, WorkloadManifest m) in EnumerateWorkloadWithExtends(workload, manifest))
             {
                 if (w.Packs != null && w.Packs.Count > 0)
                 {
@@ -677,9 +672,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             /// <summary>
             /// The workload pack ID. The NuGet package ID <see cref="ResolvedPackageId"/> may differ from this.
             /// </summary>
-#if USE_SYSTEM_TEXT_JSON
             [JsonConverter(typeof(PackIdJsonConverter))]
-#endif
             public WorkloadPackId Id { get; }
 
             public string Version { get; }
@@ -785,7 +778,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             public Dictionary<string, WorkloadSet> GetAvailableWorkloadSets() => new();
             public IEnumerable<ReadableWorkloadManifest> GetManifests() => Enumerable.Empty<ReadableWorkloadManifest>();
             public string GetSdkFeatureBand() => _sdkFeatureBand;
-            public string? GetWorkloadVersion() => _sdkFeatureBand.ToString() + ".2";
+            public IWorkloadManifestProvider.WorkloadVersionInfo GetWorkloadVersion() => new IWorkloadManifestProvider.WorkloadVersionInfo(_sdkFeatureBand + ".2");
         }
     }
 

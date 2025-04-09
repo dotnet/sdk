@@ -3,27 +3,25 @@
 
 using System.Diagnostics;
 
-//only Microsoft.DotNet.NativeWrapper (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
-
 namespace Microsoft.DotNet.NativeWrapper
 {
     public class EnvironmentProvider
     {
         private static readonly char[] s_invalidPathChars = Path.GetInvalidPathChars();
 
-        private IEnumerable<string> _searchPaths;
+        private IEnumerable<string>? _searchPaths;
 
-        private readonly Func<string, string> _getEnvironmentVariable;
-        private readonly Func<string> _getCurrentProcessPath;
+        private readonly Func<string, string?> _getEnvironmentVariable;
+        private readonly Func<string?> _getCurrentProcessPath;
 
-        public EnvironmentProvider(Func<string, string> getEnvironmentVariable)
+        public EnvironmentProvider(Func<string, string?> getEnvironmentVariable)
             : this(getEnvironmentVariable, GetCurrentProcessPath)
         { }
 
-        public EnvironmentProvider(Func<string, string> getEnvironmentVariable, Func<string> getCurrentProcessPath)
+        public EnvironmentProvider(Func<string, string?> getEnvironmentVariable, Func<string?> getCurrentProcessPath)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
@@ -34,7 +32,7 @@ namespace Microsoft.DotNet.NativeWrapper
             get
             {
                 _searchPaths ??=
-                    _getEnvironmentVariable(Constants.PATH)
+                    _getEnvironmentVariable(Constants.PATH)!
                     .Split(new char[] { Path.PathSeparator }, options: StringSplitOptions.RemoveEmptyEntries)
                     .Select(p => p.Trim('"'))
                     .Where(p => p.IndexOfAny(s_invalidPathChars) == -1)
@@ -44,7 +42,7 @@ namespace Microsoft.DotNet.NativeWrapper
             }
         }
 
-        public string GetCommandPath(string commandName)
+        public string? GetCommandPath(string commandName)
         {
             var commandNameWithExtension = commandName + Constants.ExeSuffix;
             var commandPath = SearchPaths
@@ -54,16 +52,16 @@ namespace Microsoft.DotNet.NativeWrapper
             return commandPath;
         }
 
-        public string GetDotnetExeDirectory(Action<FormattableString> log = null)
+        public string? GetDotnetExeDirectory(Action<FormattableString>? log = null)
         {
-            string environmentOverride = _getEnvironmentVariable(Constants.DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR);
+            string? environmentOverride = _getEnvironmentVariable(Constants.DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR);
             if (!string.IsNullOrEmpty(environmentOverride))
             {
                 log?.Invoke($"GetDotnetExeDirectory: {Constants.DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR} set to {environmentOverride}");
                 return environmentOverride;
             }
 
-            string dotnetExe;
+            string? dotnetExe;
 #if NETCOREAPP
             // The dotnet executable is loading only the .NET version of this code so there is no point checking
             // the current process path on .NET Framework. We are expected to find dotnet on PATH.
@@ -73,8 +71,8 @@ namespace Microsoft.DotNet.NativeWrapper
                     .Equals(Constants.DotNet, StringComparison.InvariantCultureIgnoreCase))
 #endif
             {
-                string dotnetExeFromPath = GetCommandPath(Constants.DotNet);
-                
+                string? dotnetExeFromPath = GetCommandPath(Constants.DotNet);
+
                 if (dotnetExeFromPath != null && !Interop.RunningOnWindows)
                 {
                     // e.g. on Linux the 'dotnet' command from PATH is a symlink so we need to
@@ -85,7 +83,9 @@ namespace Microsoft.DotNet.NativeWrapper
                 if (!string.IsNullOrWhiteSpace(dotnetExeFromPath))
                 {
                     dotnetExe = dotnetExeFromPath;
-                } else {
+                }
+                else
+                {
                     log?.Invoke($"GetDotnetExeDirectory: dotnet command path not found.  Using current process");
                     log?.Invoke($"GetDotnetExeDirectory: Path variable: {_getEnvironmentVariable(Constants.PATH)}");
 
@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.NativeWrapper
             return dotnetDirectory;
         }
 
-        public static string GetDotnetExeDirectory(Func<string, string> getEnvironmentVariable = null, Action<FormattableString> log = null)
+        public static string? GetDotnetExeDirectory(Func<string, string?>? getEnvironmentVariable = null, Action<FormattableString>? log = null)
         {
             if (getEnvironmentVariable == null)
             {
@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.NativeWrapper
             return environmentProvider.GetDotnetExeDirectory(log);
         }
 
-        public static string GetDotnetExeDirectory(Func<string, string> getEnvironmentVariable, Func<string> getCurrentProcessPath, Action<FormattableString> log = null)
+        public static string? GetDotnetExeDirectory(Func<string, string?> getEnvironmentVariable, Func<string?>? getCurrentProcessPath, Action<FormattableString>? log = null)
         {
             getEnvironmentVariable ??= Environment.GetEnvironmentVariable;
             getCurrentProcessPath ??= GetCurrentProcessPath;
@@ -123,9 +123,9 @@ namespace Microsoft.DotNet.NativeWrapper
             return environmentProvider.GetDotnetExeDirectory();
         }
 
-        private static string GetCurrentProcessPath()
+        private static string? GetCurrentProcessPath()
         {
-            string currentProcessPath;
+            string? currentProcessPath;
 #if NET6_0_OR_GREATER
             currentProcessPath = Environment.ProcessPath;
 #else

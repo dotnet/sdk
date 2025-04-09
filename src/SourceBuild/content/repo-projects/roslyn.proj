@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <!-- Roslyn's build.cmd adds -build automatically. On non-windows, use the default -->
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
+    <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
+
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
+    <!-- roslyn by default builds with desktop msbuild (xcopy-msbuild) -->
+    <BuildArgs Condition="'$(BuildOS)' == 'windows' and '$(UseOfficialBuildVersioning)' != 'false'">$(BuildArgs) $(FlagParameterPrefix)officialBuildId $(OfficialBuildId)</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipTests true</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData true</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName placeholder</BuildArgs>
+    <BuildArgs Condition="'$(BuildOS)' == 'windows'">$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken placeholder</BuildArgs>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:ApplyPartialNgenOptimization=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:EnablePartialNgenOptimization=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublishWindowsPdb=false</BuildArgs>
+    <!-- UsingToolMicrosoftNetCompilers=false introduces a prebuilt so we'll have to turn back on after our bootstrap SDK has native integer support -->
+    <!-- issue: https://github.com/dotnet/source-build/issues/1719 -->
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
+    <!-- Temporary disable opts to avoid internal tool restore. https://github.com/dotnet/source-build/issues/4041. -->
+    <BuildArgs>$(BuildArgs) /p:EnableNgenOptimization=false</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="symreader" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <SourceBuiltSdkOverride Include="@(WindowsDesktopSdkOverride)" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+  </ItemGroup>
+
+</Project>

@@ -224,6 +224,26 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</source>
 FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</target>
         <note />
       </trans-unit>
+      <trans-unit id="DeploymentStatus">
+        <source>Deployment status is '{0}'.</source>
+        <target state="translated">部署状态为 ‘{0}’。</target>
+        <note>{0} - deployment status name</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatusWithText">
+        <source>Deployment status is '{0}': {1}</source>
+        <target state="translated">部署状态为 ‘{0}’: {1}</target>
+        <note>{0} - deployment status name, {1} - deployment status text</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatus_InvalidPollingUrl">
+        <source>Deployment status URL '{0}' is missing or invalid</source>
+        <target state="translated">部署状态 URL ‘{0}’ 缺失或无效</target>
+        <note>{0} - deployment polling URL</note>
+      </trans-unit>
+      <trans-unit id="DeploymentStatus_Polling">
+        <source>Polling for deployment status...</source>
+        <target state="translated">正在轮询部署状态…</target>
+        <note />
+      </trans-unit>
       <trans-unit id="EFSCRIPT_Generating">
         <source>Generating Entity Framework SQL Scripts...</source>
         <target state="translated">正在生成实体框架 SQL 脚本...</target>
@@ -333,6 +353,51 @@ FWLink: http://go.microsoft.com/fwlink/?LinkId=246068</target>
         <source>Invalid verb({0}) for supplied source ({1}) and destination ({2}).</source>
         <target state="translated">所提供的源({1})和目标({2})的谓词({0})无效。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedDeployRequest">
+        <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}'.</source>
+        <target state="translated">OneDeploy 尝试通过 ‘{0}’ 发布文件失败，HTTP 状态代码为 ‘{1}’。</target>
+        <note>{0} - publish URL, {1} - HTTP response status code</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedDeployRequest_With_ResponseText">
+        <source>OneDeploy attempt to publish file through '{0}' failed with HTTP status code '{1}': {2}.</source>
+        <target state="translated">OneDeploy 尝试通过 ‘{0}’ 发布文件失败，HTTP 状态代码 ‘{1}’: {2}。</target>
+        <note>{0} - publish URL, {1} - HTTP response status code, {2} - response body as text</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedToRetrieveCredentials">
+        <source>Failed to retrieve publish credentials.</source>
+        <target state="translated">无法检索发布凭据。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FailedWithLogs">
+        <source>OneDeploy attempt to publish file '{0}' through '{1}' failed with status code '{2}'. See the logs at '{3}'.</source>
+        <target state="translated">OneDeploy 尝试通过 ‘{1}’ 发布文件 ‘{0}’ 失败，状态代码为 ‘{2}’。请参阅位于 ‘{3}’ 的日志。</target>
+        <note>{0} - file to publish, {1} - publish URL, {2} - deployment response status code, {3} -  deployment logs URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_FileToPublish_NotFound">
+        <source>File to publish '{0}' was not found or is not accessible.</source>
+        <target state="translated">找不到或无法访问要发布 ‘{0}’ 的文件。</target>
+        <note>{0} - file to publish</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_InvalidPublishUrl">
+        <source>PublishUrl '{0}' is missing or has an invalid value.</source>
+        <target state="translated">PublishUrl ‘{0}’ 缺失或具有无效值。</target>
+        <note>{0} - publish URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_PublishingOneDeploy">
+        <source>Publishing '{0}' to '{1}'...</source>
+        <target state="translated">正在将 ‘{0}’ 发布到 {1}...</target>
+        <note>{0} - file to publish, {1} - publish URL</note>
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_Success">
+        <source>OneDeploy deployment succeeded.</source>
+        <target state="translated">OneDeploy 部署成功。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ONEDEPLOY_Uploaded">
+        <source>File '{0}' uploaded to target instance.</source>
+        <target state="translated">文件 ‘{0}’ 已上传到目标实例。</target>
+        <note>{0} - file to publish.</note>
       </trans-unit>
       <trans-unit id="POWERSHELL_PublishProfileParsingError">
         <source>Unable to parse the pubxml file {0}.</source>
