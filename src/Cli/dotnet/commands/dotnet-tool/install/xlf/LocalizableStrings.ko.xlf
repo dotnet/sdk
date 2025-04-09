@@ -2,6 +2,11 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ko" original="../LocalizableStrings.resx">
     <body>
+      <trans-unit id="AllowPackageDowngradeOptionDescription">
+        <source>Allow package downgrade when installing a .NET tool package.</source>
+        <target state="translated">.NET 도구 패키지를 설치할 때 패키지 다운그레이드를 허용합니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CreateManifestIfNeededOptionDescription">
         <source>Create a tool manifest if one isn't found during tool installation. For information on how manifests are located, see https://aka.ms/dotnet/tools/create-manifest-if-needed</source>
         <target state="translated">도구 설치 중에 도구 매니페스트를 찾을 수 없는 경우 도구 매니페스트를 만드세요. 매니페스트의 위치는 https://aka.ms/dotnet/tools/create-manifest-if-needed를 참조하세요.</target>
@@ -81,6 +86,11 @@ If you would like to create a manifest, use `dotnet new tool-manifest`, usually 
       <trans-unit id="PrereleaseAndVersionAreNotSupportedAtTheSameTime">
         <source>The --prerelease and --version options are not supported in the same command</source>
         <target state="translated">--prerelease 및 --version 옵션은 같은 명령에서 지원되지 않습니다</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RollForwardOptionDescription">
+        <source>Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn't installed.</source>
+        <target state="translated">대상으로 하는 런타임이 설치되지 않은 경우 .NET 도구가 최신 버전의 .NET 런타임으로 롤포워드하도록 허용합니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionDescription">
