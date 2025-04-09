@@ -3,7 +3,6 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
@@ -31,7 +30,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute("--verbosity", "quiet")
+                .Execute("--verbosity", "quiet", "--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -63,7 +62,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -88,7 +87,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -121,7 +120,7 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
             new ListPackageCommand(Log)
                 .WithProject("App.sln")
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -212,7 +211,7 @@ class Program
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -220,7 +219,7 @@ class Program
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute(args: "--include-transitive")
+                .Execute(args: ["--include-transitive", "--no-restore"])
                 .Should()
                 .Pass()
                 .And.NotHaveStdErr()
@@ -321,7 +320,13 @@ class Program
         }
 
         [Theory]
+        [InlineData(false, "--no-restore")]
         [InlineData(false, "--vulnerable")]
+        [InlineData(false, "--no-restore", "--include-transitive")]
+        [InlineData(false, "--no-restore", "--include-prerelease")]
+        [InlineData(false, "--no-restore", "--deprecated")]
+        [InlineData(false, "--no-restore", "--outdated")]
+        [InlineData(false, "--no-restore", "--vulnerable")]
         [InlineData(false, "--vulnerable", "--include-transitive")]
         [InlineData(false, "--vulnerable", "--include-prerelease")]
         [InlineData(false, "--deprecated", "--highest-minor")]
