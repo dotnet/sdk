@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -173,7 +173,7 @@ internal static class SolutionAndProjectUtility
 
                     if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
                     {
-                        innerModules ??= new List<TestModule>(frameworks.Length);
+                        innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
                     }
                 }
