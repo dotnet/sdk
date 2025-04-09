@@ -1,0 +1,17 @@
+﻿{
+  "author": "Microsoft",
+  "name": "xUnit 테스트 프로젝트",
+  "description": "Windows, Linux 및 macOS의 .NET에서 실행할 수 있는 xUnit.net 테스트가 포함된 프로젝트입니다.",
+  "symbols/TargetFrameworkOverride/description": "대상 프레임워크를 재정의합니다.",
+  "symbols/TargetFrameworkOverride/displayName": "대상 프레임워크 재정의",
+  "symbols/Framework/description": "프로젝트에 대한 대상 프레임워크입니다.",
+  "symbols/Framework/displayName": "프레임워크",
+  "symbols/Framework/choices/net9.0/description": "Target net9.0",
+  "symbols/EnablePack/description": "프로젝트에 대해 패키징(\"dotnet pack\"을 통해)을 활성화할지 여부",
+  "symbols/EnablePack/displayName": "팩 사용",
+  "symbols/skipRestore/description": "지정된 경우, 프로젝트 생성 시 자동 복원을 건너뜁니다.",
+  "symbols/skipRestore/displayName": "복원 건너뛰기",
+  "postActions/restoreNugetPackages/description": "이 프로젝트에 필요한 NuGet 패키지를 복원합니다.",
+  "postActions/restoreNugetPackages/manualInstructions/default/text": "'dotnet restore' 실행",
+  "postActions/openInEditor/description": "편집기에서 Tests.fs 열기"
+}
