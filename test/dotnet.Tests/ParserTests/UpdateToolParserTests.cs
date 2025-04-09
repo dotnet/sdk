@@ -21,6 +21,20 @@ namespace Microsoft.DotNet.Tests.ParserTests
             _output = output;
         }
 
+        [Theory]
+        [InlineData("console.test.app --version 1.0.0")]
+        [InlineData("console.test.app@1.0.0")]
+        public void UpdateGlobalToolParserCanGetPackageIdentityWithVersion(string arguments)
+        {
+            var result = Parser.Instance.Parse($"dotnet tool update -g {arguments}");
+            var packageIdentity = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument);
+            var packageId = packageIdentity?.Id;
+            var packageVersion = packageIdentity?.Version?.ToString() ?? result.GetValue<string>(ToolInstallCommandParser.VersionOption);
+            packageId.Should().Be("console.test.app");
+            packageVersion.Should().Be("1.0.0");
+        }
+
+
         [Fact]
         public void UpdateGlobaltoolParserCanGetPackageId()
         {
@@ -29,29 +43,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var packageId = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument)?.Id;
 
             packageId.Should().Be("console.test.app");
-        }
-
-        [Fact]
-        public void UpdateGlobaltoolParserCanGetPackageIdAndPackageVersionl()
-        {
-            var result = Parser.Instance.Parse("dotnet tool update -g console.test.app --version 1.0.0");
-
-            var packageIdVersion = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument)?.Id;
-            var packageVersion = result.GetValue<string>(ToolInstallCommandParser.VersionOption);
-
-            packageIdVersion.Should().Be("console.test.app");
-            packageVersion.Should().Be("1.0.0"); 
-        }
-
-        [Fact]
-        public void UpdateGlobaltoolParserCanGetPackageIdAndPackageVersionWithAtSymbol()
-        {
-            var result = Parser.Instance.Parse("dotnet tool update -g console.test.app@1.0.0");
-
-            var packageIdVersion = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument);
-
-            packageIdVersion?.Id?.Should().Be("console.test.app");
-            packageIdVersion?.Version?.ToString().Should().Be("1.0.0"); 
         }
 
         [Fact]
