@@ -28,20 +28,25 @@ namespace Microsoft.DotNet.Cli
             {
                 return null;
             }
+
             string[] splitToken = argumentResult.Tokens[0].Value.Split('@');
             var (packageId, versionString) = (splitToken.ElementAtOrDefault(0), splitToken.ElementAtOrDefault(1));
+
             if (string.IsNullOrEmpty(packageId))
             {
                 throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
             }
+
             if (string.IsNullOrEmpty(versionString))
             {
                 return new PackageIdentity(packageId, null);
             }
+
             if (!NuGetVersion.TryParse(versionString, out var version))
             {
                 throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
+
             return new PackageIdentity(packageId, new NuGetVersion(version));
         }
         #endregion
