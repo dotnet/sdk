@@ -1,0 +1,48 @@
+# NuGet.Client does not flow to the VMR directly but only to dotnet/sdk where it is validated
+# Upon the version bump happens in dotnet/sdk, this job promotes that build of NuGet.Client to
+# another channel from where it flows into the VMR.
+# The sdk and nuget.client subscriptions are separate batched and go into the VMR in a single VMR.
+
+jobs:
+- job: PromoteNuGetClient
+  displayName: Promote NuGet Client
+  pool:
+    name: NetCore1ESPool-Publishing-Internal
+    image: windows.vs2019.amd64
+    os: windows
+
+  steps:
+  - task: AzureCLI@2
+    displayName: 🟣 Assign build to channel
+    inputs:
+      azureSubscription: "Darc: Maestro Production"
+      scriptType: ps
+      scriptLocation: inlineScript
+      inlineScript: |
+        $ErrorActionPreference = 'Stop'
+        . .\eng\common\tools.ps1
+        $dotnetRoot = InitializeDotNetCli -install:$true
+        $dotnet = "$dotnetRoot\dotnet.exe"
+        & "$dotnet" tool restore
+
+        $dependencies = .\.dotnet\dotnet darc get-dependencies get-dependencies --name 'NuGet.Protocol' --ci
+        $version = $dependencies | Select-String -Pattern 'Version:\s+([^\s]+)' | Select-Object -First 1
+        $version -match 'Version:\s+([^\s]+)' | Out-Null
+        $version = $matches[1]
+
+        Write-Host "Looking up build for version $version"
+
+        $assets = .\.dotnet\dotnet darc get-asset --name 'NuGet.Protocol' --version "6.14.0-preview.1.102" --max-age 60 --output-format json --ci
+        $buildId = ($assets | ConvertFrom-Json)[0].build.id
+
+        if ($buildId -eq $null) {
+          Write-Error "No build found to promote version $version"
+          exit 1
+        }
+
+        $defaultChannels = .\.dotnet\dotnet darc get-default-channels --source-repo https://github.com/dotnet/sdk --branch "$(Build.SourceBranchName)" --output-format json --ci | ConvertFrom-Json
+        $targetChannel = $defaultChannels[0].channel.name
+
+        Write-Host "Promoting build $buildId to channel $targetChannel"
+
+        .\.dotnet\dotnet darc add-build-to-channel --id $buildId --channel "$targetChannel" --skip-assets-publishing --ci
