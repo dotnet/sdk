@@ -50,7 +50,10 @@
   </ItemGroup>
 
   <Target Name="ValidateBundledManifestSigning"
-          Condition=" '$(OS)' == 'Windows_NT' and '$(Architecture)' != 'arm' and '$(Sign)' == 'true' ">
+          Condition=" '$(OS)' == 'Windows_NT' and
+          '$(Architecture)' != 'arm' and
+          $(BUILD_SOURCEBRANCH) != '' and
+          $(BUILD_SOURCEBRANCH.Contains('release')) ">
     <PropertyGroup>
       <SignCheckExe>$(PkgMicrosoft_DotNet_SignCheck)\tools\Microsoft.DotNet.SignCheck.exe</SignCheckExe>
       <SignCheckLog Condition="'$(SignCheckLog)' == ''">$(ArtifactsLogDir)\workloadmanifestsigncheck.log</SignCheckLog>
