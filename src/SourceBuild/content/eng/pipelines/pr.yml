@@ -13,6 +13,9 @@
 #   - CI: release/* only, every batched commit, full build
 #   - Schedule: main only, full build
 #
+# - dotnet-unified-build-full (public)
+#   https://dev.azure.com/dnceng-public/public/_build?definitionId=303
+#   Comment trigger only
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
@@ -28,8 +31,12 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
-- name: Codeql.Enabled  # we run CodeQL on internal builds only
-  value: false
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: skipComponentGovernanceDetection  # we run CG on internal builds only
+    value: true
+
+  - name: Codeql.Enabled  # we run CodeQL on internal builds only
+    value: false
 
 - template: /eng/common/templates/variables/pool-providers.yml@self
 
@@ -38,7 +45,7 @@ stages:
   parameters:
     isBuiltFromVmr: true
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
-    ${{ if eq(variables.isScheduleTrigger, 'true') }}:
+    ${{ if or(eq(variables.isScheduleTrigger, 'true'), contains(variables['Build.DefinitionName'], '-full')) }}:
       scope: full
     ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
       scope: lite

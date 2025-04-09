@@ -1,7 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Help;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Help;
 
 namespace Microsoft.DotNet.Help.Tests
 {
@@ -85,7 +86,7 @@ Run 'dotnet [command] --help' for more information on a command.";
                   .Execute("help", "invalid");
 
             cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(string.Format(LocalizableStrings.CommandDoesNotExist, "invalid"));
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.CommandDoesNotExist, "invalid"));
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 
@@ -98,7 +99,7 @@ Run 'dotnet [command] --help' for more information on a command.";
                   .Execute($"help", command);
 
             cmd.Should().Fail();
-            cmd.StdErr.Should().Contain(string.Format(LocalizableStrings.CommandDoesNotExist, command));
+            cmd.StdErr.Should().Contain(string.Format(CliCommandStrings.CommandDoesNotExist, command));
             cmd.StdOut.Should().ContainVisuallySameFragmentIfNotLocalized(HelpText);
         }
 

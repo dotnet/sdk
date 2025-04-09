@@ -43,7 +43,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal static CliOption<bool> IgnoreConstraintsOption { get; } = new("--ignore-constraints")
         {
             Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
-            Arity = new ArgumentArity(0, 1)
+            Arity = ArgumentArity.Zero
         };
 
         internal static CliArgument<string> NameArgument { get; } = new("template-name")

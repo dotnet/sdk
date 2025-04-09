@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
-
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
     public class GivenDotnetRunThrowsAParseError : SdkTest
@@ -19,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .WithWorkingDirectory(Path.GetTempPath())
                 .Execute("--", "1")
                 .Should().Fail()
-                .And.HaveStdErrContainingOnce(LocalizableStrings.RunCommandExceptionNoProjects);
+                .And.HaveStdErrContainingOnce("Couldn't find a project to run.");
         }
     }
 }

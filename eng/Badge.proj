@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <IsShippingPackage>true</IsShippingPackage>
+  </PropertyGroup>
+
+  <Target Name="GenerateVersionBadge" AfterTargets="Build" Returns="$(VersionBadge)">
+    <PropertyGroup>
+      <!-- Replace '-' with '_' for os names like 'linux-musl' -->
+      <VersionBadgeMoniker>$(OSName.Replace('-', '_'))_$(TargetArchitecture)</VersionBadgeMoniker>
+      <VersionBadgeMoniker Condition="'$(IsLinuxPortable)' == 'true'">linux_$(TargetArchitecture)</VersionBadgeMoniker>
+
+      <VersionBadge>$(ArtifactsShippingPackagesDir)$(VersionBadgeMoniker)_$(Configuration)_version_badge.svg</VersionBadge>
+      <VersionSvgTemplate>$(MSBuildThisFileDirectory)version_badge.svg</VersionSvgTemplate>
+    </PropertyGroup>
+
+    <Message Text="$(VersionBadge)" />
+
+    <WriteLinesToFile
+      File="$(VersionBadge)"
+      Lines="$([System.IO.File]::ReadAllText('$(VersionSvgTemplate)').Replace('ver_number', '$(Version)'))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+  </Target>
+
+</Project>

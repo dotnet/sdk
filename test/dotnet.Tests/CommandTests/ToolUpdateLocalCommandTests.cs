@@ -1,22 +1,23 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Restore;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolManifest;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
-using Microsoft.DotNet.Tools.Tool.Install;
-using Microsoft.DotNet.Tools.Tool.Restore;
-using Microsoft.DotNet.Tools.Tool.Update;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
-
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
@@ -137,7 +138,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var parseResult = Parser.Instance.Parse($"dotnet tool update {_packageIdA.ToString()} --ignore-failed-sources");
             var command = new ToolUpdateLocalCommand(parseResult);
-            command._toolInstallLocalCommand.Value._restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
+            command._toolInstallLocalCommand.Value.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
         [Fact]
@@ -238,10 +239,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(ToolManifest.LocalizableStrings.CannotFindAManifestFile);
+                .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(ToolManifest.LocalizableStrings.ListOfSearched, ""));
+                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
         }
 
         [Fact]
@@ -305,7 +306,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocalToolSucceeded,
+                        CliCommandStrings.UpdateLocalToolSucceeded,
                         _packageIdA,
                         _packageOriginalVersionA.ToNormalizedString(),
                         _packageNewVersionA.ToNormalizedString(),
@@ -358,7 +359,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Single()
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                        CliCommandStrings.UpdateLocaToolSucceededVersionNoChange,
                         _packageIdA,
                         _packageOriginalVersionA.ToNormalizedString(),
                         _manifestFilePath));
@@ -373,7 +374,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Clear();
             Action a = () => _defaultToolUpdateLocalCommand.Execute();
             a.Should().Throw<GracefulException>().And.Message.Should().Contain(string.Format(
-                LocalizableStrings.UpdateLocalToolToLowerVersion,
+                CliCommandStrings.UpdateLocalToolToLowerVersion,
                 "0.9.0",
                 _packageOriginalVersionA.ToNormalizedString(),
                 _manifestFilePath));

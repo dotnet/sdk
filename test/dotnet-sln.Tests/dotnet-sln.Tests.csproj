@@ -1,4 +1,5 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
@@ -9,6 +10,7 @@
     <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <RootNamespace>Microsoft.DotNet.Cli.Sln</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
@@ -18,9 +20,8 @@
 
   <ItemGroup>
     <!-- Use string resources from product in order to validate test output. -->
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CommonLocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CommandLineValidation\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli.CommandLineValidation" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\commands\dotnet-sln\LocalizableStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Tools.Sln" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet\Commands\CliCommandStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli.Commands" />
   </ItemGroup>
 
   <ItemGroup>
@@ -28,4 +29,5 @@
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
 </Project>
