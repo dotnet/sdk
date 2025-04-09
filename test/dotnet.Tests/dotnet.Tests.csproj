@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- TODO: Removed here: https://github.com/dotnet/sdk/pull/46562 -->
+    <!-- Removed here: https://github.com/dotnet/sdk/pull/46562 -->
     <Compile Remove="CommandTests\Test\MSBuildHandlerTests.cs" />
 
     <None Include="ShellShimTests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
