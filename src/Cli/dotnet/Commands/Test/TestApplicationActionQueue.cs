@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal class TestApplicationActionQueue
 {
-    private readonly Channel<NonParallelizedTestModuleGroup> _channel;
+    private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly List<Task> _readers;
 
     private int? _aggregateExitCode;
@@ -16,7 +16,7 @@ internal class TestApplicationActionQueue
 
     public TestApplicationActionQueue(int degreeOfParallelism, BuildOptions buildOptions, Func<TestApplication, Task<int>> action)
     {
-        _channel = Channel.CreateUnbounded<NonParallelizedTestModuleGroup>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
+        _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = [];
 
         for (int i = 0; i < degreeOfParallelism; i++)
@@ -25,7 +25,7 @@ internal class TestApplicationActionQueue
         }
     }
 
-    public void Enqueue(NonParallelizedTestModuleGroup testApplication)
+    public void Enqueue(ParallelizableTestModuleGroupWithSequentialInnerModules testApplication)
     {
         if (!_channel.Writer.TryWrite(testApplication))
         {

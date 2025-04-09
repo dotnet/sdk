@@ -48,7 +48,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new NonParallelizedTestModuleGroup(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null));
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }

@@ -9,22 +9,21 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 /// <summary>
 /// Groups test modules that should NOT be run in parallel.
-/// Parallelization here refers only to the inner test modules.
-/// Note that multiple NonParallelizedTestModuleGroups can be run in parallel.
+/// The whole group is still parallelizable with other groups, just that the inner modules are run sequentially.
 /// This class serves only the purpose of disabling parallelizing of TFMs when user sets TestTfmsInParallel to false.
 /// For a single TFM project, we will use the constructor with a single module. Meaning it will be parallelized.
 /// For a multi TFM project:
-/// - If parallelization is enabled, we will create multiple NonParallelizedTestModuleGroups, each with a single module.
-/// - If parallelization is not enabled, we will create a single NonParallelizedTestModuleGroup with all modules.
+/// - If parallelization is enabled, we will create multiple ParallelizableTestModuleGroupWithSequentialInnerModuless, each with a single module.
+/// - If parallelization is not enabled, we will create a single ParallelizableTestModuleGroupWithSequentialInnerModules with all modules.
 /// </summary>
-internal sealed class NonParallelizedTestModuleGroup : IEnumerable<TestModule>
+internal sealed class ParallelizableTestModuleGroupWithSequentialInnerModules : IEnumerable<TestModule>
 {
-    public NonParallelizedTestModuleGroup(List<TestModule> modules)
+    public ParallelizableTestModuleGroupWithSequentialInnerModules(List<TestModule> modules)
     {
         Modules = modules;
     }
 
-    public NonParallelizedTestModuleGroup(TestModule module)
+    public ParallelizableTestModuleGroupWithSequentialInnerModules(TestModule module)
     {
         // This constructor is used when there is only one module.
         Module = module;
@@ -58,10 +57,10 @@ internal sealed class NonParallelizedTestModuleGroup : IEnumerable<TestModule>
 
     internal struct Enumerator : IEnumerator<TestModule>
     {
-        private readonly NonParallelizedTestModuleGroup _group;
+        private readonly ParallelizableTestModuleGroupWithSequentialInnerModules _group;
         private int _index = -1;
 
-        public Enumerator(NonParallelizedTestModuleGroup group)
+        public Enumerator(ParallelizableTestModuleGroupWithSequentialInnerModules group)
         {
             _group = group;
         }

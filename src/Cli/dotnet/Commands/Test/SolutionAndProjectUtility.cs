@@ -119,9 +119,9 @@ internal static class SolutionAndProjectUtility
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
-    public static IEnumerable<NonParallelizedTestModuleGroup> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(string projectFilePath, ProjectCollection projectCollection, bool noLaunchProfile)
     {
-        var projects = new List<NonParallelizedTestModuleGroup>();
+        var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, projectFilePath, null);
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
@@ -133,7 +133,7 @@ internal static class SolutionAndProjectUtility
         {
             if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
             {
-                projects.Add(new NonParallelizedTestModuleGroup(module));
+                projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
         }
         else
@@ -156,7 +156,7 @@ internal static class SolutionAndProjectUtility
 
                     if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
                     {
-                        projects.Add(new NonParallelizedTestModuleGroup(module));
+                        projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
                 }
             }
@@ -177,7 +177,7 @@ internal static class SolutionAndProjectUtility
 
                 if (innerModules is not null)
                 {
-                    projects.Add(new NonParallelizedTestModuleGroup(innerModules));
+                    projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(innerModules));
                 }
             }
         }

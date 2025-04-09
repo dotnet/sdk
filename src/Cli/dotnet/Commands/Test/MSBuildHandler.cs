@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
-using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Testing.Platform.OutputDevice.Terminal;
@@ -15,7 +14,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
     private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
 
-    private readonly ConcurrentBag<NonParallelizedTestModuleGroup> _testApplications = [];
+    private readonly ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
     private bool _areTestingPlatformApplications = true;
 
     public bool RunMSBuild()
@@ -64,7 +63,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             return ExitCode.GenericFailure;
         }
 
-        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
+        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(projectOrSolutionFilePath, isSolution);
 
         InitializeTestApplications(projects);
 
@@ -73,14 +72,14 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
 
     private int RunBuild(string filePath, bool isSolution)
     {
-        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
+        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool restored) = GetProjectsProperties(filePath, isSolution);
 
         InitializeTestApplications(projects);
 
         return restored ? ExitCode.Success : ExitCode.GenericFailure;
     }
 
-    private void InitializeTestApplications(IEnumerable<NonParallelizedTestModuleGroup> moduleGroups)
+    private void InitializeTestApplications(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         // If one test app has IsTestingPlatformApplication set to false (VSTest and not MTP), then we will not run any of the test apps
         IEnumerable<TestModule> vsTestTestProjects = moduleGroups.SelectMany(group => group.GetVSTestAndNotMTPModules());
@@ -100,7 +99,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
             return;
         }
 
-        foreach (NonParallelizedTestModuleGroup moduleGroup in moduleGroups)
+        foreach (ParallelizableTestModuleGroupWithSequentialInnerModules moduleGroup in moduleGroups)
         {
             _testApplications.Add(moduleGroup);
         }
@@ -120,9 +119,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return true;
     }
 
-    private (IEnumerable<NonParallelizedTestModuleGroup> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
+    private (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool Restored) GetProjectsProperties(string solutionOrProjectFilePath, bool isSolution)
     {
-        (IEnumerable<NonParallelizedTestModuleGroup> projects, bool isBuiltOrRestored) = isSolution ?
+        (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects, bool isBuiltOrRestored) = isSolution ?
             MSBuildUtility.GetProjectsFromSolution(solutionOrProjectFilePath, _buildOptions) :
             MSBuildUtility.GetProjectsFromProject(solutionOrProjectFilePath, _buildOptions);
 
@@ -131,7 +130,7 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, TestApplicationA
         return (projects, isBuiltOrRestored);
     }
 
-    private static void LogProjectProperties(IEnumerable<NonParallelizedTestModuleGroup> moduleGroups)
+    private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         if (!Logger.TraceEnabled)
         {
