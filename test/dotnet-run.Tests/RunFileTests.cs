@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Run;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -15,6 +16,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Console.WriteLine("Hello from " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
         #if !DEBUG
         Console.WriteLine("Release config");
+        #endif
+        #if CUSTOM_DEFINE
+        Console.WriteLine("Custom define");
         #endif
         """;
 
@@ -828,5 +832,135 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Description:
                   Sample app for System.CommandLine
                 """);
+    }
+
+    [Fact]
+    public void UpToDate()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        Build(expectedUpToDate: false);
+
+        Build(expectedUpToDate: true);
+
+        Build(expectedUpToDate: true);
+
+        // Change the source file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + " ");
+
+        Build(expectedUpToDate: false);
+
+        Build(expectedUpToDate: true);
+
+        // Change an unrelated source file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "test");
+
+        Build(expectedUpToDate: true);
+
+        // Add an implicit build file.
+        string buildPropsFile = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.WriteAllText(buildPropsFile, """
+            <Project>
+                <PropertyGroup>
+                    <DefineConstants>$(DefineConstants);CUSTOM_DEFINE</DefineConstants>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        Build(expectedUpToDate: false, expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        // Remove an implicit build file (currently this is not recognized).
+        File.Delete(buildPropsFile);
+        Build(expectedUpToDate: true, expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        // Force rebuild.
+        Build(expectedUpToDate: false, args: ["--no-cache"]);
+
+        Build(expectedUpToDate: true);
+
+        // Pass argument (no rebuild necessary).
+        Build(expectedUpToDate: true, args: ["--", "test-arg"], expectedOutput: """
+            echo args:test-arg
+            Hello from Program
+            """);
+
+        // Change config (a rebuild is necessary).
+        Build(expectedUpToDate: false, args: ["-c", "Release"], expectedOutput: """
+            Hello from Program
+            Release config
+            """);
+
+        // Keep changed config (no rebuild necessary).
+        Build(expectedUpToDate: true, args: ["-c", "Release"], expectedOutput: """
+            Hello from Program
+            Release config
+            """);
+
+        // Change config back (a rebuild is necessary).
+        Build(expectedUpToDate: false);
+
+        // Build with a failure.
+        new DotnetCommand(Log, ["run", "Program.cs", "-p:LangVersion=Invalid"])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS1617"); // Invalid option 'Invalid' for /langversion.
+
+        // A rebuild is necessary since the last build failed.
+        Build(expectedUpToDate: false);
+
+        void Build(bool expectedUpToDate, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program")
+        {
+            new DotnetCommand(Log, ["run", "Program.cs", "-bl", .. args])
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(expectedUpToDate
+                    ? $"""
+                        {CliCommandStrings.NoBinaryLogBecauseUpToDate}
+                        {expectedOutput}
+                        """
+                    : expectedOutput);
+
+            var binlogs = new DirectoryInfo(testInstance.Path)
+                .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
+
+            binlogs.Select(f => f.Name)
+                .Should().BeEquivalentTo(
+                    expectedUpToDate
+                        ? ["msbuild-dotnet-run.binlog"]
+                        : ["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
+
+            foreach (var binlog in binlogs)
+            {
+                binlog.Delete();
+            }
+        }
+    }
+
+    [Fact]
+    public void UpToDate_InvalidOptions()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+
+        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-restore")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
     }
 }
