@@ -135,7 +135,10 @@ internal static class SolutionAndProjectUtility
         }
         else
         {
-            var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
+            var frameworks = targetFrameworks
+                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim())
+                .Distinct();
             foreach (var framework in frameworks)
             {
                 projectInstance = EvaluateProject(projectCollection, projectFilePath, framework);
