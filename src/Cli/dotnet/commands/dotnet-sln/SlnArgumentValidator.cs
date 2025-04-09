@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Common;
 
 namespace Microsoft.DotNet.Tools.Sln
 {
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Tools.Sln
                 throw new GracefulException(LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
             }
 
-            var slnFile = _arguments.FirstOrDefault(path => path.EndsWith(".sln"));
+            var slnFile = _arguments.FirstOrDefault(path => path.HasExtension(".sln") || path.HasExtension(".slnx"));
             if (slnFile != null)
             {
                 string args;
@@ -46,13 +47,13 @@ namespace Microsoft.DotNet.Tools.Sln
                     args = "";
                 }
 
-                var projectArgs = string.Join(" ", _arguments.Where(path => !path.EndsWith(".sln")));
+                var projectArgs = string.Join(" ", _arguments.Where(path => !path.HasExtension(".sln") && !path.HasExtension(".slnx")));
                 string command = commandType == CommandType.Add ? "add" : "remove";
                 throw new GracefulException(new string[]
                 {
                     string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, slnFile),
                     CommonLocalizableStrings.DidYouMean,
-                    $"  dotnet sln {slnFile} {command} {args}{projectArgs}"
+                    $"  dotnet solution {slnFile} {command} {args}{projectArgs}"
                 });
             }
         }
