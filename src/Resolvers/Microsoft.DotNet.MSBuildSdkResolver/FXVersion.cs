@@ -5,22 +5,13 @@ namespace Microsoft.DotNet.MSBuildSdkResolver;
 
 // Note: This is SemVer 2.0.0 https://semver.org/spec/v2.0.0.html
 // See the original version of this code here: https://github.com/dotnet/core-setup/blob/master/src/corehost/cli/fxr/fx_ver.cpp
-internal sealed class FXVersion
+internal sealed class FXVersion(int major, int minor, int patch, string pre = "", string build = "")
 {
-    public int Major { get; }
-    public int Minor { get; }
-    public int Patch { get; }
-    public string Pre { get; }
-    public string Build { get; }
-
-    public FXVersion(int major, int minor, int patch, string pre = "", string build = "")
-    {
-        Major = major;
-        Minor = minor;
-        Patch = patch;
-        Pre = pre;
-        Build = build;
-    }
+    public int Major { get; } = major;
+    public int Minor { get; } = minor;
+    public int Patch { get; } = patch;
+    public string Pre { get; } = pre;
+    public string Build { get; } = build;
 
     private static string GetId(string ids, int idStart)
     {
@@ -83,9 +74,9 @@ internal sealed class FXVersion
                 string id1 = GetId(s1.Pre, idStart);
                 string id2 = GetId(s2.Pre, idStart);
 
-                int id1num = 0;
+                int id1num;
                 bool id1IsNum = int.TryParse(id1, out id1num);
-                int id2num = 0;
+                int id2num;
                 bool id2IsNum = int.TryParse(id2, out id2num);
 
                 if (id1IsNum && id2IsNum)
@@ -157,8 +148,7 @@ internal sealed class FXVersion
             return false;
         }
 
-        int ignored;
-        if (!buildMeta && id[0] == '0' && id.Length > 1 && int.TryParse(id, out ignored))
+        if (!buildMeta && id[0] == '0' && id.Length > 1 && int.TryParse(id, out _))
         {
             // numeric identifiers must not be padded with 0s
             return false;
@@ -227,7 +217,7 @@ internal sealed class FXVersion
             return false;
         }
 
-        int major = 0;
+        int major;
         if (!int.TryParse(fxVersionString.Substring(0, majorSeparator), out major))
         {
             return false;
@@ -246,7 +236,7 @@ internal sealed class FXVersion
             return false;
         }
 
-        int minor = 0;
+        int minor;
         if (!int.TryParse(fxVersionString.Substring(minorStart, minorSeparator - minorStart), out minor))
         {
             return false;
@@ -258,9 +248,10 @@ internal sealed class FXVersion
             return false;
         }
 
-        int patch = 0;
         int patchStart = minorSeparator + 1;
         int patchSeparator = IndexOfNonNumeric(fxVersionString, patchStart);
+
+        int patch;
         if (patchSeparator == -1)
         {
             if (!int.TryParse(fxVersionString.Substring(patchStart), out patch))

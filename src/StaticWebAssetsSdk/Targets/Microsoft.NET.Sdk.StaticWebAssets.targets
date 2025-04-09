@@ -676,7 +676,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(Content)"
+      CandidateAssets="@(Content->Distinct())"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
@@ -741,6 +741,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.ServiceWorker.targets" Condition="'$(ServiceWorkerAssetsManifest)' != ''" />
 
-  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlImportMap.targets" Condition="'$(WriteImportMapToHtml)' == 'true'" />
+  <Import Project="Microsoft.NET.Sdk.StaticWebAssets.HtmlAssetPlaceholders.targets" Condition="'$(OverrideHtmlAssetPlaceholders)' == 'true'" />
 
 </Project>

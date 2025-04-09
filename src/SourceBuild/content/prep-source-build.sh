@@ -13,7 +13,8 @@
 ###   --no-sdk                    Exclude the download of the .NET SDK
 ###   --artifacts-rid             The RID of the previously source-built artifacts archive to download
 ###                               Default is centos.9-x64
-###   --rid, --target-rid <value> Overrides the target rid for the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64
+###   --bootstrap-rid <value>     The (portable) RID for the bootstrap artifacts to restore. For example, linux-arm64, linux-musl-x64
+###                               Default is the current portable RID.
 ###   --runtime-source-feed       URL of a remote server or a local directory, from which SDKs and
 ###                               runtimes can be downloaded
 ###   --runtime-source-feed-key   Key for accessing the above server, if necessary
@@ -49,7 +50,7 @@ downloadPrebuilts=true
 removeBinaries=true
 installDotnet=true
 artifactsRid=$defaultArtifactsRid
-target_rid=''
+bootstrap_rid=''
 runtime_source_feed='' # IBM requested these to support s390x scenarios
 runtime_source_feed_key='' # IBM requested these to support s390x scenarios
 
@@ -83,8 +84,8 @@ while :; do
     --artifacts-rid)
       artifactsRid=$2
       ;;
-    --rid|--target-rid)
-      target_rid=$2
+    --bootstrap-rid)
+      bootstrap_rid=$2
       shift
       ;;
     --runtime-source-feed)
@@ -203,8 +204,8 @@ function BootstrapArtifacts {
   fi
 
   properties=( "/p:ArchiveDir=$packagesArchiveDir" )
-  if [[ -n "$target_rid" ]]; then
-    properties+=( "/p:TargetRid=$target_rid" )
+  if [[ -n "$bootstrap_rid" ]]; then
+    properties+=( "/p:PortableRid=$bootstrap_rid" )
   fi
 
   # Run restore on project to initiate download of bootstrap packages

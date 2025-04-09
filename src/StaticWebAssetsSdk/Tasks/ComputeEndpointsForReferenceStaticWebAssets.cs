@@ -20,13 +20,13 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
     public override bool Execute()
     {
-        var assets = Assets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
-        var candidateEndpoints = StaticWebAssetEndpoint.FromItemGroup(CandidateEndpoints);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets);
 
-        var endpoints = new List<StaticWebAssetEndpoint>();
+        var result = CandidateEndpoints;
 
-        foreach (var candidateEndpoint in candidateEndpoints)
+        for (var i = 0; i < CandidateEndpoints.Length; i++)
         {
+            var candidateEndpoint = StaticWebAssetEndpoint.FromTaskItem(CandidateEndpoints[i]);
             if (assets.TryGetValue(candidateEndpoint.AssetFile, out var asset))
             {
                 // We need to adjust the path to include the base path for the asset, since this is going to be used
@@ -43,26 +43,32 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 {
                     candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
 
-                    foreach (var property in candidateEndpoint.EndpointProperties)
+                    for (var j = 0; j < candidateEndpoint.EndpointProperties.Length; j++)
                     {
+                        ref var property = ref candidateEndpoint.EndpointProperties[j];
                         if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
                         {
                             property.Value = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, property.Value, '/');
+                            // We need to do this because we are modifying the properties in place.
+                            // We could instead do candidateEndpoint.EndpointProperties = candidateEndpoint.EndpointProperties
+                            // but that's more obscure than this.
+                            candidateEndpoint.MarkProperiesAsModified();
                         }
                     }
 
                     Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
 
-                    endpoints.Add(candidateEndpoint);
+                    result[i] = candidateEndpoint.ToTaskItem();
                 }
             }
             else
             {
                 Log.LogMessage(MessageImportance.Low, "Skipping endpoint {0} because the asset {1} was not found.", candidateEndpoint.Route, candidateEndpoint.AssetFile);
+                result[i] = null;
             }
         }
 
-        Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
+        Endpoints = result;
 
         return true;
     }

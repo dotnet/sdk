@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
+using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -47,7 +49,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -93,7 +95,46 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void RunProjectWithMultipleTFMs_ParallelizationTest_RunInParallelShouldFail(bool testTfmsInParallel)
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsParallelization", Guid.NewGuid().ToString())
+                .WithSource();
+            testInstance.WithTargetFrameworks($"{DotnetVersionHelper.GetPreviousDotnetVersion()};{ToolsetInfo.CurrentTargetFramework}", "TestProject");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute(CommonOptions.PropertiesOption.Name, $"TestTfmsInParallel={testTfmsInParallel}");
+
+            if (testTfmsInParallel)
+            {
+                if (!TestContext.IsLocalized())
+                {
+                    result.StdOut
+                        .Should().Contain("Test run summary: Failed!")
+                        .And.Contain("total: 2")
+                        .And.Contain("succeeded: 0")
+                        .And.Contain("failed: 2")
+                        .And.Contain("skipped: 0")
+                        .And.Contain("This is run in parallel!");
+                }
+                else
+                {
+                    result.StdOut
+                        .Should().Contain("This is run in parallel!");
+                }
+
+                result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+            }
+            else
+            {
+                result.ExitCode.Should().Be(ExitCodes.Success);
+            }
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -121,7 +162,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 3");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -157,7 +198,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 0");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
     }
 }

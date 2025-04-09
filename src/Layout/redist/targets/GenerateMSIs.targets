@@ -34,12 +34,15 @@
     <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesWindowsDirectory)\stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
     <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatebundle.ps1</SdkGenerateBundlePowershellScript>
 
-    <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(Architecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
+    <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(TargetArchitecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
 
     <!-- Temp directory for light command layouts -->
     <LightCommandObjDir>$(ArtifactsObjDir)LightCommandPackages</LightCommandObjDir>
     <!-- Directory for the zipped up light command package -->
     <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
+
+    <!-- for local SDK builds we allow skipping the workload manifest msi generation to save build time, the sdk bundle won't contain the manifest msis in that case. -->
+    <AllowEmptyBuiltinWorkloadManifestMsi Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuild)' != 'true'">true</AllowEmptyBuiltinWorkloadManifestMsi>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -93,8 +96,8 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs"
-          Inputs="$(SdkInternalLayoutPath)**/*;
+          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareIntermediateSdkInstallerOutput"
+          Inputs="$(IntermediateSdkInstallerOutputPath)**/*;
                   $(SdkGenerateMsiPowershellScript)"
           Outputs="$(SdkMSIInstallerFile)">
     <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
@@ -102,7 +105,7 @@
     </GenerateGuidFromName>
 
     <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
-                      '$(SdkInternalLayoutPath.TrimEnd('\'))' ^
+                      '$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))' ^
                       '$(SdkMSIInstallerFile)' ^
                       '$(WixRoot)' ^
                       '$(ToolsetBrandName)' ^
@@ -114,7 +117,7 @@
                       '$(VersionMinor)' ^
                       '$(SdkInstallerUpgradeCode)' ^
                       '$(SdkDependencyKeyName)' ^
-                      '$(Architecture)' ^
+                      '$(TargetArchitecture)' ^
                       '$(SdkStableFileIdForApphostTransform)' ^
                       -InformationAction Continue" />
 
@@ -158,7 +161,7 @@
                       '$(VersionMinor)' ^
                       '$(SdkPlaceholderInstallerUpgradeCode)' ^
                       '$(SdkPlaceholderDependencyKeyName)' ^
-                      '$(Architecture)' ^
+                      '$(TargetArchitecture)' ^
                       -InformationAction Continue" />
 
     <ItemGroup>
@@ -195,7 +198,7 @@
                       '$(VersionMinor)' ^
                       '%(TemplatesMsiComponent.UpgradeCode)' ^
                       '%(TemplatesMsiComponent.DependencyKeyName)' ^
-                      '$(Architecture)' ^
+                      '$(TargetArchitecture)' ^
                       -InformationAction Continue" />
 
     <ItemGroup>
@@ -224,7 +227,7 @@
 
     <ItemGroup>
       <TemplatesMsiComponent Include="@(TemplatesComponents)">
-        <LayoutPath>$(RedistInstallerBaseOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
+        <LayoutPath>$(IntermediateOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
         <BrandName>%(TemplatesComponents.BrandNameWithoutVersion) $(Version)</BrandName>
         <MsiVersion>%(TemplatesComponents.MSIVersion)</MsiVersion>
         <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>
@@ -233,12 +236,40 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="GenerateWorkloadManifestsWxs">
+  <Target Name="UnzipBuiltinWorkloadManifestMsiNuPkg">
+    <PropertyGroup>
+      <BuiltinManifestMsiPackageSourceDirectory>$(ArtifactsShippingPackagesDir)</BuiltinManifestMsiPackageSourceDirectory>
+      <BuiltinManifestMsiPackageSourceDirectory Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuild)' == 'true'">$(ArtifactsDir)downloaded-manifest-msi-packages\PackageArtifacts</BuiltinManifestMsiPackageSourceDirectory>
+      <BuiltinManifestMsiPackageSourceDirectory Condition="'$(DotNetBuild)' == 'true' and '$(DotNetBuildPass)' == '3'">$(SourceBuiltShippingPackagesDir)</BuiltinManifestMsiPackageSourceDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_builtinManifestMsiPackages Include="$(BuiltinManifestMsiPackageSourceDirectory)/%(BuiltinManifests.Identity).Manifest-*.Msi.$(MsiArchitectureForWorkloadManifests)*.nupkg" />
+      <BuiltinManifestMsiPackages Include="@(_builtinManifestMsiPackages)" UnzipDestinationFolder="$(IntermediateOutputPath)\extracted-manifests\%(Filename)" />
+    </ItemGroup>
+
+    <Message Text="Builtin workload manifest msi packages were skipped, the SDK installer .exe bundle won't contain the builtin manifests and workload installs will be broken. Pass /p:BuildWorkloads=true to enable building them."
+             Importance="High"
+             Condition="'@(BuiltinManifestMsiPackages)' == '' and '$(AllowEmptyBuiltinWorkloadManifestMsi)' == 'true'" />
+
+    <Error Text="Could not find expected builtin manifest msi packages in $(BuiltinManifestMsiPackageSourceDirectory)"
+           Condition="'@(BuiltinManifestMsiPackages)' == '' and '$(AllowEmptyBuiltinWorkloadManifestMsi)' != 'true'" />
+
+    <Unzip SourceFiles="@(BuiltinManifestMsiPackages)"
+           DestinationFolder="%(BuiltinManifestMsiPackages.UnzipDestinationFolder)"
+           Condition="'@(BuiltinManifestMsiPackages)' != ''" />
+  </Target>
+
+  <Target Name="GenerateWorkloadManifestsWxs" DependsOnTargets="UnzipBuiltinWorkloadManifestMsiNuPkg">
     <ItemGroup>
       <_Manifests Include="@(BundledManifests)">
-        <RestoredMsiPathInNupkg>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</RestoredMsiPathInNupkg>
+        <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(RestoredMsiNupkgContentPath)/data/', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
+      </_Manifests>
+      <_Manifests Include="@(BuiltinManifestMsiPackages)" Condition="'@(BuiltinManifestMsiPackages)' != ''">
+        <MsiPath>$([MSBuild]::NormalizePath($([System.IO.Directory]::GetFiles('%(BuiltinManifestMsiPackages.UnzipDestinationFolder)\data\', '*$(MsiArchitectureForWorkloadManifests).msi'))))</MsiPath>
       </_Manifests>
     </ItemGroup>
+
     <PropertyGroup>
       <WorkloadManifestsWxsPath>$(IntermediateOutputPath)WorkloadManifests.wxs</WorkloadManifestsWxsPath>
       <WorkloadManifestsWxsContent>
@@ -248,7 +279,7 @@
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
     <Fragment>
         <PackageGroup Id="PG_WorkloadManifests">
-            @(_Manifests->'<MsiPackage SourceFile="%(RestoredMsiPathInNupkg)">
+            @(_Manifests->'<MsiPackage SourceFile="%(MsiPath)">
                 <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
             </MsiPackage>', '
             ')
@@ -321,7 +352,7 @@
                       -WindowsDesktopVersion '$(MicrosoftWindowsDesktopAppRuntimePackageVersion)' ^
                       -UpgradeCode '$(CombinedFrameworkSDKHostInstallerUpgradeCode)' ^
                       -DependencyKeyName '$(SdkDependencyKeyName)' ^
-                      -Architecture '$(Architecture)' ^
+                      -Architecture '$(TargetArchitecture)' ^
                       -DotNetRuntimeVersion '$(MicrosoftNETCoreAppRuntimePackageVersion)' ^
                       -AspNetCoreVersion '$(MicrosoftAspNetCoreAppRuntimePackageVersion)' ^
                       -SDKProductBandVersion '$(CliProductBandVersion)' ^

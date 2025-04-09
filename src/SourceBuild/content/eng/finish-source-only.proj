@@ -226,10 +226,12 @@
     <!-- Inputs: Packages to include in the tarball -->
     <ItemGroup>
       <ArtifactsPackageToBundle Include="$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping/**;
-                                          $(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping/**"
-                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
-      <ReferencePackageToBundle Include="$(ReferencePackagesDir)**"
-                                Condition="!$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+                                          $(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping/**" />
+      <ArtifactsPackageToBundle Remove="@(ArtifactsPackageToBundle)"
+                                Condition="$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
+      <ReferencePackageToBundle Include="$(ReferencePackagesDir)**" />
+      <ReferencePackageToBundle Remove="@(ReferencePackageToBundle)"
+                                Condition="$([System.String]::Copy('%(Identity)').EndsWith('.symbols.nupkg'))" />
       <MergedAssetManifest Include="$(MergedAssetManifestOutputPath)" />
     </ItemGroup>
 
@@ -308,7 +310,7 @@
           DestinationFolder="$(ArtifactsAssetsDir)"
           SkipUnchangedFiles="true"
           UseHardlinksIfPossible="true" />
-    
+
     <!-- Mark the artifact so that it gets binplaced. -->
     <ItemGroup>
       <BinPlaceFile Include="$(ArtifactsAssetsDir)$([System.IO.Path]::GetFileName('$(SdkTarballPath)'))" />

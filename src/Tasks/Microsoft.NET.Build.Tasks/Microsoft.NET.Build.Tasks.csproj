@@ -1,6 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
-<Project>
+﻿<Project>
 
   <PropertyGroup>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
@@ -103,8 +101,8 @@
     <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
-    <Compile Include="$(RepoRoot)src\Cli\dotnet\commands\Test\IPC\**\*.cs" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Workload\InstallStateContents.cs" LinkBase="Cli" />
+    <Compile Include="$(RepoRoot)src\Cli\dotnet\Commands\Test\IPC\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Tools.MSBuild;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {

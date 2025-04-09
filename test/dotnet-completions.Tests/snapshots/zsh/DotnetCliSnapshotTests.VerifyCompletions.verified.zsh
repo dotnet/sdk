@@ -593,10 +593,10 @@ _testhost() {
                                             '--package-directory=[The directory to restore packages to.]:PACKAGE_DIR: ' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--prerelease[Allows prerelease packages to be installed.]' \
-                                            '--project=[]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':PACKAGE_NAME -- The package reference to add.:->dotnet_dynamic_complete' \
+                                            ':PACKAGE_NAME -- The package reference to add. This can be in the form of just the package identifier, for example '\''Newtonsoft.Json'\'', or a package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\'':->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -629,7 +629,8 @@ _testhost() {
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
                                             '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
-                                            '--project=[]: : ' \
+                                            '--no-restore[Do not restore before running the command.]' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -637,7 +638,7 @@ _testhost() {
                                     (remove)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--project=[]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PACKAGE_NAME -- The package reference to remove.: ' \
@@ -664,6 +665,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
+                                            '--force[Force conversion even if there are malformed directives.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \
@@ -970,8 +972,8 @@ _testhost() {
                         '--no-build[Do not build the project before testing. Implies --no-restore.]' \
                         '--results-directory=[The directory where the test results will be placed. The specified directory will be created if it does not exist.]:RESULTS_DIR: ' \
                         '*--collect=[The friendly name of the data collector to use for the test run.                                         More info here\: https\://aka.ms/vstest-collect]:DATA_COLLECTOR_NAME: ' \
-                        '--blame[Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.   When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.  Based on the additional settings, hang dump or crash dump can also be collected.  Example\:    Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.    (Crash dumps require additional setup, see below.)   dotnet test --blame-hang --blame-crash Example\:    Timeout the test run when a test takes more than 20 minutes and collect hang dump.    dotnet test --blame-hang-timeout 20min ]' \
-                        '--blame-crash[Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.    For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.  Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.  The tools can be downloaded here\: https\://docs.microsoft.com/sysinternals/downloads/procdump    To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.  Implies --blame.]' \
+                        '--blame[Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.  When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.  Based on the additional settings, hang dump or crash dump can also be collected.  Example\:   Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.   (Crash dumps require additional setup, see below.)   dotnet test --blame-hang --blame-crash Example\:   Timeout the test run when a test takes more than 20 minutes and collect hang dump.   dotnet test --blame-hang-timeout 20min ]' \
+                        '--blame-crash[Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.  For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.  Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.  The tools can be downloaded here\: https\://docs.microsoft.com/sysinternals/downloads/procdump  To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.  Implies --blame.]' \
                         '--blame-crash-dump-type=[The type of crash dump to be collected. Supported values are full (default) and mini. Implies --blame-crash.]:DUMP_TYPE:((full\:"full" mini\:"mini" ))' \
                         '--blame-crash-collect-always[Enables collecting crash dump on expected as well as unexpected testhost exit.]' \
                         '--blame-hang[Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.]' \

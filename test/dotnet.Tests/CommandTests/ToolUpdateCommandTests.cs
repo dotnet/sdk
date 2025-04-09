@@ -1,9 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Update;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
-                    LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
+                    CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
                     "--global --tool-path"));
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    string.Format(LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
+                    string.Format(CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath,
                         "--local --tool-path"));
         }
 
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUpdateCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
         [Fact]
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolUpdateCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(Tools.Tool.Common.LocalizableStrings.OnlyLocalOptionSupportManifestFileOption);
+                .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
         }
 
         [Fact]
@@ -97,7 +97,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
                     string.Format(
-                        LocalizableStrings.UpdateToolCommandInvalidAllAndVersion, "--all --version")
+                        CliCommandStrings.UpdateToolCommandInvalidAllAndVersion, "--all --version")
                 );
         }
 
@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId
+                    CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId
                 );
         }
 
@@ -127,7 +127,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
-                    LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId
+                    CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId
                 );
         }
     }

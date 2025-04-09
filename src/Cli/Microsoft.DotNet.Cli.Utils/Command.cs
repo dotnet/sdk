@@ -7,9 +7,9 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-public class Command : ICommand
+public class Command(Process? process, bool trimTrailingNewlines = false) : ICommand
 {
-    private readonly Process _process;
+    private readonly Process _process = process ?? throw new ArgumentNullException(nameof(process));
 
     private StreamForwarder? _stdOut;
 
@@ -17,13 +17,7 @@ public class Command : ICommand
 
     private bool _running = false;
 
-    private bool _trimTrailingNewlines = false;
-
-    public Command(Process? process, bool trimTrailingNewlines = false)
-    {
-        _trimTrailingNewlines = trimTrailingNewlines;
-        _process = process ?? throw new ArgumentNullException(nameof(process));
-    }
+    private bool _trimTrailingNewlines = trimTrailingNewlines;
 
     public CommandResult Execute()
     {
@@ -53,10 +47,7 @@ public class Command : ICommand
         using (var reaper = new ProcessReaper(_process))
         {
             _process.Start();
-            if (processStarted != null)
-            {
-                processStarted(_process);
-            }
+            processStarted?.Invoke(_process);
             reaper.NotifyProcessStarted();
 
             Reporter.Verbose.WriteLine(string.Format(
