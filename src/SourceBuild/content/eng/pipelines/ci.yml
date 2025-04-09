@@ -62,6 +62,12 @@ variables:
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
+- name: GDN_EXTRACT_TOOLS
+  value: 'binskim,bandit,roslynanalyzers'
+
+- name: GDN_EXTRACT_FILTER
+  value: 'f|**\*.zip;f|**\*.nupkg;f|**\*.vsix;f|**\*.cspkg;f|**\*.sfpkg;f|**\*.package'
+
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: skipComponentGovernanceDetection  # we run CG on internal builds only
     value: true
