@@ -20,8 +20,7 @@ This means:
 * New MSBuild warnings and errors (props/targets).
 * New NuGet warnings and errors. 
   * For example, NuGet Audit.
-* Roslyn Analyzers and CodeFixes.
-  * This includes trimming/ILLink analyzers and codefixes.
+* Changes to Roslyn Analyzers and CodeFixes that apply to existing TFMs.
 * Behavioral/implementation changes.
   * MSBuild engine changes like MSBuild Server.
   * Implementation changes for MSBuild Tasks.
@@ -79,11 +78,11 @@ This knob exists so that users can safely and consistently say "for whatever rea
 
 ### Tie potentially impactful changes to the target TFM
 
-Changes that are expected to cause significant disruption should only be introduced behind the Target Framework knob. This ensures business continuity and allows developers to address changes needed as part of scheduled work to migrate a codebase to a new TFM.
+Changes that are expected to cause significant disruption should only be introduced behind the Target Framework knob. This ensures business continuity and allows developers to address changes needed as part of scheduled work to migrate a codebase to a new TFM. In general, new warnings/errors that only apply to a new TFM are not considered breaking changes. 
 
 Examples:
-* NuGet warnings for vulnerable transitive dependencies were introduced in the .NET 10 SDK only for applications targeting .NET 10 and higher.
-* New Roslyn analyzers are regularly tied to target TFM (and are not considered breaking as a result).
+* NuGet warnings for vulnerable transitive dependencies were introduced in the .NET 10 SDK only for projects targeting .NET 10 and higher.
+* New Roslyn analyzers tied to a new target TFM.
 
 ## Required process for all .NET SDK breaking changes 
 
