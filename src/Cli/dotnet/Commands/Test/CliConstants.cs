@@ -95,4 +95,6 @@ internal static class ProjectProperties
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
     internal const string AppDesignerFolder = "AppDesignerFolder";
+    internal const string TestTfmsInParallel = "TestTfmsInParallel";
+    internal const string BuildInParallel = "BuildInParallel";
 }

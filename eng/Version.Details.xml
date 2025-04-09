@@ -1,46 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Edge" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Orchestrator.RunnableProjects" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Utils" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateSearch.Common" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.TestHelper" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateEngine.Authoring.TemplateVerifier" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.TemplateSearch.TemplateDiscovery" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.4.25208.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.4.25208.10">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>bf6d1023e801a4992e41d79ef4232411566a1fb4</Sha>
+      <Sha>affa6e65d000805edd0d3788b859f089ebe3dc53</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.4.25208.11">
@@ -278,22 +278,22 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>b8b44c6cd0d7a5215373bf269ed610bcbbb4fb95</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25208.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25208.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c5954c08a2f777f815dac20d925d72338fd90056</Sha>
+      <Sha>ef0afd181cc9333ccb65705f943569fc64392e6c</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25208.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25208.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c5954c08a2f777f815dac20d925d72338fd90056</Sha>
+      <Sha>ef0afd181cc9333ccb65705f943569fc64392e6c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25208.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25208.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c5954c08a2f777f815dac20d925d72338fd90056</Sha>
+      <Sha>ef0afd181cc9333ccb65705f943569fc64392e6c</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25208.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25208.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
-      <Sha>c5954c08a2f777f815dac20d925d72338fd90056</Sha>
+      <Sha>ef0afd181cc9333ccb65705f943569fc64392e6c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.4.25207.7" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://github.com/dotnet/wpf</Uri>
