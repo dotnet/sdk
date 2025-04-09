@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<PackageIdentity> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
+    public static readonly CliArgument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
 
     public static readonly CliOption<string> VersionOption = new("--version")
     {

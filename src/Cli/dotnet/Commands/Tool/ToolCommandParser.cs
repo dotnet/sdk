@@ -40,5 +40,4 @@ internal static class ToolCommandParser
 
         return command;
     }
-
 }

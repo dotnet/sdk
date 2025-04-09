@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli
     internal class CommonArguments
     {
         #region PackageIdentityArgument
-        public static CliArgument<PackageIdentity> PackageIdentityArgument(bool requireArgument = true) =>
+        public static CliArgument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli
                 Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity ParsePackageIdentity(ArgumentResult argumentResult)
+        private static PackageIdentity? ParsePackageIdentity(ArgumentResult argumentResult)
         {
             if (argumentResult.Tokens.Count == 0)
             {

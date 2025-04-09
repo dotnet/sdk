@@ -21,7 +21,7 @@ internal class ToolInstallCommand(
 
     internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
     {
-        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument).Version?.ToString()) &&
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
             !string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.VersionOption)))
         {
             throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);

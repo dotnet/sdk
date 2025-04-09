@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool update -g console.test.app");
 
-            var packageId = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument).Id;
+            var packageId = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument)?.Id;
 
             packageId.Should().Be("console.test.app");
         }
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet tool update -g console.test.app --version 1.0.0");
 
-            var packageIdVersion = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument).Id;
+            var packageIdVersion = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument)?.Id;
             var packageVersion = result.GetValue<string>(ToolInstallCommandParser.VersionOption);
 
             packageIdVersion.Should().Be("console.test.app");
@@ -50,8 +50,8 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var packageIdVersion = result.GetValue<PackageIdentity>(ToolUpdateCommandParser.PackageIdentityArgument);
 
-            packageIdVersion.Id.Should().Be("console.test.app");
-            packageIdVersion.Version.ToString().Should().Be("1.0.0"); 
+            packageIdVersion?.Id?.Should().Be("console.test.app");
+            packageIdVersion?.Version?.ToString().Should().Be("1.0.0"); 
         }
 
         [Fact]
