@@ -25,18 +25,10 @@
   <ItemGroup>
     <!-- Removed here: https://github.com/dotnet/sdk/pull/46562 -->
     <Compile Remove="CommandTests\Test\MSBuildHandlerTests.cs" />
-
-    <None Include="ShellShimTests\WpfBinaryTestAsssets\testwpf.dll" LinkBase="WpfBinaryTestAsssets">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-
-    <None Update="CollectCodeCoverage.runsettings">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-
-    <None Update="queryResultSample.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    <None Include="CompletionTests\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

@@ -38,7 +38,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             string shimPath = Path.Combine(tempDirectory, Path.GetRandomFileName());
 
             appHostShellShimMaker.CreateApphostShellShim(
-                new FilePath(Path.GetFullPath(Path.Combine("WpfBinaryTestAsssets", "testwpf.dll"))),
+                new FilePath(Path.GetFullPath(Path.Combine("WpfBinaryTestAssets", "testwpf.dll"))),
                 new FilePath(shimPath));
             return shimPath;
         }

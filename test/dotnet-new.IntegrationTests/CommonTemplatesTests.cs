@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: templateShortName)
             {
-                // squeshing snapshots by creating output unique for template (but not alias) and preventing item to have name by alias
+                // squashing snapshots by creating output unique for template (but not alias) and preventing item to have name by alias
                 TemplateSpecificArgs = new[] { "-o", itemName, "-n", "item" }.Concat(args ?? Enumerable.Empty<string>()),
                 SnapshotsDirectory = "Approvals",
                 VerifyCommandOutput = true,
