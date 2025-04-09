@@ -27,7 +27,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
@@ -48,7 +50,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\_framework\\blazor.server.js.gz",
@@ -69,7 +73,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\_content\\ComponentApp\\_framework\\blazor.server.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\_content\\ComponentApp\\_framework\\blazor.server.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.gz",
@@ -90,7 +96,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\_content\\ComponentApp\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.gz"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\_content\\ComponentApp\\_framework\\blazor.web#[.{fingerprint=__fingerprint__}]?.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
@@ -111,7 +119,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
@@ -132,7 +142,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\blazor.server.js",
@@ -153,7 +165,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\build\\..\\_framework\\blazor.server.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\build\\..\\_framework\\blazor.server.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\_framework\\blazor.web.js",
@@ -174,7 +188,9 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\build\\..\\_framework\\blazor.web.js"
+      "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\build\\..\\_framework\\blazor.web.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [

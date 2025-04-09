@@ -36,7 +36,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm-minimal.wasm",
@@ -74,7 +74,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -145,7 +145,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
-            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
+            new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm.gz")).Should().Exist();
@@ -182,7 +182,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -232,7 +232,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -296,7 +296,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -349,7 +349,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/different-path/_framework/blazor.boot.json",
+                $"wwwroot/different-path/_framework/{WasmBootConfigFileName}",
                 "wwwroot/different-path/_framework/blazor.webassembly.js",
                 "wwwroot/different-path/_framework/dotnet.native.wasm",
                 "wwwroot/different-path/_framework/blazorwasm.wasm",
@@ -411,7 +411,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var expectedFiles = new[]
             {
-                "wwwroot/different-path/_framework/blazor.boot.json",
+                $"wwwroot/different-path/_framework/{WasmBootConfigFileName}",
                 "wwwroot/different-path/_framework/blazor.webassembly.js",
                 "wwwroot/different-path/_framework/dotnet.native.wasm",
                 "wwwroot/different-path/_framework/dotnet.native.wasm.br",
@@ -441,8 +441,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private static void VerifyCompression(TestAsset testAsset, string blazorPublishDirectory)
         {
-            var original = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json");
-            var compressed = Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json.br");
+            var original = Path.Combine(blazorPublishDirectory, "_framework", WasmBootConfigFileName);
+            var compressed = Path.Combine(blazorPublishDirectory, "_framework", $"{WasmBootConfigFileName}.br");
             using var brotliStream = new BrotliStream(File.OpenRead(compressed), CompressionMode.Decompress);
             using var textReader = new StreamReader(brotliStream);
             var uncompressedText = textReader.ReadToEnd();
@@ -478,7 +478,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -522,7 +522,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyAssemblyHasTypes(loggingAssemblyPath, new[] { "Microsoft.Extensions.Logging.Abstractions.NullLogger" });
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_SatelliteAssemblies_AreCopiedToBuildOutput()
         {
             // Arrange
@@ -566,7 +566,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 "wwwroot/_framework/fr/Microsoft.CodeAnalysis.CSharp.resources.wasm"
             });
 
-            var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json"));
+            var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", WasmBootConfigFileName));
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.wasm\"");
             bootJsonData.Should().Contain("\"fr\"");
             bootJsonData.Should().Contain("\"Microsoft.CodeAnalysis.CSharp.resources.wasm\"");
@@ -607,7 +607,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var blazorPublishDirectory = Path.Combine(publishOutputDirectory.ToString(), "wwwroot");
             publishOutputDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -693,7 +693,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
-            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonPath = Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName);
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
             bootJsonData.resources.wasmNative.Should().ContainKey("dotnet.native.wasm");
@@ -709,7 +709,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             bootJsonData.config.Should().Contain("../appsettings.development.json");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_HostedApp_WithSatelliteAssemblies()
         {
             // Arrange
@@ -753,7 +753,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm);
 
-            var bootJsonData = new FileInfo(Path.Combine(publishOutputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJsonData = new FileInfo(Path.Combine(publishOutputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             publishOutputDirectory.Should().HaveFiles(new[]
             {
@@ -810,7 +810,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -898,7 +898,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -971,7 +971,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -1068,7 +1068,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -1128,7 +1128,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         // Regression test to verify satellite assemblies from the blazor app are copied to the published app's wwwroot output directory as
         // part of publishing in VS
-        [Fact(Skip = "https://github.com/dotnet/runtime/issues/105399")]
+        [Fact]
         public void Publish_HostedApp_VisualStudio_WithSatelliteAssemblies()
         {
             var testAppName = "BlazorWasmWithLibrary";
@@ -1173,12 +1173,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/ja/blazorwasm.resources.wasm",
                 "wwwroot/_framework/fr/Microsoft.CodeAnalysis.CSharp.resources.wasm"
             });
 
-            var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", "blazor.boot.json"));
+            var bootJsonData = new FileInfo(Path.Combine(blazorPublishDirectory, "_framework", WasmBootConfigFileName));
             bootJsonData.Should().Contain("\"es-ES\"");
             bootJsonData.Should().Contain("\"ja\"");
             bootJsonData.Should().Contain("\"fr\"");
@@ -1315,7 +1315,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -1398,7 +1398,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             publishDirectory.Should().HaveFiles(new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/blazor.webassembly.js",
                 "wwwroot/_framework/dotnet.native.wasm",
                 "wwwroot/_framework/blazorwasm.wasm",
@@ -1480,7 +1480,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
-            var bootJsonPath = Path.Combine(publishOutputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json");
+            var bootJsonPath = Path.Combine(publishOutputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName);
             var bootJsonData = ReadBootJsonData(bootJsonPath);
 
             bootJsonData.globalizationMode.Should().Be("invariant");
@@ -1525,7 +1525,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(firstCss).Should().Exist();
             new FileInfo(firstCss).Should().Exist("/* First app.css */");
 
-            var firstBootJsonPath = Path.Combine(firstAppPublishDirectory, "_framework", "blazor.boot.json");
+            var firstBootJsonPath = Path.Combine(firstAppPublishDirectory, "_framework", WasmBootConfigFileName);
             var firstBootJson = ReadBootJsonData(firstBootJsonPath);
 
             // Do a sanity check that the boot json has files.
@@ -1544,7 +1544,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(secondCss).Should().Exist();
             new FileInfo(secondCss).Should().Exist("/* Second app.css */");
 
-            var secondBootJsonPath = Path.Combine(secondAppPublishDirectory, "_framework", "blazor.boot.json");
+            var secondBootJsonPath = Path.Combine(secondAppPublishDirectory, "_framework", WasmBootConfigFileName);
             var secondBootJson = ReadBootJsonData(secondBootJsonPath);
 
             VerifyBootManifestHashes(testInstance, secondAppPublishDirectory);
@@ -1641,9 +1641,7 @@ public class TestReference
 
         private static BootJsonData ReadBootJsonData(string path)
         {
-            return JsonSerializer.Deserialize<BootJsonData>(
-                File.ReadAllText(path),
-                new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+            return BootJsonDataLoader.ParseBootData(path);
         }
     }
 

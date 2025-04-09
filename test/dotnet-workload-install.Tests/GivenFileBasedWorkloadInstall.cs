@@ -7,14 +7,13 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using Microsoft.TemplateEngine.Edge.Constraints;
-using Microsoft.DotNet.Workloads.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload;
 
 namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 {

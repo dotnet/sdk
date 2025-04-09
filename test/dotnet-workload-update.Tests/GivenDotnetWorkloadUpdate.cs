@@ -9,17 +9,16 @@ using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Workload.Install.Tests;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Config;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Workload.Search.Tests;
-using Microsoft.DotNet.Workloads.Workload.History;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NuGet.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Update;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -292,9 +291,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void UpdateViaWorkloadSet(bool upgrade)
+        [InlineData(true, true, null)]
+        [InlineData(false, true, null)]
+        [InlineData(true, true, false)]
+        [InlineData(true, false, true)]
+        public void UpdateViaWorkloadSet(bool upgrade, bool? installStateUseWorkloadSet, bool? globalJsonValue)
         {
             var testDir = _testAssetsManager.CreateTestDirectory(identifier: upgrade.ToString());
             string dotnetDir = Path.Combine(testDir.Path, "dotnet");
@@ -323,11 +324,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 ],
                 fromWorkloadSet: true, workloadSetVersion: workloadSetVersion);
             var resolverFactory = new MockWorkloadResolverFactory(dotnetDir, sdkVersion, workloadResolver, userProfileDir);
-            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater);
+            var updateCommand = new WorkloadUpdateCommand(Parser.Instance.Parse("dotnet workload update"), Reporter.Output, resolverFactory, workloadInstaller, nugetPackageDownloader, workloadManifestUpdater, shouldUseWorkloadSetsFromGlobalJson: globalJsonValue);
 
             var installStatePath = Path.Combine(dotnetDir, "metadata", "workloads", RuntimeInformation.ProcessArchitecture.ToString(), sdkVersion, "InstallState", "default.json");
             var contents = new InstallStateContents();
-            contents.UseWorkloadSets = true;
+            contents.UseWorkloadSets = installStateUseWorkloadSet;
 
             Directory.CreateDirectory(Path.GetDirectoryName(installStatePath));
             File.WriteAllText(installStatePath, contents.ToString());
@@ -335,6 +336,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             workloadInstaller.InstalledManifests.Count.Should().Be(1);
             workloadInstaller.InstalledManifests[0].manifestUpdate.NewVersion.ToString().Should().Be("2.3.4");
+
+            // This splits between whether installation occurred via workload set or loose manifests. (The previous test incorrectly assumed that
+            // only if the upgrade were via workload sets would the manifest be updated like that, but the MockWorkloadManifestUpdater actually
+            // doesn't really care).
+            workloadManifestUpdater.CalculateManifestUpdatesCallCount.Should().Be(globalJsonValue ?? installStateUseWorkloadSet ?? true ? 0 : 1);
         }
 
         [Fact]
@@ -605,7 +611,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 
             var exception = Assert.Throws<GracefulException>(() => updateCommand.Execute());
             exception.InnerException.Should().BeOfType<FormatException>();
-            exception.InnerException.Message.Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.InvalidVersionForWorkload, "mock.workload", "6.0.0.15"));
+            exception.InnerException.Message.Should().Contain(string.Format(CliCommandStrings.InvalidVersionForWorkload, "mock.workload", "6.0.0.15"));
         }
 
         internal (string, WorkloadUpdateCommand, MockPackWorkloadInstaller, IWorkloadResolver, MockWorkloadManifestUpdater, MockNuGetPackageDownloader) GetTestInstallers(

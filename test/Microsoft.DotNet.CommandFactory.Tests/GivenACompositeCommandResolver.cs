@@ -3,7 +3,8 @@
 
 #nullable disable
 
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Moq;
 
 namespace Microsoft.DotNet.Tests

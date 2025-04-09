@@ -1,0 +1,45 @@
+﻿<Project>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <Nullable>enable</Nullable>
+
+    <IsShipping>false</IsShipping>
+    <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
+
+    <!-- VSIX -->
+    <!-- We duplicate some logic like VsixVersion from arcade targets because they are imported only when using .NET Framework MSBuild,
+    but we want to build the VSIX in SDK's CI which is using Core MSBuild. See https://github.com/dotnet/arcade/issues/15617. -->
+    <VSSDKTargetPlatformRegRootSuffix>RoslynDev</VSSDKTargetPlatformRegRootSuffix>
+    <GeneratePkgDefFile>true</GeneratePkgDefFile>
+    <IncludeAssemblyInVSIXContainer>true</IncludeAssemblyInVSIXContainer>
+    <IncludeDebugSymbolsInVSIXContainer>true</IncludeDebugSymbolsInVSIXContainer>
+    <IncludeDebugSymbolsInLocalVSIXDeployment>true</IncludeDebugSymbolsInLocalVSIXDeployment>
+    <IncludeCopyLocalReferencesInVSIXContainer>false</IncludeCopyLocalReferencesInVSIXContainer>
+    <VsixVersion Condition="'$(VsixVersion)' == ''">42.42.42.4242424</VsixVersion>
+    <DeployExtension Condition="'$(MSBuildRuntimeType)' == 'Core'">false</DeployExtension>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Net.Sdk.AnalyzerRedirecting.Tests" />
+  </ItemGroup>
+
+  <Target Name="GetVsixVersion" Returns="$(VsixVersion)">
+    <PropertyGroup>
+      <VsixVersion Condition="'$(VersionSuffixDateStamp)' != ''">$(VersionPrefix).$(VersionSuffixDateStamp)$(VersionSuffixBuildOfTheDayPadded)</VsixVersion>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Order matters here. VSSDK appends to PrepareForRunDependsOn but Microsoft.NET.Sdk overwrites it. See https://github.com/dotnet/msbuild/issues/2393. -->
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+  <Import Project="$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets" Condition="Exists('$(VSToolsPath)\VSSDK\Microsoft.VsSDK.targets') and '$(OS)' == 'Windows_NT' And '$(TargetArchitecture)' == 'x64'" />
+
+</Project>

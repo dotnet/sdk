@@ -3,8 +3,8 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Package.List;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Package.List;
 
 namespace Microsoft.DotNet.Cli.List.Package.Tests
 {
@@ -139,10 +139,28 @@ namespace Microsoft.DotNet.Cli.List.Package.Tests
 
             new ListPackageCommand(Log)
                 .WithWorkingDirectory(projectDirectory)
-                .Execute()
+                .Execute("--no-restore")
                 .Should()
                 .Fail()
                 .And.HaveStdErr();
+        }
+
+        [Fact]
+        public void RestoresAndLists()
+        {
+            var testAsset = "NewtonSoftDependentProject";
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset(testAsset)
+                .WithSource()
+                .Path;
+
+            new ListPackageCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute()
+                .Should()
+                .Pass()
+                .And.HaveStdOut()
+                .And.HaveStdOutContaining("NewtonSoft.Json");
         }
 
         [Fact]
@@ -325,7 +343,7 @@ class Program
         public void ItEnforcesOptionRules(bool throws, params string[] options)
         {
             var parseResult = Parser.Instance.Parse($"dotnet list package {string.Join(' ', options)}");
-            Action checkRules = () => ListPackageReferencesCommand.EnforceOptionRules(parseResult);
+            Action checkRules = () => Microsoft.DotNet.Cli.Commands.Package.List.PackageListCommand.EnforceOptionRules(parseResult);
 
             if (throws)
             {

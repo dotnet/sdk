@@ -6,7 +6,12 @@
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
+    <!-- Pass TargetArchitecture in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetArchitecture>true</SkipSetTargetArchitecture>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+
+    <!-- Pass TargetOS in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetOS>true</SkipSetTargetOS>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)os $(TargetOS)</BuildArgs>
 
     <IsSpecialFlavorBuild Condition="'$(PgoInstrument)' == 'true'">true</IsSpecialFlavorBuild>
@@ -34,6 +39,12 @@
 
     <!-- Needed until https://github.com/dotnet/runtime/issues/109329 is fixed. -->
     <BuildArgs>$(BuildArgs) /p:NetCoreAppToolCurrentVersion=10.0</BuildArgs>
+
+    <!-- Temporarily disable building tests until the next runtime codeflow with an updated SDK. -->
+    <DotNetBuildTestsOptOut>true</DotNetBuildTestsOptOut>
+
+    <!-- Explicitly disable RID-specific artifacts when it's not enabled. Runtime's build defaults to using RID-specific artifacts, so we must explicitly opt-out. -->
+    <EnableDefaultRidSpecificArtifacts Condition="'$(EnableDefaultRidSpecificArtifacts)' != 'true'">false</EnableDefaultRidSpecificArtifacts>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
@@ -44,7 +55,6 @@
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="cecil" />
     <RepositoryReference Include="command-line-api" />
-    <RepositoryReference Include="emsdk" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">

@@ -3,9 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.CommandLineValidation;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Utils;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
@@ -154,7 +152,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(args);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Fact]
@@ -163,8 +161,8 @@ Options:
             var cmd = new DotnetCommand(Log, "add", "one", "two", "three", "reference", "proj.csproj")
                     .Execute();
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "two")}
-{string.Format(LocalizableStrings.UnrecognizedCommandOrArgument, "three")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two")}
+{string.Format(CliStrings.UnrecognizedCommandOrArgument, "three")}");
         }
 
         [Theory]
@@ -179,7 +177,7 @@ Options:
                     .WithWorkingDirectory(setup.TestRoot)
                     .Execute(setup.ValidRefCsprojPath);
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, projName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -208,7 +206,7 @@ Options:
                     .WithWorkingDirectory(setup.TestRoot)
                     .Execute(setup.ValidRefCsprojPath);
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.ProjectIsInvalid, projName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.ProjectIsInvalid, projName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -222,7 +220,7 @@ Options:
                     .WithWorkingDirectory(workingDir)
                     .Execute(setup.ValidRefCsprojRelToOtherProjPath);
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, workingDir + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneProjectInDirectory, workingDir + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -235,7 +233,7 @@ Options:
                     .WithWorkingDirectory(setup.TestRoot)
                     .Execute($"\"{setup.ValidRefCsprojPath}\"");
             cmd.ExitCode.Should().NotBe(0);
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory, setup.TestRoot + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, setup.TestRoot + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -252,7 +250,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(libref.CsProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
@@ -271,7 +269,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(FrameworkNet451Args.Concat(new[] { libref.CsProjPath }));
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithConditionContaining(ConditionFrameworkNet451).Should().Be(condBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(libref.Name, ConditionFrameworkNet451).Should().Be(0);
@@ -291,7 +289,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(libref.CsProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
@@ -310,7 +308,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(libref.CsProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceCouldNotBeFound, libref.CsProjPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceCouldNotBeFound, libref.CsProjPath));
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
@@ -327,7 +325,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(FrameworkNet451Args.Concat(new[] { libref.CsProjPath }));
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceCouldNotBeFound, libref.CsProjPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceCouldNotBeFound, libref.CsProjPath));
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
         }
 
@@ -347,7 +345,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(librefNoCond.CsProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(librefNoCond.Name).Should().Be(0);
@@ -372,7 +370,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(FrameworkNet451Args.Concat(new[] { librefCond.CsProjPath }));
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore);
             csproj.NumberOfProjectReferencesWithIncludeContaining(librefNoCond.Name).Should().Be(1);
@@ -397,7 +395,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(FrameworkNet451Args.Concat(new[] { librefCondNet451.CsProjPath }));
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithConditionContaining(ConditionFrameworkNet451).Should().Be(condNet451Before - 1);
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(librefCondNet451.Name, ConditionFrameworkNet451).Should().Be(0);
@@ -413,8 +411,8 @@ Options:
             var proj = new ProjDir(Path.Combine(setup.TestRoot, "WithDoubledRef"));
             var libref = GetLibRef(setup);
 
-            string removedText = $@"{string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, setup.LibCsprojRelPath)}
-{string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, setup.LibCsprojRelPath)}";
+            string removedText = $@"{string.Format(CliStrings.ProjectReferenceRemoved, setup.LibCsprojRelPath)}
+{string.Format(CliStrings.ProjectReferenceRemoved, setup.LibCsprojRelPath)}";
 
             int noCondBefore = proj.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new RemoveReferenceCommand(Log)
@@ -442,7 +440,7 @@ Options:
                 .WithWorkingDirectory(lib.Path)
                 .Execute(setup.ValidRefCsprojRelToOtherProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
@@ -461,7 +459,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(setup.ValidRefCsprojRelToOtherProjPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
@@ -480,7 +478,7 @@ Options:
                 .WithWorkingDirectory(setup.TestRoot)
                 .Execute(setup.ValidRefCsprojPath);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, setup.ValidRefCsprojRelToOtherProjPath));
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
@@ -494,8 +492,8 @@ Options:
             var libref = AddLibRef(setup, lib);
             var validref = AddValidRef(setup, lib);
 
-            string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName))}
-{string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine(setup.ValidRefCsprojRelPath))}";
+            string outputText = $@"{string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName))}
+{string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine(setup.ValidRefCsprojRelPath))}";
 
             int noCondBefore = lib.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new RemoveReferenceCommand(Log)
@@ -518,8 +516,8 @@ Options:
             var libref = GetLibRef(setup);
             var validref = AddValidRef(setup, lib);
 
-            string outputText = $@"{string.Format(CommonLocalizableStrings.ProjectReferenceCouldNotBeFound, setup.LibCsprojPath)}
-{string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine(setup.ValidRefCsprojRelPath))}";
+            string outputText = $@"{string.Format(CliStrings.ProjectReferenceCouldNotBeFound, setup.LibCsprojPath)}
+{string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine(setup.ValidRefCsprojRelPath))}";
 
             int noCondBefore = lib.CsProj().NumberOfItemGroupsWithoutCondition();
             var cmd = new RemoveReferenceCommand(Log)
@@ -546,7 +544,7 @@ Options:
                     .Execute(libref.CsProjPath);
 
             result.Should().Pass();
-            result.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
+            result.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, Path.Combine("Lib", setup.LibCsprojName)));
             result.StdErr.Should().BeEmpty();
         }
 
@@ -564,7 +562,7 @@ Options:
 
             result.Should().Fail();
             result.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
-            result.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
+            result.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
 
         [Fact]
@@ -581,7 +579,7 @@ Options:
 
             result.Should().Fail();
             result.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
-            result.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
+            result.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
         }
     }
 }

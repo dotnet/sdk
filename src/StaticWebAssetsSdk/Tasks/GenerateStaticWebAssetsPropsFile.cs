@@ -27,6 +27,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
     private const string CopyToOutputDirectory = "CopyToOutputDirectory";
     private const string CopyToPublishDirectory = "CopyToPublishDirectory";
     private const string OriginalItemSpec = "OriginalItemSpec";
+    private const string FileLength = "FileLength";
+    private const string LastWriteTime = "LastWriteTime";
 
     [Required]
     public string TargetPropsFilePath { get; set; }
@@ -83,6 +85,8 @@ public class GenerateStaticWebAssetsPropsFile : Task
                 new XElement(Integrity, element.GetMetadata(Integrity)),
                 new XElement(CopyToOutputDirectory, element.GetMetadata(CopyToOutputDirectory)),
                 new XElement(CopyToPublishDirectory, element.GetMetadata(CopyToPublishDirectory)),
+                new XElement(FileLength, element.GetMetadata(FileLength)),
+                new XElement(LastWriteTime, element.GetMetadata(LastWriteTime)),
                 new XElement(OriginalItemSpec, fullPathExpression)));
         }
 

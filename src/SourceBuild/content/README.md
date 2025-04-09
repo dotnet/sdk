@@ -20,6 +20,13 @@ Similarly, VMR's `main` branch will follow `main` branches of product repositori
 More in-depth documentation about the VMR can be found in [VMR Design And Operation](src/arcade/Documentation/UnifiedBuild/VMR-Design-And-Operation.md#layout).
 See also [dotnet/source-build](https://github.com/dotnet/source-build) for more information about our whole-product source-build.
 
+
+## Installing the SDK
+
+You can download the .NET SDK either as an installer (MSI, PKG) or as an archive (zip, tar.gz). The .NET SDK contains both the .NET runtimes and CLI tools.
+
+- [**Latest builds table**](docs/builds-table.md)
+
 ## Goals
 
 - The main purpose of the [dotnet/dotnet](https://github.com/dotnet/dotnet) repository is to have all source code necessary to build the .NET product available in one repository and identified by a single commit.

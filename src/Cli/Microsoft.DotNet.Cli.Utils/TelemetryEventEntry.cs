@@ -3,119 +3,111 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.DotNet.Cli.Utils
+namespace Microsoft.DotNet.Cli.Utils;
+
+public static class TelemetryEventEntry
 {
-    public static class TelemetryEventEntry
+    public static event EventHandler<InstrumentationEventArgs>? EntryPosted;
+    public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
+
+    public static void TrackEvent(
+        string? eventName = null,
+        IDictionary<string, string?>? properties = null,
+        IDictionary<string, double>? measurements = null)
     {
-        public static event EventHandler<InstrumentationEventArgs>? EntryPosted;
-        public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
+        EntryPosted?.Invoke(typeof(TelemetryEventEntry),
+            new InstrumentationEventArgs(eventName, properties, measurements));
+    }
 
-        public static void TrackEvent(
-            string? eventName = null,
-            IDictionary<string, string?>? properties = null,
-            IDictionary<string, double>? measurements = null)
+    public static void SendFiltered(object? o = null)
+    {
+        if (o == null)
         {
-            EntryPosted?.Invoke(typeof(TelemetryEventEntry),
-                new InstrumentationEventArgs(eventName, properties, measurements));
+            return;
         }
 
-        public static void SendFiltered(object? o = null)
+        foreach (ApplicationInsightsEntryFormat entry in TelemetryFilter.Filter(o))
         {
-            if (o == null)
-            {
-                return;
-            }
-
-            foreach (ApplicationInsightsEntryFormat entry in TelemetryFilter.Filter(o))
-            {
-                TrackEvent(entry.EventName, entry.Properties, entry.Measurements);
-            }
-        }
-
-        public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
-        {
-            void Handler(object? sender, InstrumentationEventArgs eventArgs)
-            {
-                subscriber(eventArgs.EventName, eventArgs.Properties, eventArgs.Measurements);
-            }
-
-            EntryPosted += Handler;
+            TrackEvent(entry.EventName, entry.Properties, entry.Measurements);
         }
     }
 
-    public sealed class PerformanceMeasurement : IDisposable
+    public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
     {
-        private readonly Stopwatch? _timer;
-        private readonly Dictionary<string, double>? _data;
-        private readonly string? _name;
-
-        public PerformanceMeasurement(Dictionary<string, double>? data, string name)
+        void Handler(object? sender, InstrumentationEventArgs eventArgs)
         {
-            // Measurement is a no-op if we don't have a dictionary to store the entry.
-            if (data == null)
-            {
-                return;
-            }
-
-            _data = data;
-            _name = name;
-            _timer = Stopwatch.StartNew();
+            subscriber(eventArgs.EventName, eventArgs.Properties, eventArgs.Measurements);
         }
 
-        public void Dispose()
+        EntryPosted += Handler;
+    }
+}
+
+public sealed class PerformanceMeasurement : IDisposable
+{
+    private readonly Stopwatch? _timer;
+    private readonly Dictionary<string, double>? _data;
+    private readonly string? _name;
+
+    public PerformanceMeasurement(Dictionary<string, double>? data, string name)
+    {
+        // Measurement is a no-op if we don't have a dictionary to store the entry.
+        if (data == null)
         {
-            if (_name is not null && _timer is not null)
-            {
-                _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
-            }
+            return;
         }
+
+        _data = data;
+        _name = name;
+        _timer = Stopwatch.StartNew();
     }
 
-    public class BlockFilter : ITelemetryFilter
+    public void Dispose()
     {
-        public IEnumerable<ApplicationInsightsEntryFormat> Filter(object o)
+        if (_name is not null && _timer is not null)
         {
-            return new List<ApplicationInsightsEntryFormat>();
+            _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
         }
     }
+}
 
-    public class InstrumentationEventArgs : EventArgs
+public class BlockFilter : ITelemetryFilter
+{
+    public IEnumerable<ApplicationInsightsEntryFormat> Filter(object o)
     {
-        internal InstrumentationEventArgs(
-            string? eventName,
-            IDictionary<string, string?>? properties,
-            IDictionary<string, double>? measurements)
-        {
-            EventName = eventName;
-            Properties = properties;
-            Measurements = measurements;
-        }
+        return [];
+    }
+}
 
-        public string? EventName { get; }
-        public IDictionary<string, string?>? Properties { get; }
-        public IDictionary<string, double>? Measurements { get; }
+public class InstrumentationEventArgs : EventArgs
+{
+    internal InstrumentationEventArgs(
+        string? eventName,
+        IDictionary<string, string?>? properties,
+        IDictionary<string, double>? measurements)
+    {
+        EventName = eventName;
+        Properties = properties;
+        Measurements = measurements;
     }
 
-    public class ApplicationInsightsEntryFormat
+    public string? EventName { get; }
+    public IDictionary<string, string?>? Properties { get; }
+    public IDictionary<string, double>? Measurements { get; }
+}
+
+public class ApplicationInsightsEntryFormat(
+    string? eventName = null,
+    IDictionary<string, string?>? properties = null,
+    IDictionary<string, double>? measurements = null)
+{
+    public string? EventName { get; } = eventName;
+    public IDictionary<string, string?>? Properties { get; } = properties;
+    public IDictionary<string, double>? Measurements { get; } = measurements;
+
+    public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
     {
-        public ApplicationInsightsEntryFormat(
-            string? eventName = null,
-            IDictionary<string, string?>? properties = null,
-            IDictionary<string, double>? measurements = null)
-        {
-            EventName = eventName;
-            Properties = properties;
-            Measurements = measurements;
-        }
-
-        public string? EventName { get; }
-        public IDictionary<string, string?>? Properties { get; }
-        public IDictionary<string, double>? Measurements { get; }
-
-        public ApplicationInsightsEntryFormat WithAppliedToPropertiesValue(Func<string?, string> func)
-        {
-            var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
-            return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
-        }
+        var appliedProperties = Properties?.ToDictionary(p => p.Key, p => (string?)func(p.Value));
+        return new ApplicationInsightsEntryFormat(EventName, appliedProperties, Measurements);
     }
 }

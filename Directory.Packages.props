@@ -6,8 +6,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageVersion Include="FluentAssertions" Version="$(FluentAssertionsVersion)" />
-    <PackageVersion Include="FluentAssertions.Json" Version="$(FluentAssertionsJsonVersion)" />
+    <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
+    <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
+    <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" Version="$(MicrosoftAspNetCoreDeveloperCertificatesXPlatPackageVersion)" />
     <PackageVersion Include="Microsoft.AspNetCore.Mvc.Razor.Extensions.Tooling.Internal" Version="$(MicrosoftAspNetCoreMvcRazorExtensionsToolingInternalPackageVersion)" />
@@ -33,6 +34,8 @@
     <PackageVersion Include="Microsoft.DiaSymReader" Version="$(MicrosoftDiaSymReaderVersion)" />
     <PackageVersion Include="Microsoft.Deployment.DotNet.Releases" Version="$(MicrosoftDeploymentDotNetReleasesVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Installers" Version="$(MicrosoftDotNetBuildTasksInstallersPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Templating" Version="$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Tasks.Workloads" Version="$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.DarcLib" Version="$(MicrosoftDotNetDarcLibVersion)" />
     <PackageVersion Include="Microsoft.DotNet.Installer.Windows.Security.TestData" Version="$(MicrosoftDotNetInstallerWindowsSecurityTestDataPackageVersion)" />
     <PackageVersion Include="Microsoft.DotNet.SignCheck" Version="$(ArcadeSdkVersion)" />
@@ -46,7 +49,6 @@
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
-    <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
@@ -67,8 +69,10 @@
     <PackageVersion Include="Microsoft.TestPlatform.Build" Version="$(MicrosoftTestPlatformBuildPackageVersion)" />
     <PackageVersion Include="Microsoft.TestPlatform.CLI" Version="$(MicrosoftTestPlatformCLIPackageVersion)" />
     <PackageVersion Include="Microsoft.VisualStudio.Composition" Version="17.4.16" />
+    <PackageVersion Include="Microsoft.VisualStudio.Sdk" Version="17.2.32505.173" />
+    <PackageVersion Include="Microsoft.VSSDK.BuildTools" Version="17.11.435" />
     <PackageVersion Include="Microsoft.VisualStudio.Setup.Configuration.Interop" Version="$(MicrosoftVisualStudioSetupConfigurationInteropVersion)" />
-    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="1.0.28" />
+    <PackageVersion Include="Microsoft.VisualStudio.SolutionPersistence" Version="$(MicrosoftVisualStudioSolutionPersistenceVersion)" />
     <PackageVersion Include="Microsoft.Web.Deployment" Version="$(WebDeploymentPackageVersion)" />
     <PackageVersion Include="Microsoft.Web.Xdt" Version="$(MicrosoftWebXdtPackageVersion)" />
     <PackageVersion Include="Microsoft.Win32.SystemEvents" Version="$(MicrosoftWin32SystemEventsPackageVersion)" />

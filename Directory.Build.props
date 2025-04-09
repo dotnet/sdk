@@ -4,30 +4,32 @@
 
   <PropertyGroup>
     <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
-    <Architecture Condition="'$(Architecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</Architecture>
-    <Architecture Condition="'$(Architecture)' == ''">x64</Architecture>
-
-    <!--
-      The finalizer.nativeproject needs to have Platform set to build for the correct architecture, but this value being set below isn't used by the project because of the build hierarchy when using the CMake SDK.
-      Instead, the Platform being set here is prior to calling the Arcade SDK, which sets PlatformName in RepoDefaults.props and modifies the OutputPath in ProjectLayout.props to include a PlatformName folder in the path.
-      Note: The redist-installer project does use Architecture. The Arcade SDK does not use either BuildArchitecture or Architecture.
-    -->
-    <Platform Condition="'$(SetPlatformFromArchitecture)' == 'true' And ('$(Platform)' == '' Or '$(Platform)' == 'AnyCPU')">$(Architecture)</Platform>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64')">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 's390x'">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'ppc64le'">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND '$(BuildArchitecture)' == 'loongarch64'">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" />
   <Import Project="$(RepositoryEngineeringDir)Analyzers.props" />
 
-  <PropertyGroup Condition="'$(PgoInstrument)' == 'true'">
-    <SkipBuildingInstallers>true</SkipBuildingInstallers>
-    <PgoTerm>-pgo</PgoTerm>
+  <PropertyGroup>
+    <IsLinux Condition="$([MSBuild]::IsOSPlatform('LINUX'))">true</IsLinux>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">win</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOSName>
+    <HostOSName Condition="'$(HostOSName)' == '' AND '$(IsLinux)' == 'true'">linux</HostOSName>
+
+    <OSName Condition="'$(OSName)' == '' AND $(TargetRid) != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(HostOSName)</OSName>
   </PropertyGroup>
 
   <PropertyGroup>
+    <SdkSrcRoot>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', 'src'))</SdkSrcRoot>
+    <PackageProjectUrl>https://github.com/dotnet/sdk</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>Latest</LangVersion>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
@@ -52,8 +54,6 @@
     <!-- do not enable analyzers on source build-->
     <EnforceCodeStyleInBuild Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</EnforceCodeStyleInBuild>
     <DisableImplicitPackageTargetFallback>true</DisableImplicitPackageTargetFallback>
-
-    <!-- <ArtifactsShippingSymbolsDir>$(ArtifactsDir)symbols\$(Configuration)\Shipping</ArtifactsShippingSymbolsDir> -->
 
     <DefineConstants Condition="'$(ContinuousIntegrationBuild)' == 'true'">$(DefineConstants);CI_BUILD</DefineConstants>
     <DefineConstants Condition="'$(OfficialBuilder)' == 'Microsoft'">$(DefineConstants);MICROSOFT_ENABLE_TELEMETRY</DefineConstants>

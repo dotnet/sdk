@@ -2,42 +2,37 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Telemetry
+namespace Microsoft.DotNet.Cli.Telemetry;
+
+internal class AllowListToSendFirstAppliedOptions(
+    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
-    internal class AllowListToSendFirstAppliedOptions : IParseResultLogRule
+    private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
+
+    public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {
-        public AllowListToSendFirstAppliedOptions(
-            HashSet<string> topLevelCommandNameAllowList)
+        var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
+        var result = new List<ApplicationInsightsEntryFormat>();
+        if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
         {
-            _topLevelCommandNameAllowList = topLevelCommandNameAllowList;
-        }
-
-        private HashSet<string> _topLevelCommandNameAllowList { get; }
-
-        public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
-        {
-            var topLevelCommandNameFromParse = parseResult.RootSubCommandResult();
-            var result = new List<ApplicationInsightsEntryFormat>();
-            if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
+            var firstOption = parseResult.RootCommandResult.Children
+                .OfType<System.CommandLine.Parsing.CommandResult>().FirstOrDefault()?
+                .Children.OfType<System.CommandLine.Parsing.CommandResult>().FirstOrDefault()?.Command.Name ?? null;
+            if (firstOption != null)
             {
-                var firstOption = parseResult.RootCommandResult.Children
-                    .OfType<System.CommandLine.Parsing.CommandResult>().FirstOrDefault()?
-                    .Children.OfType<System.CommandLine.Parsing.CommandResult>().FirstOrDefault()?.Command.Name ?? null;
-                if (firstOption != null)
-                {
-                    result.Add(new ApplicationInsightsEntryFormat(
-                        "sublevelparser/command",
-                        new Dictionary<string, string>
-                        {
-                            { "verb", topLevelCommandNameFromParse},
-                            {"argument", firstOption}
-                        },
-                        measurements));
-                }
+                result.Add(new ApplicationInsightsEntryFormat(
+                    "sublevelparser/command",
+                    new Dictionary<string, string>
+                    {
+                        { "verb", topLevelCommandNameFromParse},
+                        {"argument", firstOption}
+                    },
+                    measurements));
             }
-            return result;
         }
+        return result;
     }
 }

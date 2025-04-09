@@ -3,21 +3,15 @@
 
 #nullable disable
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 {
@@ -119,7 +113,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
-                        throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                        throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
                     }
 
                     var feedPackage = GetPackage(
@@ -162,7 +156,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         throw new ToolPackageException(
                             string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                CliStrings.ToolPackageConflictPackageId,
                                 packageId,
                                 version.ToNormalizedString()));
                     }
@@ -259,7 +253,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             if (package == null)
             {
                 _reporter?.WriteLine($"Error: failed to restore package {packageId}.");
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             return package;
@@ -322,7 +316,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             if (string.IsNullOrEmpty(packageId.ToString()))
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             var feedPackage = GetPackage(

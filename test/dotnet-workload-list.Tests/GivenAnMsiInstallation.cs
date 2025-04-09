@@ -4,8 +4,8 @@
 #nullable disable
 
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
+using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Win32;
 

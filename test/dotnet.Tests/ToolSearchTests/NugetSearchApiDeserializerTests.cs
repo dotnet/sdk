@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.NugetSearch;
-using Microsoft.DotNet.ToolPackage;
+using Microsoft.DotNet.Cli.NugetSearch;
+using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace dotnet.Tests.ToolSearchTests
 {

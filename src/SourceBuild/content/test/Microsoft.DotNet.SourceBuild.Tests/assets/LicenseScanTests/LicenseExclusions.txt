@@ -198,7 +198,6 @@ src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 # Scanner is identifying the https://github.com/SixLabors/ImageSharp/blob/master/LICENSE license as unknown. But this license is not applicable because we're
 # relying on the Spectre.Console distribution.
 # See https://github.com/dotnet/dotnet/blob/c6a7278fbb7d79fa3d1f386ef0dc8474043ed06c/src/source-build-externals/src/spectre-console/README.md?plain=1#L104
-src/source-build-externals/src/spectre-console/README.md|unknown-license-reference
 
 # Configuration, doesn't apply to source directly
 src/source-build-externals/src/vs-solutionpersistence/stylecop.json
@@ -209,9 +208,6 @@ src/source-build-externals/src/vs-solutionpersistence/stylecop.json
 
 # False positive
 src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/8.0.0/THIRD-PARTY-NOTICES.TXT|unknown
-src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.aspnetcore.app.ref/9.0.0/THIRD-PARTY-NOTICES.TXT|unknown
-src/source-build-reference-packages/src/targetPacks/ILsrc/microsoft.netcore.app.ref/3.*/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
-src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/1.6.1/ThirdPartyNotices.txt|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library/2.0.*/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
 src/source-build-reference-packages/src/targetPacks/ILsrc/netstandard.library.ref/2.1.0/THIRD-PARTY-NOTICES.TXT|codesourcery-2004
 src/source-build-reference-packages/src/textOnlyPackages/src/microsoft.netcore.*/1.*/ThirdPartyNotices.txt|unknown-license-reference
@@ -249,7 +245,6 @@ src/wpf/eng/WpfArcadeSdk/tools/GenXmlStringTable.pl|proprietary-license
 
 # False positive
 src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationUI/MS/Internal/Documents/RMPublishingDialog.RightsTable.cs|unknown-license-reference
-src/wpf/src/Microsoft.DotNet.Wpf/src/PresentationFramework/System/Windows/WindowBackdropType.cs|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resources/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Resources/Theme/*.xaml|bsd-2-clause-views
 src/wpf/src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/*.xaml|bsd-2-clause-views

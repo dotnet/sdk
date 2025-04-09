@@ -1,7 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Hidden.List.Package;
+using Microsoft.DotNet.Cli.Extensions;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -13,7 +14,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         {
             var result = Parser.Instance.Parse("dotnet list package --interactive");
 
-            result.OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand()).Should().ContainSingle("--interactive");
+            result.OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand()).Should().ContainSingle("--interactive");
             result.Errors.Should().BeEmpty();
         }
 
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result = Parser.Instance.Parse($"dotnet list package {inputOption} {value}");
 
             result
-                .OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand())
+                .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())
                 .Should()
                 .Contain($"--verbosity:{value.ToLowerInvariant()}");
             result.Errors.Should().BeEmpty();
@@ -60,7 +61,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
             var result = Parser.Instance.Parse($"dotnet list package");
 
             result
-                .OptionValuesToBeForwarded(ListPackageReferencesCommandParser.GetCommand())
+                .OptionValuesToBeForwarded(ListPackageCommandParser.GetCommand())
                 .Should()
                 .NotContain(i => i.Contains("--verbosity", StringComparison.OrdinalIgnoreCase))
                 .And.NotContain(i => i.Contains("-v", StringComparison.OrdinalIgnoreCase));

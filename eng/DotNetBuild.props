@@ -13,7 +13,6 @@
     <PropertyGroup>
       <InnerBuildArgs>$(InnerBuildArgs) /p:Projects="$(InnerSourceBuildRepoRoot)\source-build.slnf"</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:UseSharedCompilation=false</InnerBuildArgs>
-      <InnerBuildArgs>$(InnerBuildArgs) /p:SkipBuildingInstallers=true</InnerBuildArgs>
       <InnerBuildArgs>$(InnerBuildArgs) /p:IncludeAdditionalSharedFrameworks=false</InnerBuildArgs>
       <InnerBuildArgs Condition="'$(DotNetBuildUseMonoRuntime)' == 'true'">$(InnerBuildArgs) /p:DISABLE_CROSSGEN=true</InnerBuildArgs>
     </PropertyGroup>

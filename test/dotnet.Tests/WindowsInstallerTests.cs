@@ -6,8 +6,8 @@
 using System.IO.Pipes;
 using System.Reflection;
 using System.Runtime.Versioning;
-using Microsoft.DotNet.Installer.Windows;
-using Microsoft.DotNet.Installer.Windows.Security;
+using Microsoft.DotNet.Cli.Installer.Windows;
+using Microsoft.DotNet.Cli.Installer.Windows.Security;
 
 namespace Microsoft.DotNet.Tests
 {

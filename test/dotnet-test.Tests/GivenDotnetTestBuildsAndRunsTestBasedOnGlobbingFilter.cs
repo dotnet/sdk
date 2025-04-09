@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Test;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -26,7 +28,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar));
 
             // Assert that the bin folder hasn't been modified
@@ -45,7 +46,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [Fact]
@@ -69,7 +70,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, filterExpression);
 
             // Assert that the bin folder hasn't been modified
@@ -88,7 +88,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 2");
             }
 
-            result.ExitCode.Should().Be(ExitCode.GenericFailure);
+            // TestProject produces 1 passed, 1 failed, and 1 skipped.
+            // OtherTestProject produces 1 passed and 1 skipped.
+            // We got 2 exit codes. Success and AtLeastOneTestFailed. So, we aggregate the final exit code to AtLeastOneTestFailed.
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
 
@@ -104,7 +107,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
                                     .WithTraceOutput()
                                     .Execute(TestingPlatformOptions.TestModulesFilterOption.Name, $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/TestProject.dll".Replace('/', Path.DirectorySeparatorChar),
                                     TestingPlatformOptions.TestModulesRootDirectoryOption.Name, testInstance.TestRoot);
@@ -121,7 +123,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
     }
 }

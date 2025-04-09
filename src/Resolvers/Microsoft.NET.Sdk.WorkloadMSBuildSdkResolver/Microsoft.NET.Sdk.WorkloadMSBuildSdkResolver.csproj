@@ -20,11 +20,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
-    <Compile Include="..\..\Cli\dotnet\commands\dotnet-workload\install\WorkloadInstallRecords\**\*.cs"
-             Exclude="..\..\Cli\dotnet\commands\dotnet-workload\install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
+    <Compile Include="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\**\*.cs"
+             Exclude="..\..\Cli\dotnet\Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs"
              LinkBase="WorkloadInstallRecords" />
-    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common"/>
-    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common"/>
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">

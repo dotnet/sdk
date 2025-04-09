@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Diagnostics;
-using Microsoft.DotNet.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory;
 
 namespace Microsoft.DotNet.Tests.ArgumentForwarding
 {
@@ -13,14 +11,14 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         private static readonly string s_reflectorDllName = "ArgumentsReflector.dll";
         private static readonly string s_reflectorCmdName = "reflector_cmd";
 
-        private string ReflectorPath { get; set; }
-        private string ReflectorCmdPath { get; set; }
+        private string ReflectorPath { get; set; } = string.Empty;
+        private string ReflectorCmdPath { get; set; } = string.Empty;
 
         public ArgumentForwardingTests(ITestOutputHelper log) : base(log)
         {
             // This test has a dependency on an argument reflector
             // Make sure it's been binplaced properly
-            FindAndEnsureReflectorPresent();
+            FindAndEnsureReflectorPresent();    
         }
 
         private void FindAndEnsureReflectorPresent()
@@ -203,9 +201,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorOutput(string reflectorOutput)
+        private string[] ParseReflectorOutput(string? reflectorOutput)
         {
-            return reflectorOutput.TrimEnd('\r', '\n').Split(',');
+            return reflectorOutput?.TrimEnd('\r', '\n').Split(',') ?? Array.Empty<string>();
         }
 
         /// <summary>
@@ -215,9 +213,9 @@ namespace Microsoft.DotNet.Tests.ArgumentForwarding
         /// </summary>
         /// <param name="reflectorOutput"></param>
         /// <returns></returns>
-        private string[] ParseReflectorCmdOutput(string reflectorOutput)
+        private string[] ParseReflectorCmdOutput(string? reflectorOutput)
         {
-            var args = reflectorOutput.Split(new string[] { "," }, StringSplitOptions.None);
+            var args = reflectorOutput?.Split(new string[] { "," }, StringSplitOptions.None) ?? Array.Empty<string>();
             args[args.Length - 1] = args[args.Length - 1].TrimEnd('\r', '\n');
 
             // To properly pass args to cmd, quotes inside a parameter are doubled

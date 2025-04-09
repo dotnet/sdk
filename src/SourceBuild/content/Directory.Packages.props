@@ -8,6 +8,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Arcade dependencies -->
+    <PackageVersion Include="Microsoft.DotNet.VersionTools" Version="$(MicrosoftDotNetVersionToolsVersion)" />
     <!-- Command-line-api dependencies -->
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <!-- MSBuild dependencies -->

@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Installer.Windows;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Installer.Windows;
 using Microsoft.Management.Infrastructure;
 using Microsoft.Management.Infrastructure.Serialization;
 

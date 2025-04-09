@@ -152,11 +152,14 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [Fact]
-        public void Target_after_AfterSdkPublish_executes()
+        [Theory]
+        [InlineData("Microsoft.NET.Sdk")]
+        [InlineData("Microsoft.NET.Sdk.Web")]
+        public void Target_after_AfterSdkPublish_executes(string sdk)
         {
             var projectChanges = (XDocument doc) =>
             {
+                doc.Root.SetAttributeValue("Sdk", sdk);
                 var ns = doc.Root.Name.Namespace;
                 var target = new XElement("Target");
                 target.ReplaceAttributes(new XAttribute[] { new XAttribute("Name", "AfterAfterSdkPublish"), new XAttribute("AfterTargets", "AfterSdkPublish") });

@@ -31,7 +31,7 @@
   "symbols/UseMSTestSdk/displayName": "Использовать MSTest.Sdk",
   "symbols/TestRunner/description": "Выберите средство выполнения тестов или платформу. Дополнительные сведения на https://aka.ms/mstest/sdk/extensions-profile",
   "symbols/TestRunner/displayName": "Средство выполнения тестов",
-  "symbols/TestRunner/choices/MSTest/description": "Используйте MSTest Runner (Microsoft.Testing.Platform)",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
   "symbols/TestRunner/choices/VSTest/description": "Используйте платформу VSTest",
   "symbols/CoverageTool/description": "Инструмент покрытия, который следует использовать для проекта.",
   "symbols/CoverageTool/displayName": "Средство оценки объема протестированного кода",

@@ -4,8 +4,9 @@
 #nullable disable
 
 using System.Text.Json;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
@@ -89,7 +90,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             {
                 throw new ToolPackageException(
                     string.Format(
-                        CommonLocalizableStrings.FailedToRetrieveToolConfiguration,
+                        CliStrings.FailedToRetrieveToolConfiguration,
                         Id,
                         ex.Message),
                     ex);

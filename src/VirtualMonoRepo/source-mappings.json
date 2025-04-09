@@ -14,6 +14,8 @@
 
     "sourceMappingsPath": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
 
+    "thirdPartyNoticesTemplatePath": "src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt",
+
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
     "additionalMappings": [
@@ -51,7 +53,9 @@
             "exclude": [
                 "src/Aspire.Dashboard/**/*",
                 "samples/**/*"
-            ]
+            ],
+            // Aspire no longer flows/changes, we only keep it for the workload manifest generation
+            "disableSynchronization": true
         },
         {
             "name": "aspnetcore",
@@ -113,6 +117,7 @@
         {
             "name": "scenario-tests",
             "defaultRemote": "https://github.com/dotnet/scenario-tests",
+            // Migrated onto the flat flow
             "disableSynchronization": true
         },
         {
@@ -145,7 +150,9 @@
         },
         {
             "name": "sourcelink",
-            "defaultRemote": "https://github.com/dotnet/sourcelink"
+            "defaultRemote": "https://github.com/dotnet/sourcelink",
+            // Migrated onto the flat flow
+            "disableSynchronization": true
         },
         {
             "name": "symreader",
@@ -154,10 +161,6 @@
         {
             "name": "templating",
             "defaultRemote": "https://github.com/dotnet/templating"
-        },
-        {
-            "name": "testfx",
-            "defaultRemote": "https://github.com/microsoft/testfx"
         },
         {
             "name": "vstest",
@@ -181,17 +184,18 @@
             "name": "xliff-tasks",
             "defaultRemote": "https://github.com/dotnet/xliff-tasks",
             "ignoreDefaults": true,
-            "exclude": [ "**/*" ]
+            "exclude": [ "**/*" ],
+            "disableSynchronization": true
         },
         {
             "name": "winforms",
             "defaultRemote": "https://github.com/dotnet/winforms",
             "exclude": [
                 // Non-OSS license - https://github.com/dotnet/source-build/issues/3772
-                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.cs",
-                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.ico",
-                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/**/*.resx",
-                "src/System.Windows.Forms/tests/IntegrationTests/DesignSurface/LICENSE.txt"
+                "src/test/integration/DesignSurface/**/*.cs",
+                "src/test/integration/DesignSurface/**/*.ico",
+                "src/test/integration/DesignSurface/**/*.resx",
+                "src/test/integration/DesignSurface/THIRD-PARTY-NOTICE.txt"
             ]
         },
         {

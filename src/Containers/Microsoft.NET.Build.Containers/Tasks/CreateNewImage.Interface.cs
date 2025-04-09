@@ -20,7 +20,6 @@ partial class CreateNewImage
     /// The base registry to pull from.
     /// Ex: mcr.microsoft.com
     /// </summary>
-    [Required]
     public string BaseRegistry { get; set; }
 
     /// <summary>
@@ -171,6 +170,10 @@ partial class CreateNewImage
     /// </summary>
     public string? ImageFormat { get; set; }
 
+    /// If true, the tooling will skip the publishing step.
+    /// </summary>
+    public bool SkipPublishing { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -188,6 +191,9 @@ partial class CreateNewImage
 
     [Output]
     public ITaskItem[] GeneratedContainerNames { get; set; }
+
+    [Output]
+    public ITaskItem? GeneratedDigestLabel { get; set; }
 
     public CreateNewImage()
     {
@@ -224,6 +230,7 @@ partial class CreateNewImage
         GeneratedArchiveOutputPath = "";
         GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
+        GeneratedDigestLabel = null;
 
         GenerateLabels = false;
         GenerateDigestLabel = false;

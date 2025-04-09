@@ -1,7 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
@@ -11,49 +12,8 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
-public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
+public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
 {
-    #region Parameters
-    /// <summary>
-    /// Manifests to include in the image index.
-    /// </summary>
-    [Required]
-    public ITaskItem[] GeneratedContainers { get; set; }
-
-    /// <summary>
-    /// The registry to push the image index to.
-    /// </summary>
-    [Required]
-    public string OutputRegistry { get; set; }
-
-    /// <summary>
-    /// The name of the output image index (manifest list) that will be pushed to the registry.
-    /// </summary>
-    [Required]
-    public string Repository { get; set; }
-
-    /// <summary>
-    /// The tag to associate with the new image index (manifest list).
-    /// </summary>
-    [Required]
-    public string[] ImageTags { get; set; }
-
-    /// <summary>
-    /// The generated image index (manifest list) in JSON format.
-    /// </summary>
-    [Output]
-    public string GeneratedImageIndex { get; set; }
-
-    public CreateImageIndex()
-    {
-        GeneratedContainers = Array.Empty<ITaskItem>();
-        OutputRegistry = string.Empty;
-        Repository = string.Empty;
-        ImageTags = Array.Empty<string>();
-        GeneratedImageIndex = string.Empty;
-    }
-    #endregion
-
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
     public void Cancel() => _cancellationTokenSource.Cancel();
@@ -62,6 +22,8 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
     {
         _cancellationTokenSource.Dispose();
     }
+
+    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public override bool Execute()
     {
@@ -84,9 +46,9 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        var images = ParseImages();
-        if (Log.HasLoggedErrors)
+        if (LocalRegistry == "Podman")
         {
+            Log.LogError(Strings.ImageIndex_PodmanNotSupported);
             return false;
         }
 
@@ -94,34 +56,42 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
-        logger.LogInformation(Strings.BuildingImageIndex, GetRepositoryAndTagsString(), string.Join(", ", images.Select(i => i.ManifestDigest)));
+        RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
+        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
+        SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
-        try
-        {
-            (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+        DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
+            Repository,
+            ImageTags,
+            msbuildLoggerFactory,
+            ArchiveOutputPath,
+            OutputRegistry,
+            LocalRegistry);
 
-            GeneratedImageIndex = imageIndex;
+        var images = ParseImages(destinationImageReference.Kind);
+        if (Log.HasLoggedErrors)
+        {
+            return false;
+        }
 
-            await PushToRemoteRegistry(GeneratedImageIndex, mediaType, logger, cancellationToken);
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (ArgumentException ex)
-        {
-            Log.LogErrorFromException(ex);
-        }
+        var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
+
+        GeneratedImageIndex = multiArchImage.ImageIndex;
+        GeneratedArchiveOutputPath = ArchiveOutputPath;
+
+        logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
+
+        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
+
+        await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
+            .ConfigureAwait(false); 
 
         return !Log.HasLoggedErrors;
     }
 
-    private ImageInfo[] ParseImages()
+    private BuiltImage[] ParseImages(DestinationImageReferenceKind destinationKind)
     {
-        var images = new ImageInfo[GeneratedContainers.Length];
+        var images = new BuiltImage[GeneratedContainers.Length];
 
         for (int i = 0; i < GeneratedContainers.Length; i++)
         {
@@ -132,38 +102,95 @@ public sealed class CreateImageIndex : Microsoft.Build.Utilities.Task, ICancelab
             string manifest = unparsedImage.GetMetadata("Manifest");
             string manifestMediaType = unparsedImage.GetMetadata("ManifestMediaType");
 
-            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest))
+            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest) || string.IsNullOrEmpty(manifestMediaType))
             {
-                Log.LogError(Strings.InvalidImageMetadata, unparsedImage.ItemSpec);
+                Log.LogError(Strings.InvalidImageMetadata);
                 break;
             }
 
-            images[i] = new ImageInfo
+            (string architecture, string os) = GetArchitectureAndOsFromConfig(config);
+
+            // We don't need ImageDigest, ImageSha, Layers for remote registry, as the individual images should be pushed already
+            string? imageDigest = null;
+            string? imageSha = null;
+            List<ManifestLayer>? layers = null;
+
+            if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
+            {
+                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
+                if (manifestV2 == null)
+                {
+                    Log.LogError(Strings.InvalidImageManifest);
+                    break;
+                }
+
+                imageDigest = manifestV2.Config.digest;
+                imageSha = DigestUtils.GetShaFromDigest(imageDigest);
+                layers = manifestV2.Layers;
+            }     
+
+            images[i] = new BuiltImage()
             {
                 Config = config,
-                ManifestDigest = manifestDigest,
+                ImageDigest = imageDigest,
+                ImageSha = imageSha,
                 Manifest = manifest,
-                ManifestMediaType = manifestMediaType
+                ManifestDigest = manifestDigest,
+                ManifestMediaType = manifestMediaType,
+                Layers = layers,
+                OS = os,
+                Architecture = architecture
             };
         }
 
         return images;
     }
 
-    private async Task PushToRemoteRegistry(string manifestList, string mediaType, ILogger logger, CancellationToken cancellationToken)
+    private (string, string) GetArchitectureAndOsFromConfig(string config)
     {
-        cancellationToken.ThrowIfCancellationRequested();
-        Debug.Assert(ImageTags.Length > 0);
-        var registry = new Registry(OutputRegistry, logger, RegistryMode.Push);
-        await registry.PushManifestListAsync(Repository, ImageTags, manifestList, mediaType, cancellationToken).ConfigureAwait(false);
-        logger.LogInformation(Strings.ImageIndexUploadedToRegistry, GetRepositoryAndTagsString(), OutputRegistry);
+        var configJson = JsonNode.Parse(config) as JsonObject;
+        if (configJson is null)
+        {
+            Log.LogError(Strings.InvalidImageConfig);
+            return (string.Empty, string.Empty);
+        }
+        var architecture = configJson["architecture"]?.ToString();
+        if (architecture is null)
+        {
+            Log.LogError(Strings.ImageConfigMissingArchitecture);
+            return (string.Empty, string.Empty);
+        } 
+        var os = configJson["os"]?.ToString();
+        if (os is null)
+        {
+            Log.LogError(Strings.ImageConfigMissingOs);
+            return (string.Empty, string.Empty);
+        }
+        return (architecture, os);
     }
 
-    private string? _repositoryAndTagsString = null;
-
-    private string GetRepositoryAndTagsString()
+    private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)
     {
-        _repositoryAndTagsString ??= $"{Repository}:{string.Join(", ", ImageTags)}";
-        return _repositoryAndTagsString;
+        switch (destinationImageKind)
+        {
+            case DestinationImageReferenceKind.LocalRegistry:
+                return new MultiArchImage()
+                {
+                    // For multi-arch we publish only oci-formatted image tarballs.
+                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
+                    ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
+                    Images = images
+                };
+            case DestinationImageReferenceKind.RemoteRegistry:
+                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                return new MultiArchImage()
+                {
+                    ImageIndex = imageIndex,
+                    ImageIndexMediaType = mediaType,
+                    // For remote registry we don't need individual images, as they should be pushed already
+                };
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
     }
 }

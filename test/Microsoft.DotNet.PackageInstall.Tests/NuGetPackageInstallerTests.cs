@@ -8,8 +8,8 @@ using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -186,7 +186,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -245,7 +245,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    CliStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 

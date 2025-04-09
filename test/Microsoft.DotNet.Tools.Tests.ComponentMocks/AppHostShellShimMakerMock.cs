@@ -4,7 +4,7 @@
 #nullable disable
 
 using System.Text.Json;
-using Microsoft.DotNet.ShellShim;
+using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks

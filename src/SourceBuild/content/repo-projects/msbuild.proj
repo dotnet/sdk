@@ -19,6 +19,7 @@
     <RepositoryReference Include="roslyn" />
     <RepositoryReference Include="runtime" />
     <RepositoryReference Include="source-build-reference-packages" />
+    <RepositoryReference Include="source-build-externals" />
   </ItemGroup>
 
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(OfficialBuildId)' != '' and '$(EnableIBCOptimization)' == 'true'">

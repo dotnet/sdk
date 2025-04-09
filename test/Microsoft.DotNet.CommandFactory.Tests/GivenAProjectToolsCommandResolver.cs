@@ -3,13 +3,13 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.CommandFactory;
 using Microsoft.DotNet.Tools.Test.Utilities;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.CommandFactory.LocalizableStrings;
+using Microsoft.DotNet.Cli;
 
 namespace Microsoft.DotNet.Tests
 {
@@ -375,7 +375,7 @@ namespace Microsoft.DotNet.Tests
             new DotnetCommand(Log)
             .WithWorkingDirectory(testProjectDirectory)
             .Execute("fallbackfoldertool", $"/p:RestorePackagesPath={nugetPackages}")
-            .Should().Fail().And.NotHaveStdOutContaining(string.Format(LocalizableStrings.CommandAssembliesNotFound, "dotnet-fallbackfoldertool"));
+            .Should().Fail().And.NotHaveStdOutContaining(string.Format(CliStrings.CommandAssembliesNotFound, "dotnet-fallbackfoldertool"));
         }
 
         private void PopulateFallbackFolder(string testProjectDirectory, string fallbackFolder)

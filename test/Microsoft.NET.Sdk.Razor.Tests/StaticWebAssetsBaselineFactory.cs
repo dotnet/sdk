@@ -27,11 +27,15 @@ public partial class StaticWebAssetsBaselineFactory
     [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.lib\.module\.js)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JSInitializerRegex();
 
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.modules\.json)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex JSModuleManifestRegex();
+
     private static readonly IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements =
     [
         (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
         (ScopedAppBundleRegex(),"$1__fingerprint__$3$4"),
         (JSInitializerRegex(), "$1__fingerprint__$3$4"),
+        (JSModuleManifestRegex(), "$1__fingerprint__$3$4"),
         (EmbeddedFingerprintExpression(), "#[.{fingerprint=__fingerprint__}]$1"),
         (FingerprintedSiteCssRegex(), "fingerprint-site$1__fingerprint__$3$4"),
     ];
@@ -60,6 +64,7 @@ public partial class StaticWebAssetsBaselineFactory
         "blazor.server",
         "dotnet.runtime",
         "dotnet.native",
+        "dotnet.boot",
         "dotnet"
     ];
 
@@ -110,8 +115,9 @@ public partial class StaticWebAssetsBaselineFactory
 
         foreach (var endpoint in manifest.Endpoints)
         {
-            foreach (var header in endpoint.ResponseHeaders)
+            for (var i = 0; i < endpoint.ResponseHeaders.Length; i++)
             {
+                ref var header = ref endpoint.ResponseHeaders[i];
                 switch (header.Name)
                 {
                     case "Content-Length":
@@ -141,8 +147,9 @@ public partial class StaticWebAssetsBaselineFactory
                 }
             }
 
-            foreach (var property in endpoint.EndpointProperties)
+            for (var i = 0; i < endpoint.EndpointProperties.Length; i++)
             {
+                ref var property = ref endpoint.EndpointProperties[i];
                 switch (property.Name)
                 {
                     case "fingerprint":
@@ -159,8 +166,9 @@ public partial class StaticWebAssetsBaselineFactory
                 ReplaceFileName(endpoint.Route);
             }
 
-            foreach (var selector in endpoint.Selectors)
+            for (var i = 0; i < endpoint.Selectors.Length; i++)
             {
+                ref var selector = ref endpoint.Selectors[i];
                 selector.Quality = "__quality__";
             }
 
@@ -247,6 +255,8 @@ public partial class StaticWebAssetsBaselineFactory
 
         asset.Fingerprint = string.IsNullOrEmpty(asset.Fingerprint) ? asset.Fingerprint : "__fingerprint__";
         asset.Integrity = string.IsNullOrEmpty(asset.Integrity) ? asset.Integrity : "__integrity__";
+        asset.FileLength = -1;
+        asset.LastWriteTime = DateTimeOffset.MinValue;
     }
 
     internal IEnumerable<string> TemplatizeExpectedFiles(

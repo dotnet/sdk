@@ -7,10 +7,11 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions.Extensions;
 using ManifestReaderTests;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Workloads.Workload.Config;
-using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Versioning;
@@ -278,7 +279,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             // check that update did not fail
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().NotContain(string.Format(Workloads.Workload.Install.LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().NotContain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
 
         }
 
@@ -345,7 +346,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             //  Assert
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
         [Theory]
@@ -411,7 +412,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             Directory.GetFiles(adManifestDir).Should().BeEmpty();
 
             _reporter.Lines.Should().NotContain(l => l.ToLowerInvariant().Contains("fail"));
-            _reporter.Lines.Should().Contain(string.Format(Workloads.Workload.Install.LocalizableStrings.AdManifestPackageDoesNotExist, testManifestName));
+            _reporter.Lines.Should().Contain(string.Format(CliCommandStrings.AdManifestPackageDoesNotExist, testManifestName));
         }
 
         [Fact]
@@ -601,13 +602,13 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             {
                 commandResult
                     .Should()
-                    .HaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
+                    .HaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
             else
             {
                 commandResult
                     .Should()
-                    .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
+                    .NotHaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
             }
 
         }
@@ -637,10 +638,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
 
             commandResult
                 .Should()
-                .NotHaveStdOutContaining(Workloads.Workload.Install.LocalizableStrings.WorkloadUpdatesAvailable);
-
-
-
+                .NotHaveStdOutContaining(CliCommandStrings.WorkloadInstallWorkloadUpdatesAvailable);
         }
 
         [Fact]

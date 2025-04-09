@@ -5,22 +5,21 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal interface IToolPackage
 {
-    internal interface IToolPackage
-    {
-        PackageId Id { get; }
+    PackageId Id { get; }
 
-        NuGetVersion Version { get; }
+    NuGetVersion Version { get; }
 
-        DirectoryPath PackageDirectory { get; }
+    DirectoryPath PackageDirectory { get; }
 
-        RestoredCommand Command { get; }
+    RestoredCommand Command { get; }
 
-        IEnumerable<string> Warnings { get; }
+    IEnumerable<string> Warnings { get; }
 
-        IReadOnlyList<FilePath> PackagedShims { get; }
+    IReadOnlyList<FilePath> PackagedShims { get; }
 
-        IEnumerable<NuGetFramework> Frameworks { get; }
-    }
+    IEnumerable<NuGetFramework> Frameworks { get; }
 }

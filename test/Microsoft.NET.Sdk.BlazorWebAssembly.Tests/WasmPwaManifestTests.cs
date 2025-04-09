@@ -38,7 +38,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildOutputDirectory = buildCommand.GetOutputDirectory(DefaultTfm).ToString();
 
-            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.boot.json")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", WasmBootConfigFileName)).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().Exist();
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazorwasm.wasm")).Should().Exist();
 

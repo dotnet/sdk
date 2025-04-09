@@ -42,13 +42,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -94,13 +94,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -146,13 +146,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -198,13 +198,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             // Assert
             var expectedFiles = new[]
             {
-                "wwwroot/_framework/blazor.boot.json",
+                $"wwwroot/_framework/{WasmBootConfigFileName}",
                 "wwwroot/_framework/RazorClassLibrary.wasm"
             };
 
             outputDirectory.Should().HaveFiles(expectedFiles);
 
-            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", "blazor.boot.json"));
+            var bootJson = ReadBootJsonData(Path.Combine(outputDirectory.ToString(), "wwwroot", "_framework", WasmBootConfigFileName));
 
             // And that it has been labelled as a dynamic assembly in the boot.json
             var lazyAssemblies = bootJson.resources.lazyAssembly;
@@ -264,9 +264,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         private static BootJsonData ReadBootJsonData(string path)
         {
-            return JsonSerializer.Deserialize<BootJsonData>(
-                File.ReadAllText(path),
-                new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            return BootJsonDataLoader.ParseBootData(path);
         }
     }
 }

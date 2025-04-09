@@ -4,12 +4,10 @@
 #nullable disable
 
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
 using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
-using Microsoft.VisualStudio.SolutionPersistence.Serializer.SlnV12;
+using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -20,6 +18,7 @@ namespace Microsoft.DotNet.Cli.Sln.Add.Tests
         public const string VBProjectTypeGuid = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}";
         public const string SolutionFolderGuid = "{2150E333-8FDC-42A3-9474-1A3956D46DE8}";
         public const string SharedProjectGuid = "{D954291E-2A0B-460D-934E-DC6B0785DB48}";
+        public const string DefaultProjectGuid = "{130159A9-F047-44B3-88CF-0CF7F02ED50F}";
     }
 
     public class GivenDotnetSlnAdd : SdkTest
@@ -70,7 +69,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute($"{solutionCommand} {commandName}".Trim().Split());
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Theory]
@@ -81,8 +80,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.slnx", "add");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.slnx")}");
         }
 
         [Theory]
@@ -101,7 +100,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, solutionName, "add", "p.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindSolutionOrDirectory, solutionName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -122,7 +121,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"InvalidSolution{solutionExtension}", "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, $"InvalidSolution{solutionExtension}"), "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -149,7 +148,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionPath, "*"));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidSolutionFormatString, solutionPath, "*"));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -169,7 +168,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.SpecifyAtLeastOneProjectToAdd);
+            cmd.StdErr.Should().Be(CliStrings.SpecifyAtLeastOneProjectToAdd);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -188,7 +187,7 @@ Options:
                 .WithWorkingDirectory(solutionPath)
                 .Execute(solutionCommand, "add", "App.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.SolutionDoesNotExist, solutionPath + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -207,7 +206,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "add", projectToAdd);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -246,10 +245,11 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln", true, ".sln")]
-        [InlineData("sln", false, ".sln")]
-        [InlineData("solution", true, ".sln")]
-        [InlineData("solution", false, ".sln")]
+        // needs https://github.com/microsoft/vs-solutionpersistence/pull/101
+        // [InlineData("sln", true, ".sln")]
+        // [InlineData("sln", false, ".sln")]
+        // [InlineData("solution", true, ".sln")]
+        // [InlineData("solution", false, ".sln")]
         [InlineData("sln", true, ".slnx")]
         [InlineData("solution", false, ".slnx")]
         public void WhenNestedProjectIsAddedSolutionFoldersAreCreatedBuild(string solutionCommand, bool fooFirst, string solutionExtension)
@@ -292,7 +292,7 @@ Options:
 
         }
 
-        [Theory(Skip = "Having projects with the same name in different paths is allowed.")]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/47859")]
         [InlineData("sln")]
         [InlineData("solution")]
         public void WhenNestedDuplicateProjectIsAddedToASolutionFolder(string solutionCommand)
@@ -371,7 +371,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(
-                    CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
+                    CliStrings.CouldNotFindAnyProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToAdd)));
 
             File.ReadAllText(slnFullPath)
@@ -400,7 +400,7 @@ Options:
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
                 string.Format(
-                    CommonLocalizableStrings.MoreThanOneProjectInDirectory,
+                    CliStrings.MoreThanOneProjectInDirectory,
                     Path.Combine(projectDirectory, directoryToAdd)));
 
             File.ReadAllText(slnFullPath)
@@ -558,7 +558,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectPath));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAddedToTheSolution, projectPath));
             cmd.StdErr.Should().BeEmpty();
         }
 
@@ -619,7 +619,7 @@ Options:
                     .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
             cmd.StdOut.Should().BeEmpty();
-            cmd.StdErr.Should().Match(string.Format(CommonLocalizableStrings.InvalidProjectWithExceptionMessage, '*', '*'));
+            cmd.StdErr.Should().Match(string.Format(CliStrings.InvalidProjectWithExceptionMessage, '*', '*'));
 
             solution = await serializer.OpenAsync(Path.Combine(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
             solution.SolutionProjects.Count().Should().Be(expectedNumberOfProjects);
@@ -692,7 +692,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.SolutionAlreadyContainsProject, solutionPath, projectToAdd));
         }
 
         [Theory]
@@ -715,7 +715,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd, "idonotexist.csproj");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, "idonotexist.csproj"));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, "idonotexist.csproj"));
 
             File.ReadAllText(slnFullPath)
                 .Should().BeVisuallyEquivalentTo(contentBefore);
@@ -750,13 +750,13 @@ Options:
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
         [InlineData("sln", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
-        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("sln", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndCSharpProject", "CSharpProject", "CSharpProject.csproj", ProjectTypeGuids.CSharpProjectTypeGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndFSharpProject", "FSharpProject", "FSharpProject.fsproj", ProjectTypeGuids.FSharpProjectTypeGuid)]
         [InlineData("solution", "SlnFileWithNoProjectReferencesAndVBProject", "VBProject", "VBProject.vbproj", ProjectTypeGuids.VBProjectTypeGuid)]
-        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
-        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", "{130159A9-F047-44B3-88CF-0CF7F02ED50F}")]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithSingleProjectTypeGuid", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
+        [InlineData("solution", "SlnFileWithNoProjectReferencesAndUnknownProjectWithMultipleProjectTypeGuids", "UnknownProject", "UnknownProject.unknownproj", ProjectTypeGuids.DefaultProjectGuid)]
         public async Task WhenPassedAProjectItAddsCorrectProjectTypeGuid(
             string solutionCommand,
             string testAsset,
@@ -775,7 +775,7 @@ Options:
                 .Execute(solutionCommand, "App.sln", "add", projectToAdd);
             cmd.Should().Pass();
             cmd.StdErr.Should().BeEmpty();
-            cmd.StdOut.Should().Be(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
 
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Combine(projectDirectory, "App.sln"));
             SolutionModel solution = await serializer.OpenAsync(Path.Combine(projectDirectory, "App.sln"), CancellationToken.None);
@@ -789,7 +789,7 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
-        public void WhenPassedAProjectWithoutATypeGuidItErrors(string solutionCommand, string solutionExtension)
+        public void WhenPassedAProjectWithoutATypeGuidNorDefaultTypeGuidItErrors(string solutionCommand, string solutionExtension)
         {
             var solutionDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithNoProjectReferencesAndUnknownProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
@@ -806,13 +806,33 @@ Options:
             cmd.Should().Pass();
             cmd.StdErr.Should().Be(
                 string.Format(
-                    CommonLocalizableStrings.UnsupportedProjectType,
+                    CliStrings.UnsupportedProjectType,
                     Path.Combine(solutionDirectory, projectToAdd)));
             cmd.StdOut.Should().BeEmpty();
 
             File.ReadAllText(solutionPath)
                 .Should()
                 .BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public void WhenPassedAProjectWithDefaultProjectGuidItPasses(string solutionCommand, string solutionExtension)
+        {
+            var solutionDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndDefaultProjectType", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+            
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(solutionDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", "Unknown.unknownproj");
+            
+            cmd.Should().Pass();
+            cmd.StdErr.Should().BeEmpty();
         }
 
         [Theory]
@@ -933,7 +953,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -956,7 +976,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -980,7 +1000,7 @@ Options:
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining(string.Format(CommonLocalizableStrings.ProjectAddedToTheSolution, projectToAdd));
+                .HaveStdOutContaining(string.Format(CliStrings.ProjectAddedToTheSolution, projectToAdd));
         }
 
         [Theory]
@@ -1059,7 +1079,7 @@ Options:
                 .Execute(solutionCommand, $"App{solutionExtension}", "add", "--solution-folder", "blah", "--in-root", projectToAdd);
             cmd.Should().Fail();
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
-            cmd.StdErr.Should().Be(Tools.Sln.LocalizableStrings.SolutionFolderAndInRootMutuallyExclusive);
+            cmd.StdErr.Should().Be(CliCommandStrings.SolutionFolderAndInRootMutuallyExclusive);
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
 
             File.ReadAllText(solutionPath)
@@ -1096,6 +1116,29 @@ Options:
                 solutionExtension: solutionExtension);
             File.ReadAllText(slnPath)
                 .Should().BeVisuallyEquivalentTo(expectedSlnContents);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".sln")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenAddingProjectOutsideDirectoryItShouldNotAddSolutionFolders(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndCsprojInParentDir", identifier: $"GivenDotnetSlnAdd-{solutionCommand}{solutionExtension}")
+                .WithSource()
+                .Path;
+            var projectToAdd = Path.Combine("..", "Lib", "Lib.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(Path.Join(projectDirectory, "Dir"))
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
+            cmd.Should().Pass();
+            // Should have no solution folders
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, "Dir", $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, "Dir", $"App{solutionExtension}"), CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(1);
+            solution.SolutionFolders.Count.Should().Be(0);
         }
 
         private string GetExpectedSlnContents(
@@ -1204,8 +1247,8 @@ Options:
                 .Execute(solutionCommand, "add", arguments, "Lib", $"App{solutionExtension}", projectArg);
             cmd.Should().Fail();
             cmd.StdErr.Should().BeVisuallyEquivalentTo(
-                string.Format(CommonLocalizableStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
-                + CommonLocalizableStrings.DidYouMean + Environment.NewLine
+                string.Format(CliStrings.SolutionArgumentMisplaced, $"App{solutionExtension}") + Environment.NewLine
+                + CliStrings.DidYouMean + Environment.NewLine
                 + $"  dotnet solution App{solutionExtension} add {arguments} Lib {projectArg}"
             );
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");

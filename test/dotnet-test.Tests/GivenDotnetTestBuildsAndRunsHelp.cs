@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools.Common;
+using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Utils;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
+using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
@@ -21,8 +23,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .Execute(CliConstants.HelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.HelpOption.Name, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -30,7 +31,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(@"Options:\s+--[\s\S]*", result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [InlineData(TestingConstants.Debug)]
@@ -44,8 +45,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnableTestingPlatform()
-                                    .Execute(CliConstants.ShortHelpOptionKey, TestingPlatformOptions.ConfigurationOption.Name, configuration);
+                                    .Execute(TestingPlatformOptions.HelpOption.Name, TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             if (!TestContext.IsLocalized())
             {
@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(otherTestProjectPattern, result.StdOut);
             }
 
-            result.ExitCode.Should().Be(ExitCode.Success);
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
     }
 }

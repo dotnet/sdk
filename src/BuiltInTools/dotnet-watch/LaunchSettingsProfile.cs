@@ -82,7 +82,14 @@ namespace Microsoft.DotNet.Watch
                 return null;
             }
 
-            var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(f => f.Value.CommandName == "Project").Key;
+            var defaultProfileKey = launchSettings.Profiles.FirstOrDefault(entry => entry.Value.CommandName == "Project").Key;
+
+            if (defaultProfileKey is null)
+            {
+                reporter.Verbose("Unable to find 'Project' command in the default launch profile.");
+                return null;
+            }
+
             var defaultProfile = launchSettings.Profiles[defaultProfileKey];
             defaultProfile.LaunchProfileName = defaultProfileKey;
             return defaultProfile;
@@ -90,7 +97,7 @@ namespace Microsoft.DotNet.Watch
 
         internal class LaunchSettingsJson
         {
-            public Dictionary<string, LaunchSettingsProfile>? Profiles { get; set; }
+            public OrderedDictionary<string, LaunchSettingsProfile>? Profiles { get; set; }
         }
     }
 }

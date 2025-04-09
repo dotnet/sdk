@@ -132,13 +132,13 @@
       "type": "parameter",
       "datatype": "choice",
       "enableQuotelessLiterals": true,
-      "description": "Select the runner/platform. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "description": "Select the runner/platform.",
       "displayName": "Test runner",
       "defaultValue": "VSTest",
       "choices": [
         {
-          "choice": "MSTest",
-          "description": "Use MSTest Runner (Microsoft.Testing.Platform)"
+          "choice": "Microsoft.Testing.Platform",
+          "description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information."
         },
         {
           "choice": "VSTest",
@@ -166,9 +166,9 @@
     "ExtensionsProfile": {
       "type": "parameter",
       "datatype": "choice",
-      "description": "Select the SDK extensions profile when using MSTest Runner. More information at https://aka.ms/mstest/sdk/extensions-profile",
+      "description": "Select the SDK extensions profile when using Microsoft.Testing.Platform. More information at https://aka.ms/mstest/sdk/extensions-profile",
       "displayName": "Testing extensions profile",
-      "isEnabled": "UseMSTestSdk && (TestRunner == MSTest)",
+      "isEnabled": "UseMSTestSdk && (TestRunner == Microsoft.Testing.Platform)",
       "defaultValue": "Default",
       "replaces": "$(ExtensionsProfile)",
       "choices": [
@@ -232,10 +232,6 @@
   },
   "primaryOutputs": [
     { "path": "Company.TestProject1.csproj" },
-    {
-      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
-      "path": "MSTestSettings.cs"
-    },
     {
       "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
       "path": "Test1.cs"

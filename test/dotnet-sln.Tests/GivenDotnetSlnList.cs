@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Common;
-using CommandLocalizableStrings = Microsoft.DotNet.Tools.Sln.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Sln.List.Tests
 {
@@ -50,7 +49,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, commandName);
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(CommonLocalizableStrings.RequiredCommandNotPassed);
+            cmd.StdErr.Should().Be(CliStrings.RequiredCommandNotPassed);
         }
 
         [Theory]
@@ -61,8 +60,8 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, "one.sln", "two.sln", "three.sln", "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "two.sln")}
-{string.Format(CommandLineValidation.LocalizableStrings.UnrecognizedCommandOrArgument, "three.sln")}");
+            cmd.StdErr.Should().BeVisuallyEquivalentTo($@"{string.Format(CliStrings.UnrecognizedCommandOrArgument, "two.sln")}
+{string.Format(CliStrings.UnrecognizedCommandOrArgument, "three.sln")}");
         }
 
         [Theory]
@@ -81,7 +80,7 @@ Options:
             var cmd = new DotnetCommand(Log)
                 .Execute(solutionCommand, solutionName, "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.CouldNotFindSolutionOrDirectory, solutionName));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindSolutionOrDirectory, solutionName));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -100,7 +99,7 @@ Options:
                 .Execute(solutionCommand, "InvalidSolution.sln", "list");
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
-                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "").TrimEnd('.'));
+                string.Format(CliStrings.InvalidSolutionFormatString, Path.Combine(projectDirectory, "InvalidSolution.sln"), "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -126,7 +125,7 @@ Options:
                 .Execute(solutionCommand, "list");
             cmd.Should().Fail();
             cmd.StdErr.Should().Contain(
-                string.Format(CommonLocalizableStrings.InvalidSolutionFormatString, solutionFullPath, "").TrimEnd('.'));
+                string.Format(CliStrings.InvalidSolutionFormatString, solutionFullPath, "").TrimEnd('.'));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -145,7 +144,7 @@ Options:
                 .WithWorkingDirectory(solutionDir)
                 .Execute(solutionCommand, "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.SolutionDoesNotExist, solutionDir + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.SolutionDoesNotExist, solutionDir + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -163,7 +162,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, "list");
             cmd.Should().Fail();
-            cmd.StdErr.Should().Be(string.Format(CommonLocalizableStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
+            cmd.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneSolutionInDirectory, projectDirectory + Path.DirectorySeparatorChar));
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
         }
 
@@ -183,7 +182,7 @@ Options:
                 .WithWorkingDirectory(projectDirectory)
                 .Execute(solutionCommand, $"App{solutionExtension}", "list");
             cmd.Should().Pass();
-            cmd.StdOut.Should().Be(CommonLocalizableStrings.NoProjectsFound);
+            cmd.StdOut.Should().Be(CliStrings.NoProjectsFound);
         }
 
         [Theory]
@@ -193,8 +192,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsPresentInTheSolutionItListsThem(string solutionCommand, string solutionExtension)
         {
-            var expectedOutput = $@"{CommandLocalizableStrings.ProjectsHeader}
-{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}
+            var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
+{new string('-', CliCommandStrings.ProjectsHeader.Length)}
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
@@ -217,8 +216,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsPresentInTheReadonlySolutionItListsThem(string solutionCommand, string solutionExtension)
         {
-            var expectedOutput = $@"{CommandLocalizableStrings.ProjectsHeader}
-{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}
+            var expectedOutput = $@"{CliCommandStrings.ProjectsHeader}
+{new string('-', CliCommandStrings.ProjectsHeader.Length)}
 {Path.Combine("App", "App.csproj")}
 {Path.Combine("Lib", "Lib.csproj")}";
 
@@ -245,8 +244,8 @@ Options:
         [InlineData("solution", ".slnx")]
         public void WhenProjectsInSolutionFoldersPresentInTheSolutionItListsSolutionFolderPaths(string solutionCommand, string solutionExtension)
         {
-            string[] expectedOutput = { $"{CommandLocalizableStrings.SolutionFolderHeader}",
-$"{new string('-', CommandLocalizableStrings.SolutionFolderHeader.Length)}",
+            string[] expectedOutput = { $"{CliCommandStrings.SolutionFolderHeader}",
+$"{new string('-', CliCommandStrings.SolutionFolderHeader.Length)}",
 $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
 
             var projectDirectory = _testAssetsManager
@@ -266,8 +265,8 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
         [InlineData("solution")]
         public void WhenSolutionFilterIsPassedItListsProjectsMatching(string solutionCommand)
         {
-            string[] expectedOutput = { $"{CommandLocalizableStrings.ProjectsHeader}",
-                $"{new string('-', CommandLocalizableStrings.ProjectsHeader.Length)}",
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
                 $"{Path.Combine("src", "App", "App.csproj")}" };
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("TestAppWithSlnxAndSolutionFilters", identifier: "GivenDotnetSlnList-Filter")
@@ -279,6 +278,25 @@ $"{Path.Combine("NestedSolution", "NestedFolder", "NestedFolder")}" };
                 .Execute(solutionCommand, "App.slnf", "list");
             cmd.Should().Pass();
             cmd.StdOut.Should().ContainAll(expectedOutput);
+        }
+
+        [Theory]
+        [InlineData("sln")]
+        [InlineData("solution")]
+        public void WhenSolutionFilterOriginalPathContainsSpecialCharactersTheyAreUnescaped(string solutionCommand)
+        {
+            string[] expectedOutput = { $"{CliCommandStrings.ProjectsHeader}",
+                $"{new string('-', CliCommandStrings.ProjectsHeader.Length)}",
+                $"{Path.Combine("src", "App", "App.csproj")}" };
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndSlnfWithSpecialCharactersInPath", identifier: "GivenDotnetSlnList-Filter-Unescape")
+                .WithSource()
+                .Path;
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, "App.slnf", "list");
+
+            cmd.Should().Pass();
         }
     }
 }
