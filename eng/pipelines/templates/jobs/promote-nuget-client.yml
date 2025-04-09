@@ -1,7 +1,7 @@
 # NuGet.Client does not flow to the VMR directly but only to dotnet/sdk where it is validated
 # Upon the version bump happens in dotnet/sdk, this job promotes that build of NuGet.Client to
 # another channel from where it flows into the VMR.
-# The sdk and nuget.client subscriptions are separate batched and go into the VMR in a single VMR.
+# The sdk and nuget.client subscriptions are batched and go into the VMR in a single PR.
 
 jobs:
 - job: PromoteNuGetClient
