@@ -24,20 +24,20 @@
 
   <ItemGroup>
     <!-- TODO: Hmmm??? -->
-    <Compile Include="..\crossgen.Tests\**\*.cs" LinkBase="crossgen" />
+    <!-- <Compile Include="..\crossgen.Tests\**\*.cs" LinkBase="crossgen" /> -->
 
     <!-- <Compile Include="..\dotnet-add-package.Tests\**\*.cs" LinkBase="dotnet-add-package" /> -->
     <!-- <Compile Include="..\dotnet-add-reference.Tests\**\*.cs" LinkBase="dotnet-add-reference" /> -->
 
     <!-- TODO: Too old??? -->
-    <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" />
+    <!-- <Compile Include="..\dotnet-back-compat.Tests\**\*.cs" LinkBase="dotnet-back-compat" /> -->
 
     <!-- <Compile Include="..\dotnet-build.Tests\**\*.cs" LinkBase="dotnet-build" /> -->
     <!-- <Compile Include="..\dotnet-clean.Tests\**\*.cs" LinkBase="dotnet-clean" /> -->
 
     <!-- TODO: Hmmm... where do these go? -->
-    <Compile Include="..\dotnet-completions.Tests\**\*.cs" Exclude="..\dotnet-completions.Tests\snapshots\**\*" LinkBase="dotnet-completions" />
-    <Content Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" Pack="false" />
+    <!-- <Compile Include="..\dotnet-completions.Tests\**\*.cs" Exclude="..\dotnet-completions.Tests\snapshots\**\*" LinkBase="dotnet-completions" />
+    <Content Include="..\dotnet-completions.Tests\snapshots/**/*" LinkBase="snapshots" CopyToOutputDirectory="PreserveNewest" Pack="false" /> -->
 
     <!-- TODO: There is a nested project in this folder. -->
     <!-- <Compile Include="..\dotnet-format.Tests\*.cs" LinkBase="dotnet-format" /> -->

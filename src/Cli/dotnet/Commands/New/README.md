@@ -17,7 +17,7 @@ The unit tests are located in:
 - [`dotnet` unit tests](https://github.com/dotnet/sdk/tree/main/test/dotnet.Tests/dotnet-new)
 - [`Microsoft.TemplateEngine.Cli`](https://github.com/dotnet/sdk/tree/main/test/Microsoft.TemplateEngine.Cli.UnitTests)
 
-The integration tests are located [here](https://github.com/dotnet/sdk/tree/main/test/dotnet-new.Tests).
+The integration tests are located [here](https://github.com/dotnet/sdk/tree/main/test/dotnet-new.IntegrationTests).
 Please follow existing tests to see how to run `dotnet new` under different conditions.
 
 Assets for unit and integration tests are defined [here](https://github.com/dotnet/sdk/tree/main/test/TestAssets/TestPackages/dotnet-new).
