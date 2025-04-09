@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli
                 return null;
             }
             string[] splitToken = argumentResult.Tokens[0].Value.Split('@');
-            var (packageId, versionString) = (splitToken[0], splitToken[1]);
+            var (packageId, versionString) = (splitToken.ElementAtOrDefault(0), splitToken.ElementAtOrDefault(1));
             if (string.IsNullOrEmpty(packageId))
             {
                 throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
