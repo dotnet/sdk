@@ -16,7 +16,6 @@
 # Referenced 6.0/7.0 assemblies (https://github.com/dotnet/sdk/issues/34245)
 ./sdk/x.y.z/Microsoft.Extensions.FileProviders.Abstractions.dll
 ./sdk/x.y.z/Microsoft.Extensions.FileSystemGlobbing.dll
-./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/source-generators/System.Collections.Immutable.dll
 ./sdk/x.y.z/Sdks/Microsoft.NET.Sdk.Razor/**/Microsoft.Extensions.ObjectPool.dll
 ./sdk/**/System.Configuration.ConfigurationManager.dll
 ./sdk/**/System.Diagnostics.EventLog*.dll
