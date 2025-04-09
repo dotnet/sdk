@@ -28,23 +28,21 @@ namespace Microsoft.DotNet.Cli
             {
                 return null;
             }
-            var token = argumentResult.Tokens[0].Value;
-            var versionSeparatorIndex = token.IndexOf('@');
-            if (versionSeparatorIndex == -1)
-            {
-                return new(token, null);
-            }
-            var packageId = token.Substring(0, versionSeparatorIndex);
-            var versionString = token.Substring(versionSeparatorIndex + 1);
-            if (string.IsNullOrEmpty(packageId) || string.IsNullOrEmpty(versionString))
+            string[] splitToken = argumentResult.Tokens[0].Value.Split('@');
+            var (packageId, versionString) = (splitToken[0], splitToken[1]);
+            if (string.IsNullOrEmpty(packageId))
             {
                 throw new GracefulException(CliStrings.PackageIdentityArgumentIdOrVersionIsNull);
+            }
+            if (string.IsNullOrEmpty(versionString))
+            {
+                return new PackageIdentity(packageId, null);
             }
             if (!NuGetVersion.TryParse(versionString, out var version))
             {
                 throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
-            return new(packageId, new NuGetVersion(version));
+            return new PackageIdentity(packageId, new NuGetVersion(version));
         }
         #endregion
     }
