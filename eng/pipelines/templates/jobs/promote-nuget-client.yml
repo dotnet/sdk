@@ -25,14 +25,14 @@ jobs:
         $dotnet = "$dotnetRoot\dotnet.exe"
         & "$dotnet" tool restore
 
-        $dependencies = .\.dotnet\dotnet darc get-dependencies get-dependencies --name 'NuGet.Protocol' --ci
+        $dependencies = .\.dotnet\dotnet darc get-dependencies --name 'NuGet.Protocol' --ci
         $version = $dependencies | Select-String -Pattern 'Version:\s+([^\s]+)' | Select-Object -First 1
         $version -match 'Version:\s+([^\s]+)' | Out-Null
         $version = $matches[1]
 
         Write-Host "Looking up build for version $version"
 
-        $assets = .\.dotnet\dotnet darc get-asset --name 'NuGet.Protocol' --version "6.14.0-preview.1.102" --max-age 60 --output-format json --ci
+        $assets = .\.dotnet\dotnet darc get-asset --name 'NuGet.Protocol' --version "$version" --max-age 60 --output-format json --ci
         $buildId = ($assets | ConvertFrom-Json)[0].build.id
 
         if ($buildId -eq $null) {
