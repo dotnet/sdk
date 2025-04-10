@@ -881,8 +881,8 @@ dotnet.config is a name don't translate.</note>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoCacheDescription">
-        <source>Avoid up to date checks and always build the project before running.</source>
-        <target state="new">Avoid up to date checks and always build the project before running.</target>
+        <source>Skip up to date checks and always build the program before running.</source>
+        <target state="new">Skip up to date checks and always build the program before running.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">

@@ -647,7 +647,7 @@ dotnet.config is a name don't translate.</comment>
     <comment>{Locked="--no-restore"}</comment>
   </data>
   <data name="CommandOptionNoCacheDescription" xml:space="preserve">
-    <value>Avoid up to date checks and always build the project before running.</value>
+    <value>Skip up to date checks and always build the program before running.</value>
   </data>
   <data name="CommandOptionNoLaunchProfileArgumentsDescription" xml:space="preserve">
     <value>Do not use arguments specified in launch profile to run the application.</value>
