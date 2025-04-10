@@ -6,6 +6,7 @@
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.DotNet.Cli.ToolPackage.ToolConfigurationDeserialization;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
@@ -62,10 +63,14 @@ internal static class ToolConfigurationDeserializer
                     dotNetCliTool.Commands[0].Runner));
         }
 
+        var ridSpecificPackages = dotNetCliTool.RuntimeIdentifierPackages?.ToDictionary(p => p.RuntimeIdentifier, p => new PackageIdentity(p.Id, new NuGet.Versioning.NuGetVersion(p.Version)))
+            .AsReadOnly();
+
         return new ToolConfiguration(
             dotNetCliTool.Commands[0].Name,
             dotNetCliTool.Commands[0].EntryPoint,
-            warnings);
+            ridSpecificPackages: ridSpecificPackages,
+            warnings: warnings);
     }
 
     private static List<string> GenerateWarningAccordingToVersionAttribute(DotNetCliTool dotNetCliTool)
