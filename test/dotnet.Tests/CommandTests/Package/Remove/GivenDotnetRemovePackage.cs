@@ -18,7 +18,7 @@ Arguments:
   <PACKAGE_NAME>    The package reference to remove.
 
 Options:
-  --interactive     Allows the command to stop and wait for user input or action (for example to complete authentication). [default: True]
+  --interactive     Allows the command to stop and wait for user input or action (for example to complete authentication). [default: False]
   -?, -h, --help    Show command line help.";
 
         private Func<string, string> RemoveCommandHelpText = (defaultVal) => $@"Description:
