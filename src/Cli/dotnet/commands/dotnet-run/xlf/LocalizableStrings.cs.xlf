@@ -17,6 +17,11 @@
         <target state="translated">K sestavení a spuštění aplikace se použije určená platforma. Tato platforma musí být zadaná v souboru projektu. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Ke spuštění aplikace nepoužívejte argumenty zadané v profilu spuštění.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">Cesta ke spouštěnému souboru projektu (výchozí je aktuální adresář, pokud existuje jenom jeden projekt)</target>
