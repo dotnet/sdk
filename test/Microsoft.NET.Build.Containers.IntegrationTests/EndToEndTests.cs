@@ -1504,6 +1504,7 @@ public class EndToEndTests : IDisposable
             .Execute();
 
         publishResult.Should().Pass();
+        publishResult.StdOut.Should().NotBeNull();
         var jsonDump = JsonDocument.Parse(publishResult.StdOut);
         var index = JsonDocument.Parse(jsonDump.RootElement.GetProperty("Properties").GetProperty("GeneratedImageIndex").ToString());
         var containers = jsonDump.RootElement.GetProperty("Items").GetProperty("GeneratedContainers").EnumerateArray().ToArray();
