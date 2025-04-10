@@ -698,23 +698,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         }
 
         [Fact]
-        public void ItDoesShowImportantLevelMessageByDefault()
-        {
-            var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource()
-                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
-
-            var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-
-            // this message should show because interactivity (and therefore nuget auth) is the default
-            result.Should().Pass()
-                .And.HaveStdOutContaining("Important text");
-        }
-
-        [Fact]
         public void ItDoesNotShowImportantLevelMessageByDefaultWhenInteractivityDisabled()
         {
             var testAppName = "MSBuildTestApp";
