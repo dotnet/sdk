@@ -20,13 +20,13 @@ internal static class Config
     public static string LogsDirectory => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(LogsDirectory))! ?? throw new InvalidOperationException("Logs directory must be specified");
 
     public static string? CustomPackagesPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(CustomPackagesPath))!;
-    public static bool CustomPackagesPathIsInclusive => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(CustomPackagesPathIsInclusive))!, out bool customPackagesPathIsInclusive) && customPackagesPathIsInclusive;
     public static bool ExcludeOmniSharpTests => bool.TryParse((string)AppContext.GetData(ConfigSwitchPrefix + nameof(ExcludeOmniSharpTests))!, out bool excludeOmniSharpTests) && excludeOmniSharpTests;
     public static string? LicenseScanPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(LicenseScanPath))!;
     public static string? MsftSdkTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(MsftSdkTarballPath))!;
     public static string? PoisonReportPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(PoisonReportPath))!;
     public static string? SdkTarballPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(SdkTarballPath))!;
     public static string? SourceBuiltArtifactsPath => (string)AppContext.GetData(ConfigSwitchPrefix + nameof(SourceBuiltArtifactsPath))!;
+    public static string? RestoreAdditionalProjectSources => (string?)AppContext.GetData(ConfigSwitchPrefix + nameof(RestoreAdditionalProjectSources));
 
     // Indicates whether the tests are being run in the context of a CI pipeline
     public static bool RunningInCI => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_CI")) ||

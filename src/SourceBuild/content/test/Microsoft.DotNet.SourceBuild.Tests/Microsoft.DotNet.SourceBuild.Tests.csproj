@@ -62,9 +62,6 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).CustomPackagesPath">
         <Value>$(SourceBuildTestsCustomSourceBuiltPackagesPath)</Value>
       </RuntimeHostConfigurationOption>
-      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).CustomPackagesPathIsInclusive">
-        <Value>$(SourceBuildTestsCustomSourceBuiltPackagesPathIsInclusive)</Value>
-      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ExcludeOmniSharpTests">
         <Value>$(SourceBuildTestsExcludeOmniSharpTests)</Value>
       </RuntimeHostConfigurationOption>
@@ -83,6 +80,9 @@
       </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).RestoreAdditionalProjectSources">
+        <Value>$(RestoreAdditionalProjectSources)</Value>
       </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>

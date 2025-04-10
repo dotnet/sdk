@@ -1030,8 +1030,7 @@ stages:
             extraProperties: >
               /p:DotNetSourceOnlyTestOnly=true
               /p:ExtraRestoreSourcePath=$(Pipeline.Workspace)/msft-pkgs
-              /p:SourceBuildTestsCustomSourceBuiltPackagesPath=$(Pipeline.Workspace)/msft-pkgs
-              /p:SourceBuildTestsCustomSourceBuiltPackagesPathIsInclusive=true
+              /p:RestoreAdditionalProjectSources=$(Pipeline.Workspace)/msft-pkgs
             dependsOn:
             - AzureLinux_x64_Cross_x64
             - Browser_Shortstack_wasm

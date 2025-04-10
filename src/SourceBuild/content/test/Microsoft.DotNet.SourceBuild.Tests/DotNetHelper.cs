@@ -49,7 +49,7 @@ internal class DotNetHelper
     private static void InitNugetConfig()
     {
         bool useCustomPackages = !string.IsNullOrEmpty(Config.CustomPackagesPath);
-        string nugetConfigPrefix = useCustomPackages && !Config.CustomPackagesPathIsInclusive ? "custom" : "default";
+        string nugetConfigPrefix = useCustomPackages ? "custom" : "default";
         string nugetConfigPath = Path.Combine(ProjectsDirectory, "NuGet.Config");
         File.Copy(
             Path.Combine(BaselineHelper.GetAssetsDirectory(), $"{nugetConfigPrefix}.NuGet.Config"),
@@ -66,13 +66,6 @@ internal class DotNetHelper
 
             string nugetConfig = File.ReadAllText(nugetConfigPath)
                 .Replace("CUSTOM_PACKAGE_FEED", Config.CustomPackagesPath);
-            File.WriteAllText(nugetConfigPath, nugetConfig);
-        }
-        else
-        {
-            // Clear out the unused custom package feed
-             string nugetConfig = File.ReadAllText(nugetConfigPath)
-                .Replace("<add key=\"custom-packages\" value=\"CUSTOM_PACKAGE_FEED\" />", "");
             File.WriteAllText(nugetConfigPath, nugetConfig);
         }
     }
@@ -117,8 +110,11 @@ internal class DotNetHelper
         process.StartInfo.EnvironmentVariables["ImportDirectoryPackagesProps"] = "false";
     }
 
-    public void ExecuteBuild(string projectName) =>
-        ExecuteCmd($"build {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
+    public void ExecuteBuild(string projectName)
+    {
+        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources}";
+        ExecuteCmd($"build {options} {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
+    }
 
     /// <summary>
     /// Create a new .NET project and return the path to the created project folder.
@@ -143,12 +139,12 @@ internal class DotNetHelper
 
     public void ExecutePublish(string projectName, DotNetTemplate template, bool? selfContained = null, string? rid = null, bool trimmed = false, bool readyToRun = false)
     {
-        string options = string.Empty;
+        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources}";
         string binlogDifferentiator = string.Empty;
 
         if (selfContained.HasValue)
         {
-            options += $"--self-contained {selfContained.Value.ToString().ToLowerInvariant()}";
+            options += $" --self-contained {selfContained.Value.ToString().ToLowerInvariant()}";
             if (selfContained.Value)
             {
                 binlogDifferentiator += "self-contained";
