@@ -13,7 +13,7 @@
     <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
     <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
     <AssetManifestFileName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</AssetManifestFileName>
-    <AssetManifestFileName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(AssetManifestName)' == ''">VerticalManifest.xml</AssetManifestFileName>
+    <AssetManifestFileName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(AssetManifestFileName)' == ''">VerticalManifest.xml</AssetManifestFileName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
