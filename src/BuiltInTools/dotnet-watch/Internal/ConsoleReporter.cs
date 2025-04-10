@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Graph;
-
 namespace Microsoft.DotNet.Watch
 {
     /// <summary>
@@ -15,16 +13,15 @@ namespace Microsoft.DotNet.Watch
         public bool IsQuiet { get; } = quiet;
         public bool SuppressEmojis { get; } = suppressEmojis;
 
-        private readonly object _writeLock = new();
-
-        public bool EnableProcessOutputReporting
-            => false;
+        private readonly Lock _writeLock = new();
 
         public void ReportProcessOutput(OutputLine line)
-            => throw new InvalidOperationException();
-
-        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
-            => throw new InvalidOperationException();
+        {
+            lock (_writeLock)
+            {
+                (line.IsError ? console.Error : console.Out).WriteLine(line.Content);
+            }
+        }
 
         private void WriteLine(TextWriter writer, string message, ConsoleColor? color, string emoji)
         {
@@ -58,7 +55,8 @@ namespace Microsoft.DotNet.Watch
             switch (descriptor.Severity)
             {
                 case MessageSeverity.Error:
-                    WriteLine(console.Error, message, ConsoleColor.Red, descriptor.Emoji);
+                    // Use stdout for error messages to preserve ordering with respect to other output.
+                    WriteLine(console.Out, message, ConsoleColor.Red, descriptor.Emoji);
                     break;
 
                 case MessageSeverity.Warning:
