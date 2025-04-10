@@ -41,7 +41,7 @@ index 697e41896..6b4eb7e3b 100644
      <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'release'"/>
 -    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' != 'true'">$(_PreReleaseLabel).final</VersionSuffix>
 -    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' == 'true'">$(_PreReleaseLabel)-final</VersionSuffix>
-+    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' != 'true'">$(_PreReleaseLabel)$(_SemVerLabelSeparator)final</VersionSuffix>
++    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease'">$(_PreReleaseLabel)$(_SemVerLabelSeparator)final</VersionSuffix>
      <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == ''">$(_PreReleaseLabel)$(_BuildNumberLabels)</VersionSuffix>
  
      <!--
