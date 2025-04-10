@@ -846,19 +846,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         Build(expectedUpToDate: true);
 
-        // Change the source file.
+        // Change the source file (a rebuild is necessary).
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + " ");
 
         Build(expectedUpToDate: false);
 
         Build(expectedUpToDate: true);
 
-        // Change an unrelated source file.
+        // Change an unrelated source file (no rebuild necessary).
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "test");
 
         Build(expectedUpToDate: true);
 
-        // Add an implicit build file.
+        // Add an implicit build file (a rebuild is necessary).
         string buildPropsFile = Path.Join(testInstance.Path, "Directory.Build.props");
         File.WriteAllText(buildPropsFile, """
             <Project>
@@ -873,12 +873,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Custom define
             """);
 
-        // Remove an implicit build file (currently this is not recognized).
+        // Remove an implicit build file (a rebuild is necessary).
         File.Delete(buildPropsFile);
-        Build(expectedUpToDate: true, expectedOutput: """
-            Hello from Program
-            Custom define
-            """);
+        Build(expectedUpToDate: false);
 
         // Force rebuild.
         Build(expectedUpToDate: false, args: ["--no-cache"]);

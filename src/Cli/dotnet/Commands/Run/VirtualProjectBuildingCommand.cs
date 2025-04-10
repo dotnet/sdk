@@ -68,8 +68,7 @@ internal sealed class VirtualProjectBuildingCommand
     {
         var binaryLogger = GetBinaryLogger(binaryLoggerArgs);
 
-        var cacheEntry = new RunFileBuildCacheEntry();
-        cacheEntry.AddGlobalProperties(GlobalProperties);
+        RunFileBuildCacheEntry cacheEntry;
 
         if (noCache)
         {
@@ -77,8 +76,10 @@ internal sealed class VirtualProjectBuildingCommand
             {
                 throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
             }
+
+            cacheEntry = ComputeCacheEntry(out _);
         }
-        else if (!NeedsToBuild(cacheEntry))
+        else if (!NeedsToBuild(out cacheEntry))
         {
             if (binaryLogger is not null)
             {
@@ -191,8 +192,44 @@ internal sealed class VirtualProjectBuildingCommand
         }
     }
 
-    private bool NeedsToBuild(RunFileBuildCacheEntry cacheEntry)
+    /// <summary>
+    /// Compute current cache entry - we need to do this always:
+    /// <list type="bullet">
+    /// <item>if we can skip build, we still need to check everything in the cache entry (e.g., implicit build files)</item>
+    /// <item>if we have to build, we need to have the cache entry to write it to the success cache file</item>
+    /// </list>
+    /// </summary>
+    private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
     {
+        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties);
+        entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
+
+        // Collect current implicit build files.
+        DirectoryInfo? directory = entryPointFileInfo.Directory;
+        while (directory != null)
+        {
+            foreach (var implicitBuildFileName in s_implicitBuildFileNames)
+            {
+                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFileName);
+                var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+                if (implicitBuildFileInfo.Exists)
+                {
+                    cacheEntry.ImplicitBuildFiles.Add(implicitBuildFilePath, implicitBuildFileInfo.LastWriteTimeUtc);
+                }
+            }
+
+            directory = directory.Parent;
+        }
+
+        return cacheEntry;
+    }
+
+    private bool NeedsToBuild(out RunFileBuildCacheEntry cacheEntry)
+    {
+        cacheEntry = ComputeCacheEntry(out FileInfo entryPointFileInfo);
+
+        // Check cache files.
+
         string artifactsDirectory = GetArtifactsPath();
         var successCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildSuccessCacheFileName));
 
@@ -216,44 +253,63 @@ internal sealed class VirtualProjectBuildingCommand
         }
 
         var previousCacheEntry = DeserializeCacheEntry(successCacheFile);
-        if (!Equals(previousCacheEntry, cacheEntry))
+        if (previousCacheEntry is null)
+        {
+            Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
+            return true;
+        }
+
+        // Check that properties match.
+
+        if (previousCacheEntry.GlobalProperties.Count != cacheEntry.GlobalProperties.Count)
         {
             Reporter.Verbose.WriteLine($"""
-                Building because cached metadata does not match current:
-                Previous: {previousCacheEntry}
-                Current: {cacheEntry}
+                Building because previous global properties count ({previousCacheEntry.GlobalProperties.Count}) does not match current count ({cacheEntry.GlobalProperties.Count}): {successCacheFile.FullName}
                 """);
             return true;
+        }
+
+        foreach (var (key, value) in cacheEntry.GlobalProperties)
+        {
+            if (!previousCacheEntry.GlobalProperties.TryGetValue(key, out var otherValue) ||
+                value != otherValue)
+            {
+                Reporter.Verbose.WriteLine($"""
+                    Building because previous global property "{key}" ({otherValue}) does not match current ({value}): {successCacheFile.FullName}
+                    """);
+                return true;
+            }
         }
 
         DateTime buildTimeUtc = successCacheFile.LastWriteTimeUtc;
 
         // Check that the source file is up to date.
         // If it does not exist, we also want to build.
-        var entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
         if (!entryPointFileInfo.Exists || entryPointFileInfo.LastWriteTimeUtc > buildTimeUtc)
         {
-            Reporter.Verbose.WriteLine("Building because entry point file is missing or out of date: " + entryPointFileInfo.FullName);
+            Reporter.Verbose.WriteLine("Building because entry point file is missing or modified: " + entryPointFileInfo.FullName);
             return true;
         }
 
         // Check that implicit build files are up to date.
-        // Note that currently we don't recognize removal of implicit build files.
-        DirectoryInfo? directory = entryPointFileInfo.Directory;
-        while (directory != null)
+        foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles.Keys)
         {
-            foreach (var implicitBuildFileName in s_implicitBuildFileNames)
+            var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+            if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
-                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFileName);
-                var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
-                if (implicitBuildFileInfo.Exists && implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
-                {
-                    Reporter.Verbose.WriteLine("Building because implicit build file is out of date: " + implicitBuildFileInfo.FullName);
-                    return true;
-                }
+                Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
+                return true;
             }
+        }
 
-            directory = directory.Parent;
+        // Check that no new implicit build files are present.
+        foreach (var implicitBuildFilePath in cacheEntry.ImplicitBuildFiles.Keys)
+        {
+            if (!previousCacheEntry.ImplicitBuildFiles.ContainsKey(implicitBuildFilePath))
+            {
+                Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
+                return true;
+            }
         }
 
         return false;
@@ -876,50 +932,33 @@ internal abstract class CSharpDirective
     }
 }
 
-internal sealed class RunFileBuildCacheEntry : IEquatable<RunFileBuildCacheEntry>
+internal sealed class RunFileBuildCacheEntry
 {
+    private static StringComparer GlobalPropertiesComparer => StringComparer.OrdinalIgnoreCase;
+    private static StringComparer ImplicitBuildFilesComparer => StringComparer.Ordinal;
+
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public Dictionary<string, string> GlobalProperties { get; } = new(StringComparer.OrdinalIgnoreCase);
+    public Dictionary<string, string> GlobalProperties { get; }
 
-    public RunFileBuildCacheEntry AddGlobalProperties(IEnumerable<KeyValuePair<string, string>> globalProperties)
+    /// <summary>
+    /// Maps full path to <see cref="FileSystemInfo.LastWriteTimeUtc"/>.
+    /// </summary>
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public Dictionary<string, DateTime> ImplicitBuildFiles { get; }
+
+    [JsonConstructor]
+    public RunFileBuildCacheEntry()
     {
-        foreach (var (key, value) in globalProperties)
-        {
-            GlobalProperties[key] = value;
-        }
-
-        return this;
+        GlobalProperties = new(GlobalPropertiesComparer);
+        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
     }
 
-    public bool Equals(RunFileBuildCacheEntry? other)
+    public RunFileBuildCacheEntry(Dictionary<string, string> globalProperties)
     {
-        if (other is null)
-        {
-            return false;
-        }
-
-        if (GlobalProperties.Count != other.GlobalProperties.Count)
-        {
-            return false;
-        }
-
-        foreach (var (key, value) in GlobalProperties)
-        {
-            if (!other.GlobalProperties.TryGetValue(key, out var otherValue) ||
-                value != otherValue)
-            {
-                return false;
-            }
-        }
-
-        return true;
+        Debug.Assert(globalProperties.Comparer == GlobalPropertiesComparer);
+        GlobalProperties = globalProperties;
+        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
     }
-
-    public override bool Equals(object? obj) => obj is RunFileBuildCacheEntry e && Equals(e);
-
-    public override int GetHashCode() => throw new NotSupportedException();
-
-    public override string ToString() => JsonSerializer.Serialize(this, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
 }
 
 [JsonSerializable(typeof(RunFileBuildCacheEntry))]
