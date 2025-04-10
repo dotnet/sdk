@@ -352,6 +352,42 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 projectChange(projectXml);
             }
 
+            if (PropertiesToRecord.Any())
+            {
+                var customAfterDirectoryBuildTargetsPath = new FileInfo(Path.Combine(targetFolder, "obj", "Custom.After.Directory.Build.targets"));
+                customAfterDirectoryBuildTargetsPath.Directory.Create();
+
+                propertyGroup.Add(new XElement(ns + "CustomAfterDirectoryBuildTargets", $"$(CustomAfterDirectoryBuildTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                propertyGroup.Add(new XElement(ns + "CustomAfterMicrosoftCommonCrossTargetingTargets", $"$(CustomAfterMicrosoftCommonCrossTargetingTargets);{customAfterDirectoryBuildTargetsPath.FullName}"));
+                
+                var customAfterDirectoryBuildTargets = new XDocument(new XElement(ns + "Project"));
+
+                var target = new XElement(ns + "Target",
+                    new XAttribute("Name", "WritePropertyValues"),
+                    new XAttribute("BeforeTargets", "AfterBuild"));
+
+                customAfterDirectoryBuildTargets.Root.Add(target);
+
+                var itemGroup = new XElement(ns + "ItemGroup");
+                target.Add(itemGroup);
+
+                foreach (var propertyName in PropertiesToRecord)
+                {
+                    itemGroup.Add(
+                        new XElement(ns + "LinesToWrite",
+                            new XAttribute("Include", $"{propertyName}: $({propertyName})")));
+                }
+
+                target.Add(
+                    new XElement(ns + "WriteLinesToFile",
+                        new XAttribute("File", $@"$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\PropertyValues.txt"),
+                        new XAttribute("Lines", "@(LinesToWrite)"),
+                        new XAttribute("Overwrite", bool.TrueString),
+                        new XAttribute("Encoding", "Unicode")));
+
+                customAfterDirectoryBuildTargets.Save(customAfterDirectoryBuildTargetsPath.FullName);
+            }
+
             using (var file = File.CreateText(targetProjectPath))
             {
                 projectXml.Save(file);
@@ -428,41 +464,6 @@ namespace {safeThisName}
             foreach (var kvp in EmbeddedResources)
             {
                 File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
-            }
-
-            if (PropertiesToRecord.Any())
-            {
-                string propertiesElements = "";
-                foreach (var propertyName in PropertiesToRecord)
-                {
-                    propertiesElements += $"      <LinesToWrite Include=`{propertyName}: $({propertyName})`/>" + Environment.NewLine;
-                }
-
-                string injectTargetContents =
-    $@"<Project>
-  <Target Name=`WritePropertyValues` BeforeTargets=`AfterBuild`>
-    <ItemGroup>
-{propertiesElements}
-    </ItemGroup>
-    <WriteLinesToFile
-      File=`$(BaseIntermediateOutputPath)\$(Configuration)\$(TargetFramework)\PropertyValues.txt`
-      Lines=`@(LinesToWrite)`
-      Overwrite=`true`
-      Encoding=`Unicode`
-      />
-  </Target>
-</Project>";
-
-                injectTargetContents = injectTargetContents.Replace('`', '"');
-
-                string targetPath = Path.Combine(targetFolder, "obj", Name + ".csproj.WriteValuesToFile.g.targets");
-
-                if (!Directory.Exists(Path.GetDirectoryName(targetPath)))
-                {
-                    Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                }
-
-                File.WriteAllText(targetPath, injectTargetContents);
             }
         }
 
