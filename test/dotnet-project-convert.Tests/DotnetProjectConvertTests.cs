@@ -62,14 +62,15 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void DirectoryAlreadyExists()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
+        var directoryPath = Path.Join(testInstance.Path, "MyApp");
+        Directory.CreateDirectory(directoryPath);
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
         new DotnetCommand(Log, "project", "convert", "MyApp.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("The target directory already exists");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, directoryPath));
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
@@ -104,14 +105,15 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void OutputOption_DirectoryAlreadyExists()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        Directory.CreateDirectory(Path.Join(testInstance.Path, "SomeOutput"));
+        var directoryPath = Path.Join(testInstance.Path, "SomeOutput");
+        Directory.CreateDirectory(directoryPath);
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
         new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", "SomeOutput")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("The target directory already exists");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, directoryPath));
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(d => d.Name).Order()
@@ -148,7 +150,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("Required argument missing for command");
+            .And.HaveStdErrContaining("convert"); // Required argument missing for command 'convert'
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Should().BeEmpty();
@@ -163,7 +165,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("The specified file must exist");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, Path.Join(testInstance.Path, "NotHere.cs")));
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Should().BeEmpty();
@@ -173,13 +175,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void NonCSharpFile()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.vb"), "");
+        var filePath = Path.Join(testInstance.Path, "Program.vb");
+        File.WriteAllText(filePath, "");
 
         new DotnetCommand(Log, "project", "convert", "Program.vb")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("The specified file must exist and have '.cs' file extension");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, filePath));
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -261,13 +264,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void ProcessingFails()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "#:invalid");
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, "#:invalid");
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining("Unrecognized directive 'invalid' at");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.UnrecognizedDirective, "invalid", $"{filePath}:1"));
 
         new DirectoryInfo(Path.Join(testInstance.Path))
             .EnumerateDirectories().Should().BeEmpty();
@@ -443,7 +447,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:sdk Test
                 #:{directive} Test
                 """,
-            expectedWildcardPattern: $"Unrecognized directive '{directive}' at /app/Program.cs:2.");
+            expectedWildcardPattern: string.Format(CliCommandStrings.UnrecognizedDirective, directive, "/app/Program.cs:2"));
     }
 
     [Fact]
@@ -454,7 +458,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:
                 #:sdk Test
                 """,
-            expectedWildcardPattern: "Unrecognized directive '' at /app/Program.cs:1.");
+            expectedWildcardPattern: string.Format(CliCommandStrings.UnrecognizedDirective, "", "/app/Program.cs:1"));
     }
 
     [Theory, CombinatorialData]
@@ -466,7 +470,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: $"""
                 #:{directive}{value}
                 """,
-            expectedWildcardPattern: $"Missing name of '{directive}' at /app/Program.cs:1.");
+            expectedWildcardPattern: string.Format(CliCommandStrings.MissingDirectiveName, directive, "/app/Program.cs:1"));
     }
 
     [Fact]
@@ -476,7 +480,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:property Test
                 """,
-            expectedWildcardPattern: "The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': /app/Program.cs:1");
+            expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveMissingParts, "/app/Program.cs:1"));
     }
 
     [Fact]
@@ -486,9 +490,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #:property Name" Value
                 """,
-            expectedWildcardPattern: """
-                Invalid property name at /app/Program.cs:1. The '"' character, hexadecimal value 0x22, cannot be included in a name.
-                """);
+            expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1", """
+                The '"' character, hexadecimal value 0x22, cannot be included in a name.
+                """));
     }
 
     [Fact]
@@ -568,7 +572,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: $"""
                 #:   property   Name{'\t'}     Value
                 """,
-            expectedWildcardPattern: "Invalid property name at /app/Program.cs:1. The '\t' character, hexadecimal value 0x09, cannot be included in a name.");
+            expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1",
+                "The '\t' character, hexadecimal value 0x09, cannot be included in a name."));
     }
 
     /// <summary>
