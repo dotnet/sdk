@@ -19,7 +19,7 @@ Arguments:
 Options:
   -f, --framework <FRAMEWORK>  Add the reference only when targeting a specific framework.
   --interactive                Allows the command to stop and wait for user input or action (for example to complete
-                               authentication). [default: True]
+                               authentication). [default: False]
   --project                    The project file to operate on. If a file is not specified, the command will search the
                                current directory for one.
   -?, -h, --help               Show command line help.";

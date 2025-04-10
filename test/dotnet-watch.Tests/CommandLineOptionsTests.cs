@@ -414,7 +414,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
 
-        private const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
+        private const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
         /// <summary>
         /// Validates that options that the "run" command forwards to "build" command are forwarded by dotnet-watch.

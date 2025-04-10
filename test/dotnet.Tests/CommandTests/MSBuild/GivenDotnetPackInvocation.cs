@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-restore", "-target:pack"];
         private static readonly string[] ExpectedNoBuildPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-target:pack"];
-        private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "-property:NuGetInteractive=true"];
+        private readonly string[] ExpectedProperties = ["--property:_IsPacking=true", "-property:NuGetInteractive=false"];
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetPackInvocation));

@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
 
-        const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
+        const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
