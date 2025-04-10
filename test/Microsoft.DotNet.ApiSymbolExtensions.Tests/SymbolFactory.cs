@@ -90,10 +90,7 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return compilation.AddSyntaxTrees(syntaxTrees);
         }
 
-        private static SyntaxTree GetSyntaxTree(string syntax)
-        {
-            return CSharpSyntaxTree.ParseText(syntax, ParseOptions);
-        }
+        private static SyntaxTree GetSyntaxTree(string syntax) => CSharpSyntaxTree.ParseText(syntax, ParseOptions);
 
         private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
         {

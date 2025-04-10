@@ -11,7 +11,12 @@ namespace Microsoft.DotNet.GenAPI.Tests;
 
 public class TestAssemblyLoaderFactory
 {
-    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts(ILog log, (string, string)[] assemblyTexts, IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null, bool respectInternals = false, bool allowUnsafe = false)
+    public static (IAssemblySymbolLoader, Dictionary<string, IAssemblySymbol>) CreateFromTexts(
+        ILog log,
+        (string, string)[] assemblyTexts,
+        bool respectInternals = false,
+        bool allowUnsafe = false,
+        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
     {
         if (assemblyTexts.Length == 0)
         {
@@ -26,10 +31,11 @@ public class TestAssemblyLoaderFactory
         Dictionary<string, IAssemblySymbol> assemblySymbols = new();
         foreach ((string assemblyName, string assemblyText) in assemblyTexts)
         {
+            string actualAssemblyName = assemblyName.Replace(".dll", string.Empty);
             using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(assemblyText, diagnosticOptions, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
-            if (loader.LoadAssembly(assemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
+            if (loader.LoadAssembly(actualAssemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
             {
-                assemblySymbols.Add(assemblyName, assemblySymbol);
+                assemblySymbols.Add(actualAssemblyName, assemblySymbol);
             }
         }
 
