@@ -10,7 +10,7 @@
     <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
          the Microsoft built packages should be used. -->
     <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
-    <UseBootstrapArcade>true</UseBootstrapArcade>
+    <UseBootstrapArcade Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' == 'true'">true</UseBootstrapArcade>
   </PropertyGroup>
 
   <!-- In source only mode, do not depend on other repositories as the scenario tests repo needs to be capable of being built
