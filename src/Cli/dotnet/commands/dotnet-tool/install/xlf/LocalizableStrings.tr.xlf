@@ -93,6 +93,16 @@ Bir bildirim oluşturmak istiyorsanız, `dotnet tool install` komutuyla birlikte
         <target state="translated">Hedeflediği çalışma zamanı yüklü değilse, bir .NET aracının daha yeni .NET çalışma zamanı sürümlerine ileri alınmasına izin verin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SourceOptionDescription">
+        <source>Replace all NuGet package sources to use during installation with these.</source>
+        <target state="translated">Yükleme sırasında kullanılacak tüm NuGet paket kaynaklarını bu kaynaklarla değiştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SourceOptionName">
+        <source>SOURCE</source>
+        <target state="translated">KAYNAK</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VersionOptionDescription">
         <source>The version of the tool package to install.</source>
         <target state="translated">Yüklenecek araç paketinin sürümü.</target>
@@ -183,8 +193,8 @@ Paket adlandırma zorlaması dahil diğer nedenler için şu adresi ziyaret edin
         <note />
       </trans-unit>
       <trans-unit id="AddSourceOptionName">
-        <source>SOURCE</source>
-        <target state="translated">SOURCE</target>
+        <source>ADDSOURCE</source>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="VersionOptionName">

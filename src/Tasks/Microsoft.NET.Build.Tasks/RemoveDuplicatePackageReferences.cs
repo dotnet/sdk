@@ -13,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks
     /// </summary>
     public class RemoveDuplicatePackageReferences : TaskBase
     {
-        private readonly List<ITaskItem> _packageList = new List<ITaskItem>();
+        private readonly List<ITaskItem> _packageList = new();
 
         [Required]
         public ITaskItem[] InputPackageReferences { get; set; }
@@ -32,7 +32,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             var packageSet = new HashSet<PackageIdentity>();
 
-            foreach(var pkg in InputPackageReferences)
+            foreach (var pkg in InputPackageReferences)
             {
                 var pkgName = pkg.ItemSpec;
                 var pkgVersion = NuGetVersion.Parse(pkg.GetMetadata("Version"));
@@ -41,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var pkg in packageSet)
             {
-                TaskItem item = new TaskItem(pkg.Id);
+                TaskItem item = new(pkg.Id);
                 item.SetMetadata("Version", pkg.Version.ToString());
                 _packageList.Add(item);
             }
