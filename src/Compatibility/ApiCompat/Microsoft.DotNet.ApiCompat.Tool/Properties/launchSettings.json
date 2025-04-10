@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Microsoft.DotNet.ApiCompat.Tool": {
+      "commandName": "Project",
+      "commandLineArgs": "package C:\\src\\dotnet\\wcf\\artifacts\\packages\\Debug\\Shipping\\System.ServiceModel.Federation.8.1.1-dev.25113.1.nupkg --baseline-package C:\\Users\\ericstj\\.nuget\\packages\\system.servicemodel.federation\\8.1.0\\system.servicemodel.federation.8.1.0.nupkg  --package-assembly-references .NETStandard,Version=v2.0|C:\\Users\\ericstj\\.nuget\\packages\\netstandard.library\\2.0.3\\build\\netstandard2.0\\ref"
+    }
+  }
+}
