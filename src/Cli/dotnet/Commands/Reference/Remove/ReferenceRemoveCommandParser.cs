@@ -11,7 +11,7 @@ internal static class ReferenceRemoveCommandParser
     {
         Description = CliCommandStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
-    }.AddCompletions(Complete.Complete.ProjectReferencesFromProjectFile);
+    }.AddCompletions(CliCompletion.ProjectReferencesFromProjectFile);
 
     public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
     {
@@ -33,7 +33,7 @@ internal static class ReferenceRemoveCommandParser
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
 
-        command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }

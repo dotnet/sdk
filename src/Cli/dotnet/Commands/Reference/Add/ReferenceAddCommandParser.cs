@@ -24,7 +24,7 @@ internal static class ReferenceAddCommandParser
         Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
         HelpName = CliStrings.CommonCmdFramework
 
-    }.AddCompletions(Complete.Complete.TargetFrameworksFromProjectFile);
+    }.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
     public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
@@ -43,7 +43,7 @@ internal static class ReferenceAddCommandParser
         command.Options.Add(FrameworkOption);
         command.Options.Add(InteractiveOption);
 
-        command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 
         return command;
     }
