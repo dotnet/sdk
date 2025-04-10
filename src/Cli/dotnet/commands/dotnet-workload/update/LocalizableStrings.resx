@@ -156,7 +156,13 @@
   <data name="UpdateFromRollbackSwitchesModeToLooseManifests" xml:space="preserve">
     <value>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</value>
   </data>
+  <data name="CannotCombineOptions" xml:space="preserve">
+    <value>Cannot use the {0} and {1} options together.</value>
+  </data>
   <data name="NoWorkloadUpdateFound" xml:space="preserve">
     <value>No workload update found.</value>
+  </data>
+  <data name="WorkloadVersionRequestedNotFound" xml:space="preserve">
+    <value>Workload version {0} not found.</value>
   </data>
 </root>
