@@ -173,6 +173,9 @@
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
+      
+      <AddPrebuiltFeeds>true</AddPrebuiltFeeds>
+      <AddPrebuiltFeeds Condition="'$(DotNetSourceOnlyTestOnly)' == 'true'">false</AddPrebuiltFeeds>
     </PropertyGroup>
 
     <ItemGroup>
@@ -198,7 +201,7 @@
 
     <ItemGroup>
       <_BuildSources Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)"
-                     Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'"/>
+                     Condition="'$(AddPrebuiltFeeds)' == 'true'"/>
       <_BuildSources Include="@(_CommonBuildSources)" />
       <_BuildSources Include="$(NetSdkSupportingFeedName)"
                      Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
@@ -213,17 +216,17 @@
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PrebuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'" />
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'" />
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ReferencePackagesNuGetSourceName)"
                             SourcePath="$(ReferencePackagesDir)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'" />
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="%(RepositoryReferenceInfo.ShippingSourceName)"
