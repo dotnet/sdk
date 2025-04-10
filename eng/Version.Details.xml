@@ -91,14 +91,14 @@
       <Uri>https://github.com/dotnet/core-setup</Uri>
       <Sha>7d57652f33493fa022125b7f63aad0d70c52d810</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.4.25209.2">
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.4.25209.5">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>d801c5cdda3341d6e0d435475124bb45f96bdb60</Sha>
+      <Sha>6e6c9ffed81b622a13277f584c8b0ebe76732985</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="10.0.0-preview.4.25209.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="10.0.0-preview.4.25209.5">
       <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>d801c5cdda3341d6e0d435475124bb45f96bdb60</Sha>
+      <Sha>6e6c9ffed81b622a13277f584c8b0ebe76732985</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25208-02">
