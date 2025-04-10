@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private static readonly string[] ConstantRestoreArgs = ["-nologo", "-verbosity:quiet"];
+        private static readonly string NuGetDisabledProperty = "-property:NuGetInteractive=false";
 
         public ITestOutputHelper Log { get; }
 
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var command = RunCommand.FromArgs(args);
                     command.RestoreArgs
                         .Should()
-                        .BeEquivalentTo([.. ConstantRestoreArgs, .. expectedArgs]);
+                        .BeEquivalentTo([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty]);
                 });
             }
             finally

@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetRestoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-target:Restore"];
+        private static readonly string NuGetDisabledProperty = "-property:NuGetInteractive=false";
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
 
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 RestoreCommand.FromArgs(args, msbuildPath)
                     .GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs, NuGetDisabledProperty]);
             });
         }
     }
