@@ -13,15 +13,6 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 // This is named "ToolPackageInstance" because "ToolPackage" would conflict with the namespace
 internal class ToolPackageInstance : IToolPackage
 {
-    public static ToolPackageInstance CreateFromAssetFile(PackageId id, DirectoryPath assetsJsonParentDirectory)
-    {
-        var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
-        var packageDirectory = new DirectoryPath(lockFile.PackageFolders[0].Path);
-        var library = FindLibraryInLockFile(lockFile, id);
-        var version = library.Version;
-
-        return new ToolPackageInstance(id, version, packageDirectory, assetsJsonParentDirectory);
-    }
     private const string PackagedShimsDirectoryConvention = "shims";
 
     public IEnumerable<string> Warnings => _toolConfiguration.Value.Warnings;
@@ -29,6 +20,10 @@ internal class ToolPackageInstance : IToolPackage
     public PackageId Id { get; private set; }
 
     public NuGetVersion Version { get; private set; }
+
+    public PackageId ResolvedPackageId { get; private set; }
+
+    public NuGetVersion ResolvedPackageVersion { get; private set; }
 
     public DirectoryPath PackageDirectory { get; private set; }
 
@@ -54,7 +49,10 @@ internal class ToolPackageInstance : IToolPackage
     private const string ToolSettingsFileName = "DotnetToolSettings.xml";
 
     private readonly Lazy<RestoredCommand> _command;
+
+    //  TODO: This probably doesn't need to be lazy
     private readonly Lazy<ToolConfiguration> _toolConfiguration;
+
     private readonly Lazy<LockFile> _lockFile;
     private readonly Lazy<IReadOnlyList<FilePath>> _packagedShims;
 
@@ -120,12 +118,23 @@ internal class ToolPackageInstance : IToolPackage
                     .WithFile(lockFileRelativePath);
     }
 
+
+    public static ToolConfiguration GetToolConfiguration(PackageId id,
+        DirectoryPath packageDirectory,
+        DirectoryPath assetsJsonParentDirectory)
+    {
+        var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
+        var lockFileTargetLibrary = FindLibraryInLockFile(lockFile, id);
+        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, id);
+
+    }
+
     private ToolConfiguration GetToolConfiguration()
     {
         try
         {
             var library = FindLibraryInLockFile(_lockFile.Value);
-            return DeserializeToolConfiguration(library);
+            return DeserializeToolConfiguration(library, PackageDirectory, Id);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
         {
@@ -181,7 +190,7 @@ internal class ToolPackageInstance : IToolPackage
         }
     }
 
-    private ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library)
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId id)
     {
         var dotnetToolSettings = FindItemInTargetLibrary(library, ToolSettingsFileName);
         if (dotnetToolSettings == null)
@@ -191,9 +200,9 @@ internal class ToolPackageInstance : IToolPackage
         }
 
         var toolConfigurationPath =
-            PackageDirectory
+            packageDirectory
                 .WithSubDirectories(
-                    Id.ToString(),
+                    id.ToString(),
                     library.Version.ToNormalizedString().ToLowerInvariant())
                 .WithFile(dotnetToolSettings.Path);
 
