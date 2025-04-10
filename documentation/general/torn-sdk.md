@@ -1,5 +1,8 @@
 # Torn .NET SDK
 
+> [!CAUTION]
+> This document has been superseded by [Decoupling the .NET SDK and Visual Studio](decouple-vs-and-net-sdk.md).
+
 ## Terminology
 
 - **msbuild**: refers the .NET Framework based msbuild included with Visual Studio.

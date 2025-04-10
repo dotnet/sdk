@@ -1235,6 +1235,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          PublicSign="$(PublicSign)"
          PathMap="$(PathMap)"
          Features="$(Features)"
+         CompilerType="$(RoslynCompilerType)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
          DisabledWarnings="$(DisabledWarnings)"
@@ -1244,7 +1245,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          TargetType="Library"
          ToolExe="$(CscToolExe)"
          ToolPath="$(CscToolPath)"
-         ToolsDirectory="$(RoslynToolsDirectory)"
          UseSharedCompilation="$(UseSharedCompilation)">
 
       <Output TaskParameter="OutputAssembly" ItemName="FileWrites"/>

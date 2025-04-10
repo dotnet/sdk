@@ -25,7 +25,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testAsset = CreateProject(useSharedCompilation).WithProjectChanges(static doc =>
         {
-            doc.Root!.Element("PropertyGroup")!.Add(new XElement("RoslynUseSdkCompiler", "false"));
+            doc.Root!.Element("PropertyGroup")!.Add(new XElement("RoslynCompilerType", "Framework"));
         });
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
         VerifyCompiler(buildCommand, FxCompilerFileName, useSharedCompilation);
