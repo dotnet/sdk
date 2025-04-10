@@ -1083,7 +1083,7 @@ _testhost_package_list() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--verbosity --outdated --deprecated --vulnerable --framework --include-transitive --include-prerelease --highest-patch --highest-minor --config --source --interactive --format --output-version --project --help" 
+    opts="--verbosity --outdated --deprecated --vulnerable --framework --include-transitive --include-prerelease --highest-patch --highest-minor --config --source --interactive --format --output-version --no-restore --project --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1152,7 +1152,7 @@ _testhost_project_convert() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --help" 
+    opts="--output --force --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

@@ -629,6 +629,7 @@ _testhost() {
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--format=[Specifies the output format type for the list packages command.]: :((console\:"console" json\:"json" ))' \
                                             '--output-version=[Specifies the version of machine-readable output. Requires the '\''--format json'\'' option.]: : ' \
+                                            '--no-restore[Do not restore before running the command.]' \
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
@@ -664,6 +665,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
+                                            '--force[Force conversion even if there are malformed directives.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \

@@ -14,7 +14,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
     private readonly TestApplicationActionQueue _actionQueue = actionQueue;
     private readonly TerminalTestReporter _output = output;
 
-    public bool RunWithTestModulesFilter(ParseResult parseResult, BuildOptions buildOptions)
+    public bool RunWithTestModulesFilter(ParseResult parseResult)
     {
         // If the module path pattern(s) was provided, we will use that to filter the test modules
         string testModules = parseResult.GetValue(TestingPlatformOptions.TestModulesFilterOption);
@@ -47,7 +47,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new TestApplication(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null), buildOptions);
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }
