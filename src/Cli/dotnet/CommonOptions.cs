@@ -133,7 +133,7 @@ internal static class CommonOptions
              Description = CliStrings.CommandInteractiveOptionDescription,
              Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
              // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
+             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
          };
 
     public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
