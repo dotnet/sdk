@@ -64,6 +64,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public IEnumerable<NuGetFramework> Frameworks { get; private set; }
 
+        public PackageId ResolvedPackageId { get; private set; }
+
+        public NuGetVersion ResolvedPackageVersion { get; private set; }
+
         private RestoredCommand GetCommand()
         {
             try

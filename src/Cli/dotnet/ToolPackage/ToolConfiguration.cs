@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
@@ -10,6 +9,7 @@ internal class ToolConfiguration
     public ToolConfiguration(
         string commandName,
         string toolAssemblyEntryPoint,
+        IDictionary<string, PackageIdentity> ridSpecificPackages = null,
         IEnumerable<string> warnings = null)
     {
         if (string.IsNullOrWhiteSpace(commandName))
@@ -57,7 +57,12 @@ internal class ToolConfiguration
         }
     }
 
+    
+
     public string CommandName { get; }
     public string ToolAssemblyEntryPoint { get; }
+
+    public IDictionary<string, PackageIdentity> RidSpecificPackages { get; }
+
     public IEnumerable<string> Warnings { get; }
 }
