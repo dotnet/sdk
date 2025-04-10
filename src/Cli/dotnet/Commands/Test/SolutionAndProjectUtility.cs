@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -144,7 +144,12 @@ internal static class SolutionAndProjectUtility
                 testTfmsInParallel = true;
             }
 
-            var frameworks = targetFrameworks.Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries);
+            var frameworks = targetFrameworks
+                .Split(CliConstants.SemiColon, StringSplitOptions.RemoveEmptyEntries)
+                .Select(f => f.Trim())
+                .Where(f => !string.IsNullOrEmpty(f))
+                .Distinct();
+
             if (testTfmsInParallel)
             {
                 foreach (var framework in frameworks)
@@ -168,7 +173,7 @@ internal static class SolutionAndProjectUtility
 
                     if (GetModuleFromProject(projectInstance, projectCollection.Loggers, noLaunchProfile) is { } module)
                     {
-                        innerModules ??= new List<TestModule>(frameworks.Length);
+                        innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
                     }
                 }
