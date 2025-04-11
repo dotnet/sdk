@@ -337,6 +337,8 @@
 
     <PropertyGroup>
       <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)eng/Version.Details.xml</_VersionDetailsXml>
+      <_ImportPreviousAndCurrentVersionProps>true</_ImportPreviousAndCurrentVersionProps>
+      <_ImportPreviousAndCurrentVersionProps Condition="'$(DotNetSourceOnlyTestOnly)' == 'true'">false</_ImportPreviousAndCurrentVersionProps>
     </PropertyGroup>
 
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
@@ -344,13 +346,15 @@
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
-                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)"
+                               Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <!-- Create previously source-built inputs info -->
     <WritePackageVersionsProps KnownPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
-                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)"
+                               Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <!-- Write a full package version props (unfiltered) that will be used to track which repo creates a package.
          Because not all repos implement the repo API (e.g. some are external), it's difficult to consistently gather
@@ -370,8 +374,8 @@
       <PackageVersionsPropsContents>
         <![CDATA[
 <Project>
-  <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
-  <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+  <Import Condition="Exists('$(PreviouslySourceBuiltPackageVersionPropsPath)')" Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+  <Import Condition="Exists('$(CurrentSourceBuiltPackageVersionPropsPath)')" Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
 </Project>
 ]]>
       </PackageVersionsPropsContents>
@@ -381,7 +385,9 @@
                       Lines="$(PackageVersionsPropsContents)"
                       Overwrite="true" />
 
-    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)" />
+    <Message Importance="High"
+             Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)"
+             Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete" AlwaysCreate="true">
