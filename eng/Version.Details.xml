@@ -719,13 +719,13 @@
       <Sha>5fa9337a84a52e9bd185d04d156eccbdcf592f74</Sha>
       <SourceBuild RepoName="aspire" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25209.3">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.7.0-preview.25210.9">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>c4b543d35d6ae0e11cb0471b1d2a47330b153f6a</Sha>
+      <Sha>35fc2e38b23affdd1dbde364beb32dea42329abd</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.9.0-preview.25209.3">
+    <Dependency Name="MSTest" Version="3.9.0-preview.25210.9">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>c4b543d35d6ae0e11cb0471b1d2a47330b153f6a</Sha>
+      <Sha>35fc2e38b23affdd1dbde364beb32dea42329abd</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.4.25209.13">
       <Uri>https://github.com/dotnet/runtime</Uri>
