@@ -29,6 +29,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             Arguments.Add(NameArgument);
             Options.Add(IgnoreConstraintsOption);
+            Options.Add(FormatOption);
             Options.Add(SharedOptions.OutputOption);
             Options.Add(SharedOptions.ProjectPathOption);
             SetupTabularOutputOptions(this);
@@ -44,6 +45,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         {
             Description = SymbolStrings.ListCommand_Option_IgnoreConstraints,
             Arity = ArgumentArity.Zero
+        };
+
+        internal static CliOption<FormatOptions> FormatOption { get; } = new("--format")
+        {
+            AllowMultipleArgumentsPerToken = true,
+            Description = SymbolStrings.ListCommand_Option_Format,
+            Arity = ArgumentArity.ExactlyOne,
         };
 
         internal static CliArgument<string> NameArgument { get; } = new("template-name")

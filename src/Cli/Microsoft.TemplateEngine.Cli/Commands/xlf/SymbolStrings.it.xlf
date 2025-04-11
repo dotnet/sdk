@@ -107,6 +107,11 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
         <target state="translated">Controlla solo la disponibilità di aggiornamenti e visualizza i pacchetti di modelli da aggiornare senza applicare l'aggiornamento.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ListCommand_Option_Format">
+        <source>Specifies the output format type for the list packages command</source>
+        <target state="new">Specifies the output format type for the list packages command</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ListCommand_Option_IgnoreConstraints">
         <source>Disables checking if the template meets the constraints to be run.</source>
         <target state="translated">Disabilita il controllo se il modello soddisfa i vincoli per l'esecuzione.</target>

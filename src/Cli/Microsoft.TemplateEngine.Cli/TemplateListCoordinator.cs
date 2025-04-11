@@ -5,6 +5,9 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Cli.Commands;
+using Microsoft.TemplateEngine.Cli.Output;
+using Microsoft.TemplateEngine.Cli.Output.JsonOutput;
+using Microsoft.TemplateEngine.Cli.Output.TabularOutput;
 using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Cli.TemplateResolution;
 using Microsoft.TemplateEngine.Edge;
@@ -59,9 +62,10 @@ namespace Microsoft.TemplateEngine.Cli
                 TemplateGroupDisplay.DisplayTemplateList(
                     _engineEnvironmentSettings,
                     resolutionResult.TemplateGroupsWithMatchingTemplateInfoAndParameters,
-                    settings,
+                    SelectDisplayFormatter(args.FormatOptions, settings),
                     reporter: Reporter.Output,
                     selectedLanguage: args.Language);
+
                 return NewCommandStatus.Success;
             }
             else
@@ -158,7 +162,7 @@ namespace Microsoft.TemplateEngine.Cli
             TemplateGroupDisplay.DisplayTemplateList(
                 _engineEnvironmentSettings,
                 curatedTemplates,
-                new TabularOutputSettings(_engineEnvironmentSettings.Environment),
+                new TabularDisplayFormatter(new TabularOutputSettings(_engineEnvironmentSettings.Environment)),
                 reporter: Reporter.Output);
 
             Reporter.Output.WriteLine(LocalizableStrings.TemplateInformationCoordinator_DotnetNew_ExampleHeader);
@@ -193,6 +197,15 @@ namespace Microsoft.TemplateEngine.Cli
             Reporter.Output.WriteLine();
 
             return NewCommandStatus.Success;
+        }
+
+        private static IDisplayFormatter SelectDisplayFormatter(FormatOptions formatOptions, TabularOutputSettings tabularSettings)
+        {
+            return formatOptions switch
+            {
+                FormatOptions.Json => new JsonDisplayFormatter(),
+                _ => new TabularDisplayFormatter(tabularSettings),
+            };
         }
 
         private static string GetInputParametersString(ListCommandArgs args/*, IReadOnlyDictionary<string, string?>? templateParameters = null*/)
