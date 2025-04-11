@@ -345,3 +345,5 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+        - template: /eng/pipelines/templates/jobs/promote-nuget-client.yml@self
