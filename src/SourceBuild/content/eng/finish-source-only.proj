@@ -269,7 +269,7 @@
           DestinationFolder="$(SourceBuiltLayoutDir)"
           UseSymbolicLinksIfPossible="true" />
     <Copy SourceFiles="@(ReferencePackageToBundle)"
-          DestinationFolder="$(SourceBuiltLayoutDir)SourceBuildReferencePackages"
+          DestinationFolder="$(SourceBuiltLayoutDir)$(PreviouslySourceBuiltReferencePackagesDirName)"
           UseSymbolicLinksIfPossible="true" />
 
     <!-- Content of the .version file to include in the tarball -->
