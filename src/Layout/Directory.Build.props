@@ -72,5 +72,4 @@
   <PropertyGroup>
     <SdkPkgSourcesRootDirectory>$(MSBuildThisFileDirectory)pkg\</SdkPkgSourcesRootDirectory>
   </PropertyGroup>
-
 </Project>

@@ -9,19 +9,17 @@
 
     <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
          the Microsoft built packages should be used. -->
-    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
+    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
+    <UseBootstrapArcade>true</UseBootstrapArcade>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- In source only mode, do not depend on other repositories as the scenario tests repo needs to be capable of being built
+       by itself in a standalone validation job. -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
     <!-- Depend on NuGet packages from the sdk repo and transitive repositories. -->
     <RepositoryReference Include="sdk" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
   <Target Name="PrepareScenarioTestsInputs"

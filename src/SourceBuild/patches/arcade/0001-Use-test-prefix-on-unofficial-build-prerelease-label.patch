@@ -1,0 +1,47 @@
+From 8dba4913754fed718ef788fc320057971ad481f8 Mon Sep 17 00:00:00 2001
+From: Matt Thalman <mthalman@microsoft.com>
+Date: Fri, 21 Mar 2025 13:38:12 -0500
+Subject: [PATCH] Use test prefix on unofficial build prerelease label
+
+Backport: TODO
+---
+ .../tools/Version.BeforeCommonTargets.targets     | 15 ++++++++-------
+ 1 file changed, 8 insertions(+), 7 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets b/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets
+index 697e41896..6b4eb7e3b 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Version.BeforeCommonTargets.targets
+@@ -108,15 +108,17 @@
+       If PreReleaseVersionIteration is set and SemanticVersioningV1 is not set to true, then the prerelease version
+       number is appended with a '.' to PreReleaseVersionLabel to create the final prerelease label.
+     -->
++    <_SemVerLabelSeparator Condition="'$(SemanticVersioningV1)' != 'true'">.</_SemVerLabelSeparator>
++    <_SemVerLabelSeparator Condition="'$(SemanticVersioningV1)' == 'true'">-</_SemVerLabelSeparator>
+     <_PreReleaseLabel>$(PreReleaseVersionLabel)</_PreReleaseLabel>
+-    <_PreReleaseLabel Condition="'$(SemanticVersioningV1)' != 'true' and '$(PreReleaseVersionIteration)' != ''">$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_PreReleaseLabel>
++    <_PreReleaseLabel Condition="'$(SemanticVersioningV1)' != 'true' and '$(PreReleaseVersionIteration)' != ''">$(PreReleaseVersionLabel)$(_SemVerLabelSeparator)$(PreReleaseVersionIteration)</_PreReleaseLabel>
+     <_PreReleaseLabel Condition="'$(SemanticVersioningV1)' == 'true'">$(PreReleaseVersionLabel)$(PreReleaseVersionIteration)</_PreReleaseLabel>
+-    <_PreReleaseLabel Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(OfficialBuild)' != 'true'">ci</_PreReleaseLabel>
++    <_PreReleaseLabel Condition="'$(ContinuousIntegrationBuild)' == 'true' and '$(OfficialBuild)' != 'true'">test$(_SemVerLabelSeparator)ci</_PreReleaseLabel>
+     <!-- Allow a non CI build to have an official build version label when OfficialBuild is explicitly passed-in. -->
+-    <_PreReleaseLabel Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(OfficialBuild)' != 'true'">dev</_PreReleaseLabel>
++    <_PreReleaseLabel Condition="'$(ContinuousIntegrationBuild)' != 'true' and '$(OfficialBuild)' != 'true'">test$(_SemVerLabelSeparator)dev</_PreReleaseLabel>
+ 
+-    <_BuildNumberLabels Condition="'$(VersionSuffixDateStamp)' != '' and '$(SemanticVersioningV1)' != 'true'">.$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</_BuildNumberLabels>
+-    <_BuildNumberLabels Condition="'$(VersionSuffixDateStamp)' != '' and '$(SemanticVersioningV1)' == 'true'">-$(VersionSuffixDateStamp)-$(VersionSuffixBuildOfTheDayPadded)</_BuildNumberLabels>
++    <_BuildNumberLabels Condition="'$(VersionSuffixDateStamp)' != '' and '$(SemanticVersioningV1)' != 'true'">.$(VersionSuffixDateStamp)$(_SemVerLabelSeparator)$(VersionSuffixBuildOfTheDay)</_BuildNumberLabels>
++    <_BuildNumberLabels Condition="'$(VersionSuffixDateStamp)' != '' and '$(SemanticVersioningV1)' == 'true'">-$(VersionSuffixDateStamp)$(_SemVerLabelSeparator)$(VersionSuffixBuildOfTheDayPadded)</_BuildNumberLabels>
+ 
+     <!--
+       If DotNetFinalVersionKind is specified, overrides the package version produced by the build like so:
+@@ -125,8 +127,7 @@
+         "release"    1.2.3
+     -->
+     <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'release'"/>
+-    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' != 'true'">$(_PreReleaseLabel).final</VersionSuffix>
+-    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' == 'true'">$(_PreReleaseLabel)-final</VersionSuffix>
++    <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == 'prerelease' and '$(SemanticVersioningV1)' != 'true'">$(_PreReleaseLabel)$(_SemVerLabelSeparator)final</VersionSuffix>
+     <VersionSuffix Condition="'$(DotNetFinalVersionKind)' == ''">$(_PreReleaseLabel)$(_BuildNumberLabels)</VersionSuffix>
+ 
+     <!--

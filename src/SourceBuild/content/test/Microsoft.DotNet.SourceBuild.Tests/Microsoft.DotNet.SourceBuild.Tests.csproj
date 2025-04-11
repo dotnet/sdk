@@ -62,6 +62,9 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).CustomPackagesPath">
         <Value>$(SourceBuildTestsCustomSourceBuiltPackagesPath)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).CustomPackagesPathIsInclusive">
+        <Value>$(SourceBuildTestsCustomSourceBuiltPackagesPathIsInclusive)</Value>
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ExcludeOmniSharpTests">
         <Value>$(SourceBuildTestsExcludeOmniSharpTests)</Value>
       </RuntimeHostConfigurationOption>
