@@ -43,6 +43,7 @@ public class RunCommand
 
     public string[] Args { get; set; }
     public bool NoRestore { get; }
+    public bool NoCache { get; }
     public VerbosityOptions? Verbosity { get; }
     public bool Interactive { get; }
     public string[] RestoreArgs { get; }
@@ -69,6 +70,7 @@ public class RunCommand
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
+        bool noCache,
         bool interactive,
         VerbosityOptions? verbosity,
         string[] restoreArgs,
@@ -85,6 +87,7 @@ public class RunCommand
         Args = args;
         Interactive = interactive;
         NoRestore = noRestore;
+        NoCache = noCache;
         Verbosity = verbosity;
         RestoreArgs = GetRestoreArguments(restoreArgs);
         EnvironmentVariables = environmentVariables;
@@ -107,12 +110,20 @@ public class RunCommand
 
             EnsureProjectIsBuilt(out projectFactory);
         }
-        else if (EntryPointFileFullPath is not null)
+        else
         {
-            projectFactory = new VirtualProjectBuildingCommand
+            if (EntryPointFileFullPath is not null)
             {
-                EntryPointFileFullPath = EntryPointFileFullPath,
-            }.PrepareProjectInstance().CreateProjectInstance;
+                projectFactory = new VirtualProjectBuildingCommand
+                {
+                    EntryPointFileFullPath = EntryPointFileFullPath,
+                }.PrepareProjectInstance().CreateProjectInstance;
+            }
+
+            if (NoCache)
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            }
         }
 
         try
@@ -255,7 +266,9 @@ public class RunCommand
             projectFactory = command.CreateProjectInstance;
             buildResult = command.Execute(
                 binaryLoggerArgs: RestoreArgs,
-                consoleLogger: MakeTerminalLogger(Verbosity ?? GetDefaultVerbosity()));
+                consoleLogger: MakeTerminalLogger(Verbosity ?? GetDefaultVerbosity()),
+                noRestore: NoRestore,
+                noCache: NoCache);
         }
         else
         {
@@ -530,6 +543,7 @@ public class RunCommand
             noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
             noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
+            noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
             verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             restoreArgs: [.. restoreArgs],
