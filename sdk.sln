@@ -97,10 +97,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet.Tests", "test\dotnet
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Tools.Tests.ComponentMocks", "test\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj", "{99334000-EBF8-44D9-90D0-BE998ED3FE60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-msbuild.Tests", "test\dotnet-msbuild.Tests\dotnet-msbuild.Tests.csproj", "{8FB015CE-1900-41EE-8E68-C222CE1B8561}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-sln.Tests", "test\dotnet-sln.Tests\dotnet-sln.Tests.csproj", "{5D421BE2-66A9-43FC-877C-620ACED021EB}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgumentsReflector", "test\ArgumentsReflector\ArgumentsReflector.csproj", "{587A6639-FA2A-498C-8FA2-F77925DB732B}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArgumentForwarding.Tests", "test\ArgumentForwarding.Tests\ArgumentForwarding.Tests.csproj", "{2D8AA9EA-3013-47DE-B2DD-E074F67467ED}"
@@ -378,7 +374,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.Ite
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Common.ProjectTemplates.10.0", "template_feed\Microsoft.DotNet.Common.ProjectTemplates.10.0\Microsoft.DotNet.Common.ProjectTemplates.10.0.csproj", "{AB7ADCF8-48AC-4885-9C70-16D752B97168}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new.IntegrationTests", "test\dotnet-new.Tests\dotnet-new.IntegrationTests.csproj", "{8868D816-C072-4B66-84D6-7E014EA16D48}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-new.IntegrationTests", "test\dotnet-new.IntegrationTests\dotnet-new.IntegrationTests.csproj", "{8868D816-C072-4B66-84D6-7E014EA16D48}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.ApiCompat.IntegrationTests", "test\Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj", "{AE43BEC0-4BB7-42E1-B2B7-60A36092C61A}"
 EndProject
@@ -481,7 +477,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "GenAPI", "GenAPI", "{85A01A
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format", "src\BuiltInTools\dotnet-format\dotnet-format.csproj", "{7382A1CB-AA9A-4136-A548-17D7A67C6B0C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.Tests\tests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "dotnet-format.UnitTests", "test\dotnet-format.UnitTests\dotnet-format.UnitTests.csproj", "{D7495CE7-64E5-4715-9304-799A41EC1D71}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "finalizer", "src\Layout\finalizer\finalizer.csproj", "{32DA04FF-A951-43EA-B2FA-86A825009A97}"
 EndProject
@@ -645,14 +641,6 @@ Global
 		{99334000-EBF8-44D9-90D0-BE998ED3FE60}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{99334000-EBF8-44D9-90D0-BE998ED3FE60}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{99334000-EBF8-44D9-90D0-BE998ED3FE60}.Release|Any CPU.Build.0 = Release|Any CPU
-		{8FB015CE-1900-41EE-8E68-C222CE1B8561}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8FB015CE-1900-41EE-8E68-C222CE1B8561}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8FB015CE-1900-41EE-8E68-C222CE1B8561}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8FB015CE-1900-41EE-8E68-C222CE1B8561}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5D421BE2-66A9-43FC-877C-620ACED021EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5D421BE2-66A9-43FC-877C-620ACED021EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5D421BE2-66A9-43FC-877C-620ACED021EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5D421BE2-66A9-43FC-877C-620ACED021EB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{587A6639-FA2A-498C-8FA2-F77925DB732B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{587A6639-FA2A-498C-8FA2-F77925DB732B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{587A6639-FA2A-498C-8FA2-F77925DB732B}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -1068,8 +1056,6 @@ Global
 		{64294C35-9001-4FF9-975F-43D283EE5FA9} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{C5F191E5-BF2E-4A7A-AE1D-E2393AAA6F99} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{99334000-EBF8-44D9-90D0-BE998ED3FE60} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{8FB015CE-1900-41EE-8E68-C222CE1B8561} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
-		{5D421BE2-66A9-43FC-877C-620ACED021EB} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{587A6639-FA2A-498C-8FA2-F77925DB732B} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{2D8AA9EA-3013-47DE-B2DD-E074F67467ED} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
 		{A0EFB2CB-517F-4746-902E-D0EBEFFBD89B} = {580D1AE7-AA8F-4912-8B76-105594E00B3B}
