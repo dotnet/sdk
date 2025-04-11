@@ -23,9 +23,9 @@ internal class BuildServerShutdownCommand : CommandBase
         IReporter reporter = null)
         : base(result)
     {
-        bool msbuild = result.GetValue(ServerShutdownCommandParser.MSBuildOption);
-        bool vbcscompiler = result.GetValue(ServerShutdownCommandParser.VbcsOption);
-        bool razor = result.GetValue(ServerShutdownCommandParser.RazorOption);
+        bool msbuild = result.GetValue(BuildServerShutdownCommandParser.MSBuildOption);
+        bool vbcscompiler = result.GetValue(BuildServerShutdownCommandParser.VbcsOption);
+        bool razor = result.GetValue(BuildServerShutdownCommandParser.RazorOption);
         bool all = !msbuild && !vbcscompiler && !razor;
 
         _enumerationFlags = ServerEnumerationFlags.None;

@@ -242,6 +242,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
         command.Options.Add(TestingPlatformOptions.NoAnsiOption);
         command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
+        command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
         command.Options.Add(TestingPlatformOptions.NoProgressOption);
         command.Options.Add(TestingPlatformOptions.OutputOption);
 
