@@ -97,12 +97,17 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-  <Target Name="UpdateCompletionTestsSnapshots">
-    <Message Text="Copying CompletionTests snapshots from $(ArtifactsBinDir)redist\$(Configuration)\snapshots to $(MSBuildProjectDirectory)\CompletionTests\snapshots" />
+  <Target Name="CompareCliSnapshots">
     <ItemGroup>
       <SnapshotFiles Include="$(ArtifactsBinDir)redist\$(Configuration)\snapshots\**\*.received.*" />
     </ItemGroup>
-    <Copy SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->'$(MSBuildProjectDirectory)\CompletionTests\snapshots\%(RecursiveDir)%(Filename).verified%(Extension)')" SkipUnchangedFiles="true" OverwriteReadOnlyFiles="true" />
+    <Copy SourceFiles="@(SnapshotFiles)" DestinationFolder="$(MSBuildThisFileDirectory)CompletionTests\snapshots\%(RecursiveDir)" SkipUnchangedFiles="true" />
   </Target>
 
+  <Target Name="UpdateCliSnapshots">
+    <ItemGroup>
+      <SnapshotFiles Include="$(MSBuildThisFileDirectory)CompletionTests\snapshots\**\*.received.*" />
+    </ItemGroup>
+    <Move SourceFiles="@(SnapshotFiles)" DestinationFiles="@(SnapshotFiles->Replace('received', 'verified'))" />
+  </Target>
 </Project>
