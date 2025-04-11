@@ -106,20 +106,20 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           locBranch: release/9.0.3xx
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
             displayName: Create artifacts/bin directory
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
+            timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
+              officialBuildProperties: $(_officialBuildProperties) /p:BuildWorkloads=true
               enableDefaultArtifacts: true
               runTests: false
               publishRetryConfig: true
@@ -133,6 +133,8 @@ extends:
               runTests: false
               variables:
                 _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
             - categoryName: Official
               targetArchitecture: arm64
               publishArgument: $(_publishArgument)
@@ -141,6 +143,8 @@ extends:
               runTests: false
               variables:
                 _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
             ### PGO ###
             - categoryName: PGO
               pgoInstrument: true
@@ -180,7 +184,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             linuxJobParameterSets:
@@ -289,7 +293,7 @@ extends:
           oneESCompat:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
-          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
             timeoutInMinutes: 90
             macOSJobParameterSets:
@@ -313,7 +317,7 @@ extends:
               name: Azure Pipelines
               vmImage: macOS-latest
               os: macOS
-            helixTargetQueue: osx.15.arm64
+            helixTargetQueue: osx.13.arm64
             macOSJobParameterSets:
             - categoryName: TestBuild
               targetArchitecture: arm64
@@ -325,7 +329,7 @@ extends:
           parameters:
             oneESCompat:
               publishTaskPrefix: 1ES.
-            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://dotnetbuilds.blob.core.windows.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+            runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
     - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:

@@ -2,9 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Config;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Config;
 
 internal static class WorkloadConfigCommandParser
 {
@@ -15,7 +14,7 @@ internal static class WorkloadConfigCommandParser
 
     public static readonly CliOption<string> UpdateMode = new("--update-mode")
     {
-        Description = LocalizableStrings.UpdateModeDescription,
+        Description = CliCommandStrings.UpdateModeDescription,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -30,7 +29,7 @@ internal static class WorkloadConfigCommandParser
     {
         UpdateMode.AcceptOnlyFromAmong(UpdateMode_WorkloadSet, UpdateMode_Manifests);
 
-        CliCommand command = new("config", LocalizableStrings.CommandDescription);
+        CliCommand command = new("config", CliCommandStrings.WorkloadConfigCommandDescription);
         command.Options.Add(UpdateMode);
 
         command.SetAction(parseResult =>

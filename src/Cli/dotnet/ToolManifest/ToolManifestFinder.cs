@@ -40,12 +40,12 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         if (!findAnyManifest)
         {
             throw new ToolManifestCannotBeFoundException(
-                LocalizableStrings.CannotFindAManifestFile,
-                string.Format(LocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine, allPossibleManifests.Select(f => "\t" + f.manifestfile.Value))));
         }
 
-        return toolManifestPackageAndSource.Select(t => t.toolManifestPackage).ToArray();
+        return [.. toolManifestPackageAndSource.Select(t => t.toolManifestPackage)];
     }
 
     public IReadOnlyCollection<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> Inspect(
@@ -59,7 +59,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
             toolManifestPackageAndSource = [];
         }
 
-        return toolManifestPackageAndSource.ToArray();
+        return [.. toolManifestPackageAndSource];
     }
 
     private bool TryFindToolManifestPackages(
@@ -181,8 +181,8 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
             }
         }
         throw new ToolManifestCannotBeFoundException(
-                LocalizableStrings.CannotFindAManifestFile,
-                string.Format(LocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine,
                         EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
     }
@@ -273,8 +273,8 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         if (!findAnyManifest)
         {
             throw new ToolManifestCannotBeFoundException(
-                LocalizableStrings.CannotFindAManifestFile,
-                string.Format(LocalizableStrings.ListOfSearched,
+                CliStrings.CannotFindAManifestFile,
+                string.Format(CliStrings.ListOfSearched,
                     string.Join(Environment.NewLine,
                         EnumerateDefaultAllPossibleManifests().Select(f => "\t" + f.manifestfile.Value))));
         }

@@ -36,7 +36,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -79,7 +79,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
         endpoints = endpoints.Where(e => !e.Route.Contains("asdf1234")).ToArray();
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
@@ -119,7 +119,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -162,7 +162,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -205,7 +205,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
         endpoints = endpoints.Where(e => !e.Route.Contains("asdf1234")).ToArray();
         endpoints[0].AssetFile = Path.GetFullPath("other.js");
 

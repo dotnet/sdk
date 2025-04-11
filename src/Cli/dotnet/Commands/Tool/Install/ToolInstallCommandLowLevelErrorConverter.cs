@@ -4,7 +4,7 @@
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class InstallToolCommandLowLevelErrorConverter
 {
@@ -13,17 +13,17 @@ internal static class InstallToolCommandLowLevelErrorConverter
         if (ex is ToolPackageException)
         {
             yield return ex.Message;
-            yield return string.Format(LocalizableStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
+            yield return string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
         }
         else if (ex is ToolConfigurationException)
         {
-            yield return string.Format(LocalizableStrings.InvalidToolConfiguration, ex.Message);
-            yield return string.Format(LocalizableStrings.ToolInstallationFailedContactAuthor, packageId);
+            yield return string.Format(CliCommandStrings.InvalidToolConfiguration, ex.Message);
+            yield return string.Format(CliCommandStrings.ToolInstallationFailedContactAuthor, packageId);
         }
         else if (ex is ShellShimException)
         {
-            yield return string.Format(LocalizableStrings.FailedToCreateToolShim, packageId, ex.Message);
-            yield return string.Format(LocalizableStrings.ToolInstallationFailed, packageId);
+            yield return string.Format(CliCommandStrings.FailedToCreateToolShim, packageId, ex.Message);
+            yield return string.Format(CliCommandStrings.ToolInstallationFailed, packageId);
         }
     }
 

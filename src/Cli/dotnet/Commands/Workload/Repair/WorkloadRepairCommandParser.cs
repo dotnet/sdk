@@ -2,10 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Repair;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Repair.LocalizableStrings;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Repair;
 
 internal static class WorkloadRepairCommandParser
 {
@@ -24,7 +23,7 @@ internal static class WorkloadRepairCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("repair", LocalizableStrings.CommandDescription);
+        CliCommand command = new("repair", CliCommandStrings.WorkloadRepairCommandDescription);
 
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);

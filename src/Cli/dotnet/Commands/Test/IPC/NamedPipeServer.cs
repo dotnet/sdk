@@ -9,7 +9,7 @@ using System.Buffers;
 using System.Globalization;
 using System.IO.Pipes;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal sealed class NamedPipeServer : NamedPipeBase, IServer
 {

@@ -2,13 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.List;
+namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal class ToolListLocalCommand : CommandBase
 {
@@ -22,7 +21,7 @@ internal class ToolListLocalCommand : CommandBase
         IReporter reporter = null)
         : base(parseResult)
     {
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         _toolManifestInspector = toolManifestInspector ??
                                  new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
@@ -63,7 +62,7 @@ internal class ToolListLocalCommand : CommandBase
              );
     }
 
-    private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
+    private static bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
     {
         return !packageId.HasValue || package.PackageId.Equals(packageId);
     }
@@ -72,16 +71,16 @@ internal class ToolListLocalCommand : CommandBase
     {
         var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
         table.AddColumn(
-            LocalizableStrings.PackageIdColumn,
+            CliCommandStrings.ToolListPackageIdColumn,
             p => p.toolManifestPackage.PackageId.ToString());
         table.AddColumn(
-            LocalizableStrings.VersionColumn,
+            CliCommandStrings.ToolListVersionColumn,
             p => p.toolManifestPackage.Version.ToNormalizedString());
         table.AddColumn(
-            LocalizableStrings.CommandsColumn,
+            CliCommandStrings.ToolListCommandsColumn,
             p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
         table.AddColumn(
-            LocalizableStrings.ManifestFileColumn,
+            CliCommandStrings.ManifestFileColumn,
             p => p.SourceManifest.Value);
         table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
     }
@@ -90,13 +89,13 @@ internal class ToolListLocalCommand : CommandBase
     {
         var jsonData = new VersionedDataContract<LocalToolListJsonContract[]>()
         {
-            Data = packageEnumerable.Select(p => new LocalToolListJsonContract
+            Data = [.. packageEnumerable.Select(p => new LocalToolListJsonContract
             {
                 PackageId = p.toolManifestPackage.PackageId.ToString(),
                 Version = p.toolManifestPackage.Version.ToNormalizedString(),
-                Commands = p.toolManifestPackage.CommandNames.Select(c => c.Value).ToArray(),
+                Commands = [.. p.toolManifestPackage.CommandNames.Select(c => c.Value)],
                 Manifest = p.SourceManifest.Value
-            }).ToArray()
+            })]
         };
         var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
         _reporter.WriteLine(jsonText);

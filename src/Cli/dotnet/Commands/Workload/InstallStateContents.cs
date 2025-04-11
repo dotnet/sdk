@@ -7,7 +7,7 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CS8632
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 internal class InstallStateContents
 {
@@ -40,7 +40,7 @@ internal class InstallStateContents
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize<InstallStateContents>(this, s_options);
+        return JsonSerializer.Serialize(this, s_options);
     }
 
     public bool ShouldUseWorkloadSets() => UseWorkloadSets ?? true;

@@ -1,0 +1,101 @@
+From 0fc879489677500f088774f1e5f0b45f7457680e Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Thu, 10 Apr 2025 14:05:56 +0200
+Subject: [PATCH] Fix formatting in two files
+
+Backport: https://github.com/microsoft/vstest/pull/15047
+
+---
+ src/Microsoft.TestPlatform.Build/Tasks/VSTestLogsTask.cs         | 1 +
+ .../ExtensionDecorators/ExtensionDecoratorFactory.cs             | 1 +
+ .../ProtocolVersioning.cs                                        | 1 +
+ .../EventHandlers/NullPathConverter.cs                           | 1 +
+ .../ShowDeprecateDotnetVStestMessageArgumentProcessor.cs         | 1 +
+ test/TestAssets/NetStandard2Library/Class1.cs                    | 1 +
+ test/vstest.ProgrammerTests/Fakes/FakeTestHost.cs                | 1 +
+ 7 files changed, 7 insertions(+)
+
+diff --git a/src/Microsoft.TestPlatform.Build/Tasks/VSTestLogsTask.cs b/src/Microsoft.TestPlatform.Build/Tasks/VSTestLogsTask.cs
+index d5dfe8c7d..7e1a0dd8b 100644
+--- a/src/Microsoft.TestPlatform.Build/Tasks/VSTestLogsTask.cs
++++ b/src/Microsoft.TestPlatform.Build/Tasks/VSTestLogsTask.cs
+@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
+ using Microsoft.Build.Utilities;
+ 
+ namespace Microsoft.TestPlatform.Build.Tasks;
++
+ public class VSTestLogsTask : Task
+ {
+     public string? LogType { get; set; }
+diff --git a/src/Microsoft.TestPlatform.Common/ExtensionDecorators/ExtensionDecoratorFactory.cs b/src/Microsoft.TestPlatform.Common/ExtensionDecorators/ExtensionDecoratorFactory.cs
+index 7a82106c7..498593b48 100644
+--- a/src/Microsoft.TestPlatform.Common/ExtensionDecorators/ExtensionDecoratorFactory.cs
++++ b/src/Microsoft.TestPlatform.Common/ExtensionDecorators/ExtensionDecoratorFactory.cs
+@@ -5,6 +5,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+ using Microsoft.VisualStudio.TestPlatform.Utilities;
+ 
+ namespace Microsoft.VisualStudio.TestPlatform.Common.ExtensionDecorators;
++
+ internal class ExtensionDecoratorFactory
+ {
+     private readonly IFeatureFlag _featureFlag;
+diff --git a/src/Microsoft.TestPlatform.CommunicationUtilities/ProtocolVersioning.cs b/src/Microsoft.TestPlatform.CommunicationUtilities/ProtocolVersioning.cs
+index 20ce0c44d..577c849a0 100644
+--- a/src/Microsoft.TestPlatform.CommunicationUtilities/ProtocolVersioning.cs
++++ b/src/Microsoft.TestPlatform.CommunicationUtilities/ProtocolVersioning.cs
+@@ -4,6 +4,7 @@
+ using Microsoft.VisualStudio.TestPlatform.CommunicationUtilities.ObjectModel;
+ 
+ namespace Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
++
+ internal static class ProtocolVersioning
+ {
+     public const int HighestSupportedVersion = Version7;
+diff --git a/src/Microsoft.TestPlatform.CrossPlatEngine/EventHandlers/NullPathConverter.cs b/src/Microsoft.TestPlatform.CrossPlatEngine/EventHandlers/NullPathConverter.cs
+index 9460f19b0..3f699402e 100644
+--- a/src/Microsoft.TestPlatform.CrossPlatEngine/EventHandlers/NullPathConverter.cs
++++ b/src/Microsoft.TestPlatform.CrossPlatEngine/EventHandlers/NullPathConverter.cs
+@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+ 
+ namespace Microsoft.VisualStudio.TestPlatform.CommunicationUtilities;
++
+ internal class NullPathConverter : IPathConverter
+ {
+     private static readonly Lazy<NullPathConverter> LazyInstance = new(() => new NullPathConverter());
+diff --git a/src/vstest.console/Processors/ShowDeprecateDotnetVStestMessageArgumentProcessor.cs b/src/vstest.console/Processors/ShowDeprecateDotnetVStestMessageArgumentProcessor.cs
+index 71db32aa9..686c3a44a 100644
+--- a/src/vstest.console/Processors/ShowDeprecateDotnetVStestMessageArgumentProcessor.cs
++++ b/src/vstest.console/Processors/ShowDeprecateDotnetVStestMessageArgumentProcessor.cs
+@@ -5,6 +5,7 @@ using System;
+ using System.Linq;
+ 
+ namespace Microsoft.VisualStudio.TestPlatform.CommandLine.Processors;
++
+ internal class ShowDeprecateDotnetVStestMessageArgumentProcessor : IArgumentProcessor
+ {
+     public const string CommandName = "/ShowDeprecateDotnetVSTestMessage";
+diff --git a/test/TestAssets/NetStandard2Library/Class1.cs b/test/TestAssets/NetStandard2Library/Class1.cs
+index 7d5d17aa1..036fa82d3 100644
+--- a/test/TestAssets/NetStandard2Library/Class1.cs
++++ b/test/TestAssets/NetStandard2Library/Class1.cs
+@@ -4,6 +4,7 @@
+ using System;
+ 
+ namespace NetStandard2Library;
++
+ public class Class1
+ {
+ 
+diff --git a/test/vstest.ProgrammerTests/Fakes/FakeTestHost.cs b/test/vstest.ProgrammerTests/Fakes/FakeTestHost.cs
+index 3a1cb11ab..5be76c100 100644
+--- a/test/vstest.ProgrammerTests/Fakes/FakeTestHost.cs
++++ b/test/vstest.ProgrammerTests/Fakes/FakeTestHost.cs
+@@ -2,6 +2,7 @@
+ // Licensed under the MIT license. See LICENSE file in the project root for full license information.
+ 
+ namespace vstest.ProgrammerTests.Fakes;
++
+ internal class FakeTestHostFixture : IDisposable
+ {
+     public int Id { get; }

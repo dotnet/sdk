@@ -3,7 +3,7 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -364,7 +364,7 @@ namespace Microsoft.DotNet.Tests
             FakeRecordEventNameTelemetry fakeTelemetry = new();
             string[] args = { "c:\\mypath\\dotnet-sdk-latest-win-x64.exe" };
 
-            InternalReportinstallsuccess.ProcessInputAndSendTelemetry(args, fakeTelemetry);
+            InternalReportInstallSuccessCommand.ProcessInputAndSendTelemetry(args, fakeTelemetry);
 
             fakeTelemetry
                 .LogEntries.Should()

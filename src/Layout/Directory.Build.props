@@ -50,7 +50,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '2' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
+    <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '3' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
     <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
 

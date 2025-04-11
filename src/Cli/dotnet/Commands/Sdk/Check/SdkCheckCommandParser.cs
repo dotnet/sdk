@@ -3,7 +3,7 @@
 
 using System.CommandLine;
 
-namespace Microsoft.DotNet.Tools.Sdk.Check;
+namespace Microsoft.DotNet.Cli.Commands.Sdk.Check;
 
 internal static class SdkCheckCommandParser
 {
@@ -16,7 +16,7 @@ internal static class SdkCheckCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("check", LocalizableStrings.AppFullName);
+        CliCommand command = new("check", CliCommandStrings.SdkCheckAppFullName);
 
         command.SetAction(SdkCheckCommand.Run);
 

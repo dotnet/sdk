@@ -3,15 +3,13 @@
 
 using System.CommandLine;
 using System.Diagnostics;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
-
 using NuGetDocumentedCommand = NuGet.CommandLine.XPlat.Commands.DocumentedCommand;
 
-namespace Microsoft.DotNet.Tools.Help;
+namespace Microsoft.DotNet.Cli.Commands.Help;
 
 public class HelpCommand(string[] helpArgs)
 {
@@ -33,7 +31,7 @@ public class HelpCommand(string[] helpArgs)
     public static void PrintHelp()
     {
         PrintVersionHeader();
-        Reporter.Output.WriteLine(HelpUsageText.UsageText);
+        Reporter.Output.WriteLine(CliUsage.HelpText);
     }
 
     public static void PrintVersionHeader()
@@ -96,14 +94,14 @@ public class HelpCommand(string[] helpArgs)
         {
             Reporter.Error.WriteLine(
                 string.Format(
-                    LocalizableStrings.CommandDoesNotExist,
+                    CliCommandStrings.CommandDoesNotExist,
                     helpArgs).Red());
-            Reporter.Output.WriteLine(HelpUsageText.UsageText);
+            Reporter.Output.WriteLine(CliUsage.HelpText);
             return 1;
         }
     }
 
-    private bool TryGetDocsLink(string[] command, out string docsLink)
+    private static bool TryGetDocsLink(string[] command, out string docsLink)
     {
         var parsedCommand = Parser.Instance.Parse(["dotnet", .. command]);
         if (parsedCommand?.CommandResult?.Command is ICommandDocument dc)
