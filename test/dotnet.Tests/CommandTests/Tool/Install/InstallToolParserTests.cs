@@ -6,6 +6,9 @@
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
+using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Packaging.Core;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -19,16 +22,17 @@ namespace Microsoft.DotNet.Tests.ParserTests
             this.output = output;
         }
 
-        [Fact]
-        public void InstallGlobaltoolParserCanGetPackageIdAndPackageVersion()
+        [Theory]
+        [InlineData("console.test.app --version 1.0.0")]
+        [InlineData("console.test.app@1.0.0")]
+        public void InstallGlobalToolParserCanGetPackageIdentityWithVersion(string arguments)
         {
-            var result = Parser.Instance.Parse("dotnet tool install -g console.test.app --version 1.0.1");
-
-            var packageId = result.GetValue<string>(ToolInstallCommandParser.PackageIdArgument);
-            var packageVersion = result.GetValue<string>(ToolInstallCommandParser.VersionOption);
-
+            var result = Parser.Instance.Parse($"dotnet tool install -g {arguments}");
+            var packageIdentity = result.GetValue<PackageIdentity>(ToolInstallCommandParser.PackageIdentityArgument);
+            var packageId = packageIdentity?.Id;
+            var packageVersion = packageIdentity?.Version?.ToString() ?? result.GetValue<string>(ToolInstallCommandParser.VersionOption);
             packageId.Should().Be("console.test.app");
-            packageVersion.Should().Be("1.0.1");
+            packageVersion.Should().Be("1.0.0");
         }
 
         [Fact]

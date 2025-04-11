@@ -540,6 +540,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">Invalid solution `{0}`. {1}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidVersion">
+        <source>Invalid version string: {0}</source>
+        <target state="new">Invalid version string: {0}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
         <source>{0} is not found in NuGet feeds {1}.</source>
         <target state="new">{0} is not found in NuGet feeds {1}.</target>
@@ -740,6 +745,21 @@ setx PATH "%PATH%;{0}"
         <source>Package</source>
         <target state="new">Package</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentDescription">
+        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
+        <source>Package reference id and version must not be null.</source>
+        <target state="new">Package reference id and version must not be null.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
+        <source>Cannot specify --version when the package argument already contains a version.</source>
+        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="PackageReference">
         <source>Package reference</source>

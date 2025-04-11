@@ -68,7 +68,9 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Id;
+
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
         _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
         _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
