@@ -48,10 +48,6 @@ steps:
       --tmp $(Agent.TempDirectory)                                                                    \
       --azdev-pat '$(dn-bot-all-orgs-code-r)'                                                         \
       --branch ${{ parameters.vmrBranch }}                                                            \
-      --repository "sdk:${{ parameters.targetRef }}"                                                  \
-      --recursive                                                                                     \
-      --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
-      --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
       --ci                                                                                            \
       --debug
 
@@ -70,14 +66,12 @@ steps:
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
+    cp .\src\VirtualMonoRepo\source-mappings.json '${{ parameters.vmrPath }}'
     ./eng/vmr-sync.ps1 `
       -vmr ${{ parameters.vmrPath }} `
       -tmp $(Agent.TempDirectory) `
       -azdevPat '$(dn-bot-all-orgs-code-r)' `
       -branch ${{ parameters.vmrBranch }} `
-      -repository "sdk:${{ parameters.targetRef }}" `
-      -recursive `
-      -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
       -ci `
       -debugOutput
 

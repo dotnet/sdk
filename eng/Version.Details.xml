@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
+  <Source Mapping="sdk" Uri="https://github.com/dotnet/dotnet" Sha="88e8da66a7134e7339cc434af6be834203d5f255" BarId="263481" />
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="10.0.100-preview.4.25210.1">
       <Uri>https://github.com/dotnet/templating</Uri>
@@ -682,13 +683,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>7618121e0f64098e2b81ed7c8cdf7024a1b87795</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25209.3">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25211.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>98b747c01a9f431a5676a6ecf6ab2cf272ce69ee</Sha>
+      <Sha>8c5b42c0fb17f3bcb3b275c24fc99cea305fbef5</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25209.3">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25211.1">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>98b747c01a9f431a5676a6ecf6ab2cf272ce69ee</Sha>
+      <Sha>8c5b42c0fb17f3bcb3b275c24fc99cea305fbef5</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="10.0.0-preview.24602.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
