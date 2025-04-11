@@ -10,9 +10,9 @@
 {
     // Location within the VMR where the source-build patches are stored
     // These patches are applied on top of the code synchronized into the VMR
-    "patchesPath": "src/sdk/src/SourceBuild/patches",
+    "patchesPath": "src/VirtualMonoRepo/Tasks",
 
-    "sourceMappingsPath": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
+    "sourceMappingsPath": "source-mappings.json",
 
     "thirdPartyNoticesTemplatePath": "src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt",
 
@@ -32,6 +32,10 @@
             "destination": "src"
         }
     ],
+
+    // Some files are copied outside of the src/ directory into other locations
+    // When files in the source paths are changed, they are automatically synchronized too
+    "additionalMappings": [],
 
     // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
     // When no "include" filter is specified, "**/*" is used
