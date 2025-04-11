@@ -21,11 +21,6 @@ Required. Path to the temporary folder where repositories will be cloned
 .PARAMETER vmrBranch
 Optional. Branch of the 'dotnet/dotnet' repo to synchronize. The VMR will be checked out to this branch
 
-.PARAMETER remote
-Optional. Additional remote to use during the synchronization
-This can be used to synchronize to a commit from a fork of the repository
-Example: 'runtime:https://github.com/yourfork/runtime'
-
 .PARAMETER azdevPat
 Optional. Azure DevOps PAT to use for cloning private repositories.
 
@@ -59,23 +54,13 @@ function Highlight {
   Write-Host "> $($args[0])" -ForegroundColor 'Cyan'
 }
 
-$sdkDir = (Split-Path -Parent $scriptRoot)
-
-# If sdk is a repo, we're in an sdk and not in the dotnet/dotnet repo
-if (Test-Path -Path "$sdkDir/.git" -PathType Container) {
-  $additionalRemotes = "sdk:$sdkDir"
-}
-
-if ($remote) {
-  $additionalRemotes = "$additionalRemotes $remote"
-}
-
 $verbosity = 'verbose'
 if ($debugOutput) {
   $verbosity = 'debug'
 }
 # Validation
 
+$sdkDir = (Split-Path -Parent $scriptRoot)
 if (-not (Test-Path -Path $sdkDir -PathType Container)) {
   Fail "Directory '$sdkDir' does not exist. Please specify the path to the dotnet/sdk repo"
   exit 1
@@ -141,10 +126,6 @@ $darcArgs = (
 
 if ($ci) {
   $darcArgs += ("--ci")
-}
-
-if ($additionalRemotes) {
-  $darcArgs += ("--additional-remotes", $additionalRemotes)
 }
 
 if ($azdevPat) {
