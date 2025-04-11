@@ -1,0 +1,55 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="dotnet-sourcelink" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.Build.StandardCI" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.Build.Tasks.Git" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.Build.Tasks.Tfvc" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.AzureDevOpsServer.Git" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.AzureRepos.Git" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.AzureRepos.Tfvc" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.Bitbucket.Git" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.Common" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.Gitea" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.Gitee" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.GitHub" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.GitLab" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.GitWeb" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Package Id="Microsoft.SourceLink.Tools" Version="10.0.0-beta.25168.115" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Build.StandardCI.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/dotnet-sourcelink.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Build.Tasks.Git.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Build.Tasks.Tfvc.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.AzureDevOpsServer.Git.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.AzureRepos.Git.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.AzureRepos.Tfvc.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.Bitbucket.Git.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.Common.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.Gitea.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.Gitee.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.GitHub.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.GitLab.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.GitWeb.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.SourceLink.Tools.10.0.0-beta.25168.115.symbols.nupkg" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="dotnet-sourcelink\net8.0\dotnet-sourcelink.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.Build.Tasks.Git\net472\Microsoft.Build.Tasks.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.Build.Tasks.Git\net8.0\Microsoft.Build.Tasks.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.Build.Tasks.Tfvc\net472\Microsoft.Build.Tasks.Tfvc.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.AzureDevOpsServer.Git\net472\Microsoft.SourceLink.AzureDevOpsServer.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.AzureDevOpsServer.Git\net8.0\Microsoft.SourceLink.AzureDevOpsServer.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.AzureRepos.Git\net472\Microsoft.SourceLink.AzureRepos.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.AzureRepos.Git\net8.0\Microsoft.SourceLink.AzureRepos.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.AzureRepos.Tfvc\net472\Microsoft.SourceLink.AzureRepos.Tfvc.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Bitbucket.Git\net472\Microsoft.SourceLink.Bitbucket.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Bitbucket.Git\net8.0\Microsoft.SourceLink.Bitbucket.Git.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Common\net472\Microsoft.SourceLink.Common.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Common\net8.0\Microsoft.SourceLink.Common.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Gitea\net472\Microsoft.SourceLink.Gitea.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Gitea\net8.0\Microsoft.SourceLink.Gitea.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Gitee\net472\Microsoft.SourceLink.Gitee.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.Gitee\net8.0\Microsoft.SourceLink.Gitee.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitHub\net472\Microsoft.SourceLink.GitHub.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitHub\net8.0\Microsoft.SourceLink.GitHub.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitLab\net472\Microsoft.SourceLink.GitLab.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitLab\net8.0\Microsoft.SourceLink.GitLab.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitWeb\net472\Microsoft.SourceLink.GitWeb.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+  <Pdb Id="Microsoft.SourceLink.GitWeb\net8.0\Microsoft.SourceLink.GitWeb.pdb" RepoOrigin="sourcelink" Visibility="Vertical" />
+</Build>

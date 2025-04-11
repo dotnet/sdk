@@ -1,0 +1,90 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.Arcade.Common" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.Cci.Extensions" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Arcade.Sdk" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.AsmDiff" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Archives" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Feed" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Installers" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Packaging" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.TargetFramework" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Templating" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.VisualStudio" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Build.Tasks.Workloads" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.CMake.Sdk" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.CodeAnalysis" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Deployment.Tasks.Links" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenAPI" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.GenFacades" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Git.IssueManager" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.Client" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.JobSender" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Helix.Sdk" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Internal.SymbolHelper" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.MacOsPkg.Cli" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.MacOsPkg.Core" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.NuGetRepack.Tasks" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.PackageTesting" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.RemoteExecutor" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SharedFramework.Sdk" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SignCheck" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SignCheckTask" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SignTool" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SourceBuild.Tasks" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.StrongName" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CmdLine" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.CodeGenerator" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.SwaggerGenerator.MSBuild" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.Tar" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools.Cli" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.VersionTools.Tasks" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.XUnitAssert" Version="2.9.2-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.XUnitConsoleRunner" Version="2.9.2-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Package Id="Microsoft.DotNet.XUnitExtensions" Version="10.0.0-beta.25168.115" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Arcade.Common.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.Cci.Extensions.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Arcade.Sdk.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.AsmDiff.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Archives.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Feed.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Installers.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Packaging.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.TargetFramework.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Templating.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.VisualStudio.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Build.Tasks.Workloads.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.CMake.Sdk.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.CodeAnalysis.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Deployment.Tasks.Links.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.GenAPI.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.GenFacades.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Git.IssueManager.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Helix.Client.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Helix.JobSender.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Helix.Sdk.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Internal.SymbolHelper.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.MacOsPkg.Cli.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.MacOsPkg.Core.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.NuGetRepack.Tasks.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.PackageTesting.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.RemoteExecutor.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SharedFramework.Sdk.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SignCheck.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SignCheckTask.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SignTool.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SourceBuild.Tasks.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.StrongName.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SwaggerGenerator.CmdLine.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SwaggerGenerator.CodeGenerator.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.SwaggerGenerator.MSBuild.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Tar.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.VersionTools.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.VersionTools.Cli.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.VersionTools.Tasks.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.XliffTasks.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.XUnitAssert.2.9.2-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.XUnitConsoleRunner.2.9.2-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.XUnitExtensions.10.0.0-beta.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="arcade" Visibility="External" />
+</Build>

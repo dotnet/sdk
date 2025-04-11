@@ -666,6 +666,7 @@
                     Exists('$(RepoArtifactsDir)')">
     <ItemGroup>
       <LogFilesToMove Include="$(RepoArtifactsDir)**/*.log" />
+      <LogFilesToMove Include="$(RepoArtifactsDir)**/AssetManifest/*.xml" />
       <LogFilesToMove Include="$(RepoArtifactsDir)**/*.binlog" />
       <PrebuiltReportsToMove Include="$(RepoArtifactsDir)sb/prebuilt-report/*" />
     </ItemGroup>

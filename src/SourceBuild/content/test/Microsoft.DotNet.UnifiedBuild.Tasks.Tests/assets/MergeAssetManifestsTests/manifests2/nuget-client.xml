@@ -1,0 +1,38 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.Build.NuGetSdkResolver" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Build.Tasks" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Build.Tasks.Console" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Build.Tasks.Pack" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.CommandLine.XPlat" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Commands" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Common" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Configuration" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Credentials" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.DependencyResolver.Core" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Frameworks" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.LibraryModel" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.PackageManagement" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Packaging" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.ProjectModel" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Protocol" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Resolver" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Package Id="NuGet.Versioning" Version="6.14.0-preview.1.115" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Build.NuGetSdkResolver.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Build.Tasks.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Build.Tasks.Console.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Build.Tasks.Pack.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.CommandLine.XPlat.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Commands.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Common.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Configuration.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Credentials.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.DependencyResolver.Core.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Frameworks.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.LibraryModel.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.PackageManagement.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Packaging.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.ProjectModel.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Protocol.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Resolver.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/NuGet.Versioning.6.14.0-preview.1.115.symbols.nupkg" RepoOrigin="nuget-client" Visibility="Vertical" />
+</Build>

@@ -1,5 +1,5 @@
-﻿using Microsoft.DotNet.VersionTools.Automation;
-using Microsoft.DotNet.VersionTools.BuildManifest;
+﻿using Microsoft.Arcade.Common;
+using Microsoft.DotNet.Build.Manifest;
 using NuGet.Packaging;
 using System.Collections.Concurrent;
 using System.Collections.Immutable;

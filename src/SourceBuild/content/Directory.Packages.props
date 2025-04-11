@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <!-- Arcade dependencies -->
-    <PackageVersion Include="Microsoft.DotNet.VersionTools" Version="$(MicrosoftDotNetVersionToolsVersion)" />
+    <PackageVersion Include="Microsoft.Arcade.Common" Version="$(MicrosoftArcadeCommonVersion)" />
+    <PackageVersion Include="Microsoft.DotNet.Build.Manifest" Version="$(MicrosoftDotNetBuildManifestVersion)" />
     <!-- Command-line-api dependencies -->
     <PackageVersion Include="System.CommandLine" Version="$(SystemCommandLineVersion)" />
     <!-- MSBuild dependencies -->

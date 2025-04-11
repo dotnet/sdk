@@ -1,0 +1,75 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="dotnet-ef" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.Data.Sqlite" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.Data.Sqlite.Core" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Abstractions" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Analyzers" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.AspNet.Specification.Tests" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Cosmos" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Design" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Proxies" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Relational" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Specification.Tests" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.Abstractions" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.HierarchyId" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Tasks" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Templates" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Package Id="Microsoft.EntityFrameworkCore.Tools" Version="10.0.0-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/dotnet-ef.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Data.Sqlite.Core.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Abstractions.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Analyzers.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.AspNet.Specification.Tests.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Cosmos.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Design.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.InMemory.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Proxies.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Relational.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Relational.Specification.Tests.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Specification.Tests.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Sqlite.Core.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.SqlServer.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.SqlServer.Abstractions.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.SqlServer.HierarchyId.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.EntityFrameworkCore.Tools.10.0.0-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="dotnet-ef\net10.0\dotnet-ef.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Abstractions\net10.0\Microsoft.EntityFrameworkCore.Abstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Analyzers\netstandard2.0\Microsoft.EntityFrameworkCore.Analyzers.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Benchmarks\net10.0\EFCore.Benchmarks.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Cosmos\net10.0\Microsoft.EntityFrameworkCore.Cosmos.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Design\net10.0\Microsoft.EntityFrameworkCore.Design.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.InMemory\net10.0\Microsoft.EntityFrameworkCore.InMemory.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Proxies\net10.0\Microsoft.EntityFrameworkCore.Proxies.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Relational.Specification.Tests\net10.0\Microsoft.EntityFrameworkCore.Relational.Specification.Tests.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Relational\net10.0\Microsoft.EntityFrameworkCore.Relational.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Specification.Tests\net10.0\Microsoft.EntityFrameworkCore.Specification.Tests.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Sqlite.Benchmarks\net10.0\EFCore.Sqlite.Benchmarks.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Sqlite.Core\net10.0\Microsoft.EntityFrameworkCore.Sqlite.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Sqlite.NTS\net10.0\Microsoft.EntityFrameworkCore.Sqlite.NetTopologySuite.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.SqlServer.Abstractions\netstandard2.1\Microsoft.EntityFrameworkCore.SqlServer.Abstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.SqlServer.Benchmarks\net10.0\EFCore.SqlServer.Benchmarks.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.SqlServer.HierarchyId\net10.0\Microsoft.EntityFrameworkCore.SqlServer.HierarchyId.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.SqlServer.NTS\net10.0\Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.SqlServer\net10.0\Microsoft.EntityFrameworkCore.SqlServer.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Tasks\net10.0\Microsoft.EntityFrameworkCore.Tasks.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Tasks\net472\Microsoft.EntityFrameworkCore.Tasks.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore.Templates\netstandard2.0\EFCore.Templates.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="EFCore\net10.0\Microsoft.EntityFrameworkCore.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="ef\net10.0\ef.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="ef\net472\ARM64\ef.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="ef\net472\ef.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="ef\net472\x86\ef.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="Microsoft.Data.Sqlite.Core\net8.0\Microsoft.Data.Sqlite.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+  <Pdb Id="Microsoft.Data.Sqlite.Core\netstandard2.0\Microsoft.Data.Sqlite.pdb" DotNetReleaseShipping="true" RepoOrigin="efcore" Visibility="Vertical" />
+</Build>

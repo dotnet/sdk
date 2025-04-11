@@ -1,0 +1,46 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Microsoft.DotNet.Arcade.Wpf.Sdk" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Wpf.GitHub" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Package Id="runtime.win-x64.Microsoft.DotNet.Wpf.GitHub" Version="10.0.0-preview.3.25168.115" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Arcade.Wpf.Sdk.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Wpf.GitHub.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.DotNet.Wpf.ProjectTemplates.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//Microsoft.NET.Sdk.WindowsDesktop.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15//runtime.win-x64.Microsoft.DotNet.Wpf.GitHub.10.0.0-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="Compiler\net10.0\x64\FXJITCompiler.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="DirectWriteForwarder\net10.0\x64\DirectWriteForwarder.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PenImc\net10.0\x64\PenImc_cor3.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationBuildTasks\net10.0\PresentationBuildTasks.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationBuildTasks\net472\PresentationBuildTasks.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationCore\net10.0\x64\PresentationCore.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework-SystemCore\net10.0\x64\PresentationFramework-SystemCore.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework-SystemData\net10.0\x64\PresentationFramework-SystemData.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework-SystemDrawing\net10.0\x64\PresentationFramework-SystemDrawing.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework-SystemXmlLinq\net10.0\x64\PresentationFramework-SystemXmlLinq.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework-SystemXml\net10.0\x64\PresentationFramework-SystemXml.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Aero2\net10.0\x64\PresentationFramework.Aero2.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.AeroLite\net10.0\x64\PresentationFramework.AeroLite.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Aero\net10.0\x64\PresentationFramework.Aero.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Classic\net10.0\x64\PresentationFramework.Classic.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Fluent\net10.0\x64\PresentationFramework.Fluent.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Luna\net10.0\x64\PresentationFramework.Luna.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework.Royale\net10.0\x64\PresentationFramework.Royale.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationFramework\net10.0\x64\PresentationFramework.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="PresentationUI\net10.0\x64\PresentationUI.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="ReachFramework\net10.0\x64\ReachFramework.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Printing\net10.0\x64\System.Printing.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Controls.Ribbon\net10.0\x64\System.Windows.Controls.Ribbon.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Input.Manipulations\net10.0\x64\System.Windows.Input.Manipulations.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Presentation\net10.0\x64\System.Windows.Presentation.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Windows.Primitives\net10.0\x64\System.Windows.Primitives.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="System.Xaml\net10.0\x64\System.Xaml.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="UIAutomationClientSideProviders\net10.0\x64\UIAutomationClientSideProviders.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="UIAutomationClient\net10.0\x64\UIAutomationClient.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="UIAutomationProvider\net10.0\x64\UIAutomationProvider.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="UIAutomationTypes\net10.0\x64\UIAutomationTypes.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="WindowsBase\net10.0\x64\WindowsBase.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="WindowsFormsIntegration\net10.0\x64\WindowsFormsIntegration.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+  <Pdb Id="wpfgfx\net10.0\x64\wpfgfx_cor3.pdb" RepoOrigin="wpf" Visibility="Vertical" />
+</Build>

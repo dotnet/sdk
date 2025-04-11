@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks;
 /// <summary>
 /// Get a list of MSBuild Items that represent the packages described in the asset manifests.
 /// </summary>
-public sealed class GetKnownArtifactsFromAssetManifests : Build.Utilities.Task
+public sealed class GetKnownArtifactsFromAssetManifests : Task
 {
     // Common metadata
     private const string IdAttributeName = "Id";

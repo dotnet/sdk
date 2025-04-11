@@ -1,0 +1,256 @@
+<Build PublishingVersion="4" Name="dotnet-dotnet" BuildId="20250318.15" Branch="refs/heads/v4-publishing-enablement" Commit="78f917530e8bba3c278eec55a908d354474ce009" AzureDevOpsAccount="dnceng" AzureDevOpsBranch="refs/heads/v4-publishing-enablement" AzureDevOpsBuildDefinitionId="1330" AzureDevOpsBuildId="2666817" AzureDevOpsBuildNumber="20250318.15" AzureDevOpsProject="internal" AzureDevOpsRepository="https://dev.azure.com/dnceng/internal/_git/dotnet-dotnet" InitialAssetsLocation="https://dev.azure.com/dnceng/internal/_apis/build/builds/2666817/artifacts" IsReleaseOnlyPackageVersion="false" IsStable="false">
+  <Package Id="Aspire.Tools.Service" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="dotnet-format" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="FSharp.Compiler.Service" Version="43.9.300-preview.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="FSharp.Core" Version="9.0.300-beta.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.ApiCompat.Task" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.ApiCompat.Tool" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Cli" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Cli.Utils" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Common.ItemTemplates" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Common.ProjectTemplates.10.0" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.Configurer" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.GenAPI.Task" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.GenAPI.Tool" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent.Data" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent.Host" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.HotReload.Agent.PipeRpc" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.DotNet.InternalAbstractions" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Build.Containers" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Build.Extensions" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.BlazorWebAssembly" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.Net.Sdk.Compilers.Toolset" Version="10.0.100-preview.3.25168.115" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Publish" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Razor" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.StaticWebAssets" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Web" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Web.ProjectSystem" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.WebAssembly" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.Worker" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.WorkloadManifestReader" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Package Id="Microsoft.TemplateEngine.Cli" Version="10.0.100-preview.3.25168.115" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Aspire.Tools.Service.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/dotnet-format.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.ApiCompat.Task.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.ApiCompat.Tool.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.Cli.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.Cli.Utils.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.Common.ItemTemplates.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.Common.ProjectTemplates.10.0.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.Configurer.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.GenAPI.Task.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.GenAPI.Tool.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.HotReload.Agent.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.HotReload.Agent.Data.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.HotReload.Agent.Host.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.HotReload.Agent.PipeRpc.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.DotNet.InternalAbstractions.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Build.Containers.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Build.Extensions.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.BlazorWebAssembly.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.Net.Sdk.Compilers.Toolset.10.0.100-preview.3.25168.115.symbols.nupkg" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.Publish.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.Razor.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.StaticWebAssets.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.Web.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.Web.ProjectSystem.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.WebAssembly.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.Worker.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.WorkloadManifestReader.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="assets/symbols/dotnet-dotnet/20250318.15/Microsoft.TemplateEngine.Cli.10.0.100-preview.3.25168.115.symbols.nupkg" NonShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Blob Id="Sdk/10.0.100-preview.3.25168.115/dotnet-sdk-pgo-10.0.100-preview.3.25168.115-win-x64.zip" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Blob Id="Sdk/10.0.100-preview.3.25168.115/dotnet-sdk-pgo-10.0.100-preview.3.25168.115-win-x64.zip.sha512" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="External" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Containers\tasks\net10.0\Microsoft.NET.Build.Containers.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Containers\tasks\net10.0\Valleysoft.DockerCredsProvider.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\datacollector.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\dotnet.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-dev-certs\10.0.0-preview.3.25168.115\tools\net10.0\any\dotnet-dev-certs.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-user-jwts\10.0.0-preview.3.25168.115\tools\net10.0\any\dotnet-user-jwts.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-user-secrets\10.0.0-preview.3.25168.115\tools\net10.0\any\dotnet-user-secrets.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\dotnet-watch.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\dotnet.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.Cli.Utils.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.Configurer.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.InternalAbstractions.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.NativeWrapper.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.SdkResolver.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.DotNet.TemplateLocator.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.TemplateEngine.Cli.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\Microsoft.Win32.Msi.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\DotnetTools\dotnet-watch\10.0.100-preview.3.25168.115\tools\net10.0\any\System.CommandLine.StaticCompletions.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Extensions\Microsoft.Diagnostics.NETCore.Client.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Extensions\Microsoft.TestPlatform.Extensions.BlameDataCollector.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Extensions\Microsoft.TestPlatform.TestHostRuntimeProvider.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Extensions\Microsoft.VisualStudio.TestPlatform.Extensions.Html.TestLogger.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Extensions\Microsoft.VisualStudio.TestPlatform.Extensions.Trx.TestLogger.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\fsc.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\FSharp.Compiler.Interactive.Settings.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\FSharp.Compiler.Service.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\FSharp.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\FSharp.DependencyManager.Nuget.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\fsi.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\Microsoft.Build.Framework.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\Microsoft.Build.Tasks.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\Microsoft.Build.Utilities.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\Microsoft.NET.StringTools.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.Messages.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\runtimes\win\lib\net10.0\System.Security.Cryptography.Pkcs.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.CodeDom.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Configuration.ConfigurationManager.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Diagnostics.EventLog.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Formats.Nrbf.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Resources.Extensions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Security.Cryptography.Pkcs.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Security.Cryptography.ProtectedData.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\FSharp\System.Security.Cryptography.Xml.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.ApplicationInsights.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.AspNetCore.DeveloperCertificates.XPlat.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Build.Framework.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Build.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Build.NuGetSdkResolver.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Build.Tasks.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Build.Utilities.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.CodeAnalysis.CSharp.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.CodeAnalysis.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.CodeCoverage.IO.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Deployment.DotNet.Releases.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.Cli.Utils.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.Configurer.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.InternalAbstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.NativeWrapper.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.SdkResolver.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.DotNet.TemplateLocator.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Configuration.Abstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Configuration.Binder.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Configuration.FileExtensions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Configuration.Ini.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Configuration.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.DependencyInjection.Abstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.DependencyInjection.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.DependencyModel.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.FileProviders.Abstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.FileProviders.Physical.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.FileSystemGlobbing.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Logging.Abstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Logging.Configuration.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Logging.Console.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Logging.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Options.ConfigurationExtensions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Options.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Extensions.Primitives.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.NET.HostModel.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.NET.Sdk.WorkloadManifestReader.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.NET.StringTools.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Abstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Cli.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Core.Contracts.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Edge.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateEngine.Utils.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TemplateSearch.Common.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.Build.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.CommunicationUtilities.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.CoreUtilities.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.CrossPlatEngine.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.PlatformAbstractions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.Utilities.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.TestPlatform.VsTestConsole.TranslationLayer.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.VisualStudio.SolutionPersistence.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.VisualStudio.TestPlatform.Client.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.VisualStudio.TestPlatform.Common.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.VisualStudio.TestPlatform.ObjectModel.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft.Win32.Msi.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft\Microsoft.NET.Build.Extensions\tools\net10.0\Microsoft.NET.Build.Extensions.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Microsoft\Microsoft.NET.Build.Extensions\tools\net10.0\Microsoft.NET.Build.Extensions.Tasks.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\MSBuild.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Newtonsoft.Json.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Build.Tasks.Console.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Build.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.CommandLine.XPlat.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Commands.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Common.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Configuration.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Credentials.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.DependencyResolver.Core.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Frameworks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.LibraryModel.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Packaging.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.ProjectModel.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Protocol.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\NuGet.Versioning.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\bincore\csc.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\bincore\Microsoft.CodeAnalysis.CSharp.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\bincore\Microsoft.CodeAnalysis.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\bincore\vbc.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\bincore\VBCSCompiler.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Roslyn\Microsoft.Build.Tasks.CodeAnalysis.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.Messages.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\runtimes\win\lib\net10.0\System.Diagnostics.EventLog.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\runtimes\win\lib\net10.0\System.Security.Cryptography.Pkcs.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\runtimes\win\lib\net10.0\System.ServiceProcess.ServiceController.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\sdk-tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.Build.Tasks.Git\tools\netframework\Microsoft.Build.Tasks.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.Build.Tasks.Git\tools\net\Microsoft.Build.Tasks.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net10.0\System.CommandLine.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.BlazorWebAssembly\tools\net10.0\System.IO.Hashing.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Publish\tools\net10.0\Microsoft.NET.Sdk.Publish.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Publish\tools\net10.0\Microsoft.Web.XmlTransform.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Publish\tools\net10.0\System.Security.Cryptography.ProtectedData.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tasks\net10.0\Microsoft.Extensions.FileSystemGlobbing.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tasks\net10.0\Microsoft.NET.Sdk.Razor.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\Microsoft.AspNetCore.Razor.Utilities.Shared.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\Microsoft.CodeAnalysis.Razor.Compiler.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\Microsoft.Css.Parser.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\Microsoft.Extensions.ObjectPool.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\Newtonsoft.Json.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Razor\tools\rzc.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Web.ProjectSystem\tools\net10.0\Microsoft.NET.Sdk.Web.ProjectSystem.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Web\tools\net10.0\Microsoft.NET.Sdk.Web.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net10.0\PresentationBuildTasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.WindowsDesktop\tools\net10.0\System.Reflection.MetadataLoadContext.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk.Worker\tools\net10.0\Microsoft.NET.Sdk.Worker.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.Deployment.DotNet.Releases.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.DotNet.ApiCompat.Task.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.DotNet.ApiCompatibility.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.DotNet.ApiSymbolExtensions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.DotNet.PackageValidation.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\Microsoft.NET.Build.Tasks.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.NET.Sdk\tools\net10.0\System.IO.Hashing.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.AzureRepos.Git\tools\netframework\Microsoft.SourceLink.AzureRepos.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.AzureRepos.Git\tools\net\Microsoft.SourceLink.AzureRepos.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.Bitbucket.Git\tools\netframework\Microsoft.SourceLink.Bitbucket.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.Bitbucket.Git\tools\net\Microsoft.SourceLink.Bitbucket.Git.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.Common\tools\netframework\Microsoft.SourceLink.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.Common\tools\net\Microsoft.SourceLink.Common.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.GitHub\tools\netframework\Microsoft.SourceLink.GitHub.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.GitHub\tools\net\Microsoft.SourceLink.GitHub.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.GitLab\tools\netframework\Microsoft.SourceLink.GitLab.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\Microsoft.SourceLink.GitLab\tools\net\Microsoft.SourceLink.GitLab.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\Sdks\NuGet.Build.Tasks.Pack\CoreCLR\NuGet.Build.Tasks.Pack.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.CodeDom.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.CommandLine.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.CommandLine.StaticCompletions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.ComponentModel.Composition.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Configuration.ConfigurationManager.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Diagnostics.EventLog.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Formats.Nrbf.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.IO.Hashing.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Reflection.MetadataLoadContext.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Resources.Extensions.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Security.Cryptography.Pkcs.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Security.Cryptography.ProtectedData.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.Security.Cryptography.Xml.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\System.ServiceProcess.ServiceController.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\testhost.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+  <Pdb Id="sdk\10.0.100-preview.3.25168.115\vstest.console.ni.pdb" DotNetReleaseShipping="true" RepoOrigin="sdk" Visibility="Vertical" />
+</Build>
