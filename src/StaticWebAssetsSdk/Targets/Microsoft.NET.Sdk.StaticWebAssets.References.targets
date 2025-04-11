@@ -181,6 +181,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         Patterns="@(_CachedBuildStaticWebAssetDiscoveryPatterns)"
         ProjectMode="$(StaticWebAssetProjectMode)"
         AssetKind="Build"
+        MakeReferencedAssetOriginalItemSpecAbsolute="$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)"
         Source="$(PackageId)"
       >
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedBuildReferencedStaticWebAsset" />
@@ -227,6 +228,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         ProjectMode="$(StaticWebAssetProjectMode)"
         AssetKind="Publish"
         Source="$(PackageId)"
+        MakeReferencedAssetOriginalItemSpecAbsolute="$(StaticWebAssetMakeReferencedAssetOriginalItemSpecAbsolute)"
       >
         <Output TaskParameter="StaticWebAssets" ItemName="_CachedPublishReferencedStaticWebAsset" />
       </ComputeReferenceStaticWebAssetItems>
