@@ -3,18 +3,15 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.CommandFactory
-{
-    public class AppBaseCommandResolver : AbstractPathBasedCommandResolver
-    {
-        public AppBaseCommandResolver(IEnvironmentProvider environment,
-            IPlatformCommandSpecFactory commandSpecFactory) : base(environment, commandSpecFactory) { }
+namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-        internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
-        {
-            return _environment.GetCommandPathFromRootPath(
-                AppContext.BaseDirectory,
-                commandResolverArguments.CommandName);
-        }
+public class AppBaseCommandResolver(IEnvironmentProvider environment,
+    IPlatformCommandSpecFactory commandSpecFactory) : AbstractPathBasedCommandResolver(environment, commandSpecFactory)
+{
+    internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
+    {
+        return _environment.GetCommandPathFromRootPath(
+            AppContext.BaseDirectory,
+            commandResolverArguments.CommandName);
     }
 }
