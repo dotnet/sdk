@@ -9,14 +9,16 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <IsShipping>true</IsShipping>
-    <IsShippingPackage>true</IsShippingPackage>
+    <IsShipping Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">false</IsShipping>
+    <IsShippingPackage>$(IsShipping)</IsShippingPackage>
     <IncludeSymbols>false</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
     <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
-    <_workloadVersionSuffix>$(_workloadVersionSuffix.TrimEnd('.'))</_workloadVersionSuffix>
+    <_workloadVersionSuffix Condition="'$(DotNetFinalVersionKind)' != 'release' and '$(PrereleaseVersionLabel)' != 'rtm'">-$(PreReleaseVersionLabel).$(PreReleaseVersionIteration)</_workloadVersionSuffix>
     <PackageId>$(MSBuildProjectName)-$(BuiltinWorkloadFeatureBand)$(_workloadVersionSuffix)</PackageId>
+    <PackageId Condition="'$(MSBuildProjectName)' == 'Microsoft.NET.Workload.Emscripten.Current.Transport.Manifest'">Microsoft.NET.Workload.Emscripten.Current.Manifest-$(BuiltinWorkloadFeatureBand).Transport</PackageId>
   </PropertyGroup>
 
   <PropertyGroup>
