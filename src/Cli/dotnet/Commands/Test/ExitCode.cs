@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 // They are also documented in https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-exit-codes
 internal static class ExitCode
 {
+    // Values here should align with: https://aka.ms/testingplatform/exitcodes.
     public const int Success = 0;
     public const int GenericFailure = 1;
     public const int ZeroTests = 8;

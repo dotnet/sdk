@@ -2,7 +2,6 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Globalization;
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -120,7 +119,7 @@ internal sealed class NonAnsiTerminal : ITerminal
     {
         if (_isBatching)
         {
-            throw new InvalidOperationException(LocalizableStrings.ConsoleIsAlreadyInBatchingMode);
+            throw new InvalidOperationException(CliCommandStrings.ConsoleIsAlreadyInBatchingMode);
         }
 
         _stringBuilder.Clear();
@@ -177,6 +176,7 @@ internal sealed class NonAnsiTerminal : ITerminal
             int passed = p.PassedTests;
             int failed = p.FailedTests;
             int skipped = p.SkippedTests;
+            int retried = p.RetriedFailedTests;
 
             // Use just ascii here, so we don't put too many restrictions on fonts needing to
             // properly show unicode, or logs being saved in particular encoding.
@@ -199,6 +199,15 @@ internal sealed class NonAnsiTerminal : ITerminal
             Append('?');
             Append(skipped.ToString(CultureInfo.CurrentCulture));
             ResetColor();
+
+            if (retried > 0)
+            {
+                SetColor(TerminalColor.Gray);
+                Append('r');
+                Append(retried.ToString(CultureInfo.CurrentCulture));
+                ResetColor();
+            }
+
             Append(']');
 
             Append(' ');

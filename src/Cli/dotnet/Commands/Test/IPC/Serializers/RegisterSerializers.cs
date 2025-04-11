@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Tools.Test;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 /*
  * NOTE: We have the following ids used for those serializers

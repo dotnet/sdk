@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
@@ -13,16 +12,23 @@ internal sealed class ProjectConvertCommandParser
 {
     public static readonly CliArgument<string> FileArgument = new("file")
     {
-        Description = LocalizableStrings.CmdFileDescription,
+        Description = CliCommandStrings.CmdFileDescription,
         Arity = ArgumentArity.ExactlyOne,
+    };
+
+    public static readonly CliOption<bool> ForceOption = new("--force")
+    {
+        Description = CliCommandStrings.CmdOptionForceDescription,
+        Arity = ArgumentArity.Zero,
     };
 
     public static CliCommand GetCommand()
     {
-        CliCommand command = new("convert", LocalizableStrings.AppFullName)
+        CliCommand command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
+            ForceOption,
         };
 
         command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());

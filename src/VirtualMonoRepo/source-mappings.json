@@ -53,7 +53,9 @@
             "exclude": [
                 "src/Aspire.Dashboard/**/*",
                 "samples/**/*"
-            ]
+            ],
+            // Aspire no longer flows/changes, we only keep it for the workload manifest generation
+            "disableSynchronization": true
         },
         {
             "name": "aspnetcore",
@@ -115,6 +117,7 @@
         {
             "name": "scenario-tests",
             "defaultRemote": "https://github.com/dotnet/scenario-tests",
+            // Migrated onto the flat flow
             "disableSynchronization": true
         },
         {
@@ -147,7 +150,9 @@
         },
         {
             "name": "sourcelink",
-            "defaultRemote": "https://github.com/dotnet/sourcelink"
+            "defaultRemote": "https://github.com/dotnet/sourcelink",
+            // Migrated onto the flat flow
+            "disableSynchronization": true
         },
         {
             "name": "symreader",
@@ -156,10 +161,6 @@
         {
             "name": "templating",
             "defaultRemote": "https://github.com/dotnet/templating"
-        },
-        {
-            "name": "testfx",
-            "defaultRemote": "https://github.com/microsoft/testfx"
         },
         {
             "name": "vstest",
@@ -183,7 +184,8 @@
             "name": "xliff-tasks",
             "defaultRemote": "https://github.com/dotnet/xliff-tasks",
             "ignoreDefaults": true,
-            "exclude": [ "**/*" ]
+            "exclude": [ "**/*" ],
+            "disableSynchronization": true
         },
         {
             "name": "winforms",

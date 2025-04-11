@@ -3,24 +3,24 @@
 
 #nullable enable
 
+using System.Collections.Immutable;
+using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.Tools.Run;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
-public partial class RunCommand
+public class RunCommand
 {
     public bool NoBuild { get; }
 
@@ -102,7 +102,7 @@ public partial class RunCommand
         {
             if (string.Equals("true", launchSettings?.DotNetRunMessages, StringComparison.OrdinalIgnoreCase))
             {
-                Reporter.Output.WriteLine(LocalizableStrings.RunCommandBuilding);
+                Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
             }
 
             EnsureProjectIsBuilt(out projectFactory);
@@ -134,7 +134,7 @@ public partial class RunCommand
         catch (InvalidProjectFileException e)
         {
             throw new GracefulException(
-                string.Format(LocalizableStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
+                string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, ProjectFileFullPath),
                 e);
         }
     }
@@ -179,17 +179,17 @@ public partial class RunCommand
         {
             if (!string.IsNullOrEmpty(LaunchProfile))
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotLocateALaunchSettingsFile, launchSettingsPath).Bold().Red());
             }
             return true;
         }
 
         if (Verbosity?.IsQuiet() != true)
         {
-            Reporter.Output.WriteLine(string.Format(LocalizableStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
+            Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        string profileName = string.IsNullOrEmpty(LaunchProfile) ? LocalizableStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
+        string profileName = string.IsNullOrEmpty(LaunchProfile) ? CliCommandStrings.DefaultLaunchProfileDisplayName : LaunchProfile;
 
         try
         {
@@ -197,7 +197,7 @@ public partial class RunCommand
             var applyResult = LaunchSettingsManager.TryApplyLaunchSettings(launchSettingsFileContents, LaunchProfile);
             if (!applyResult.Success)
             {
-                Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
+                Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, applyResult.FailureReason).Bold().Red());
             }
             else
             {
@@ -206,7 +206,7 @@ public partial class RunCommand
         }
         catch (IOException ex)
         {
-            Reporter.Error.WriteLine(string.Format(LocalizableStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
+            Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName).Bold().Red());
             Reporter.Error.WriteLine(ex.Message.Bold().Red());
             return false;
         }
@@ -272,7 +272,7 @@ public partial class RunCommand
         if (buildResult != 0)
         {
             Reporter.Error.WriteLine();
-            throw new GracefulException(LocalizableStrings.RunCommandException);
+            throw new GracefulException(CliCommandStrings.RunCommandException);
         }
     }
 
@@ -376,7 +376,7 @@ public partial class RunCommand
 
             if (!project.Build([ComputeRunArgumentsTarget], loggers: loggersForBuild, remoteLoggers: null, out _))
             {
-                throw new GracefulException(LocalizableStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
+                throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, ComputeRunArgumentsTarget);
             }
         }
     }
@@ -415,13 +415,13 @@ public partial class RunCommand
             string targetFramework = project.GetPropertyValue("TargetFramework");
             if (string.IsNullOrEmpty(targetFramework))
             {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyFramework, "--framework");
             }
         }
 
         throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.RunCommandExceptionUnableToRun,
+                    CliCommandStrings.RunCommandExceptionUnableToRun,
                     "dotnet run",
                     "OutputType",
                     project.GetPropertyValue("OutputType")));
@@ -448,7 +448,7 @@ public partial class RunCommand
 
         if (entryPointFilePath is null && projectFilePath is null)
         {
-            throw new GracefulException(LocalizableStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
+            throw new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
         }
 
         return projectFilePath;
@@ -464,7 +464,7 @@ public partial class RunCommand
 
             if (projectFiles.Length > 1)
             {
-                throw new GracefulException(LocalizableStrings.RunCommandExceptionMultipleProjects, directory);
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionMultipleProjects, directory);
             }
 
             return projectFiles[0];
@@ -481,5 +481,118 @@ public partial class RunCommand
             args = args[1..];
             return Path.GetFullPath(arg);
         }
+    }
+
+    public static RunCommand FromArgs(string[] args)
+    {
+        var parseResult = Parser.Instance.ParseFrom("dotnet run", args);
+        return FromParseResult(parseResult);
+    }
+
+    public static RunCommand FromParseResult(ParseResult parseResult)
+    {
+        if (parseResult.UsingRunCommandShorthandProjectOption())
+        {
+            Reporter.Output.WriteLine(CliCommandStrings.RunCommandProjectAbbreviationDeprecated.Yellow());
+            parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
+        }
+
+        // if the application arguments contain any binlog args then we need to remove them from the application arguments and apply
+        // them to the restore args.
+        // this is because we can't model the binlog command structure in MSbuild in the System.CommandLine parser, but we need
+        // bl information to synchronize the restore and build logger configurations
+        var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
+
+        var binlogArgs = new List<string>();
+        var nonBinLogArgs = new List<string>();
+        foreach (var arg in applicationArguments ?? [])
+        {
+            if (LoggerUtility.IsBinLogArgument(arg))
+            {
+                binlogArgs.Add(arg);
+            }
+            else
+            {
+                nonBinLogArgs.Add(arg);
+            }
+        }
+
+        var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
+        if (binlogArgs.Count > 0)
+        {
+            restoreArgs.AddRange(binlogArgs);
+        }
+
+        var command = new RunCommand(
+            noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
+            projectFileOrDirectory: parseResult.GetValue(RunCommandParser.ProjectOption),
+            launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty,
+            noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
+            noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
+            noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
+            interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
+            verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+            restoreArgs: [.. restoreArgs],
+            args: [.. nonBinLogArgs],
+            environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty
+        );
+
+        return command;
+    }
+
+    public static int Run(ParseResult parseResult)
+    {
+        parseResult.HandleDebugSwitch();
+
+        return FromParseResult(parseResult).Execute();
+    }
+
+    public static ParseResult ModifyParseResultForShorthandProjectOption(ParseResult parseResult)
+    {
+        // we know the project is going to be one of the following forms:
+        //   -p:project
+        //   -p project
+        // so try to find those and filter them out of the arguments array
+        var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault()!;
+        var tokensMinusProject = new List<string>();
+        var nextTokenMayBeProject = false;
+        foreach (var token in parseResult.Tokens)
+        {
+            if (token.Value == "-p")
+            {
+                // skip this token, if the next token _is_ the project then we'll skip that too
+                // if the next token _isn't_ the project then we'll backfill
+                nextTokenMayBeProject = true;
+                continue;
+            }
+            else if (token.Value == possibleProject && nextTokenMayBeProject)
+            {
+                // skip, we've successfully stripped this option and value entirely
+                nextTokenMayBeProject = false;
+                continue;
+            }
+            else if (token.Value.StartsWith("-p") && token.Value.EndsWith(possibleProject))
+            {
+                // both option and value in the same token, skip and carry on
+            }
+            else
+            {
+                if (nextTokenMayBeProject)
+                {
+                    //we skipped a -p, so backfill it
+                    tokensMinusProject.Add("-p");
+                }
+                nextTokenMayBeProject = false;
+            }
+
+            tokensMinusProject.Add(token.Value);
+        }
+
+        tokensMinusProject.Add("--project");
+        tokensMinusProject.Add(possibleProject);
+
+        var tokensToParse = tokensMinusProject.ToArray();
+        var newParseResult = Parser.Instance.Parse(tokensToParse);
+        return newParseResult;
     }
 }

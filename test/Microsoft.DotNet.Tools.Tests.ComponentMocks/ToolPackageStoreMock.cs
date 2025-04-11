@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             throw new ToolPackageException(
                 string.Format(
-                    CommonLocalizableStrings.FailedToFindStagedToolPackage,
+                    CliStrings.FailedToFindStagedToolPackage,
                     packageId));
         }
 

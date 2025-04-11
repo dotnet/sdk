@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.List;
 
@@ -17,9 +16,9 @@ internal static class ReferenceListCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        var command = new CliCommand("list", LocalizableStrings.AppFullName);
+        var command = new CliCommand("list", CliCommandStrings.ReferenceListAppFullName);
 
-        command.SetAction((parseResult) => new ListProjectToProjectReferencesCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceListCommand(parseResult).Execute());
 
         return command;
     }

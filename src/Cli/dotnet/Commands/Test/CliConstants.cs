@@ -5,31 +5,15 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class CliConstants
 {
-    public const string DotnetRunCommand = "dotnet run";
-
     public const string ServerOptionKey = "--server";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
-    public const string FrameworkOptionKey = "--framework";
-    public const string NoProgressOptionKey = "--no-progress";
-    public static string NoAnsiOptionKey = "--no-ansi";
-    public static string OutputOptionKey = "--output";
 
     public const string ServerOptionValue = "dotnettestcli";
 
-    public const string ParametersSeparator = "--";
     public const string SemiColon = ";";
 
     public const string VSTest = "VSTest";
     public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
-
-    public const string TestSectionKey = "test";
-
-    public const string RestoreCommand = "Restore";
-    public const string BuildCommand = "Build";
-
-    public const string Configuration = "Configuration";
-    public const string RuntimeIdentifier = "RuntimeIdentifier";
-    public const string TargetFramework = "TargetFramework";
 
     public static readonly string[] ProjectExtensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
@@ -94,4 +78,7 @@ internal static class ProjectProperties
     internal const string RunCommand = "RunCommand";
     internal const string RunArguments = "RunArguments";
     internal const string RunWorkingDirectory = "RunWorkingDirectory";
+    internal const string AppDesignerFolder = "AppDesignerFolder";
+    internal const string TestTfmsInParallel = "TestTfmsInParallel";
+    internal const string BuildInParallel = "BuildInParallel";
 }

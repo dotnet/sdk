@@ -5,7 +5,6 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
@@ -24,9 +23,9 @@ internal class BuildServerShutdownCommand : CommandBase
         IReporter reporter = null)
         : base(result)
     {
-        bool msbuild = result.GetValue(ServerShutdownCommandParser.MSBuildOption);
-        bool vbcscompiler = result.GetValue(ServerShutdownCommandParser.VbcsOption);
-        bool razor = result.GetValue(ServerShutdownCommandParser.RazorOption);
+        bool msbuild = result.GetValue(BuildServerShutdownCommandParser.MSBuildOption);
+        bool vbcscompiler = result.GetValue(BuildServerShutdownCommandParser.VbcsOption);
+        bool razor = result.GetValue(BuildServerShutdownCommandParser.RazorOption);
         bool all = !msbuild && !vbcscompiler && !razor;
 
         _enumerationFlags = ServerEnumerationFlags.None;
@@ -57,7 +56,7 @@ internal class BuildServerShutdownCommand : CommandBase
 
         if (tasks.Count == 0)
         {
-            _reporter.WriteLine(LocalizableStrings.NoServersToShutdown.Green());
+            _reporter.WriteLine(CliCommandStrings.NoServersToShutdown.Green());
             return 0;
         }
 
@@ -110,7 +109,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShuttingDownServerWithPid,
+                    CliCommandStrings.ShuttingDownServerWithPid,
                     server.Name,
                     server.ProcessId));
         }
@@ -118,7 +117,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShuttingDownServer,
+                    CliCommandStrings.ShuttingDownServer,
                     server.Name));
         }
     }
@@ -129,7 +128,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShutDownFailedWithPid,
+                    CliCommandStrings.ShutDownFailedWithPid,
                     server.Name,
                     server.ProcessId,
                     exception.InnerException.Message).Red());
@@ -138,7 +137,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShutDownFailed,
+                    CliCommandStrings.ShutDownFailed,
                     server.Name,
                     exception.InnerException.Message).Red());
         }
@@ -155,7 +154,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShutDownSucceededWithPid,
+                    CliCommandStrings.ShutDownSucceededWithPid,
                     server.Name,
                     server.ProcessId).Green());
         }
@@ -163,7 +162,7 @@ internal class BuildServerShutdownCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.ShutDownSucceeded,
+                    CliCommandStrings.ShutDownSucceeded,
                     server.Name).Green());
         }
     }
