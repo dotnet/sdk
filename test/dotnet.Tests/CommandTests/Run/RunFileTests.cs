@@ -113,6 +113,22 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <c>dotnet file.cs</c> is equivalent to <c>dotnet run file.cs</c>.
+    /// </summary>
+    [Fact]
+    public void FilePath_WithoutRun()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    /// <summary>
     /// Casing of the argument is used for the output binary name.
     /// </summary>
     [Fact]
