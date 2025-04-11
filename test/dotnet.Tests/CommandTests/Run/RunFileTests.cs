@@ -897,6 +897,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             Custom define
             """);
 
+        Build(expectedUpToDate: true, expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        // Change the implicit build file (a rebuild is necessary).
+        string importedFile = Path.Join(testInstance.Path, "Settings.props");
+        File.WriteAllText(importedFile, """
+            <Project>
+            </Project>
+            """);
+        File.WriteAllText(buildPropsFile, """
+            <Project>
+                <Import Project="Settings.props" />
+            </Project>
+            """);
+
+        Build(expectedUpToDate: false);
+
+        // Change the imported build file (this is not recognized).
+        File.WriteAllText(importedFile, """
+            <Project>
+                <PropertyGroup>
+                    <DefineConstants>$(DefineConstants);CUSTOM_DEFINE</DefineConstants>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        Build(expectedUpToDate: true);
+
+        // Force rebuild.
+        Build(expectedUpToDate: false, args: ["--no-cache"], expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
         // Remove an implicit build file (a rebuild is necessary).
         File.Delete(buildPropsFile);
         Build(expectedUpToDate: false);
