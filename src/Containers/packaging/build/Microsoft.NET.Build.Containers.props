@@ -15,6 +15,7 @@
 
     <!--Register our custom task-->
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateNewImage" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateImageIndex" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ParseContainerProperties" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
 </Project>

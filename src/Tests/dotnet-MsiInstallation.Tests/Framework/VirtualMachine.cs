@@ -8,12 +8,15 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
     class VirtualMachine : IDisposable
     {
+        private static VirtualMachine s_Instance;
+        private static object s_Lock = new object();
+
         ITestOutputHelper Log { get; }
         public VMControl VMControl { get; }
 
         public VMTestSettings VMTestSettings { get; }
 
-        VMStateTree _rootState;
+        VMState _vmState;
         VMStateTree _currentState;
         VMStateTree _currentAppliedState;
 
@@ -24,6 +27,15 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
 
         public VirtualMachine(ITestOutputHelper log)
         {
+            lock (s_Lock)
+            {
+                if (s_Instance != null)
+                {
+                    throw new Exception(nameof(VirtualMachine) + " already created.  This can be caused by running multiple tests which use the VM in parallel, which is not supported.");
+                }
+                s_Instance = this;
+            }
+
             Log = log;
 
             var testSettingsFile = Path.Combine(Environment.CurrentDirectory, "VMTestSettings.json");
@@ -69,41 +81,53 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             if (File.Exists(_stateFile))
             {
                 string json = File.ReadAllText(_stateFile);
-                _rootState = JsonSerializer.Deserialize<SerializableVMStateTree>(json, GetSerializerOptions()).ToVMStateTree();
+                _vmState = JsonSerializer.Deserialize<SerializableVMState>(json, GetSerializerOptions()).ToVMState();
             }
             else
             {
-                var snapshots = VMControl.GetSnapshots();
-                var testStartSnapshots = snapshots.Where(s => s.name.Contains("Test start", StringComparison.OrdinalIgnoreCase)).ToList();
-                if (testStartSnapshots.Count == 0)
-                {
-                    throw new Exception("No test start snapshots found");
-                }
-                else if (testStartSnapshots.Count > 1)
-                {
-                    foreach (var snapshot in testStartSnapshots)
-                    {
-                        Log.WriteLine(snapshot.id + ": " + snapshot.name);
-                    }
-                    throw new Exception("Multiple test start snapshots found");
-                }
-                _rootState = new VMStateTree
-                {
-                    SnapshotId = testStartSnapshots[0].Item1,
-                    SnapshotName = testStartSnapshots[0].Item2
-                };
+                _vmState = new VMState();
             }
 
-            _currentState = _rootState;
+            //  Determine test start state
+            var snapshots = VMControl.GetSnapshots();
+            var testStartSnapshots = snapshots.Where(s => s.name.Contains("Test start", StringComparison.OrdinalIgnoreCase)).ToList();
+            if (testStartSnapshots.Count == 0)
+            {
+                throw new Exception("No test start snapshots found");
+            }
+            else if (testStartSnapshots.Count > 1)
+            {
+                foreach (var snapshot in testStartSnapshots)
+                {
+                    Log.WriteLine(snapshot.id + ": " + snapshot.name);
+                }
+                throw new Exception("Multiple test start snapshots found");
+            }
+
+            _vmState.DefaultRootState = testStartSnapshots[0].name;
+            if (!_vmState.VMStates.ContainsKey(_vmState.DefaultRootState))
+            {
+                _vmState.VMStates[_vmState.DefaultRootState] = new VMStateTree()
+                {
+                    SnapshotId = testStartSnapshots[0].id,
+                    SnapshotName = testStartSnapshots[0].name
+                };
+            }
+            _currentState = _vmState.GetRootState();
 
             TrimMissingSnapshots();
         }
         public void Dispose()
         {
-            string json = JsonSerializer.Serialize(_rootState.ToSerializeable(), GetSerializerOptions());
+            string json = JsonSerializer.Serialize(_vmState.ToSerializable(), GetSerializerOptions());
             File.WriteAllText(_stateFile, json);
 
             VMControl.Dispose();
+
+            lock (s_Lock)
+            {
+                s_Instance = null;
+            }
         }
 
         JsonSerializerOptions GetSerializerOptions()
@@ -120,7 +144,17 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
         {
             var snapshotIds = VMControl.GetSnapshots().Select(s => s.id).ToHashSet();
 
-            Recurse(_rootState);
+            foreach (var state in _vmState.VMStates.Values.ToList())
+            {
+                if (!snapshotIds.Contains(state.SnapshotId))
+                {
+                    _vmState.VMStates.Remove(state.SnapshotId);
+                }
+                else
+                {
+                    Recurse(state);
+                }
+            }
 
             void Recurse(VMStateTree node)
             {
@@ -134,6 +168,37 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
                 foreach (var result in node.Actions.Select(a => a.Value.resultingState))
                 {
                     Recurse(result);
+                }
+            }
+        }
+
+        public void SetCurrentState(string stateName)
+        {
+            if (_vmState.VMStates.TryGetValue(stateName, out var state))
+            {
+                _currentState = state;
+            }
+            else
+            {
+                var snapshots = VMControl.GetSnapshots();
+                var matchingSnapshots = snapshots.Where(s => s.name.Equals(stateName, StringComparison.OrdinalIgnoreCase)).ToList();
+                if (matchingSnapshots.Count == 0)
+                {
+                    throw new Exception($"No snapshot found with name {stateName}");
+                }
+                else if (matchingSnapshots.Count > 1)
+                {
+                    throw new Exception($"Multiple snapshots found with name {stateName}");
+                }
+                else
+                {
+                    var newState = new VMStateTree()
+                    {
+                        SnapshotId = matchingSnapshots[0].id,
+                        SnapshotName = matchingSnapshots[0].name,
+                    };
+                    _vmState.VMStates[stateName] = newState;
+                    _currentState = newState;
                 }
             }
         }
@@ -295,7 +360,9 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             {
                 var targetSharePath = VMPathToSharePath(action.TargetPath);
 
-                CopyDirectory(action.SourcePath, targetSharePath);
+                var result = new RunExeCommand(Log, "robocopy", action.SourcePath, targetSharePath, "/mir")
+                    .Execute()
+                    .ExitCode.Should().BeLessThan(8);   //  Robocopy error exit codes are 8 or higher
 
                 return VMActionResult.Success();
             }
@@ -406,24 +473,6 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             return sb.ToString();
         }
 
-        static void CopyDirectory(string sourcePath, string destPath)
-        {
-            if (!Directory.Exists(destPath))
-            {
-                Directory.CreateDirectory(destPath);
-            }
-
-            foreach (var dir in Directory.GetDirectories(sourcePath))
-            {
-                CopyDirectory(dir, Path.Combine(destPath, Path.GetFileName(dir)));
-            }
-
-            foreach (var file in Directory.GetFiles(sourcePath))
-            {
-                new FileInfo(file).CopyTo(Path.Combine(destPath, Path.GetFileName(file)), true);
-            }
-        }
-
         string VMPathToSharePath(string vmPath)
         {
             var dirInfo = new DirectoryInfo(vmPath);
@@ -508,6 +557,8 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             public override bool Exists => GetResult().Exists;
 
             public override List<string> Directories => GetResult().Directories;
+
+            public override List<string> Files => GetResult().Files;
         }
 
         public class VMSnapshot
