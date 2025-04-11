@@ -785,7 +785,7 @@ For a list of locations searched, specify the "-d" option before the tool name.<
     <comment>{Locked="dotnet workload update"}</comment>
   </data>
   <data name="PackageIdentityArgumentDescription" xml:space="preserve">
-    <value>Package reference in the form of package identifier, for example 'Newtonsoft.Json', or package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'.</value>
+    <value>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</value>
   </data>
   <data name="PackageIdentityArgumentIdOrVersionIsNull" xml:space="preserve">
     <value>Package reference id and version must not be null.</value>
@@ -795,5 +795,6 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   </data>
   <data name="PackageIdentityArgumentVersionOptionConflict" xml:space="preserve">
     <value>Cannot specify --version when the package argument already contains a version.</value>
+    <comment>{Locked="--version"}</comment>
   </data>
 </root>

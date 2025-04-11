@@ -747,8 +747,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
-        <source>Package reference in the form of package identifier, for example 'Newtonsoft.Json', or package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="new">Package reference in the form of package identifier, for example 'Newtonsoft.Json', or package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'.</target>
+        <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
+        <target state="new">Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
@@ -759,7 +759,7 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
         <target state="new">Cannot specify --version when the package argument already contains a version.</target>
-        <note />
+        <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="PackageReference">
         <source>Package reference</source>
