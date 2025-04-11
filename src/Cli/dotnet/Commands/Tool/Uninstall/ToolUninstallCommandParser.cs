@@ -15,6 +15,7 @@ internal static class ToolUninstallCommandParser
     {
         HelpName = "PACKAGE_ID",
         Description = CliStrings.PackageReference,
+        Arity = ArgumentArity.ExactlyOne
     };
 
     public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
