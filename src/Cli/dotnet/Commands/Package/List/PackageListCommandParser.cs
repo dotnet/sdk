@@ -72,6 +72,12 @@ internal static class PackageListCommandParser
 
     public static readonly CliOption InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
+    public static readonly CliOption NoRestore = new CliOption<bool>("--no-restore")
+    {
+        Description = CliCommandStrings.CmdNoRestoreDescription,
+        Arity = ArgumentArity.Zero
+    };
+
     public static readonly CliOption VerbosityOption = new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
     {
         Description = CliStrings.VerbosityOptionDescription,
@@ -113,9 +119,10 @@ internal static class PackageListCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(FormatOption);
         command.Options.Add(OutputVersionOption);
+        command.Options.Add(NoRestore);
         command.Options.Add(PackageCommandParser.ProjectOption);
 
-        command.SetAction((parseResult) => new ListPackageReferencesCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
 
         return command;
     }

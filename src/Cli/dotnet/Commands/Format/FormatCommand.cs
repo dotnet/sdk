@@ -7,7 +7,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Format;
 
-public class FormatCommand(IEnumerable<string> argsToForward) : DotnetFormatForwardingApp(argsToForward)
+public class FormatCommand(IEnumerable<string> argsToForward) : FormatForwardingApp(argsToForward)
 {
     public static FormatCommand FromArgs(string[] args)
     {
@@ -31,6 +31,6 @@ public class FormatCommand(IEnumerable<string> argsToForward) : DotnetFormatForw
     public static int Run(string[] args)
     {
         DebugHelper.HandleDebugSwitch(ref args);
-        return new DotnetFormatForwardingApp(args).Execute();
+        return new FormatForwardingApp(args).Execute();
     }
 }

@@ -65,5 +65,5 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="Exists('$(MSBuildThisFileDirectory)..\..\..\Containers\build\Microsoft.NET.Build.Containers.props')" />
 
   <Import Project="$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets"
-    Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets') AND '$(TargetFramework)' != ''" />
+    Condition="$(_IsNotSetContainersTargetsDir) AND Exists('$(_ContainersTargetsDir)Microsoft.NET.Build.Containers.targets')" />
 </Project>
