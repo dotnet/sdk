@@ -97,4 +97,12 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <Target Name="UpdateCompletionTestsSnapshots">
+    <Message Text="Copying CompletionTests snapshots from $(ArtifactsBinDir)redist\$(Configuration)\snapshots to $(MSBuildProjectDirectory)\CompletionTests\snapshots" Importance="high" />
+    <ItemGroup>
+      <SnapshotFiles Include="$(ArtifactsBinDir)redist\$(Configuration)\snapshots\**\*.verified.*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SnapshotFiles)" DestinationFolder="$(MSBuildProjectDirectory)\CompletionTests\snapshots\%(RecursiveDir)"/>
+  </Target>
+
 </Project>
