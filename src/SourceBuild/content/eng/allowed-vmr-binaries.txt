@@ -118,7 +118,7 @@ src/sdk/test/TestAssets/TestProjects/**/*.dat
 src/sdk/test/TestAssets/TestProjects/**/*.cache
 src/sdk/test/TestAssets/TestProjects/**/*.tlb
 src/sdk/test/TestAssets/TestPackages/dotnet-new/nupkg_templates/*
-src/sdk/test/Microsoft.DotNet.ShellShim.Tests/WpfBinaryTestAsssets/*.dll
+src/sdk/test/dotnet.Tests/ShellShimTests/WpfBinaryTestAssets/testwpf.dll
 src/sdk/test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Resources/*.zip
 
 # source-build-externals
