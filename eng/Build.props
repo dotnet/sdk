@@ -1,5 +1,9 @@
 <Project>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <ProjectToBuild Include="$(RepoRoot)source-build.slnf" />
+  </ItemGroup>
+
   <!-- For product build, build MSBuildExtensions and VSTemplateLocator in the second build pass on win-x64 as
        they depend on assets from other verticals that are built in the first build pass. -->
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and
