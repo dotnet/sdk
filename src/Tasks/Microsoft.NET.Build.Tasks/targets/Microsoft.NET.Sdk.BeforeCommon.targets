@@ -322,8 +322,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <When Condition="'$(MSBuildRuntimeType)' == 'Full'
       and '$(BuildWithNetFrameworkHostedCompiler)' == ''
       and '$(_IsDisjointMSBuildVersion)' == 'true'
-      and ('$(Language)' == 'C#'
-      or '$(Language)' == 'VB')">
+      and ('$(MSBuildProjectExtension)' == '.csproj'
+      or '$(MSBuildProjectExtension)' == '.vbproj')">
       <PropertyGroup><RoslynCompilerType>FrameworkPackage</RoslynCompilerType></PropertyGroup>
     </When>
 
@@ -338,12 +338,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
     <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>
     <VisualBasicCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.VisualBasic.Core.targets</VisualBasicCoreTargetsPath>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'FrameworkPackage' and '$(OS)' == 'Windows_NT'">
-    <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
-    <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
-    <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
 
 </Project>
