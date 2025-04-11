@@ -13,9 +13,9 @@
     <UseBootstrapArcade Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' == 'true'">true</UseBootstrapArcade>
   </PropertyGroup>
 
-  <!-- In source only mode, do not depend on other repositories as the scenario tests repo needs to be capable of being built
+  <!-- In source only test mode, do not depend on other repositories as the scenario tests repo needs to be capable of being built
        by itself in a standalone validation job. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+  <ItemGroup Condition="'$(DotNetSourceOnlyTestOnly)' != 'true'">
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
     <!-- Depend on NuGet packages from the sdk repo and transitive repositories. -->
