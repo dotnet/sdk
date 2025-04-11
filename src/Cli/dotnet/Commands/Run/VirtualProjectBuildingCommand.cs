@@ -401,7 +401,8 @@ internal sealed class VirtualProjectBuildingCommand
         }
     }
 
-    private string GetArtifactsPath()
+    // internal for testing
+    internal string GetArtifactsPath()
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)

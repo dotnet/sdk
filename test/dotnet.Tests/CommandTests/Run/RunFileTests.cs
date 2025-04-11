@@ -701,6 +701,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
 
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = new VirtualProjectBuildingCommand { EntryPointFileFullPath = programFile }.GetArtifactsPath();
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
         // It is an error when never built before.
         new DotnetCommand(Log, "run", "--no-build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
