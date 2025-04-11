@@ -1047,7 +1047,7 @@ _testhost() {
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of package identifier, for example '\''Newtonsoft.Json'\'', or package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                         ;;
                                     (uninstall)
@@ -1085,7 +1085,7 @@ _testhost() {
                                             '--all[Update all tools.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::packageId -- Package reference in the form of package identifier, for example '\''Newtonsoft.Json'\'', or package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                         ;;
                                     (list)
