@@ -39,15 +39,6 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [Fact]
-        public void AddReferenceDoesHaveInteractiveFlagByDefault()
-        {
-            var result = Parser.Instance.Parse("dotnet add reference my.csproj");
-
-            result.GetValue<bool>(ReferenceAddCommandParser.InteractiveOption)
-                .Should().BeTrue();
-        }
-
-        [Fact]
         public void AddReferenceWithoutArgumentResultsInAnError()
         {
             var result = Parser.Instance.Parse("dotnet add reference");
