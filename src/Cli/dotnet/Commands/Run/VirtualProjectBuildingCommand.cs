@@ -33,7 +33,7 @@ internal sealed class VirtualProjectBuildingCommand
     /// <summary>
     /// A file put into the artifacts directory when build starts.
     /// It contains full path to the original source file to allow tracking down the input corresponding to the output.
-    /// It is also used to check whether the previous build has failed.
+    /// It is also used to check whether the previous build has failed (when it is newer than the <see cref="BuildSuccessCacheFileName"/>).
     /// </summary>
     private const string BuildStartCacheFileName = "build-start.cache";
 
@@ -339,7 +339,7 @@ internal sealed class VirtualProjectBuildingCommand
     private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
     {
         string successCacheFile = Path.Join(GetArtifactsPath(), BuildSuccessCacheFileName);
-        using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.Read);
+        using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
