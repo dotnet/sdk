@@ -14,7 +14,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
 
         public string Project { get; set; }
         public string SourceBuildPackageIdCreator { get; set; }
-        public string ProdConPackageIdCreator { get; set; }
         public bool EndsUpInOutput { get; set; }
         public bool TestProjectByHeuristic { get; set; }
         public bool TestProjectOnlyByHeuristic { get; set; }
@@ -26,7 +25,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
             Usage.ToXml().Attributes(),
             Project.ToXAttributeIfNotNull(nameof(Project)),
             SourceBuildPackageIdCreator.ToXAttributeIfNotNull(nameof(SourceBuildPackageIdCreator)),
-            ProdConPackageIdCreator.ToXAttributeIfNotNull(nameof(ProdConPackageIdCreator)),
             TestProjectByHeuristic.ToXAttributeIfTrue(nameof(TestProjectByHeuristic)),
             TestProjectOnlyByHeuristic.ToXAttributeIfTrue(nameof(TestProjectOnlyByHeuristic)),
             IsDirectDependency.ToXAttributeIfTrue(nameof(IsDirectDependency)),
