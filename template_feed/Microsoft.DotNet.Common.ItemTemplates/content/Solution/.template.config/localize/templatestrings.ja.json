@@ -1,5 +1,11 @@
 ﻿{
   "author": "Microsoft",
   "name": "ソリューション ファイル",
-  "description": "プロジェクトを含まない空のソリューションを作成します。"
+  "description": "プロジェクトを含まない空のソリューションを作成します。",
+  "symbols/Format/description": "ソリューション ファイルの形式を選択してください: sln または slnx。",
+  "symbols/Format/displayName": "ソリューション ファイル形式",
+  "symbols/Format/choices/sln/description": "ソリューション ファイル",
+  "symbols/Format/choices/sln/displayName": ".sln 形式",
+  "symbols/Format/choices/slnx/description": "XML ソリューション ファイル",
+  "symbols/Format/choices/slnx/displayName": ".slnx 形式"
 }
