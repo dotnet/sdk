@@ -583,9 +583,22 @@ Options:
             using (var stream = new FileStream(Path.Combine(projectDirectory, "App.sln"), FileMode.Open))
             {
                 var bytes = new byte[preamble.Length];
-#pragma warning disable CA2022 // Avoid inexact read
-                stream.Read(bytes, 0, bytes.Length);
-#pragma warning restore CA2022 // Avoid inexact read
+#if NET
+                stream.ReadExactly(bytes, 0, bytes.Length);
+#else
+                int offset = 0;
+                int count = bytes.Length;
+                while (count > 0)
+                {
+                    int read = stream.Read(bytes, offset, count);
+                    if (read <= 0)
+                    {
+                        throw new EndOfStreamException();
+                    }
+                    offset += read;
+                    count -= read;
+                }
+#endif
                 bytes.Should().BeEquivalentTo(preamble);
             }
         }
