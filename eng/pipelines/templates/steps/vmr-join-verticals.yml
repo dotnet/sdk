@@ -21,6 +21,7 @@ steps:
   workingDirectory: ${{ parameters.vmrPath }}
 - task: CopyFiles@2
   displayName: Copy logs for upload
+  condition: succeededOrFailed()
   inputs:
     SourceFolder: '$(Build.SourcesDirectory)/artifacts/log'
     Contents: |
