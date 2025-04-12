@@ -258,7 +258,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/emsdk -->
-    <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>10.0.0-preview.4.25209.5</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
+    <MicrosoftNETRuntimeEmscriptenSdkInternalVersion>10.0.0-preview.4.25212.2</MicrosoftNETRuntimeEmscriptenSdkInternalVersion>
     <!-- emscripten versions, these are are included in package IDs and need to be kept in sync with emsdk -->
     <EmscriptenVersionCurrent>3.1.56</EmscriptenVersionCurrent>
     <EmscriptenVersionNet9>3.1.56</EmscriptenVersionNet9>
