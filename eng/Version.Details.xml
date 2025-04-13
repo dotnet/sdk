@@ -95,12 +95,6 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>d7c8e08245f0e5c6c14eb5e6d7c5ab461e471048</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.emsdk" Version="10.0.0-preview.4.25211.3">
-      <Uri>https://github.com/dotnet/emsdk</Uri>
-      <Sha>429a2fd8fe7a63131bed39ba56b22fac9190877e</Sha>
-      <SourceBuild RepoName="emsdk" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>b96560aa033132c61c19d7c6b16d17c26fe3dbaf</Sha>
