@@ -42,7 +42,8 @@
     <RepositoryReference Include="aspnetcore" />
     <RepositoryReference Include="command-line-api" />
     <RepositoryReference Include="deployment-tools" />
-    <RepositoryReference Include="emsdk" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(PgoInstrument)' != 'true' and '$(TargetArchitecture)' != 'arm' and '$(TargetArchitecture)' != 'x86'" />
+    <!-- we're focusing on x64 and arm64 for the webassembly build tools -->
+    <RepositoryReference Include="emsdk" Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(PgoInstrument)' != 'true' and ('$(TargetArchitecture)' == 'x64' or '$(TargetArchitecture)' == 'arm64')" />
     <RepositoryReference Include="fsharp" />
     <RepositoryReference Include="msbuild" />
     <!-- nuget-client is not compliant with Unified Build: https://github.com/dotnet/source-build/issues/4974 -->
