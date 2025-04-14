@@ -1,6 +1,7 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
+    <BuildArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
     <!-- The toolset compiler doesn't get killed with 'build-server shutdown'.
          Instead of disabling shared compilation, disable the toolset compiler package. -->
     <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>

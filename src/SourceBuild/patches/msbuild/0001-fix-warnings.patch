@@ -1,7 +1,7 @@
 From 0541e6fbe44d71fed92a7993bf30d28f0b9b0810 Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Mon, 14 Apr 2025 19:08:47 +0200
-Subject: [PATCH] Fix warnings shown in VMR with recent SDK
+Subject: [PATCH 1/2] Fix warnings shown in VMR with recent SDK
 
 Backport: https://github.com/dotnet/msbuild/pull/11728
 
@@ -107,3 +107,124 @@ index 73180f14fb8..8b1096c5eef 100644
 +#endif
      }
  }
+
+From 6dac9785bd371dd8ad38ff30bc1e35cdc06bf447 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 14 Apr 2025 20:53:04 +0200
+Subject: [PATCH 2/2] Fix NuGet package pruning warnings
+
+---
+ .../Microsoft.Build.BuildCheck.UnitTests.csproj      |  7 +++++--
+ src/MSBuild/MSBuild.csproj                           |  2 +-
+ .../ProjectCachePlugin/ProjectCachePlugin.csproj     | 12 ++++++++----
+ src/Tasks/Microsoft.Build.Tasks.csproj               |  2 +-
+ src/Utilities/Microsoft.Build.Utilities.csproj       |  2 +-
+ 5 files changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj b/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
+index 440a60cc86e..630e01a73bb 100644
+--- a/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
++++ b/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
+@@ -24,10 +24,13 @@
+   </ItemGroup>
+ 
+   <ItemGroup>
+-    <PackageReference Include="System.Collections.Immutable" />
+     <PackageReference Include="Shouldly" />
++  </ItemGroup>
++
++    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++    <PackageReference Include="System.Collections.Immutable" />
+ 
+-    <Reference Include="System.Net.Http" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
++    <Reference Include="System.Net.Http"  />
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/MSBuild/MSBuild.csproj b/src/MSBuild/MSBuild.csproj
+index 2edca8c339b..d169a6ecfe0 100644
+--- a/src/MSBuild/MSBuild.csproj
++++ b/src/MSBuild/MSBuild.csproj
+@@ -179,7 +179,6 @@
+ 
+     <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
+     <PackageReference Include="System.Configuration.ConfigurationManager" />
+-    <PackageReference Include="System.Diagnostics.DiagnosticSource" /><!-- for consistency with Framework via transitives -->
+   </ItemGroup>
+   <!-- Manually download this library for RoslynCodeTaskFactory.
+            See target AddRefAssemblies below. -->
+@@ -194,6 +193,7 @@
+     <Reference Include="System.Core" />
+     <Reference Include="System.Xml" />
+     <PackageReference Include="LargeAddressAware" PrivateAssets="All" />
++    <PackageReference Include="System.Diagnostics.DiagnosticSource" /><!-- for consistency with Framework via transitives -->
+   </ItemGroup>
+ 
+   <ItemGroup>
+diff --git a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
+index 684e80213ae..531b4ec5f0c 100644
+--- a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
++++ b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
+@@ -1,4 +1,5 @@
+ <Project Sdk="Microsoft.NET.Sdk">
++
+   <PropertyGroup>
+     <UseProductOutputPath>true</UseProductOutputPath>
+     <CopyNuGetImplementations>false</CopyNuGetImplementations>
+@@ -7,17 +8,20 @@
+     <TargetFrameworks>$(LatestDotNetCoreForMSBuild)</TargetFrameworks>
+     <TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(FullFrameworkTFM);$(LatestDotNetCoreForMSBuild)</TargetFrameworks>
+   </PropertyGroup>
++
+   <ItemGroup>
+     <PackageReference Include="Microsoft.Build" Version="16.11.0" PrivateAssets="all" />
++    <PackageReference Include="Shouldly" Version="4.2.1" />
+ 
+     <!-- Bump versions of transitive dependencies to vulnerable packages,
+          but don't reference them so the plugin doesn't carry higher references
+          than its targeted MSBuild. NOT NECESSARY for public plugins; use higher MSBuild. -->
+     <PackageReference Include="System.Drawing.Common" Version="4.7.2" ExcludeAssets="all" />
+-    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" ExcludeAssets="all" />
+   </ItemGroup>
+-  <ItemGroup>
+-    <PackageReference Include="Shouldly" Version="4.2.1" />
+-    <Reference Include="System.Net.Http" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
++
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'"> 
++    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" ExcludeAssets="all" />
++    <Reference Include="System.Net.Http"  />
+   </ItemGroup>
++
+ </Project>
+diff --git a/src/Tasks/Microsoft.Build.Tasks.csproj b/src/Tasks/Microsoft.Build.Tasks.csproj
+index 37d7cece260..7184f04adb7 100644
+--- a/src/Tasks/Microsoft.Build.Tasks.csproj
++++ b/src/Tasks/Microsoft.Build.Tasks.csproj
+@@ -663,7 +663,6 @@
+   </ItemGroup>
+   <ItemGroup>
+     <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
+-    <PackageReference Include="System.Collections.Immutable" />
+     <PackageReference Include="System.Resources.Extensions" />
+   </ItemGroup>
+ 
+@@ -682,6 +681,7 @@
+ 
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'">
+     <PackageReference Include="System.Threading.Tasks.Dataflow" />
++    <PackageReference Include="System.Collections.Immutable" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and '$(DotNetBuildSourceOnly)' != 'true'">
+diff --git a/src/Utilities/Microsoft.Build.Utilities.csproj b/src/Utilities/Microsoft.Build.Utilities.csproj
+index e5a0a89b595..86e032a484b 100644
+--- a/src/Utilities/Microsoft.Build.Utilities.csproj
++++ b/src/Utilities/Microsoft.Build.Utilities.csproj
+@@ -23,7 +23,7 @@
+     <ProjectReference Include="..\StringTools\StringTools.csproj" />
+ 
+     <PackageReference Include="Microsoft.IO.Redist" Condition="'$(FeatureMSIORedist)' == 'true'" />
+-    <PackageReference Include="System.Collections.Immutable" />
++    <PackageReference Include="System.Collections.Immutable" Condition="'$(TargetFrameworkIdentifier)' != '.NETCoreApp'" />
+     <PackageReference Include="System.Configuration.ConfigurationManager" />
+   </ItemGroup>
