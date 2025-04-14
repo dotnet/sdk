@@ -190,7 +190,7 @@ index 684e80213ae..531b4ec5f0c 100644
 -    <PackageReference Include="Shouldly" Version="4.2.1" />
 -    <Reference Include="System.Net.Http" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
 +
-+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'"> 
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
 +    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" ExcludeAssets="all" />
 +    <Reference Include="System.Net.Http"  />
    </ItemGroup>
