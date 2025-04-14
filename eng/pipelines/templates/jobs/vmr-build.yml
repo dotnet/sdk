@@ -184,8 +184,8 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
-  - name: artifactsPackagesDir
-    value: $(Build.ArtifactStagingDirectory)/packages
+  - name: artifactsPrepublishDir
+    value: $(Build.ArtifactStagingDirectory)/prepublish
 
   - name: successfulJobArtifactName
     value: $(Agent.JobName)_Artifacts
@@ -305,7 +305,7 @@ jobs:
       sbomEnabled: true
 
     - output: pipelineArtifact
-      path: $(artifactsPackagesDir)
+      path: $(artifactsPrepublishDir)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()
@@ -644,7 +644,7 @@ jobs:
         packages/**/*
         assets/**/*
         obj/manifests/**/*
-      TargetFolder: '$(artifactsPackagesDir)'
+      TargetFolder: '$(artifactsPrepublishDir)'
       CleanTargetFolder: true
     condition: failed()
     continueOnError: true
@@ -702,7 +702,7 @@ jobs:
       condition: succeeded()
       continueOnError: true
 
-    - publish: $(artifactsPackagesDir)
+    - publish: $(artifactsPrepublishDir)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()
