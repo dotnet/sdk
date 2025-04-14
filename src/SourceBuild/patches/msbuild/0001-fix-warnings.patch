@@ -1,0 +1,109 @@
+From 0541e6fbe44d71fed92a7993bf30d28f0b9b0810 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 14 Apr 2025 19:08:47 +0200
+Subject: [PATCH] Fix warnings shown in VMR with recent SDK
+
+Backport: https://github.com/dotnet/msbuild/pull/11728
+
+---
+ src/Framework/BinaryTranslator.cs       | 12 ------------
+ src/Framework/BuildEventArgs.cs         |  2 +-
+ src/Framework/IBuildEngine7.cs          |  2 +-
+ src/Framework/IBuildEngine8.cs          |  2 +-
+ src/Framework/InternalErrorException.cs |  2 ++
+ 5 files changed, 5 insertions(+), 15 deletions(-)
+
+diff --git a/src/Framework/BinaryTranslator.cs b/src/Framework/BinaryTranslator.cs
+index ecf16907307..762292169eb 100644
+--- a/src/Framework/BinaryTranslator.cs
++++ b/src/Framework/BinaryTranslator.cs
+@@ -55,11 +55,6 @@ internal static ITranslator GetWriteTranslator(Stream stream)
+         /// </summary>
+         private class BinaryReadTranslator : ITranslator
+         {
+-            /// <summary>
+-            /// The stream used as a source or destination for data.
+-            /// </summary>
+-            private Stream _packetStream;
+-
+             /// <summary>
+             /// The binary reader used in read mode.
+             /// </summary>
+@@ -71,7 +66,6 @@ private class BinaryReadTranslator : ITranslator
+             /// </summary>
+             public BinaryReadTranslator(Stream packetStream, BinaryReaderFactory buffer)
+             {
+-                _packetStream = packetStream;
+                 _reader = buffer.Create(packetStream);
+             }
+ #nullable disable
+@@ -795,11 +789,6 @@ public bool TranslateNullable<T>(T value)
+         /// </summary>
+         private class BinaryWriteTranslator : ITranslator
+         {
+-            /// <summary>
+-            /// The stream used as a source or destination for data.
+-            /// </summary>
+-            private Stream _packetStream;
+-
+             /// <summary>
+             /// The binary writer used in write mode.
+             /// </summary>
+@@ -811,7 +800,6 @@ private class BinaryWriteTranslator : ITranslator
+             /// <param name="packetStream">The stream serving as the source or destination of data.</param>
+             public BinaryWriteTranslator(Stream packetStream)
+             {
+-                _packetStream = packetStream;
+                 _writer = new BinaryWriter(packetStream);
+             }
+ 
+diff --git a/src/Framework/BuildEventArgs.cs b/src/Framework/BuildEventArgs.cs
+index 1e1264246ec..a26e7b26948 100644
+--- a/src/Framework/BuildEventArgs.cs
++++ b/src/Framework/BuildEventArgs.cs
+@@ -284,7 +284,7 @@ private void SetBuildEventContextDefaultAfterSerialization(StreamingContext sc)
+         /// This is used by the Message property overrides to reconstruct the
+         /// message lazily on demand.
+         /// </summary>
+-        internal static Func<string, string?[], string> ResourceStringFormatter = (string resourceName, string?[] arguments) =>
++        internal static Func<string, string?[], string> ResourceStringFormatter = (resourceName, arguments) =>
+         {
+             var sb = new StringBuilder();
+             sb.Append(resourceName);
+diff --git a/src/Framework/IBuildEngine7.cs b/src/Framework/IBuildEngine7.cs
+index c5fcd4c18a4..040e6ac338e 100644
+--- a/src/Framework/IBuildEngine7.cs
++++ b/src/Framework/IBuildEngine7.cs
+@@ -11,6 +11,6 @@ namespace Microsoft.Build.Framework
+     /// </summary>
+     public interface IBuildEngine7 : IBuildEngine6
+     {
+-        public bool AllowFailureWithoutError { get; set; }
++        bool AllowFailureWithoutError { get; set; }
+     }
+ }
+diff --git a/src/Framework/IBuildEngine8.cs b/src/Framework/IBuildEngine8.cs
+index 7d08daa0c4d..d31e09ed246 100644
+--- a/src/Framework/IBuildEngine8.cs
++++ b/src/Framework/IBuildEngine8.cs
+@@ -17,6 +17,6 @@ public interface IBuildEngine8 : IBuildEngine7
+         /// </summary>
+         /// <param name="warningCode">The warning code to check.</param>
+         /// <returns>A boolean to determine whether the warning should be treated as an error.</returns>
+-        public bool ShouldTreatWarningAsError(string warningCode);
++        bool ShouldTreatWarningAsError(string warningCode);
+     }
+ }
+diff --git a/src/Framework/InternalErrorException.cs b/src/Framework/InternalErrorException.cs
+index 73180f14fb8..8b1096c5eef 100644
+--- a/src/Framework/InternalErrorException.cs
++++ b/src/Framework/InternalErrorException.cs
+@@ -148,6 +148,8 @@ private static void LaunchDebugger(string message, string innerMessage)
+         }
+         #endregion
+ 
++#if DEBUG
+         private static bool RunningTests() => BuildEnvironmentState.s_runningTests;
++#endif
+     }
+ }
