@@ -371,11 +371,17 @@
 
     <!-- Write a single file that contains imports for both the current and previously built packages -->
     <PropertyGroup>
-      <PackageVersionsPropsContents>
+      <PackageVersionsPropsContents Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'">
         <![CDATA[
 <Project>
-  <Import Condition="Exists('$(PreviouslySourceBuiltPackageVersionPropsPath)')" Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
-  <Import Condition="Exists('$(CurrentSourceBuiltPackageVersionPropsPath)')" Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+  <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+  <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+      <PackageVersionsPropsContents Condition="'$(_ImportPreviousAndCurrentVersionProps)' != 'true'">
+        <![CDATA[
+<Project>
 </Project>
 ]]>
       </PackageVersionsPropsContents>
