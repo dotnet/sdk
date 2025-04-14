@@ -1,4 +1,4 @@
-From f3ecf82fae34e52b4d18c436ce80761b046219a7 Mon Sep 17 00:00:00 2001
+From 8ca49f30aef26ec2c594b274e2b155e97a0fa99a Mon Sep 17 00:00:00 2001
 From: Viktor Hofer <viktor.hofer@microsoft.com>
 Date: Mon, 14 Apr 2025 19:08:47 +0200
 Subject: [PATCH] Fix warnings shown in VMR with recent SDK
@@ -19,7 +19,7 @@ Backport: https://github.com/dotnet/msbuild/pull/11728
  10 files changed, 21 insertions(+), 24 deletions(-)
 
 diff --git a/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj b/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
-index 440a60cc86..630e01a73b 100644
+index 440a60cc86..76031c5b59 100644
 --- a/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
 +++ b/src/BuildCheck.UnitTests/Microsoft.Build.BuildCheck.UnitTests.csproj
 @@ -24,10 +24,13 @@
@@ -30,11 +30,11 @@ index 440a60cc86..630e01a73b 100644
      <PackageReference Include="Shouldly" />
 +  </ItemGroup>
 +
-+    <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
++  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
 +    <PackageReference Include="System.Collections.Immutable" />
- 
+
 -    <Reference Include="System.Net.Http" Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'" />
-+    <Reference Include="System.Net.Http"  />
++    <Reference Include="System.Net.Http" />
    </ItemGroup>
  
    <ItemGroup>
@@ -153,7 +153,7 @@ index 2edca8c339..d169a6ecfe 100644
  
    <ItemGroup>
 diff --git a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
-index 684e80213a..5035ab8dcb 100644
+index 684e80213a..ec425f3f96 100644
 --- a/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
 +++ b/src/Samples/ProjectCachePlugin/ProjectCachePlugin.csproj
 @@ -1,4 +1,5 @@
@@ -183,7 +183,7 @@ index 684e80213a..5035ab8dcb 100644
 +
 +  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
 +    <PackageReference Include="System.Text.Encodings.Web" Version="4.7.2" ExcludeAssets="all" />
-+    <Reference Include="System.Net.Http"  />
++    <Reference Include="System.Net.Http" />
    </ItemGroup>
 +
  </Project>
