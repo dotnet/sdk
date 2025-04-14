@@ -112,7 +112,7 @@ internal class DotNetHelper
 
     public void ExecuteBuild(string projectName)
     {
-        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources}";
+        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources.Replace(";", "%3B")}";
         ExecuteCmd($"build {options} {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
     }
 
