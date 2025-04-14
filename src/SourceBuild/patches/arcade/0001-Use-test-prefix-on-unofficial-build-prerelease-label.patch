@@ -3,7 +3,7 @@ From: Matt Thalman <mthalman@microsoft.com>
 Date: Fri, 21 Mar 2025 13:38:12 -0500
 Subject: [PATCH] Use test prefix on unofficial build prerelease label
 
-Backport: TODO
+Backport: https://github.com/dotnet/arcade/pull/15728
 ---
  .../tools/Version.BeforeCommonTargets.targets     | 15 ++++++++-------
  1 file changed, 8 insertions(+), 7 deletions(-)
