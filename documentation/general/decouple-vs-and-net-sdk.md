@@ -119,6 +119,12 @@ Solutions that mix .NET SDK and Visual Studio projects will end up with multiple
 
 The compiler will offer a property that allows SDK projects to use the MSBuild version of the compiler when being built with `msbuild`: `<RoslynCompilerType>Framework</RoslynCompilerType>`. This can be added to a `Directory.Build.props` file to impact the entire solution. This is not expected to be a common scenario but is available for customers who need it. This property will be ignored when using `dotnet build` as there is no way to fall back to the Visual Studio compiler in that scenario.
 
+> [!NOTE]
+> These values are recognized for property `RoslynCompilerType`:
+> - `Core`: use the compiler that comes with the .NET SDK
+> - `Framework`: use the compiler that comes with .NET Framework MSBuild
+> - `FrameworkPackage`: download package with .NET Framework compiler corresponding to the .NET SDK version
+
 ### .NET Framework based analyzers
 
 There are a few analyzers which are built against .NET Framework TFMs. That means when loaded in a .NET Core compiler it could lead to compatibility issues. This is not expected to be a significant issue as our processes have been pushing customers to target `netstandard` in analyzers for 5+ years. However it is possible that some customers will run into issues here.
