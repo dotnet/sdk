@@ -216,7 +216,7 @@
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
-                            SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
+                            SourcePath="$(PreviouslySourceBuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
@@ -320,10 +320,10 @@
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
     <ItemGroup>
-      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
+      <_PreviouslySourceBuiltAssetManifests Include="$(PreviouslySourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PreviouslySourceBuiltAssetManifests)" Condition="Exists(@(_PreviouslySourceBuiltAssetManifests))">
       <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
     </GetKnownArtifactsFromAssetManifests>
 
@@ -874,7 +874,7 @@
       <TarballPrebuiltPackageFile Include="$(PrebuiltPackagesPath)*.nupkg" />
 
       <SourceBuiltPackageFile Include="$(ArtifactsPackagesDir)**/*.nupkg" />
-      <SourceBuiltPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <SourceBuiltPackageFile Include="$(PreviouslySourceBuiltPackagesPath)*.nupkg" />
       <ReferencePackageFile Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
