@@ -306,15 +306,7 @@ extends:
               buildArchitecture: arm64
               runtimeIdentifier: osx-arm64
 
-      ############### SOURCE BUILD ###############
-      - template: /eng/common/templates-official/job/source-build.yml@self
-        parameters:
-          enableInternalSources: true
-          platform:
-            name: Managed
-            container: centosStream9
-            jobProperties:
-              timeoutInMinutes: 30
+# Remove the source build leg as we don't ship that outside of 1xx feature bands
 
       ############### DOTNET-FORMAT ###############
       - ${{ if or(eq(parameters.runTestBuild, true), eq(variables['Build.Reason'], 'PullRequest')) }}:
