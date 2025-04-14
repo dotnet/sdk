@@ -94,7 +94,7 @@
     <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.4.25212.2">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>d7c8e08245f0e5c6c14eb5e6d7c5ab461e471048</Sha>
-       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
+      <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
@@ -231,22 +231,22 @@
       <Uri>https://github.com/nuget/nuget.client</Uri>
       <Sha>7f50923823cb8fe4dab9b6565ece9516407de498</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.14.0-preview-25202-02">
+    <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>d45df4b7119f16b31c3d0adcd3adbf3ec0842d02</Sha>
+      <Sha>92a3cb95e0d1b901ab0eb77f511e4cabe76edd61</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.14.0-preview-25202-02">
+    <Dependency Name="Microsoft.TestPlatform.CLI" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>d45df4b7119f16b31c3d0adcd3adbf3ec0842d02</Sha>
+      <Sha>92a3cb95e0d1b901ab0eb77f511e4cabe76edd61</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.14.0-preview-25202-02">
+    <Dependency Name="Microsoft.TestPlatform.Build" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>d45df4b7119f16b31c3d0adcd3adbf3ec0842d02</Sha>
+      <Sha>92a3cb95e0d1b901ab0eb77f511e4cabe76edd61</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.14.0-preview-25202-02">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>d45df4b7119f16b31c3d0adcd3adbf3ec0842d02</Sha>
+      <Sha>92a3cb95e0d1b901ab0eb77f511e4cabe76edd61</Sha>
       <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.4.25211.19">
