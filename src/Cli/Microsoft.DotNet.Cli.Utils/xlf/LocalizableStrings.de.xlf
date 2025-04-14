@@ -12,6 +12,11 @@
         <target state="translated">Fehlerhafter Befehlstext "{0}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoExecutableFoundMatchingCommandErrorMessage">
+        <source>Could not execute because the specified command or file was not found.</source>
+        <target state="translated">Die Ausführung war nicht möglich, da der angegebene Befehl oder die angegebene Datei nicht gefunden wurde.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">Dotnetmultiplexer nicht gefunden</target>
@@ -28,16 +33,14 @@
         <note />
       </trans-unit>
       <trans-unit id="NoExecutableFoundMatchingCommand">
-        <source>Could not execute because the specified command or file was not found.
-Possible reasons for this include:
+        <source>Possible reasons for this include:
   * You misspelled a built-in dotnet command.
   * You intended to execute a .NET program, but {0} does not exist.
   * You intended to run a global tool, but a dotnet-prefixed executable with this name could not be found on the PATH.</source>
-        <target state="translated">Die Ausführung war nicht möglich, weil der angegebene Befehl oder die Datei nicht gefunden wurde.
-Mögliche Ursachen:
-  * Sie haben sich bei einem integrierten dotnet-Befehl verschrieben.
-  * Sie wollten ein .NET-Programm ausführen, aber "{0}" ist nicht vorhanden.
-  * Sie wollten ein globales Tool ausführen, aber in PATH wurde keine ausführbare Datei dieses Namens mit dotnet-Präfix gefunden.</target>
+        <target state="translated">Mögliche Gründe hierfür sind:
+  * Sie haben einen integrierten dotnet-Befehl falsch geschrieben.
+  * Sie wollten ein .NET-Programm ausführen, aber {0} ist nicht vorhanden.
+  * Sie wollten ein globales Tool ausführen, aber eine ausführbare Datei mit dotnet-Präfix und diesem Namen wurde in PATH nicht gefunden.</target>
         <note />
       </trans-unit>
       <trans-unit id="WaitingForDebuggerToAttach">
