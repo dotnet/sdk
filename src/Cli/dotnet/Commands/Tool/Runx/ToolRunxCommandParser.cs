@@ -33,7 +33,7 @@ internal static class ToolRunxCommandParser
 
     private static CliCommand ConstructCommand()
     {
-        CliCommand command = new("run", CliCommandStrings.ToolRunCommandDescription);
+        CliCommand command = new("runx", "TODO: Run and execute remote tool");
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);

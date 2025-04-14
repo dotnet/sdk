@@ -14,12 +14,35 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Runx;
 internal class ToolRunxCommand(ParseResult result) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunxCommandParser.CommandNameArgument);
-    private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunxCommandParser.CommandArgument);
-    public bool _allowRollForward = result.GetValue(ToolRunxCommandParser.RollForwardOption);
 
     public override int Execute()
     {
+        PackageLocation packageLocation = new PackageLocation();
+        PackageId packageId = new PackageId(_toolCommandName);
+
         var tempDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
-        return 0;
+
+        // Acquire package
+
+        ToolPackageStoreAndQuery toolPackageStoreAndQuery = ToolPackageFactory.CreateConcreteToolPackageStore(tempDir);
+        ToolPackageDownloader toolPackageDownloader = new ToolPackageDownloader(toolPackageStoreAndQuery);
+        ToolPackageUninstaller toolPackageUninstaller = new ToolPackageUninstaller(toolPackageStoreAndQuery);
+
+        IToolPackage toolPackage = toolPackageStoreAndQuery.EnumeratePackageVersions(packageId).FirstOrDefault()
+            ?? toolPackageDownloader.InstallPackage(packageLocation, packageId);
+
+        // Run package
+
+        DotnetToolsCommandResolver dotnetToolsCommandResolver = new DotnetToolsCommandResolver(toolPackageStoreAndQuery.Root.ToString());
+        CommandSpec commandSpec = dotnetToolsCommandResolver.Resolve(new CommandResolverArguments()
+            {
+                // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
+                CommandName = $"dotnet-{_toolCommandName}",
+                CommandArguments = new string[] { },
+            });
+
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
+
+        return result.ExitCode;
     }
 }
