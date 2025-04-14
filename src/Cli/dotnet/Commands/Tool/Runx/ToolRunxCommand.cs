@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Runx;
 internal class ToolRunxCommand(ParseResult result) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunxCommandParser.CommandNameArgument);
+    private readonly IEnumerable<string> _toolArguments = result.GetValue(ToolRunxCommandParser.CommandArgument);
 
     public override int Execute()
     {
-        PackageLocation packageLocation = new PackageLocation();
         PackageId packageId = new PackageId(_toolCommandName);
 
         var tempDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
@@ -28,17 +28,18 @@ internal class ToolRunxCommand(ParseResult result) : CommandBase(result)
         ToolPackageDownloader toolPackageDownloader = new ToolPackageDownloader(toolPackageStoreAndQuery);
         ToolPackageUninstaller toolPackageUninstaller = new ToolPackageUninstaller(toolPackageStoreAndQuery);
 
-        IToolPackage toolPackage = toolPackageStoreAndQuery.EnumeratePackageVersions(packageId).FirstOrDefault()
-            ?? toolPackageDownloader.InstallPackage(packageLocation, packageId);
+        PackageLocation packageLocation = new PackageLocation(rootConfigDirectory: toolPackageStoreAndQuery.Root);
+
+        IToolPackage toolPackage = toolPackageDownloader.InstallPackage(packageLocation, packageId, isGlobalTool: true);
 
         // Run package
 
-        DotnetToolsCommandResolver dotnetToolsCommandResolver = new DotnetToolsCommandResolver(toolPackageStoreAndQuery.Root.ToString());
+        DotnetToolsCommandResolver dotnetToolsCommandResolver = new DotnetToolsCommandResolver(toolPackage.PackageDirectory.Value);
         CommandSpec commandSpec = dotnetToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
-                CommandName = $"dotnet-{_toolCommandName}",
-                CommandArguments = new string[] { },
+                CommandName = _toolCommandName.StartsWith("dotnet-") ? _toolCommandName : $"dotnet-{_toolCommandName}",
+                CommandArguments = _toolArguments,
             });
 
         var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
