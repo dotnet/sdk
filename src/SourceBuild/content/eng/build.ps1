@@ -58,7 +58,7 @@ $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true")
 # This repo uses the VSTest integration instead of the Arcade Test target
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
-  $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true")
+  $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true", "/p:IsTestRun=true")
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
