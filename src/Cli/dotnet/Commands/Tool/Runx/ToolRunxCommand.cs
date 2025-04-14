@@ -30,7 +30,8 @@ internal class ToolRunxCommand(ParseResult result) : CommandBase(result)
 
         PackageLocation packageLocation = new PackageLocation(rootConfigDirectory: toolPackageStoreAndQuery.Root);
 
-        IToolPackage toolPackage = toolPackageDownloader.InstallPackage(packageLocation, packageId, isGlobalTool: true);
+        IToolPackage toolPackage = toolPackageStoreAndQuery.EnumeratePackageVersions(packageId).FirstOrDefault()
+            ?? toolPackageDownloader.InstallPackage(packageLocation, packageId, isGlobalTool: true);
 
         // Run package
 
