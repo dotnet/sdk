@@ -175,7 +175,7 @@
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
       
       <AddPrebuiltFeeds>true</AddPrebuiltFeeds>
-      <AddPrebuiltFeeds Condition="'$(DotNetSourceOnlyTestOnly)' == 'true'">false</AddPrebuiltFeeds>
+      <AddPrebuiltFeeds Condition="'$(DotNetSourceOnlyTestOnly)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'">false</AddPrebuiltFeeds>
     </PropertyGroup>
 
     <ItemGroup>
