@@ -49,3 +49,6 @@ cmake/
 
 # Live Unit Testing
 *.lutconfig
+
+# JetBrains IDEs
+/.idea
