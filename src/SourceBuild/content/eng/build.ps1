@@ -94,7 +94,6 @@ function Build {
     "-tl:off" `
     $bl `
     /p:Configuration=$configuration `
-    /p:DotNetPublishUsingPipelines=true `
     @actions `
     @properties `
     @arguments

@@ -248,7 +248,6 @@ function Build {
       $bl \
       /p:Configuration=$configuration \
       "/p:RepoRoot=$scriptroot/" \
-      "/p:DotNetPublishUsingPipelines=true" \
       "-tl:off" \
       "${actions[@]}" \
       "${properties[@]}"
@@ -288,7 +287,6 @@ function Build {
       "/p:Projects=$project" \
       /p:Configuration=$configuration \
       "/p:RepoRoot=$scriptroot/" \
-      "/p:DotNetPublishUsingPipelines=true" \
       "-tl:off" \
       $bl \
       "${actions[@]}" \
