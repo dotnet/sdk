@@ -136,15 +136,16 @@ namespace Microsoft.DotNet.Tools.Sln.Add
         {
             // Open project instance to see if it is a valid project
             ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
+            ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
             SolutionProjectModel project;
             try
             {
                 project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
             }
-            catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
+            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.InvalidProjectTypeReference)
             {
                 // If guid is not identified by vs-solutionpersistence, check in project element itself
-                var guid = projectRootElement.GetProjectTypeGuid();
+                var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
                 if (string.IsNullOrEmpty(guid))
                 {
                     Reporter.Error.WriteLine(CommonLocalizableStrings.UnsupportedProjectType, fullPath);
@@ -153,7 +154,6 @@ namespace Microsoft.DotNet.Tools.Sln.Add
                 project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
             }
             // Add settings based on existing project instance
-            ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
             string projectInstanceId = projectInstance.GetProjectId();
             if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
             {
