@@ -10,12 +10,6 @@ dotnet run file.cs
 > [!NOTE]
 > This document describes the ideal final state, but the feature will be implemented in [stages](#stages).
 
-> [!CAUTION]
-> The current implementation has been limited to single file support for the initial preview
-> (as if the implicit project file had `<EnableDefaultItems>false</EnableDefaultItems>` and an explicit `<Compile Include="file.cs" />`),
-> but this proposal describes a situation where all files in the target directory are included.
-> Once a final decision is made, the proposal will be updated.
-
 ## Motivation
 
 File-based programs
@@ -49,14 +43,14 @@ dotnet project convert
 ## Target path
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
-If it is a file, it is called *the target file*.
-*The target directory* is the directory of the target file, or the target path if it is not a file.
+The target path must be a file which has the `.cs` file extension, but we could allow folders as well in the future.
 
-We can consider adding an option like `dotnet run --from-stdin` which would read the C# file from the standard input.
+We can consider adding an option like `dotnet run --cs-from-stdin` which would read the C# file from the standard input
+(or `dotnet run -` although then it's unclear which programming language the input is in)
 In this case, the current working directory would not be used to search for project or other C# files,
 the compilation would consist solely of the single file read from the standard input.
 Similarly, it could be possible to specify the whole C# source text in a command-like argument
-like `dotnet run --code 'Console.WriteLine("Hi")'`.
+like `dotnet run --cs-code 'Console.WriteLine("Hi")'`.
 
 ## Integration into the existing `dotnet run` command
 
@@ -65,8 +59,7 @@ specifically `file.cs` is passed as the first command-line argument to the targe
 We preserve this behavior to avoid a breaking change.
 The file-based build and run kicks in only when:
 - a project file cannot be found (in the current directory or via the `--project` option), and
-- if the target path is a file, it has the `.cs` file extension, and
-- the target path (file or directory) exists.
+- if the target file exists and has the `.cs` file extension.
 
 > [!NOTE]
 > This means that `dotnet run path` stops working when a file-based program [grows up](#grow-up) into a project-based program.
@@ -135,9 +128,7 @@ That's because it might be perfectly reasonable to have file-based programs nest
 
 ### Multiple entry points
 
-If there are multiple entry-point files in the target directory, the target path must be a file
-(an error is reported if it points to a directory instead).
-Then the build ignores other entry-point files.
+If there are multiple entry-point files in the target directory, the build ignores other entry-point files.
 
 Thanks to this, it is possible to have a structure like
 ```
@@ -147,7 +138,7 @@ App/Program2.cs
 ```
 where either `Program1.cs` or `Program2.cs` can be run and both of them have access to `Util.cs`.
 
-In this case, there are multiple implicit projects
+Behind the scenes, there are multiple implicit projects
 (and during [grow up](#grow-up), multiple project files are materialized
 and the original C# files are moved to the corresponding project subdirectories):
 ```
@@ -162,19 +153,23 @@ The generated folders might need to be named differently to avoid clashes with e
 
 The entry-point projects (`Program1` and `Program2` in our example)
 have the shared `.cs` files source-included via `<Content Include="../Shared/**/*.cs" />`.
-We could consider having the projects directly in the top-level folder instead
-but that might result in clashes of build outputs that are not project-scoped, like `project.assets.json`.
-If we did that though, it would be enough to exclude the other entry points rather than including all the shared `.cs` files.
 
-Unless the [artifacts output layout][artifacts-output] is used (which is recommended),
-those implicit projects mean that build artifacts are placed under those implicit directories
-even though they don't exist on disk prior to build:
+We could consider using `InternalsVisibleTo` attribute but that might result in slight differences between single- and multi-entry-point programs
+(if not now then perhaps in the future if [some "more internal" accessibility](https://github.com/dotnet/csharplang/issues/6794) is added to C# which doesn't respect `InternalsVisibleTo`)
+which would be undesirable when users start with a single entry point and later add another.
+Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or via a complex-looking `AssemblyAttribute` item group into the `.csproj` like:
+
+```xml
+<ItemGroup>
+  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute" _Parameter1="App.Shared" />
+</ItemGroup>
 ```
-App/Program1/bin/
-App/Program1/obj/
-App/Program2/bin/
-App/Program2/obj/
-```
+
+## Build outputs
+
+Outputs are placed in a user-scoped directory (e.g., AppData on Windows) which might or might not be a temp directory,
+under a subdirectory whose name is hashed file path of the entry point.
+Apart from keeping the source directory clean, this also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 
 ## Directives for project metadata
 
@@ -189,7 +184,8 @@ Other directives result in a warning, reserving them for future use.
 #:package System.CommandLine 2.0.0-*
 ```
 
-The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
+The value must be separated from the name of the directive by white space (`@` is additionally allowed separator for the package directive)
+and any leading and trailing white space is not considered part of the value.
 Any value can optionally have two parts separated by a space (more whitespace characters could be allowed in the future).
 The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
 and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
