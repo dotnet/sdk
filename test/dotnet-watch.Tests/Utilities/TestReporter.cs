@@ -4,22 +4,40 @@
 #nullable enable
 
 using System.Diagnostics;
+using Microsoft.Build.Graph;
 
-namespace Microsoft.Extensions.Tools.Internal
+namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal class TestReporter(ITestOutputHelper output) : IReporter
     {
         private readonly Dictionary<int, Action> _actions = [];
+        public readonly List<string> ProcessOutput = [];
 
-        public bool ReportProcessOutput
+        public bool EnableProcessOutputReporting
             => true;
 
-        public event Action<string, string>? OnProcessOutput;
+        public bool IsVerbose
+            => true;
 
-        public void ProcessOutput(string projectPath, string data)
+        public event Action<string, OutputLine>? OnProjectProcessOutput;
+        public event Action<OutputLine>? OnProcessOutput;
+
+        public void ReportProcessOutput(OutputLine line)
         {
-            output.WriteLine($"[{Path.GetFileName(projectPath)}]: {data}");
-            OnProcessOutput?.Invoke(projectPath, data);
+            WriteTestOutput(line.Content);
+            ProcessOutput.Add(line.Content);
+
+            OnProcessOutput?.Invoke(line);
+        }
+
+        public void ReportProcessOutput(ProjectGraphNode project, OutputLine line)
+        {
+            var content = $"[{project.GetDisplayName()}]: {line.Content}";
+
+            WriteTestOutput(content);
+            ProcessOutput.Add(content);
+
+            OnProjectProcessOutput?.Invoke(project.ProjectInstance.FullPath, line);
         }
 
         public SemaphoreSlim RegisterSemaphore(MessageDescriptor descriptor)
@@ -49,12 +67,24 @@ namespace Microsoft.Extensions.Tools.Internal
         {
             if (descriptor.TryGetMessage(prefix, args, out var message))
             {
-                output.WriteLine($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
+                WriteTestOutput($"{ToString(descriptor.Severity)} {descriptor.Emoji} {message}");
             }
 
             if (descriptor.Id.HasValue && _actions.TryGetValue(descriptor.Id.Value, out var action))
             {
                 action();
+            }
+        }
+
+        private void WriteTestOutput(string message)
+        {
+            try
+            {
+                output.WriteLine(message);
+            }
+            catch (InvalidOperationException)
+            {
+                // May happen when a test is aborted and no longer running.
             }
         }
 
