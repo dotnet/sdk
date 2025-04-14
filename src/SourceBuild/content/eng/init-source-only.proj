@@ -25,12 +25,12 @@
 
   <!-- Unpacks the Private.SourceBuilt.Artifacts archive -->
   <Target Name="UnpackSourceBuiltArtifactsArchive"
-          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''"
+          Condition="'$(CustomPreviouslySourceBuiltPackagesPath)' == ''"
           Inputs="$(ExternalTarballsDir)"
-          Outputs="$(PrebuiltSourceBuiltPackagesPath)">
-    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" />
+          Outputs="$(PreviouslySourceBuiltPackagesPath)">
+    <MakeDir Directories="$(PreviouslySourceBuiltPackagesPath)" />
     <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)"
-          WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)" />
+          WorkingDirectory="$(PreviouslySourceBuiltPackagesPath)" />
   </Target>
 
   <!-- Check for a prebuilt dependency tarball and extract if exists. If there isn't one, we expect
@@ -72,7 +72,7 @@
   <!-- Extract toolset packages into the bootstrap folder -->
   <Target Name="ExtractToolsetPackages" DependsOnTargets="UnpackTarballs">
     <ItemGroup>
-      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PrebuiltSourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PreviouslySourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
       <ToolsetPackage Include="Microsoft.Build.NoTargets" SourceFolder="$(PreviouslySourceBuiltReferencePackagesDir)" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
       <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(PreviouslySourceBuiltReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
     </ItemGroup>
