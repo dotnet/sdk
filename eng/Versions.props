@@ -123,7 +123,10 @@
     <SystemTextJsonPackageVersion>9.0.3</SystemTextJsonPackageVersion>
     <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
+    <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
+    <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>
     <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
+    <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.3</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>9.0.3</SystemFormatsAsn1Version>
   </PropertyGroup>
@@ -282,20 +285,6 @@
     <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkGitHubVersion>
     <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkBitbucketGitVersion>
-  </PropertyGroup>
-  <!--
-    Dependencies to support netstandard2.0 targets.
-    Versions need to be conditionally selected: due to https://github.com/dotnet/sdk/issues/45155
-  -->
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
-    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
-    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
-    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
-    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
