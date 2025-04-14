@@ -9,9 +9,9 @@ using Microsoft.Extensions.Logging.Console;
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 {
     /// <summary>
-    /// Represents a <see cref="CliCommand"/> together with its action.
+    /// Represents a <see cref="Command"/> together with its action.
     /// </summary>
-    internal abstract class ExecutableCommand<TModel> : CliCommand where TModel : class
+    internal abstract class ExecutableCommand<TModel> : Command where TModel : class
     {
         internal ExecutableCommand(string name, string? description = null)
             : base(name, description)
@@ -29,7 +29,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
         /// </summary>
         protected abstract Task<int> ExecuteAsync(TModel args, ILoggerFactory loggerFactory, CancellationToken cancellationToken);
 
-        private sealed class CommandAction : AsynchronousCliAction
+        private sealed class CommandAction : AsynchronousCommandLineAction
         {
             private readonly ExecutableCommand<TModel> _command;
 

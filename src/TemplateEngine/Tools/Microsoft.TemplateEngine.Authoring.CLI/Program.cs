@@ -11,7 +11,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
     {
         internal static Task<int> Main(string[] args)
         {
-            CliRootCommand rootCommand = new("dotnet-template-authoring");
+            RootCommand rootCommand = new("dotnet-template-authoring");
             rootCommand.Subcommands.Add(new LocalizeCommand());
             rootCommand.Subcommands.Add(new VerifyCommand());
             rootCommand.Subcommands.Add(new ValidateCommand());
@@ -19,9 +19,9 @@ namespace Microsoft.TemplateEngine.Authoring.CLI
             return GetCommandLineConfiguration(rootCommand).InvokeAsync(args);
         }
 
-        internal static CliConfiguration GetCommandLineConfiguration(CliCommand command)
+        internal static CommandLineConfiguration GetCommandLineConfiguration(Command command)
         {
-            return new CliConfiguration(command)
+            return new CommandLineConfiguration(command)
             {
                 EnablePosixBundling = false
             };

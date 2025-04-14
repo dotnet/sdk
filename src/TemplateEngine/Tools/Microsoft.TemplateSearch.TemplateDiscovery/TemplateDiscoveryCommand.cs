@@ -9,77 +9,77 @@ using Microsoft.TemplateSearch.TemplateDiscovery.Test;
 
 namespace Microsoft.TemplateSearch.TemplateDiscovery
 {
-    internal class TemplateDiscoveryCommand : CliCommand
+    internal class TemplateDiscoveryCommand : Command
     {
         private const int DefaultPageSize = 100;
 
-        private readonly CliOption<DirectoryInfo> _basePathOption = new("--basePath")
+        private readonly Option<DirectoryInfo> _basePathOption = new("--basePath")
         {
             Arity = ArgumentArity.ExactlyOne,
             Description = "The root dir for output for this run.",
             Required = true
         };
 
-        private readonly CliOption<bool> _allowPreviewPacksOption = new("--allowPreviewPacks")
+        private readonly Option<bool> _allowPreviewPacksOption = new("--allowPreviewPacks")
         {
             Description = "Include preview packs in the results (by default, preview packs are ignored and the latest stable pack is used.",
         };
 
-        private readonly CliOption<int> _pageSizeOption = new("--pageSize")
+        private readonly Option<int> _pageSizeOption = new("--pageSize")
         {
             Description = "(debugging) The chunk size for interactions with the source.",
             DefaultValueFactory = (r) => DefaultPageSize,
         };
 
-        private readonly CliOption<bool> _onePageOption = new("--onePage")
+        private readonly Option<bool> _onePageOption = new("--onePage")
         {
             Description = "(debugging) Only process one page of template packs.",
         };
 
-        private readonly CliOption<bool> _savePacksOption = new("--savePacks")
+        private readonly Option<bool> _savePacksOption = new("--savePacks")
         {
             Description = "Don't delete downloaded candidate packs (by default, they're deleted at the end of a run).",
         };
 
-        private readonly CliOption<bool> _noTemplateJsonFilterOption = new("--noTemplateJsonFilter")
+        private readonly Option<bool> _noTemplateJsonFilterOption = new("--noTemplateJsonFilter")
         {
             Description = "Don't prefilter packs that don't contain any template.json files (this filter is applied by default).",
         };
 
-        private readonly CliOption<bool> _verboseOption = new("--verbose", "-v")
+        private readonly Option<bool> _verboseOption = new("--verbose", "-v")
         {
             Description = "Verbose output for template processing.",
         };
 
-        private readonly CliOption<bool> _testOption = new("--test", "-t")
+        private readonly Option<bool> _testOption = new("--test", "-t")
         {
             Description = "Run tests on generated metadata files.",
         };
 
-        private readonly CliOption<SupportedQueries[]> _queriesOption = new("--queries")
+        private readonly Option<SupportedQueries[]> _queriesOption = new("--queries")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = $"The list of providers to run. Supported providers: {string.Join(",", Enum.GetValues<SupportedQueries>())}.",
             AllowMultipleArgumentsPerToken = true,
         };
 
-        private readonly CliOption<DirectoryInfo> _packagesPathOption = new CliOption<DirectoryInfo>("--packagesPath")
+        private readonly Option<DirectoryInfo> _packagesPathOption = new Option<DirectoryInfo>("--packagesPath")
         {
             Description = "Path to pre-downloaded packages. If specified, the packages won't be downloaded from NuGet.org."
         }.AcceptExistingOnly();
 
-        private readonly CliOption<bool> _diffOption = new("--diff")
+        private readonly Option<bool> _diffOption = new("--diff")
         {
             Description = "The list of packages will be compared with previous run, and if package version is not changed, the package won't be rescanned.",
             DefaultValueFactory = (r) => true,
         };
 
-        private readonly CliOption<FileInfo> _diffOverrideCacheOption = new CliOption<FileInfo>("--diff-override-cache")
+        private readonly Option<FileInfo> _diffOverrideCacheOption = new Option<FileInfo>("--diff-override-cache")
         {
             Description = "Location of current search cache (local path only).",
         }.AcceptExistingOnly();
 
-        private readonly CliOption<FileInfo> _diffOverrideNonPackagesOption = new CliOption<FileInfo>("--diff-override-non-packages")
+        private readonly Option<FileInfo> _diffOverrideNonPackagesOption = new Option<FileInfo>("--diff-override-non-packages")
         {
             Description = "Location of the list of packages known not to be a valid package (local path only).",
         }.AcceptExistingOnly();
