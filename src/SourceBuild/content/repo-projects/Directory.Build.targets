@@ -391,8 +391,7 @@
                       Lines="$(PackageVersionsPropsContents)"
                       Overwrite="true" />
 
-    <Message Importance="High"
-             Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)"
+    <Message Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)"
              Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
