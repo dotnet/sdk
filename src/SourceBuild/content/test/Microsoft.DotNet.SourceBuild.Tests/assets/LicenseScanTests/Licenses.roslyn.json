@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/RoslynAnalyzers/Assets/EULA.txt",
+      "detected_license_expression": "ms-net-library"
+    }
+  ]
+}
