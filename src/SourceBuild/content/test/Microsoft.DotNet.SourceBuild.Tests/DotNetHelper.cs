@@ -112,7 +112,7 @@ internal class DotNetHelper
 
     public void ExecuteBuild(string projectName)
     {
-        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources.Replace(";", "%3B")}";
+        string options = GetRestoreAdditionalProjectSourcesPropertyOption();
         ExecuteCmd($"build {options} {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
     }
 
@@ -139,7 +139,7 @@ internal class DotNetHelper
 
     public void ExecutePublish(string projectName, DotNetTemplate template, bool? selfContained = null, string? rid = null, bool trimmed = false, bool readyToRun = false)
     {
-        string options = $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources}";
+        string options = GetRestoreAdditionalProjectSourcesPropertyOption();
         string binlogDifferentiator = string.Empty;
 
         if (selfContained.HasValue)
@@ -223,7 +223,10 @@ internal class DotNetHelper
         {
             throw validator.ValidationException;
         }
-    }    
+    }
+
+    private static string GetRestoreAdditionalProjectSourcesPropertyOption() =>
+        $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources.Replace(";", "%3B")}";
 
     private static string GetBinLogOption(string projectName, string command, string? differentiator = null)
     {
