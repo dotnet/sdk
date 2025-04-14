@@ -5,7 +5,6 @@ using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
-using Microsoft.DotNet.Cli.Commands.Complete;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -42,7 +41,7 @@ internal static class CommonOptions
             Description = description,
             HelpName = CliStrings.FrameworkArgumentName
         }
-        .AddCompletions(Complete.TargetFrameworksFromProjectFile)
+        .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
         .ForwardAsSingle(o => $"-property:TargetFramework={o}");
 
     public static CliOption<string> ArtifactsPathOption =
@@ -69,14 +68,14 @@ internal static class CommonOptions
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc)
-        .AddCompletions(Complete.RunTimesFromProjectFile);
+        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static CliOption<string> LongFormRuntimeOption =
         new DynamicForwardedOption<string>("--runtime")
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc)
-        .AddCompletions(Complete.RunTimesFromProjectFile);
+        .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static CliOption<bool> CurrentRuntimeOption(string description) =>
         new ForwardedOption<bool>("--use-current-runtime", "--ucr")
@@ -91,7 +90,7 @@ internal static class CommonOptions
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName
         }.ForwardAsSingle(o => $"-property:Configuration={o}")
-        .AddCompletions(Complete.ConfigurationsFromProjectFileOrDefaults);
+        .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
     public static CliOption<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
@@ -134,7 +133,7 @@ internal static class CommonOptions
              Description = CliStrings.CommandInteractiveOptionDescription,
              Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
              // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => IsCIEnvironmentOrRedirected()
+             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
          };
 
     public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");

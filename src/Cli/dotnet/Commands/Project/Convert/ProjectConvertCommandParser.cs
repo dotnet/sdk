@@ -16,12 +16,19 @@ internal sealed class ProjectConvertCommandParser
         Arity = ArgumentArity.ExactlyOne,
     };
 
+    public static readonly CliOption<bool> ForceOption = new("--force")
+    {
+        Description = CliCommandStrings.CmdOptionForceDescription,
+        Arity = ArgumentArity.Zero,
+    };
+
     public static CliCommand GetCommand()
     {
         CliCommand command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
+            ForceOption,
         };
 
         command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());
