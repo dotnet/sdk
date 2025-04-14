@@ -94,6 +94,7 @@ namespace Microsoft.DotNet.Cli
             pushCommand.Options.Add(new CliOption<bool>("--no-service-endpoint"));
             pushCommand.Options.Add(new CliOption<bool>("--interactive"));
             pushCommand.Options.Add(new CliOption<bool>("--skip-duplicate"));
+            pushCommand.Options.Add(new CliOption<string>("--configfile"));
 
             pushCommand.SetAction(NuGetCommand.Run);
 
