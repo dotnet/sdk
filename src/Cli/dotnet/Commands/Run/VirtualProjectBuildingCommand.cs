@@ -648,7 +648,6 @@ internal sealed class VirtualProjectBuildingCommand
     }
 
 #pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
-#pragma warning disable RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
     private static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportErrors)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
@@ -682,8 +681,8 @@ internal sealed class VirtualProjectBuildingCommand
             {
                 TextSpan span = getFullSpan(previousWhiteSpaceSpan, trivia);
 
-                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { EndOfDirectiveToken.LeadingTrivia: [{ RawKind: (int)SyntaxKind.PreprocessingMessageTrivia } messageTrivia] }
-                    ? messageTrivia.ToString().AsSpan().Trim()
+                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
+                    ? content.Text.AsSpan().Trim()
                     : "";
                 var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
                 var name = parts.MoveNext() ? message[parts.Current] : default;
@@ -735,7 +734,6 @@ internal sealed class VirtualProjectBuildingCommand
             }
         }
     }
-#pragma warning restore RSEXPERIMENTAL005 // 'IgnoredDirectiveTriviaSyntax' is experimental
 #pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
     public static SourceFile LoadSourceFile(string filePath)

@@ -1,6 +1,6 @@
 <Project>
 
-  <Target Name="LayoutManifest" DependsOnTargets="Pack">
+  <Target Name="LayoutManifest" DependsOnTargets="Pack" Condition="'$(IsShipping)' == 'true'">
     <PropertyGroup>
       <_manifestTargetDirectory>$(ManifestDirectory)$(BuiltinWorkloadFeatureBand)\$(MSBuildProjectName.Replace('.Manifest', '').ToLower())\$(Version)</_manifestTargetDirectory>
     </PropertyGroup>
