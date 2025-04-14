@@ -117,6 +117,11 @@
         <target state="translated">重新導向工作負載 '{0}' 具有 'redirect-to' 以外的其他金鑰</target>
         <note />
       </trans-unit>
+      <trans-unit id="ShouldInstallAWorkloadSet">
+        <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>
+        <target state="translated">工作負載已設定為使用工作負載版本來安裝和更新，但找不到任何工作負載版本。執行 "dotnet workload restore" 以安裝工作負載版本。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTokenAtOffset">
         <source>Unexpected token '{0}' at offset {1}</source>
         <target state="translated">位移 {1} 有未預期的權杖 '{0}'</target>

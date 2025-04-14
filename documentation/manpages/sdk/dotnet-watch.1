@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-watch" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-watch" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet watch
 .PP
@@ -74,15 +74,19 @@ As an alternative to disabling response compression, manually add the browser re
 .fi
 .SH ARGUMENTS
 .IP \[bu] 2
-\f[B]\f[VB]command\f[B]\f[R]
+\f[B]\f[VB]<command>\f[B]\f[R]
 .RS 2
 .PP
-\f[V]dotnet watch\f[R] can run any command that is dispatched via the \f[V]dotnet\f[R] executable, such as built-in CLI commands and global tools.
+In .NET 7 SDK and earlier, \f[V]dotnet watch\f[R] can run any command that is dispatched via the \f[V]dotnet\f[R] executable, such as built-in CLI commands and global tools.
 If you can run \f[V]dotnet <command>\f[R], you can run \f[V]dotnet watch <command>\f[R].
+.PP
+In .NET 8 SDK and later, \f[V]dotnet watch\f[R] can run \f[V]dotnet run\f[R], \f[V]dotnet build\f[R], or \f[V]dotnet test\f[R].
+Specify \f[V]run\f[R], \f[V]build\f[R], or \f[V]test\f[R] for \f[V]<command>\f[R].
+.PP
 If the child command isn\[cq]t specified, the default is \f[V]run\f[R] for \f[V]dotnet run\f[R].
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]forwarded arguments\f[B]\f[R]
+\f[B]\f[VB]<forwarded arguments>\f[B]\f[R]
 .RS 2
 .PP
 Arguments provided after a double dash (\f[V]--\f[R]) are passed to the child \f[V]dotnet\f[R] process.
