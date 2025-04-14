@@ -94,6 +94,7 @@
     <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.4.25212.2">
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>d7c8e08245f0e5c6c14eb5e6d7c5ab461e471048</Sha>
+       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25211-01">
       <Uri>https://github.com/dotnet/msbuild</Uri>
