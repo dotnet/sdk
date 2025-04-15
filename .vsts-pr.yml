@@ -78,15 +78,7 @@ stages:
           buildArchitecture: arm64
           runtimeIdentifier: osx-arm64
 
-  ############### SOURCE BUILD ###############
-  - template: /eng/common/templates/job/source-build.yml
-    parameters:
-      enableInternalSources: true
-      platform:
-        name: Managed
-        container: centosStream9
-        jobProperties:
-          timeoutInMinutes: 30
+# Remove the source build leg as we don't ship that outside of 1xx feature bands
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml
