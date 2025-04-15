@@ -79,7 +79,8 @@ The file-based build and run kicks in only when:
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
-(except for the arguments recognized by `dotnet run` unless they are after the `--` separator).
+(except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
+and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
 ## Entry points
 
@@ -170,8 +171,8 @@ Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or 
 
 ## Build outputs
 
-Outputs are placed in a user-scoped directory (e.g., AppData on Windows) which might or might not be a temp directory,
-under a subdirectory whose name is hashed file path of the entry point.
+Build outputs are placed in a temp directory under a subdirectory whose name is hashed file path of the entry point
+and which is restricted to the current user per [runtime guidelines][temp-guidelines].
 Apart from keeping the source directory clean, this also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 
 ## Directives for project metadata
@@ -319,3 +320,4 @@ Instead of implicitly including files from the target directory, the importing c
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
+[temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md
