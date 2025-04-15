@@ -206,6 +206,9 @@ We do not limit these directives to appear only in entry point files.
 Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#:package`s it needs specified in it,
 which also makes it possible to share it independently or symlink it to multiple script folders.
 This is also similar to `global using`s which users usually put into a single file but don't have to.
+However, beware that all directives are always parsed by the CLI regardless of whether the file is included in the final compilation
+(in other words, any build customizations like `<Compile Exclude="Util.cs" />` are ignored),
+because the CLI must parse the directives before invoking MSBuild to avoid multiple build invocations.
 
 We could consider deduplicating `#:` directives
 (e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
