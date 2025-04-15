@@ -23,11 +23,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- netstandard2.0 polyfills -->
-    <PackageReference Include="System.Buffers" />
-    <PackageReference Include="System.Memory" />
-    <PackageReference Include="System.Threading.Tasks.Extensions" />
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" />
+    <!-- netstandard2.0 polyfills
+      Since this code may be run in Visual Studio / full framework MSBuild, these packages need to use the "toolset" package versions so they
+      don't depend on higher versions of the packages than are available in those environments.
+    -->
+    <PackageReference Include="System.Buffers" VersionOverride="$(SystemBuffersToolsetPackageVersion)" />
+    <PackageReference Include="System.Memory" VersionOverride="$(SystemMemoryToolsetPackageVersion)" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" VersionOverride="$(SystemThreadingTasksExtensionsToolsetPackageVersion)" />
+    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" VersionOverride="$(MicrosoftBclAsyncInterfacesToolsetPackageVersion)"/>
   </ItemGroup>
 
   <!-- Make sure the shared source files do not require any global usings -->

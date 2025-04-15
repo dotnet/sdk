@@ -41,6 +41,9 @@
     <!-- Transitive dependencies from MSBuild -->
     <UsagePattern IdentityGlob="Microsoft.VisualStudio.SolutionPersistence/1.0.9" />
     <UsagePattern IdentityGlob="System.Formats.Nrbf/*9.0.0*" />
+    <UsagePattern IdentityGlob="System.Buffers/*4.6.0*" />
+    <UsagePattern IdentityGlob="System.Memory/*4.6.0*" />
+    <UsagePattern IdentityGlob="System.Numerics.Vectors/*4.6.0*" />
 
     <!-- Transitive dependencies from roslyn -->
     <UsagePattern IdentityGlob="System.Diagnostics.EventLog/8.0.0" />

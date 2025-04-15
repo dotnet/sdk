@@ -123,7 +123,10 @@
     <SystemTextJsonPackageVersion>9.0.4</SystemTextJsonPackageVersion>
     <!-- This is a minimum version for various projects to work. It's used for netfx-targeted components that run in Visual Studio
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
+    <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
+    <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>
     <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
+    <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.4</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>9.0.4</SystemFormatsAsn1Version>
   </PropertyGroup>
@@ -179,8 +182,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.14.0-preview-25177-05</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.14.0-preview-25177-05</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.14.4</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.14.4-preview-25207-08</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.12</MinimumVSVersion>
   </PropertyGroup>
@@ -282,20 +285,6 @@
     <MicrosoftSourceLinkGitHubVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkGitHubVersion>
     <MicrosoftSourceLinkGitLabVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftSourceLinkBitbucketGitVersion>9.0.0-beta.24617.1</MicrosoftSourceLinkBitbucketGitVersion>
-  </PropertyGroup>
-  <!--
-    Dependencies to support netstandard2.0 targets.
-    Versions need to be conditionally selected: due to https://github.com/dotnet/sdk/issues/45155
-  -->
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <SystemBuffersVersion>4.6.1</SystemBuffersVersion>
-    <SystemMemoryVersion>4.6.2</SystemMemoryVersion>
-    <SystemThreadingTasksExtensionsVersion>4.6.2</SystemThreadingTasksExtensionsVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-    <SystemBuffersVersion>4.5.1</SystemBuffersVersion>
-    <SystemMemoryVersion>4.5.5</SystemMemoryVersion>
-    <SystemThreadingTasksExtensionsVersion>4.5.4</SystemThreadingTasksExtensionsVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
