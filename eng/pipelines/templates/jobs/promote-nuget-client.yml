@@ -52,6 +52,11 @@ jobs:
         }
 
         $defaultChannels = .\.dotnet\dotnet darc get-default-channels --source-repo https://github.com/dotnet/sdk --branch "$(Build.SourceBranchName)" --output-format json --ci | ConvertFrom-Json
+        if ($defaultChannels -eq $null) {
+          Write-Error "No default channels found for branch $(Build.SourceBranchName) - no promotion will take place"
+          exit 0
+        }
+
         $targetChannel = $defaultChannels[0].channel.name
 
         Write-Host "Promoting build $buildId to channel $targetChannel"
