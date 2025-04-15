@@ -2472,4 +2472,7 @@ To display a value, specify the corresponding command-line option without provid
   <data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
+  <data name="ToolRunFromSourceOptionDescription" xml:space="preserve">
+    <value>Executes a tool from source without permanently installing it. </value>
+  </data>
 </root>
