@@ -26,7 +26,6 @@ internal class ToolRunCommand(
     private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
     private readonly bool _fromSource = result.GetValue(ToolRunCommandParser.FromSourceOption);
 
-    private readonly ToolInstallLocalInstaller _toolInstaller = new(result);
     private readonly IToolManifestEditor _toolManifestEditor = new ToolManifestEditor();
     private readonly ILocalToolsResolverCache _localToolsResolverCache = new LocalToolsResolverCache();
     public override int Execute()
@@ -41,7 +40,7 @@ internal class ToolRunCommand(
 
         if (commandspec == null && _fromSource)
         {
-            commandspec = GetRemoteCommandSpec();
+            return ExecuteFromSource();
         }
 
         if (commandspec == null)
@@ -53,10 +52,14 @@ internal class ToolRunCommand(
         return result.ExitCode;
     }
 
-    public CommandSpec GetRemoteCommandSpec()
+    public int ExecuteFromSource()
     {
+        string tempDirectory = PathUtilities.CreateTempSubdirectory();
         FilePath manifestFile = _toolManifest.FindFirst(true);
         PackageId packageId = new(_toolCommandName);
+
+        ToolInstallLocalInstaller _toolInstaller = new(_parseResult, new ToolPackageDownloader(
+            store: new ToolPackageStoreAndQuery(new DirectoryPath(tempDirectory))));
 
         IToolPackage toolPackage = _toolInstaller.Install(manifestFile, packageId);
 
@@ -71,10 +74,21 @@ internal class ToolRunCommand(
             toolPackage,
             _toolInstaller.TargetFrameworkToInstall);
 
-        return _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+        CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
         {
             CommandName = $"dotnet-{toolPackage.Command.Name}",
             CommandArguments = _forwardArgument,
         }, _allowRollForward);
+
+        if (commandSpec == null)
+        {
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+        }
+
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
+
+        _toolManifestEditor.Remove(manifestFile, toolPackage.Id);
+
+        return result.ExitCode;
     }
 }
