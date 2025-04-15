@@ -91,6 +91,8 @@ to check whether the file contains an entry point (top-level statements or a val
 (We cannot simply use Roslyn APIs to detect entry points ourselves because parsing depends on conditional symbols like those from `<DefineConstants>`
 and we can reliably know the set of those only after invoking MSBuild, and doing that up front would be an unnecessary performance hit just to detect entry points.)
 
+## Multiple C# files
+
 Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
 For example, other `.cs` files but also `.resx` (embedded resources).
