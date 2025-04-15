@@ -347,3 +347,5 @@ extends:
               os: windows
 
         - template: /eng/pipelines/templates/jobs/promote-nuget-client.yml@self
+          parameters:
+            assetName: NuGet.Protocol
