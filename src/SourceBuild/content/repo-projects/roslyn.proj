@@ -3,14 +3,17 @@
   <PropertyGroup>
     <LogVerbosityOptOut>true</LogVerbosityOptOut>
 
+    <!-- Use the repo root build script -->
+    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+
     <!-- Roslyn's build.cmd adds -build automatically. On non-windows, use the default -->
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(FlagParameterPrefix)restore</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)pack</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows'">$(BuildActions) $(FlagParameterPrefix)publish</BuildActions>
     <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(Sign)' == 'true'">$(BuildActions) $(FlagParameterPrefix)sign</BuildActions>
 
-    <!-- Use the repo root build script -->
-    <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
+    <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PublishWindowsPdb=false</BuildArgs>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(BuildOS)' == 'windows' and '$(OfficialBuildId)' != ''">
@@ -23,14 +26,6 @@
     <BuildArgs Condition="'$(EnableIBCOptimization)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)officialSourceBranchName main</BuildArgs>
     <BuildArgs Condition="'$(EnableIBCOptimization)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)officialVisualStudioDropAccessToken $(IBCDropAccessToken)</BuildArgs>
     <BuildArgs Condition="'$(EnableIBCOptimization)' == 'true'">$(BuildArgs) $(FlagParameterPrefix)officialSkipApplyOptimizationData false</BuildArgs>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:PublishWindowsPdb=false</BuildArgs>
-    <!-- UsingToolMicrosoftNetCompilers=false introduces a prebuilt so we'll have to turn back on after our bootstrap SDK has native integer support -->
-    <!-- issue: https://github.com/dotnet/source-build/issues/1719 -->
-    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>

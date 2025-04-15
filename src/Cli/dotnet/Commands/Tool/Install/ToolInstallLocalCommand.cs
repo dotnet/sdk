@@ -44,7 +44,7 @@ internal class ToolInstallLocalCommand : CommandBase
         : base(parseResult)
     {
         _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Id;
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
         _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
 

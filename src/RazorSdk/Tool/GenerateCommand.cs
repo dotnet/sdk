@@ -329,10 +329,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var items = new SourceItem[sources.Count];
             for (var i = 0; i < items.Length; i++)
             {
-                var fileKind = fileKinds.Count > 0 ? fileKinds[i] : "mvc";
+                var fileKind = fileKinds.Count > 0
+                    ? ConvertFileKind(fileKinds[i])
+                    : RazorFileKind.Legacy;
+
                 if (AspNetCore.Razor.Language.FileKinds.IsComponent(fileKind))
                 {
-                    fileKind = AspNetCore.Razor.Language.FileKinds.GetComponentFileKindFromFilePath(sources[i]);
+                    fileKind = GetComponentFileKindFromFilePath(sources[i]);
                 }
 
                 var cssScopeValue = cssScopeAssociations.TryGetValue(sources[i], out var cssScopeIndex)
@@ -343,6 +346,33 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
 
             return items;
+        }
+
+        private static RazorFileKind ConvertFileKind(string fileKind)
+        {
+            if (string.Equals(fileKind, "component", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.Component;
+            }
+
+            if (string.Equals(fileKind, "componentImport", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.ComponentImport;
+            }
+
+            if (string.Equals(fileKind, "mvc", StringComparison.OrdinalIgnoreCase))
+            {
+                return RazorFileKind.Legacy;
+            }
+
+            return RazorFileKind.Legacy;
+        }
+
+        private static RazorFileKind GetComponentFileKindFromFilePath(string filePath)
+        {
+            return AspNetCore.Razor.Language.FileKinds.TryGetFileKindFromPath(filePath, out var kind) && kind != RazorFileKind.Legacy
+                ? kind
+                : RazorFileKind.Component;
         }
 
         private OutputItem[] GenerateCode(RazorProjectEngine engine, SourceItem[] inputs)
@@ -377,7 +407,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
         private readonly struct SourceItem
         {
-            public SourceItem(string sourcePath, string outputPath, string physicalRelativePath, string fileKind, string cssScope)
+            public SourceItem(string sourcePath, string outputPath, string physicalRelativePath, RazorFileKind fileKind, string cssScope)
             {
                 SourcePath = sourcePath;
                 OutputPath = outputPath;
@@ -397,7 +427,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
             public string FilePath { get; }
 
-            public string FileKind { get; }
+            public RazorFileKind FileKind { get; }
 
             public string CssScope { get; }
         }

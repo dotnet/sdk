@@ -1,7 +1,7 @@
 name: Remove Lockdown Label from PRs
 
 on:
-  pull_request:
+  pull_request_target:
     types: [closed]
 
 permissions:
@@ -13,9 +13,6 @@ jobs:
         if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding')
         runs-on: ubuntu-latest
         steps:
-        -   name: Checkout repository
-            uses: actions/checkout@v2
-
         -   name: PR's only change is <VersionFeature> in eng/Versions.props
             id: only_version_feature_changed
             uses: actions/github-script@v4

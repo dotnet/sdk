@@ -68,6 +68,11 @@ internal static class TestingPlatformOptions
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly CliOption<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
+    {
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
+    };
+
     public static readonly CliOption<bool> NoProgressOption = new("--no-progress")
     {
         Description = CliCommandStrings.CmdNoProgressDescription,

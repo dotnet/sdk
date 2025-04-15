@@ -67,14 +67,23 @@ internal class ToolUpdateCommand : CommandBase
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdArgument) is not null)
+        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdentityArgument) is not null)
         {
-            options.Add(ToolUpdateCommandParser.PackageIdArgument.Name);
+            options.Add(ToolUpdateCommandParser.PackageIdentityArgument.Name);
         }
 
         if (options.Count != 1)
         {
             throw new GracefulException(message);
+        }
+    }
+
+    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
+    {
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
+            !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
+        {
+            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
         }
     }
 
@@ -93,6 +102,8 @@ internal class ToolUpdateCommand : CommandBase
         EnsureEitherUpdateAllOrUpdateOption(
             _parseResult,
             CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
+
+        EnsureNoConflictPackageIdentityVersionOption(_parseResult);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

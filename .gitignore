@@ -46,6 +46,7 @@ cmake/
 # Test results
 **/*.trx
 /TestResults
+/test/dotnet.Tests/CompletionTests/snapshots/**/**.received.*
 
 # Live Unit Testing
 *.lutconfig

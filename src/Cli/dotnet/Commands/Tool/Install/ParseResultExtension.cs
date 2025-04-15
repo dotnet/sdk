@@ -11,7 +11,8 @@ internal static class ParseResultExtension
 {
     public static VersionRange GetVersionRange(this ParseResult parseResult)
     {
-        string packageVersion = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
+        string packageVersion = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString() ??
+            parseResult.GetValue(ToolInstallCommandParser.VersionOption);
         bool prerelease = parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption);
 
         if (!string.IsNullOrEmpty(packageVersion) && prerelease)

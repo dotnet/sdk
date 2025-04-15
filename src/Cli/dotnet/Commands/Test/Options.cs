@@ -7,4 +7,12 @@ internal record TestOptions(string Architecture, bool HasFilterMode, bool IsHelp
 
 internal record PathOptions(string ProjectPath, string SolutionPath, string DirectoryPath);
 
-internal record BuildOptions(PathOptions PathOptions, bool HasNoRestore, bool HasNoBuild, VerbosityOptions? Verbosity, bool NoLaunchProfile, int DegreeOfParallelism, List<string> UnmatchedTokens, IEnumerable<string> MSBuildArgs);
+internal record BuildOptions(
+    PathOptions PathOptions,
+    bool HasNoRestore,
+    bool HasNoBuild,
+    VerbosityOptions? Verbosity,
+    bool NoLaunchProfile,
+    bool NoLaunchProfileArguments,
+    int DegreeOfParallelism, List<string> UnmatchedTokens,
+    IEnumerable<string> MSBuildArgs);

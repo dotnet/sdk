@@ -31,7 +31,7 @@
 
 # Area-Format
 /src/Cli/dotnet/commands/dotnet-format @sharwell @arunchndr
-/test/dotnet-format.Tests @sharwell @arunchndr
+/test/dotnet-format.UnitTests @sharwell @arunchndr
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
@@ -50,7 +50,7 @@
 /src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-testing-admin
 /test/dotnet-test.Tests @dotnet/dotnet-testing-admin
 /test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
-/test/dotnet-new.Tests @dotnet/dotnet-testing-admin
+/test/dotnet-new.IntegrationTests @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
 /template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
@@ -58,7 +58,7 @@
 # Area-Templates
 /src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
 /src/Cli/Microsoft.TemplateEngine.Cli @dotnet/templating-engine-maintainers
-/test/dotnet-new.Tests @dotnet/templating-engine-maintainers
+/test/dotnet-new.IntegrationTests @dotnet/templating-engine-maintainers
 /test/Microsoft.TemplateEngine.* @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
 
@@ -102,7 +102,7 @@
 
 # dotnet-format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.Tests @dotnet/roslyn-ide
+/test/dotnet-format.UnitTests @dotnet/roslyn-ide
 
 # Area: VMR & SourceBuild
 /.devcontainer/ @dotnet/source-build @dotnet/product-construction

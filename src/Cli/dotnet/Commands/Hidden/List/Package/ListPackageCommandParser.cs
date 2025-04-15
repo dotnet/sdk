@@ -33,6 +33,7 @@ internal static class ListPackageCommandParser
         command.Options.Add(PackageListCommandParser.InteractiveOption);
         command.Options.Add(PackageListCommandParser.FormatOption);
         command.Options.Add(PackageListCommandParser.OutputVersionOption);
+        command.Options.Add(PackageListCommandParser.NoRestore);
 
         command.SetAction((parseResult) => new PackageListCommand(parseResult).Execute());
 

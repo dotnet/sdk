@@ -81,7 +81,7 @@ stages:
   - job: ValidateInstallers_Linux_arm64
     displayName: Validate Installers - Linux arm64
     pool: ${{ parameters.pool_LinuxArm64 }}
-    timeoutInMinutes: 30
+    timeoutInMinutes: 60
     steps:
     - template: ../steps/vmr-validate-installers.yml
       parameters:

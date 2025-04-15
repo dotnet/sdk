@@ -1,0 +1,24 @@
+From 479ec304ff25b58728f6b3ec8cd33a604f953ec1 Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Sat, 12 Apr 2025 10:08:34 +0200
+Subject: [PATCH] Resolve NU1510 as System.Net.ServerSentEvents is inbox now
+
+Backport: https://github.com/dotnet/aspnetcore/pull/61467
+
+---
+ .../src/Microsoft.AspNetCore.Http.Connections.Client.csproj     | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj b/src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj
+index 7c9977be80e2..4086df48687e 100644
+--- a/src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj
++++ b/src/SignalR/clients/csharp/Http.Connections.Client/src/Microsoft.AspNetCore.Http.Connections.Client.csproj
+@@ -25,7 +25,7 @@
+     <Reference Include="Microsoft.AspNetCore.Http.Connections.Common" />
+     <Reference Include="Microsoft.Extensions.Logging.Abstractions" />
+     <Reference Include="Microsoft.Extensions.Options" />
+-    <Reference Include="System.Net.ServerSentEvents" />
++    <Reference Include="System.Net.ServerSentEvents" Condition="'$(TargetFramework)' != '$(DefaultNetCoreTargetFramework)'" />
+   </ItemGroup>
+ 
+   <ItemGroup Condition="'$(TargetFramework)' == '$(DefaultNetFxTargetFramework)' OR '$(MSBuildRestoreSessionId)' == ''">

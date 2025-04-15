@@ -486,6 +486,13 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdOutputVersionDescription" xml:space="preserve">
     <value>Specifies the version of machine-readable output. Requires the '--format json' option.</value>
   </data>
+  <data name="Error_restore" xml:space="preserve">
+    <value>Restore failed. Run `dotnet restore` for more details on the issue.</value>
+    <comment>{Locked="dotnet restore"}</comment>
+  </data>
+  <data name="CmdNoRestoreDescription" xml:space="preserve">
+    <value>Do not restore before running the command.</value>
+  </data>
   <data name="CmdPackage" xml:space="preserve">
     <value>PACKAGE_NAME</value>
   </data>

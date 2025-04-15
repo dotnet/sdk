@@ -4,9 +4,12 @@
     <!-- Use the repo root build script -->
     <BuildScript>$(ProjectDirectory)build$(ShellExtension)</BuildScript>
 
+    <!-- Pass TargetArchitecture in as a CLI switch, instead of an msbuild property. -->
+    <SkipSetTargetArchitecture>true</SkipSetTargetArchitecture>
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</BuildArgs>
+
     <BuildArgs>$(BuildArgs) /p:PackageRid=$(TargetRid)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:PlatformName=$(TargetArchitecture)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:ForceBuildManifestOnly=true</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>

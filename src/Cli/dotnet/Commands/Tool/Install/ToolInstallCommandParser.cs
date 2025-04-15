@@ -2,19 +2,17 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
-    {
-        HelpName = CliCommandStrings.ToolInstallPackageIdArgumentName,
-        Description = CliCommandStrings.ToolInstallPackageIdArgumentDescription
-    };
+    public static readonly CliArgument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
 
     public static readonly CliOption<string> VersionOption = new("--version")
     {
@@ -92,7 +90,7 @@ internal static class ToolInstallCommandParser
     private static CliCommand ConstructCommand()
     {
         CliCommand command = new("install", CliCommandStrings.ToolInstallCommandDescription);
-        command.Arguments.Add(PackageIdArgument);
+        command.Arguments.Add(PackageIdentityArgument);
 
         AddCommandOptions(command);
 
