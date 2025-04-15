@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
-using Microsoft.DotNet.Cli.Commands.Tool.Runx;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 using Microsoft.DotNet.Cli.Commands.Tool.Update;
@@ -36,7 +35,6 @@ internal static class ToolCommandParser
         command.Subcommands.Add(ToolRunCommandParser.GetCommand());
         command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
         command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
-        command.Subcommands.Add(ToolRunxCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

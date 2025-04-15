@@ -24,6 +24,8 @@ internal static class ToolRunCommandParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly CliOption<bool> FromSourceOption = new("--from-source");
+
     private static readonly CliCommand Command = ConstructCommand();
 
     public static CliCommand GetCommand()
@@ -38,6 +40,7 @@ internal static class ToolRunCommandParser
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
         command.Options.Add(RollForwardOption);
+        command.Options.Add(FromSourceOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 
