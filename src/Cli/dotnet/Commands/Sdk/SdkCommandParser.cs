@@ -11,14 +11,14 @@ internal static class SdkCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-sdk";
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         DocumentedCommand command = new("sdk", DocsLink, CliCommandStrings.SdkAppFullName);
         command.Subcommands.Add(SdkCheckCommandParser.GetCommand());

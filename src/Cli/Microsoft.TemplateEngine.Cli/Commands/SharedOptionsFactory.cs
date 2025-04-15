@@ -9,40 +9,40 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 {
     public static class SharedOptionsFactory
     {
-        public static CliOption AsHidden(this CliOption o)
+        public static Option AsHidden(this Option o)
         {
             o.Hidden = true;
             return o;
         }
 
-        public static CliOption<T> AsHidden<T>(this CliOption<T> o)
+        public static Option<T> AsHidden<T>(this Option<T> o)
         {
             o.Hidden = true;
             return o;
         }
 
-        public static CliOption<T> WithDescription<T>(this CliOption<T> o, string description)
+        public static Option<T> WithDescription<T>(this Option<T> o, string description)
         {
             o.Description = description;
             return o;
         }
 
-        public static CliOption<T> DisableAllowMultipleArgumentsPerToken<T>(this CliOption<T> o)
+        public static Option<T> DisableAllowMultipleArgumentsPerToken<T>(this Option<T> o)
         {
             o.AllowMultipleArgumentsPerToken = false;
             return o;
         }
 
-        internal static CliOption<bool> CreateInteractiveOption()
+        internal static Option<bool> CreateInteractiveOption()
         {
-            return new CliOption<bool>("--interactive")
+            return new Option<bool>("--interactive")
             {
                 Arity = new ArgumentArity(0, 1),
                 Description = SymbolStrings.Option_Interactive
             };
         }
 
-        internal static CliOption<string[]> CreateAddSourceOption()
+        internal static Option<string[]> CreateAddSourceOption()
         {
             return new("--add-source", "--nuget-source")
             {
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<bool> CreateForceOption()
+        internal static Option<bool> CreateForceOption()
         {
             return new("--force")
             {
@@ -62,7 +62,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreateAuthorOption()
+        internal static Option<string> CreateAuthorOption()
         {
             return new("--author")
             {
@@ -71,7 +71,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreateBaselineOption()
+        internal static Option<string> CreateBaselineOption()
         {
             return new("--baseline")
             {
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreateLanguageOption()
+        internal static Option<string> CreateLanguageOption()
         {
             return new("--language", "-lang")
             {
@@ -90,7 +90,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreateTypeOption()
+        internal static Option<string> CreateTypeOption()
         {
             return new("--type")
             {
@@ -99,7 +99,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreateTagOption()
+        internal static Option<string> CreateTagOption()
         {
             return new("--tag")
             {
@@ -108,7 +108,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string> CreatePackageOption()
+        internal static Option<string> CreatePackageOption()
         {
             return new("--package")
             {
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<bool> CreateColumnsAllOption()
+        internal static Option<bool> CreateColumnsAllOption()
         {
             return new("--columns-all")
             {
@@ -126,9 +126,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             };
         }
 
-        internal static CliOption<string[]> CreateColumnsOption()
+        internal static Option<string[]> CreateColumnsOption()
         {
-            CliOption<string[]> option = new("--columns")
+            Option<string[]> option = new("--columns")
             {
                 Arity = new ArgumentArity(1, 4),
                 Description = SymbolStrings.Option_Columns,

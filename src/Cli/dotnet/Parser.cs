@@ -42,20 +42,21 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
 
 public static class Parser
 {
-    public static readonly CliRootCommand RootCommand = new()
+    public static readonly RootCommand RootCommand = new()
     {
         Directives = { new DiagramDirective(), new SuggestDirective(), new EnvironmentVariablesDirective() }
     };
 
-    public static readonly CliCommand InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
+    public static readonly Command InstallSuccessCommand = InternalReportInstallSuccessCommandParser.GetCommand();
 
     // Subcommands
-    public static readonly CliCommand[] Subcommands =
+    public static readonly Command[] Subcommands =
     [
         AddCommandParser.GetCommand(),
         BuildCommandParser.GetCommand(),
@@ -89,36 +90,36 @@ public static class Parser
         new System.CommandLine.StaticCompletions.CompletionsCommand()
     ];
 
-    public static readonly CliOption<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
+    public static readonly Option<bool> DiagOption = CommonOptionsFactory.CreateDiagnosticsOption(recursive: false);
 
-    public static readonly CliOption<bool> VersionOption = new("--version")
+    public static readonly Option<bool> VersionOption = new("--version")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly CliOption<bool> InfoOption = new("--info")
+    public static readonly Option<bool> InfoOption = new("--info")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly CliOption<bool> ListSdksOption = new("--list-sdks")
+    public static readonly Option<bool> ListSdksOption = new("--list-sdks")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly CliOption<bool> ListRuntimesOption = new("--list-runtimes")
+    public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
     {
         Arity = ArgumentArity.Zero,
     };
 
     // Argument
-    public static readonly CliArgument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
+    public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-    private static CliCommand ConfigureCommandLine(CliCommand rootCommand)
+    private static Command ConfigureCommandLine(Command rootCommand)
     {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
-            CliOption option = rootCommand.Options[i];
+            Option option = rootCommand.Options[i];
 
             if (option is VersionOption)
             {
@@ -170,7 +171,7 @@ public static class Parser
         return rootCommand;
     }
 
-    public static CliCommand GetBuiltInCommand(string commandName)
+    public static Command GetBuiltInCommand(string commandName)
     {
         return Subcommands
             .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
@@ -206,7 +207,7 @@ public static class Parser
         }
     }
 
-    public static CliConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
+    public static CommandLineConfiguration Instance { get; } = new(ConfigureCommandLine(RootCommand))
     {
         EnableDefaultExceptionHandler = false,
         EnablePosixBundling = false,
@@ -297,8 +298,8 @@ public static class Parser
         public static void additionalOption(HelpContext context)
         {
             List<TwoColumnHelpRow> options = [];
-            HashSet<CliOption> uniqueOptions = [];
-            foreach (CliOption option in context.Command.Options)
+            HashSet<Option> uniqueOptions = [];
+            foreach (Option option in context.Command.Options)
             {
                 if (!option.Hidden && uniqueOptions.Add(option))
                 {
@@ -374,7 +375,7 @@ public static class Parser
             {
                 if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
                 {
-                    CliCommand listCommand = command.Parents.Single() as CliCommand;
+                    Command listCommand = command.Parents.Single() as Command;
 
                     for (int i = 0; i < listCommand.Arguments.Count; i++)
                     {

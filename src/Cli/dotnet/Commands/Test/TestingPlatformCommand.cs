@@ -8,7 +8,7 @@ using Microsoft.TemplateEngine.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
+internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;

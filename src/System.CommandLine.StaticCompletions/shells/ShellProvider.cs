@@ -29,7 +29,7 @@ public interface IShellProvider
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
-    string GenerateCompletions(System.CommandLine.CliCommand command);
+    string GenerateCompletions(System.CommandLine.Command command);
 }
 
 

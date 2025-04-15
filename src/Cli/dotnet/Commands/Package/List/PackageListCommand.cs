@@ -33,8 +33,8 @@ internal class PackageListCommand(
 
         if (!noRestore)
         {
-            ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
-            bool interactive = _parseResult.GetValue((CliOption<bool>)PackageListCommandParser.InteractiveOption);
+            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandParser.InteractiveOption);
             restoreExitCode = RunRestore(projectFile, formatOption, interactive);
         }
 
