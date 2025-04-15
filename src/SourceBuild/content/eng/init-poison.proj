@@ -10,7 +10,7 @@
 
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.MarkAndCatalogPackages" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="PoisonPrebuiltPackages"
-          AfterTargets="Build"
+          BeforeTargets="Build"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)PoisonPrebuiltPackages.complete">
     <PropertyGroup>
@@ -20,13 +20,13 @@
 
     <ItemGroup>
       <PrebuiltPackages Include="$(PrebuiltPackagesPath)**/*.nupkg" />
-      <PrebuiltSourceBuiltPackages Include="$(PrebuiltSourceBuiltPackagesPath)**/*.nupkg" />
+      <PreviouslySourceBuiltPackages Include="$(PreviouslySourceBuiltPackagesPath)**/*.nupkg" />
     </ItemGroup>
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Poisoning existing packages for leak detection." />
 
     <MarkAndCatalogPackages PackagesToMark="@(PrebuiltPackages)" CatalogOutputFilePath="$(PoisonReportDataFile)" MarkerFileName="$(PoisonMarkerFile)" />
-    <MarkAndCatalogPackages PackagesToMark="@(PrebuiltSourceBuiltPackages)" CatalogOutputFilePath="$(SourceBuiltPoisonReportDataFile)" MarkerFileName="$(SourceBuiltPoisonMarkerFile)" />
+    <MarkAndCatalogPackages PackagesToMark="@(PreviouslySourceBuiltPackages)" CatalogOutputFilePath="$(SourceBuiltPoisonReportDataFile)" MarkerFileName="$(SourceBuiltPoisonMarkerFile)" />
 
     <Message Importance="High" Text="[$([System.DateTime]::Now.ToString('HH:mm:ss.ff'))] Done poisoning." />
 

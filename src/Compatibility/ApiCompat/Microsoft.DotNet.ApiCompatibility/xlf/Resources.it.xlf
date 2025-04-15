@@ -122,9 +122,9 @@
         <target state="translated">Impossibile rimuovere il vincolo '{0}' nel parametro di tipo '{1}' di '{2}'.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">Non è possibile rimuovere la parola chiave virtuale dal membro '{0}'.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">L'indice {0} deve essere compreso nell'intervallo compreso tra zero e {1} incluso.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Non è stato possibile trovare un assembly corrispondente: '{0}' in nessuna delle directory di ricerca.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

@@ -19,6 +19,11 @@ pr:
     - release/*.0.2xx
     - release/*.0.3xx
     - release/*.0.4xx
+  paths:
+    exclude:
+    - documentation/*
+    - README.md
+    - CODEOWNERS
 
 parameters:
 - name: vmrBranch
@@ -33,6 +38,13 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
+
+- ${{ if eq(variables['System.TeamProject'], 'public') }}:
+  - name: skipComponentGovernanceDetection  # we run CG on internal builds only
+    value: true
+
+  - name: Codeql.Enabled  # we run CodeQL on internal builds only
+    value: false
 
 - ${{ if ne(parameters.vmrBranch, ' ') }}:
   - name: VmrBranch

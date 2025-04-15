@@ -15,11 +15,11 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string ProjectFile { get; }
 
-        public TestAsset TestAsset { get; }
+        public TestAsset? TestAsset { get; }
 
         public string FullPathProjectFile => Path.Combine(ProjectRootPath, ProjectFile);
 
-        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string relativePathToProject = null)
+        public MSBuildCommand(ITestOutputHelper log, string target, string projectRootPath, string? relativePathToProject = null)
             : base(log)
         {
             Target = target;
@@ -29,13 +29,13 @@ namespace Microsoft.NET.TestFramework.Commands
             ProjectFile = FindProjectFile(ref _projectRootPath, relativePathToProject);
         }
 
-        public MSBuildCommand(TestAsset testAsset, string target, string relativePathToProject = null)
+        public MSBuildCommand(TestAsset testAsset, string target, string? relativePathToProject = null)
             : this(testAsset.Log, target, testAsset.TestRoot, relativePathToProject ?? testAsset.TestProject?.Name)
         {
             TestAsset = testAsset;
         }
 
-        internal static string FindProjectFile(ref string projectRootPath, string relativePathToProject)
+        internal static string FindProjectFile(ref string projectRootPath, string? relativePathToProject)
         {
             if (File.Exists(projectRootPath) && string.IsNullOrEmpty(relativePathToProject))
             {
@@ -68,7 +68,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return buildProjectFiles[0];
         }
 
-        public virtual DirectoryInfo GetOutputDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null, string platform = null)
+        public virtual DirectoryInfo GetOutputDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null, string? platform = null)
         {
             if (TestAsset != null)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.NET.TestFramework.Commands
             return new DirectoryInfo(output);
         }
 
-        public virtual DirectoryInfo GetIntermediateDirectory(string targetFramework = null, string configuration = "Debug", string runtimeIdentifier = null)
+        public virtual DirectoryInfo GetIntermediateDirectory(string? targetFramework = null, string configuration = "Debug", string? runtimeIdentifier = null)
         {
             if (TestAsset != null)
             {
@@ -135,8 +135,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
             var command = base.Execute(args);
 
-            var error = command.StdErr.ToString();
-            var output = command.StdOut.ToString();
+            var error = command.StdErr?.ToString();
+            var output = command.StdOut?.ToString();
             if ((!String.IsNullOrEmpty(error) && error.Contains("NU3003")) || (!String.IsNullOrEmpty(output) && output.Contains("NU3003")))
             {
                 args = args.Concat(new[] { "-v:diag" });

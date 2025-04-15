@@ -1,0 +1,106 @@
+<Project>
+
+  <Target Name="LayoutBundledComponents">
+    <!-- Remove everything from the publish directory so we don't have left over items from previous builds -->
+    <RemoveDir Directories="$(RedistInstallerLayoutPath)" />
+    <MakeDir Directories="$(RedistInstallerLayoutPath)" />
+
+    <ExtractArchiveToDirectory SourceArchive="%(BundledLayoutComponent.DownloadDestination)"
+                               DestinationDirectory="$(RedistInstallerLayoutPath)/%(BundledLayoutComponent.RelativeLayoutPath)"
+                               DirectoriesToCopy="%(BundledLayoutComponent.DirectoriesToCopy)" />
+
+    <ItemGroup>
+      <!-- Use lowercase package name in package path -->
+      <BundledLayoutPackage>
+        <LoweredPackageName>$([MSBuild]::ValueOrDefault('%(BundledLayoutPackage.PackageName)', '').ToLowerInvariant())</LoweredPackageName>
+      </BundledLayoutPackage>
+
+      <!-- Remove files from the root of the package, as these are either files NuGet writes, or not necessary -->
+      <BundledLayoutPackageDownloadFiles Include="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\**\*.*"
+                                         Exclude="$(NuGetPackageRoot)\%(BundledLayoutPackage.LoweredPackageName)\%(BundledLayoutPackage.PackageVersion)\*.*"
+                                         Condition="%(BundledLayoutPackage.SkipExtractPackage) != 'true'">
+        <RelativeLayoutPath>%(BundledLayoutPackage.RelativeLayoutPath)</RelativeLayoutPath>
+        <LayoutPackageDescription>%(BundledLayoutPackage.Identity)</LayoutPackageDescription>
+      </BundledLayoutPackageDownloadFiles>
+
+      <!-- Set destination path in layout -->
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>%(BundledLayoutPackageDownloadFiles.RecursiveDir)%(BundledLayoutPackageDownloadFiles.Filename)%(BundledLayoutPackageDownloadFiles.Extension)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$(RedistInstallerLayoutPath)%(BundledLayoutPackageDownloadFiles.RelativeLayoutPath)/%(BundledLayoutPackageDownloadFiles.DestinationPath)</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+      <BundledLayoutPackageDownloadFiles>
+        <DestinationPath>$([MSBuild]::NormalizePath(%(BundledLayoutPackageDownloadFiles.DestinationPath)))</DestinationPath>
+      </BundledLayoutPackageDownloadFiles>
+
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledLayoutPackageDownloadFiles)" />
+    </ItemGroup>
+
+    <!-- BundledLayoutPackage with SkipExtractPackage=true metadata -->
+    <ItemGroup Condition="'@(BundledLayoutPackage->AnyHaveMetadataValue('SkipExtractPackage', 'true'))' == 'true'">
+      <BundledUncompressedLayoutPackage Include="@(BundledLayoutPackage->WithMetadataValue('SkipExtractPackage', 'true'))" />
+      <BundledUncompressedLayoutPackageFile Include="$(NuGetPackageRoot)\%(BundledUncompressedLayoutPackage.LoweredPackageName)\%(BundledUncompressedLayoutPackage.PackageVersion)\%(BundledUncompressedLayoutPackage.LoweredPackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg"
+                                            DestinationPath="$(RedistInstallerLayoutPath)%(BundledUncompressedLayoutPackage.RelativeLayoutPath)\%(BundledUncompressedLayoutPackage.PackageName).%(BundledUncompressedLayoutPackage.PackageVersion).nupkg" />
+      
+      <BundledLayoutPackageDownloadFilesWithDestination Include="@(BundledUncompressedLayoutPackageFile)" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(BundledLayoutPackageDownloadFilesWithDestination)"
+          DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
+          SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <SdkOutputFile Include="$(OutputPath)**\*" />
+      <SdkOutputFileDestination Include="@(SdkOutputFile->'$(RedistInstallerLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SdkOutputFile)" DestinationFiles="@(SdkOutputFileDestination)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="LayoutWorkloadUserLocalMarker"
+          Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <WriteLinesToFile File="$(RedistInstallerLayoutPath)metadata/workloads/$(CliProductBandVersion)00/userlocal"
+                      Overwrite="true" />
+  </Target>
+
+  <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
+  <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
+                                                                 Condition="'$(BundleRuntimePacks)' == 'true' and !$([MSBuild]::IsOSPlatform('WINDOWS'))">
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+    <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
+  </Target>
+
+  <!-- Anything that goes outside of the sdk/$(Version) directory. -->
+  <Target Name="GenerateInstallerLayout"
+          DependsOnTargets="GenerateSdkLayout;
+                            DownloadBundledComponents;
+                            LayoutBundledComponents;
+                            LayoutTemplates;
+                            LayoutManifests;
+                            LayoutBaselineWorkloadSet;
+                            LayoutWorkloadUserLocalMarker;
+                            CrossgenLayout;
+                            ReplaceBundledRuntimePackFilesWithSymbolicLinks"
+          AfterTargets="Build" />
+
+  <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
+       necessary for the msi/pkg to install correctly and put the content under that sub path. -->
+  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateSdkLayout">
+    <PropertyGroup>
+      <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer', '$(Configuration)'))</IntermediateSdkInstallerOutputPath>
+    </PropertyGroup>
+
+    <!-- Create "SDK Internal" layout. -->
+    <ItemGroup>
+      <SdkOutputFile Include="$(OutputPath)**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>

@@ -11,6 +11,12 @@
 *.xlf linguist-generated=true
 
 ###############################################################################
+# Set default behavior to:
+#   don't collapse these files in PRs
+###############################################################################
+**/build/** linguist-generated=false
+
+###############################################################################
 # Set file behavior to:
 #   treat as text
 ###############################################################################
@@ -61,3 +67,5 @@
 *.verified.txt text eol=lf working-tree-encoding=UTF-8
 *.verified.xml text eol=lf working-tree-encoding=UTF-8
 *.verified.json text eol=lf working-tree-encoding=UTF-8
+
+src/SourceBuild/patches/**/*.patch    text    eol=lf

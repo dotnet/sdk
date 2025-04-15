@@ -3,12 +3,11 @@
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal interface IProjectRestorer
 {
-    internal interface IProjectRestorer
-    {
-        void Restore(FilePath project,
-            PackageLocation packageLocation,
-            string verbosity = null);
-    }
+    void Restore(FilePath project,
+        PackageLocation packageLocation,
+        string verbosity = null);
 }
