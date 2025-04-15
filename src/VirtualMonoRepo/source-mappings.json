@@ -53,7 +53,9 @@
             "exclude": [
                 "src/Aspire.Dashboard/**/*",
                 "samples/**/*"
-            ]
+            ],
+            // Aspire no longer flows/changes, we only keep it for the workload manifest generation
+            "disableSynchronization": true
         },
         {
             "name": "aspnetcore",
@@ -115,6 +117,7 @@
         {
             "name": "scenario-tests",
             "defaultRemote": "https://github.com/dotnet/scenario-tests",
+            // Migrated onto the flat flow
             "disableSynchronization": true
         },
         {
@@ -148,6 +151,7 @@
         {
             "name": "sourcelink",
             "defaultRemote": "https://github.com/dotnet/sourcelink",
+            // Migrated onto the flat flow
             "disableSynchronization": true
         },
         {

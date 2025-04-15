@@ -2,8 +2,8 @@
   "Version": 1,
   "Hash": "__hash__",
   "Source": "blazorhosted",
-  "BasePath": "_content/blazorhosted",
-  "Mode": "Default",
+  "BasePath": "/",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [
     {
@@ -89,29 +89,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${RestorePath}\\microsoft.aspnetcore.components.webassembly\\${PackageVersion}\\build\\${Tfm}\\blazor.webassembly.js",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.js",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Primary",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "",
-      "AssetTraitName": "WasmResource",
-      "AssetTraitValue": "native",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${RestorePath}\\microsoft.netcore.app.runtime.mono.browser-wasm\\${RuntimeVersion}\\runtimes\\browser-wasm\\native\\dotnet.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -296,29 +273,6 @@
       "CopyToOutputDirectory": "PreserveNewest",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\blazor.webassembly.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.js.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -3405,52 +3359,6 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.br",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.boot.js.br",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.boot.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "br",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\dotnet.boot.js.br",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.gz",
-      "SourceId": "blazorwasm",
-      "SourceType": "Project",
-      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "/",
-      "RelativePath": "_framework/dotnet.boot.js.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.boot.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\dotnet.boot.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
       "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
@@ -3462,14 +3370,37 @@
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.js",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "Fingerprint": "__fingerprint__",
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\_framework\\dotnet.js.br",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\dotnet.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.gz",
+      "SourceId": "blazorwasm",
+      "SourceType": "Project",
+      "ContentRoot": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "/",
+      "RelativePath": "_framework/dotnet.js.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\_framework\\dotnet.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -3888,12 +3819,12 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.boot.js",
+      "Identity": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.js",
       "SourceId": "blazorwasm",
       "SourceType": "Project",
       "ContentRoot": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\publish\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "_framework/dotnet.boot.js",
+      "RelativePath": "_framework/dotnet.js",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -3906,7 +3837,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.boot.js",
+      "OriginalItemSpec": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.js",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -5712,43 +5643,6 @@
       ]
     },
     {
-      "Route": "_framework/dotnet.js",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.js",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/dotnet.native.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\bin\\Debug\\${Tfm}\\wwwroot\\_framework\\dotnet.native.js",
       "Selectors": [],
@@ -6118,106 +6012,6 @@
     {
       "Route": "_framework/blazor.webassembly.js",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.webassembly.js.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/dotnet.js.gz",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/dotnet.js",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\_framework\\dotnet.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -19787,206 +19581,6 @@
       ]
     },
     {
-      "Route": "_framework/dotnet.boot.js.br",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.br",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/dotnet.boot.js",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.br",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "br",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "br"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/dotnet.boot.js.gz",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "_framework/dotnet.boot.js",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.boot.js.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Accept-Ranges",
-          "Value": "bytes"
-        },
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Content-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
       "Route": "_framework/dotnet.js.br",
       "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.br",
       "Selectors": [],
@@ -20053,6 +19647,106 @@
         {
           "Name": "Content-Encoding",
           "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/dotnet.js.gz",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Content-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "_framework/dotnet.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\dotnet.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
         },
         {
           "Name": "Content-Length",
@@ -22003,8 +21697,8 @@
       ]
     },
     {
-      "Route": "_framework/dotnet.boot.js",
-      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.boot.js",
+      "Route": "_framework/dotnet.js",
+      "AssetFile": "${ProjectPath}\\blazorwasm\\obj\\Debug\\${Tfm}\\publish.dotnet.js",
       "Selectors": [],
       "ResponseHeaders": [
         {

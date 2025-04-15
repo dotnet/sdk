@@ -6,6 +6,8 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 
 namespace Microsoft.DotNet.Cli.Commands.Package.List;
 
@@ -25,7 +27,71 @@ internal class PackageListCommand(
 
     public override int Execute()
     {
-        return NuGetCommand.Run(TransformArgs());
+        string projectFile = GetProjectOrSolution();
+        bool noRestore = _parseResult.HasOption(PackageListCommandParser.NoRestore);
+        int restoreExitCode = 0;
+
+        if (!noRestore)
+        {
+            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandParser.InteractiveOption);
+            restoreExitCode = RunRestore(projectFile, formatOption, interactive);
+        }
+
+        return restoreExitCode == 0
+            ? NuGetCommand.Run(TransformArgs(projectFile))
+            : restoreExitCode;
+    }
+
+    private int RunRestore(string projectOrSolution, ReportOutputFormat formatOption, bool interactive)
+    {
+        List<string> args = ["-target:Restore", projectOrSolution];
+
+        if (formatOption == ReportOutputFormat.json)
+        {
+            args.Add("-noConsoleLogger");
+        }
+        else
+        {
+            args.Add("-consoleLoggerParameters:NoSummary");
+            args.Add("-verbosity:minimal");
+        }
+
+        args.Add($"-interactive:{interactive.ToString().ToLower()}");
+
+        MSBuildForwardingApp restoringCommand = new MSBuildForwardingApp(argsToForward: args);
+
+        int exitCode = 0;
+
+        try
+        {
+            exitCode = restoringCommand.Execute();
+        }
+        catch (Exception)
+        {
+            exitCode = 1;
+        }
+
+        if (exitCode != 0)
+        {
+            if (formatOption == ReportOutputFormat.json)
+            {
+                string jsonError = $$"""
+{
+   "version": 1,
+   "problems": [
+      {
+         "text": "{{String.Format(CultureInfo.CurrentCulture, CliCommandStrings.Error_restore)}}",
+         "level": "error"
+      }
+   ]
+}
+""";
+                Console.WriteLine(jsonError);
+            }
+        }
+
+        return exitCode;
     }
 
     internal static void EnforceOptionRules(ParseResult parseResult)
@@ -40,13 +106,13 @@ internal class PackageListCommand(
         }
     }
 
-    private string[] TransformArgs()
+    private string[] TransformArgs(string projectOrSolution)
     {
         var args = new List<string>
         {
             "package",
             "list",
-            GetProjectOrSolution()
+            projectOrSolution
         };
 
         args.AddRange(_parseResult.OptionValuesToBeForwarded(PackageListCommandParser.GetCommand()));
