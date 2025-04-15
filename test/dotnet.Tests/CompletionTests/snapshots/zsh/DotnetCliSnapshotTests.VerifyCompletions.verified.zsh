@@ -1127,6 +1127,7 @@ _testhost() {
                                     (run)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
+                                            '--from-source[Executes a tool from source without permanently installing it. ]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':commandName -- The command name of the tool to run.: ' \

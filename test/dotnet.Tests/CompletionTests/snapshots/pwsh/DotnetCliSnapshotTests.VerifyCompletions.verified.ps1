@@ -1057,6 +1057,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;tool;run' {
             $staticCompletions = @(
                 [CompletionResult]::new('--allow-roll-forward', '--allow-roll-forward', [CompletionResultType]::ParameterName, "Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn`'t installed.")
+                [CompletionResult]::new('--from-source', '--from-source', [CompletionResultType]::ParameterName, "Executes a tool from source without permanently installing it. ")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
