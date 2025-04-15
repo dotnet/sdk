@@ -144,7 +144,7 @@
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <BuildArgs>$(BuildArgs) /p:SourceBuiltSymbolsDir=$(IntermediateSymbolsRepoDir)</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:DotNetBuildSourceOnly=true</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PrebuiltSourceBuiltPackagesPath)"</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PreviouslySourceBuiltNupkgCacheDir="$(PreviouslySourceBuiltPackagesPath)"</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:ReferencePackageNupkgCacheDir="$(ReferencePackagesDir)"</BuildArgs>
   </PropertyGroup>
 

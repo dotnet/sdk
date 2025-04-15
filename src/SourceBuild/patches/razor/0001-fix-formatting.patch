@@ -1,0 +1,36 @@
+From 270f4dfe3fa70b85331f91048cfa0732fcbabe2e Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Mon, 14 Apr 2025 16:38:10 +0200
+Subject: [PATCH] Fix two IDE0055 errors
+
+Backport: https://github.com/dotnet/razor/pull/11738
+
+---
+ .../Options/LocDescriptionAttribute.cs                           | 1 +
+ .../Options/LocDisplayNameAttribute.cs                           | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDescriptionAttribute.cs b/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDescriptionAttribute.cs
+index d77a552a0f4..3d8fe3c079f 100644
+--- a/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDescriptionAttribute.cs
++++ b/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDescriptionAttribute.cs
+@@ -4,6 +4,7 @@
+ using System.ComponentModel;
+ 
+ namespace Microsoft.VisualStudio.RazorExtension.Options;
++
+ internal class LocDescriptionAttribute : DescriptionAttribute
+ {
+     private readonly string _resourceKey;
+diff --git a/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDisplayNameAttribute.cs b/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDisplayNameAttribute.cs
+index 32f2ef7149b..77d9ebd206d 100644
+--- a/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDisplayNameAttribute.cs
++++ b/src/Razor/src/Microsoft.VisualStudio.RazorExtension/Options/LocDisplayNameAttribute.cs
+@@ -4,6 +4,7 @@
+ using System.ComponentModel;
+ 
+ namespace Microsoft.VisualStudio.RazorExtension.Options;
++
+ internal class LocDisplayNameAttribute : DisplayNameAttribute
+ {
+     private string _resourceKey;
