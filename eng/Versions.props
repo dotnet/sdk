@@ -135,18 +135,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.13.2-rc.1</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.13.2-rc.1</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.13.2-rc.1</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.13.2-rc.1</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.13.2-rc.1</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.13.2-rc.1</NuGetProjectModelPackageVersion>
+    <NuGetBuildTasksPackageVersion>6.13.2</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>6.13.2</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>6.13.2</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>6.13.2</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>6.13.2</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>6.13.2</NuGetProjectModelPackageVersion>
     <MicrosoftBuildNuGetSdkResolverPackageVersion>6.13.2-rc.1</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.13.2-rc.1</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.13.2-rc.1</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.13.2-rc.1</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.13.2-rc.1</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.13.2-rc.1</NuGetVersioningPackageVersion>
+    <NuGetCommonPackageVersion>6.13.2</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>6.13.2</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>6.13.2</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>6.13.2</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>6.13.2</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
@@ -191,7 +191,7 @@
     <MicrosoftTemplateEngineUtilsPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineUtilsPackageVersion>
     <MicrosoftTemplateSearchCommonPackageVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateSearchCommonPackageVersion>
     <!-- test dependencies -->
-    <MicrosoftTemplateEngineMocksPackageVersion>9.0.204-servicing.25209.4</MicrosoftTemplateEngineMocksPackageVersion>
+    <MicrosoftTemplateEngineMocksPackageVersion>9.0.204-servicing.25215.4</MicrosoftTemplateEngineMocksPackageVersion>
     <MicrosoftTemplateEngineTestHelperPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateEngineTestHelperPackageVersion>
     <MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>$(MicrosoftTemplateEngineAbstractionsPackageVersion)</MicrosoftTemplateEngineAuthoringTemplateVerifierVersion>
     <MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>$(MicrosoftTemplateEngineMocksPackageVersion)</MicrosoftTemplateSearchTemplateDiscoveryPackageVersion>
