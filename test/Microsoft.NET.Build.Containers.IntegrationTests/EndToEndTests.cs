@@ -496,7 +496,7 @@ public class EndToEndTests : IDisposable
         CommandResult commandResult = new DotnetCommand(
             _testOutput,
             "publish",
-            "/p:PublishProfile=DefaultContainer",
+            "/t:PublishContainer",
             "/p:RuntimeIdentifier=linux-x64",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRegistry={DockerRegistryManager.LocalRegistry}",
@@ -525,20 +525,20 @@ public class EndToEndTests : IDisposable
         var containerName = $"test-container-1-{projectType}-{addPackageReference}";
         CommandResult processResult = ContainerCli.RunCommand(
             _testOutput,
-            "--rm",
-            "--name",
-            containerName,
-            "-P",
-            "--detach",
-            $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}")
+            [
+                "--rm",
+                "--name",
+                containerName,
+                "-P",
+                ..projectType != "console" ? ["--detach"] : new string[]{},
+                $"{DockerRegistryManager.LocalRegistry}/{imageName}:{imageTag}"
+            ])
         .Execute();
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
 
         bool everSucceeded = false;
-
-
 
         if (projectType == "webapi")
         {
@@ -578,14 +578,13 @@ public class EndToEndTests : IDisposable
             Assert.True(everSucceeded, $"{appUri}weatherforecast never responded.");
 
             ContainerCli.StopCommand(_testOutput, appContainerId)
-           .Execute()
-           .Should().Pass();
+            .Execute()
+            .Should().Pass();
         }
         else if (projectType == "worker")
         {
             // the worker template needs a second to start up and emit the logs we are looking for
             await Task.Delay(TimeSpan.FromSeconds(5)).ConfigureAwait(false);
-            var containerLogs =
             ContainerCli.LogsCommand(_testOutput, appContainerId)
                 .Execute()
                 .Should().Pass()
@@ -594,10 +593,11 @@ public class EndToEndTests : IDisposable
             ContainerCli.StopCommand(_testOutput, appContainerId)
             .Execute()
             .Should().Pass();
+
         }
-        else
+        else if (projectType == "console")
         {
-            throw new NotImplementedException("Unknown project type");
+            processResult.Should().Pass().And.HaveStdOutContaining("Hello, World!");
         }
 
         newProjectDir.Delete(true);
@@ -1004,7 +1004,7 @@ public class EndToEndTests : IDisposable
             .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'.");
-        
+
         // Check that the containers can be run
         // First pull the image from the registry for each platform
         ContainerCli.PullCommand(
