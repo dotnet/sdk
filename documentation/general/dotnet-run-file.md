@@ -23,7 +23,8 @@ Previous file-based approaches like scripting are a variant of C# and as such ha
 
 ## Implicit project file
 
-The [guiding principle](#guiding-principle) implies that we can think of file-based programs as having an implicit project file.
+The [guiding principle](#guiding-principle) implies that we can think of file-based programs as having an implicit project file
+(also known as a virtual project file because it exists only in memory unless the file-based program is converted to a project-based program).
 
 The implicit project file is the default project that would be created by running `dotnet new console`.
 This means that the behavior of `dotnet run file.cs` can change between SDK versions if the `dotnet new console` template changes.
