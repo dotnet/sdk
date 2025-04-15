@@ -26,7 +26,11 @@ internal static class ToolRunCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> FromSourceOption = new("--from-source");
+    public static readonly Option<bool> FromSourceOption = new("--from-source")
+    {
+        Description = CliCommandStrings.ToolRunFromSourceOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
 
     private static readonly Command Command = ConstructCommand();
 

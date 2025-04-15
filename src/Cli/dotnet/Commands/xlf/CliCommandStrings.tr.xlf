@@ -3137,6 +3137,11 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
         <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRunFromSourceOptionDescription">
+        <source>Executes a tool from source without permanently installing it. </source>
+        <target state="new">Executes a tool from source without permanently installing it. </target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in nuget.org</source>
         <target state="new">Search dotnet tools in nuget.org</target>
