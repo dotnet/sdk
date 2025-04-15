@@ -52,13 +52,14 @@ internal class ToolPackageDownloader : IToolPackageDownloader
     public ToolPackageDownloader(
         IToolPackageStore store,
         string runtimeJsonPathForTests = null,
-        string currentWorkingDirectory = null
+        string currentWorkingDirectory = null,
+        string localToolDownloadDir = null
     )
     {
         _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
         _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
         ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
-        _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
+        _localToolDownloadDir = new DirectoryPath(localToolDownloadDir ?? SettingsUtility.GetGlobalPackagesFolder(settings));
         _currentWorkingDirectory = currentWorkingDirectory;
         
         _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
