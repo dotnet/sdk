@@ -1,19 +1,16 @@
 <Project InitialTargets="DiscoverArtifacts">
+  <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
+
   <PropertyGroup>
     <EnableDefaultArtifacts>false</EnableDefaultArtifacts>
     <PushToLocalStorage>true</PushToLocalStorage>
     <PreserveRepoOrigin>true</PreserveRepoOrigin>
-    <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
     <ArtifactsStagingDir Condition="'$(ArtifactsStagingDir)' == ''">$(ArtifactsDir)/staging/</ArtifactsStagingDir>
     <SourceBuiltAssetsDir>$(ArtifactsStagingDir)/assets/$(Configuration)</SourceBuiltAssetsDir>
     <SourceBuiltAssetManifestsDir>$(ArtifactsStagingDir)/manifests/$(Configuration)</SourceBuiltAssetManifestsDir>
     <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
-    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
-    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
-    <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
     <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
-    <AssetManifestFileName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</AssetManifestFileName>
-    <AssetManifestFileName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(AssetManifestFileName)' == ''">VerticalManifest.xml</AssetManifestFileName>
+    <AssetManifestFileName Condition="'$(MergedAssetManifestName)' != ''">$(MergedAssetManifestName)</AssetManifestFileName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
@@ -25,10 +22,6 @@
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
     <SourceBuiltShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
     <SourceBuiltNonShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
-  </PropertyGroup>
-  <PropertyGroup>
-    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
-    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
   </PropertyGroup>
 
   <!--
@@ -69,24 +62,36 @@
       </ProducedPackage>
 
       <ReferencePackage Include="@(ProducedPackage->'$(ReferencePackagesDir)%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' == 'source-build-reference-packages'" />
+      <PackageToPublish Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' != 'source-build-reference-packages'" />
     </ItemGroup>
 
     <!-- Create Artifact items for produced packages and assets -->
     <ItemGroup>
-      <Artifact Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' != 'source-build-reference-packages'" />
-      <Artifact Include="@(ReferencePackage)" RepoOrigin="SourceBuildReferencePackages" />
+      <Artifact Include="@(PackageToPublish);@(ReferencePackage)" />
       <Artifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')">
-        <Kind>Asset</Kind>
+        <Kind>Blob</Kind>
+      </Artifact>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+      <!-- Copy SDK archive to assets root as source-only build partners expect the file to be there. -->
+      <Artifact Include="@(ProducedAsset)" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+        <RelativeBlobPath>/%(Filename)%(Extension)</RelativeBlobPath>
+      </Artifact>
+      <Artifact Include="$(ArtifactsAssetsDir)dotnet-symbols-*$(ArchiveExtension)">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+        <RelativeBlobPath>/%(Filename)%(Extension)</RelativeBlobPath>
+      </Artifact>
+      <Artifact Include="$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).*$(ArchiveExtension)">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+        <RelativeBlobPath>/%(Filename)%(Extension)</RelativeBlobPath>
       </Artifact>
     </ItemGroup>
   </Target>
 
-  <Target Name="FinishSourceBuild" AfterTargets="Publish" Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <MSBuild
-      Projects="$(RepositoryEngineeringDir)finish-source-only.proj"
-      Targets="Restore"
-      Properties="MSBuildRestoreSessionId=$([System.Guid]::NewGuid())" />
-    <MSBuild
-      Projects="$(RepositoryEngineeringDir)finish-source-only.proj" />
-  </Target>
+  <Import Project="$(RepositoryEngineeringDir)PublishSourceBuild.props" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 </Project>

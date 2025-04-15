@@ -138,74 +138,7 @@
 
     <ShellExtension Condition="'$(BuildOS)' == 'windows'">.cmd</ShellExtension>
     <ShellExtension Condition="'$(BuildOS)' != 'windows'">.sh</ShellExtension>
-
-    <!-- While the tarball infrastructure currently only supports non Windows, these properties
-         are already defined for more flexibility in the future. -->
-    <ArchiveExtension Condition="'$(BuildOS)' == 'windows'">.zip</ArchiveExtension>
-    <ArchiveExtension Condition="'$(BuildOS)' != 'windows'">.tar.gz</ArchiveExtension>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <SrcDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SrcDir>
-    <ToolsDir>$([MSBuild]::NormalizeDirectory('$(RepositoryEngineeringDir)', 'tools'))</ToolsDir>
-    <TasksDir>$([MSBuild]::NormalizeDirectory('$(ToolsDir)', 'tasks'))</TasksDir>
-    <RepoProjectsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'repo-projects'))</RepoProjectsDir>
-
-    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
-    <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
-    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
-
-    <!-- When SB mode, the initial toolsets are unzipped to the "BootstrapPackages" dir.
-         When running in non-source-build, the bootstrap package is the one restored at the beginning of the build. -->
-    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'BootstrapPackages'))</BootstrapPackagesDir>
-    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</BootstrapPackagesDir>
-
-    <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
-    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
-
-    <ArtifactsAssetManifestsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'manifests', '$(Configuration)'))</ArtifactsAssetManifestsDir>
-    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'manifests', '$(Configuration)'))</AssetManifestsIntermediateDir>
-    <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
-
-    <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
-
-    <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
-    <PreviouslyRestoredPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previouslyRestored'))</PreviouslyRestoredPackagesPath>
-    <PrebuiltSourceBuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previously-source-built'))</PrebuiltSourceBuiltPackagesPath>
-    <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomPrebuiltSourceBuiltPackagesPath)'))</PrebuiltSourceBuiltPackagesPath>
-
-    <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
-    <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
-    <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
-    <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
-    <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
-    <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
-
-    <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
-  </PropertyGroup>
-
-  <!-- Build task assembly paths -->
-  <PropertyGroup>
-    <MicrosoftDotNetUnifiedBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.UnifiedBuild.Tasks', '$(Configuration)', 'Microsoft.DotNet.UnifiedBuild.Tasks.dll'))</MicrosoftDotNetUnifiedBuildTasksAssembly>
-    <MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll'))</MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
-    <PoisonMarkerFile>.prebuilt.xml</PoisonMarkerFile>
-    <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>
-    <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
-    <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <ArtifactsStagingDir Condition="'$(ArtifactsStagingDir)' == ''">$(ArtifactsDir)/staging/</ArtifactsStagingDir>
-    <SourceBuiltAssetsDir>$(ArtifactsStagingDir)/assets/$(Configuration)</SourceBuiltAssetsDir>
-    <!-- Respect the VerticalName property which is set to a unique identifier in CI.
-         Don't use that when building source-only to allow the build to find the previously built manifest file regardless of the vertical name.
-         Default to VerticalManifest.xml. -->
-    <MergedAssetManifestName Condition="'$(VerticalName)' != ''">$(VerticalName).xml</MergedAssetManifestName>
-    <MergedAssetManifestName Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(MergedAssetManifestName)' == ''">VerticalManifest.xml</MergedAssetManifestName>
-    <MergedAssetManifestOutputPath>$(ArtifactsStagingDir)/manifests/$(Configuration)/$(MergedAssetManifestName)</MergedAssetManifestOutputPath>
-  </PropertyGroup>
-
+  <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
 </Project>
