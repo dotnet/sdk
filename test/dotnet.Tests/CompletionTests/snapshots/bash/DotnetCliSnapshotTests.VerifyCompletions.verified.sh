@@ -1719,7 +1719,7 @@ _testhost_tool_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-roll-forward --help" 
+    opts="--allow-roll-forward --from-source --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
