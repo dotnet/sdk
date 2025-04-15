@@ -92,6 +92,9 @@ to check whether the file contains an entry point (top-level statements or a val
 (We cannot simply use Roslyn APIs to detect entry points ourselves because parsing depends on conditional symbols like those from `<DefineConstants>`
 and we can reliably know the set of those only after invoking MSBuild, and doing that up front would be an unnecessary performance hit just to detect entry points.)
 
+Similarly, during [grow up](#grow-up), we ask Roslyn via MSBuild to give us the set of entry-point files
+(we can also use this to ask user during the conversion whether they want to continue despite compilation errors if there are any).
+
 ## Multiple C# files
 
 Because of the [implicit project file](#implicit-project-file),
