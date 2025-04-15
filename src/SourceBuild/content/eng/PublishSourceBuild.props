@@ -72,7 +72,7 @@
           DestinationFolder="$(SourceBuiltLayoutDir)"
           UseSymbolicLinksIfPossible="true" />
     <Copy SourceFiles="@(ReferencePackage)"
-          DestinationFolder="$(SourceBuiltLayoutDir)SourceBuildReferencePackages"
+          DestinationFolder="$(SourceBuiltLayoutDir)$(PreviouslySourceBuiltReferencePackagesDirName)"
           UseSymbolicLinksIfPossible="true" />
 
     <!-- Content of the .version file to include in the tarball -->

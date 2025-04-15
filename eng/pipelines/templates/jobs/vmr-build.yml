@@ -222,7 +222,7 @@ jobs:
     value: $(commandPrefix)ci $(commandPrefix)$(cleanArgument) $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
 
   - name: baseProperties
-    value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+    value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName)
 
   - name: targetProperties
     ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:
@@ -298,7 +298,7 @@ jobs:
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
     # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
-      path: $(artifactsStagingDir)
+      path: $(Build.ArtifactStagingDirectory)
       artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts (On Success)
       condition: succeeded()
@@ -314,7 +314,7 @@ jobs:
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - ${{ if ne(parameters.buildSourceOnly, true) }}:
       - output: buildArtifacts
-        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+        PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
         ArtifactName: VerticalManifests
         displayName: Publish Vertical Manifest
         sbomEnabled: false
@@ -436,6 +436,7 @@ jobs:
         $(baseArguments)
         $(signArguments)
         $(baseProperties)
+        /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory)
         $(targetProperties)
         $(signProperties)
         $(buildPassProperties)
@@ -511,7 +512,7 @@ jobs:
         customEnvVars=""
         customPreBuildArgs=""
         customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
-        extraBuildProperties="$(baseProperties) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
+        extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
 
         if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
           customBuildArgs="$customBuildArgs --online"
@@ -564,7 +565,7 @@ jobs:
       - script: |
           set -ex
           # Update the owner of the staging directory to the current user
-          sudo chown -R $(whoami) $(artifactsStagingDir)
+          sudo chown -R $(whoami) $(Build.ArtifactStagingDirectory)
         displayName: Update owner of artifacts staging directory
 
     # Only run tests if enabled
@@ -588,7 +589,7 @@ jobs:
 
           customPreBuildArgs=''
           customBuildArgs="--test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $(baseArguments)"
-          extraBuildProperties="$(baseProperties) $(targetProperties) ${{ parameters.extraProperties }}"
+          extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) ${{ parameters.extraProperties }}"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
@@ -696,7 +697,7 @@ jobs:
     # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
     # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
-    - publish: $(artifactsStagingDir)
+    - publish: $(Build.ArtifactStagingDirectory)
       artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts (On Success)
       condition: succeeded()
@@ -712,6 +713,6 @@ jobs:
     - ${{ if ne(parameters.buildSourceOnly, true) }}:
       - task: PublishBuildArtifacts@1
         inputs:
-          PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
           ArtifactName: VerticalManifests
         displayName: Publish Vertical Manifest

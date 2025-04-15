@@ -25,12 +25,12 @@
 
   <!-- Unpacks the Private.SourceBuilt.Artifacts archive -->
   <Target Name="UnpackSourceBuiltArtifactsArchive"
-          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''"
+          Condition="'$(CustomPreviouslySourceBuiltPackagesPath)' == ''"
           Inputs="$(ExternalTarballsDir)"
-          Outputs="$(PrebuiltSourceBuiltPackagesPath)">
-    <MakeDir Directories="$(PrebuiltSourceBuiltPackagesPath)" />
+          Outputs="$(PreviouslySourceBuiltPackagesPath)">
+    <MakeDir Directories="$(PreviouslySourceBuiltPackagesPath)" />
     <Exec Command="tar -xzf $(ExternalTarballsDir)$(SourceBuiltArtifactsTarballName).*$(ArchiveExtension)"
-          WorkingDirectory="$(PrebuiltSourceBuiltPackagesPath)" />
+          WorkingDirectory="$(PreviouslySourceBuiltPackagesPath)" />
   </Target>
 
   <!-- Check for a prebuilt dependency tarball and extract if exists. If there isn't one, we expect
@@ -47,32 +47,9 @@
           Condition="'@(SourceBuiltPrebuiltsTarballFile)' != ''" />
   </Target>
 
-  <!-- Copy SBRP packages to reference packages location. -->
-  <Target Name="CopySourceBuiltReferencePackages"
-          DependsOnTargets="UnpackSourceBuiltArtifactsArchive"
-          Inputs="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages"
-          Outputs="$(ReferencePackagesDir)">
-    <ItemGroup>
-      <UnpackedSourceBuildReferencePackage Include="$(PrebuiltSourceBuiltPackagesPath)SourceBuildReferencePackages/*" />
-    </ItemGroup>
-
-    <!-- When building iteratively (e.g. making infra changes), the directory may already exist and needs to be cleaned up. -->
-    <RemoveDir Directories="$(ReferencePackagesDir)" />
-
-    <!-- Either move or copy the unpacked SBRP packages.
-         Don't move when the packages directory is externally provided. -->
-    <Move SourceFiles="@(UnpackedSourceBuildReferencePackage)"
-          DestinationFolder="$(ReferencePackagesDir)"
-          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' == ''" />
-    <Copy SourceFiles="@(UnpackedSourceBuildReferencePackage)"
-          DestinationFolder="$(ReferencePackagesDir)"
-          Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''" />
-  </Target>
-
   <Target Name="UnpackTarballs"
           DependsOnTargets="UnpackSourceBuiltArtifactsArchive;
-                            UnpackSourceBuiltPrebuiltsArchive;
-                            CopySourceBuiltReferencePackages" />
+                            UnpackSourceBuiltPrebuiltsArchive" />
 
   <!-- Build the custom msbuild sdk resolver. -->
   <Target Name="BuildMSBuildSdkResolver"
@@ -95,9 +72,9 @@
   <!-- Extract toolset packages into the bootstrap folder -->
   <Target Name="ExtractToolsetPackages" DependsOnTargets="UnpackTarballs">
     <ItemGroup>
-      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PrebuiltSourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
-      <ToolsetPackage Include="Microsoft.Build.NoTargets" SourceFolder="$(ReferencePackagesDir)" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
-      <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(ReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.DotNet.Arcade.Sdk" SourceFolder="$(PreviouslySourceBuiltPackagesPath)" Version="$(ARCADE_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.NoTargets" SourceFolder="$(PreviouslySourceBuiltReferencePackagesDir)" Version="$(NOTARGETS_BOOTSTRAP_VERSION)" />
+      <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(PreviouslySourceBuiltReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
     </ItemGroup>
 
     <ItemGroup>
