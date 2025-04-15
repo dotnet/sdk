@@ -268,6 +268,10 @@ or as the first argument if it makes sense for them.
 We could also add `dotnet compile` command that would be the equivalent of `dotnet build` but for file-based programs
 (because "compiling" might make more sense for file-based programs than "building").
 
+`dotnet clean` could be extended to support cleaning [the output directory](#build-outputs),
+e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
+or `dotnet clean --all-file-based-programs`.
+
 ### `dotnet package add`
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
