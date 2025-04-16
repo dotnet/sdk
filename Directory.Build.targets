@@ -78,4 +78,21 @@
     </KnownFrameworkReference>
   </ItemGroup>
 
+  <PropertyGroup>
+    <CoreCompileDependsOn>$(CoreCompileDependsOn);RemoveCodeStyleAnalyzers</CoreCompileDependsOn>
+  </PropertyGroup>
+
+  <!--
+    CodeStyle analyzers inserted in the SDK might not be compatible with the current public version of Visual Studio,
+    which causes failures when building from the IDE.
+  -->
+  <Target Name="RemoveCodeStyleAnalyzers" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="
+                '%(FileName)' == 'Microsoft.CodeAnalysis.CodeStyle' or
+                '%(FileName)' == 'Microsoft.CodeAnalysis.CodeStyle.Fixes' or
+                '%(FileName)' == 'Microsoft.CodeAnalysis.CSharp.CodeStyle' or
+                '%(FileName)' == 'Microsoft.CodeAnalysis.CSharp.CodeStyle.Fixes'"/>
+    </ItemGroup>
+  </Target>
 </Project>
