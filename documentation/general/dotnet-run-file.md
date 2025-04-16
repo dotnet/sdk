@@ -45,6 +45,7 @@ dotnet project convert
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
 The target path must be a file which has the `.cs` file extension, but we could allow folders as well in the future.
+*The target directory* is the directory of the target file.
 
 We can consider adding an option like `dotnet run --cs-from-stdin` which would read the C# file from the standard input
 (or `dotnet run -` although then it's unclear which programming language the input is in)
@@ -135,7 +136,7 @@ That's because it might be perfectly reasonable to have file-based programs nest
 
 ### Multiple entry points
 
-If there are multiple entry-point files in the target directory, the build ignores other entry-point files.
+If there are multiple entry-point files in the target directory subtree, the build ignores other entry-point files.
 
 Thanks to this, it is possible to have a structure like
 ```
