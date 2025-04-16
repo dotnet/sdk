@@ -293,7 +293,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         using (FileStream packageStream = File.OpenRead(packagePath))
         {
             PackageArchiveReader reader = new(packageStream);
-            Stream nuspecReader = new NuspecReader(reader.GetNuspec());
+            NuspecReader nuspecReader = new NuspecReader(reader.GetNuspec());
             version = nuspecReader.GetVersion();
             bool requireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance();
             // If the package requires license acceptance, we need to ask the user to accept it
