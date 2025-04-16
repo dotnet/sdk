@@ -114,7 +114,13 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
         }
 
-        var pathResolver = new VersionFolderPathResolver(downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value);
+        var resolvedDownloadFolder = downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value;
+        if (string.IsNullOrEmpty(resolvedDownloadFolder))
+        {
+            throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
+        }
+        var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
+        
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
