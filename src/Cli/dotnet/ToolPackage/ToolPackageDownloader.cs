@@ -74,8 +74,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig restoreActionConfig = null
-        )
+        RestoreActionConfig restoreActionConfig = null)
     {
 
         ILogger nugetLogger = new NullLogger();
@@ -99,7 +98,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             verbosityOptions: verbosity,
             currentWorkingDirectory: _currentWorkingDirectory);
 
-
+        //  TODO: This transaction scope probably isn't necessary
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
             {
@@ -112,7 +111,6 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 {
                     givenSpecificVersion = true;
                 }
-
 
                 if (isGlobalTool)
                 {
@@ -173,8 +171,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                     packageSourceLocation,
                     givenSpecificVersion,
                     assetFileDirectory: _globalToolStageDir,
-                    targetFramework,
-                    _runtimeJsonPath);
+                    targetFramework);
 
                 var toolStoreTargetDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
 
@@ -239,7 +236,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
     //                packageId,
     //                packageVersion.ToNormalizedString()));
     //    }
-        
+
     //    NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
 
     //    DirectoryPath toolReturnPackageDirectory;
@@ -310,66 +307,96 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool givenSpecificVersion,
         string targetFramework)
     {
-
-        var toolDownloadDir = _localToolDownloadDir;
-        var assetFileDirectory = _localToolAssetDir;
-
-        NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
-
-        DirectoryPath toolReturnPackageDirectory;
-        DirectoryPath toolReturnJsonParentDirectory;
-
-        (toolReturnPackageDirectory, toolReturnJsonParentDirectory) = DownloadAndMovePackage(
-            false, // isGlobalTool
-            toolDownloadDir,
-            packageId,
-            packageVersion,
-            localRepository,
-            nugetPackageDownloader,
-            packageSourceLocation,
-            givenSpecificVersion,
-            assetFileDirectory,
-            targetFramework,
-            _runtimeJsonPath,
-            _toolPackageStore,
-            _globalToolStageDir);
-
-        var toolConfiguration = ToolPackageInstance.GetToolConfiguration(packageId, toolReturnPackageDirectory, toolReturnJsonParentDirectory);
-        if (toolConfiguration.RidSpecificPackages?.Any() == true)
-        {
-            var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(_runtimeJsonPath);
-            var bestRuntimeIdentifier = Microsoft.NET.Build.Tasks.NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeInformation.RuntimeIdentifier, toolConfiguration.RidSpecificPackages.Keys, out bool wasInGraph);
-            if (bestRuntimeIdentifier == null)
+        return TransactionalAction.Run<IToolPackage>(
+            action: () =>
             {
-                //  TODO: Localize
-                throw new ToolPackageException($"The tool does not support the current architecture or operating system (Runtime Identifier {RuntimeInformation.RuntimeIdentifier}");
-            }
+                DownloadTool(
+                    packageDownloadDir: _localToolDownloadDir,
+                    packageId,
+                    packageVersion,
+                    nugetPackageDownloader,
+                    packageSourceLocation,
+                    givenSpecificVersion,
+                    assetFileDirectory: _localToolAssetDir,
+                    targetFramework);
 
-            var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
+                var toolPackageInstance = new ToolPackageInstance(id: packageId,
+                    version: packageVersion,
+                    packageDirectory: _localToolDownloadDir,
+                    assetsJsonParentDirectory: _localToolAssetDir);
 
-            var (resolvedPackageDirectory, resolvedAssetsJsonParentDirectory) = DownloadAndMovePackage(
-                false, // isGlobalTool
-                toolDownloadDir,
-                new PackageId(resolvedPackage.Id),
-                resolvedPackage.Version,
-                localRepository,
-                nugetPackageDownloader,
-                packageSourceLocation,
-                givenSpecificVersion: true, // Primary package manifest should always specify a specific version of RID-specific package
-                assetFileDirectory,
-                targetFramework,
-                _runtimeJsonPath,
-                _toolPackageStore,
-                _globalToolStageDir);
-        }
-
-        var toolPackageInstance = new ToolPackageInstance(id: packageId,
-                        version: packageVersion,
-                        packageDirectory: toolReturnPackageDirectory,
-                        assetsJsonParentDirectory: toolReturnJsonParentDirectory);
-
-        return toolPackageInstance;
+                return toolPackageInstance;
+            });
     }
+
+    //private IToolPackage InstallLocalToolPackageInternal(
+    //    PackageSourceLocation packageSourceLocation,
+    //    NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+    //    PackageId packageId,
+    //    NuGetVersion packageVersion,
+    //    bool givenSpecificVersion,
+    //    string targetFramework)
+    //{
+
+    //    var toolDownloadDir = _localToolDownloadDir;
+    //    var assetFileDirectory = _localToolAssetDir;
+
+    //    NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
+
+    //    DirectoryPath toolReturnPackageDirectory;
+    //    DirectoryPath toolReturnJsonParentDirectory;
+
+    //    (toolReturnPackageDirectory, toolReturnJsonParentDirectory) = DownloadAndMovePackage(
+    //        false, // isGlobalTool
+    //        toolDownloadDir,
+    //        packageId,
+    //        packageVersion,
+    //        localRepository,
+    //        nugetPackageDownloader,
+    //        packageSourceLocation,
+    //        givenSpecificVersion,
+    //        assetFileDirectory,
+    //        targetFramework,
+    //        _runtimeJsonPath,
+    //        _toolPackageStore,
+    //        _globalToolStageDir);
+
+    //    var toolConfiguration = ToolPackageInstance.GetToolConfiguration(packageId, toolReturnPackageDirectory, toolReturnJsonParentDirectory);
+    //    if (toolConfiguration.RidSpecificPackages?.Any() == true)
+    //    {
+    //        var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(_runtimeJsonPath);
+    //        var bestRuntimeIdentifier = Microsoft.NET.Build.Tasks.NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeInformation.RuntimeIdentifier, toolConfiguration.RidSpecificPackages.Keys, out bool wasInGraph);
+    //        if (bestRuntimeIdentifier == null)
+    //        {
+    //            //  TODO: Localize
+    //            throw new ToolPackageException($"The tool does not support the current architecture or operating system (Runtime Identifier {RuntimeInformation.RuntimeIdentifier}");
+    //        }
+
+    //        var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
+
+    //        var (resolvedPackageDirectory, resolvedAssetsJsonParentDirectory) = DownloadAndMovePackage(
+    //            false, // isGlobalTool
+    //            toolDownloadDir,
+    //            new PackageId(resolvedPackage.Id),
+    //            resolvedPackage.Version,
+    //            localRepository,
+    //            nugetPackageDownloader,
+    //            packageSourceLocation,
+    //            givenSpecificVersion: true, // Primary package manifest should always specify a specific version of RID-specific package
+    //            assetFileDirectory,
+    //            targetFramework,
+    //            _runtimeJsonPath,
+    //            _toolPackageStore,
+    //            _globalToolStageDir);
+    //    }
+
+    //    var toolPackageInstance = new ToolPackageInstance(id: packageId,
+    //                    version: packageVersion,
+    //                    packageDirectory: toolReturnPackageDirectory,
+    //                    assetsJsonParentDirectory: toolReturnJsonParentDirectory);
+
+    //    return toolPackageInstance;
+    //}
 
     private void DownloadTool(
         DirectoryPath packageDownloadDir,
@@ -379,12 +406,8 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         PackageSourceLocation packageSourceLocation,
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
-        string targetFramework,
-        string runtimeJsonPath)
+        string targetFramework)
     {
-        //  Need to do outside this method for Global tools:
-        //  - Check to see if the package already exists in the repository, error if so
-
         NuGetv3LocalRepository nugetLocalRepository = new(packageDownloadDir.Value);
 
         var package = nugetLocalRepository.FindPackage(packageId.ToString(), packageVersion);
@@ -394,84 +417,84 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
         }
 
-        CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), runtimeJsonPath, targetFramework);
+        CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), _runtimeJsonPath, targetFramework);
 
         //  TODO: Also download RID-specific package if needed
     }
 
-    private static (DirectoryPath toolReturnPackageDirectory, DirectoryPath toolReturnJsonParentDirectory) DownloadAndMovePackage(
-        bool isGlobalTool,
-        DirectoryPath toolDownloadDir,
-        PackageId packageId,
-        NuGetVersion packageVersion,
-        NuGetv3LocalRepository localRepository,
-        INuGetPackageDownloader nugetPackageDownloader,
-        PackageSourceLocation packageSourceLocation,
-        bool givenSpecificVersion,
-        DirectoryPath assetFileDirectory,
-        string targetFramework,
-        string runtimeJsonPath,
-        IToolPackageStore toolPackageStore,
-        DirectoryPath globalToolStageDir)
-    {
-        DirectoryPath packageRootDirectory = toolPackageStore.GetRootPackageDirectory(packageId);
+    //private static (DirectoryPath toolReturnPackageDirectory, DirectoryPath toolReturnJsonParentDirectory) DownloadAndMovePackage(
+    //    bool isGlobalTool,
+    //    DirectoryPath toolDownloadDir,
+    //    PackageId packageId,
+    //    NuGetVersion packageVersion,
+    //    NuGetv3LocalRepository localRepository,
+    //    INuGetPackageDownloader nugetPackageDownloader,
+    //    PackageSourceLocation packageSourceLocation,
+    //    bool givenSpecificVersion,
+    //    DirectoryPath assetFileDirectory,
+    //    string targetFramework,
+    //    string runtimeJsonPath,
+    //    IToolPackageStore toolPackageStore,
+    //    DirectoryPath globalToolStageDir)
+    //{
+    //    DirectoryPath packageRootDirectory = toolPackageStore.GetRootPackageDirectory(packageId);
 
-        string rollbackDirectory = null;
-        rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
+    //    string rollbackDirectory = null;
+    //    rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
         
-        return TransactionalAction.Run(() =>
-        {
-            DirectoryPath toolReturnPackageDirectory;
-            DirectoryPath toolReturnJsonParentDirectory;
+    //    return TransactionalAction.Run(() =>
+    //    {
+    //        DirectoryPath toolReturnPackageDirectory;
+    //        DirectoryPath toolReturnJsonParentDirectory;
 
-            var package = localRepository.FindPackage(packageId.ToString(), packageVersion);
+    //        var package = localRepository.FindPackage(packageId.ToString(), packageVersion);
 
-            if (package == null)
-            {
-                DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
-            }
-            else if (isGlobalTool)
-            {
-                throw new ToolPackageException(
-                    string.Format(
-                        CliStrings.ToolPackageConflictPackageId,
-                        packageId,
-                        packageVersion.ToNormalizedString()));
-            }
+    //        if (package == null)
+    //        {
+    //            DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
+    //        }
+    //        else if (isGlobalTool)
+    //        {
+    //            throw new ToolPackageException(
+    //                string.Format(
+    //                    CommonLocalizableStrings.ToolPackageConflictPackageId,
+    //                    packageId,
+    //                    packageVersion.ToNormalizedString()));
+    //        }
 
-            CreateAssetFile(packageId, packageVersion, toolDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), runtimeJsonPath, targetFramework);
+    //        CreateAssetFile(packageId, packageVersion, toolDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), runtimeJsonPath, targetFramework);
 
-            if (isGlobalTool)
-            {
-                toolReturnPackageDirectory = toolPackageStore.GetPackageDirectory(packageId, packageVersion);
-                toolReturnJsonParentDirectory = toolPackageStore.GetPackageDirectory(packageId, packageVersion);
-                var rootPackageDirectory = toolPackageStore.GetRootPackageDirectory(packageId);
-                Directory.CreateDirectory(rootPackageDirectory.Value);
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(globalToolStageDir.Value, toolReturnPackageDirectory.Value));
-                rollbackDirectory = toolReturnPackageDirectory.Value;
-            }
-            else
-            {
-                toolReturnPackageDirectory = toolDownloadDir;
-                toolReturnJsonParentDirectory = assetFileDirectory;
-            }
+    //        if (isGlobalTool)
+    //        {
+    //            toolReturnPackageDirectory = toolPackageStore.GetPackageDirectory(packageId, packageVersion);
+    //            toolReturnJsonParentDirectory = toolPackageStore.GetPackageDirectory(packageId, packageVersion);
+    //            var rootPackageDirectory = toolPackageStore.GetRootPackageDirectory(packageId);
+    //            Directory.CreateDirectory(rootPackageDirectory.Value);
+    //            FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(globalToolStageDir.Value, toolReturnPackageDirectory.Value));
+    //            rollbackDirectory = toolReturnPackageDirectory.Value;
+    //        }
+    //        else
+    //        {
+    //            toolReturnPackageDirectory = toolDownloadDir;
+    //            toolReturnJsonParentDirectory = assetFileDirectory;
+    //        }
 
-            return (toolReturnPackageDirectory, toolReturnJsonParentDirectory);
-        },
-        rollback: () =>
-        {
-            if (rollbackDirectory != null && Directory.Exists(rollbackDirectory))
-            {
-                Directory.Delete(rollbackDirectory, true);
-            }
-            // Delete the root if it is empty
-            if (Directory.Exists(packageRootDirectory.Value) &&
-                !Directory.EnumerateFileSystemEntries(packageRootDirectory.Value).Any())
-            {
-                Directory.Delete(packageRootDirectory.Value, false);
-            }
-        });
-    }
+    //        return (toolReturnPackageDirectory, toolReturnJsonParentDirectory);
+    //    },
+    //    rollback: () =>
+    //    {
+    //        if (rollbackDirectory != null && Directory.Exists(rollbackDirectory))
+    //        {
+    //            Directory.Delete(rollbackDirectory, true);
+    //        }
+    //        // Delete the root if it is empty
+    //        if (Directory.Exists(packageRootDirectory.Value) &&
+    //            !Directory.EnumerateFileSystemEntries(packageRootDirectory.Value).Any())
+    //        {
+    //            Directory.Delete(packageRootDirectory.Value, false);
+    //        }
+    //    });
+    //}
 
     // The following methods are copied from the LockFileUtils class in Nuget.Client
     private static void AddToolsAssets(
@@ -564,28 +587,48 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool includeUnlisted = false
         )
     {
-        var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
+        var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
-        // look for package on disk and read the version
-        NuGetVersion version;
+        string? folderToDeleteOnFailure = null;
 
-        using (FileStream packageStream = File.OpenRead(packagePath))
+        try
         {
-            PackageArchiveReader reader = new(packageStream);
-            version = new NuspecReader(reader.GetNuspec()).GetVersion();
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
+                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false);
 
-            var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-            var hashPath = new VersionFolderPathResolver(packagesRootPath).GetHashPath(packageId.ToString(), version);
+            folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
-            File.WriteAllText(hashPath, packageHash);
+            // look for package on disk and read the version
+            NuGetVersion version;
+
+            using (FileStream packageStream = File.OpenRead(packagePath))
+            {
+                PackageArchiveReader reader = new(packageStream);
+                version = new NuspecReader(reader.GetNuspec()).GetVersion();
+
+                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
+                var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                File.WriteAllText(hashPath, packageHash);
+            }
+
+            // Extract the package
+            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
+            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+
+            return version;
         }
+        catch
+        {
+            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
+            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
+            {
+                Directory.Delete(folderToDeleteOnFailure, true);
+            }
 
-        // Extract the package
-        var nupkgDir = new VersionFolderPathResolver(packagesRootPath).GetInstallPath(packageId.ToString(), version);
-        await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
-
-        return version;
+            throw;
+        }
     }
 
     private static void CreateAssetFile(
