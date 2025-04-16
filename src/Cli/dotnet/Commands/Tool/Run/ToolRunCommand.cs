@@ -96,6 +96,6 @@ internal class ToolRunCommand(
     {
         // TODO: Use a better way to ask for user input
         Console.WriteLine("Tool will be run from source. Accept? [yn]");
-        return Console.ReadLine() == 'y';
+        return Console.ReadLine() == "y";
     }
 }
