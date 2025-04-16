@@ -66,6 +66,18 @@ public class Program
         Required = true
     };
 
+    private static Option exclusions = new Option<string>("-exclusions")
+    {
+        Description = "Path to the exclusions file.",
+        Required = true
+    };
+
+    private static Option sdkTaskScript = new Option<string>("-sdkTaskScript")
+    {
+        Description = "Path to the SDK task script.",
+        Required = true
+    };
+
     /// <summary>
     /// Entry point for the build comparison tool.
     /// </summary>
@@ -80,7 +92,12 @@ public class Program
                 "assets",
                 "Compares asset manifests and outputs missing or misclassified assets",
                 typeof(AssetComparer),
-                new List<Option> { vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline })
+                new List<Option> { vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline }),
+            new ComparerCommand(
+                "signing",
+                "Compares signing status between builds and outputs assets with differences.",
+                typeof(SigningComparer),
+                new List<Option> { vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline, exclusions, sdkTaskScript }),
         };
 
         foreach (var command in CreateComparerCommands(subCommands))
