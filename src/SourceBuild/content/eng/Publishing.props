@@ -70,13 +70,13 @@
       <Artifact Include="@(PackageToPublish);@(ReferencePackage)" />
       <Artifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')">
         <Kind>Blob</Kind>
-        <RelativeBlobPath>%(Identity)</RelativeBlobPath>
+        <RelativeBlobPath>%(ProducedAsset.Identity)</RelativeBlobPath>
       </Artifact>
     </ItemGroup>
 
     <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <!-- Copy SDK archive to assets root as source-only build partners expect the file to be there. -->
-      <SourceBuildArtifact Include="$(ArtifactsAssetsDir)@(ProducedAsset)" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
+      <SourceBuildArtifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
         <Kind>Blob</Kind>
         <IsShipping>true</IsShipping>
       </SourceBuildArtifact>
