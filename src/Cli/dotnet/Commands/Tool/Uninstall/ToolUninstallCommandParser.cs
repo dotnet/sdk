@@ -11,31 +11,31 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal static class ToolUninstallCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+    public static readonly Argument<string> PackageIdArgument = new("packageId")
     {
         HelpName = "PACKAGE_ID",
         Description = CliStrings.PackageReference,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
-    public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
 
-    public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-    public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
+        Command command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
         command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallGlobalOptionDescription));

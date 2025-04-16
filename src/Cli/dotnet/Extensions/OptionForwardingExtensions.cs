@@ -56,17 +56,17 @@ public static class OptionForwardingExtensions
                 .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
             );
 
-    public static CliOption<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T?, IEnumerable<string>> format) => option.SetForwardingFunction(format);
+    public static Option<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T?, IEnumerable<string>> format) => option.SetForwardingFunction(format);
 
-    public static CliOption<IEnumerable<string>> ForwardAsManyArgumentsEachPrefixedByOption(this ForwardedOption<IEnumerable<string>> option, string alias) => option.ForwardAsMany(o => ForwardedArguments(alias, o));
+    public static Option<IEnumerable<string>> ForwardAsManyArgumentsEachPrefixedByOption(this ForwardedOption<IEnumerable<string>> option, string alias) => option.ForwardAsMany(o => ForwardedArguments(alias, o));
 
-    public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, CliCommand command) =>
+    public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, Command command) =>
         command.Options
             .OfType<IForwardedOption>()
             .Select(o => o.GetForwardingFunction())
             .SelectMany(f => f is not null ? f(parseResult) : []);
 
-    public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, CliCommand command, string alias)
+    public static IEnumerable<string> ForwardedOptionValues<T>(this ParseResult parseResult, Command command, string alias)
     {
         var func = command.Options?
             .Where(o => o.Name.Equals(alias) || o.Aliases.Contains(alias))?
@@ -76,21 +76,21 @@ public static class OptionForwardingExtensions
         return func?.Invoke(parseResult) ?? [];
     }
 
-    public static CliOption<T> AllowSingleArgPerToken<T>(this CliOption<T> option)
+    public static Option<T> AllowSingleArgPerToken<T>(this Option<T> option)
     {
         option.AllowMultipleArgumentsPerToken = false;
         return option;
     }
 
-    public static CliOption<T> Hide<T>(this CliOption<T> option)
+    public static Option<T> Hide<T>(this Option<T> option)
     {
         option.Hidden = true;
         return option;
     }
 
-    internal static Dictionary<CliOption, Dictionary<CliCommand, string>> HelpDescriptionCustomizations = [];
+    internal static Dictionary<Option, Dictionary<Command, string>> HelpDescriptionCustomizations = [];
 
-    public static CliOption<T> WithHelpDescription<T>(this CliOption<T> option, CliCommand command, string helpText)
+    public static Option<T> WithHelpDescription<T>(this Option<T> option, Command command, string helpText)
     {
         if (HelpDescriptionCustomizations.ContainsKey(option))
         {
@@ -98,7 +98,7 @@ public static class OptionForwardingExtensions
         }
         else
         {
-            HelpDescriptionCustomizations.Add(option, new Dictionary<CliCommand, string>() { { command, helpText } });
+            HelpDescriptionCustomizations.Add(option, new Dictionary<Command, string>() { { command, helpText } });
         }
 
         return option;
@@ -119,7 +119,7 @@ public interface IForwardedOption
     Func<ParseResult, IEnumerable<string>> GetForwardingFunction();
 }
 
-public class ForwardedOption<T> : CliOption<T>, IForwardedOption
+public class ForwardedOption<T> : Option<T>, IForwardedOption
 {
     private Func<ParseResult, IEnumerable<string>> ForwardingFunction;
 

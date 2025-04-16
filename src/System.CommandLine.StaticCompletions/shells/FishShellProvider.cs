@@ -24,5 +24,5 @@ public class FishShellProvider : IShellProvider
         complete -f -c dotnet -a "(dotnet complete (commandline -cp))"
         """;
 
-    public string GenerateCompletions(System.CommandLine.CliCommand command) => _dynamicCompletionScript;
+    public string GenerateCompletions(System.CommandLine.Command command) => _dynamicCompletionScript;
 }
