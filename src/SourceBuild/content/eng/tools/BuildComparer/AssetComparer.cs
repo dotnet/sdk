@@ -17,6 +17,7 @@ using System.Xml.Linq;
 public class AssetComparer : BuildComparer
 {
     public AssetComparer(
+        bool clean,
         AssetType? assetType,
         string vmrManifestPath,
         string vmrAssetBasePath,
@@ -26,6 +27,7 @@ public class AssetComparer : BuildComparer
         int parallelTasks,
         string baselineFilePath)
         : base(
+            clean,
             assetType,
             vmrManifestPath,
             vmrAssetBasePath,

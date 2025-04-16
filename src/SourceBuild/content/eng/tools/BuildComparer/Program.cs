@@ -23,6 +23,11 @@ public class Program
 {
     private record ComparerCommand(string Name, string Description, Type ComparerType, List<Option> Options);
 
+    private static Option clean = new Option<bool>("-clean")
+    {
+        Description = "Clean up each artifact after comparison.",
+    };
+
     private static Option assetType = new Option<AssetType?>("-assetType")
     {
         Description = "Type of asset to compare. If not specified, all asset types will be compared.",
@@ -98,12 +103,12 @@ public class Program
                 "assets",
                 "Compares asset manifests and outputs missing or misclassified assets",
                 typeof(AssetComparer),
-                new List<Option> { assetType, vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline }),
+                new List<Option> { clean, assetType, vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline }),
             new ComparerCommand(
                 "signing",
                 "Compares signing status between builds and outputs assets with differences.",
                 typeof(SigningComparer),
-                new List<Option> { assetType, vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline, exclusions, sdkTaskScript }),
+                new List<Option> { clean, assetType, vmrManifestPath, vmrAssetBasePath, msftAssetBasePath, issuesReport, noIssuesReport, parallel, baseline, exclusions, sdkTaskScript }),
         };
 
         foreach (var command in CreateComparerCommands(subCommands))

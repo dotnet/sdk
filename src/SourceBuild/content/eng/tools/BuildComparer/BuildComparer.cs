@@ -67,11 +67,17 @@ public abstract class BuildComparer
     protected Baseline _baseline;
 
     /// <summary>
+    /// Whether the artifacts should be removed after the comparison.
+    /// </summary>
+    protected bool _clean;
+
+    /// <summary>
     /// The issues to report on.
     /// </summary>
     List<IssueType> _issuesToReport;
 
     protected BuildComparer(
+        bool clean,
         AssetType? assetType,
         string vmrManifestPath,
         string vmrAssetBasePath,
@@ -82,6 +88,7 @@ public abstract class BuildComparer
         string baselineFilePath,
         List<IssueType> issuesToReport)
     {
+        _clean = clean;
         _assetType = assetType;
         _vmrManifestPath = vmrManifestPath;
         _vmrBuildAssetBasePath = vmrAssetBasePath;
@@ -127,6 +134,18 @@ public abstract class BuildComparer
         var evaluationTasks = _assetMappings.Select(mapping => Task.Run(async () =>
         {
             await EvaluateAsset(mapping);
+            if (_clean)
+            {
+                // Clean up the artifacts after evaluation
+                if (mapping.DiffFilePath != null && File.Exists(mapping.DiffFilePath))
+                {
+                    File.Delete(mapping.DiffFilePath);
+                }
+                if (mapping.BaseBuildFilePath != null && File.Exists(mapping.BaseBuildFilePath))
+                {
+                    File.Delete(mapping.BaseBuildFilePath);
+                }
+            }
         }));
 
         await Task.WhenAll(evaluationTasks);
