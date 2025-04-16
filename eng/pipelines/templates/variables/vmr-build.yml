@@ -4,6 +4,10 @@ parameters:
   type: string
   default: ''
 
+- name: buildSourceOnly
+  type: boolean
+  default: false
+
 - name: desiredSigning
   displayName: Signed/unsigned/default signing parameters
   type: string
