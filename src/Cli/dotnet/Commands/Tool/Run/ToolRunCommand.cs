@@ -30,7 +30,7 @@ internal class ToolRunCommand(
     private readonly ILocalToolsResolverCache _localToolsResolverCache = new LocalToolsResolverCache();
     public override int Execute()
     {
-        CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+        CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
             CommandName = $"dotnet-{_toolCommandName}",
@@ -38,17 +38,17 @@ internal class ToolRunCommand(
 
         }, _allowRollForward);
 
-        if (commandspec == null && _fromSource)
+        if (commandSpec == null && _fromSource && UserAgreedToExecuteFromSource())
         {
             return ExecuteFromSource();
         }
 
-        if (commandspec == null)
+        if (commandSpec == null)
         {
             throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
-        var result = CommandFactoryUsingResolver.Create(commandspec).Execute();
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
         return result.ExitCode;
     }
 
@@ -90,5 +90,12 @@ internal class ToolRunCommand(
         _toolManifestEditor.Remove(manifestFile, toolPackage.Id);
 
         return result.ExitCode;
+    }
+
+    private bool UserAgreedToExecuteFromSource()
+    {
+        // TODO: Use a better way to ask for user input
+        Console.WriteLine("Tool will be run from source. Accept? [yn]")
+        return Console.ReadLine() == 'y';
     }
 }
