@@ -35,7 +35,7 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
             var analyzersByLanguage = new Dictionary<string, AnalyzersAndFixers>();
 
             // We need AnalyzerReferenceInformationProvider to load all local project suppressors
-            var referenceProvider =  new AnalyzerReferenceInformationProvider();
+            var referenceProvider = new AnalyzerReferenceInformationProvider();
             var projectsReferenceAnalyzersAndFixers = referenceProvider.GetAnalyzersAndFixers(workspace, solution, formatOptions, logger);
 
             return solution.Projects
