@@ -1,0 +1,246 @@
+parameters:
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: unifiedBuildRunId
+  type: string
+  default: ''
+
+- name: command
+  type: string
+  values:
+    - assets
+    - signing
+
+- name: OS
+  type: string
+  default: 'Windows_NT'
+  values:
+    - Windows_NT
+    - Linux
+    - Darwin
+
+- name: sourceManifestCommit
+  type: string
+  default: ''
+
+# This parameter is used to determine the type of asset to compare.
+# This is used to workaround limitations with the available space
+# on the MacOS agents.
+- name: assetType
+  type: string
+  default: ' '
+  values:
+    - ' '
+    - Package
+    - Blob
+
+# This is used to workaround limitations with the available space
+# on the MacOS agents.
+- name: clean
+  type: boolean
+  default: false
+
+steps:
+- powershell: |
+    $build_id = '${{ parameters.unifiedBuildRunId }}'.Replace(' ', '')
+    $build_branch = ''
+    $commit_sha = ''
+
+    if ([string]::IsNullOrWhiteSpace($build_id)) {
+      $build_id = az pipelines runs list --branch '$(Build.SourceBranch)' --organization 'https://dev.azure.com/dnceng/' --project 'internal' --pipeline-ids '1330' --status completed --top 1 --query "[].id" --output tsv
+      $build_branch = '$(Build.SourceBranch)'
+    }
+
+    if ([string]::IsNullOrWhiteSpace($build_id)) {
+      Write-Host "Could not find a completed dotnet-unified-build build for branch '$(Build.SourceBranch)'"
+      exit 1
+    }
+
+    if ([string]::IsNullOrWhiteSpace($build_branch)) {
+      $build_branch = az pipelines runs show --id $build_id --organization 'https://dev.azure.com/dnceng/' --project 'internal' --query "sourceBranch" --output tsv
+    }
+
+    if ([string]::IsNullOrWhiteSpace($build_branch)) {
+      Write-Host "Could not find the branch for build id $build_id"
+      exit 1
+    }
+
+    if ([string]::IsNullOrWhiteSpace($commit_sha)) {
+      $commit_sha = az pipelines build show --id $build_id --organization 'https://dev.azure.com/dnceng/' --project 'internal' --query "sourceVersion" --output tsv 
+    }
+
+    if ([string]::IsNullOrWhiteSpace($commit_sha)) {
+      Write-Host "Could not find the commit for build id $build_id"
+      exit 1
+    }
+
+    Write-Host "Unified Build build: https://dev.azure.com/dnceng/internal/_build/results?buildId=$build_id&view=results"
+    Write-Host "Unified Build branch: $build_branch"
+    Write-Host "Unified Build commit sha: $commit_sha"
+
+    Write-Host "##vso[build.addbuildtag]dotnet-unified-build-id $build_id"
+    Write-Host "##vso[task.setvariable variable=UnifiedBuildRunId;isOutput=true]$build_id"
+    Write-Host "##vso[task.setvariable variable=UnifiedBuildBranch;isOutput=true]$build_branch"
+    Write-Host "##vso[task.setvariable variable=UnifiedBuildCommitSha;isOutput=true]$commit_sha"
+  displayName: Find associated build
+  name: GetBuildInfo
+  env:
+    AZURE_DEVOPS_EXT_PAT: $(System.AccessToken)
+
+- powershell: |
+    $source_manifest_commit = '${{ parameters.sourceManifestCommit }}'.Replace(' ', '')
+    if ([string]::IsNullOrWhiteSpace($source_manifest_commit)) {
+      $source_manifest_commit = "$(GetBuildInfo.UnifiedBuildCommitSha)"
+    }
+
+    Write-Host "Using VMR commit '$source_manifest_commit' for source-manifest.json"
+
+    $url = "https://dev.azure.com/dnceng/internal/_apis/git/repositories/dotnet-dotnet/items?" `
+      + "path=src/source-manifest.json" `
+      + "&versionDescriptor.version=$source_manifest_commit" `
+      + "&versionDescriptor.versionType=commit" `
+      + "&api-version=7.1"
+    
+    $source_manifest_path = "$(Build.ArtifactStagingDirectory)/source-manifest.json"
+    $headers = @{
+      Authorization = "Basic " + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes(":$(dn-bot-all-drop-rw-code-rw-release-all)"))
+    }
+    Invoke-WebRequest -Uri $url -Headers $headers -OutFile $source_manifest_path
+
+    Write-Host "Source manifest downloaded successfully to $source_manifest_path"
+    Write-Host "##vso[task.setvariable variable=SourceManifestPath;isOutput=true]$source_manifest_path"
+  displayName: Download source-manifest
+  name: GetSourceManifest
+
+- template: ../steps/vmr-download-artifact.yml
+  parameters:
+    displayName: Download Asset Manifest
+    buildId: $(GetBuildInfo.UnifiedBuildRunId)
+    artifactName: AssetManifests
+    itemPattern: '**/MergedManifest.xml'
+    downloadPath: '$(Build.ArtifactStagingDirectory)/AssetManifests'
+    continueOnError: ${{ parameters.continueOnError }}
+
+- ${{ if eq(parameters.OS, 'Windows_NT')}}:
+  - powershell: |
+      $(Build.SourcesDirectory)\eng\common\darc-init.ps1 -toolpath $(Build.SourcesDirectory)\artifacts\tools\darc
+      Write-Host "##vso[task.setvariable variable=darcPath;isOutput=true]$(Build.SourcesDirectory)\artifacts\tools\darc\darc.exe"
+      Write-Host "##vso[task.setvariable variable=dotnetPath;isOutput=true]$(Build.SourcesDirectory)/.dotnet/dotnet.exe"
+    name: InstallDarc
+    displayName: Install darc
+
+- ${{ else }}:
+  - script: |
+      $(Build.SourcesDirectory)/eng/common/darc-init.sh --toolpath $(Build.SourcesDirectory)/artifacts/tools/darc
+      echo "##vso[task.setvariable variable=darcPath;isOutput=true]$(Build.SourcesDirectory)/artifacts/tools/darc/darc"
+      echo "##vso[task.setvariable variable=dotnetPath;isOutput=true]$(Build.SourcesDirectory)/.dotnet/dotnet"
+    name: InstallDarc
+    displayName: Install darc
+
+- powershell: |
+    if ("${{ parameters.assetType }}" -eq "Package") {
+      $assetFilter = "^[^/]*$,.*assets\/manifests\/.*\/MergedManifest\.xml"
+    } elseif ("${{ parameters.assetType }}" -eq "Blob") {
+      $assetFilter = ".*\/.*"
+    } else {
+      $assetFilter = ".*"
+    }
+
+    Write-Host "Asset filter: $assetFilter"
+    Write-Host "##vso[task.setvariable variable=assetFilter;isOutput=true]$assetFilter"
+  name: SetAssetFilter
+  displayName: Set asset filter
+
+- task: AzureCLI@2
+  displayName: 'Gather Drop'
+  continueOnError: ${{ parameters.continueOnError }}
+  inputs:
+    azureSubscription: DotNetStaging
+    scriptType: 'pscore'
+    scriptLocation: 'scriptPath'
+    scriptPath: $(Build.SourcesDirectory)/src/sdk/eng/GatherDrops.ps1
+    arguments: -filePath '$(GetSourceManifest.SourceManifestPath)' -outputPath '$(Build.ArtifactStagingDirectory)/base-assets/'
+      -darcPath $(InstallDarc.darcPath) -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
+      -assetFilter "$(SetAssetFilter.assetFilter)"
+
+- ${{ if ne(parameters.assetType, 'Blob') }}:
+  - template: ../steps/vmr-download-artifact.yml
+    parameters:
+      displayName: Download Package Artifacts
+      buildId: $(GetBuildInfo.UnifiedBuildRunId)
+      artifactName: PackageArtifacts
+      downloadPath: '$(Build.ArtifactStagingDirectory)/vmr-assets/PackageArtifacts'
+      continueOnError: ${{ parameters.continueOnError }}
+
+- ${{ if ne(parameters.assetType, 'Package') }}:
+  - template: ../steps/vmr-download-artifact.yml
+    parameters:
+      displayName: Download Blob Artifacts
+      buildId: $(GetBuildInfo.UnifiedBuildRunId)
+      artifactName: BlobArtifacts
+      downloadPath: '$(Build.ArtifactStagingDirectory)/vmr-assets/BlobArtifacts'
+      continueOnError: ${{ parameters.continueOnError }}
+
+- ${{ if eq(parameters.command, 'signing') }}:
+  - template: ../steps/vmr-download-artifact.yml
+    parameters:
+      displayName: Download Exclusions File
+      buildId: $(GetBuildInfo.UnifiedBuildRunId)
+      artifactName: SignCheck_${{ parameters.OS }}
+      itemPattern: '**/SignCheckExclusionsFile.txt'
+      downloadPath: '$(Build.SourcesDirectory)/eng/'
+      continueOnError: ${{ parameters.continueOnError }}
+      condition: not(or(startsWith(variables['GetBuildInfo.UnifiedBuildBranch'], 'refs/heads/release/'), startsWith(variables['GetBuildInfo.UnifiedBuildBranch'], 'refs/heads/internal/release/')))
+
+- powershell: |
+    $additionalArgs = ""
+    if ("${{ parameters.command }}" -eq "signing") {
+        $additionalArgs += " -exclusions $(Build.SourcesDirectory)/eng/SignCheckExclusionsFile.txt"
+
+        if ("${{ parameters.OS }}" -eq "Windows_NT") {
+            $additionalArgs += " -sdkTaskScript $(Build.SourcesDirectory)/eng/common/sdk-task.ps1"
+        } else {
+            $additionalArgs += " -sdkTaskScript $(Build.SourcesDirectory)/eng/common/sdk-task.sh"
+        }
+    }
+
+    if (![string]::IsNullOrWhiteSpace("${{ parameters.assetType }}")) {
+        $additionalArgs += " -assetType ${{ parameters.assetType }}"
+    }
+
+    if ("${{ parameters.clean }}" -eq "True") {
+        $additionalArgs += " -clean"
+    }
+
+    Write-Host "##vso[task.setvariable variable=additionalArgs;isOutput=true]$additionalArgs"
+  name: SetAdditionalArgs
+  displayName: Set additional command arguments
+
+- task: PowerShell@2
+  inputs:
+    filePath: $(Build.SourcesDirectory)/eng/common/build.ps1
+    arguments: -ci -projects $(Build.SourcesDirectory)/eng/tools/BuildComparer/BuildComparer.csproj -restore -build
+  displayName: Build BuildComparer
+
+- script: $(InstallDarc.dotnetPath)
+    $(Build.SourcesDirectory)/artifacts/bin/BuildComparer/Debug/BuildComparer.dll
+    ${{ parameters.command }}
+    -vmrManifestPath "$(Build.ArtifactStagingDirectory)/AssetManifests/MergedManifest.xml"
+    -vmrAssetBasePath "$(Build.ArtifactStagingDirectory)/vmr-assets"
+    -msftAssetBasePath "$(Build.ArtifactStagingDirectory)/base-assets"
+    -issuesReport "$(Build.SourcesDirectory)/artifacts/AssetBaselines/BaselineComparisonIssues.xml"
+    -noIssuesReport "$(Build.SourcesDirectory)/artifacts/AssetBaselines/BaselineComparisonNoIssues.xml"
+    -baseline "$(Build.SourcesDirectory)/src/sdk/eng/vmr-msft-comparison-baseline.json"
+    $(SetAdditionalArgs.additionalArgs)
+  displayName: Compare ${{ parameters.command}}
+
+- task: 1ES.PublishPipelineArtifact@1
+  displayName: Publish Baseline Files
+  continueOnError: true
+  inputs:
+    path: $(Build.SourcesDirectory)/artifacts/AssetBaselines/
+    artifactName: AssetBaselineFiles_$(Agent.JobName)
+    artifactType: Container
+    parallel: true
