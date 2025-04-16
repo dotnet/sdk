@@ -10,22 +10,22 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly CliArgument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument(requireArgument: false);
+    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument(requireArgument: false);
 
-    public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
+    public static readonly Option<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 
-    public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+    public static readonly Option<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
+        Command command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
 
         command.Arguments.Add(PackageIdentityArgument);
 
