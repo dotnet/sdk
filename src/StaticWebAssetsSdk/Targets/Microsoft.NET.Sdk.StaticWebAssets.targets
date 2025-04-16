@@ -660,7 +660,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
     <DefineStaticWebAssets
-      CandidateAssets="@(Content)"
+      CandidateAssets="@(Content->Distinct())"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
