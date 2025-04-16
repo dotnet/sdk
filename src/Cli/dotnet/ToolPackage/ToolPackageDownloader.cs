@@ -77,50 +77,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         RestoreActionConfig restoreActionConfig = null
         )
     {
-        var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-        
-        return TransactionalAction.Run<IToolPackage>(
-            action: () =>
-            {
-                if (isGlobalTool)
-                {
-                    return InstallGlobalToolPackageInternal(
-                        packageLocation, 
-                        packageId, 
-                        verbosity, 
-                        versionRange, 
-                        targetFramework, 
-                        isGlobalToolRollForward, 
-                        verifySignatures, 
-                        restoreActionConfig,
-                        packageRootDirectory);
-                }
-                else
-                {
-                    return InstallLocalToolPackageInternal(
-                        packageLocation, 
-                        packageId, 
-                        verbosity, 
-                        versionRange, 
-                        targetFramework, 
-                        verifySignatures, 
-                        restoreActionConfig,
-                        packageRootDirectory);
-                }
-            });
-    }
 
-    private IToolPackage InstallGlobalToolPackageInternal(
-        PackageLocation packageLocation, 
-        PackageId packageId,
-        VerbosityOptions verbosity,
-        VersionRange versionRange,
-        string targetFramework,
-        bool isGlobalToolRollForward,
-        bool verifySignatures,
-        RestoreActionConfig restoreActionConfig,
-        DirectoryPath packageRootDirectory)
-    {
         ILogger nugetLogger = new NullLogger();
         if (verbosity.IsDetailedOrDiagnostic())
         {
@@ -133,11 +90,8 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             versionRange = VersionRange.Parse(versionString);
         }
 
-        var toolDownloadDir = _globalToolStageDir;
-        var assetFileDirectory = _globalToolStageDir;
-
         var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-            toolDownloadDir,
+            new DirectoryPath(),
             verboseLogger: nugetLogger,
             verifySignatures: verifySignatures,
             shouldUsePackageSourceMapping: true,
@@ -145,14 +99,60 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             verbosityOptions: verbosity,
             currentWorkingDirectory: _currentWorkingDirectory);
 
-        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
-        bool givenSpecificVersion = false;
-        if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
-        {
-            givenSpecificVersion = true;
-        }
-        NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+        return TransactionalAction.Run<IToolPackage>(
+            action: () =>
+            {
+                var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
+
+                NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+
+                bool givenSpecificVersion = false;
+                if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+                {
+                    givenSpecificVersion = true;
+                }
+
+
+                if (isGlobalTool)
+                {
+                    return InstallGlobalToolPackageInternal(
+                        packageSourceLocation,
+                        nugetPackageDownloader,
+                        packageId, 
+                        packageVersion,
+                        givenSpecificVersion,
+                        targetFramework, 
+                        isGlobalToolRollForward);
+                }
+                else
+                {
+                    return InstallLocalToolPackageInternal(
+                        packageSourceLocation,
+                        nugetPackageDownloader,
+                        packageId,
+                        packageVersion,
+                        givenSpecificVersion, 
+                        targetFramework);
+                }
+            });
+    }
+
+    private IToolPackage InstallGlobalToolPackageInternal(
+        PackageSourceLocation packageSourceLocation,
+        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        bool givenSpecificVersion,
+        string targetFramework,
+        bool isGlobalToolRollForward)
+    {
+
+
+        var toolDownloadDir = _globalToolStageDir;
+        var assetFileDirectory = _globalToolStageDir;
+
+
 
         // Check if package already exists in global tools location
         NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
@@ -183,7 +183,6 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             givenSpecificVersion,
             assetFileDirectory,
             targetFramework,
-            packageRootDirectory,
             _runtimeJsonPath,
             _toolPackageStore,
             _globalToolStageDir);
@@ -212,7 +211,6 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 givenSpecificVersion: true, // Primary package manifest should always specify a specific version of RID-specific package
                 assetFileDirectory,
                 targetFramework,
-                packageRootDirectory,
                 _runtimeJsonPath,
                 _toolPackageStore,
                 _globalToolStageDir);
@@ -232,47 +230,16 @@ internal class ToolPackageDownloader : IToolPackageDownloader
     }
 
     private IToolPackage InstallLocalToolPackageInternal(
-        PackageLocation packageLocation, 
+        PackageSourceLocation packageSourceLocation,
+        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
         PackageId packageId,
-        VerbosityOptions verbosity,
-        VersionRange versionRange,
-        string targetFramework,
-        bool verifySignatures,
-        RestoreActionConfig restoreActionConfig,
-        DirectoryPath packageRootDirectory)
+        NuGetVersion packageVersion,
+        bool givenSpecificVersion,
+        string targetFramework)
     {
-        ILogger nugetLogger = new NullLogger();
-        if (verbosity.IsDetailedOrDiagnostic())
-        {
-            nugetLogger = new NuGetConsoleLogger();
-        }
-
-        if (versionRange == null)
-        {
-            var versionString = "*";
-            versionRange = VersionRange.Parse(versionString);
-        }
 
         var toolDownloadDir = _localToolDownloadDir;
         var assetFileDirectory = _localToolAssetDir;
-
-        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-            toolDownloadDir,
-            verboseLogger: nugetLogger,
-            verifySignatures: verifySignatures,
-            shouldUsePackageSourceMapping: true,
-            restoreActionConfig: restoreActionConfig,
-            verbosityOptions: verbosity,
-            currentWorkingDirectory: _currentWorkingDirectory);
-
-        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
-
-        bool givenSpecificVersion = false;
-        if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
-        {
-            givenSpecificVersion = true;
-        }
-        NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
         NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
 
@@ -290,7 +257,6 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             givenSpecificVersion,
             assetFileDirectory,
             targetFramework,
-            packageRootDirectory,
             _runtimeJsonPath,
             _toolPackageStore,
             _globalToolStageDir);
@@ -319,7 +285,6 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 givenSpecificVersion: true, // Primary package manifest should always specify a specific version of RID-specific package
                 assetFileDirectory,
                 targetFramework,
-                packageRootDirectory,
                 _runtimeJsonPath,
                 _toolPackageStore,
                 _globalToolStageDir);
@@ -333,7 +298,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         return toolPackageInstance;
     }
 
-    private (DirectoryPath toolReturnPackageDirectory, DirectoryPath toolReturnJsonParentDirectory) DownloadAndMovePackage(
+    private static (DirectoryPath toolReturnPackageDirectory, DirectoryPath toolReturnJsonParentDirectory) DownloadAndMovePackage(
         bool isGlobalTool,
         DirectoryPath toolDownloadDir,
         PackageId packageId,
@@ -344,11 +309,12 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
         string targetFramework,
-        DirectoryPath packageRootDirectory,
         string runtimeJsonPath,
         IToolPackageStore toolPackageStore,
         DirectoryPath globalToolStageDir)
     {
+        DirectoryPath packageRootDirectory = toolPackageStore.GetRootPackageDirectory(packageId);
+
         string rollbackDirectory = null;
         rollbackDirectory = isGlobalTool ? toolDownloadDir.Value : new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
         
