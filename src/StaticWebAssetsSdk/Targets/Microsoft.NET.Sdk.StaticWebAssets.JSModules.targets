@@ -98,6 +98,11 @@ Copyright (c) .NET Foundation. All rights reserved.
          to identify them and correctly clasify them. Modules from other projects or packages will already be correctly tagged when we
          retrieve them.
     -->
+
+    <PropertyGroup>
+      <_ResolveJsInitializerModuleStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rjimswa.dswa.cache.json</_ResolveJsInitializerModuleStaticWebAssetsCachePath>
+    </PropertyGroup>
+
     <DefineStaticWebAssets Condition="@(_JSModuleCandidates) != ''"
       CandidateAssets="@(_JSModuleCandidates)"
       AssetTraitName="JSModule"
@@ -105,6 +110,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       RelativePathFilter="**/$(PackageId).lib.module.js"
       PropertyOverrides="AssetTraitName;AssetTraitValue"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      CacheManifestPath="$(_ResolveJsInitializerModuleStaticWebAssetsCachePath)"
     >
       <Output TaskParameter="Assets" ItemName="_JSModuleStaticWebAsset" />
     </DefineStaticWebAssets>
@@ -258,6 +264,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMode="CurrentProject"
       AssetRole="Primary"
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       AssetTraitName="JSModule"
       AssetTraitValue="JSModuleManifest"
     >
@@ -374,6 +382,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetMergeSource="$(StaticWebAssetMergeTarget)"
       AssetTraitName="JSModule"
       AssetTraitValue="JSModuleManifest"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
     >
       <Output TaskParameter="Assets" ItemName="_PublishJsModuleManifestStaticWebAsset" />
     </DefineStaticWebAssets>
@@ -400,10 +410,17 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- To avoid situations where the content is defined twice, if the user defines the JS module explicitly as
            a content item, we'll prefer that over the potential item in the None item group
       -->
-      <_JSFileModuleCandidates Include="@(Content)" />
-      <_JSFileModuleNoneCandidates Include="@(None)" Exclude="@(Content)" />
+      <_JSFileModuleCandidates Include="@(Content->Distinct())" />
+      <_JSFileModuleNoneCandidates Include="@(None->Distinct())" Exclude="@(Content)" />
       <_JSFileModuleCandidates Include="@(_JSFileModuleNoneCandidates)" />
     </ItemGroup>
+
+    <PropertyGroup>
+      <_ResolveJSModuleStaticWebAssetsRazorCachePath>$(_StaticWebAssetsManifestBase)rjsmrazor.dswa.cache.json</_ResolveJSModuleStaticWebAssetsRazorCachePath>
+    </PropertyGroup>
+    <PropertyGroup>
+      <_ResolveJSModuleStaticWebAssetsCshtmlCachePath>$(_StaticWebAssetsManifestBase)rjsmcshtml.dswa.cache.json</_ResolveJSModuleStaticWebAssetsCshtmlCachePath>
+    </PropertyGroup>
 
     <!-- Find JS module files -->
     <!-- **/*.razor.js -->
@@ -414,7 +431,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(MSBuildProjectDirectory)"
       SourceType="Discovered"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      CacheManifestPath="$(_ResolveJSModuleStaticWebAssetsRazorCachePath)">
         <Output TaskParameter="Assets" ItemName="_ComponentJSModule" />
     </DefineStaticWebAssets>
 
@@ -426,7 +446,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       ContentRoot="$(MSBuildProjectDirectory)"
       SourceType="Discovered"
       BasePath="$(StaticWebAssetBasePath)"
-      AssetMergeSource="$(StaticWebAssetMergeTarget)">
+      AssetMergeSource="$(StaticWebAssetMergeTarget)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      CacheManifestPath="$(_ResolveJSModuleStaticWebAssetsCshtmlCachePath)">
         <Output TaskParameter="Assets" ItemName="_MvcJSModule" />
     </DefineStaticWebAssets>
 

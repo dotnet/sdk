@@ -6,11 +6,9 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class ProjectPathCommandResolver : AbstractPathBasedCommandResolver
+public class ProjectPathCommandResolver(IEnvironmentProvider environment,
+    IPlatformCommandSpecFactory commandSpecFactory) : AbstractPathBasedCommandResolver(environment, commandSpecFactory)
 {
-    public ProjectPathCommandResolver(IEnvironmentProvider environment,
-        IPlatformCommandSpecFactory commandSpecFactory) : base(environment, commandSpecFactory) { }
-
     internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
     {
         if (commandResolverArguments.ProjectDirectory == null)

@@ -5,7 +5,6 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks.Utils;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -21,12 +20,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // There is also a RelativePathPattern that is used to automatically transform the relative path of the candidates to match
 // the expected path of the final asset. This is typically use to remove a common path prefix, like `wwwroot` from the target
 // path of the assets and so on.
-public class DefineStaticWebAssets : Task
+public partial class DefineStaticWebAssets : Task
 {
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
-    public ITaskItem[] PropertyOverrides { get; set; }
+    public string[] PropertyOverrides { get; set; }
 
     public string SourceId { get; set; }
 
@@ -64,6 +63,8 @@ public class DefineStaticWebAssets : Task
 
     public string CopyToPublishDirectory { get; set; } = StaticWebAsset.AssetCopyOptions.PreserveNewest;
 
+    public string CacheManifestPath { get; set; }
+
     [Output]
     public ITaskItem[] Assets { get; set; }
 
@@ -72,13 +73,24 @@ public class DefineStaticWebAssets : Task
 
     public Func<string, string, (FileInfo file, long fileLength, DateTimeOffset lastWriteTimeUtc)> TestResolveFileDetails { get; set; }
 
+    private HashSet<string> _overrides;
+
     public override bool Execute()
     {
+        _overrides = new HashSet<string>(PropertyOverrides ?? [], StringComparer.OrdinalIgnoreCase);
+        var assetsCache = GetOrCreateAssetsCache();
+
+        if (assetsCache.IsUpToDate())
+        {
+            var outputs = assetsCache.GetComputedOutputs();
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
+
+            return !Log.HasLoggedErrors;
+        }
+
         try
         {
-            var results = new List<ITaskItem>();
-            var copyCandidates = new List<ITaskItem>();
-
             var matcher = !string.IsNullOrEmpty(RelativePathPattern) ?
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathPattern).Build() :
                 null;
@@ -87,12 +99,13 @@ public class DefineStaticWebAssets : Task
                 new StaticWebAssetGlobMatcherBuilder().AddIncludePatterns(RelativePathFilter).Build() :
                 null;
 
-            var assetsByRelativePath = new Dictionary<string, List<ITaskItem>>();
+            var assetsByRelativePath = new Dictionary<string, (ITaskItem First, ITaskItem Second)>(CandidateAssets.Length);
             var fingerprintPatternMatcher = new FingerprintPatternMatcher(Log, FingerprintCandidates ? (FingerprintPatterns ?? []) : []);
             var matchContext = StaticWebAssetGlobMatcher.CreateMatchContext();
-            for (var i = 0; i < CandidateAssets.Length; i++)
+            foreach (var kvp in assetsCache.OutOfDateInputs())
             {
-                var candidate = CandidateAssets[i];
+                var hash = kvp.Key;
+                var candidate = kvp.Value;
                 var relativePathCandidate = string.Empty;
                 if (SourceType == StaticWebAsset.SourceTypes.Discovered)
                 {
@@ -213,10 +226,7 @@ public class DefineStaticWebAssets : Task
 
                     if (computed)
                     {
-                        copyCandidates.Add(new TaskItem(candidate.ItemSpec, new Dictionary<string, string>
-                        {
-                            ["TargetPath"] = identity
-                        }));
+                        assetsCache.AppendCopyCandidate(hash, candidate.ItemSpec, identity);
                     }
                 }
 
@@ -255,11 +265,16 @@ public class DefineStaticWebAssets : Task
                     UpdateAssetKindIfNecessary(assetsByRelativePath, asset.RelativePath, item);
                 }
 
-                results.Add(item);
+                assetsCache.AppendAsset(hash, asset, item);
             }
 
-            Assets = [.. results];
-            CopyCandidates = [.. copyCandidates];
+            var outputs = assetsCache.GetComputedOutputs();
+            var results = outputs.Assets;
+
+            assetsCache.WriteCacheManifest();
+
+            Assets = [.. outputs.Assets];
+            CopyCandidates = [.. outputs.CopyCandidates];
         }
         catch (Exception ex)
         {
@@ -344,7 +359,7 @@ public class DefineStaticWebAssets : Task
 
     private string ComputePropertyValue(ITaskItem element, string metadataName, string propertyValue, bool isRequired = true)
     {
-        if (PropertyOverrides != null && PropertyOverrides.Any(a => string.Equals(a.ItemSpec, metadataName, StringComparison.OrdinalIgnoreCase)))
+        if (_overrides.Contains(metadataName))
         {
             return propertyValue;
         }
@@ -416,7 +431,9 @@ public class DefineStaticWebAssets : Task
         }
     }
 
-    private void UpdateAssetKindIfNecessary(Dictionary<string, List<ITaskItem>> assetsByRelativePath, string candidateRelativePath, ITaskItem asset)
+    private void UpdateAssetKindIfNecessary(
+        Dictionary<string, (ITaskItem First, ITaskItem Second)> assetsByRelativePath,
+        string candidateRelativePath, ITaskItem asset)
     {
         // We want to support content items in the form of
         // <Content Include="service-worker.development.js CopyToPublishDirectory="Never" TargetPath="wwwroot\service-worker.js" />
@@ -427,14 +444,13 @@ public class DefineStaticWebAssets : Task
         // As a result, assets by default have an asset kind 'All' when there is only one asset for the target path and 'Build' or 'Publish' when there are two of them.
         if (!assetsByRelativePath.TryGetValue(candidateRelativePath, out var existing))
         {
-            assetsByRelativePath.Add(candidateRelativePath, [asset]);
+            assetsByRelativePath.Add(candidateRelativePath, (asset, null));
         }
         else
         {
-            if (existing.Count == 2)
+            var (first, second) = existing;
+            if (first != null && second != null)
             {
-                var first = existing[0];
-                var second = existing[1];
                 var errorMessage = "More than two assets are targeting the same path: " + Environment.NewLine +
                     "'{0}' with kind '{1}'" + Environment.NewLine +
                     "'{2}' with kind '{3}'" + Environment.NewLine +
@@ -450,9 +466,9 @@ public class DefineStaticWebAssets : Task
 
                 return;
             }
-            else if (existing.Count == 1)
+            else if (first != null && second == null)
             {
-                var existingAsset = existing[0];
+                var existingAsset = first;
                 switch ((asset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory)), existingAsset.GetMetadata(nameof(StaticWebAsset.CopyToPublishDirectory))))
                 {
                     case (StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
@@ -472,7 +488,7 @@ public class DefineStaticWebAssets : Task
                         break;
 
                     case (StaticWebAsset.AssetCopyOptions.Never, not StaticWebAsset.AssetCopyOptions.Never):
-                        existing.Add(asset);
+                        existing.Second = asset;
                         asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
                         existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                         Log.LogMessage(MessageImportance.Low,
@@ -492,7 +508,7 @@ public class DefineStaticWebAssets : Task
                         break;
 
                     case (not StaticWebAsset.AssetCopyOptions.Never, StaticWebAsset.AssetCopyOptions.Never):
-                        existing.Add(asset);
+                        existing.Second = asset;
                         asset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Publish);
                         existingAsset.SetMetadata(nameof(StaticWebAsset.AssetKind), StaticWebAsset.AssetKinds.Build);
                         Log.LogMessage(MessageImportance.Low,

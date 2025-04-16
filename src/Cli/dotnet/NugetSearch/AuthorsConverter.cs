@@ -24,7 +24,7 @@ internal class AuthorsConverter : JsonConverter<NugetSearchApiAuthorsSerializabl
         else
         {
             var s = reader.GetString();
-            return new NugetSearchApiAuthorsSerializable() { Authors = new string[] { s } };
+            return new NugetSearchApiAuthorsSerializable() { Authors = [s] };
         }
     }
 

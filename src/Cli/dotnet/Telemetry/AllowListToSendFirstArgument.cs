@@ -7,15 +7,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-internal class AllowListToSendFirstArgument : IParseResultLogRule
+internal class AllowListToSendFirstArgument(
+    HashSet<string> topLevelCommandNameAllowList) : IParseResultLogRule
 {
-    public AllowListToSendFirstArgument(
-        HashSet<string> topLevelCommandNameAllowList)
-    {
-        _topLevelCommandNameAllowList = topLevelCommandNameAllowList;
-    }
-
-    private HashSet<string> _topLevelCommandNameAllowList { get; }
+    private HashSet<string> _topLevelCommandNameAllowList { get; } = topLevelCommandNameAllowList;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {
@@ -31,7 +26,7 @@ internal class AllowListToSendFirstArgument : IParseResultLogRule
         {
             if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
             {
-                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens.Where(t => t.Type.Equals(CliTokenType.Argument)).FirstOrDefault()?.Value ?? null;
+                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens.Where(t => t.Type.Equals(TokenType.Argument)).FirstOrDefault()?.Value ?? null;
                 if (firstArgument != null)
                 {
                     result.Add(new ApplicationInsightsEntryFormat(

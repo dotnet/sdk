@@ -42,15 +42,14 @@ public static class TypoCorrection
         var matchByContains = new List<Suggestion>();
         if (currentToken.Length >= minCurrentTokenLength)
         {
-            matchByContains = possibleSuggestions
+            matchByContains = [.. possibleSuggestions
                 .Where(s =>
                     !s.IsSelected
                     && s.PossibleMatch.Contains(currentToken)
                     && s.Distance - currentTokenLength <= maxLevenshteinDistance)
                 .OrderBy(s => s.Distance)
                 .Take(maxNumberOfSuggestions - numberOfSuggestions)
-                .Select(SetSelection)
-                .ToList();
+                .Select(SetSelection)];
 
             numberOfSuggestions += matchByContains.Count;
             if (numberOfSuggestions >= maxNumberOfSuggestions)
@@ -127,7 +126,7 @@ public static class TypoCorrection
         // so just O(m) space. Initialize the current row.
 
         int curRow = 0, nextRow = 1;
-        int[][] rows = { new int[m + 1], new int[m + 1] };
+        int[][] rows = [new int[m + 1], new int[m + 1]];
 
         for (int j = 0; j <= m; ++j)
         {

@@ -6,23 +6,16 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class RestoredCommand
+internal class RestoredCommand(
+    ToolCommandName name,
+    string runner,
+    FilePath executable)
 {
-    public RestoredCommand(
-        ToolCommandName name,
-        string runner,
-        FilePath executable)
-    {
-        Name = name;
-        Runner = runner ?? throw new ArgumentNullException(nameof(runner));
-        Executable = executable;
-    }
+    public ToolCommandName Name { get; private set; } = name;
 
-    public ToolCommandName Name { get; private set; }
+    public string Runner { get; private set; } = runner ?? throw new ArgumentNullException(nameof(runner));
 
-    public string Runner { get; private set; }
-
-    public FilePath Executable { get; private set; }
+    public FilePath Executable { get; private set; } = executable;
 
     public string DebugToString()
     {

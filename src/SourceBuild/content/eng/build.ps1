@@ -13,6 +13,7 @@ Param(
 
   # Advanced settings
   [switch]$buildRepoTests,
+  [string]$projects,
   [switch]$ci,
   [switch][Alias('cwb')]$cleanWhileBuilding,
   [switch][Alias('nobl')]$excludeCIBinarylog,
@@ -36,6 +37,7 @@ function Get-Usage() {
 
   Write-Host "Advanced settings:"
   Write-Host "  -buildRepoTests         Build repository tests"
+  Write-Host "  -projects <value>       Project or solution file to build"
   Write-Host "  -ci                     Set when running on CI server"
   Write-Host "  -cleanWhileBuilding     Cleans each repo after building (reduces disk space usage, short: -cwb)"
   Write-Host "  -excludeCIBinarylog     Don't output binary log (short: -nobl)"
@@ -62,6 +64,11 @@ if ($test) {
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
+}
+
+# Override project if specified on cmd-line
+if ($projects) {
+  $project = $projects
 }
 
 if ($sign) {

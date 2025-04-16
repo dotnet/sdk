@@ -45,14 +45,14 @@ internal static class LockFileTargetExtensions
         Dictionary<string, LockFileTargetLibrary> libraryLookup =
             runtimeLibraries.ToDictionary(e => e.Name, StringComparer.OrdinalIgnoreCase);
 
-        HashSet<string> allExclusionList = new();
+        HashSet<string> allExclusionList = [];
 
         if (lockFileTarget.IsPortable())
         {
             allExclusionList.UnionWith(lockFileTarget.GetPlatformExclusionList(libraryLookup));
         }
 
-        return runtimeLibraries.Filter(allExclusionList).ToArray();
+        return [.. runtimeLibraries.Filter(allExclusionList)];
     }
 
     public static IEnumerable<LockFileTargetLibrary> GetCompileLibraries(this LockFileTarget lockFileTarget)

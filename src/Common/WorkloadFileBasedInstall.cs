@@ -1,17 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
-
 #if DotnetCsproj
-using Microsoft.DotNet.Workloads.Workload.History;
+using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
 
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli;
 
-static class WorkloadFileBasedInstall
+internal static class WorkloadFileBasedInstall
 {
     public static bool IsUserLocal(string? dotnetDir, string? sdkFeatureBand)
         => dotnetDir is not null && File.Exists(GetUserInstallFilePath(dotnetDir, sdkFeatureBand));
@@ -50,10 +49,10 @@ static class WorkloadFileBasedInstall
     {
         if (!Directory.Exists(workloadHistoryDirectory))
         {
-            return Enumerable.Empty<WorkloadHistoryRecord>();
+            return [];
         }
 
-        List<WorkloadHistoryRecord> historyRecords = new();
+        List<WorkloadHistoryRecord> historyRecords = [];
 
         foreach (var file in Directory.GetFiles(workloadHistoryDirectory, "*.json"))
         {

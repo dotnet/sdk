@@ -1,5 +1,7 @@
-﻿using Microsoft.DotNet.VersionTools.BuildManifest;
+﻿using Microsoft.DotNet.VersionTools.Automation;
+using Microsoft.DotNet.VersionTools.BuildManifest;
 using NuGet.Packaging;
+using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Formats.Tar;
@@ -37,9 +39,14 @@ public class Program
             Description = "Path to the asset base path",
             Required = true
         };
-        var outputFileArgument = new CliOption<string>("-report")
+        var issuesReportArgument = new CliOption<string>("-issuesReport")
         {
-            Description = "Path to output xml file.",
+            Description = "Path to output xml file for non-baselined issues.",
+            Required = true
+        };
+        var noIssuesReportArgument = new CliOption<string>("-noIssuesReport") 
+        {
+            Description = "Path to output xml file for baselined issues and assets without issues.",
             Required = true
         };
         var parallelismArgument = new CliOption<int>("-parallel")
@@ -58,7 +65,8 @@ public class Program
             vmrManifestPathArgument,
             vmrAssetBasePathArgument,
             msftAssetBasePathArgument,
-            outputFileArgument,
+            issuesReportArgument,
+            noIssuesReportArgument,
             baselineArgument,
             parallelismArgument
         };
@@ -69,11 +77,10 @@ public class Program
         var comparer = new Program(result.GetValue(vmrManifestPathArgument),
                                     result.GetValue(vmrAssetBasePathArgument),
                                     result.GetValue(msftAssetBasePathArgument),
-                                    result.GetValue(outputFileArgument),
+                                    result.GetValue(issuesReportArgument),
+                                    result.GetValue(noIssuesReportArgument),
                                     result.GetValue(baselineArgument),
                                     result.GetValue(parallelismArgument));
-
-
 
         return (int)comparer.CompareBuilds().GetAwaiter().GetResult();
     }
@@ -94,9 +101,14 @@ public class Program
     private string _baseBuildAssetBasePath;
     
     /// <summary>
-    /// Path where the comparison report will be saved.
+    /// Path where the comparison report for issues will be saved.
     /// </summary>
-    private string _outputFilePath;
+    private string _issuesReportPath;
+    
+    /// <summary>
+    /// Path where the comparison report for no issues will be saved.
+    /// </summary>
+    private string _noIssuesReportPath;
     
     /// <summary>
     /// Semaphore used to control parallel processing.
@@ -121,19 +133,23 @@ public class Program
     /// <param name="vmrManifestPath">Path to the VMR manifest file.</param>
     /// <param name="vmrAssetBasePath">Base path for VMR build assets.</param>
     /// <param name="baseBuildAssetBasePath">Base path for Microsoft build assets.</param>
-    /// <param name="outputFilePath">Path where the comparison report will be saved.</param>
+    /// <param name="issuesReportPath">Path where the comparison report for issues will be saved.</param>
+    /// <param name="noIssuesReportPath">Path where the comparison report for no issues will be saved.</param>
+    /// <param name="baselineFilePath">Path to the baseline build manifest.</param>
     /// <param name="parallelTasks">Number of tasks to run in parallel.</param>
     private Program(string vmrManifestPath,
                     string vmrAssetBasePath,
                     string baseBuildAssetBasePath,
-                    string outputFilePath,
+                    string issuesReportPath,
+                    string noIssuesReportPath,
                     string baselineFilePath,
                     int parallelTasks)
     {
         _vmrManifestPath = vmrManifestPath;
         _vmrBuildAssetBasePath = vmrAssetBasePath;
         _baseBuildAssetBasePath = baseBuildAssetBasePath;
-        _outputFilePath = outputFilePath;
+        _issuesReportPath = issuesReportPath;
+        _noIssuesReportPath = noIssuesReportPath;
         _throttle = new SemaphoreSlim(parallelTasks, parallelTasks);
 
         if (!string.IsNullOrEmpty(baselineFilePath))
@@ -239,53 +255,85 @@ public class Program
     }
 
     /// <summary>
-    /// Generates the final comparison report and saves it to the specified output file.
+    /// Generates the final comparison report and saves it to the specified output files.
     /// </summary>
     private void GenerateReport()
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_outputFilePath));
+        // Create two separate reports
+        var issuesReport = new ComparisonReport();
+        var noIssuesReport = new ComparisonReport();
 
-        // Bucketize asset mappings
-        _comparisonReport.AssetsWithoutIssues = _assetMappings
-            .Where(mapping => !mapping.Issues.Any(i => i.Baseline == null) && !mapping.EvaluationErrors.Any())
-            .ToList();
-
-        _comparisonReport.AssetsWithErrors = _assetMappings
+        // Assets with errors go to the issues report
+        var assetsWithErrors = _assetMappings
             .Where(mapping => mapping.EvaluationErrors.Any())
             .ToList();
 
-        _comparisonReport.AssetsWithIssues = _assetMappings
-            .Where(mapping => mapping.Issues.Any(issue => issue.Baseline == null))
-            .OrderByDescending(mapping => mapping.Issues.Count(issue => issue.Baseline == null))
+        // Process each asset mapping to potentially split between reports
+        var assetsForReport = _assetMappings
+            .Where(mapping => !mapping.EvaluationErrors.Any())
+            .SelectMany(mapping =>
+            {
+                var nonBaselinedIssues = mapping.Issues.Any(i => i.Baseline == null);
+                var baselinedIssues = mapping.Issues.Any(i => i.Baseline != null);
+
+                if (nonBaselinedIssues && baselinedIssues)
+                {
+                    // If it has both non-baselined and baselined issues, create a copy for the issues report
+                    var nonBaselinedMapping = CloneAssetMappingWithFilteredIssues(mapping, i => i.Baseline == null);
+                    var baselinedMapping = CloneAssetMappingWithFilteredIssues(mapping, i => i.Baseline != null);
+                    return new[] { nonBaselinedMapping, baselinedMapping };
+                }
+                else
+                {
+                    // If it has no issues at all, it goes to the no-issues report as is
+                    return new[] { mapping };
+                }
+            })
             .ToList();
 
-        // Sort issues within each mapping
-        foreach (var mapping in _comparisonReport.AssetsWithIssues)
-        {
-            mapping.Issues = mapping.Issues
-                .OrderBy(issue => issue.Baseline != null)
-                .ThenBy(issue => issue.IssueType)
-                .ToList();
-        }
+        // Populate the issues report
+        issuesReport.AssetsWithIssues = assetsForReport
+            .Where(mapping => mapping.Issues.Any(i => i.Baseline == null))
+            .OrderByDescending(mapping => mapping.Issues.Count)
+            .ToList();
+        issuesReport.AssetsWithErrors = assetsWithErrors;
+        issuesReport.AssetsWithoutIssues = new List<AssetMapping>();
 
-        // Serialize all asset mappings to xml
+        // Populate the no-issues report
+        noIssuesReport.AssetsWithIssues = assetsForReport
+            .Where(mapping => mapping.Issues.All(i => i.Baseline != null))
+            .ToList();
+        noIssuesReport.AssetsWithoutIssues = assetsForReport
+            .Where(mapping => !mapping.Issues.Any())
+            .ToList();
+        noIssuesReport.AssetsWithErrors = new List<AssetMapping>();
+
+        // Create directories if they don't exist
+        Directory.CreateDirectory(Path.GetDirectoryName(_issuesReportPath));
+        Directory.CreateDirectory(Path.GetDirectoryName(_noIssuesReportPath));
+
+        // Serialize reports to XML
         var serializer = new System.Xml.Serialization.XmlSerializer(typeof(ComparisonReport));
-        using (var stream = new FileStream(_outputFilePath, FileMode.Create))
+        using (var stream = new FileStream(_issuesReportPath, FileMode.Create))
         {
-            serializer.Serialize(stream, _comparisonReport);
-            stream.Close();
+            serializer.Serialize(stream, issuesReport);
         }
 
-        Console.WriteLine($"Comparison report saved to {_outputFilePath}");
-        Console.WriteLine($"Errors: {_comparisonReport.ErrorCount}");
-        Console.WriteLine($"Issues: {_comparisonReport.IssueCount}");
-        Console.WriteLine($"Baselined issues: {_comparisonReport.BaselineCount}");
+        using (var stream = new FileStream(_noIssuesReportPath, FileMode.Create))
+        {
+            serializer.Serialize(stream, noIssuesReport);
+        }
 
-        var allAssetWithIssues = _assetMappings
-            .Where(mapping => mapping.Issues.Any() && !mapping.EvaluationErrors.Any())
-            .ToList();
+        // Update console output for both reports
+        Console.WriteLine($"Issues report saved to {_issuesReportPath}");
+        Console.WriteLine($"No-issues report saved to {_noIssuesReportPath}");
+        Console.WriteLine($"Errors: {assetsWithErrors.Count}");
+        Console.WriteLine($"Non-baselined issues: {issuesReport.AssetsWithIssues.Sum(m => m.Issues.Count)}");
+        Console.WriteLine($"Baselined issues: {noIssuesReport.AssetsWithIssues.Sum(m => m.Issues.Count)}");
 
         // Print detailed issue counts by type
+        var allAssetWithIssues = assetsForReport.Where(mapping => mapping.Issues.Any()).ToList();
+
         var issueCountsByType = allAssetWithIssues
             .SelectMany(mapping => mapping.Issues)
             .Where(issue => issue.Baseline == null)
@@ -305,6 +353,27 @@ public class Program
             baselinedIssueCountsByType.TryGetValue(issueType, out int baselinedIssueCount);
             Console.WriteLine($"  {issueType}: Issues w/o Baseline = {issueCount}, Baselined issues = {baselinedIssueCount}");
         }
+    }
+
+    /// <summary>
+    /// Clones an asset mapping with filtered issues.
+    /// </summary>
+    /// <param name="original">Original asset mapping.</param>
+    /// <param name="issueFilter">Filter function for issues.</param>
+    /// <returns>Cloned asset mapping with filtered issues.</returns>
+    private static AssetMapping CloneAssetMappingWithFilteredIssues(AssetMapping original, Func<Issue, bool> issueFilter)
+    {
+        return new AssetMapping
+        {
+            Id = original.Id,
+            AssetType = original.AssetType,
+            DiffFilePath = original.DiffFilePath,
+            DiffManifestElement = original.DiffManifestElement,
+            BaseBuildFilePath = original.BaseBuildFilePath,
+            BaseBuildManifestElement = original.BaseBuildManifestElement,
+            EvaluationErrors = original.EvaluationErrors,
+            Issues = original.Issues.Where(issueFilter).ToList()
+        };
     }
 
     /// <summary>
@@ -983,6 +1052,9 @@ public class Program
         return assetMappings;
     }
 
+    private NupkgInfoFactory _nupkgInfoFactory = new NupkgInfoFactory(new PackageArchiveReaderFactory());
+    private ConcurrentDictionary<string, string> _symbolNupkgBlobVersionHelper = new ConcurrentDictionary<string, string>();
+
     private AssetMapping MapBlob(XDocument diffMergedManifestContent, XElement baseElement, string basePath, string diffPath)
     {
         string baseBlobId = baseElement.Attribute("Id")?.Value;
@@ -1001,7 +1073,18 @@ public class Program
         // in the target manifest. Use the version identifier on the full ID because it's
         // smarter in some cases using that.
 
-        string baseVersion = VersionIdentifier.GetVersion(baseBlobId);
+        string baseVersion;
+        // Special case for symbols packages, since we can open them. There are some blobs where we have trouble
+        // identifying the version by a string parse because it doesn't have a proper pre-release label. e.g. assets/symbols/csc.ARM64.Symbols.4.14.0-3.25174.10.symbols.nupkg
+        if (baseFilePath != null && baseBlobId.EndsWith(".symbols.nupkg"))
+        {
+            baseVersion = _nupkgInfoFactory.CreateNupkgInfo(baseFilePath).Version;
+        }
+        else
+        {
+            baseVersion = VersionIdentifier.GetVersion(baseBlobId);
+        }
+
         string strippedBaseBlobFileName = baseBlobFileName;
         if (baseVersion != null)
         {
@@ -1013,7 +1096,24 @@ public class Program
             {
                 string diffBlobId = p.Attribute("Id")?.Value;
                 string diffBlobFileName = Path.GetFileName(diffBlobId);
-                string diffVersion = VersionIdentifier.GetVersion(diffBlobId);
+                string diffFilePath = Path.Combine(diffPath, "BlobArtifacts", diffBlobFileName);
+
+                // Because the version identifier isn't perfect, we special case a couple artifacts where it's easier to
+                // just open a nupkg and get the version from it.
+                string diffVersion = null;
+                if (diffFilePath.EndsWith(".symbols.nupkg"))
+                {
+                    if (!_symbolNupkgBlobVersionHelper.TryGetValue(diffBlobId, out diffVersion) && File.Exists(diffFilePath))
+                    {
+                        diffVersion = _nupkgInfoFactory.CreateNupkgInfo(diffFilePath).Version;
+                        _symbolNupkgBlobVersionHelper.TryAdd(diffBlobId, diffVersion);
+                    }
+                }
+
+                if (diffVersion == null)
+                {
+                    diffVersion = VersionIdentifier.GetVersion(diffBlobId);
+                }
                 string strippedDiffBlobFileName = diffBlobFileName;
                 if (diffVersion != null)
                 {

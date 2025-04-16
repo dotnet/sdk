@@ -22,6 +22,10 @@
     <RepoArtifactsNonShippingPackagesDir Condition="'$(ReferenceOnlyRepoArtifacts)' == 'true'">$(ReferencePackagesDir)</RepoArtifactsNonShippingPackagesDir>
     <RepoArtifactsPdbArtifactsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsSymStoreDirectory)', '$(RepositoryName)'))</RepoArtifactsPdbArtifactsDir>
 
+    <!-- Pass down configuration properties -->
+    <CommonArgs Condition="'$(SkipSetTargetArchitecture)' != 'true'">$(CommonArgs) /p:TargetArchitecture=$(TargetArchitecture)</CommonArgs>
+    <CommonArgs Condition="'$(SkipSetTargetOS)' != 'true'">$(CommonArgs) /p:TargetOS=$(TargetOS)</CommonArgs>
+
     <!-- Pass location for packages -->
     <CommonArgs>$(CommonArgs) /p:SourceBuiltShippingPackagesDir=$(RepoArtifactsShippingPackagesDir)</CommonArgs>
     <!-- Trim the trailing slash as it breaks argument parsing on Windows if this is the last argument. -->
@@ -56,7 +60,6 @@
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
-    <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
@@ -213,7 +216,7 @@
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
-                            SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
+                            SourcePath="$(PreviouslySourceBuiltPackagesPath)"
                             Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
@@ -317,10 +320,10 @@
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
     <ItemGroup>
-      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
+      <_PreviouslySourceBuiltAssetManifests Include="$(PreviouslySourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PreviouslySourceBuiltAssetManifests)" Condition="Exists(@(_PreviouslySourceBuiltAssetManifests))">
       <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
     </GetKnownArtifactsFromAssetManifests>
 
@@ -871,7 +874,7 @@
       <TarballPrebuiltPackageFile Include="$(PrebuiltPackagesPath)*.nupkg" />
 
       <SourceBuiltPackageFile Include="$(ArtifactsPackagesDir)**/*.nupkg" />
-      <SourceBuiltPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <SourceBuiltPackageFile Include="$(PreviouslySourceBuiltPackagesPath)*.nupkg" />
       <ReferencePackageFile Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
@@ -944,7 +947,6 @@
 
     <WriteUsageReports DataFile="$(PackageReportDataFile)"
                        PackageVersionPropsSnapshots="@(PackageVersionPropsSavedSnapshotFile)"
-                       ProdConBuildManifestFile="$(ProdConManifestFile)"
                        PoisonedReportFile="$(PoisonedReportFile)"
                        OutputDirectory="$(PackageReportDir)" />
 

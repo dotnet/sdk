@@ -1,19 +1,33 @@
 <Project>
 
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <ProjectToBuild Include="$(RepoRoot)source-build.slnf" />
+  </ItemGroup>
+
   <!-- For product build, build MSBuildExtensions and VSTemplateLocator in the second build pass on win-x64 as
        they depend on assets from other verticals that are built in the first build pass. -->
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and
                         '$(OS)' == 'Windows_NT' and
-                        '$(Architecture)' == 'x64'">
+                        '$(TargetArchitecture)' == 'x64' and
+                        '$(BuildWorkloads)' != 'true'">
     <ProjectToBuild Include="$(RepoRoot)src\Layout\VS.Redist.Common.Net.Core.SDK.MSBuildExtensions\VS.Redist.Common.Net.Core.SDK.MSBuildExtensions.proj" DotNetBuildPass="2" />
     <ProjectToBuild Include="$(RepoRoot)src\Layout\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator\VS.Redist.Common.Net.Core.SDK.VSTemplateLocator.proj" DotNetBuildPass="2" />
   </ItemGroup>
 
-  <!-- For product build, build the sdk bundle in the second build pass on windows as
+  <!-- For product build, build the Workloads in the second build pass on windows as
        it depends on assets from other verticals that are built in the first build pass. -->
   <ItemGroup Condition="'$(DotNetBuildPass)' == '2' and
+                        '$(OS)' == 'Windows_NT' and
+                        '$(TargetArchitecture)' == 'x64' and
+                        '$(BuildWorkloads)' == 'true'">
+    <ProjectToBuild Include="$(RepoRoot)src\Workloads\VSInsertion\workloads.csproj" DotNetBuildPass="2" />
+  </ItemGroup>
+
+  <!-- For product build, build the sdk bundle in the third build pass on windows as
+       it depends on assets from other verticals that are built in the second build pass. -->
+  <ItemGroup Condition="'$(DotNetBuildPass)' == '3' and
                         '$(OS)' == 'Windows_NT'">
-    <ProjectToBuild Include="$(RepoRoot)src\Layout\redist\redist.csproj" DotNetBuildPass="2" />
+    <ProjectToBuild Include="$(RepoRoot)src\Layout\redist\redist.csproj" DotNetBuildPass="3" />
   </ItemGroup>
 
 </Project>

@@ -9,23 +9,16 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-internal class LocalToolsCommandResolver : ICommandResolver
+internal class LocalToolsCommandResolver(
+    ToolManifestFinder toolManifest = null,
+    ILocalToolsResolverCache localToolsResolverCache = null,
+    IFileSystem fileSystem = null,
+    string currentWorkingDirectory = null) : ICommandResolver
 {
-    private readonly ToolManifestFinder _toolManifest;
-    private readonly ILocalToolsResolverCache _localToolsResolverCache;
-    private readonly IFileSystem _fileSystem;
+    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
+    private readonly ILocalToolsResolverCache _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
+    private readonly IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
     private const string LeadingDotnetPrefix = "dotnet-";
-
-    public LocalToolsCommandResolver(
-        ToolManifestFinder toolManifest = null,
-        ILocalToolsResolverCache localToolsResolverCache = null,
-        IFileSystem fileSystem = null,
-        string currentWorkingDirectory = null)
-    {
-        _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
-        _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
-        _fileSystem = fileSystem ?? new FileSystemWrapper();
-    }
 
     public CommandSpec ResolveStrict(CommandResolverArguments arguments, bool allowRollForward = false)
     {
@@ -91,7 +84,7 @@ internal class LocalToolsCommandResolver : ICommandResolver
         {
             if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
             {
-                throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore,
+                throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
             }
 
@@ -106,7 +99,7 @@ internal class LocalToolsCommandResolver : ICommandResolver
         }
         else
         {
-            throw new GracefulException(string.Format(LocalizableStrings.NeedRunToolRestore,
+            throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
         }
     }
