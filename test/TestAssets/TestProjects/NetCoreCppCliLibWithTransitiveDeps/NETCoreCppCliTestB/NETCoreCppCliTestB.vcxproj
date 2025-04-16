@@ -42,6 +42,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <RootNamespace>NETCoreCppCliTest</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <EnableManagedpackageReferenceSupport>true</EnableManagedpackageReferenceSupport>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
