@@ -215,13 +215,13 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-We do not limit these directives to appear only in entry point files.
-Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#:package`s it needs specified in it,
-which also makes it possible to share it independently or symlink it to multiple script folders.
-This is also similar to `global using`s which users usually put into a single file but don't have to.
-However, beware that all directives are always parsed by the CLI regardless of whether the file is included in the final compilation
-(in other words, any build customizations like `<Compile Exclude="Util.cs" />` are ignored),
-because the CLI must parse the directives before invoking MSBuild to avoid multiple build invocations.
+It is an error if a project directive appears in a non-entry-point file.
+Otherwise it is unclear how the CLI would determine which files to parse directives from
+(presumably we would want to exclude other entry points but the CLI defers to the compiler to detect entry points).
+We could relax this in the future because it would allow:
+- a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
+- which would also make it possible to share it independently or symlink it to multiple script folders,
+- and it would be similar to `global using`s which users usually put into a single file but don't have to.
 
 We could consider deduplicating `#:` directives
 (e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
