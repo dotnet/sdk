@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Reflection;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -296,12 +297,13 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             version = nuspecReader.GetVersion();
             bool requireLicenseAcceptance = nuspecReader.GetRequireLicenseAcceptance();
             // If the package requires license acceptance, we need to ask the user to accept it
+            // TODO: Find a better way to handle this
             if (requireLicenseAcceptance)
             {
                 Console.WriteLine($"The package {packageId} requires license acceptance. Please accept the license to continue. [y]");
                 if (!Console.ReadKey().Key.Equals(ConsoleKey.Y))
                 {
-                    throw new OperationCanceledException($"User did not accept the license for package {packageId}.");
+                    throw new ToolPackageException($"User did not accept the license for package {packageId}.");
                 }
             }
 
