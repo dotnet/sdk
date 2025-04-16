@@ -11,7 +11,7 @@ public class CommonOptionsTests
     [Fact]
     public void Duplicates()
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", "A=1", "-e", "A=2"]);
@@ -26,7 +26,7 @@ public class CommonOptionsTests
     [Fact]
     public void Duplicates_CasingDifference()
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", "A=1", "-e", "a=2"]);
@@ -53,7 +53,7 @@ public class CommonOptionsTests
     [Fact]
     public void MultiplePerToken()
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", "A=1;B=2,C=3 D=4", "-e", "B==Y=", "-e", "C;=;"]);
@@ -73,7 +73,7 @@ public class CommonOptionsTests
     [Fact]
     public void NoValue()
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", "A"]);
@@ -88,7 +88,7 @@ public class CommonOptionsTests
     [Fact]
     public void WhitespaceTrimming()
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", " A \t\n\r\u2002 = X Y \t\n\r\u2002"]);
@@ -107,7 +107,7 @@ public class CommonOptionsTests
     [InlineData("  \u2002 = X")]
     public void Errors(string token)
     {
-        var command = new CliRootCommand();
+        var command = new RootCommand();
         command.Options.Add(CommonOptions.EnvOption);
 
         var result = command.Parse(["-e", token]);

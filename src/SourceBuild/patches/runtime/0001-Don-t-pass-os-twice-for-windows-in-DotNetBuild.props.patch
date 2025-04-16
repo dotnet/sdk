@@ -1,0 +1,24 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Alexander=20K=C3=B6plinger?= <alex.koeplinger@outlook.com>
+Date: Wed, 16 Apr 2025 11:51:04 +0200
+Subject: [PATCH] Don't pass -os twice for windows in DotNetBuild.props
+
+Backport: https://github.com/dotnet/runtime/pull/114732
+
+---
+ eng/DotNetBuild.props | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/eng/DotNetBuild.props b/eng/DotNetBuild.props
+index 135b972c32b..1e3137ec241 100644
+--- a/eng/DotNetBuild.props
++++ b/eng/DotNetBuild.props
+@@ -32,7 +32,7 @@
+ 
+       <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)arch $(TargetArchitecture)</InnerBuildArgs>
+       <InnerBuildArgs Condition="'$(_portableOS)' == 'win'">$(InnerBuildArgs) $(FlagParameterPrefix)os windows</InnerBuildArgs>
+-      <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)os $(_portableOS)</InnerBuildArgs>
++      <InnerBuildArgs Condition="'$(_portableOS)' != 'win'">$(InnerBuildArgs) $(FlagParameterPrefix)os $(_portableOS)</InnerBuildArgs>
+       <!-- Mobile builds are never "cross" builds as they don't have a rootfs-based filesystem build. -->
+       <InnerBuildArgs Condition="'$(CrossBuild)' == 'true' or ('$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(TargetsMobile)' != 'true')">$(InnerBuildArgs) $(FlagParameterPrefix)cross</InnerBuildArgs>
+       <InnerBuildArgs>$(InnerBuildArgs) $(FlagParameterPrefix)configuration $(Configuration)</InnerBuildArgs>
