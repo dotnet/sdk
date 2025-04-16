@@ -38,8 +38,13 @@ In fact, this command simply materializes the [implicit project file](#implicit-
 This action should not change the behavior of the target program.
 
 ```ps1
-dotnet project convert
+dotnet project convert file.cs
 ```
+
+The command takes a path which can be either
+- path to the entry-point file in case of single entry-point programs, or
+- path to the target directory (then all entry points are converted;
+  it is not possible to convert just a single entry point in multi-entry-point program).
 
 ## Target path
 
@@ -136,7 +141,9 @@ That's because it might be perfectly reasonable to have file-based programs nest
 
 ### Multiple entry points
 
-If there are multiple entry-point files in the target directory subtree, the build ignores other entry-point files.
+If there are multiple entry-point files in the target directory, the build ignores other entry-point files.
+It is an error to have an entry-point file in a subdirectory of the target directory
+(because it is unclear how such program should be converted to a project-based one).
 
 Thanks to this, it is possible to have a structure like
 ```
