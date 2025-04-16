@@ -15,8 +15,8 @@ internal static class CommonRunHelpers
     {
         Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
 
-        var fakeCommand = new System.CommandLine.CliCommand("dotnet") { CommonOptions.PropertiesOption };
-        var propertyParsingConfiguration = new System.CommandLine.CliConfiguration(fakeCommand);
+        var fakeCommand = new System.CommandLine.Command("dotnet") { CommonOptions.PropertiesOption };
+        var propertyParsingConfiguration = new System.CommandLine.CommandLineConfiguration(fakeCommand);
         var propertyParseResult = propertyParsingConfiguration.Parse(args);
         var propertyValues = propertyParseResult.GetValue(CommonOptions.PropertiesOption);
 
