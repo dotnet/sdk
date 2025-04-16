@@ -1,5 +1,5 @@
 
-<Project Sdk="Microsoft.Build.NoTargets">
+<Project>
 
   <PropertyGroup>
     <!-- Need to set to false to calculate RepositoryCommit. -->
@@ -63,7 +63,7 @@
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.WritePackageVersionsProps" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
   <Target Name="CreatePrivateSourceBuiltArtifactsArchive"
           AfterTargets="Publish"
-          DependsOnTargets="DiscoverArtifacts;DetermineSourceBuiltSdkNonStableVersion"
+          DependsOnTargets="DiscoverArtifacts"
           Inputs="@(PackageToPublish);@(ReferencePackage);$(AssetManifestFilePath)"
           Outputs="$(SourceBuiltTarballName);$(SourceBuiltVersionName);$(AllPackageVersionsPropsName);$(SourceBuiltMergedAssetManifestName)">
     <!-- Copy packages to layout directory. Since there are a large number of files,
