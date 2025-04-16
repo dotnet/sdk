@@ -24,43 +24,43 @@ public class Program
     /// <returns>Return code indicating success (0) or failure (non-zero).</returns>
     static int Main(string[] args)
     {
-        var vmrManifestPathArgument = new Option<string>("-vmrManifestPath")
+        var vmrManifestPathArgument = new CliOption<string>("-vmrManifestPath")
         {
             Description = "Path to the manifest file",
             Required = true
         };
-        var vmrAssetBasePathArgument = new Option<string>("-vmrAssetBasePath")
+        var vmrAssetBasePathArgument = new CliOption<string>("-vmrAssetBasePath")
         {
             Description = "Path to the manifest file",
             Required = true
         };
-        var msftAssetBasePathArgument = new Option<string>("-msftAssetBasePath")
+        var msftAssetBasePathArgument = new CliOption<string>("-msftAssetBasePath")
         {
             Description = "Path to the asset base path",
             Required = true
         };
-        var issuesReportArgument = new Option<string>("-issuesReport")
+        var issuesReportArgument = new CliOption<string>("-issuesReport")
         {
             Description = "Path to output xml file for non-baselined issues.",
             Required = true
         };
-        var noIssuesReportArgument = new Option<string>("-noIssuesReport") 
+        var noIssuesReportArgument = new CliOption<string>("-noIssuesReport") 
         {
             Description = "Path to output xml file for baselined issues and assets without issues.",
             Required = true
         };
-        var parallelismArgument = new Option<int>("-parallel")
+        var parallelismArgument = new CliOption<int>("-parallel")
         {
             Description = "Amount of parallelism used while analyzing the builds.",
             DefaultValueFactory = _ => 8,
             Required = true
         };
-        var baselineArgument = new Option<string>("-baseline")
+        var baselineArgument = new CliOption<string>("-baseline")
         {
             Description = "Path to the baseline build manifest.",
             Required = true
         };
-        var rootCommand = new RootCommand(description: "Tool for comparing Microsoft builds with VMR builds.")
+        var rootCommand = new CliRootCommand(description: "Tool for comparing Microsoft builds with VMR builds.")
         {
             vmrManifestPathArgument,
             vmrAssetBasePathArgument,
