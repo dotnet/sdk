@@ -216,7 +216,6 @@ fi
 project="$scriptroot/build.proj"
 actions=( "/p:Restore=true" "/p:Build=true" "/p:Publish=true")
 
-# This repo uses the VSTest integration instead of the Arcade Test target
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
   actions=( "/p:Restore=true" "/p:Build=true" "/p:Test=true" "/p:IsTestRun=true")

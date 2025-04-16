@@ -55,7 +55,6 @@ if ($help) {
 $project = Join-Path $RepoRoot "build.proj"
 $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true")
 
-# This repo uses the VSTest integration instead of the Arcade Test target
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
   $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true", "/p:IsTestRun=true")
