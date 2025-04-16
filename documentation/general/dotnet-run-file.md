@@ -160,7 +160,7 @@ App/Program2/Program2.csproj
 The generated folders might need to be named differently to avoid clashes with existing folders.
 
 The entry-point projects (`Program1` and `Program2` in our example)
-have the shared `.cs` files source-included via `<Content Include="../Shared/**/*.cs" />`.
+have the shared `.cs` files source-included via `<Compile Include="../Shared/**/*.cs" />`.
 
 We could consider using `InternalsVisibleTo` attribute but that might result in slight differences between single- and multi-entry-point programs
 (if not now then perhaps in the future if [some "more internal" accessibility](https://github.com/dotnet/csharplang/issues/6794) is added to C# which doesn't respect `InternalsVisibleTo`)
