@@ -11,10 +11,10 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TopLevelCommandNameAndOptionToLog(
     HashSet<string> topLevelCommandName,
-    HashSet<CliOption> optionsToLog) : IParseResultLogRule
+    HashSet<Option> optionsToLog) : IParseResultLogRule
 {
     private HashSet<string> _topLevelCommandName { get; } = topLevelCommandName;
-    private HashSet<CliOption> _optionsToLog { get; } = optionsToLog;
+    private HashSet<Option> _optionsToLog { get; } = optionsToLog;
 
     public List<ApplicationInsightsEntryFormat> AllowList(ParseResult parseResult, Dictionary<string, double> measurements = null)
     {

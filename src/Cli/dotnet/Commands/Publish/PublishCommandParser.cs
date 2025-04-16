@@ -11,57 +11,57 @@ internal static class PublishCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
         Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
         Description = CliCommandStrings.PublishOutputOptionDescription,
         HelpName = CliCommandStrings.PublishOutputOption
     }.ForwardAsOutputPath("PublishDir");
 
-    public static readonly CliOption<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
+    public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest")
     {
         Description = CliCommandStrings.ManifestOptionDescription,
         HelpName = CliCommandStrings.ManifestOption
     }.ForwardAsSingle(o => $"-property:TargetManifestFiles={string.Join("%3B", o.Select(CommandDirectoryContext.GetFullPath))}")
     .AllowSingleArgPerToken();
 
-    public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
     {
         Description = CliCommandStrings.NoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
         Description = CliCommandStrings.PublishCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly CliOption<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
+    public static readonly Option<bool> SelfContainedOption = CommonOptions.SelfContainedOption;
 
-    public static readonly CliOption<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
+    public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly CliOption<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
+    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
 

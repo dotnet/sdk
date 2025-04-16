@@ -8,24 +8,24 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Remove;
 
 internal static class PackageRemoveCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
+    public static readonly Argument<IEnumerable<string>> CmdPackageArgument = new(CliCommandStrings.CmdPackage)
     {
         Description = CliCommandStrings.PackageRemoveAppHelpText,
         Arity = ArgumentArity.OneOrMore,
     };
 
-    public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("remove", CliCommandStrings.PackageRemoveAppFullName);
+        var command = new Command("remove", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(CmdPackageArgument);
         command.Options.Add(InteractiveOption);
