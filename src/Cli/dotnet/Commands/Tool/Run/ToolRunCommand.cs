@@ -95,7 +95,7 @@ internal class ToolRunCommand(
     private bool UserAgreedToExecuteFromSource()
     {
         // TODO: Use a better way to ask for user input
-        Console.WriteLine("Tool will be run from source. Accept? [yn]")
+        Console.WriteLine("Tool will be run from source. Accept? [yn]");
         return Console.ReadLine() == 'y';
     }
 }
