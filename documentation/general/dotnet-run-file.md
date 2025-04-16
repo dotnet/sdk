@@ -188,9 +188,10 @@ Apart from keeping the source directory clean, this also avoids clashes of build
 
 ## Directives for project metadata
 
-It is possible to specify some project metadata via [ignored C# directives][ignored-directives].
+It is possible to specify some project metadata via *project directives*
+which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
 Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
-Other directives result in a warning, reserving them for future use.
+Other directives result in an error, reserving them for future use.
 
 ```cs
 #:sdk Microsoft.NET.Sdk.Web
