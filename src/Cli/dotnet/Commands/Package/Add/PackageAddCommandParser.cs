@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {
-    public static readonly CliArgument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
+    public static readonly Argument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
     .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
