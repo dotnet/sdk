@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.ObjectModel;
 using System.Reflection;
 using System.Security.Cryptography;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
 using NuGet.Packaging;
@@ -184,7 +186,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -205,7 +207,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -243,7 +245,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    CliStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 
@@ -266,30 +268,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
 
             bufferedReporter.Lines.Should().BeEmpty();
-            File.Exists(packagePath).Should().BeTrue();
-        }
-
-        [UnixOnlyFact]
-        public async Task GivenANonWindowsMachineItShouldPrintMessageOnce()
-        {
-            BufferedReporter bufferedReporter = new();
-            NuGetPackageDownloader nuGetPackageDownloader = new(_tempDirectory, null,
-                new MockFirstPartyNuGetPackageSigningVerifier(),
-                _logger, bufferedReporter, restoreActionConfig: new RestoreActionConfig(NoCache: true));
-            await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            // download 2 packages should only print the message once
-            string packagePath = await nuGetPackageDownloader.DownloadPackageAsync(
-                TestPackageId,
-                new NuGetVersion(TestPackageVersion),
-                new PackageSourceLocation(sourceFeedOverrides: new[] { GetTestLocalFeedPath() }));
-
-            bufferedReporter.Lines.Should()
-                .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.SkipNuGetpackageSigningValidationmacOSLinux);
             File.Exists(packagePath).Should().BeTrue();
         }
 

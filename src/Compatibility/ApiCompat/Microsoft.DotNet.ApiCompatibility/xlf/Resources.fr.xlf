@@ -122,9 +122,9 @@
         <target state="translated">Impossible de supprimer la contrainte « {0} » sur le paramètre de type « {1} » de « {2} ».</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">Impossible de supprimer le mot-clé virtuel du membre '{0}'.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">L’index {0} doit être compris entre zéro et {1} inclus.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">Assembly correspondant introuvable : «{0}» dans les répertoires de recherche.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

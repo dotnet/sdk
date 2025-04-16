@@ -2,8 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
-#nullable enable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,7 +35,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks
         /// </summary>
         public string[] KeepFeedPrefixes { get; set; } = [];
 
-        private readonly string[] Sections = [ "packageSources", "auditSources" ];
+        private readonly string[] Sections = [ "packageSources" ];
 
         public override bool Execute()
         {

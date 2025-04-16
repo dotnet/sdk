@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Tests
                 .Should()
                 .Pass()
                 .And
-                .HaveStdOutContaining("[ dotnet [ build [ -o <output> ] ] ]");
+                .HaveStdOutContaining("[ dotnet [ build [ -o <output> ] *[ --interactive ] ] ]");
         }
 
         [Fact]

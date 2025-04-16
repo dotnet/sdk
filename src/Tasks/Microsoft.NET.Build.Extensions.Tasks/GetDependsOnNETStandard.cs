@@ -24,7 +24,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Set of reference items to analyze.
         /// </summary>
         [Required]
-        public ITaskItem[] References { get; set; }
+        public ITaskItem[]? References { get; set; }
 
         /// <summary>
         /// True if any of the references depend on netstandard.dll
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private bool AnyReferenceDependsOnNETStandard()
         {
-            foreach (var reference in References)
+            foreach (var reference in References ?? Array.Empty<ITaskItem>())
             {
                 var referenceSourcePath = ItemUtilities.GetSourcePath(reference);
 

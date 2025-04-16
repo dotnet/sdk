@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Tools.Tool.Install
@@ -70,7 +74,7 @@ namespace Microsoft.DotNet.Tools.Tool.Install
 
             if (command.ExitCode != 0)
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
         }
     }
