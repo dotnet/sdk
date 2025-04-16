@@ -5,7 +5,10 @@ namespace for_code_formatter
 {
     class Program : MonoBehaviour
     {
-        // Update is called once per frame
+        // This method should trigger IDE0051 (remove unused private member) in a regular project.
+        // But given we simulate a Unity MonoBehavior and we include Microsoft.Unity.Analyzers nuget,
+        // given Update is a well-known Unity message, this IDE0051 should be suppressed by USP0003.
+        // see https://github.com/microsoft/Microsoft.Unity.Analyzers/blob/main/doc/USP0003.md
         void Update()
         {
 
