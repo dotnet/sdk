@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Common;
 
 namespace Microsoft.DotNet.Configurer
@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
 
         public static string CliFallbackFolderPath =>
             Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_FALLBACKFOLDER") ??
-            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent.FullName, "NuGetFallbackFolder");
+            Path.Combine(new DirectoryInfo(AppContext.BaseDirectory).Parent?.FullName ?? string.Empty, "NuGetFallbackFolder");
 
         public static string ToolsShimPath => Path.Combine(DotnetUserProfileFolderPath, ToolsShimFolderName);
 
@@ -41,8 +41,6 @@ namespace Microsoft.DotNet.Configurer
             Path.Combine(DotnetHomePath, DotnetProfileDirectoryName);
 
         public static string ToolsResolverCachePath => Path.Combine(DotnetUserProfileFolderPath, ToolsResolverCacheFolderName);
-
-        public static string PlatformHomeVariableName => CliFolderPathCalculatorCore.PlatformHomeVariableName;
 
         public static string DotnetHomePath
         {

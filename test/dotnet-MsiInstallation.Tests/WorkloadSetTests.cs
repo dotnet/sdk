@@ -3,8 +3,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.MsiInstallerTests.Framework;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
@@ -227,14 +227,14 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(WorkloadSetVersion2);
         }
 
-        [Fact(Skip = "Not Implemented")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46905")]
         public void WorkloadSetInstallationRecordIsWrittenCorrectly()
         {
             //  Should the workload set version or the package version be used in the registry?
             throw new NotImplementedException();
         }
 
-        [Fact(Skip = "Not Implemented")]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/46905")]
         public void TurnOffWorkloadSetUpdateMode()
         {
             //  If you have a workload set installed and then turn off workload set update mode, what should happen?

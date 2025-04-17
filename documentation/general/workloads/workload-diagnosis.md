@@ -22,12 +22,12 @@ _Installation rollback failed: Workload manifest dependency 'Microsoft.NET.Workl
 
 ## Diagnosing Issues With Installed Workloads
 
-### Common Workload State Failrues
+### Common Workload State Failures
 
 1. Workload is not installed. Try running `dotnet workload restore`. If that does not work, try running `dotnet build -getItem:MissingWorkloadPack` to determine what workload packs are missing. Our workload detection logic could be wrong and you could need a different workload than we list. This call should provide the pack we need and file an issue in the SDK repo with this information.
 _NETSDK1147: To build this project, the following workloads must be installed:_
 2. You installed workloads previously but now your workload templates are missing (Aspire and MAUI templates are installed by the workloads). This could be because your workloads were installed correctly at some point in the past but are now out of sync.
-  1. You installed a new band of the SDK. Workloads are installed per band so installing a new SDK could lead to your workloads not working. [Workload versions](https://github.com/dotnet/designs/pull/294)s should improve that.
+  1. You installed a new band of the SDK. Workloads are installed per band so installing a new SDK could lead to your workloads not working. [Workload versions](https://github.com/dotnet/designs/pull/294) should improve that.
   2. You installed a different workload from the dotnet CLI. We've improved this a few times but it's still possible to install a different workload which updates your workload manifests without updating your workloads. Please file a bug if this happens to you.
   3. You install a new version of Visual Studio that doesn't have worklaods selected. Visual Studio should include all available workloads so make sure to select them in Visual Studio setup.
 

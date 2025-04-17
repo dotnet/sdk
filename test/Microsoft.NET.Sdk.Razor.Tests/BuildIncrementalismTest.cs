@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests
@@ -155,7 +157,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Assert.NotEqual(markerFileThumbPrint, FileThumbPrint.Create(markerFile));
         }
 
-        private IDisposable LockDirectory(string directory)
+        private static IDisposable LockDirectory(string directory)
         {
             var disposables = new List<IDisposable>();
             foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))

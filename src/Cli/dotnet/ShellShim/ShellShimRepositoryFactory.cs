@@ -4,18 +4,17 @@
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ShellShim
-{
-    internal static class ShellShimRepositoryFactory
-    {
-        public static IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null)
-        {
-            return new ShellShimRepository(nonGlobalLocation ?? GetShimLocation(), appHostSourceDirectory);
-        }
+namespace Microsoft.DotNet.Cli.ShellShim;
 
-        private static DirectoryPath GetShimLocation()
-        {
-            return new DirectoryPath(CliFolderPathCalculator.ToolsShimPath);
-        }
+internal static class ShellShimRepositoryFactory
+{
+    public static IShellShimRepository CreateShellShimRepository(string appHostSourceDirectory, DirectoryPath? nonGlobalLocation = null)
+    {
+        return new ShellShimRepository(nonGlobalLocation ?? GetShimLocation(), appHostSourceDirectory);
+    }
+
+    private static DirectoryPath GetShimLocation()
+    {
+        return new DirectoryPath(CliFolderPathCalculator.ToolsShimPath);
     }
 }

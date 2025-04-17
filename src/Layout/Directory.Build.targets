@@ -1,0 +1,41 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <DownloadsFolder>$(IntermediateOutputPath)\redist-downloads\</DownloadsFolder>
+    <RedistInstallerLayoutPath>$(ArtifactsBinDir)redist\$(Configuration)\dotnet-installer\</RedistInstallerLayoutPath>
+    <InstallerOutputDirectory>$(RedistInstallerLayoutPath)sdk\$(Version)\</InstallerOutputDirectory>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <FullNugetVersion>$(VersionPrefix)-$(PreReleaseVersionLabel)</FullNugetVersion>
+    <FullNugetVersion Condition="'$(PreReleaseVersionIteration)' != ''">$(FullNugetVersion).$(PreReleaseVersionIteration)</FullNugetVersion>
+    <FullNugetVersion Condition="'$(VersionSuffixDateStamp)' != '' and '$(VersionSuffixBuildOfTheDay)' != ''">$(FullNugetVersion).$(VersionSuffixDateStamp).$(VersionSuffixBuildOfTheDay)</FullNugetVersion>
+
+    <PgoTerm Condition="'$(PgoInstrument)' == 'true'">-pgo</PgoTerm>
+    <ArtifactNameWithVersionSdk>dotnet-sdk-internal$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionSdk>
+    <ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>dotnet-sdk$(PgoTerm)-$(Version)-$(ProductMonikerRid)</ArtifactNameWithVersionCombinedHostHostFxrFrameworkSdk>
+
+    <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
+    <SdkMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
+    <!-- When building the sdk bundle only, the sdk msi is acquired via DownloadBundledComponents. -->
+    <SdkMSIInstallerFile Condition="'$(GenerateSdkBundleOnly)' == 'true'">$(DownloadsFolder)$(SdkMSIInstallerFileName)</SdkMSIInstallerFile>
+
+    <SdkPlaceholderMSIInstallerFile>$(ArtifactsNonShippingPackagesDir)dotnet-sdkplaceholder-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkPlaceholderMSIInstallerFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SdkBrandName>Microsoft .NET SDK $(Version)</SdkBrandName>
+    <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
+    <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
+    <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
+    <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
+    <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
+    <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
+    <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
+    <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
+    <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
+  </PropertyGroup>
+
+</Project>

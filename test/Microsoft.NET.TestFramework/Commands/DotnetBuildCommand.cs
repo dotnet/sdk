@@ -13,7 +13,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public DotnetBuildCommand(TestAsset testAsset, params string[] args) : this(testAsset.Log, args)
         {
-            if (testAsset.TestProject != null)
+            if (testAsset.TestProject != null && testAsset.TestProject.Name is not null)
             {
                 WorkingDirectory = Path.Combine(testAsset.TestRoot, testAsset.TestProject.Name);
             }
