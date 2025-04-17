@@ -17,7 +17,7 @@ internal class ToolPackageInstance : IToolPackage
 {
     private const string PackagedShimsDirectoryConvention = "shims";
 
-    public IEnumerable<string> Warnings => _toolConfiguration.Value.Warnings;
+    public IEnumerable<string> Warnings { get; private set; }
 
     public PackageId Id { get; private set; }
 
@@ -29,85 +29,125 @@ internal class ToolPackageInstance : IToolPackage
 
     public DirectoryPath PackageDirectory { get; private set; }
 
-    public RestoredCommand Command
-    {
-        get
-        {
-            return _command.Value;
-        }
-    }
+    public RestoredCommand Command { get; private set; }
 
-    public IReadOnlyList<FilePath> PackagedShims
-    {
-        get
-        {
-            return _packagedShims.Value;
-        }
-    }
+    public IReadOnlyList<FilePath> PackagedShims { get; private set; }
 
     public IEnumerable<NuGetFramework> Frameworks { get; private set; }
 
     private const string AssetsFileName = "project.assets.json";
+    public const string RidSpecificPackageAssetsFileName = "project.assets.ridpackage.json";
     private const string ToolSettingsFileName = "DotnetToolSettings.xml";
-
-    private readonly Lazy<RestoredCommand> _command;
-
-    //  TODO: This probably doesn't need to be lazy
-    private readonly Lazy<ToolConfiguration> _toolConfiguration;
-
-    private readonly Lazy<LockFile> _lockFile;
-    private readonly Lazy<IReadOnlyList<FilePath>> _packagedShims;
 
     public ToolPackageInstance(PackageId id,
         NuGetVersion version,
         DirectoryPath packageDirectory,
         DirectoryPath assetsJsonParentDirectory)
     {
-        _command = new Lazy<RestoredCommand>(GetCommand);
-        _packagedShims = new Lazy<IReadOnlyList<FilePath>>(GetPackagedShims);
-
         Id = id;
         Version = version ?? throw new ArgumentNullException(nameof(version));
         PackageDirectory = packageDirectory;
-        _toolConfiguration = new Lazy<ToolConfiguration>(GetToolConfiguration);
-        _lockFile =
-            new Lazy<LockFile>(
-                () => new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value));
-        var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(Id.ToString(), Version);
-        var toolsPackagePath = Path.Combine(installPath, "tools");
-        Frameworks = Directory.GetDirectories(toolsPackagePath)
-            .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
-    }
 
-    private RestoredCommand GetCommand()
-    {
+        bool usingRidSpecificPackage = File.Exists(assetsJsonParentDirectory.WithFile(RidSpecificPackageAssetsFileName).Value);
+
+        string resolvedAssetsFileNameFullPath;
+        if (usingRidSpecificPackage)
+        {
+            resolvedAssetsFileNameFullPath = assetsJsonParentDirectory.WithFile(RidSpecificPackageAssetsFileName).Value;
+        }
+        else
+        {
+            resolvedAssetsFileNameFullPath = assetsJsonParentDirectory.WithFile(AssetsFileName).Value;
+        }
+
+        LockFile lockFile;
+
         try
         {
-            LockFileTargetLibrary library = FindLibraryInLockFile(_lockFile.Value);
-            ToolConfiguration configuration = _toolConfiguration.Value;
-            LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, configuration.ToolAssemblyEntryPoint);
-            if (entryPointFromLockFile == null)
-            {
-                throw new ToolConfigurationException(
-                    string.Format(
-                        CliStrings.MissingToolEntryPointFile,
-                        configuration.ToolAssemblyEntryPoint,
-                        configuration.CommandName));
-            }
-
-            // Currently only "dotnet" commands are supported
-            return new RestoredCommand(
-                new ToolCommandName(configuration.CommandName),
-                "dotnet",
-                LockFileRelativePathToFullFilePath(entryPointFromLockFile.Path, library));
+            lockFile = new LockFileFormat().Read(resolvedAssetsFileNameFullPath);
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
         {
-            throw new ToolConfigurationException(
+            throw new ToolPackageException(
                 string.Format(
-                    CliStrings.FailedToRetrieveToolConfiguration,
+                    CliStrings.FailedToReadNuGetLockFile,
+                    Id,
                     ex.Message),
                 ex);
+        }
+
+        var library = lockFile.Targets?.SingleOrDefault().Libraries.SingleOrDefault();
+        if (library == null)
+        {
+            throw new ToolPackageException(
+                string.Format(
+                    //  TODO: Change exception message
+                    CliStrings.FailedToReadNuGetLockFile,
+                    Id,
+                    resolvedAssetsFileNameFullPath));
+        }
+
+
+        if (usingRidSpecificPackage)
+        {
+            ResolvedPackageId = new PackageId(library.Name);
+            ResolvedPackageVersion = library.Version;
+        }
+        else
+        {
+            ResolvedPackageId = Id;
+            ResolvedPackageVersion = Version;
+        }
+
+        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, ResolvedPackageId);
+        Warnings = toolConfiguration.Warnings;
+
+        var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
+        var toolsPackagePath = Path.Combine(installPath, "tools");
+        Frameworks = Directory.GetDirectories(toolsPackagePath)
+            .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
+
+        LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, toolConfiguration.ToolAssemblyEntryPoint);
+        if (entryPointFromLockFile == null)
+        {
+            throw new ToolConfigurationException(
+                string.Format(
+                    CliStrings.MissingToolEntryPointFile,
+                    toolConfiguration.ToolAssemblyEntryPoint,
+                    toolConfiguration.CommandName));
+        }
+
+        Command = new RestoredCommand(
+                new ToolCommandName(toolConfiguration.CommandName),
+                toolConfiguration.Runner,
+                LockFileRelativePathToFullFilePath(entryPointFromLockFile.Path, library));
+
+        IEnumerable<LockFileItem> filesUnderShimsDirectory = library
+            ?.ToolsAssemblies
+            ?.Where(t => LockFileMatcher.MatchesDirectoryPath(t, PackagedShimsDirectoryConvention));
+
+        if (filesUnderShimsDirectory == null)
+        {
+            PackagedShims = [];
+        }
+        else
+        {
+            IEnumerable<string> allAvailableShimRuntimeIdentifiers = filesUnderShimsDirectory
+               .Select(f => f.Path.Split('\\', '/')?[4]) // ex: "tools/netcoreapp2.1/any/shims/osx-x64/demo" osx-x64 is at [4]
+               .Where(f => !string.IsNullOrEmpty(f));
+
+            if (new FrameworkDependencyFile().TryGetMostFitRuntimeIdentifier(
+                DotnetFiles.VersionFileObject.BuildRid,
+                [.. allAvailableShimRuntimeIdentifiers],
+                out var mostFitRuntimeIdentifier))
+            {
+                PackagedShims = library?.ToolsAssemblies?.Where(l => LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
+                    .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray() ?? [];
+            }
+            else
+            {
+                PackagedShims = [];
+            }
         }
     }
 
@@ -115,7 +155,7 @@ internal class ToolPackageInstance : IToolPackage
     {
         return PackageDirectory
                     .WithSubDirectories(
-                        Id.ToString(),
+                        library.Name,
                         library.Version.ToNormalizedString().ToLowerInvariant())
                     .WithFile(lockFileRelativePath);
     }
@@ -131,12 +171,26 @@ internal class ToolPackageInstance : IToolPackage
 
     }
 
-    private ToolConfiguration GetToolConfiguration()
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId id)
     {
         try
         {
-            var library = FindLibraryInLockFile(_lockFile.Value);
-            return DeserializeToolConfiguration(library, PackageDirectory, Id);
+            var dotnetToolSettings = FindItemInTargetLibrary(library, ToolSettingsFileName);
+            if (dotnetToolSettings == null)
+            {
+                throw new ToolConfigurationException(
+                    CliStrings.MissingToolSettingsFile);
+            }
+
+            var toolConfigurationPath =
+                packageDirectory
+                    .WithSubDirectories(
+                        id.ToString(),
+                        library.Version.ToNormalizedString().ToLowerInvariant())
+                    .WithFile(dotnetToolSettings.Path);
+
+            var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            return configuration;
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
         {
@@ -146,70 +200,6 @@ internal class ToolPackageInstance : IToolPackage
                     ex.Message),
                 ex);
         }
-    }
-
-    private IReadOnlyList<FilePath> GetPackagedShims()
-    {
-        LockFileTargetLibrary library;
-        try
-        {
-            library = FindLibraryInLockFile(_lockFile.Value);
-        }
-        catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
-        {
-            throw new ToolPackageException(
-                string.Format(
-                    CliStrings.FailedToReadNuGetLockFile,
-                    Id,
-                    ex.Message),
-                ex);
-        }
-
-        IEnumerable<LockFileItem> filesUnderShimsDirectory = library
-            ?.ToolsAssemblies
-            ?.Where(t => LockFileMatcher.MatchesDirectoryPath(t, PackagedShimsDirectoryConvention));
-
-        if (filesUnderShimsDirectory == null)
-        {
-            return [];
-        }
-
-        IEnumerable<string> allAvailableShimRuntimeIdentifiers = filesUnderShimsDirectory
-            .Select(f => f.Path.Split('\\', '/')?[4]) // ex: "tools/netcoreapp2.1/any/shims/osx-x64/demo" osx-x64 is at [4]
-            .Where(f => !string.IsNullOrEmpty(f));
-
-        if (new FrameworkDependencyFile().TryGetMostFitRuntimeIdentifier(
-            DotnetFiles.VersionFileObject.BuildRid,
-            [.. allAvailableShimRuntimeIdentifiers],
-            out var mostFitRuntimeIdentifier))
-        {
-            return library?.ToolsAssemblies?.Where(l => LockFileMatcher.MatchesDirectoryPath(l, $"{PackagedShimsDirectoryConvention}/{mostFitRuntimeIdentifier}"))
-                .Select(l => LockFileRelativePathToFullFilePath(l.Path, library)).ToArray() ?? [];
-        }
-        else
-        {
-            return [];
-        }
-    }
-
-    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId id)
-    {
-        var dotnetToolSettings = FindItemInTargetLibrary(library, ToolSettingsFileName);
-        if (dotnetToolSettings == null)
-        {
-            throw new ToolConfigurationException(
-                CliStrings.MissingToolSettingsFile);
-        }
-
-        var toolConfigurationPath =
-            packageDirectory
-                .WithSubDirectories(
-                    id.ToString(),
-                    library.Version.ToNormalizedString().ToLowerInvariant())
-                .WithFile(dotnetToolSettings.Path);
-
-        var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
-        return configuration;
     }
 
     private static LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile, PackageId id)

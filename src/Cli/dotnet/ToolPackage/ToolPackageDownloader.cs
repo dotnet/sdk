@@ -279,7 +279,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, resolvedPackage.Version, packageSourceLocation, includeUnlisted: true).GetAwaiter().GetResult();
             }
 
-            CreateAssetFile(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.ridpackage.json"), _runtimeJsonPath, targetFramework);
+            CreateAssetFile(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
         }
     }
 
@@ -376,7 +376,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
     {
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
-        string? folderToDeleteOnFailure = null;
+        string folderToDeleteOnFailure = null;
 
         try
         {

@@ -54,7 +54,9 @@ internal static class ToolConfigurationDeserializer
             throw new ToolConfigurationException(CliStrings.ToolSettingsMoreThanOneCommand);
         }
 
-        if (dotNetCliTool.Commands[0].Runner != "dotnet")
+        //  TODO: Should be an error if runner is empty and there aren't any RID-specific packages
+        var runner = dotNetCliTool.Commands[0].Runner;
+        if (!string.IsNullOrEmpty(runner) && runner != "dotnet" && runner != "executable")
         {
             throw new ToolConfigurationException(
                 string.Format(
@@ -69,6 +71,7 @@ internal static class ToolConfigurationDeserializer
         return new ToolConfiguration(
             dotNetCliTool.Commands[0].Name,
             dotNetCliTool.Commands[0].EntryPoint,
+            dotNetCliTool.Commands[0].Runner,
             ridSpecificPackages: ridSpecificPackages,
             warnings: warnings);
     }
