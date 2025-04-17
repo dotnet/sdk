@@ -26,7 +26,7 @@ internal class AllowListToSendFirstArgument(
         {
             if (_topLevelCommandNameAllowList.Contains(topLevelCommandNameFromParse))
             {
-                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens.Where(t => t.Type.Equals(CliTokenType.Argument)).FirstOrDefault()?.Value ?? null;
+                var firstArgument = parseResult.RootCommandResult.Children.FirstOrDefault()?.Tokens.Where(t => t.Type.Equals(TokenType.Argument)).FirstOrDefault()?.Value ?? null;
                 if (firstArgument != null)
                 {
                     result.Add(new ApplicationInsightsEntryFormat(
