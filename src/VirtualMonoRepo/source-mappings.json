@@ -150,7 +150,9 @@
         },
         {
             "name": "sourcelink",
-            "defaultRemote": "https://github.com/dotnet/sourcelink"
+            "defaultRemote": "https://github.com/dotnet/sourcelink",
+            // Migrated onto the flat flow
+            "disableSynchronization": true
         },
         {
             "name": "symreader",
