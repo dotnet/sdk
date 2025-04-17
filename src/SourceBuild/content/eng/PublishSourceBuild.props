@@ -47,8 +47,7 @@
     </Touch>
   </Target>
 
-  <Target Name="DetermineSourceBuiltSdkNonStableVersion"
-          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+  <Target Name="DetermineSourceBuiltSdkNonStableVersion">
     <ItemGroup>
       <SdkVersionFileItem Include="$(DotNetSdkExtractDir)/sdk/**/.version" />
     </ItemGroup>
