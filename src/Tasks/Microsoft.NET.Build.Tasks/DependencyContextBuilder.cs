@@ -324,6 +324,36 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
+            // Rather than adding the main project's dependencies, we added references to them, i.e., Foo.Reference.dll
+            // instead of Foo.dll. This adds Foo.dll as a reference directly so another reference can be removed if it
+            // isn't necessary because of a direct reference from the main project.
+            if (_includeMainProjectInDepsFile)
+            {
+                var mainProjectReferences = _directReferences;
+                if (IncludeCompilationLibraries && _referenceAssemblies != null)
+                {
+                    if (mainProjectReferences == null)
+                    {
+                        mainProjectReferences = _referenceAssemblies;
+                    }
+                    else
+                    {
+                        mainProjectReferences = mainProjectReferences.Concat(_referenceAssemblies);
+                    }
+                }
+
+                if (mainProjectReferences != null)
+                {
+                    foreach (var directReference in mainProjectReferences)
+                    {
+                        if (libraries.TryGetValue(directReference.Name, out var dep))
+                        {
+                            dep.Dependents.Add(_mainProjectInfo.Name);
+                        }
+                    }
+                }
+            }
+
             var unprocessedLibraries = runtimeLibraries.ToHashSet();
             while (unprocessedLibraries.Any())
             {
