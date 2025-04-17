@@ -139,31 +139,53 @@ steps:
     name: InstallDarc
     displayName: Install darc
 
-- powershell: |
-    if ("${{ parameters.assetType }}" -eq "Package") {
-      $assetFilter = "^[^/]*$,.*assets\/manifests\/.*\/MergedManifest\.xml"
-    } elseif ("${{ parameters.assetType }}" -eq "Blob") {
-      $assetFilter = ".*\/.*"
-    } else {
-      $assetFilter = ".*"
-    }
-
-    Write-Host "Asset filter: $assetFilter"
-    Write-Host "##vso[task.setvariable variable=assetFilter;isOutput=true]$assetFilter"
-  name: SetAssetFilter
-  displayName: Set asset filter
-
 - task: AzureCLI@2
   displayName: 'Gather Drop'
   continueOnError: ${{ parameters.continueOnError }}
   inputs:
     azureSubscription: DotNetStaging
     scriptType: 'pscore'
-    scriptLocation: 'scriptPath'
-    scriptPath: $(Build.SourcesDirectory)/src/sdk/eng/GatherDrops.ps1
-    arguments: -filePath '$(GetSourceManifest.SourceManifestPath)' -outputPath '$(Build.ArtifactStagingDirectory)/base-assets/'
-      -darcPath $(InstallDarc.darcPath) -githubPat $(BotAccount-dotnet-bot-repo-PAT) -azdevPat $(dn-bot-all-drop-rw-code-rw-release-all)
-      -assetFilter "$(SetAssetFilter.assetFilter)"
+    scriptLocation: inlineScript
+    inlineScript: |
+      $filePath = "$(GetSourceManifest.SourceManifestPath)"
+      $outputPath = "$(Build.ArtifactStagingDirectory)/base-assets/"
+      $darcPath = "$(InstallDarc.darcPath)"
+      $githubPat = "$(BotAccount-dotnet-bot-repo-PAT)"
+      $azdevPat = "$(dn-bot-all-drop-rw-code-rw-release-all)"
+
+      $nonShipping = $false
+      if ("${{ parameters.command }}" -eq "assets") {
+        $nonShipping = $true
+      }
+
+      # Download the manifests separately if we're only collecting non-shipping artifacts.
+      # This is needed because the manifests are non-shipping but are required for the comparison.
+      if (!$nonShipping) {
+        $(Build.SourcesDirectory)/src/sdk/eng/GatherDrops.ps1 `
+          -filePath $filePath `
+          -outputPath $outputPath `
+          -darcPath $darcPath `
+          -githubPat $githubPat `
+          -azdevPat $azdevPat `
+          -assetFilter "`".*assets\/manifests\/.*\/MergedManifest\.xml`"" `
+          -nonShipping
+      }
+
+      $assetFilter = "`".*`""
+      if ("${{ parameters.assetType }}" -eq "Package") {
+        $assetFilter = "`"^[^/]*$`""
+      } elseif ("${{ parameters.assetType }}" -eq "Blob") {
+        $assetFilter = "`".*\/.*`""
+      }
+
+      $(Build.SourcesDirectory)/src/sdk/eng/GatherDrops.ps1 `
+        -filePath $filePath `
+        -outputPath $outputPath `
+        -darcPath $darcPath `
+        -githubPat $githubPat `
+        -azdevPat $azdevPat `
+        -assetFilter $assetFilter `
+        -nonShipping:$nonShipping
 
 - ${{ if ne(parameters.assetType, 'Blob') }}:
   - template: ../steps/vmr-download-artifact.yml
