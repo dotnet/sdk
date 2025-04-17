@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -35,13 +36,18 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
                 return 1;
             }
 
+            if (_allowRollForward)
+            {
+                _forwardArguments.Append("--allow-roll-forward");
+            }
+
             PackageId packageId = new(_toolCommandName);
             VersionRange versionRange = _parseResult.GetVersionRange();
 
             string tempDirectory = PathUtilities.CreateTempSubdirectory();
 
-            IToolManifestFinder toolManifestFinder = new ToolManifestFinder(new(tempDirectory));
-            IToolManifestEditor toolManifestEditor = new ToolManifestEditor();
+            ToolManifestFinder toolManifestFinder = new ToolManifestFinder(new(tempDirectory));
+            ToolManifestEditor toolManifestEditor = new ToolManifestEditor();
             FilePath toolManifestPath = toolManifestFinder.FindFirst(true);
 
             ToolPackageStoreAndQuery toolPackageStoreAndQuery = new(new(tempDirectory));
@@ -56,45 +62,24 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
                 packageId: packageId,
                 verbosity: _verbosity,
                 versionRange: versionRange,
+                isGlobalToolRollForward: _allowRollForward, // Needed to update .runtimeconfig.json
                 restoreActionConfig: new(
                     IgnoreFailedSources: _ignoreFailedSources,
                     Interactive: _interactive));
 
-            LocalToolsResolverCache localToolsResolverCache = new();
-            localToolsResolverCache.SaveToolPackage(toolPackage, BundledTargetFramework.GetTargetFrameworkMoniker());
-
-            toolManifestEditor.Add(
-                toolManifestPath,
-                packageId,
-                toolPackage.Version,
-                [toolPackage.Command.Name],
-                rollForward: _allowRollForward);
-
-            LocalToolsCommandResolver localToolsCommandResolver = new();
-
-            CommandSpec commandSpec = localToolsCommandResolver.ResolveStrict(new()
-            {
-                CommandName = $"dotnet-{toolPackage.Command.Name}",
-                CommandArguments = _forwardArguments,
-            }, _allowRollForward);
-
-            if (commandSpec == null)
-            {
-                throw new GracefulException(
-                    string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName),
-                    isUserError: false);
-            }
-
+            CommandSpec commandSpec = MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(toolPackage.Command.Executable.ToString(), _forwardArguments);
             var command = CommandFactoryUsingResolver.Create(commandSpec);
             var result = command.Execute();
-
             return result.ExitCode;
         }
+
         private bool UserAgreedToExecuteFromSource()
         {
             // TODO: Use a better way to ask for user input
-            Console.WriteLine("Tool will be run from source. Accept? [yn]");
-            return Console.ReadKey().Key == ConsoleKey.Y;
+            Console.Write("Tool will be run from source. Accept? [y]".Red());
+            bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
+            Console.WriteLine();
+            return userAccepted;
         }
     }
 }
