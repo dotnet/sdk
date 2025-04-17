@@ -19,6 +19,12 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
         private readonly string? _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
         private readonly IEnumerable<string>? _forwardArguments = result.GetValue(ToolRunCommandParser.CommandArgument);
         private readonly bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+        private readonly string? _configFile = result.GetValue(ToolRunCommandParser.FromSourceConfigFile);
+        private readonly string[] _sources = result.GetValue(ToolRunCommandParser.FromSourceSourceOption) ?? [];
+        private readonly string[] _addSource = result.GetValue(ToolRunCommandParser.FromSourceAddSourceOption) ?? [];
+        private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+        private readonly bool _interactive = result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.VerbosityOption);
 
         public override int Execute()
         {
@@ -40,10 +46,17 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
             ToolPackageDownloader toolPackageDownloader = new(toolPackageStoreAndQuery);
 
             IToolPackage toolPackage = toolPackageDownloader.InstallPackage(
-                new PackageLocation(),
+                new PackageLocation(
+                    nugetConfig: _configFile != null ? new FilePath(_configFile) : null,
+                    rootConfigDirectory: null,
+                    sourceFeedOverrides: _sources,
+                    additionalFeeds: _addSource),
                 packageId: packageId,
-                verbosity: VerbosityOptions.d,
-                versionRange: versionRange);
+                verbosity: _verbosity,
+                versionRange: versionRange,
+                restoreActionConfig: new(
+                    IgnoreFailedSources: _ignoreFailedSources,
+                    Interactive: _interactive));
 
             toolManifestEditor.Add(
                 toolManifestPath,

@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -33,6 +34,14 @@ internal static class ToolRunCommandParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly Option<string> FromSourceConfigFile = ToolInstallCommandParser.ConfigOption;
+
+    public static readonly Option<string[]> FromSourceSourceOption = ToolInstallCommandParser.SourceOption;
+
+    public static readonly Option<string[]> FromSourceAddSourceOption = ToolInstallCommandParser.AddSourceOption;
+
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -48,6 +57,13 @@ internal static class ToolRunCommandParser
         command.Arguments.Add(CommandArgument);
         command.Options.Add(RollForwardOption);
         command.Options.Add(FromSourceOption);
+        command.Options.Add(FromSourceConfigFile);
+        command.Options.Add(FromSourceSourceOption);
+        command.Options.Add(FromSourceAddSourceOption);
+        command.Options.Add(VerbosityOption);
+
+        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+        command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 
