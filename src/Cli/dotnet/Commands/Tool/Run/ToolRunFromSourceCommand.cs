@@ -25,8 +25,8 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
         private readonly string[] _sources = result.GetValue(ToolRunCommandParser.FromSourceSourceOption) ?? [];
         private readonly string[] _addSource = result.GetValue(ToolRunCommandParser.FromSourceAddSourceOption) ?? [];
         private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        private readonly bool _interactive = result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveOption);
-        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.VerbosityOption) ?? VerbosityOptions.normal;
+        private readonly bool _interactive = result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.VerbosityOption);
 
         public override int Execute()
         {

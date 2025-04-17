@@ -54,7 +54,6 @@ internal static class ToolRunCommandParser
         command.Arguments.Add(CommandArgument);
         command.Options.Add(RollForwardOption);
         command.Options.Add(FromSourceOption);
-        command.Options.Add(FromSourceToolManifestOption);
         command.Options.Add(FromSourceConfigFile);
         command.Options.Add(FromSourceSourceOption);
         command.Options.Add(FromSourceAddSourceOption);
