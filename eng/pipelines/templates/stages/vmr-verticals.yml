@@ -88,7 +88,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
-
+        buildSourceOnly: true
     jobs:
 
     ### Jobs for ultralite builds ###

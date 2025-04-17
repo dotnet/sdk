@@ -4,6 +4,10 @@ parameters:
   type: string
   default: ''
 
+- name: buildSourceOnly
+  type: boolean
+  default: false
+
 - name: desiredSigning
   displayName: Signed/unsigned/default signing parameters
   type: string
@@ -52,10 +56,20 @@ variables:
   - name: ibcEnabled
     value: false
 
-- name: officialBuildParameter
-  ${{ if eq(variables['isOfficialBuild'], true) }}:
-    value: /p:OfficialBuildId=$(Build.BuildNumber)
-  ${{ else }}:
+## Do not set this when building source only to avoid including telemetry in the bootstrap artifacts
+## handed off to distro partners.
+- ${{ if ne(parameters.buildSourceOnly, true) }}:
+  - name: officialBuilderProperty
+    value: '/p:OfficialBuilder=Microsoft'
+- ${{ else }}:
+  - name: officialBuilderProperty
+    value: ''
+
+- ${{ if eq(variables['isOfficialBuild'], true) }}:
+  - name: officialBuildProperties
+    value: '/p:OfficialBuildId=$(Build.BuildNumber) $(officialBuilderProperty)'
+- ${{ else }}:
+  - name: officialBuildProperties
     value: ''
 
 - ${{ if eq(parameters.desiredSigning, 'Signed') }}:
