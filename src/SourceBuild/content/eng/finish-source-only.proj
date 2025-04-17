@@ -2,8 +2,6 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
-    <!-- Need to set to false to calculate RepositoryCommit. -->
-    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 

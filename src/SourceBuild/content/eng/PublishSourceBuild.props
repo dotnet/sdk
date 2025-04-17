@@ -1,10 +1,5 @@
 <Project>
 
-  <PropertyGroup>
-    <!-- Need to set to false to calculate RepositoryCommit. -->
-    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
-  </PropertyGroup>
-
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
           AfterTargets="DiscoverArtifacts"
@@ -87,9 +82,17 @@
           DestinationFolder="$(SourceBuiltLayoutDir)$(PreviouslySourceBuiltReferencePackagesDirName)"
           UseSymbolicLinksIfPossible="true" />
 
+    <Exec Command="git rev-parse HEAD"
+          WorkingDirectory="$(RepoRoot)"
+          EchoOff="true"
+          ConsoleToMsBuild="true"
+          StandardOutputImportance="Low">
+      <Output TaskParameter="ConsoleOutput" PropertyName="RepositoryCommit" />
+    </Exec>
+
     <!-- Content of the .version file to include in the tarball -->
     <ItemGroup>
-      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkNonStableVersion)" />
+      <VersionFileContent Include="$(RepositoryCommit.Trim());$(SourceBuiltSdkNonStableVersion)" />
     </ItemGroup>
 
     <WriteLinesToFile File="$(SourceBuiltVersionName)"
