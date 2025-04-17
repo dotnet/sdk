@@ -1,4 +1,7 @@
-﻿using System.Xml.Linq;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Xml.Linq;
 using System.Xml.Serialization;
 /// <summary>
 /// Represents the mapping between base build and VMR build for a specific asset.
@@ -55,6 +58,18 @@ public class AssetMapping
     {
         get; set;
     }
+
+    /// <summary>
+    /// Gets a value indicating whether the blob mapping should be ignored.
+    /// </summary>
+    [XmlIgnore]
+    public bool IsIgnorableBlob { get => Id.Contains(".wixpack.zip") || Id.Contains("MergedManifest.xml"); }
+
+    /// <summary>
+    /// Gets a value indicating whether the package mapping should be ignored.
+    /// </summary>
+    [XmlIgnore]
+    public bool IsIgnorablePackage { get => Id.Contains("Microsoft.SourceBuild.Intermediate"); }
 
     /// <summary>
     /// Gets or sets the list of errors encountered during evaluation.
