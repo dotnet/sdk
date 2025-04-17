@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -14,18 +15,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal class ToolRunCommand(
     ParseResult result,
-    LocalToolsCommandResolver localToolsCommandResolver = null,
-    ToolManifestFinder toolManifest = null) : CommandBase(result)
+    LocalToolsCommandResolver localToolsCommandResolver = null) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
     private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
-    public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
-    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
     private readonly bool _fromSource = result.GetValue(ToolRunCommandParser.FromSourceOption);
 
-    private readonly IToolManifestEditor _toolManifestEditor = new ToolManifestEditor();
-    private readonly ILocalToolsResolverCache _localToolsResolverCache = new LocalToolsResolverCache();
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
+    public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
+
     public override int Execute()
     {
         CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
@@ -36,9 +34,10 @@ internal class ToolRunCommand(
 
         }, _allowRollForward);
 
-        if (commandSpec == null && _fromSource && UserAgreedToExecuteFromSource())
+        if (commandSpec == null && _fromSource)
         {
-            return ExecuteFromSource();
+            // Reroute to ToolRunFromSourceCommand
+            return new ToolRunFromSourceCommand(_parseResult).Execute();
         }
 
         if (commandSpec == null)
@@ -50,51 +49,5 @@ internal class ToolRunCommand(
         return result.ExitCode;
     }
 
-    public int ExecuteFromSource()
-    {
-        string tempDirectory = PathUtilities.CreateTempSubdirectory();
-        FilePath manifestFile = _toolManifest.FindFirst(true);
-        PackageId packageId = new(_toolCommandName);
 
-        ToolInstallLocalInstaller _toolInstaller = new(_parseResult, new ToolPackageDownloader(
-            localToolDownloadDir: tempDirectory,
-            store: new ToolPackageStoreAndQuery(new DirectoryPath(tempDirectory))));
-
-        IToolPackage toolPackage = _toolInstaller.Install(manifestFile, packageId);
-
-        _toolManifestEditor.Add(
-            manifestFile,
-            toolPackage.Id,
-            toolPackage.Version,
-            [toolPackage.Command.Name],
-            _allowRollForward);
-
-        _localToolsResolverCache.SaveToolPackage(
-            toolPackage,
-            _toolInstaller.TargetFrameworkToInstall);
-
-        CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
-        {
-            CommandName = $"dotnet-{toolPackage.Command.Name}",
-            CommandArguments = _forwardArgument,
-        }, _allowRollForward);
-
-        if (commandSpec == null)
-        {
-            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
-        }
-
-        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
-
-        _toolManifestEditor.Remove(manifestFile, toolPackage.Id);
-
-        return result.ExitCode;
-    }
-
-    private bool UserAgreedToExecuteFromSource()
-    {
-        // TODO: Use a better way to ask for user input
-        Console.WriteLine("Tool will be run from source. Accept? [yn]");
-        return Console.ReadLine() == "y";
-    }
 }
