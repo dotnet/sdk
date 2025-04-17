@@ -12,23 +12,23 @@ internal static class ListCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-list";
 
-    public static readonly CliArgument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
+    public static readonly Argument<string> SlnOrProjectArgument = CreateSlnOrProjectArgument(CliStrings.SolutionOrProjectArgumentName, CliStrings.SolutionOrProjectArgumentDescription);
 
-    internal static CliArgument<string> CreateSlnOrProjectArgument(string name, string description)
-        => new CliArgument<string>(name)
+    internal static Argument<string> CreateSlnOrProjectArgument(string name, string description)
+        => new Argument<string>(name)
         {
             Description = description,
             Arity = ArgumentArity.ZeroOrOne
         }.DefaultToCurrentDirectory();
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         var command = new DocumentedCommand("list", DocsLink, CliCommandStrings.NetListCommand)
         {

@@ -8,39 +8,39 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal static class ToolRunCommandParser
 {
-    public static readonly CliArgument<string> CommandNameArgument = new("commandName")
+    public static readonly Argument<string> CommandNameArgument = new("commandName")
     {
         HelpName = CliCommandStrings.CommandNameArgumentName,
         Description = CliCommandStrings.CommandNameArgumentDescription
     };
 
-    public static readonly CliArgument<IEnumerable<string>> CommandArgument = new("toolArguments")
+    public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
     {
         Description = "arguments forwarded to the tool"
     };
 
-    public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+    public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
     {
         Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> FromSourceOption = new("--from-source")
+    public static readonly Option<bool> FromSourceOption = new("--from-source")
     {
         Description = CliCommandStrings.ToolRunFromSourceOptionDescription,
         Arity = ArgumentArity.Zero
     };
+  
+    private static readonly Command Command = ConstructCommand();
 
-    private static readonly CliCommand Command = ConstructCommand();
-
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("run", CliCommandStrings.ToolRunCommandDescription);
+        Command command = new("run", CliCommandStrings.ToolRunCommandDescription);
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
