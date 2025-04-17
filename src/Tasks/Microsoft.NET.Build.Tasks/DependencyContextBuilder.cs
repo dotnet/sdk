@@ -494,7 +494,8 @@ namespace Microsoft.NET.Build.Tasks
                     compilationLibraries.Any(lib => lib.Name.Equals(dependency.Name))).ToList(),
                 library.Library.Serviceable,
                 library.Library.Path,
-                library.Library.HashPath)),
+                library.Library.HashPath,
+                library.Library.RuntimeStoreManifestName)),
             runtimeFallbackGraph);
         }
 

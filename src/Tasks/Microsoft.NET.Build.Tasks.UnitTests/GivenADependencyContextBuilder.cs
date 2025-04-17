@@ -185,11 +185,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .RuntimeLibraries
                 .SelectMany(l => l.Dependencies)
                 .Should()
-                .NotBeEmpty()
-                .And
-                .NotContain(d => d.Name == "System.NotConflicting")
-                .And
-                .NotContain(d => d.Name == "System.Collections.NonGeneric.Reference");
+                .BeEmpty();
         }
 
         [Fact]
