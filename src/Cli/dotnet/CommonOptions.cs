@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
-    public static CliOption<string[]> PropertiesOption =
+    public static Option<string[]> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
         new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")
         {
@@ -20,14 +20,14 @@ internal static class CommonOptions
         }.ForwardAsProperty()
         .AllowSingleArgPerToken();
 
-    public static CliOption<VerbosityOptions> VerbosityOption =
+    public static Option<VerbosityOptions> VerbosityOption =
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
         }.ForwardAsSingle(o => $"-verbosity:{o}");
 
-    public static CliOption<VerbosityOptions> HiddenVerbosityOption =
+    public static Option<VerbosityOptions> HiddenVerbosityOption =
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
@@ -35,7 +35,7 @@ internal static class CommonOptions
             Hidden = true
         }.ForwardAsSingle(o => $"-verbosity:{o}");
 
-    public static CliOption<string> FrameworkOption(string description) =>
+    public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")
         {
             Description = description,
@@ -44,7 +44,7 @@ internal static class CommonOptions
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
         .ForwardAsSingle(o => $"-property:TargetFramework={o}");
 
-    public static CliOption<string> ArtifactsPathOption =
+    public static Option<string> ArtifactsPathOption =
         new ForwardedOption<string>(
             //  --artifacts-path is pretty verbose, should we use --artifacts instead (or possibly support both)?
             "--artifacts-path")
@@ -63,28 +63,28 @@ internal static class CommonOptions
         return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
-    public static CliOption<string> RuntimeOption =
+    public static Option<string> RuntimeOption =
         new DynamicForwardedOption<string>("--runtime", "-r")
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
-    public static CliOption<string> LongFormRuntimeOption =
+    public static Option<string> LongFormRuntimeOption =
         new DynamicForwardedOption<string>("--runtime")
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
-    public static CliOption<bool> CurrentRuntimeOption(string description) =>
+    public static Option<bool> CurrentRuntimeOption(string description) =>
         new ForwardedOption<bool>("--use-current-runtime", "--ucr")
         {
             Description = description,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
 
-    public static CliOption<string> ConfigurationOption(string description) =>
+    public static Option<string> ConfigurationOption(string description) =>
         new DynamicForwardedOption<string>("--configuration", "-c")
         {
             Description = description,
@@ -92,7 +92,7 @@ internal static class CommonOptions
         }.ForwardAsSingle(o => $"-property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
-    public static CliOption<string> VersionSuffixOption =
+    public static Option<string> VersionSuffixOption =
         new ForwardedOption<string>("--version-suffix")
         {
             Description = CliStrings.CmdVersionSuffixDescription,
@@ -101,7 +101,7 @@ internal static class CommonOptions
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
-    public static CliArgument<string> DefaultToCurrentDirectory(this CliArgument<string> arg)
+    public static Argument<string> DefaultToCurrentDirectory(this Argument<string> arg)
     {
         // we set this lazily so that we don't pay the overhead of determining the
         // CWD multiple times, one for each Argument that uses this.
@@ -109,7 +109,7 @@ internal static class CommonOptions
         return arg;
     }
 
-    public static CliOption<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
+    public static Option<bool> NoRestoreOption = new ForwardedOption<bool>("--no-restore")
     {
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
@@ -136,9 +136,9 @@ internal static class CommonOptions
              DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
          };
 
-    public static CliOption<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
 
-    public static CliOption<bool> DisableBuildServersOption =
+    public static Option<bool> DisableBuildServersOption =
         new ForwardedOption<bool>("--disable-build-servers")
         {
             Description = CliStrings.DisableBuildServersOptionDescription,
@@ -146,14 +146,14 @@ internal static class CommonOptions
         }
         .ForwardAsMany(_ => ["--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false"]);
 
-    public static CliOption<string> ArchitectureOption =
+    public static Option<string> ArchitectureOption =
         new ForwardedOption<string>("--arch", "-a")
         {
             Description = CliStrings.ArchitectureOptionDescription,
             HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-    public static CliOption<string> LongFormArchitectureOption =
+    public static Option<string> LongFormArchitectureOption =
         new ForwardedOption<string>("--arch")
         {
             Description = CliStrings.ArchitectureOptionDescription,
@@ -165,26 +165,26 @@ internal static class CommonOptions
             parseResult.GetValue(LongFormArchitectureOption) :
             parseResult.GetValue(ArchitectureOption);
 
-    public static CliOption<string> OperatingSystemOption =
+    public static Option<string> OperatingSystemOption =
         new ForwardedOption<string>("--os")
         {
             Description = CliStrings.OperatingSystemOptionDescription,
             HelpName = CliStrings.OSArgumentName
         }.SetForwardingFunction(ResolveOsOptionToRuntimeIdentifier);
 
-    public static CliOption<bool> DebugOption = new("--debug")
+    public static Option<bool> DebugOption = new("--debug")
     {
         Arity = ArgumentArity.Zero,
     };
 
-    public static CliOption<bool> SelfContainedOption =
+    public static Option<bool> SelfContainedOption =
         new ForwardedOption<bool>("--self-contained", "--sc")
         {
             Description = CliStrings.SelfContainedOptionDescription
         }
         .SetForwardingFunction(ForwardSelfContainedOptions);
 
-    public static CliOption<bool> NoSelfContainedOption =
+    public static Option<bool> NoSelfContainedOption =
         new ForwardedOption<bool>("--no-self-contained")
         {
             Description = CliStrings.FrameworkDependentOptionDescription,
@@ -192,7 +192,7 @@ internal static class CommonOptions
         }
         .SetForwardingFunction((_, p) => ForwardSelfContainedOptions(false, p));
 
-    public static readonly CliOption<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
+    public static readonly Option<IReadOnlyDictionary<string, string>> EnvOption = new("--environment", "-e")
     {
         Description = CliStrings.CmdEnvironmentVariableDescription,
         HelpName = CliStrings.CmdEnvironmentVariableExpression,
@@ -206,7 +206,7 @@ internal static class CommonOptions
         var result = new Dictionary<string, string>(
             RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal);
 
-        List<CliToken>? invalid = null;
+        List<Token>? invalid = null;
 
         foreach (var token in argumentResult.Tokens)
         {
@@ -238,11 +238,11 @@ internal static class CommonOptions
         return result;
     }
 
-    public static readonly CliOption<string> TestPlatformOption = new("--Platform");
+    public static readonly Option<string> TestPlatformOption = new("--Platform");
 
-    public static readonly CliOption<string> TestFrameworkOption = new("--Framework");
+    public static readonly Option<string> TestFrameworkOption = new("--Framework");
 
-    public static readonly CliOption<string[]> TestLoggerOption = new("--logger");
+    public static readonly Option<string[]> TestLoggerOption = new("--logger");
 
     public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
     {
@@ -321,13 +321,13 @@ internal static class CommonOptions
         return selfContainedProperties;
     }
 
-    internal static CliOption<T> AddCompletions<T>(this CliOption<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    internal static Option<T> AddCompletions<T>(this Option<T> option, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {
         option.CompletionSources.Add(completionSource);
         return option;
     }
 
-    internal static CliArgument<T> AddCompletions<T>(this CliArgument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
+    internal static Argument<T> AddCompletions<T>(this Argument<T> argument, Func<CompletionContext, IEnumerable<CompletionItem>> completionSource)
     {
         argument.CompletionSources.Add(completionSource);
         return argument;
@@ -360,10 +360,10 @@ public enum VerbosityOptions
     diag
 }
 
-public class DynamicOption<T>(string name, params string[] aliases) : CliOption<T>(name, aliases), IDynamicOption
+public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption
 {
 }
 
-public class DynamicArgument<T>(string name) : CliArgument<T>(name), IDynamicArgument
+public class DynamicArgument<T>(string name) : Argument<T>(name), IDynamicArgument
 {
 }

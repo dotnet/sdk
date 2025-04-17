@@ -7,32 +7,32 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal static class WorkloadSearchVersionsCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> WorkloadVersionArgument =
+    public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument =
         new(CliCommandStrings.WorkloadVersionArgument)
         {
             Arity = ArgumentArity.ZeroOrMore,
             Description = CliCommandStrings.WorkloadVersionArgumentDescription
         };
 
-    public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
+    public static readonly Option<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
-    public static readonly CliOption<string> FormatOption = new("--format")
+    public static readonly Option<string> FormatOption = new("--format")
     {
         Description = CliCommandStrings.FormatOptionDescription
     };
 
-    public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
+    public static readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("version", CliCommandStrings.PrintSetVersionsDescription);
+        var command = new Command("version", CliCommandStrings.PrintSetVersionsDescription);
         command.Arguments.Add(WorkloadVersionArgument);
         command.Options.Add(FormatOption);
         command.Options.Add(TakeOption);
