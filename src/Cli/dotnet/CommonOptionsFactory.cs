@@ -13,7 +13,7 @@ internal static class CommonOptionsFactory
     /// <summary>
     /// Creates common diagnostics option (-d|--diagnostics).
     /// </summary>
-    public static CliOption<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
+    public static Option<bool> CreateDiagnosticsOption(bool recursive) => new("--diagnostics", "-d")
     {
         Description = CliStrings.SDKDiagnosticsCommandDefinition,
         Recursive = recursive,
