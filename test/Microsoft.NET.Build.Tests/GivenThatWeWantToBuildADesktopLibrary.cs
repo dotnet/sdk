@@ -133,10 +133,30 @@ public class NETFramework
             }
         }
 
+        [Fact]
+        public void PackageWithoutAssets_ShouldNotShowUpInDepsJson()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            testProject.PackageReferences.Add(new TestPackageReference("Nerdbank.GitVersioning", "3.6.146"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory("net9.0").FullName, "PackageWithoutAssets_ShouldNotShowUpInDepsJson.deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+            }
+        }
+
         [WindowsOnlyFact]
         public void It_can_reference_a_netstandard2_library_and_exchange_types()
         {
-
             var netStandardLibrary = new TestProject()
             {
                 Name = "NETStandardLibrary",
