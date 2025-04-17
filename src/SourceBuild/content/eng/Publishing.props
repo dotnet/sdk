@@ -1,4 +1,5 @@
 <Project InitialTargets="DiscoverArtifacts">
+  <Import Project="$(RepositoryEngineeringDir)RuntimeIdentifier.props" />
   <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
 
   <PropertyGroup>
@@ -76,10 +77,10 @@
 
     <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
       <!-- Copy SDK archive to assets root as source-only build partners expect the file to be there. -->
-      <SourceBuildArtifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
+      <SdkTarball Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
         <Kind>Blob</Kind>
         <IsShipping>true</IsShipping>
-      </SourceBuildArtifact>
+      </SdkTarball>
       <!-- Add the symbols archives to the publishing output. -->
       <SourceBuildArtifact Include="$(ArtifactsAssetsDir)dotnet-symbols-*$(ArchiveExtension)">
         <Kind>Blob</Kind>
@@ -90,7 +91,7 @@
         <Kind>Blob</Kind>
         <IsShipping>true</IsShipping>
       </SourceBuildArtifact>
-      <Artifact Include="@(SourceBuildArtifact)">
+      <Artifact Include="@(SdkTarball);@(SourceBuildArtifact)">
         <IsShipping>true</IsShipping>
         <Kind>Blob</Kind>
         <RelativeBlobPath>%(Filename)%(Extension)</RelativeBlobPath>
