@@ -10,6 +10,7 @@ internal class ToolConfiguration
     public ToolConfiguration(
         string commandName,
         string toolAssemblyEntryPoint,
+        string runner,
         IDictionary<string, PackageIdentity> ridSpecificPackages = null,
         IEnumerable<string> warnings = null)
     {
@@ -18,7 +19,7 @@ internal class ToolConfiguration
             throw new ToolConfigurationException(CliStrings.ToolSettingsMissingCommandName);
         }
 
-        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
+        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint) && ridSpecificPackages?.Any() != true)
         {
             throw new ToolConfigurationException(
                 string.Format(
@@ -31,6 +32,8 @@ internal class ToolConfiguration
 
         CommandName = commandName;
         ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
+        Runner = runner;
+        RidSpecificPackages = ridSpecificPackages;
         Warnings = warnings ?? [];
     }
 
@@ -62,6 +65,7 @@ internal class ToolConfiguration
 
     public string CommandName { get; }
     public string ToolAssemblyEntryPoint { get; }
+    public string Runner { get; }
 
     public IDictionary<string, PackageIdentity> RidSpecificPackages { get; }
 
