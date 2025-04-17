@@ -76,7 +76,7 @@ internal class ToolPackageInstance : IToolPackage
                 ex);
         }
 
-        var library = lockFile.Targets?.SingleOrDefault().Libraries.SingleOrDefault();
+        var library = FindLibraryInLockFile(lockFile);
         if (library == null)
         {
             throw new ToolPackageException(
@@ -99,7 +99,7 @@ internal class ToolPackageInstance : IToolPackage
             ResolvedPackageVersion = Version;
         }
 
-        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, ResolvedPackageId);
+        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory);
         Warnings = toolConfiguration.Warnings;
 
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
@@ -166,12 +166,12 @@ internal class ToolPackageInstance : IToolPackage
         DirectoryPath assetsJsonParentDirectory)
     {
         var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
-        var lockFileTargetLibrary = FindLibraryInLockFile(lockFile, id);
-        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, id);
+        var lockFileTargetLibrary = FindLibraryInLockFile(lockFile);
+        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory);
 
     }
 
-    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, PackageId id)
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory)
     {
         try
         {
@@ -185,7 +185,7 @@ internal class ToolPackageInstance : IToolPackage
             var toolConfigurationPath =
                 packageDirectory
                     .WithSubDirectories(
-                        id.ToString(),
+                        new PackageId(library.Name).ToString(),
                         library.Version.ToNormalizedString().ToLowerInvariant())
                     .WithFile(dotnetToolSettings.Path);
 
@@ -202,17 +202,11 @@ internal class ToolPackageInstance : IToolPackage
         }
     }
 
-    private static LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile, PackageId id)
+    private static LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile)
     {
         return lockFile
             ?.Targets?.SingleOrDefault(t => t.RuntimeIdentifier != null)
-            ?.Libraries?.SingleOrDefault(l =>
-                string.Compare(l.Name, id.ToString(), StringComparison.OrdinalIgnoreCase) == 0);
-    }
-
-    private LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile)
-    {
-        return FindLibraryInLockFile(lockFile, Id);
+            ?.Libraries?.SingleOrDefault();
     }
 
     private static LockFileItem FindItemInTargetLibrary(LockFileTargetLibrary library, string targetRelativeFilePath)
