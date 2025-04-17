@@ -12,11 +12,11 @@ namespace Microsoft.DotNet.Cli.ToolPackage.ToolConfigurationDeserialization;
 public class DotNetCliToolRuntimeIdentifierPackage
 {
     [XmlAttribute]
-    public string RuntimeIdentifier { get; set; }
+    public string? RuntimeIdentifier { get; set; }
 
     [XmlAttribute]
-    public string Id { get; set; }
+    public string? Id { get; set; }
 
     [XmlAttribute]
-    public string Version { get; set; }
+    public string? Version { get; set; }
 }
