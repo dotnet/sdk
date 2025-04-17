@@ -9,6 +9,8 @@ using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run
@@ -48,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
             IToolPackage toolPackage = toolPackageDownloader.InstallPackage(
                 new PackageLocation(
                     nugetConfig: _configFile != null ? new FilePath(_configFile) : null,
-                    rootConfigDirectory: null,
+                    rootConfigDirectory: toolManifestPath.GetDirectoryPath().GetParentPath(),
                     sourceFeedOverrides: _sources,
                     additionalFeeds: _addSource),
                 packageId: packageId,
@@ -57,6 +59,9 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
                 restoreActionConfig: new(
                     IgnoreFailedSources: _ignoreFailedSources,
                     Interactive: _interactive));
+
+            LocalToolsResolverCache localToolsResolverCache = new();
+            localToolsResolverCache.SaveToolPackage(toolPackage, BundledTargetFramework.GetTargetFrameworkMoniker());
 
             toolManifestEditor.Add(
                 toolManifestPath,

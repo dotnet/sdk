@@ -31,9 +31,7 @@ internal static class ToolRunCommandParser
         Description = CliCommandStrings.ToolRunFromSourceOptionDescription,
         Arity = ArgumentArity.Zero
     };
-  
-    private static readonly Command Command = ConstructCommand();
-
+    
     public static readonly Option<string> FromSourceConfigFile = ToolInstallCommandParser.ConfigOption;
 
     public static readonly Option<string[]> FromSourceSourceOption = ToolInstallCommandParser.SourceOption;
