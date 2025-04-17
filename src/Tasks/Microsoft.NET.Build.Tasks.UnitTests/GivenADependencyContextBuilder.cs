@@ -218,7 +218,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         // If an assembly is in withResources, it has to be a key in dependencies, even with an empty list.
-        private DependencyContext BuildDependencyContextFromDependenciesWithResources(Dictionary<string, List<string>> dependencies, List<string> withResources, List<string> directReferences)
+        private static DependencyContext BuildDependencyContextFromDependenciesWithResources(Dictionary<string, List<string>> dependencies, List<string> withResources, List<string> references)
         {
             string mainProjectName = "simpleApp";
             LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
@@ -231,7 +231,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 []);
             string mainProjectDirectory = Path.GetDirectoryName(mainProject.ProjectPath);
 
-            ITaskItem[] referencePaths = directReferences.Select(reference =>
+            ITaskItem[] referencePaths = references.Select(reference =>
                 new MockTaskItem($"/usr/Path/{reference}.dll", new Dictionary<string, string> {
                     { "CopyLocal", "false" },
                     { "FusionName", $"{reference}, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" },
@@ -279,18 +279,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             CompilationOptions compilationOptions = CreateCompilationOptions();
 
-          /*  IEnumerable<ReferenceInfo> references =
-                ReferenceInfo.CreateDirectReferenceInfos(
-                    referencePaths,
-                    [],
-                    lockFileLookup: new LockFileLookup(lockFile),
-                    i => true,
-                    true);
-          */
             return new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: new LockFileLookup(lockFile))
                 .WithReferenceAssemblies(ReferenceInfo.CreateReferenceInfos(referencePaths))
                 .WithCompilationOptions(compilationOptions)
-              //  .WithDirectReferences(references)
                 .WithReferenceProjectInfos(referenceProjectInfos)
                 .Build();
         }

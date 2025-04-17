@@ -481,7 +481,20 @@ namespace Microsoft.NET.Build.Tasks
             targetInfo,
             _compilationOptions ?? CompilationOptions.Default,
             compilationLibraries,
-            runtimeLibraries.Select(library => library.Library),
+            runtimeLibraries.Select(library => new RuntimeLibrary(
+                library.Library.Type,
+                library.Library.Name,
+                library.Library.Version,
+                library.Library.Hash,
+                library.Library.RuntimeAssemblyGroups,
+                library.Library.NativeLibraryGroups,
+                library.Library.ResourceAssemblies,
+                library.Library.Dependencies.Where(
+                    dependency => runtimeLibraries.Any(lib => lib.Library.Name.Equals(dependency.Name)) ||
+                    compilationLibraries.Any(lib => lib.Name.Equals(dependency.Name))).ToList(),
+                library.Library.Serviceable,
+                library.Library.Path,
+                library.Library.HashPath)),
             runtimeFallbackGraph);
         }
 
