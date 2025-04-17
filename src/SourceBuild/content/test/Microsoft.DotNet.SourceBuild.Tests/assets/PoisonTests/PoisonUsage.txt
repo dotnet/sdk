@@ -1,1 +1,707 @@
-<PrebuiltLeakReport />
+<PrebuiltLeakReport>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/Microsoft.Win32.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/mscorlib.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/netstandard.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.AppContext.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Buffers.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Collections.Concurrent.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Collections.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Collections.NonGeneric.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Collections.Specialized.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ComponentModel.Composition.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ComponentModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ComponentModel.EventBasedAsync.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ComponentModel.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ComponentModel.TypeConverter.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Console.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Core.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Data.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Data.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.Contracts.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.Debug.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.FileVersionInfo.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.Process.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.StackTrace.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.TextWriterTraceListener.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.Tools.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.TraceSource.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Diagnostics.Tracing.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Drawing.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Drawing.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Dynamic.Runtime.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Globalization.Calendars.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Globalization.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Globalization.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.Compression.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.Compression.FileSystem.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.Compression.ZipFile.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.FileSystem.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.FileSystem.DriveInfo.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.FileSystem.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.FileSystem.Watcher.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.IsolatedStorage.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.MemoryMappedFiles.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.Pipes.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.IO.UnmanagedMemoryStream.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Linq.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Linq.Expressions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Linq.Parallel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Linq.Queryable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Memory.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Http.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.NameResolution.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.NetworkInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Ping.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Requests.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Security.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.Sockets.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.WebHeaderCollection.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.WebSockets.Client.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Net.WebSockets.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Numerics.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Numerics.Vectors.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ObjectModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.DispatchProxy.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.Emit.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.Emit.ILGeneration.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.Emit.Lightweight.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Reflection.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Resources.Reader.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Resources.ResourceManager.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Resources.Writer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.CompilerServices.VisualC.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Handles.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.InteropServices.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.InteropServices.RuntimeInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Numerics.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Serialization.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Serialization.Formatters.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Serialization.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Serialization.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Runtime.Serialization.Xml.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Claims.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Cryptography.Algorithms.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Cryptography.Csp.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Cryptography.Encoding.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Cryptography.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Cryptography.X509Certificates.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.Principal.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Security.SecureString.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ServiceModel.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Text.Encoding.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Text.Encoding.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Text.RegularExpressions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Overlapped.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Tasks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Tasks.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Tasks.Parallel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Thread.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.ThreadPool.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Threading.Timer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Transactions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.ValueTuple.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Web.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Windows.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.Linq.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.ReaderWriter.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.Serialization.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XmlDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XmlSerializer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XPath.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/packs/NETStandard.Library.Ref/x.y.z/ref/netstandard2.1/System.Xml.XPath.XDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/Microsoft.Win32.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/netfx.force.conflicts.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/netstandard.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.AppContext.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Collections.Concurrent.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Collections.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Collections.NonGeneric.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Collections.Specialized.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ComponentModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ComponentModel.EventBasedAsync.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ComponentModel.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ComponentModel.TypeConverter.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Console.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Data.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.Contracts.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.Debug.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.FileVersionInfo.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.Process.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.StackTrace.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.TextWriterTraceListener.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.Tools.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.TraceSource.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Diagnostics.Tracing.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Drawing.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Dynamic.Runtime.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Globalization.Calendars.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Globalization.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Globalization.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.Compression.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.Compression.ZipFile.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.FileSystem.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.FileSystem.DriveInfo.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.FileSystem.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.FileSystem.Watcher.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.IsolatedStorage.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.MemoryMappedFiles.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.Pipes.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.IO.UnmanagedMemoryStream.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Linq.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Linq.Expressions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Linq.Parallel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Linq.Queryable.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Http.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.NameResolution.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.NetworkInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Ping.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Requests.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Security.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.Sockets.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.WebHeaderCollection.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.WebSockets.Client.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Net.WebSockets.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ObjectModel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Reflection.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Reflection.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Reflection.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Resources.Reader.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Resources.ResourceManager.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Resources.Writer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.CompilerServices.VisualC.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Handles.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.InteropServices.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.InteropServices.RuntimeInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Numerics.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Serialization.Formatters.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Serialization.Json.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Serialization.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Runtime.Serialization.Xml.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Claims.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Cryptography.Algorithms.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Cryptography.Csp.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Cryptography.Encoding.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Cryptography.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Cryptography.X509Certificates.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.Principal.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Security.SecureString.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Text.Encoding.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Text.Encoding.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Text.RegularExpressions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.Overlapped.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.Tasks.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.Tasks.Parallel.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.Thread.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.ThreadPool.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Threading.Timer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.ValueTuple.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.ReaderWriter.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.XDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.XmlDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.XmlSerializer.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.XPath.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net461/lib/System.Xml.XPath.XDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net462/lib/System.Runtime.InteropServices.RuntimeInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net47/lib/System.Runtime.InteropServices.RuntimeInformation.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net47/lib/System.Security.Cryptography.Algorithms.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net47/lib/System.ValueTuple.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/netfx.force.conflicts.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Data.Common.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Diagnostics.StackTrace.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Diagnostics.Tracing.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Globalization.Extensions.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.IO.Compression.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Net.Http.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Net.Sockets.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Runtime.Serialization.Primitives.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Security.Cryptography.Algorithms.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Security.SecureString.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Threading.Overlapped.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+  <File Path="artifacts/assets/Release/dotnet-sdk-x.y.z/sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/lib/System.Xml.XPath.XDocument.dll">
+    <Type>AssemblyAttribute</Type>
+  </File>
+</PrebuiltLeakReport>

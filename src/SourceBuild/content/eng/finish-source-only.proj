@@ -124,13 +124,13 @@
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
           BeforeTargets="Build"
+          DependsOnTargets="CopySdkArchive"
           Condition="'$(EnablePoison)' == 'true'"
           Inputs="$(MSBuildProjectFullPath)"
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
     <ItemGroup>
-      <!-- Exclude the Private.SourceBuilt.Artifacts archive from poison usage scan. -->
-      <AssetToCheck Include="$(ArtifactsAssetsDir)*$(ArchiveExtension)" />
-      <AssetToCheck Remove="$(ArtifactsAssetsDir)$(SourceBuiltArtifactsTarballName)*" />
+      <!-- Include dotnet-sdk-*.tar.gz -->
+      <AssetToCheck Include="$(ArtifactsAssetsDir)dotnet-sdk-*$(ArchiveExtension)" />
       <!-- Include shipping nuget packages. -->
       <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
