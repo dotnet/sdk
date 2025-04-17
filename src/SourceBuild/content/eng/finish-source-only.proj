@@ -130,19 +130,19 @@
           Outputs="$(BaseIntermediateOutputPath)ReportPoisonUsage.complete" >
     <ItemGroup>
       <!-- Include dotnet-sdk-*.tar.gz -->
-      <AssetToCheck Include="$(ArtifactsAssetsDir)dotnet-sdk-*$(ArchiveExtension)" />
+      <SdkArchive Include="$(ArtifactsAssetsDir)dotnet-sdk-*$(ArchiveExtension)" />
       <!-- Include shipping nuget packages. -->
       <ShippingPackageToCheck Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
       <!-- Add and mark SBRP packages to validate that they have the correct poison attribute. -->
       <SbrpPackageToCheck Include="$(ReferencePackagesDir)**\*.nupkg" IsSourceBuildReferencePackage="true" />
     </ItemGroup>
 
-    <Error Condition="'@(AssetToCheck)' == ''" Text="No assets will be poison checked - this is unexpected!" />
+    <Error Condition="'@(SdkArchive)' == ''" Text="SDK archive will not be poison checked - this is unexpected!" />
     <Error Condition="'@(ShippingPackageToCheck)' == ''" Text="No shipping packages will be poison checked - this is unexpected!" />
     <Error Condition="'@(SbrpPackageToCheck)' == ''" Text="No SBRP packages will be poison checked - this is unexpected!" />
 
     <ItemGroup>
-      <PoisonFileToCheck Include="@(AssetToCheck)" />
+      <PoisonFileToCheck Include="@(SdkArchive)" />
       <PoisonFileToCheck Include="@(ShippingPackageToCheck)" />
       <PoisonFileToCheck Include="@(SbrpPackageToCheck)" />
     </ItemGroup>
