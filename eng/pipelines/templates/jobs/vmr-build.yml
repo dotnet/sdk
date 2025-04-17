@@ -239,7 +239,7 @@ jobs:
     value: $(commandPrefix)ci $(commandPrefix)$(cleanArgument) $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
 
   - name: baseProperties
-    value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName)
+    value: $(officialBuildProperties) /p:VerticalName=$(Agent.JobName)
 
   - name: targetProperties
     ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:

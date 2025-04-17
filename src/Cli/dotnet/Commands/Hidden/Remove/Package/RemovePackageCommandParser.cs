@@ -8,16 +8,16 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
 
 internal static class RemovePackageCommandParser
 {
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("package", CliCommandStrings.PackageRemoveAppFullName);
+        var command = new Command("package", CliCommandStrings.PackageRemoveAppFullName);
 
         command.Arguments.Add(PackageRemoveCommandParser.CmdPackageArgument);
         command.Options.Add(PackageRemoveCommandParser.InteractiveOption);
