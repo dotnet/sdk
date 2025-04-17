@@ -17,6 +17,11 @@ using System.Xml.Linq;
 public abstract class BuildComparer
 {
     /// <summary>
+    /// Type of asset being processed in the build comparison tool.
+    /// </summary>
+    protected AssetType? _assetType;
+
+    /// <summary>
     /// Path to the VMR manifest file.
     /// </summary>
     protected string _vmrManifestPath;
@@ -67,6 +72,7 @@ public abstract class BuildComparer
     List<IssueType> _issuesToReport;
 
     protected BuildComparer(
+        AssetType? assetType,
         string vmrManifestPath,
         string vmrAssetBasePath,
         string baseBuildAssetBasePath,
@@ -76,6 +82,7 @@ public abstract class BuildComparer
         string baselineFilePath,
         List<IssueType> issuesToReport)
     {
+        _assetType = assetType;
         _vmrManifestPath = vmrManifestPath;
         _vmrBuildAssetBasePath = vmrAssetBasePath;
         _baseBuildAssetBasePath = baseBuildAssetBasePath;
@@ -333,10 +340,16 @@ public abstract class BuildComparer
             switch (element.Name.LocalName)
             {
                 case "Blob":
-                    assetMappings.Add(MapBlob(vmrMergedManifestContent, element, baseDirectory, diffDirectory));
+                    if (_assetType is AssetType.Blob or null)
+                    {
+                        assetMappings.Add(MapBlob(vmrMergedManifestContent, element, baseDirectory, diffDirectory));
+                    }
                     break;
                 case "Package":
-                    assetMappings.Add(MapPackage(vmrMergedManifestContent, element, baseDirectory, diffDirectory));
+                    if (_assetType is AssetType.Package or null)
+                    {
+                        assetMappings.Add(MapPackage(vmrMergedManifestContent, element, baseDirectory, diffDirectory));
+                    }
                     break;
                 case "Pdb":
                     // NYI

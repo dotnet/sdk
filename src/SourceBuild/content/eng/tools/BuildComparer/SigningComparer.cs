@@ -15,6 +15,7 @@ public class SigningComparer : BuildComparer
     private SignCheckExecuter _signCheckExecuter;
 
     public SigningComparer(
+        AssetType? assetType,
         string vmrManifestPath,
         string vmrAssetBasePath,
         string baseBuildAssetBasePath,
@@ -25,6 +26,7 @@ public class SigningComparer : BuildComparer
         string exclusionsFilePath,
         string sdkTaskScript)
         : base(
+            assetType,
             vmrManifestPath,
             vmrAssetBasePath,
             baseBuildAssetBasePath,
