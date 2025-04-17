@@ -3,7 +3,7 @@
   "Hash": "__hash__",
   "Source": "RazorComponentAppMultitarget",
   "BasePath": "/",
-  "Mode": "Default",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
