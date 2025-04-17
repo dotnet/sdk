@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <BuildArgs>$(BuildArgs) /p:PackageRid=$(TargetRid)</BuildArgs>
-    <BuildArgs>$(BuildArgs) /p:PlatformName=$(TargetArchitecture)</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
