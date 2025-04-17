@@ -2,7 +2,7 @@
 
   <!-- Don't set IsTestUtilityProject=true because this project is referenced by tools and would otherwise be filtered out. -->
   <PropertyGroup>
-    <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+    <TargetFrameworks>$(NetMinimum);$(NetFrameworkMinimum)</TargetFrameworks>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>

@@ -2,11 +2,12 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <Description>A dotnet CLI tool with commands for template authoring.</Description>
     <IsPackable>true</IsPackable>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>dotnet-template-authoring</ToolCommandName>
+    <RollForward>Major</RollForward>
   </PropertyGroup>
 
   <ItemGroup>
