@@ -13,14 +13,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
     internal class ToolRunFromSourceCommand(ParseResult result) : CommandBase(result)
     {
         private readonly string? _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-        private readonly IEnumerable<string>? _forwardArguments = result.GetValue(ToolRunCommandParser.CommandArgument);
+        private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolRunCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
         private readonly bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
         private readonly string? _configFile = result.GetValue(ToolRunCommandParser.FromSourceConfigFile);
         private readonly string[] _sources = result.GetValue(ToolRunCommandParser.FromSourceSourceOption) ?? [];
         private readonly string[] _addSource = result.GetValue(ToolRunCommandParser.FromSourceAddSourceOption) ?? [];
         private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        private readonly bool _interactive = result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
+        private readonly bool _interactive = result.GetValue(ToolRunCommandParser.FromSourceInteractiveOption);
         private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.FromSourceVerbosityOption);
+        private readonly bool _yes = result.GetValue(ToolRunCommandParser.FromSourceYesOption);
 
         public override int Execute()
         {
@@ -57,19 +58,27 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
 
             CommandSpec commandSpec = MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(toolPackage.Command.Executable.ToString(), _forwardArguments);
             var command = CommandFactoryUsingResolver.Create(commandSpec);
-
-            Console.WriteLine('-' * Console.WindowWidth);
-
             var result = command.Execute();
             return result.ExitCode;
         }
 
         private bool UserAgreedToRunFromSource()
         {
+            if (_yes)
+            {
+                return true;
+            }
+
+            if (!_interactive)
+            {
+                return false;
+            }
+
             // TODO: Use a better way to ask for user input
             Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
             Console.WriteLine();
+            Console.WriteLine(new string('-', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
             return userAccepted;
         }
     }
