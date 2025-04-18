@@ -117,7 +117,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
             if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
             {
-                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
+                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest, Constants.SerializerOptions);
                 if (manifestV2 == null)
                 {
                     Log.LogError(Strings.InvalidImageManifest);
