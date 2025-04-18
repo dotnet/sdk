@@ -63,6 +63,18 @@ parameters:
   type: boolean
   default: false
 
+# Name of previous job(s) (from the same template as this) whose output will be used to build this job
+# The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
+- name: reuseBuildArtifactsFrom
+  type: object
+  default: ''
+
+# Names of jobs that this job depends on. This only provides a job dependency and does not automatically
+# download artifacts from the other job. Use reuseBuildArtifactsFrom for that.
+- name: dependsOn
+  type: object
+  default: ''
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -83,12 +95,6 @@ parameters:
   type: boolean
   default: false
 
-# Name of previous job(s) (from the same template as this) whose output will be used to build this job
-# The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
-- name: reuseBuildArtifactsFrom
-  type: object
-  default: ''
-
 # Allow downloading artifacts from the internet during the build
 - name: runOnline
   type: boolean
@@ -107,6 +113,16 @@ parameters:
 - name: withPreviousSDK
   type: boolean
   default: false
+
+# Skip the build step (this would be used when wanting to run tests only)
+- name: skipBuild
+  type: boolean
+  default: false
+
+# Custom steps to run before running tests
+- name: testInitSteps
+  type: stepList
+  default: []
 
 #### sdk parameters ####
 
@@ -138,7 +154,7 @@ jobs:
         image: ${{ parameters.container.image }}
         options: $(defaultContainerOptions)
 
-  ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
+  ${{ if or(ne(parameters.reuseBuildArtifactsFrom, ''), ne(parameters.dependsOn, '')) }}:
     ${{ if eq(parameters.buildPass, '') }}:
       # For PR builds, skip the stage 2 build if the stage 1 build fails.
       # Otherwise, run the stage 2 build even if the stage 1 build fails so that we can get a complete assessment of the build status.
@@ -149,7 +165,11 @@ jobs:
         condition: succeededOrFailed()
     ${{ else }}:
       condition: succeeded()
-    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
+    dependsOn:
+    - ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
+      - ${{ parameters.reuseBuildArtifactsFrom }}
+    - ${{ if ne(parameters.dependsOn, '') }}:
+      - ${{ parameters.dependsOn }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -344,20 +364,15 @@ jobs:
   - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
     - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
       - ${{ if eq(parameters.buildSourceOnly, true) }}:
-        - download: current
-          artifact: ${{ reuseBuildArtifacts }}_Artifacts
-          patterns: |
-            **/Private.SourceBuilt.Artifacts.*.tar.gz
-            **/dotnet-sdk-*.tar.gz
-            **/*.nupkg
-          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
-
-        - task: CopyFiles@2
-          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
-            Contents: '*.tar.gz'
-            TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+        - template: ../steps/download-artifacts.yml@self
+          parameters:
+            artifactDescription: Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
+            artifactName: ${{ reuseBuildArtifacts }}_Artifacts
+            downloadFilePatterns: |
+              **/Private.SourceBuilt.Artifacts.*.tar.gz
+              **/dotnet-sdk-*.tar.gz
+            copyDestination: $(sourcesPath)/prereqs/packages/archive/
+            flattenDirs: true
 
       - ${{ else }}:
         - task: DownloadPipelineArtifact@2
@@ -502,61 +517,62 @@ jobs:
         displayName: Prep the Build
         workingDirectory: $(sourcesPath)
 
-    - script: |
-        set -ex
-        df -h
+    - ${{ if ne(parameters.skipBuild, 'true') }}:
 
-        customEnvVars=""
-        customPreBuildArgs=""
-        customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
-        extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
+      - script: |
+          set -ex
+          df -h
 
-        if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --online"
-        else
-          customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
-        fi
+          customEnvVars=""
+          customPreBuildArgs=""
+          customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
+          extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
 
-        if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --poison"
-        fi
-
-        if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --source-repository https://github.com/dotnet/dotnet"
-          customBuildArgs="$customBuildArgs --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
-        fi
-
-        if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --source-only"
-          extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
-        fi
-
-        if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --use-mono-runtime"
-        fi
-
-        if [[ -n "${{ parameters.targetRid }}" ]]; then
-          customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
-        fi
-
-        if [[ -n "${{ parameters.crossRootFs }}" ]]; then
-          customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
-          if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
-            extraBuildProperties="$extraBuildProperties /p:CrossBuild=true"
+          if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --online"
+          else
+            customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
           fi
-        fi
 
-        buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
-        buildArgs=$(echo $buildArgs | xargs) # Remove extra spaces
+          if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --poison"
+          fi
 
-        for envVar in $customEnvVars; do
-          customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
-        done
+          if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --source-repository https://github.com/dotnet/dotnet"
+            customBuildArgs="$customBuildArgs --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
+          fi
 
-        eval $customEnvVarsWithBashSyntax
-        $customPreBuildArgs ./build.sh $buildArgs
-      displayName: Build
-      workingDirectory: $(sourcesPath)
+          if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --source-only"
+            extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
+          fi
+
+          if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --use-mono-runtime"
+          fi
+
+          if [[ -n "${{ parameters.targetRid }}" ]]; then
+            customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
+          fi
+
+          if [[ -n "${{ parameters.crossRootFs }}" ]]; then
+            customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
+            if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
+              extraBuildProperties="$extraBuildProperties /p:CrossBuild=true"
+            fi
+          fi
+
+          buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+
+          for envVar in $customEnvVars; do
+            customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
+          done
+
+          eval $customEnvVarsWithBashSyntax
+          $customPreBuildArgs ./build.sh $buildArgs
+        displayName: Build
+        workingDirectory: $(sourcesPath)
 
     - ${{ if ne(parameters.runOnline, 'True' )}}:
       - script: |
@@ -567,6 +583,8 @@ jobs:
 
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
+      - ${{ parameters.testInitSteps }}
+      
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
       # builds where the packages are only available in the private feeds. This allows the tests to restore from those feeds.
       - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
