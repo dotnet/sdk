@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal static class ReferenceAddCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
     {
         Description = CliCommandStrings.ReferenceAddProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
@@ -19,25 +19,25 @@ internal static class ReferenceAddCommandParser
         }
     };
 
-    public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
     {
         Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
         HelpName = CliStrings.CommonCmdFramework
 
     }.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-    public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("add", CliCommandStrings.ReferenceAddAppFullName);
+        Command command = new("add", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);

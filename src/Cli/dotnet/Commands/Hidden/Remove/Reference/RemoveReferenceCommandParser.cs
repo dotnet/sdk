@@ -8,16 +8,16 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
 
 internal static class RemoveReferenceCommandParser
 {
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("reference", CliCommandStrings.ReferenceRemoveAppFullName);
+        var command = new Command("reference", CliCommandStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ReferenceRemoveCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceRemoveCommandParser.FrameworkOption);

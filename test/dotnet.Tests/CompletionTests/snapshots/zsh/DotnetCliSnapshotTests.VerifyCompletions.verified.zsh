@@ -841,6 +841,7 @@ _testhost() {
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--no-restore[Do not restore the project before building.]' \
+                        '--no-cache[Skip up to date checks and always build the program before running.]' \
                         '--self-contained=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--sc=[Publish the .NET runtime with your application so the runtime doesn'\''t need to be installed on the target machine. The default is '\''false.'\'' However, when targeting .NET 7 or lower, the default is '\''true'\'' if a runtime identifier is specified.]: :((False\:"False" True\:"True" ))' \
                         '--no-self-contained[Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.]' \
@@ -1047,7 +1048,7 @@ _testhost() {
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- The NuGet Package Id of the tool to install.: ' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                         ;;
                                     (uninstall)
@@ -1059,7 +1060,7 @@ _testhost() {
                                             '--tool-manifest=[]:PATH: ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- The NuGet Package Id of the tool to install.: ' \
+                                            ':packageId -- Package reference: ' \
                                             && ret=0
                                         ;;
                                     (update)
@@ -1085,7 +1086,7 @@ _testhost() {
                                             '--all[Update all tools.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::packageId -- The NuGet Package Id of the tool to update.: ' \
+                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                         ;;
                                     (list)

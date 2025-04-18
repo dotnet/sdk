@@ -132,6 +132,7 @@ src/roslyn/src/Analyzers/VisualBasic/Tests/FileHeaders/FileHeaderTests.vb|unknow
 src/roslyn/src/EditorFeatures/CSharpTest2/EmbeddedLanguages/RegularExpressions/Regex_RealWorldPatterns.json
 
 # Applicable to installer, not source
+src/roslyn/src/RoslynAnalyzers/Assets/EULA.txt|ms-net-library
 src/roslyn/src/Setup/Roslyn.ThirdPartyNotices/ThirdPartyNotices.rtf
 src/roslyn/src/Setup/Roslyn.VsixLicense/EULA.rtf
 

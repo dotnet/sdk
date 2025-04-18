@@ -53,14 +53,14 @@ internal partial class TestingPlatformCommand
         context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
     }
 
-    private static IEnumerable<string> GetCustomUsageParts(CliCommand command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
+    private static IEnumerable<string> GetCustomUsageParts(Command command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
     {
-        var parentCommands = new List<CliCommand>();
+        var parentCommands = new List<Command>();
         var nextCommand = command;
         while (nextCommand is not null)
         {
             parentCommands.Add(nextCommand);
-            nextCommand = nextCommand.Parents.FirstOrDefault(c => c is CliCommand) as CliCommand;
+            nextCommand = nextCommand.Parents.FirstOrDefault(c => c is Command) as Command;
         }
         parentCommands.Reverse();
 

@@ -885,6 +885,11 @@ dotnet.config is a name don't translate.</note>
         <target state="new">Do not build the project before running. Implies --no-restore.</target>
         <note>{Locked="--no-restore"}</note>
       </trans-unit>
+      <trans-unit id="CommandOptionNoCacheDescription">
+        <source>Skip up to date checks and always build the program before running.</source>
+        <target state="new">Skip up to date checks and always build the program before running.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
         <target state="new">Do not use arguments specified in launch profile to run the application.</target>
@@ -1406,6 +1411,11 @@ Make the profile names distinct.</target>
         <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
+      <trans-unit id="InvalidOptionCombination">
+        <source>Cannot combine option '{0}' and '{1}'.</source>
+        <target state="new">Cannot combine option '{0}' and '{1}'.</target>
+        <note>{0} and {1} are option names like '--no-build'.</note>
+      </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
         <target state="new">Failed to parse "{0}" as a semantic version.</target>
@@ -1616,6 +1626,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Installing workload version {0}.</source>
         <target state="new">Installing workload version {0}.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="NoBinaryLogBecauseUpToDate">
+        <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
+        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</target>
+        <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
         <source>Do not build the project before publishing. Implies --no-restore.</source>

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
-    <IsCrossgenSupported Condition="'$(DISABLE_CROSSGEN)' == '' and
+    <IsCrossgenSupported Condition="'$(SkipUsingCrossgen)' != 'true' and
                                     '$(TargetArchitecture)' != 's390x' and
                                     '$(TargetArchitecture)' != 'ppc64le' and
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
