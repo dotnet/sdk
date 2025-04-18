@@ -110,6 +110,7 @@
 
     <!-- Pass down configuration properties -->
     <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
+    <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)verbosity $(LogVerbosity)</CommonArgs>
     <CommonArgs>$(CommonArgs) /p:TargetRid=$(TargetRid)</CommonArgs>
 
     <!-- Pass through DotNetBuildPass for join point vertical support. -->

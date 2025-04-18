@@ -11,7 +11,6 @@
     <!-- noVisualStudio build action must be passed if building with Core MSBuild on Windows. -->
     <BuildActions Condition="'$(BuildOS)' == 'windows' and '$(ForceDotNetMSBuildEngine)' != 'false'">$(BuildActions) $(FlagParameterPrefix)noVisualStudio</BuildActions>
 
-    <BuildArgs>$(BuildArgs) /p:TreatWarningsAsErrors=false</BuildArgs>
     <BuildArgs>$(BuildArgs) /p:GenerateResourceUsePreserializedResources=true</BuildArgs>
 
     <!--
