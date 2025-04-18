@@ -34,9 +34,9 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
 
             var analyzersByLanguage = new Dictionary<string, AnalyzersAndFixers>();
 
-            // We need AnalyzerReferenceInformationProvider to load all local project suppressors
+            // We need AnalyzerReferenceInformationProvider to get all project suppressors
             var referenceProvider = new AnalyzerReferenceInformationProvider();
-            var projectsReferenceAnalyzersAndFixers = referenceProvider.GetAnalyzersAndFixers(workspace, solution, formatOptions, logger);
+            var perProjectAnalyzersAndFixers = referenceProvider.GetAnalyzersAndFixers(workspace, solution, formatOptions, logger);
 
             return solution.Projects
                 .ToImmutableDictionary(
@@ -45,13 +45,14 @@ namespace Microsoft.CodeAnalysis.Tools.Analyzers
                     {
                         if (!analyzersByLanguage.TryGetValue(project.Language, out var analyzersAndFixers))
                         {
-                            var analyzers = references.SelectMany(reference => reference.GetAnalyzers(project.Language));
+                            var analyzers = ImmutableArray.CreateBuilder<DiagnosticAnalyzer>();
+                            analyzers.AddRange(references.SelectMany(reference => reference.GetAnalyzers(project.Language)));
                             var codeFixes = AnalyzerFinderHelpers.LoadFixers(references.Select(reference => reference.GetAssembly()), project.Language);
 
-                            // Add local project suppressors to global analyzers
-                            if (projectsReferenceAnalyzersAndFixers.TryGetValue(project.Id, out var referenceAnalyzersAndFixers))
+                            // Add project suppressors to featured analyzers
+                            if (perProjectAnalyzersAndFixers.TryGetValue(project.Id, out var thisProjectAnalyzersAndFixers))
                             {
-                                analyzers = referenceAnalyzersAndFixers.Analyzers.OfType<DiagnosticSuppressor>().Aggregate(analyzers, (current, suppressor) => current.Append(suppressor));
+                                analyzers.AddRange(thisProjectAnalyzersAndFixers.Analyzers.OfType<DiagnosticSuppressor>());
                             }
 
                             analyzersAndFixers = new AnalyzersAndFixers(analyzers.ToImmutableArray(), codeFixes);
