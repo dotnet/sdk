@@ -1,0 +1,62 @@
+From 61bc796849d69f53d918fc151ed23efc26f5441e Mon Sep 17 00:00:00 2001
+From: Viktor Hofer <viktor.hofer@microsoft.com>
+Date: Fri, 18 Apr 2025 10:38:10 +0200
+Subject: [PATCH] Build TestPlatform packages in VMR
+
+Backport: https://github.com/microsoft/vstest/pull/15055
+
+---
+ .../Microsoft.TestPlatform.Portable.csproj                 | 7 ++++---
+ .../Microsoft.TestPlatform/Microsoft.TestPlatform.csproj   | 7 ++++---
+ 2 files changed, 8 insertions(+), 6 deletions(-)
+
+diff --git a/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj b/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
+index 353675add1..0707c75386 100644
+--- a/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
++++ b/src/package/Microsoft.TestPlatform.Portable/Microsoft.TestPlatform.Portable.csproj
+@@ -16,8 +16,7 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <!-- Don't produce this package when building from source or inside the VMR as it relies on a VS license. -->
+-    <IsPackable Condition="'$(DotNetBuild)' != 'true'">true</IsPackable>
++    <IsPackable>true</IsPackable>
+     <NuspecFile>Microsoft.TestPlatform.Portable.nuspec</NuspecFile>
+     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+     <PackageId>Microsoft.TestPlatform.Portable</PackageId>
+@@ -32,7 +31,9 @@
+     </PackageDescription>
+     <!-- Override default license -->
+     <PackageLicenseFile>LICENSE_VS.txt</PackageLicenseFile>
+-    <PackageLicenseFullPath>$(SrcPackageFolder)licenses/LICENSE_VS.txt</PackageLicenseFullPath>
++    <!-- Use the MIT license when building from the VMR as the VS license is cloaked out. -->
++    <PackageLicenseFile Condition="'$(DotNetBuild)' == 'true'">LICENSE_MIT.txt</PackageLicenseFile>
++    <PackageLicenseFullPath>$(SrcPackageFolder)licenses/$(PackageLicenseFile)</PackageLicenseFullPath>
+   </PropertyGroup>
+ 
+   <ItemGroup Label="NuGet">
+diff --git a/src/package/Microsoft.TestPlatform/Microsoft.TestPlatform.csproj b/src/package/Microsoft.TestPlatform/Microsoft.TestPlatform.csproj
+index 4eaf14cca6..728c2402c0 100644
+--- a/src/package/Microsoft.TestPlatform/Microsoft.TestPlatform.csproj
++++ b/src/package/Microsoft.TestPlatform/Microsoft.TestPlatform.csproj
+@@ -15,8 +15,7 @@
+   </PropertyGroup>
+ 
+   <PropertyGroup>
+-    <!-- Don't produce this package when building from source or inside the VMR as it relies on a VS license. -->
+-    <IsPackable Condition="'$(DotNetBuild)' != 'true'">true</IsPackable>
++    <IsPackable>true</IsPackable>
+     <NuspecFile>Microsoft.TestPlatform.nuspec</NuspecFile>
+     <NuspecBasePath>$(OutputPath)</NuspecBasePath>
+     <PackageId>Microsoft.TestPlatform</PackageId>
+@@ -34,7 +33,9 @@
+     </PackageDescription>
+     <!-- Override default license -->
+     <PackageLicenseFile>LICENSE_VS.txt</PackageLicenseFile>
+-    <PackageLicenseFullPath>$(SrcPackageFolder)licenses/LICENSE_VS.txt</PackageLicenseFullPath>
++    <!-- Use the MIT license when building from the VMR as the VS license is cloaked out. -->
++    <PackageLicenseFile Condition="'$(DotNetBuild)' == 'true'">LICENSE_MIT.txt</PackageLicenseFile>
++    <PackageLicenseFullPath>$(SrcPackageFolder)licenses/$(PackageLicenseFile)</PackageLicenseFullPath>
+   </PropertyGroup>
+ 
+   <ItemGroup Label="NuGet">
