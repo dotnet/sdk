@@ -3,14 +3,13 @@
 
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal interface IToolPackageStoreQuery
 {
-    internal interface IToolPackageStoreQuery
-    {
-        IEnumerable<IToolPackage> EnumeratePackages();
+    IEnumerable<IToolPackage> EnumeratePackages();
 
-        IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId);
+    IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId);
 
-        IToolPackage GetPackage(PackageId packageId, NuGetVersion version);
-    }
+    IToolPackage GetPackage(PackageId packageId, NuGetVersion version);
 }

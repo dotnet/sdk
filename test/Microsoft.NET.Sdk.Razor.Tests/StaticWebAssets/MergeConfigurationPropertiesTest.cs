@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -258,7 +260,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             config.GetMetadata("AdditionalPublishPropertiesToRemove").Should().Be("RuntimeIdentifier;TargetFramework");
         }
 
-        private ITaskItem CreateCandidateProjectConfiguration(string project)
+        private static ITaskItem CreateCandidateProjectConfiguration(string project)
         {
             return new TaskItem(Path.GetFullPath(project), new Dictionary<string, string>
             {
@@ -273,7 +275,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             });
         }
 
-        private ITaskItem CreateProjectReference(
+        private static ITaskItem CreateProjectReference(
             string project,
             string msBuildSourceProjectFile,
             string undefineProperties = "",

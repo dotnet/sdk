@@ -1,10 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
@@ -35,7 +36,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -78,7 +79,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
         endpoints = endpoints.Where(e => !e.Route.Contains("asdf1234")).ToArray();
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
@@ -118,7 +119,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -161,7 +162,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
 
         var resolvedEndpoints = new ResolveFingerprintedStaticWebAssetEndpointsForAssets
         {
@@ -204,7 +205,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             )
         ];
 
-        var endpoints = CreateEndpoints(candidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray());
+        var endpoints = CreateEndpoints(candidateAssets.Select(a => StaticWebAsset.FromTaskItem(a)).ToArray());
         endpoints = endpoints.Where(e => !e.Route.Contains("asdf1234")).ToArray();
         endpoints[0].AssetFile = Path.GetFullPath("other.js");
 
@@ -221,7 +222,7 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
         result.Should().BeFalse();
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -254,6 +255,8 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             // Add these to avoid accessing the disk to compute them
             Integrity = integrity,
             Fingerprint = fingerprint,
+            FileLength = 10,
+            LastWriteTime = DateTime.UtcNow,
         };
 
         result.ApplyDefaults();
@@ -276,14 +279,12 @@ public class ResolveFingerprintedStaticWebAssetEndpointsForAssetsTest
             ]
         };
         defineStaticWebAssetEndpoints.BuildEngine = Mock.Of<IBuildEngine>();
-        defineStaticWebAssetEndpoints.TestLengthResolver = name => 10;
-        defineStaticWebAssetEndpoints.TestLastWriteResolver = name => DateTime.UtcNow;
 
         defineStaticWebAssetEndpoints.Execute();
         return StaticWebAssetEndpoint.FromItemGroup(defineStaticWebAssetEndpoints.Endpoints);
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {

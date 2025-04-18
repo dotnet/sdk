@@ -3,7 +3,7 @@
 // The container supports source-building the SDK
 {
     "name": "VMR with PR changes",
-    "image": "mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39",
+    "image": "mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9",
     "hostRequirements": {
         // A completely source built .NET is >64 GB with all the repos/artifacts
         "storage": "128gb"

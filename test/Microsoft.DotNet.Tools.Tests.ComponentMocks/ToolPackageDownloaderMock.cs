@@ -1,21 +1,17 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+#nullable disable
+
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Microsoft.NET.TestFramework.Utilities;
 using NuGet.Frameworks;
 using NuGet.Versioning;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 {
@@ -99,8 +95,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
-            RestoreActionConfig restoreActionConfig = null,
-            bool verifySignatures = false
+            bool verifySignatures = false,
+            RestoreActionConfig restoreActionConfig = null
             )
         {
             string rollbackDirectory = null;
@@ -117,7 +113,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
                     if (string.IsNullOrEmpty(packageId.ToString()))
                     {
-                        throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                        throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
                     }
 
                     var feedPackage = GetPackage(
@@ -160,7 +156,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     {
                         throw new ToolPackageException(
                             string.Format(
-                                CommonLocalizableStrings.ToolPackageConflictPackageId,
+                                CliStrings.ToolPackageConflictPackageId,
                                 packageId,
                                 version.ToNormalizedString()));
                     }
@@ -178,8 +174,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Commands = new List<RestoredCommand> {
-                            new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable) },
+                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -258,7 +253,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             if (package == null)
             {
                 _reporter?.WriteLine($"Error: failed to restore package {packageId}.");
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             return package;
@@ -314,13 +309,14 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false)
+            bool isGlobalTool = false,
+            RestoreActionConfig restoreActionConfig = null)
         {
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
             if (string.IsNullOrEmpty(packageId.ToString()))
             {
-                throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+                throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
             }
 
             var feedPackage = GetPackage(
@@ -340,7 +336,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public IReadOnlyList<RestoredCommand> Commands { get; set; }
+            public RestoredCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 
