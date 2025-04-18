@@ -9,7 +9,7 @@ namespace System.CommandLine.StaticCompletions.Tests;
 
 public static class VerifyExtensions
 {
-    public static async Task Verify(this IShellProvider provider, CliCommand command, ITestOutputHelper log, [CallerFilePath] string sourceFile = "")
+    public static async Task Verify(this IShellProvider provider, Command command, ITestOutputHelper log, [CallerFilePath] string sourceFile = "")
     {
         // Can't use sourceFile directly because in CI the file may be rooted at a different location than the compile-time location
         // We do have the source code available, just at a different root, so we can use that compute

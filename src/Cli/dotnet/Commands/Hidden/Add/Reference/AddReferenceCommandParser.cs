@@ -9,16 +9,16 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
 
 internal static class AddReferenceCommandParser
 {
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("reference", CliCommandStrings.ReferenceAddAppFullName);
+        Command command = new("reference", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ReferenceAddCommandParser.ProjectPathArgument);
         command.Options.Add(ReferenceAddCommandParser.FrameworkOption);
