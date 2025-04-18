@@ -37,6 +37,8 @@ The servicing branches are locked from the time of code complete to the next bra
 ### Tactics approval
 Even releases that are in lockdown can still take changes as long as they are approved and the final build isn't complete. To bring a change through tactics, mark it with the label `servicing-consider` and update the description to include 5 sections (Description, Customer Impact, Regression?, Risk, Testing). See previously approved bugs for examples by looking for the [servicing-approved](https://github.com/dotnet/sdk/pulls?q=is%3Apr+label%3AServicing-approved+is%3Aclosed) label.
 
+For servicing changes to other repos like MSBuild and NuGet, we recommend getting approval from tactics before the PR is merged. For codeflow, we do not gate codeflow on approvals as many codeflows are just infra work that doesn't require approval. Separating those out would add additional complexity we want to avoid.
+
 ## External contributions
 External contributions are encouraged and welcome. There are so many teams working in this repo that it can be hard to track. Contributors looking to learn more about how to contribute should check out the [Developer Guide](https://github.com/dotnet/sdk/blob/main/documentation/project-docs/developer-guide.md).
 
