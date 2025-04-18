@@ -57,6 +57,9 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
 
             CommandSpec commandSpec = MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(toolPackage.Command.Executable.ToString(), _forwardArguments);
             var command = CommandFactoryUsingResolver.Create(commandSpec);
+
+            Console.WriteLine('-' * Console.WindowWidth);
+
             var result = command.Execute();
             return result.ExitCode;
         }
