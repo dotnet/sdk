@@ -1719,12 +1719,19 @@ _testhost_tool_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-roll-forward --from-source --help" 
+    opts="--allow-roll-forward --from-source --configfile --source --add-source --verbosity --ignore-failed-sources --interactive --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
+    
+    case $prev in
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
