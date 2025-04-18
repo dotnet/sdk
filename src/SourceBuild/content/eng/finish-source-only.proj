@@ -2,6 +2,8 @@
 <Project Sdk="Microsoft.Build.NoTargets">
 
   <PropertyGroup>
+    <!-- Need to set to false to calculate RepositoryCommit. -->
+    <EnableSourceControlManagerQueries>false</EnableSourceControlManagerQueries>
     <TargetFramework>$(NetCurrent)</TargetFramework>
   </PropertyGroup>
 
@@ -42,6 +44,19 @@
     <PropertyGroup>
       <SourceBuiltSdkNonStableVersion>$([System.Text.RegularExpressions.Regex]::Split('$([System.IO.File]::ReadAllText('%(SdkVersionFileItem.Identity)'))', '\r\n|\r|\n')[3])</SourceBuiltSdkNonStableVersion>
     </PropertyGroup>
+  </Target>
+
+  <!-- Write out the .version file to be bundled into the source-build tarball -->
+  <Target Name="WriteSourceBuiltSdkVersionFile"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion">
+    <!-- Content of the .version file to include in the tarball -->
+    <ItemGroup>
+      <VersionFileContent Include="$(RepositoryCommit);$(SourceBuiltSdkNonStableVersion)" />
+    </ItemGroup>
+
+    <WriteLinesToFile File="$(ArtifactsAssetsDir).version"
+                      Lines="@(VersionFileContent)" />
   </Target>
 
   <!--

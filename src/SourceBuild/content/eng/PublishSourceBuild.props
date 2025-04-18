@@ -52,6 +52,10 @@
     </PropertyGroup>
   </Target>
 
+  <PropertyGroup>
+    <SourceBuiltVersionInputName>$(ArtifactsAssetsDir).version</SourceBuiltVersionInputName>
+  </PropertyGroup>
+
   <Target Name="GetOutputsForCreatePrivateSourceBuiltArtifactsArchive"
           DependsOnTargets="DetermineSourceBuiltSdkNonStableVersion">
     <PropertyGroup>
@@ -71,7 +75,7 @@
   <Target Name="CreatePrivateSourceBuiltArtifactsArchive"
           AfterTargets="Publish"
           DependsOnTargets="DiscoverArtifacts;GetOutputsForCreatePrivateSourceBuiltArtifactsArchive"
-          Inputs="@(PackageToPublish);@(ReferencePackage);$(AssetManifestFilePath)"
+          Inputs="@(PackageToPublish);@(ReferencePackage);$(SourceBuiltVersionInputName);$(AssetManifestFilePath)"
           Outputs="$(SourceBuiltTarballName);$(SourceBuiltVersionName);$(AllPackageVersionsPropsName);$(SourceBuiltMergedAssetManifestName)">
     <!-- Copy packages to layout directory. Since there are a large number of files,
           this will use symlinks instead of copying files to make this execute quickly. -->
@@ -82,22 +86,10 @@
           DestinationFolder="$(SourceBuiltLayoutDir)$(PreviouslySourceBuiltReferencePackagesDirName)"
           UseSymbolicLinksIfPossible="true" />
 
-    <Exec Command="git rev-parse HEAD"
-          WorkingDirectory="$(RepoRoot)"
-          EchoOff="true"
-          ConsoleToMsBuild="true"
-          StandardOutputImportance="Low">
-      <Output TaskParameter="ConsoleOutput" PropertyName="RepositoryCommit" />
-    </Exec>
-
-    <!-- Content of the .version file to include in the tarball -->
-    <ItemGroup>
-      <VersionFileContent Include="$(RepositoryCommit.Trim());$(SourceBuiltSdkNonStableVersion)" />
-    </ItemGroup>
-
-    <WriteLinesToFile File="$(SourceBuiltVersionName)"
-                      Lines="@(VersionFileContent)"
-                      Overwrite="true" />
+    <!-- Copy the version file in to the tarball -->
+    <Copy SourceFiles="$(SourceBuiltVersionInputName)"
+          DestinationFiles="$(SourceBuiltVersionName)"
+          UseSymbolicLinksIfPossible="true" />
 
     <!-- Copy the merged asset manifest into the tarball -->
     <Copy SourceFiles="$(AssetManifestFilePath)"
