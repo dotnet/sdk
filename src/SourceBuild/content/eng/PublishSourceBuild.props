@@ -97,7 +97,7 @@
           UseSymbolicLinksIfPossible="true" />
 
     <!-- Create a PackageVersions.props file that includes entries for all packages. -->
-    <WritePackageVersionsProps KnownPackages="@(PackageToPublish)"
+    <WritePackageVersionsProps KnownPackages="@(ProducedPackage->Metadata('PackageId'))"
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="AllPackages"
                                OutputPath="$(AllPackageVersionsPropsName)" />
