@@ -142,9 +142,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                     new object[] { "dotnet.new", "1.0.0", null, "dotnet.new.resources", null, dotnetNewSatelliteAssemblies, null, null, null },
                     new object[] { "simple.dependencies", "1.0.0", null, "simple.dependencies", null, null, null, null, resolvedNuGetFiles },
                 };
-
-
-
             }
         }
 
@@ -188,11 +185,16 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .RuntimeLibraries
                 .SelectMany(l => l.Dependencies)
                 .Should()
-                .NotBeEmpty()
-                .And
-                .NotContain(d => d.Name == "System.NotConflicting")
-                .And
-                .NotContain(d => d.Name == "System.Collections.NonGeneric.Reference");
+                .BeEmpty();
+        }
+
+        [Fact]
+        public void ItDoesntCreateKeepUnneededRuntimeReferences()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextWithReferenceAssemblies(useCompilationOptions: false);
+
+            dependencyContext.RuntimeLibraries.Count.Should().Be(1);
+            dependencyContext.RuntimeLibraries[0].Name.Should().Be("simple.dependencies"); // This is the entrypoint
         }
 
         [Fact]
@@ -209,6 +211,168 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference" && c.Type == "referenceassembly");
             dependencyContext.CompileLibraries.Should()
                 .Contain(c => c.Name == "System.Collections.NonGeneric.Reference.Reference" && c.Type == "referenceassembly");
+        }
+
+        // If an assembly is in withResources, it has to be a key in dependencies, even with an empty list.
+        private static DependencyContext BuildDependencyContextFromDependenciesWithResources(Dictionary<string, List<string>> dependencies, List<string> withResources, List<string> references)
+        {
+            string mainProjectName = "simpleApp";
+            LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
+
+            SingleProjectInfo mainProject = SingleProjectInfo.Create(
+                "/usr/Path",
+                mainProjectName,
+                ".dll",
+                "1.0.0",
+                []);
+            string mainProjectDirectory = Path.GetDirectoryName(mainProject.ProjectPath);
+
+            ITaskItem[] referencePaths = references.Select(reference =>
+                new MockTaskItem($"/usr/Path/{reference}.dll", new Dictionary<string, string> {
+                    { "CopyLocal", "false" },
+                    { "FusionName", $"{reference}, Version=4.0.0.0, Culture=neutral, PublicKeyToken=null" },
+                    { "Version", "" },
+                })).ToArray();
+
+            ProjectContext projectContext = lockFile.CreateProjectContext(
+                FrameworkConstants.CommonFrameworks.NetCoreApp10.GetShortFolderName(),
+                runtime: null,
+                platformLibraryName: Constants.DefaultPlatformLibrary,
+                runtimeFrameworks: null,
+                isSelfContained: false);
+
+            Dictionary<string, SingleProjectInfo> referenceProjectInfos = new();
+
+            foreach (KeyValuePair<string, List<string>> kvp in dependencies)
+            {
+                projectContext.LockFileTarget.Libraries.Add(
+                    new LockFileTargetLibrary()
+                    {
+                        Name = kvp.Key,
+                        Version = new NuGetVersion(4, 0, 0),
+                        Type = withResources.Contains(kvp.Key) ? "project" : "unrealType",
+                        Dependencies = kvp.Value.Select(n => new PackageDependency(n)).ToList()
+                    });
+
+                if (withResources.Contains(kvp.Key))
+                {
+                    var fullPath = Path.GetFullPath(Path.Combine(mainProjectDirectory, kvp.Key));
+                    lockFile.Libraries.Add(new LockFileLibrary()
+                    {
+                        Name = kvp.Key,
+                        Version = new NuGetVersion(4, 0, 0),
+                        Type = "project",
+                        MSBuildProject = fullPath
+                    });
+
+                    referenceProjectInfos.Add(fullPath, SingleProjectInfo.Create(kvp.Key, kvp.Key, ".dll", "4.0.0",
+                        [new MockTaskItem($"{kvp.Key}.resource", new Dictionary<string, string>() {
+                            { "Culture", "en-us" },
+                            { "TargetPath", $"{kvp.Key}.resource" }
+                        })]));
+                }
+            }
+
+            CompilationOptions compilationOptions = CreateCompilationOptions();
+
+            return new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: new LockFileLookup(lockFile))
+                .WithReferenceAssemblies(ReferenceInfo.CreateReferenceInfos(referencePaths))
+                .WithCompilationOptions(compilationOptions)
+                .WithReferenceProjectInfos(referenceProjectInfos)
+                .Build();
+        }
+
+        [Fact]
+        public void DirectReferenceToPackageWithNoAssets()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources([], [], ["System.A"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(1);
+        }
+
+        [Fact]
+        public void IndirectReferenceToPackageWithNoAssets()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
+                { "System.A", ["System.B"] }
+            }, ["System.A"], ["System.A"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(2);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.A"));
+        }
+
+        [Fact]
+        public void PackageWithNoAssetsReferencesPackageWithNoAssets()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
+                { "System.A", ["System.B"] },
+                { "System.B", [] }
+            }, [], ["System.A"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(1);
+        }
+
+        [Fact]
+        public void PackageWithNoAssetsReferencesPackageWithAssets()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>() {
+                { "System.A", ["System.B"] },
+                { "System.B", [] }
+            }, ["System.B"], ["System.A"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(3);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.A"));
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
+        }
+
+        [Fact]
+        public void PackageWithNoAssetsReferencesPackageReferencesByOtherPackage()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
+            {
+                { "System.A", ["System.B"] },
+                { "System.B", [] },
+            }, ["System.B"], ["System.A", "System.B"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(2);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
+        }
+
+        [Fact]
+        public void PackageWithNoAssetsReferencesPackageWithAssetsWithOtherReferencer()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
+            {
+                { "System.A", ["System.B"] },
+                { "System.B", [] },
+                { "System.C", ["System.B"] }
+            }, ["System.B", "System.C"], ["System.A", "System.C"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(3);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.C"));
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
+        }
+
+        [Fact]
+        public void TwoPackagesWithNoAssetsReferencePackageWithAssets()
+        {
+            DependencyContext dependencyContext = BuildDependencyContextFromDependenciesWithResources(new Dictionary<string, List<string>>()
+            {
+                { "System.A", ["System.B"] },
+                { "System.C", ["System.B"] },
+                { "System.B", [] }
+            }, ["System.B"], ["System.A", "System.C"]);
+            Save(dependencyContext);
+            dependencyContext.RuntimeLibraries.Count.Should().Be(3);
+            dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.B"));
+            if (dependencyContext.RuntimeLibraries.Any(x => x.Name.Equals("System.A")))
+            {
+                dependencyContext.RuntimeLibraries.Should().NotContain(x => x.Name.Equals("System.C"));
+            }
+            else
+            {
+                dependencyContext.RuntimeLibraries.Should().Contain(x => x.Name.Equals("System.C"));
+            }
         }
 
         private DependencyContext BuildDependencyContextWithReferenceAssemblies(bool useCompilationOptions)
