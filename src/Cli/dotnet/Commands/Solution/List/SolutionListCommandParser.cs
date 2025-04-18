@@ -7,22 +7,22 @@ namespace Microsoft.DotNet.Cli.Commands.Solution.List;
 
 public static class SolutionListCommandParser
 {
-    public static readonly CliOption<bool> SolutionFolderOption = new("--solution-folders")
+    public static readonly Option<bool> SolutionFolderOption = new("--solution-folders")
     {
         Description = CliCommandStrings.ListSolutionFoldersArgumentDescription,
         Arity = ArgumentArity.Zero
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("list", CliCommandStrings.ListAppFullName);
+        Command command = new("list", CliCommandStrings.ListAppFullName);
 
         command.Options.Add(SolutionFolderOption);
         command.SetAction((parseResult) => new SolutionListCommand(parseResult).Execute());

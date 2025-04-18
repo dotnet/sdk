@@ -334,13 +334,20 @@ public class LinuxInstallerTests : IDisposable
         sb.AppendLine("# Install the installer packages and Microsoft.DotNet.ScenarioTests.SdkTemplateTests tool");
         sb.Append("RUN");
 
-        // TODO: remove --force-all after deps image issue has been resolved - https://github.com/dotnet/dotnet-docker/issues/6271
-        string packageInstallationCommand = packageType == PackageType.Deb ? "dpkg -i --force-all" : "rpm -i";
+        string packageInstallationCommand = packageType == PackageType.Deb ? "dpkg -i" : "rpm -i";
         bool useAndOperator = false;
         foreach (string package in packageList)
         {
+            string options = "";
+            // TODO: remove --force-depends after deps image issue has been resolved - https://github.com/dotnet/dotnet-docker/issues/6271
+            if (packageType == PackageType.Deb &&
+                package.Contains("dotnet-runtime-deps-"))
+            {
+                options = " --force-depends";
+            }
+
             sb.AppendLine(" \\");
-            sb.Append($"    {(useAndOperator ? "&&" : "")} {packageInstallationCommand} {package}");
+            sb.Append($"    {(useAndOperator ? "&&" : "")} {packageInstallationCommand}{options} {package}");
             useAndOperator = true;
         }
         sb.AppendLine("");
