@@ -110,6 +110,10 @@
 
     <!-- Pass down configuration properties -->
     <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
+    <!-- TODO: Remove condition when the following PRs are consumed:
+          - https://github.com/NuGet/NuGet.Client/pull/6402 and
+          - https://github.com/dotnet/aspnetcore/pull/61545. -->
+    <CommonArgs Condition="'$(RepositoryName)' != 'nuget-client' and '$(RepositoryName)' != 'aspnetcore'">$(CommonArgs) $(FlagParameterPrefix)verbosity $(LogVerbosity)</CommonArgs>
     <CommonArgs>$(CommonArgs) /p:TargetRid=$(TargetRid)</CommonArgs>
 
     <!-- Pass through DotNetBuildPass for join point vertical support. -->
