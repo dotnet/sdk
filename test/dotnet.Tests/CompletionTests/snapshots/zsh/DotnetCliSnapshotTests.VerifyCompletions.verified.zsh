@@ -596,7 +596,7 @@ _testhost() {
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':PACKAGE_NAME -- The package reference to add. This can be in the form of just the package identifier, for example '\''Newtonsoft.Json'\'', or a package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\'':->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)

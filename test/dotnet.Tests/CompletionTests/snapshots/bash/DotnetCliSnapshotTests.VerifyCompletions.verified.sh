@@ -1059,7 +1059,6 @@ _testhost_package_add() {
     COMPREPLY=()
     
     opts="--version --framework --no-restore --source --package-directory --interactive --prerelease --project --help" 
-    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
