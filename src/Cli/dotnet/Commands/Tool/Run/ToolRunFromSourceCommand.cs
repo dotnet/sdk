@@ -5,19 +5,12 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Frameworks;
-using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run
 {
-    internal class ToolRunFromSourceCommand(
-        ParseResult result) : CommandBase(result)
+    internal class ToolRunFromSourceCommand(ParseResult result) : CommandBase(result)
     {
         private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
         private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolRunCommandParser.CommandArgument);
@@ -27,11 +20,11 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
         private readonly string[] _addSource = result.GetValue(ToolRunCommandParser.FromSourceAddSourceOption) ?? [];
         private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
         private readonly bool _interactive = result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
-        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.VerbosityOption);
+        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.FromSourceVerbosityOption);
 
         public override int Execute()
         {
-            if (!UserAgreedToExecuteFromSource())
+            if (!UserAgreedToRunFromSource())
             {
                 return 1;
             }
@@ -46,17 +39,12 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
 
             string tempDirectory = PathUtilities.CreateTempSubdirectory();
 
-            ToolManifestFinder toolManifestFinder = new ToolManifestFinder(new(tempDirectory));
-            ToolManifestEditor toolManifestEditor = new ToolManifestEditor();
-            FilePath toolManifestPath = toolManifestFinder.FindFirst(true);
-
             ToolPackageStoreAndQuery toolPackageStoreAndQuery = new(new(tempDirectory));
             ToolPackageDownloader toolPackageDownloader = new(toolPackageStoreAndQuery);
 
             IToolPackage toolPackage = toolPackageDownloader.InstallPackage(
                 new PackageLocation(
-                    nugetConfig: _configFile != null ? new FilePath(_configFile) : null,
-                    rootConfigDirectory: toolManifestPath.GetDirectoryPath().GetParentPath(),
+                    nugetConfig: _configFile != null ? new(_configFile) : null,
                     sourceFeedOverrides: _sources,
                     additionalFeeds: _addSource),
                 packageId: packageId,
@@ -73,10 +61,10 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
             return result.ExitCode;
         }
 
-        private bool UserAgreedToExecuteFromSource()
+        private bool UserAgreedToRunFromSource()
         {
             // TODO: Use a better way to ask for user input
-            Console.Write("Tool will be run from source. Accept? [y]".Red());
+            Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
             Console.WriteLine();
             return userAccepted;

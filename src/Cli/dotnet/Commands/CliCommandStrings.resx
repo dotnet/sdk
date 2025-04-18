@@ -2486,4 +2486,7 @@ To display a value, specify the corresponding command-line option without provid
   <data name="ToolRunFromSourceOptionDescription" xml:space="preserve">
     <value>Executes a tool from source without permanently installing it. </value>
   </data>
+  <data name="ToolRunFromSourceUserConfirmationPrompt" xml:space="preserve">
+    <value>Tool not found in the system. Do you want to run it from source? [y/n] </value>
+  </data>
 </root>

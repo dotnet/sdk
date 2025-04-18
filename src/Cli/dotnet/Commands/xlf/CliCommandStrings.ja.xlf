@@ -3156,6 +3156,11 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <target state="new">Executes a tool from source without permanently installing it. </target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRunFromSourceUserConfirmationPrompt">
+        <source>Tool not found in the system. Do you want to run it from source? [y/n] </source>
+        <target state="new">Tool not found in the system. Do you want to run it from source? [y/n] </target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in nuget.org</source>
         <target state="new">Search dotnet tools in nuget.org</target>
