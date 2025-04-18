@@ -85,6 +85,8 @@
   <!--
     CodeStyle analyzers inserted in the SDK might not be compatible with the current public version of Visual Studio,
     which causes failures when building from the IDE.
+
+    TODO: enable once they version independently: https://github.com/dotnet/sdk/issues/48578
   -->
   <Target Name="RemoveCodeStyleAnalyzers" Condition="'$(BuildingInsideVisualStudio)' == 'true'">
     <ItemGroup>
