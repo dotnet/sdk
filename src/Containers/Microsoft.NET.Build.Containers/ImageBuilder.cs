@@ -2,8 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.RegularExpressions;
 using System.Text.Json;
+using System.Text.Unicode;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -91,7 +93,7 @@ internal sealed class ImageBuilder
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
+            Manifest = JsonSerializer.SerializeToNode(newManifest, Constants.SerializerOptions)?.ToJsonString() ?? "",
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
             Layers = _manifest.Layers
