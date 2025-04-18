@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
@@ -40,6 +41,10 @@ internal static class ToolRunCommandParser
 
     public static readonly Option<VerbosityOptions> FromSourceVerbosityOption = CommonOptions.VerbosityOption;
 
+    public static readonly Option<bool> FromSourceInteractiveOption = CommonOptions.InteractiveOption();
+
+    public static readonly Option<bool> FromSourceYesOption = CommonOptions.YesOption;
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -60,9 +65,10 @@ internal static class ToolRunCommandParser
         command.Options.Add(FromSourceSourceOption);
         command.Options.Add(FromSourceAddSourceOption);
         command.Options.Add(FromSourceVerbosityOption);
+        command.Options.Add(FromSourceInteractiveOption);
+        command.Options.Add(FromSourceYesOption);
 
         command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 
