@@ -110,8 +110,11 @@ internal class DotNetHelper
         process.StartInfo.EnvironmentVariables["ImportDirectoryPackagesProps"] = "false";
     }
 
-    public void ExecuteBuild(string projectName) =>
-        ExecuteCmd($"build {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
+    public void ExecuteBuild(string projectName)
+    {
+        string options = GetRestoreAdditionalProjectSourcesPropertyOption();
+        ExecuteCmd($"build {options} {GetBinLogOption(projectName, "build")}", GetProjectDirectory(projectName));
+    }
 
     /// <summary>
     /// Create a new .NET project and return the path to the created project folder.
@@ -136,12 +139,12 @@ internal class DotNetHelper
 
     public void ExecutePublish(string projectName, DotNetTemplate template, bool? selfContained = null, string? rid = null, bool trimmed = false, bool readyToRun = false)
     {
-        string options = string.Empty;
+        string options = GetRestoreAdditionalProjectSourcesPropertyOption();
         string binlogDifferentiator = string.Empty;
 
         if (selfContained.HasValue)
         {
-            options += $"--self-contained {selfContained.Value.ToString().ToLowerInvariant()}";
+            options += $" --self-contained {selfContained.Value.ToString().ToLowerInvariant()}";
             if (selfContained.Value)
             {
                 binlogDifferentiator += "self-contained";
@@ -220,7 +223,10 @@ internal class DotNetHelper
         {
             throw validator.ValidationException;
         }
-    }    
+    }
+
+    private static string GetRestoreAdditionalProjectSourcesPropertyOption() =>
+        $"/p:RestoreAdditionalProjectSources={Config.RestoreAdditionalProjectSources.Replace(";", "%3B")}";
 
     private static string GetBinLogOption(string projectName, string command, string? differentiator = null)
     {
