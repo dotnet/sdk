@@ -57,7 +57,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
        PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
        PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
-    
+
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
     -->
     <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
@@ -85,7 +85,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                                     or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
     <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
