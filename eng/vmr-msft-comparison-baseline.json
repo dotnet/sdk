@@ -245,7 +245,7 @@
   },
   {
     "issueType": "MissingNonShipping",
-    "idMatch": "SOS\\.InstallHelper",
+    "idMatch": "SOS\\.Hosting",
     "justification": "Diagnostics does a minimal build in the VMR"
   },
   {
