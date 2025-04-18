@@ -40,7 +40,7 @@ internal static class ToolRunCommandParser
 
     public static readonly Option<string[]> FromSourceAddSourceOption = ToolInstallCommandParser.AddSourceOption;
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+    public static readonly Option<VerbosityOptions> FromSourceVerbosityOption = CommonOptions.VerbosityOption;
 
     private static readonly Command Command = ConstructCommand();
 
@@ -56,11 +56,12 @@ internal static class ToolRunCommandParser
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
         command.Options.Add(RollForwardOption);
+
         command.Options.Add(FromSourceOption);
         command.Options.Add(FromSourceConfigFile);
         command.Options.Add(FromSourceSourceOption);
         command.Options.Add(FromSourceAddSourceOption);
-        command.Options.Add(VerbosityOption);
+        command.Options.Add(FromSourceVerbosityOption);
 
         command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
         command.Options.Add(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption);
