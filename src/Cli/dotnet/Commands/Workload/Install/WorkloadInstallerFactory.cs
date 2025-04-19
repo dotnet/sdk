@@ -4,10 +4,7 @@
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
@@ -35,7 +32,7 @@ internal class WorkloadInstallerFactory
         {
             if (!OperatingSystem.IsWindows())
             {
-                throw new InvalidOperationException(LocalizableStrings.OSDoesNotSupportMsi);
+                throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
             }
             // TODO: should restoreActionConfig be flowed through to the client here as well like it is for the FileBasedInstaller below?
             return NetSdkMsiInstallerClient.Create(verifySignatures, sdkFeatureBand, workloadResolver,
@@ -44,7 +41,7 @@ internal class WorkloadInstallerFactory
 
         if (elevationRequired && !WorkloadFileBasedInstall.IsUserLocal(dotnetDir, sdkFeatureBand.ToString()) && !CanWriteToDotnetRoot(dotnetDir))
         {
-            throw new GracefulException(LocalizableStrings.InadequatePermissions, isUserError: false);
+            throw new GracefulException(CliCommandStrings.InadequatePermissions, isUserError: false);
         }
 
         userProfileDir ??= CliFolderPathCalculator.DotnetUserProfileFolderPath;

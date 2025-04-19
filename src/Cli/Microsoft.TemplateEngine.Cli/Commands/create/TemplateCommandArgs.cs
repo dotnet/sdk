@@ -80,7 +80,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         public ParseResult ParseResult { get; }
 
-        public CliCommand Command => _command;
+        public Command Command => _command;
 
         public NewCommand RootCommand { get; }
 
@@ -115,7 +115,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 throw new InvalidOperationException($"Parameter {parameterName} is not defined for {Template.Identity}.");
             }
-            if (parameter.Type == ParameterType.Hex && optionResult.Option is CliOption<long>)
+            if (parameter.Type == ParameterType.Hex && optionResult.Option is Option<long>)
             {
                 var intValue = (long)optionValue;
                 return $"0x{intValue.ToString("X")}";
@@ -129,10 +129,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 return newCommand;
             }
-            CliCommand? currentCommand = command;
+            Command? currentCommand = command;
             while (currentCommand != null && currentCommand is not NewCommand)
             {
-                currentCommand = currentCommand.Parents.OfType<CliCommand>().SingleOrDefault();
+                currentCommand = currentCommand.Parents.OfType<Command>().SingleOrDefault();
             }
             return currentCommand as NewCommand ?? throw new Exception($"Command structure is not correct: {nameof(NewCommand)} is not found.");
         }

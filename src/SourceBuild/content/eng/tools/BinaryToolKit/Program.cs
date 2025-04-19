@@ -9,20 +9,20 @@ namespace BinaryToolKit;
 
 public class Program
 {
-    public static readonly CliArgument<string> TargetDirectory = new("target-directory")
+    public static readonly Argument<string> TargetDirectory = new("target-directory")
     {
         Description = "The directory to run the binary tooling on.",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> OutputReportDirectory = new("--output-directory", "-o")
+    public static readonly Option<string> OutputReportDirectory = new("--output-directory", "-o")
     {
         Description = "The directory to output the report to.",
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => Path.Combine(Directory.GetCurrentDirectory(), "binary-report")
     };
 
-    public static readonly CliOption<LogLevel> Level = new("--log-level", "-l")
+    public static readonly Option<LogLevel> Level = new("--log-level", "-l")
     {
         Description = "The log level to run the tool in.",
         Arity = ArgumentArity.ZeroOrOne,
@@ -30,7 +30,7 @@ public class Program
         Recursive = true
     };
 
-    public static readonly CliOption<string> AllowedBinariesFile = new("--allowed-binaries-file", "-ab")
+    public static readonly Option<string> AllowedBinariesFile = new("--allowed-binaries-file", "-ab")
     {
         Description = "The file containing the list of allowed binaries that are ignored for cleaning or validating.\n",
         Arity = ArgumentArity.ZeroOrOne
@@ -43,7 +43,7 @@ public class Program
         var cleanCommand = CreateCommand("clean", "Clean the binaries in the target directory.");
         var validateCommand = CreateCommand("validate", "Detect new binaries in the target directory.");
 
-        var rootCommand = new CliRootCommand("Tool for detecting, validating, and cleaning binaries in the target directory.")
+        var rootCommand = new RootCommand("Tool for detecting, validating, and cleaning binaries in the target directory.")
         {
             Level,
             cleanCommand,
@@ -58,9 +58,9 @@ public class Program
         return ExitCode;
     }
 
-    private static CliCommand CreateCommand(string name, string description)
+    private static Command CreateCommand(string name, string description)
     {
-        return new CliCommand(name, description)
+        return new Command(name, description)
         {
             TargetDirectory,
             OutputReportDirectory,
@@ -68,7 +68,7 @@ public class Program
         };
     }
 
-    private static void SetCommandAction(CliCommand command, Modes mode)
+    private static void SetCommandAction(Command command, Modes mode)
     {
         command.SetAction(async (result, CancellationToken) =>
         {

@@ -7,7 +7,6 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -34,7 +33,7 @@ internal class ToolRunCommand(
 
         if (commandspec == null)
         {
-            throw new GracefulException([string.Format(LocalizableStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
         var result = CommandFactoryUsingResolver.Create(commandspec).Execute();

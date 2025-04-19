@@ -51,7 +51,7 @@ internal class ToolUpdateLocalCommand : CommandBase
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
         PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Id is string s)
         {
             packageId = new PackageId(s);
         }

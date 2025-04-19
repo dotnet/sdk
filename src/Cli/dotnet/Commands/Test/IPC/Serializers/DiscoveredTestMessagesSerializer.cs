@@ -5,8 +5,9 @@
 #endif
 
 using System.Diagnostics;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-namespace Microsoft.DotNet.Tools.Test;
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 /*
 |---FieldCount---| 2 bytes

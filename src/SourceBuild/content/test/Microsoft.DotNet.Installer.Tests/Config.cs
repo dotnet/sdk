@@ -23,6 +23,9 @@ public static class Config
     public static string PackagesDirectory { get; } = GetRuntimeConfig(PackagesDirectorySwitch);
     const string PackagesDirectorySwitch = RuntimeConfigSwitchPrefix + nameof(PackagesDirectory);
 
+    public static string ArtifactsTestResultsDirectory { get; } = GetRuntimeConfig(ArtifactsTestResultsDirectorySwitch);
+    const string ArtifactsTestResultsDirectorySwitch = RuntimeConfigSwitchPrefix + nameof(ArtifactsTestResultsDirectory);
+
     public static string ScenarioTestsNuGetConfigPath { get; } = GetRuntimeConfig(ScenarioTestsNuGetConfigSwitch);
     const string ScenarioTestsNuGetConfigSwitch = RuntimeConfigSwitchPrefix + nameof(ScenarioTestsNuGetConfigPath);
 

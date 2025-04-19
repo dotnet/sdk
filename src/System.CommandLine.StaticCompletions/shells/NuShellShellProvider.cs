@@ -45,5 +45,5 @@ public class NushellShellProvider : IShellProvider
         }
         """;
 
-    public string GenerateCompletions(System.CommandLine.CliCommand command) => _dynamicCompletionScript;
+    public string GenerateCompletions(System.CommandLine.Command command) => _dynamicCompletionScript;
 }

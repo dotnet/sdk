@@ -362,7 +362,7 @@ if [[ "$sourceOnly" == "true" ]]; then
     if [ "$test" == "true" ]; then
       properties+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     else
-      properties+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+      properties+=( "/p:CustomPreviouslySourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     fi
   fi
 

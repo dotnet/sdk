@@ -50,13 +50,13 @@ internal class MsbuildProject
     {
         if (!File.Exists(projectPath))
         {
-            throw new GracefulException(CommonLocalizableStrings.ProjectDoesNotExist, projectPath);
+            throw new GracefulException(CliStrings.ProjectDoesNotExist, projectPath);
         }
 
         var project = TryOpenProject(projects, projectPath);
         if (project == null)
         {
-            throw new GracefulException(CommonLocalizableStrings.ProjectIsInvalid, projectPath);
+            throw new GracefulException(CliStrings.ProjectIsInvalid, projectPath);
         }
 
         return new MsbuildProject(projects, project, interactive);
@@ -69,7 +69,7 @@ internal class MsbuildProject
         var project = TryOpenProject(projects, projectFile.FullName);
         if (project == null)
         {
-            throw new GracefulException(CommonLocalizableStrings.FoundInvalidProject, projectFile.FullName);
+            throw new GracefulException(CliStrings.FoundInvalidProject, projectFile.FullName);
         }
 
         return new MsbuildProject(projects, project, interactive);
@@ -84,25 +84,25 @@ internal class MsbuildProject
         }
         catch (ArgumentException)
         {
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
         }
 
         if (!dir.Exists)
         {
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
         }
 
         FileInfo[] files = dir.GetFiles("*proj");
         if (files.Length == 0)
         {
             throw new GracefulException(
-                CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
+                CliStrings.CouldNotFindAnyProjectInDirectory,
                 projectDirectory);
         }
 
         if (files.Length > 1)
         {
-            throw new GracefulException(CommonLocalizableStrings.MoreThanOneProjectInDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, projectDirectory);
         }
 
         return files.First();
@@ -120,7 +120,7 @@ internal class MsbuildProject
             if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
             {
                 Reporter.Output.WriteLine(string.Format(
-                    CommonLocalizableStrings.ProjectAlreadyHasAreference,
+                    CliStrings.ProjectAlreadyHasAreference,
                     @ref));
                 continue;
             }
@@ -128,7 +128,7 @@ internal class MsbuildProject
             numberOfAddedReferences++;
             itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
 
-            Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.ReferenceAddedToTheProject, @ref));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
         }
 
         return numberOfAddedReferences;
@@ -226,7 +226,7 @@ internal class MsbuildProject
         catch (InvalidProjectFileException e)
         {
             throw new GracefulException(string.Format(
-                CommonLocalizableStrings.ProjectCouldNotBeEvaluated,
+                CliStrings.ProjectCouldNotBeEvaluated,
                 ProjectRootElement.FullPath, e.Message));
         }
         finally
@@ -250,14 +250,14 @@ internal class MsbuildProject
                 }
 
                 numberOfRemovedRefs++;
-                Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, r));
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r));
             }
         }
 
         if (numberOfRemovedRefs == 0)
         {
             Reporter.Output.WriteLine(string.Format(
-                CommonLocalizableStrings.ProjectReferenceCouldNotBeFound,
+                CliStrings.ProjectReferenceCouldNotBeFound,
                 reference));
         }
 

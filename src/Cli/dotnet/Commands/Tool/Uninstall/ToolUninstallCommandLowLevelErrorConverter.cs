@@ -3,7 +3,6 @@
 
 using Microsoft.DotNet.Cli.ShellShim;
 using Microsoft.DotNet.Cli.ToolPackage;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
@@ -14,11 +13,11 @@ internal static class ToolUninstallCommandLowLevelErrorConverter
         string[] userFacingMessages = null;
         if (ex is ToolPackageException)
         {
-            userFacingMessages = [string.Format(CommonLocalizableStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
+            userFacingMessages = [string.Format(CliStrings.FailedToUninstallToolPackage, packageId, ex.Message)];
         }
         else if (ex is ToolConfigurationException || ex is ShellShimException)
         {
-            userFacingMessages = [string.Format(LocalizableStrings.FailedToUninstallTool, packageId, ex.Message)];
+            userFacingMessages = [string.Format(CliCommandStrings.FailedToUninstallTool, packageId, ex.Message)];
         }
 
         return userFacingMessages;

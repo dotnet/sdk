@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
@@ -25,7 +24,7 @@ internal class ToolUninstallCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UninstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 

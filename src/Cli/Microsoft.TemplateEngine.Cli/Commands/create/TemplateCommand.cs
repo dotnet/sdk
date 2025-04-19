@@ -10,10 +10,11 @@ using Microsoft.TemplateEngine.Cli.PostActionProcessors;
 using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.Utils;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class TemplateCommand : CliCommand
+    internal class TemplateCommand : Command
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
         private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
@@ -100,7 +101,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
             if (HasRunScriptPostActionDefined(template))
             {
-                AllowScriptsOption = new CliOption<AllowRunScripts>("--allow-scripts")
+                AllowScriptsOption = new Option<AllowRunScripts>("--allow-scripts")
                 {
                     Description = SymbolStrings.TemplateCommand_Option_AllowScripts,
                     Arity = new ArgumentArity(1, 1),
@@ -114,13 +115,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal static IReadOnlyList<string> KnownHelpAliases => _helpAliases;
 
-        internal CliOption<AllowRunScripts>? AllowScriptsOption { get; }
+        internal Option<AllowRunScripts>? AllowScriptsOption { get; }
 
-        internal CliOption<string>? LanguageOption { get; }
+        internal Option<string>? LanguageOption { get; }
 
-        internal CliOption<string>? TypeOption { get; }
+        internal Option<string>? TypeOption { get; }
 
-        internal CliOption<string>? BaselineOption { get; }
+        internal Option<string>? BaselineOption { get; }
 
         internal IReadOnlyDictionary<string, TemplateOption> TemplateOptions => _templateSpecificOptions;
 
@@ -274,9 +275,9 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
             return reservedAliases;
 
-            static void AddReservedNamesAndAliases(HashSet<string> reservedAliases, CliCommand command)
+            static void AddReservedNamesAndAliases(HashSet<string> reservedAliases, Command command)
             {
-                foreach (CliOption option in command.Options)
+                foreach (Option option in command.Options)
                 {
                     reservedAliases.Add(option.Name);
                     foreach (string alias in option.Aliases)
@@ -284,7 +285,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                         reservedAliases.Add(alias);
                     }
                 }
-                foreach (CliCommand subCommand in command.Subcommands)
+                foreach (Command subCommand in command.Subcommands)
                 {
                     reservedAliases.Add(subCommand.Name);
                     foreach (string alias in subCommand.Aliases)

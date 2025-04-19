@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
@@ -45,7 +44,7 @@ internal class ToolUninstallLocalCommand : CommandBase
 
         if (!manifestFileOptional.HasValue)
         {
-            throw new GracefulException([string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.NoManifestFileContainPackageId, _packageId)], isUserError: false);
         }
 
         var manifestFile = manifestFileOptional.Value;
@@ -59,7 +58,7 @@ internal class ToolUninstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.UninstallLocalToolSucceeded,
+                CliCommandStrings.UninstallLocalToolSucceeded,
                 _packageId,
                 manifestFile.Value).Green());
         return 0;

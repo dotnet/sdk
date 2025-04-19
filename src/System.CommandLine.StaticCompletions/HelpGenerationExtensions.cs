@@ -15,7 +15,7 @@ public static class HelpExtensions
     /// <param name="command"></param>
     /// <param name="parentCommandNames">The chain of commands to get to this command</param>
     /// <returns></returns>
-    public static string FunctionName(this CliCommand command, string[]? parentCommandNames = null) => parentCommandNames switch
+    public static string FunctionName(this Command command, string[]? parentCommandNames = null) => parentCommandNames switch
     {
         null => "_" + command.Name,
         [] => "_" + command.Name,
@@ -34,13 +34,13 @@ public static class HelpExtensions
     /// </summary>
     /// <param name="option"></param>
     /// <returns></returns>
-    public static string[] Names(this CliOption option)
+    public static string[] Names(this Option option)
     {
         var (primary, aliases) = PrimaryNameAndAliases(option);
         return aliases is null ? [primary] : [primary, .. aliases];
     }
 
-    public static (string primary, string[]? aliases) PrimaryNameAndAliases(this CliOption option)
+    public static (string primary, string[]? aliases) PrimaryNameAndAliases(this Option option)
     {
         if (option.Aliases.Count == 0)
         {
@@ -61,7 +61,7 @@ public static class HelpExtensions
     /// </summary>
     /// <param name="command"></param>
     /// <returns></returns>
-    public static string[] Names(this CliCommand command)
+    public static string[] Names(this Command command)
     {
         if (command.Aliases.Count == 0)
         {
@@ -73,7 +73,7 @@ public static class HelpExtensions
         }
     }
 
-    public static IEnumerable<CliOption> HierarchicalOptions(this CliCommand c)
+    public static IEnumerable<Option> HierarchicalOptions(this Command c)
     {
         // don't include hidden options, because hidden shouldn't be shown in completions at all.
         var myOptions = c.Options.Where(o => !o.Hidden);
@@ -84,11 +84,11 @@ public static class HelpExtensions
         else
         {
             // the parents could return the same logical option, so we need to dedupe them in order to not crowd the completion lists.
-            return myOptions.Concat(c.Parents.OfType<CliCommand>().SelectMany(OptionsForParent)).DistinctBy(o => o.Name);
+            return myOptions.Concat(c.Parents.OfType<Command>().SelectMany(OptionsForParent)).DistinctBy(o => o.Name);
         }
     }
 
-    private static IEnumerable<CliOption> OptionsForParent(CliCommand c)
+    private static IEnumerable<Option> OptionsForParent(Command c)
     {
         foreach (var o in c.Options)
         {
@@ -97,7 +97,7 @@ public static class HelpExtensions
                 yield return o;
             }
         }
-        foreach (var p in c.Parents.OfType<CliCommand>())
+        foreach (var p in c.Parents.OfType<Command>())
         {
             foreach (var o in OptionsForParent(p))
             {
@@ -111,8 +111,8 @@ public static class HelpExtensions
     public static bool IsLongAlias(this string name) => name.Length > 2 && name[0] == '-' && name[1] == '-';
     public static bool IsShortAlias(this string name) => name.Length == 2 && name[0] == '-' && char.IsAsciiLetter(name[1]);
 
-    public static bool IsDynamic(this CliOption option) => option.GetType().GetInterface(nameof(IDynamicOption)) is not null;
-    public static bool IsDynamic(this CliArgument argument) => argument.GetType().GetInterface(nameof(IDynamicArgument)) is not null;
+    public static bool IsDynamic(this Option option) => option.GetType().GetInterface(nameof(IDynamicOption)) is not null;
+    public static bool IsDynamic(this Argument argument) => argument.GetType().GetInterface(nameof(IDynamicArgument)) is not null;
 
-    public static bool IsFlag(this CliOption option) => option.Arity.Equals(ArgumentArity.Zero);
+    public static bool IsFlag(this Option option) => option.Arity.Equals(ArgumentArity.Zero);
 }

@@ -31,15 +31,15 @@ internal sealed class CommandLineOptions
     public string Command => ExplicitCommand ?? DefaultCommand;
 
     // this option is referenced from inner logic and so needs to be reference-able
-    public static CliOption<bool> NonInteractiveOption = new CliOption<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
+    public static Option<bool> NonInteractiveOption = new Option<bool>("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
 
     public static CommandLineOptions? Parse(IReadOnlyList<string> args, IReporter reporter, TextWriter output, out int errorCode)
     {
         // dotnet watch specific options:
-        var quietOption = new CliOption<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
-        var verboseOption = new CliOption<bool>("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
-        var listOption = new CliOption<bool>("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
-        var noHotReloadOption = new CliOption<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
+        var quietOption = new Option<bool>("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
+        var verboseOption = new Option<bool>("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
+        var listOption = new Option<bool>("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
+        var noHotReloadOption = new Option<bool>("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
 
         verboseOption.Validators.Add(v =>
         {
@@ -49,7 +49,7 @@ internal sealed class CommandLineOptions
             }
         });
 
-        CliOption[] watchOptions =
+        Option[] watchOptions =
         [
             quietOption,
             verboseOption,
@@ -59,12 +59,12 @@ internal sealed class CommandLineOptions
         ];
 
         // Options we need to know about that are passed through to the subcommand:
-        var shortProjectOption = new CliOption<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var longProjectOption = new CliOption<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var launchProfileOption = new CliOption<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
-        var noLaunchProfileOption = new CliOption<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
+        var shortProjectOption = new Option<string>("-p") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var longProjectOption = new Option<string>("--project") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var launchProfileOption = new Option<string>("--launch-profile", "-lp") { Hidden = true, Arity = ArgumentArity.ZeroOrOne, AllowMultipleArgumentsPerToken = false };
+        var noLaunchProfileOption = new Option<bool>("--no-launch-profile") { Hidden = true, Arity = ArgumentArity.Zero };
 
-        var rootCommand = new CliRootCommand(Resources.Help)
+        var rootCommand = new RootCommand(Resources.Help)
         {
             Directives = { new EnvironmentVariablesDirective() },
         };
@@ -90,7 +90,7 @@ internal sealed class CommandLineOptions
         var rootCommandInvoked = false;
         rootCommand.SetAction(parseResult => rootCommandInvoked = true);
 
-        var cliConfig = new CliConfiguration(rootCommand)
+        var cliConfig = new CommandLineConfiguration(rootCommand)
         {
             Output = output,
             Error = output,
@@ -148,7 +148,7 @@ internal sealed class CommandLineOptions
 
         // We assume that forwarded options, if any, are intended for dotnet build.
         var buildArguments = buildOptions.Select(option => ((IForwardedOption)option).GetForwardingFunction()(parseResult)).SelectMany(args => args).ToArray();
-        var targetFrameworkOption = (CliOption<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
+        var targetFrameworkOption = (Option<string>?)buildOptions.SingleOrDefault(option => option.Name == "--framework");
 
         return new()
         {
@@ -174,8 +174,8 @@ internal sealed class CommandLineOptions
 
     private static IReadOnlyList<string> GetCommandArguments(
         ParseResult parseResult,
-        IReadOnlyList<CliOption> watchOptions,
-        CliCommand? explicitCommand)
+        IReadOnlyList<Option> watchOptions,
+        Command? explicitCommand)
     {
         var arguments = new List<string>();
 
@@ -251,7 +251,7 @@ internal sealed class CommandLineOptions
         return arguments;
     }
 
-    private static CliCommand? TryGetSubcommand(ParseResult parseResult)
+    private static Command? TryGetSubcommand(ParseResult parseResult)
     {
         // Assuming that all tokens after "--" are unmatched:
         var dashDashIndex = IndexOf(parseResult.Tokens, t => t.Value == "--");

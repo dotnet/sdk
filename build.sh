@@ -9,11 +9,8 @@ done
 ScriptRoot="$( cd -P "$( dirname "$SOURCE" )" && pwd )"
 
 if [[ "$@" != *"-pack"* ]]; then
-  # disable crossgen for inner-loop builds to save a ton of time
-  export DISABLE_CROSSGEN=true
-  skipBuildingInstallersFlag="/p:SkipBuildingInstallers=true"
-else
-  skipBuildingInstallersFlag=
+  # skip crossgen for inner-loop builds to save a ton of time
+  skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 fi
 
-. "$ScriptRoot/eng/common/build.sh" --build --restore $skipBuildingInstallersFlag "$@"
+. "$ScriptRoot/eng/common/build.sh" --build --restore $skipFlags "$@"

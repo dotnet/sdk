@@ -29,7 +29,7 @@ internal class PrintableTable<T>
         if (maxWidth <= 0)
         {
             throw new ArgumentException(
-                CommonLocalizableStrings.ColumnMaxWidthMustBeGreaterThanZero,
+                CliStrings.ColumnMaxWidthMustBeGreaterThanZero,
                 nameof(maxWidth));
         }
 

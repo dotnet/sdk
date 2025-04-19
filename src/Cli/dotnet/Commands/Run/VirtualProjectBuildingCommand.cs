@@ -3,9 +3,12 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.Build.Construction;
@@ -15,27 +18,82 @@ using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Run.LocalizableStrings;
+using Microsoft.DotNet.Cli.Utils.Extensions;
 
-namespace Microsoft.DotNet.Tools;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand
 {
+    /// <summary>
+    /// A file put into the artifacts directory when build starts.
+    /// It contains full path to the original source file to allow tracking down the input corresponding to the output.
+    /// It is also used to check whether the previous build has failed (when it is newer than the <see cref="BuildSuccessCacheFileName"/>).
+    /// </summary>
+    private const string BuildStartCacheFileName = "build-start.cache";
+
+    /// <summary>
+    /// A file written in the artifacts directory on successful builds used to determine whether a re-build is needed.
+    /// </summary>
+    private const string BuildSuccessCacheFileName = "build-success.cache";
+
+    private static readonly ImmutableArray<string> s_implicitBuildFileNames =
+    [
+        "global.json",
+
+        // All these casings are recognized on case-sensitive platforms:
+        // https://github.com/NuGet/NuGet.Client/blob/ab6b96fd9ba07ed3bf629ee389799ca4fb9a20fb/src/NuGet.Core/NuGet.Configuration/Settings/Settings.cs#L32-L37
+        "nuget.config",
+        "NuGet.config",
+        "NuGet.Config",
+
+        "Directory.Build.props",
+        "Directory.Build.targets",
+        "Directory.Packages.props",
+        "Directory.Build.rsp",
+        "MSBuild.rsp",
+    ];
+
     private ImmutableArray<CSharpDirective> _directives;
-    private string? _targetFilePath;
 
     public Dictionary<string, string> GlobalProperties { get; } = new(StringComparer.OrdinalIgnoreCase);
     public required string EntryPointFileFullPath { get; init; }
 
-    public int Execute(string[] binaryLoggerArgs, ILogger consoleLogger)
+    public int Execute(string[] binaryLoggerArgs, ILogger consoleLogger, bool noRestore, bool noCache)
     {
         var binaryLogger = GetBinaryLogger(binaryLoggerArgs);
+
+        RunFileBuildCacheEntry cacheEntry;
+
+        if (noCache)
+        {
+            if (noRestore)
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
+            }
+
+            cacheEntry = ComputeCacheEntry(out _);
+        }
+        else if (!NeedsToBuild(out cacheEntry))
+        {
+            if (binaryLogger is not null)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+            }
+
+            PrepareProjectInstance();
+
+            return 0;
+        }
+
+        MarkBuildStart();
+
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
         {
@@ -64,19 +122,22 @@ internal sealed class VirtualProjectBuildingCommand
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
             // and https://github.com/dotnet/msbuild/issues/11519.
-            var restoreRequest = new BuildRequestData(
-                CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
-                {
-                    globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
-                    globalProperties["MSBuildIsRestoring"] = bool.TrueString;
-                }),
-                targetsToBuild: ["Restore"],
-                hostServices: null,
-                BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
-            var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
-            if (restoreResult.OverallResult != BuildResultCode.Success)
+            if (!noRestore)
             {
-                return 1;
+                var restoreRequest = new BuildRequestData(
+                    CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
+                    {
+                        globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
+                        globalProperties["MSBuildIsRestoring"] = bool.TrueString;
+                    }),
+                    targetsToBuild: ["Restore"],
+                    hostServices: null,
+                    BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+                var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
+                if (restoreResult.OverallResult != BuildResultCode.Success)
+                {
+                    return 1;
+                }
             }
 
             // Then do a build.
@@ -90,6 +151,9 @@ internal sealed class VirtualProjectBuildingCommand
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
+
+            MarkBuildSuccess(cacheEntry);
+
             return 0;
         }
         catch (Exception e)
@@ -130,26 +194,165 @@ internal sealed class VirtualProjectBuildingCommand
     }
 
     /// <summary>
+    /// Compute current cache entry - we need to do this always:
+    /// <list type="bullet">
+    /// <item>if we can skip build, we still need to check everything in the cache entry (e.g., implicit build files)</item>
+    /// <item>if we have to build, we need to have the cache entry to write it to the success cache file</item>
+    /// </list>
+    /// </summary>
+    private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
+    {
+        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties);
+        entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
+
+        // Collect current implicit build files.
+        DirectoryInfo? directory = entryPointFileInfo.Directory;
+        while (directory != null)
+        {
+            foreach (var implicitBuildFileName in s_implicitBuildFileNames)
+            {
+                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFileName);
+                var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+                if (implicitBuildFileInfo.Exists)
+                {
+                    cacheEntry.ImplicitBuildFiles.Add(implicitBuildFilePath, implicitBuildFileInfo.LastWriteTimeUtc);
+                }
+            }
+
+            directory = directory.Parent;
+        }
+
+        return cacheEntry;
+    }
+
+    private bool NeedsToBuild(out RunFileBuildCacheEntry cacheEntry)
+    {
+        cacheEntry = ComputeCacheEntry(out FileInfo entryPointFileInfo);
+
+        // Check cache files.
+
+        string artifactsDirectory = GetArtifactsPath();
+        var successCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildSuccessCacheFileName));
+
+        if (!successCacheFile.Exists)
+        {
+            Reporter.Verbose.WriteLine("Building because cache file does not exist: " + successCacheFile.FullName);
+            return true;
+        }
+
+        var startCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildStartCacheFileName));
+        if (!startCacheFile.Exists)
+        {
+            Reporter.Verbose.WriteLine("Building because start cache file does not exist: " + startCacheFile.FullName);
+            return true;
+        }
+
+        if (startCacheFile.LastWriteTimeUtc > successCacheFile.LastWriteTimeUtc)
+        {
+            Reporter.Verbose.WriteLine("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
+            return true;
+        }
+
+        var previousCacheEntry = DeserializeCacheEntry(successCacheFile);
+        if (previousCacheEntry is null)
+        {
+            Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
+            return true;
+        }
+
+        // Check that properties match.
+
+        if (previousCacheEntry.GlobalProperties.Count != cacheEntry.GlobalProperties.Count)
+        {
+            Reporter.Verbose.WriteLine($"""
+                Building because previous global properties count ({previousCacheEntry.GlobalProperties.Count}) does not match current count ({cacheEntry.GlobalProperties.Count}): {successCacheFile.FullName}
+                """);
+            return true;
+        }
+
+        foreach (var (key, value) in cacheEntry.GlobalProperties)
+        {
+            if (!previousCacheEntry.GlobalProperties.TryGetValue(key, out var otherValue) ||
+                value != otherValue)
+            {
+                Reporter.Verbose.WriteLine($"""
+                    Building because previous global property "{key}" ({otherValue}) does not match current ({value}): {successCacheFile.FullName}
+                    """);
+                return true;
+            }
+        }
+
+        DateTime buildTimeUtc = successCacheFile.LastWriteTimeUtc;
+
+        // Check that the source file is up to date.
+        // If it does not exist, we also want to build.
+        if (!entryPointFileInfo.Exists || entryPointFileInfo.LastWriteTimeUtc > buildTimeUtc)
+        {
+            Reporter.Verbose.WriteLine("Building because entry point file is missing or modified: " + entryPointFileInfo.FullName);
+            return true;
+        }
+
+        // Check that implicit build files are up to date.
+        foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles.Keys)
+        {
+            var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
+            if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
+            {
+                Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
+                return true;
+            }
+        }
+
+        // Check that no new implicit build files are present.
+        foreach (var implicitBuildFilePath in cacheEntry.ImplicitBuildFiles.Keys)
+        {
+            if (!previousCacheEntry.ImplicitBuildFiles.ContainsKey(implicitBuildFilePath))
+            {
+                Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
+                return true;
+            }
+        }
+
+        return false;
+
+        static RunFileBuildCacheEntry? DeserializeCacheEntry(FileInfo cacheFile)
+        {
+            try
+            {
+                using var stream = File.Open(cacheFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            catch (Exception e)
+            {
+                Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({cacheFile.FullName}): {e.GetType().FullName}: {e.Message}");
+                return null;
+            }
+        }
+    }
+
+    private void MarkBuildStart()
+    {
+        string directory = GetArtifactsPath();
+        Directory.CreateDirectory(directory);
+        File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
+    }
+
+    private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
+    {
+        string successCacheFile = Path.Join(GetArtifactsPath(), BuildSuccessCacheFileName);
+        using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
+        JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
+    }
+
+    /// <summary>
     /// Needs to be called before the first call to <see cref="CreateProjectInstance(ProjectCollection)"/>.
     /// </summary>
     public VirtualProjectBuildingCommand PrepareProjectInstance()
     {
-        Debug.Assert(_directives.IsDefault && _targetFilePath is null, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
+        Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
 
         var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile);
-
-        // If there were any `#:` directives, remove them from the file.
-        // (This is temporary until Roslyn is updated to ignore them.)
-        _targetFilePath = EntryPointFileFullPath;
-        if (_directives.Length != 0)
-        {
-            var targetDirectory = Path.Join(Path.GetDirectoryName(_targetFilePath), "obj");
-            Directory.CreateDirectory(targetDirectory);
-            _targetFilePath = Path.Join(targetDirectory, Path.GetFileName(_targetFilePath));
-
-            RemoveDirectivesFromFile(_directives, sourceFile.Text, _targetFilePath);
-        }
+        _directives = FindDirectives(sourceFile, reportErrors: false);
 
         return this;
     }
@@ -179,11 +382,16 @@ internal sealed class VirtualProjectBuildingCommand
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            Debug.Assert(!_directives.IsDefault && _targetFilePath is not null, $"{nameof(PrepareProjectInstance)} should have been called first.");
+            Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
 
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
-            WriteProjectFile(projectFileWriter, _directives, isVirtualProject: true, targetFilePath: _targetFilePath);
+            WriteProjectFile(
+                projectFileWriter,
+                _directives,
+                isVirtualProject: true,
+                targetFilePath: EntryPointFileFullPath,
+                artifactsPath: GetArtifactsPath());
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -194,12 +402,33 @@ internal sealed class VirtualProjectBuildingCommand
         }
     }
 
-    public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
+    // internal for testing
+    internal string GetArtifactsPath()
     {
-        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null);
+        // We want a location where permissions are expected to be restricted to the current user.
+        string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+            ? Path.GetTempPath()
+            : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+
+        // Include entry point file name so the directory name is not completely opaque.
+        string fileName = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
+        string hash = Sha256Hasher.HashWithNormalizedCasing(EntryPointFileFullPath);
+        string directoryName = $"{fileName}-{hash}";
+
+        return Path.Join(directory, "dotnet", "runfile", directoryName);
     }
 
-    private static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives, bool isVirtualProject, string? targetFilePath)
+    public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
+    {
+        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null, artifactsPath: null);
+    }
+
+    private static void WriteProjectFile(
+        TextWriter writer,
+        ImmutableArray<CSharpDirective> directives,
+        bool isVirtualProject,
+        string? targetFilePath,
+        string? artifactsPath)
     {
         int processedDirectives = 0;
 
@@ -217,8 +446,15 @@ internal sealed class VirtualProjectBuildingCommand
 
         if (isVirtualProject)
         {
+            Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
+
             writer.WriteLine($"""
                 <Project>
+
+                  <PropertyGroup>
+                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                  </PropertyGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />
@@ -298,6 +534,17 @@ internal sealed class VirtualProjectBuildingCommand
             }
 
             writer.WriteLine("  </PropertyGroup>");
+        }
+
+        if (isVirtualProject)
+        {
+            // After `#:property` directives so they don't override this.
+            writer.WriteLine("""
+
+                  <PropertyGroup>
+                    <Features>$(Features);FileBasedProgram</Features>
+                  </PropertyGroup>
+                """);
         }
 
         if (packageDirectives.Any())
@@ -396,28 +643,99 @@ internal sealed class VirtualProjectBuildingCommand
         static string EscapeValue(string value) => SecurityElement.Escape(value);
     }
 
-    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile)
+    public static ImmutableArray<CSharpDirective> FindDirectivesForConversion(SourceFile sourceFile, bool force)
+    {
+        return FindDirectives(sourceFile, reportErrors: !force);
+    }
+
+#pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
+    private static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportErrors)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
+        SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
+            CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
 
-        // NOTE: When Roslyn is updated to support "ignored directives", we should use its SyntaxTokenParser instead.
-        foreach (var line in sourceFile.Text.Lines)
+        var result = tokenizer.ParseLeadingTrivia();
+        TextSpan previousWhiteSpaceSpan = default;
+        foreach (var trivia in result.Token.LeadingTrivia)
         {
-            var lineText = sourceFile.Text.ToString(line.Span);
+            // Stop when the trivia contains an error (e.g., because it's after #if).
+            if (trivia.ContainsDiagnostics)
+            {
+                break;
+            }
 
-            if (Patterns.Shebang.IsMatch(lineText))
+            if (trivia.IsKind(SyntaxKind.WhitespaceTrivia))
             {
-                builder.Add(new CSharpDirective.Shebang { Span = line.SpanIncludingLineBreak });
+                Debug.Assert(previousWhiteSpaceSpan.IsEmpty);
+                previousWhiteSpaceSpan = trivia.FullSpan;
+                continue;
             }
-            else if (Patterns.Directive.Match(lineText) is { Success: true } match)
+
+            if (trivia.IsKind(SyntaxKind.ShebangDirectiveTrivia))
             {
-                builder.Add(CSharpDirective.Parse(sourceFile, line.SpanIncludingLineBreak, match.Groups[1].Value, match.Groups[2].Value));
+                TextSpan span = getFullSpan(previousWhiteSpaceSpan, trivia);
+
+                builder.Add(new CSharpDirective.Shebang { Span = span });
             }
+            else if (trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                TextSpan span = getFullSpan(previousWhiteSpaceSpan, trivia);
+
+                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
+                    ? content.Text.AsSpan().Trim()
+                    : "";
+                var parts = Patterns.Whitespace.EnumerateSplits(message, 2);
+                var name = parts.MoveNext() ? message[parts.Current] : default;
+                var value = parts.MoveNext() ? message[parts.Current] : default;
+                Debug.Assert(!parts.MoveNext());
+                builder.Add(CSharpDirective.Parse(sourceFile, span, name.ToString(), value.ToString()));
+            }
+
+            previousWhiteSpaceSpan = default;
+        }
+
+        // In conversion mode, we want to report errors for any invalid directives in the rest of the file
+        // so users don't end up with invalid directives in the converted project.
+        if (reportErrors)
+        {
+            tokenizer.ResetTo(result);
+
+            do
+            {
+                result = tokenizer.ParseNextToken();
+
+                foreach (var trivia in result.Token.LeadingTrivia)
+                {
+                    reportErrorFor(sourceFile, trivia);
+                }
+
+                foreach (var trivia in result.Token.TrailingTrivia)
+                {
+                    reportErrorFor(sourceFile, trivia);
+                }
+            }
+            while (!result.Token.IsKind(SyntaxKind.EndOfFileToken));
         }
 
         // The result should be ordered by source location, RemoveDirectivesFromFile depends on that.
         return builder.ToImmutable();
+
+        static TextSpan getFullSpan(TextSpan previousWhiteSpaceSpan, SyntaxTrivia trivia)
+        {
+            // Include the preceding whitespace in the span, i.e., span will be the whole line.
+            return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
+        }
+
+        static void reportErrorFor(SourceFile sourceFile, SyntaxTrivia trivia)
+        {
+            if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
+            {
+                throw new GracefulException(CliCommandStrings.CannotConvertDirective, sourceFile.GetLocationString(trivia.Span));
+            }
+        }
     }
+#pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
     public static SourceFile LoadSourceFile(string filePath)
     {
@@ -470,11 +788,8 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
 
 internal static partial class Patterns
 {
-    [GeneratedRegex("""^\s*#:\s*(\w*)\s*(.*?)\s*$""")]
-    public static partial Regex Directive { get; }
-
-    [GeneratedRegex("""^\s*#!.*$""")]
-    public static partial Regex Shebang { get; }
+    [GeneratedRegex("""\s+""")]
+    public static partial Regex Whitespace { get; }
 }
 
 /// <summary>
@@ -496,13 +811,15 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
-            _ => throw new GracefulException(LocalizableStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
+            _ => throw new GracefulException(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
         };
     }
 
-    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
     {
-        var i = directiveText.IndexOf(' ', StringComparison.Ordinal);
+        var i = separators != null
+            ? directiveText.AsSpan().IndexOfAny(separators)
+            : directiveText.IndexOf(' ', StringComparison.Ordinal);
         var firstPart = checkFirstPart(i < 0 ? directiveText : directiveText[..i]);
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
@@ -516,7 +833,7 @@ internal abstract class CSharpDirective
         {
             if (string.IsNullOrWhiteSpace(firstPart))
             {
-                throw new GracefulException(LocalizableStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
             }
 
             return firstPart;
@@ -572,7 +889,7 @@ internal abstract class CSharpDirective
 
             if (propertyValue is null)
             {
-                throw new GracefulException(LocalizableStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
+                throw new GracefulException(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
             }
 
             try
@@ -581,7 +898,7 @@ internal abstract class CSharpDirective
             }
             catch (XmlException ex)
             {
-                throw new GracefulException(string.Format(LocalizableStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
+                throw new GracefulException(string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
             }
 
             return new Property
@@ -598,6 +915,8 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Package : CSharpDirective
     {
+        private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
+
         private Package() { }
 
         public required string Name { get; init; }
@@ -605,7 +924,7 @@ internal abstract class CSharpDirective
 
         public static new Package Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
+            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText, s_separators);
 
             return new Package
             {
@@ -616,3 +935,35 @@ internal abstract class CSharpDirective
         }
     }
 }
+
+internal sealed class RunFileBuildCacheEntry
+{
+    private static StringComparer GlobalPropertiesComparer => StringComparer.OrdinalIgnoreCase;
+    private static StringComparer ImplicitBuildFilesComparer => StringComparer.Ordinal;
+
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public Dictionary<string, string> GlobalProperties { get; }
+
+    /// <summary>
+    /// Maps full path to <see cref="FileSystemInfo.LastWriteTimeUtc"/>.
+    /// </summary>
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
+    public Dictionary<string, DateTime> ImplicitBuildFiles { get; }
+
+    [JsonConstructor]
+    public RunFileBuildCacheEntry()
+    {
+        GlobalProperties = new(GlobalPropertiesComparer);
+        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
+    }
+
+    public RunFileBuildCacheEntry(Dictionary<string, string> globalProperties)
+    {
+        Debug.Assert(globalProperties.Comparer == GlobalPropertiesComparer);
+        GlobalProperties = globalProperties;
+        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
+    }
+}
+
+[JsonSerializable(typeof(RunFileBuildCacheEntry))]
+internal partial class RunFileJsonSerializerContext : JsonSerializerContext;

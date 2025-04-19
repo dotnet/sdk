@@ -11,9 +11,9 @@ namespace Microsoft.DotNet.Cli.Commands.Project;
 
 internal sealed class ProjectCommandParser
 {
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
-        CliCommand command = new("project");
+        Command command = new("project");
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
         command.Subcommands.Add(ProjectConvertCommandParser.GetCommand());
 

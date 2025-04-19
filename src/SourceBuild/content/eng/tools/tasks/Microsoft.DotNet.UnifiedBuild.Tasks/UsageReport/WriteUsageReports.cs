@@ -35,20 +35,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
         public ITaskItem[] PackageVersionPropsSnapshots { get; set; }
 
         /// <summary>
-        /// Infos that associate packages to the ProdCon build they're from.
-        /// 
-        /// %(PackageId): Identity of the package.
-        /// %(OriginBuildName): Name of the build that produced this package.
-        /// </summary>
-        public ITaskItem[] ProdConPackageInfos { get; set; }
-
-        /// <summary>
-        /// Path to a ProdCon build manifest file (build.xml) as an alternative way to pass
-        /// ProdConPackageInfos items.
-        /// </summary>
-        public string ProdConBuildManifestFile { get; set; }
-
-        /// <summary>
         /// File containing the results of poisoning the prebuilts. Example format:
         /// 
         /// MATCH: output built\dotnet-sdk-...\System.Collections.dll(hash 4b...31) matches one of:
@@ -64,32 +50,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
         public override bool Execute()
         {
             UsageData data = UsageData.Parse(XElement.Parse(File.ReadAllText(DataFile)));
-
             IEnumerable<RepoOutput> sourceBuildRepoOutputs = GetSourceBuildRepoOutputs();
-
-            // Map package id to the build name that created them in a ProdCon build.
-            var prodConPackageOrigin = new Dictionary<string, string>(
-                StringComparer.OrdinalIgnoreCase);
-
-            foreach (ITaskItem item in ProdConPackageInfos.NullAsEmpty())
-            {
-                AddProdConPackage(
-                    prodConPackageOrigin,
-                    item.GetMetadata("PackageId"),
-                    item.GetMetadata("OriginBuildName"));
-            }
-
-            if (File.Exists(ProdConBuildManifestFile))
-            {
-                var xml = XElement.Parse(File.ReadAllText(ProdConBuildManifestFile));
-                foreach (var x in xml.Descendants("Package"))
-                {
-                    AddProdConPackage(
-                        prodConPackageOrigin,
-                        x.Attribute("Id")?.Value,
-                        x.Attribute("OriginBuildName")?.Value);
-                }
-            }
 
             var poisonNupkgFilenames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -137,8 +98,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
                         }
                     }
 
-                    prodConPackageOrigin.TryGetValue(id, out string prodConCreator);
-
                     return new AnnotatedUsage
                     {
                         Usage = usage,
@@ -149,8 +108,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
                         SourceBuildPackageIdCreator = sourceBuildCreator.Length == 0
                             ? null
                             : sourceBuildCreator.ToString(),
-
-                        ProdConPackageIdCreator = prodConCreator,
 
                         TestProjectByHeuristic = IsTestUsageByHeuristic(usage),
 
@@ -233,18 +190,6 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.UsageReport
                     Built = pvp.PackageVersionProp.Except(prev.PackageVersionProp).ToArray()
                 })
                 .ToArray();
-        }
-
-        private void AddProdConPackage(
-            Dictionary<string, string> packageOrigin,
-            string id,
-            string origin)
-        {
-            if (!string.IsNullOrEmpty(id) &&
-                !string.IsNullOrEmpty(origin))
-            {
-                packageOrigin[id] = origin;
-            }
         }
 
         public static bool IsTestUsageByHeuristic(Usage usage)

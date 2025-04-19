@@ -20,7 +20,7 @@ public class BashShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    public string GenerateCompletions(CliCommand command)
+    public string GenerateCompletions(Command command)
     {
         var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
         return
@@ -32,7 +32,7 @@ public class BashShellProvider : IShellProvider
             """;
     }
 
-    private string GenerateCommandsCompletions(string[] parentCommandNames, CliCommand command, bool isNestedCommand)
+    private string GenerateCommandsCompletions(string[] parentCommandNames, Command command, bool isNestedCommand)
     {
         var functionName = command.FunctionName(parentCommandNames).MakeSafeFunctionName();
 
@@ -128,7 +128,7 @@ public class BashShellProvider : IShellProvider
         return textWriter.ToString() + string.Join('\n', visibleSubcommands.Select(c => GenerateCommandsCompletions(parentCommandNamesForSubcommands, c, isNestedCommand: true)));
     }
 
-    internal static string[] PositionalArgumentTerms(CliArgument[] arguments)
+    internal static string[] PositionalArgumentTerms(Argument[] arguments)
     {
         var completions = new List<string>();
         foreach (var argument in arguments)
@@ -160,7 +160,7 @@ public class BashShellProvider : IShellProvider
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
-    internal static string? GenerateOptionHandlers(CliCommand command)
+    internal static string? GenerateOptionHandlers(Command command)
     {
         var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
         if (optionHandlers.Length == 0)
@@ -187,7 +187,7 @@ public class BashShellProvider : IShellProvider
     /// </summary>
     /// <param name="option"></param>
     /// <returns>a bash switch case expression for providing completions for this option</returns>
-    internal static string? GenerateOptionHandler(CliOption option)
+    internal static string? GenerateOptionHandler(Option option)
     {
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.

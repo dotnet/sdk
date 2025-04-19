@@ -4,11 +4,9 @@
 #nullable enable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools;
-using Microsoft.DotNet.Tools.Project.Convert;
 using Microsoft.TemplateEngine.Cli.Commands;
-using LocalizableStrings = Microsoft.DotNet.Tools.Project.Convert.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
@@ -16,24 +14,25 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 {
     private readonly string _file = parseResult.GetValue(ProjectConvertCommandParser.FileArgument) ?? string.Empty;
     private readonly string? _outputDirectory = parseResult.GetValue(SharedOptions.OutputOption)?.FullName;
+    private readonly bool _force = parseResult.GetValue(ProjectConvertCommandParser.ForceOption);
 
     public override int Execute()
     {
         string file = Path.GetFullPath(_file);
         if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
         {
-            throw new GracefulException(LocalizableStrings.InvalidFilePath, file);
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
         string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
-            throw new GracefulException(LocalizableStrings.DirectoryAlreadyExists, targetDirectory);
+            throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile);
+        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: _force);
 
         Directory.CreateDirectory(targetDirectory);
 

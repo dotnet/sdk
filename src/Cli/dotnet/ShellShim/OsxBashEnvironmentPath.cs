@@ -52,14 +52,14 @@ internal class OsxBashEnvironmentPath(
             if (_fileSystem.Exists(DotnetCliToolsPathsDPath))
             {
                 _reporter.WriteLine(
-                    CommonLocalizableStrings.EnvironmentPathOSXNeedReopen);
+                    CliStrings.EnvironmentPathOSXNeedReopen);
             }
             else
             {
                 // similar to https://code.visualstudio.com/docs/setup/mac
                 _reporter.WriteLine(
                     string.Format(
-                        CommonLocalizableStrings.EnvironmentPathOSXBashManualInstructions,
+                        CliStrings.EnvironmentPathOSXBashManualInstructions,
                         _packageExecutablePath.Path));
             }
         }

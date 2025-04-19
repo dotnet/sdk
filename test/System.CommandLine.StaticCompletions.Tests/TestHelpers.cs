@@ -3,14 +3,14 @@
 
 namespace System.CommandLine.StaticCompletions.Tests;
 
-public class DynamicOption<T> : CliOption<T>, IDynamicOption
+public class DynamicOption<T> : Option<T>, IDynamicOption
 {
     public DynamicOption(string name) : base(name)
     {
     }
 }
 
-public class DynamicArgument<T> : CliArgument<T>, IDynamicArgument
+public class DynamicArgument<T> : Argument<T>, IDynamicArgument
 {
     public DynamicArgument(string name) : base(name)
     {

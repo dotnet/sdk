@@ -20,7 +20,7 @@ public class BashShellProviderTests(ITestOutputHelper log)
     public async Task SimpleOptionCompletion()
     {
         await provider.Verify(new("mycommand") {
-            new CliOption<string>("--name")
+            new Option<string>("--name")
         }, log);
     }
 
@@ -28,8 +28,8 @@ public class BashShellProviderTests(ITestOutputHelper log)
     public async Task SubcommandAndOptionInTopLevelList()
     {
         await provider.Verify(new("mycommand") {
-                new CliOption<string>("--name"),
-                new CliCommand("subcommand")
+                new Option<string>("--name"),
+                new Command("subcommand")
             }, log);
     }
 
@@ -37,8 +37,8 @@ public class BashShellProviderTests(ITestOutputHelper log)
     public async Task NestedSubcommandCompletion()
     {
         await provider.Verify(new("mycommand") {
-            new CliCommand("subcommand") {
-                new CliCommand("nested")
+            new Command("subcommand") {
+                new Command("nested")
             }
         }, log);
     }

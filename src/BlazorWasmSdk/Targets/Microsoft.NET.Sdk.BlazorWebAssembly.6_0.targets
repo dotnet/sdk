@@ -49,7 +49,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
     <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
-    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(WriteImportMapToHtml)' == 'true'">true</BlazorFingerprintBlazorJs>
+    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(OverrideHtmlAssetPlaceholders)' == 'true'">true</BlazorFingerprintBlazorJs>
 
     <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
     <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>

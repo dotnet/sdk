@@ -11,7 +11,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -45,7 +44,7 @@ internal class ToolInstallLocalCommand : CommandBase
         : base(parseResult)
     {
         _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Id;
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
         _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
 
@@ -125,7 +124,7 @@ internal class ToolInstallLocalCommand : CommandBase
             throw new GracefulException(
                 [
                     string.Format(
-                        Tools.Tool.Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
+                        CliCommandStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
@@ -136,7 +135,7 @@ internal class ToolInstallLocalCommand : CommandBase
         {
             _reporter.WriteLine(
                 string.Format(
-                    Tools.Tool.Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                    CliCommandStrings.UpdateLocaToolSucceededVersionNoChange,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
@@ -150,7 +149,7 @@ internal class ToolInstallLocalCommand : CommandBase
                 [toolDownloadedPackage.Command.Name]);
             _reporter.WriteLine(
                 string.Format(
-                    Tools.Tool.Update.LocalizableStrings.UpdateLocalToolSucceeded,
+                    CliCommandStrings.UpdateLocalToolSucceeded,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),
@@ -182,7 +181,7 @@ internal class ToolInstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.LocalToolInstallationSucceeded,
+                CliCommandStrings.LocalToolInstallationSucceeded,
                 toolDownloadedPackage.Command.Name,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version.ToNormalizedString(),
@@ -202,7 +201,7 @@ internal class ToolInstallLocalCommand : CommandBase
         catch (ToolManifestCannotBeFoundException e)
         {
             throw new GracefulException(
-                [e.Message, LocalizableStrings.NoManifestGuide],
+                [e.Message, CliCommandStrings.ToolInstallNoManifestGuide],
                 verboseMessages: [e.VerboseMessage],
                 isUserError: false);
         }

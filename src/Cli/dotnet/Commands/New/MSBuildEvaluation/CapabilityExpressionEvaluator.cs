@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using LocalizableStrings = Microsoft.DotNet.Tools.New.LocalizableStrings;
-
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 /// <remarks>
@@ -280,7 +278,7 @@ internal class CapabilityExpressionEvaluator
         internal static Exception CreateInvalidExpressionException(int position)
         {
             return new ArgumentException(
-                string.Format(LocalizableStrings.CapabilityExpressionEvaluator_Exception_InvalidExpression, position),
+                string.Format(CliCommandStrings.CapabilityExpressionEvaluator_Exception_InvalidExpression, position),
                 "expression");
         }
     }

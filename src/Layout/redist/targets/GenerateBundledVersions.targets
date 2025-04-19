@@ -17,28 +17,32 @@
 
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.NETCore.App.Ref">
+      DependencyName="Microsoft.NETCore.App.Ref"
+      Condition="'$(DotNetBuild)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
 
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.AspNetCore.App.Ref">
+      DependencyName="Microsoft.AspNetCore.App.Ref"
+      Condition="'$(DotNetBuild)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
+
     <GetDependencyInfo
       VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
-      DependencyName="Microsoft.WindowsDesktop.App.Ref">
+      DependencyName="Microsoft.WindowsDesktop.App.Ref"
+      Condition="'$(DotNetBuild)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
     </GetDependencyInfo>
 
     <ItemGroup Label="Version info">
-      <Line Include="runtime" Version="$(DepRuntimeVersion)" Commit="$(DepRuntimeCommit)" />
-      <Line Include="aspnetcore" Version="$(DepAspNetCoreVersion)" Commit="$(DepAspNetCoreCommit)" />
-      <Line Include="windowsdesktop" Version="$(DepWindowsDesktopVersion)" Commit="$(DepWindowsDesktopCommit)" />
+      <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepWindowsDesktopCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
@@ -71,7 +75,6 @@
       Lines="$(JsonContents)"
       Overwrite="true"
       Encoding="ASCII" />
-
   </Target>
 
   <Target Name="GenerateBundledVersionsProps">

@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
@@ -40,7 +39,7 @@ internal class ToolListGlobalOrToolPathCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.InvalidToolPathOption,
+                        CliCommandStrings.ToolListInvalidToolPathOption,
                         toolPathOption));
             }
 
@@ -91,7 +90,7 @@ internal class ToolListGlobalOrToolPathCommand(
         {
             _errorReporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.InvalidPackageWarning,
+                    CliCommandStrings.ToolListInvalidPackageWarning,
                     package.Id,
                     ex.Message).Yellow());
             return false;
@@ -103,13 +102,13 @@ internal class ToolListGlobalOrToolPathCommand(
         var table = new PrintableTable<IToolPackage>();
 
         table.AddColumn(
-            LocalizableStrings.PackageIdColumn,
+            CliCommandStrings.ToolListPackageIdColumn,
             p => p.Id.ToString());
         table.AddColumn(
-            LocalizableStrings.VersionColumn,
+            CliCommandStrings.ToolListVersionColumn,
             p => p.Version.ToNormalizedString());
         table.AddColumn(
-            LocalizableStrings.CommandsColumn,
+            CliCommandStrings.ToolListCommandsColumn,
             p => p.Command.Name.ToString());
 
         table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));

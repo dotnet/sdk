@@ -25,6 +25,9 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PackagesDirectory">
         <Value>$(PackageArtifactsDir)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ArtifactsTestResultsDirectory">
+        <Value>$(ArtifactsTestResultsDir)</Value>
+      </RuntimeHostConfigurationOption>
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).ScenarioTestsNuGetConfigPath">
         <Value>$(RepoRoot)src\scenario-tests\NuGet.config</Value>
       </RuntimeHostConfigurationOption>

@@ -5,7 +5,8 @@
 // The protocol follows the concept of optional properties.
 // The id is used to identify the property in the stream and it will be skipped if it's not recognized.
 // We can add new properties with new ids, but we CANNOT change the existing ids (to support backwards compatibility).
-namespace Microsoft.DotNet.Tools.Test;
+
+namespace Microsoft.DotNet.Cli.Commands.Test.IPC;
 
 internal static class VoidResponseFieldsId
 {

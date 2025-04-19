@@ -4,7 +4,6 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
@@ -19,14 +18,26 @@ internal class ToolInstallCommand(
     private readonly string _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
     private readonly string _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
 
+
+    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
+    {
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
+            !string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.VersionOption)))
+        {
+            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
+        }
+    }
+
     public override int Execute()
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.InstallToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
+
+        EnsureNoConflictPackageIdentityVersionOption(_parseResult);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
@@ -38,7 +49,7 @@ internal class ToolInstallCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.LocalOptionDoesNotSupportFrameworkOption));
+                        CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption));
             }
 
             return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();

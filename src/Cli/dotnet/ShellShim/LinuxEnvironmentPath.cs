@@ -64,14 +64,14 @@ internal class LinuxEnvironmentPath : IEnvironmentPath
             if (_fileSystem.Exists(DotnetCliToolsProfilePath))
             {
                 _reporter.WriteLine(
-                    CommonLocalizableStrings.EnvironmentPathLinuxNeedLogout);
+                    CliStrings.EnvironmentPathLinuxNeedLogout);
             }
             else
             {
                 // similar to https://code.visualstudio.com/docs/setup/mac
                 _reporter.WriteLine(
                     string.Format(
-                        CommonLocalizableStrings.EnvironmentPathLinuxManualInstructions,
+                        CliStrings.EnvironmentPathLinuxManualInstructions,
                         _packageExecutablePath.Path));
             }
         }

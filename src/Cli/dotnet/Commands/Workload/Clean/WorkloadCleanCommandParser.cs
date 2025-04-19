@@ -2,24 +2,23 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Clean.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Clean;
 
 internal static class WorkloadCleanCommandParser
 {
-    public static readonly CliOption<bool> CleanAllOption = new("--all") { Description = LocalizableStrings.CleanAllOptionDescription };
+    public static readonly Option<bool> CleanAllOption = new("--all") { Description = CliCommandStrings.CleanAllOptionDescription };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("clean", LocalizableStrings.CommandDescription);
+        Command command = new("clean", CliCommandStrings.WorkloadCleanCommandDescription);
 
         command.Options.Add(CleanAllOption);
 

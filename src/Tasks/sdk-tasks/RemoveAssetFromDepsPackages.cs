@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.Build.Tasks
                 deps = JToken.ReadFrom(reader);
             }
 
+            bool found = false;
             foreach (JProperty target in deps["targets"])
             {
                 foreach (JProperty pv in target.Value.Children<JProperty>())
@@ -46,20 +47,26 @@ namespace Microsoft.DotNet.Build.Tasks
                             if (assetPath.Equals(relPath.Name))
                             {
                                 relPath.Remove();
+                                found = true;
                                 break;
                             }
                         }
                         if (assetPath.Equals("*"))
                         {
                             section.Parent.Remove();
+                            found = true;
                         }
                     }
                 }
             }
-            using (var file = File.CreateText(depsFile))
-            using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
+
+            if (found)
             {
-                deps.WriteTo(writer);
+                using (var file = File.CreateText(depsFile))
+                using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
+                {
+                    deps.WriteTo(writer);
+                }
             }
         }
     }

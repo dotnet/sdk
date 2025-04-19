@@ -414,7 +414,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
 
-        private const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
+        private const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
         /// <summary>
         /// Validates that options that the "run" command forwards to "build" command are forwarded by dotnet-watch.
@@ -424,7 +424,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "-property:TargetFramework=net9.0", NugetInteractiveProperty })]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { "-property:RuntimeIdentifier=arm64", "-property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
         [InlineData(new[] { "--property", "b=1" }, new[] { "--property:b=1", NugetInteractiveProperty })]
-        [InlineData(new[] { "--interactive" }, new[] { NugetInteractiveProperty })]
+        [InlineData(new[] { "--interactive" }, new[] { "-property:NuGetInteractive=true" })]
         [InlineData(new[] { "--no-restore" }, new[] { NugetInteractiveProperty, "-restore:false" })]
         [InlineData(new[] { "--sc" }, new[] { NugetInteractiveProperty, "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true" })]
         [InlineData(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "-property:SelfContained=True", "-property:_CommandLineDefinedSelfContained=true" })]

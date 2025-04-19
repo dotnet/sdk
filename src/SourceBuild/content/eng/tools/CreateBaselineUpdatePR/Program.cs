@@ -9,52 +9,52 @@ namespace CreateBaselineUpdatePR;
 
 public class Program
 {
-    public static readonly CliArgument<string> Repo = new("repo")
+    public static readonly Argument<string> Repo = new("repo")
     {
         Description = "The GitHub repository to create the PR in. Should be in the form '<owner>/<repo-name>'",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliArgument<string> OriginalFilesDirectory = new("original-files-directory")
+    public static readonly Argument<string> OriginalFilesDirectory = new("original-files-directory")
     {
         Description = "The directory where the original test files are located. Should be relative to the repo",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliArgument<string> UpdatedFilesDirectory = new("updated-files-directory")
+    public static readonly Argument<string> UpdatedFilesDirectory = new("updated-files-directory")
     {
         Description = "The directory containing the updated test files published by the associated test. Should be absolute or relative to the working directory of the tool.",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliArgument<int> BuildId = new("build-id")
+    public static readonly Argument<int> BuildId = new("build-id")
     {
         Description = "The id of the build that published the updated test files.",
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> Title = new("--title", "-t")
+    public static readonly Option<string> Title = new("--title", "-t")
     {
         Description = "The title of the PR.",
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => "Update Test Baselines and Exclusions"
     };
 
-    public static readonly CliOption<string> Branch = new("--branch", "-b")
+    public static readonly Option<string> Branch = new("--branch", "-b")
     {
         Description = "The target branch of the PR.",
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => "main"
     };
 
-    public static readonly CliOption<string> GitHubToken = new("--github-token", "-g")
+    public static readonly Option<string> GitHubToken = new("--github-token", "-g")
     {
         Description = "The GitHub token to use to create the PR.",
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => Environment.GetEnvironmentVariable("GH_TOKEN") ?? throw new ArgumentException("GitHub token not provided.")
     };
 
-    public static readonly CliOption<LogLevel> Level = new("--log-level", "-l")
+    public static readonly Option<LogLevel> Level = new("--log-level", "-l")
     {
         Description = "The log level to run the tool in.",
         Arity = ArgumentArity.ZeroOrOne,
@@ -69,7 +69,7 @@ public class Program
         var sdkDiffTestsCommand = CreateCommand("sdk", "Creates a PR that updates baselines and exclusion files published by the sdk diff tests.");
         var licenseScanTestsCommand = CreateCommand("license", "Creates a PR that updates baselines and exclusion files published by the license scan tests.");
 
-        var rootCommand = new CliRootCommand("Tool for creating PRs that update baselines and exclusion files.")
+        var rootCommand = new RootCommand("Tool for creating PRs that update baselines and exclusion files.")
         {
             Level,
             sdkDiffTestsCommand,
@@ -84,9 +84,9 @@ public class Program
         return ExitCode;
     }
 
-    private static CliCommand CreateCommand(string name, string description)
+    private static Command CreateCommand(string name, string description)
     {
-        return new CliCommand(name, description)
+        return new Command(name, description)
         {
             Repo,
             OriginalFilesDirectory,
@@ -98,7 +98,7 @@ public class Program
         };
     }
 
-    private static void SetCommandAction(CliCommand command, Pipelines pipeline)
+    private static void SetCommandAction(Command command, Pipelines pipeline)
     {
         command.SetAction(async (result, CancellationToken) =>
         {

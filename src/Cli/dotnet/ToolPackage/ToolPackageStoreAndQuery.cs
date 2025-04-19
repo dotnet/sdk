@@ -30,7 +30,7 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
 
         throw new ToolPackageException(
             string.Format(
-                CommonLocalizableStrings.FailedToFindStagedToolPackage,
+                CliStrings.FailedToFindStagedToolPackage,
                 packageId));
     }
 

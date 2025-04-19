@@ -60,7 +60,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                                 templateGroup,
                                 template);
 
-                            CliConfiguration parser = ParserFactory.CreateParser(command);
+                            CommandLineConfiguration parser = ParserFactory.CreateParser(command);
 
                             //it is important to pass raw text to get the completion
                             //completions for args passed as array are not supported

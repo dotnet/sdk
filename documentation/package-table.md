@@ -1,4 +1,4 @@
-### Table
+# .NET SDK daily builds table
 
 --------------------------------------------------------------------------------------
 | Platform | main<br>(10.0.x&nbsp;Runtime) | 10.0.1xx-preview3<br>(10.0-preview3&nbsp;Runtime) | 9.0.3xx<br>(9.0.x&nbsp;Runtime) |
