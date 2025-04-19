@@ -13,6 +13,9 @@ usage()
   echo "  --binaryLog                     Create MSBuild binary log (short: -bl)"
   echo "  --configuration <value>         Build configuration: 'Debug' or 'Release' (short: -c)"
   echo "  --rid, --target-rid <value>     Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
+  echo "  --os <value>                    Target operating system: e.g. linux, win, osx, freebsd. Note: this is the base OS name, not the distro."
+  echo "  --arch <value>                  Target architecture: e.g. x64, x86, arm64, arm, riscv64"
+  echo "  --cross                         Enables cross-compilation for a different OS or architecture"
   echo "  --verbosity <value>             Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   echo "  --with-system-libs <libs>       Use system versions of these libraries. Combine with a plus. eg brotli+libunwind+rapidjson+zlib"
   echo ""
@@ -105,6 +108,17 @@ while [[ $# > 0 ]]; do
     -rid|-target-rid)
       target_rid=$2
       shift
+      ;;
+    -os)
+      properties+=( "/p:TargetOS=$2" )
+      shift
+      ;;
+    -arch)
+      properties+=( "/p:TargetArchitecture=$2" )
+      shift
+      ;;
+    -cross)
+      properties+=( "/p:CrossBuild=true" )
       ;;
     -with-system-libs)
       system_libs=$2
