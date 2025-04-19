@@ -1,0 +1,46 @@
+parameters:
+- name: displayName
+  type: string
+  default: Download VMR Artifact
+
+- name: continueOnError
+  type: boolean
+  default: false
+
+- name: buildId
+  type: string
+  default: $(Build.BuildId)
+
+- name: artifactName
+  type: string
+  default: ''
+
+- name: itemPattern
+  type: string
+  default: '**/*'
+
+- name: downloadPath
+  type: string
+  default: $(Build.ArtifactStagingDirectory)
+
+- name: condition
+  type: string
+  default: succeeded()
+
+steps:
+- task: DownloadPipelineArtifact@2
+  inputs:
+    buildType: specific
+    project: internal
+    pipeline: dotnet-unified-build
+    buildVersionToDownload: specific
+    buildId: ${{ parameters.buildId }}
+    allowPartiallySucceededBuilds: true
+    allowFailedBuilds: true
+    artifact: ${{ parameters.artifactName }}
+    itemPattern: ${{ parameters.itemPattern }}
+    downloadPath: ${{ parameters.downloadPath }}
+  enabled: true
+  displayName: ${{ parameters.displayName }}
+  continueOnError: ${{ parameters.continueOnError }}
+  condition: ${{ parameters.condition }}

@@ -28,4 +28,9 @@ public enum IssueType
     PackageMetadataDifference,
     PackageTFMs,
     PackageDependencies,
+
+    /// <summary>
+    /// Indicates that the MSFT asset is signed, but the VMR asset is not.
+    /// </summary>
+    Unsigned
 }

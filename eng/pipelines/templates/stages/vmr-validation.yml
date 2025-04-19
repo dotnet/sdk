@@ -57,14 +57,6 @@ stages:
   - group: Release-Pipeline
   - group: DotNetBot-GitHub-AllBranches
   jobs:
-  - job: ValidateAssetBaselines
-    displayName: Validate Asset Baselines
-    pool: ${{ parameters.pool_Windows }}
-    timeoutInMinutes: 180
-    steps:
-    - template: ../steps/vmr-validate-asset-baseline.yml
-      parameters:
-        continueOnError: true
   - job: ValidateInstallers_Linux_x64
     displayName: Validate Installers - Linux x64
     pool: ${{ parameters.pool_Linux }}

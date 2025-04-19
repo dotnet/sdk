@@ -1,0 +1,140 @@
+### This stage builds https://github.com/dotnet/dotnet with varying parameters
+### If run in a PR, new changes are applied to a local copy of the VMR, then it is built and tested
+
+parameters:
+- name: unifiedBuildRunId
+  displayName: 'Specific dotnet-unified-build run ID number (e.g `2108850`)'
+  type: string
+  default: ''
+
+- name: comparisonType
+  displayName: 'Comparison Type'
+  type: string
+  values:
+    - assets
+    - signing
+    - all
+
+- name: sourceManifestCommit
+  displayName: 'Source Manifest Commit'
+  type: string
+  default: ''
+
+# These are not expected to be passed it but rather just object variables reused below
+- name: pool_Linux
+  type: object
+  default:
+    name: $(defaultPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
+- name: pool_Windows
+  type: object
+  default:
+    name: $(defaultPoolName)
+    image: $(poolImage_Windows)
+    demands: ImageOverride -equals $(poolImage_Windows)
+    os: windows
+
+- name: pool_LinuxArm64
+  type: object
+  default:
+    name: $(poolName_LinuxArm64)
+    image: $(poolImage_LinuxArm64)
+    demands: ImageOverride -equals $(poolImage_LinuxArm64)
+    hostArchitecture: Arm64
+    os: linux
+
+- name: pool_Mac
+  type: object
+  default:
+    name: Azure Pipelines
+    vmImage: $(poolImage_Mac)
+    os: macOS
+
+- name: pool_Linux_Shortstack
+  type: object
+  default:
+    name: $(shortStackPoolName)
+    image: $(poolImage_Linux)
+    demands: ImageOverride -equals $(poolImage_Linux)
+    os: linux
+
+stages:
+- stage: VMR_Comparison
+  displayName: VMR Comparison
+  variables:
+  - template: ../variables/vmr-build.yml
+  - group: Release-Pipeline
+  - group: DotNetBot-GitHub-AllBranches
+  jobs:
+  - ${{ if ne(parameters.comparisonType, 'signing') }}:
+    - job: CompareAssets
+      displayName: Compare Assets
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 180
+      steps:
+      - template: ../steps/vmr-compare.yml
+        parameters:
+          continueOnError: false
+          unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+          sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+          command: assets
+
+  - ${{ if ne(parameters.comparisonType, 'assets') }}:
+    - job: CompareSigning_Windows
+      displayName: Compare Signing - Windows
+      pool: ${{ parameters.pool_Windows }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-compare.yml
+        parameters:
+          continueOnError: false
+          unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+          sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+          command: signing
+          OS: Windows_NT
+
+    - job: CompareSigning_Mac_Blobs
+      displayName: Compare Signing - Mac (Blobs)
+      pool: ${{ parameters.pool_Mac }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-compare.yml
+        parameters:
+          continueOnError: false
+          unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+          sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+          command: signing
+          assetType: Blob
+          OS: Darwin
+          clean: true
+    
+    - job: CompareSigning_Mac_Packages
+      displayName: Compare Signing - Mac (Packages)
+      pool: ${{ parameters.pool_Mac }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-compare.yml
+        parameters:
+          continueOnError: false
+          unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+          sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+          command: signing
+          assetType: Package
+          OS: Darwin
+          clean: true
+
+    - job: CompareSigning_Linux
+      displayName: Compare Signing - Linux
+      pool: ${{ parameters.pool_Linux }}
+      timeoutInMinutes: 240
+      steps:
+      - template: ../steps/vmr-compare.yml
+        parameters:
+          continueOnError: false
+          unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+          sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+          command: signing
+          OS: Linux

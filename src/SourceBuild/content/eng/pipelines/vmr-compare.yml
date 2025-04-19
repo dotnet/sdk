@@ -1,0 +1,72 @@
+# Relies on dotnet-unified-build being in the same repo as this pipeline
+# https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations
+
+resources:
+  pipelines:
+  - pipeline: dotnet-unified-build
+    source: dotnet-unified-build
+    # Run on every build of the main branch.
+    # For releases branches only run on internal/release branches because that's where dependencies flow.
+    # Previews don't have internal/release branches so they must be run from non-internal release branches.
+    trigger:
+      branches:
+        include:
+        - refs/heads/release/main
+        - refs/heads/release/*.0.1xx-preview*
+        - refs/heads/internal/release/*.0.1xx*
+
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+pr: none
+trigger: none
+
+parameters:
+- name: unifiedBuildRunId
+  displayName: 'Specific dotnet-unified-build run ID number (e.g `2108850`)'
+  type: string
+  default: ' '
+
+- name: sourceManifestCommit
+  displayName: 'Specific dotnet-dotnet commit to pull the source manifest from'
+  type: string
+  default: ' '
+
+- name: comparisonType
+  displayName: 'Specific comparison type to run'
+  type: string
+  default: 'all'
+  values:
+    - assets
+    - signing
+    - all
+
+variables:
+- template: /eng/common/templates-official/variables/pool-providers.yml@self
+- template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    featureFlags:
+      incrementalSDLBinaryAnalysis: true
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+      binskim:
+        enabled: true
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
+    stages:
+    - template: /src/sdk/eng/pipelines/templates/stages/vmr-compare.yml@self
+      parameters:
+        unifiedBuildRunId: ${{ parameters.unifiedBuildRunId }}
+        sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
+        comparisonType: ${{ parameters.comparisonType }}
