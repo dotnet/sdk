@@ -202,6 +202,7 @@ internal sealed class NonAnsiTerminal : ITerminal
 
             if (retried > 0)
             {
+                Append('/');
                 SetColor(TerminalColor.Gray);
                 Append('r');
                 Append(retried.ToString(CultureInfo.CurrentCulture));
