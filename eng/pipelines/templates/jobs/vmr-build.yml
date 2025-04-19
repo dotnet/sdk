@@ -204,6 +204,9 @@ jobs:
   - name: artifactsStagingDir
     value: $(Build.ArtifactStagingDirectory)/artifacts
 
+  - name: artifactsPrepublishDir
+    value: $(Build.ArtifactStagingDirectory)/prepublish
+
   - name: successfulJobArtifactName
     value: $(Agent.JobName)_Artifacts
 
@@ -322,7 +325,7 @@ jobs:
       sbomEnabled: true
 
     - output: pipelineArtifact
-      path: $(Build.ArtifactStagingDirectory)
+      path: $(artifactsPrepublishDir)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()
@@ -652,6 +655,19 @@ jobs:
     continueOnError: true
     condition: succeededOrFailed()
 
+  - task: CopyFiles@2
+    displayName: Copy unmerged artifacts to staging directory
+    inputs:
+      SourceFolder: '$(sourcesPath)/artifacts'
+      Contents: |
+        packages/**/*
+        assets/**/*
+        obj/manifests/**/*
+      TargetFolder: '$(artifactsPrepublishDir)'
+      CleanTargetFolder: true
+    condition: failed()
+    continueOnError: true
+
   - ${{ if eq(parameters.buildSourceOnly, 'True') }}:
     - task: CopyFiles@2
       displayName: Copy prebuilt-report to BuildLogs
@@ -705,7 +721,7 @@ jobs:
       condition: succeeded()
       continueOnError: true
 
-    - publish: $(Build.ArtifactStagingDirectory)
+    - publish: $(artifactsPrepublishDir)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()

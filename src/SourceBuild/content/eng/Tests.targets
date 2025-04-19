@@ -1,0 +1,7 @@
+<Project>
+  <!--
+    Override the Test target to directly depend on VSTest.
+    This repo uses the VSTest integration instead of the Arcade Test target.
+  -->
+  <Target Name="Test" DependsOnTargets="VSTest" />
+</Project>

@@ -1,11 +1,7 @@
 <Project>
+  <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
 
-  <Import Project="$([MSBuild]::GetPathOfFileAbove(Directory.Build.props, $(MSBuildThisFileDirectory)..))" />
-
-  <!-- Don't use these feeds when testing. Projects under this directory are referenced by
-       test projects. This makes sure that the feeds aren't used. -->
   <PropertyGroup>
     <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(IsTestRun)' != 'true'">$(PreviouslySourceBuiltReferencePackagesDir);$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
   </PropertyGroup>
-
 </Project>

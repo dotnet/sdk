@@ -77,9 +77,17 @@
       <ToolsetPackage Include="Microsoft.Build.Traversal" SourceFolder="$(PreviouslySourceBuiltReferencePackagesDir)" Version="$(TRAVERSAL_BOOTSTRAP_VERSION)" />
     </ItemGroup>
 
+    <ItemGroup>
+      <ToolsetPackage Destination="$(BootstrapPackagesDir)$([System.String]::Copy('%(ToolsetPackage.Identity)').ToLowerInvariant())/%(ToolsetPackage.Version)" />
+    </ItemGroup>
+
     <Unzip SourceFiles="%(ToolsetPackage.SourceFolder)%(ToolsetPackage.Identity).%(ToolsetPackage.Version).nupkg"
-           DestinationFolder="$(BootstrapPackagesDir)$([System.String]::Copy('%(ToolsetPackage.Identity)').ToLowerInvariant())/%(ToolsetPackage.Version)"
+           DestinationFolder="%(ToolsetPackage.Destination)"
            SkipUnchangedFiles="true" />
+
+    <WriteLinesToFile File="$(ArtifactsDir)/toolset/bootstrap-sdks.txt"
+                      Lines="@(ToolsetPackage->Metadata('Destination'))"
+                      Overwrite="true" />
   </Target>
 
 </Project>
