@@ -4,8 +4,12 @@ trigger:
   batch: true
   branches:
     include:
-    - main
-    - release/*
+    - release/8*
+    - release/9*
+    - release/10.0.1xx-preview1
+    - release/10.0.1xx-preview2
+    - release/10.0.1xx-preview3
+    - release/10.0.1xx-preview4
     exclude:
     - release/*.0.2xx
     - release/*.0.3xx
