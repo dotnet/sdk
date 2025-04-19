@@ -4,7 +4,10 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -12,18 +15,18 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal class ToolRunCommand(
     ParseResult result,
-    LocalToolsCommandResolver localToolsCommandResolver = null,
-    ToolManifestFinder toolManifest = null) : CommandBase(result)
+    LocalToolsCommandResolver localToolsCommandResolver = null) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
     private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
+    private readonly bool _fromSource = result.GetValue(ToolRunCommandParser.FromSourceOption);
+
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
     public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
-    private readonly ToolManifestFinder _toolManifest = toolManifest ?? new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
 
     public override int Execute()
     {
-        CommandSpec commandspec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+        CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
             CommandName = $"dotnet-{_toolCommandName}",
@@ -31,12 +34,20 @@ internal class ToolRunCommand(
 
         }, _allowRollForward);
 
-        if (commandspec == null)
+        if (commandSpec == null && _fromSource)
+        {
+            // Reroute to ToolRunFromSourceCommand
+            return new ToolRunFromSourceCommand(_parseResult).Execute();
+        }
+
+        if (commandSpec == null)
         {
             throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
         }
 
-        var result = CommandFactoryUsingResolver.Create(commandspec).Execute();
+        var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
         return result.ExitCode;
     }
+
+
 }

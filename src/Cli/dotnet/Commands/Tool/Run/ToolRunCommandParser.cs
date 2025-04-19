@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -24,6 +27,24 @@ internal static class ToolRunCommandParser
         Arity = ArgumentArity.Zero
     };
 
+    public static readonly Option<bool> FromSourceOption = new("--from-source")
+    {
+        Description = CliCommandStrings.ToolRunFromSourceOptionDescription,
+        Arity = ArgumentArity.Zero
+    };
+    
+    public static readonly Option<string> FromSourceConfigFile = ToolInstallCommandParser.ConfigOption;
+
+    public static readonly Option<string[]> FromSourceSourceOption = ToolInstallCommandParser.SourceOption;
+
+    public static readonly Option<string[]> FromSourceAddSourceOption = ToolInstallCommandParser.AddSourceOption;
+
+    public static readonly Option<VerbosityOptions> FromSourceVerbosityOption = CommonOptions.VerbosityOption;
+
+    public static readonly Option<bool> FromSourceInteractiveOption = CommonOptions.InteractiveOption();
+
+    public static readonly Option<bool> FromSourceYesOption = CommonOptions.YesOption;
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -38,6 +59,16 @@ internal static class ToolRunCommandParser
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
         command.Options.Add(RollForwardOption);
+
+        command.Options.Add(FromSourceOption);
+        command.Options.Add(FromSourceConfigFile);
+        command.Options.Add(FromSourceSourceOption);
+        command.Options.Add(FromSourceAddSourceOption);
+        command.Options.Add(FromSourceVerbosityOption);
+        command.Options.Add(FromSourceInteractiveOption);
+        command.Options.Add(FromSourceYesOption);
+
+        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
 
