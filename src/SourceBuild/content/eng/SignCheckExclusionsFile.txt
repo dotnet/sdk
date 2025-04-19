@@ -6,6 +6,7 @@
 *singlefilehost.exe;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
 *comhost.dll;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
 *apphosttemplateapphostexe.exe;;Template, DO-NOT-SIGN, https://github.com/dotnet/core-setup/pull/7549
+dotnet*.js;; DO-NOT-SIGN, https://github.com/dotnet/runtime/issues/114353#issuecomment-2784726217
 
 ;; ## PGO ##
 ;dotnet-sdk-pgo-*.tar.gz; PGO builds are unsigned
@@ -23,6 +24,10 @@ ILCompiler.Build.Tasks.dll;; IGNORE-STRONG-NAME, https://github.com/dotnet/sourc
 
 ;; ## MACH-O ##
 *.dwarf;; Debugging symbols, https://github.com/dotnet/source-build/issues/4994#issuecomment-2768803544
+
+;; ## ESRP Signing Issues ##
+*.exe;*.whl;The .whl files are not supported by ESRP, https://github.com/dotnet/emsdk/commit/3ac196ac425223d11490e759c2641256ce746f21
+libbinaryen.dylib;; fails to sign via ESRP, https://github.com/dotnet/emsdk/commit/3ac196ac425223d11490e759c2641256ce746f21
 
 ;; ## DAC Signed Files ##
 ;; Exclusions for these files are added dynamically when running the VMR Signing Validation task on a non-release branch.

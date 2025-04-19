@@ -4,34 +4,30 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
-    {
-        HelpName = CliCommandStrings.ToolUpdatePackageIdArgumentName,
-        Description = CliCommandStrings.ToolUpdatePackageIdArgumentDescription,
-        Arity = ArgumentArity.ZeroOrOne
-    };
+    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument(requireArgument: false);
 
-    public static readonly CliOption<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
+    public static readonly Option<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 
-    public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
+    public static readonly Option<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
+        Command command = new("update", CliCommandStrings.ToolUpdateCommandDescription);
 
-        command.Arguments.Add(PackageIdArgument);
+        command.Arguments.Add(PackageIdentityArgument);
 
         ToolInstallCommandParser.AddCommandOptions(command);
         command.Options.Add(AllowPackageDowngradeOption);
@@ -42,4 +38,3 @@ internal static class ToolUpdateCommandParser
         return command;
     }
 }
-

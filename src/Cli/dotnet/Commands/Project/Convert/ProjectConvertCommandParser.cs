@@ -10,18 +10,25 @@ namespace Microsoft.DotNet.Cli.Commands.Project.Convert;
 
 internal sealed class ProjectConvertCommandParser
 {
-    public static readonly CliArgument<string> FileArgument = new("file")
+    public static readonly Argument<string> FileArgument = new("file")
     {
         Description = CliCommandStrings.CmdFileDescription,
         Arity = ArgumentArity.ExactlyOne,
     };
 
-    public static CliCommand GetCommand()
+    public static readonly Option<bool> ForceOption = new("--force")
     {
-        CliCommand command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
+        Description = CliCommandStrings.CmdOptionForceDescription,
+        Arity = ArgumentArity.Zero,
+    };
+
+    public static Command GetCommand()
+    {
+        Command command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
+            ForceOption,
         };
 
         command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());

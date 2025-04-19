@@ -31,17 +31,12 @@ steps:
 
 - ${{ if eq(parameters.OS, 'Linux') }}:
   - script: |
-      extraBuildProperties="/p:TestRpmPackages=true"
-      if [[ '${{ parameters.targetArchitecture }}' == 'x64' ]]; then
-        # At the moment Deb packages are only available for x64
-        extraBuildProperties="$extraBuildProperties /p:TestDebPackages=true"
-      fi
-
       ./build.sh \
       --ci \
       -t \
       --projects test/Microsoft.DotNet.Installer.Tests/Microsoft.DotNet.Installer.Tests.csproj \
-      $extraBuildProperties
+      /p:TestRpmPackages=true \
+      /p:TestDebPackages=true
     displayName: Validate installer packages
     workingDirectory: $(Build.SourcesDirectory)
 
