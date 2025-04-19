@@ -9,6 +9,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.TemplateEngine.Utils;
 using Newtonsoft.Json.Linq;
 using NuGet.Client;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ContentModel;
@@ -72,104 +73,114 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig restoreActionConfig = null
-        )
+        RestoreActionConfig restoreActionConfig = null)
     {
-        var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-        string rollbackDirectory = null;
+
+        ILogger nugetLogger = new NullLogger();
+        if (verbosity.IsDetailedOrDiagnostic())
+        {
+            nugetLogger = new NuGetConsoleLogger();
+        }
+
+        if (versionRange == null)
+        {
+            var versionString = "*";
+            versionRange = VersionRange.Parse(versionString);
+        }
+
+        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+            new DirectoryPath(),
+            verboseLogger: nugetLogger,
+            verifySignatures: verifySignatures,
+            shouldUsePackageSourceMapping: true,
+            restoreActionConfig: restoreActionConfig,
+            verbosityOptions: verbosity,
+            currentWorkingDirectory: _currentWorkingDirectory);
+
+            var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
+
+            NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+
+            bool givenSpecificVersion = false;
+            if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+            {
+                givenSpecificVersion = true;
+            }
+
+            if (isGlobalTool)
+            {
+                return InstallGlobalToolPackageInternal(
+                    packageSourceLocation,
+                    nugetPackageDownloader,
+                    packageId, 
+                    packageVersion,
+                    givenSpecificVersion,
+                    targetFramework, 
+                    isGlobalToolRollForward);
+            }
+            else
+            {
+                return InstallLocalToolPackageInternal(
+                    packageSourceLocation,
+                    nugetPackageDownloader,
+                    packageId,
+                    packageVersion,
+                    givenSpecificVersion, 
+                    targetFramework);
+            }
+    }
+
+    private IToolPackage InstallGlobalToolPackageInternal(
+        PackageSourceLocation packageSourceLocation,
+        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        bool givenSpecificVersion,
+        string targetFramework,
+        bool isGlobalToolRollForward)
+    {
+        // Check if package already exists in global tools location
+        NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
+        var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
+
+        if (globalPackage != null)
+        {
+            throw new ToolPackageException(
+                string.Format(
+                    CliStrings.ToolPackageConflictPackageId,
+                    packageId,
+                    packageVersion.ToNormalizedString()));
+        }
+
+        string rollbackDirectory = _globalToolStageDir.Value;
 
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
             {
-                ILogger nugetLogger = new NullLogger();
-                if (verbosity.IsDetailedOrDiagnostic())
-                {
-                    nugetLogger = new NuGetConsoleLogger();
-                }
+                DownloadTool(
+                    packageDownloadDir: _globalToolStageDir,
+                    packageId,
+                    packageVersion,
+                    nugetPackageDownloader,
+                    packageSourceLocation,
+                    givenSpecificVersion,
+                    assetFileDirectory: _globalToolStageDir,
+                    targetFramework);
 
-                if (versionRange == null)
-                {
-                    var versionString = "*";
-                    versionRange = VersionRange.Parse(versionString);
-                }
+                var toolStoreTargetDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
 
-                var toolDownloadDir = isGlobalTool ? _globalToolStageDir : _localToolDownloadDir;
-                var assetFileDirectory = isGlobalTool ? _globalToolStageDir : _localToolAssetDir;
+                //  Create parent directory in global tool store, for example dotnet\tools\.store\powershell
+                Directory.CreateDirectory(toolStoreTargetDirectory.GetParentPath().Value);
 
-                var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-                    toolDownloadDir,
-                    verboseLogger: nugetLogger,
-                    verifySignatures: verifySignatures,
-                    shouldUsePackageSourceMapping: true,
-                    restoreActionConfig: restoreActionConfig,
-                    verbosityOptions: verbosity,
-                    currentWorkingDirectory: _currentWorkingDirectory);
+                //  Move tool files from stage to final location
+                FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, toolStoreTargetDirectory.Value));
 
-                var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
-
-                bool givenSpecificVersion = false;
-                if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
-                {
-                    givenSpecificVersion = true;
-                }
-                NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
-
-                rollbackDirectory = isGlobalTool ? toolDownloadDir.Value: new VersionFolderPathResolver(toolDownloadDir.Value).GetInstallPath(packageId.ToString(), packageVersion);
-
-                if (isGlobalTool)
-                {
-                    NuGetv3LocalRepository nugetPackageRootDirectory = new(new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion));
-                    var globalPackage = nugetPackageRootDirectory.FindPackage(packageId.ToString(), packageVersion);
-
-                    if (globalPackage != null)
-                    {
-                        throw new ToolPackageException(
-                            string.Format(
-                                CliStrings.ToolPackageConflictPackageId,
-                                packageId,
-                                packageVersion.ToNormalizedString()));
-                    }
-                }
-                NuGetv3LocalRepository localRepository = new(toolDownloadDir.Value);
-                var package = localRepository.FindPackage(packageId.ToString(), packageVersion);
-
-                if (package == null)
-                {
-                    DownloadAndExtractPackage(packageId, nugetPackageDownloader, toolDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
-                }
-                else if(isGlobalTool)
-                {
-                    throw new ToolPackageException(
-                        string.Format(
-                            CliStrings.ToolPackageConflictPackageId,
-                            packageId,
-                            packageVersion.ToNormalizedString()));
-                }
-                                   
-                CreateAssetFile(packageId, packageVersion, toolDownloadDir, assetFileDirectory, _runtimeJsonPath, targetFramework);
-                
-                DirectoryPath toolReturnPackageDirectory;
-                DirectoryPath toolReturnJsonParentDirectory;
-
-                if (isGlobalTool)
-                {
-                    toolReturnPackageDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
-                    toolReturnJsonParentDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
-                    var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-                    Directory.CreateDirectory(packageRootDirectory.Value);
-                    FileAccessRetrier.RetryOnMoveAccessFailure(() => Directory.Move(_globalToolStageDir.Value, toolReturnPackageDirectory.Value));
-                    rollbackDirectory = toolReturnPackageDirectory.Value;
-                }
-                else
-                {
-                    toolReturnPackageDirectory = toolDownloadDir;
-                    toolReturnJsonParentDirectory = _localToolAssetDir;
-                }
+                rollbackDirectory = toolStoreTargetDirectory.Value;
 
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
-                                version: packageVersion,
-                                packageDirectory: toolReturnPackageDirectory,
-                                assetsJsonParentDirectory: toolReturnJsonParentDirectory);
+                    version: packageVersion,
+                    packageDirectory: toolStoreTargetDirectory,
+                    assetsJsonParentDirectory: toolStoreTargetDirectory);
 
                 if (isGlobalToolRollForward)
                 {
@@ -184,13 +195,90 @@ internal class ToolPackageDownloader : IToolPackageDownloader
                 {
                     Directory.Delete(rollbackDirectory, true);
                 }
-                // Delete the root if it is empty
+
+                //  Delete global tool store package ID directory if it's empty (ie no other versions are installed)
+                DirectoryPath packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
                 if (Directory.Exists(packageRootDirectory.Value) &&
                     !Directory.EnumerateFileSystemEntries(packageRootDirectory.Value).Any())
                 {
                     Directory.Delete(packageRootDirectory.Value, false);
                 }
             });
+    }
+
+    private IToolPackage InstallLocalToolPackageInternal(
+        PackageSourceLocation packageSourceLocation,
+        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        bool givenSpecificVersion,
+        string targetFramework)
+    {
+        return TransactionalAction.Run<IToolPackage>(
+            action: () =>
+            {
+                DownloadTool(
+                    packageDownloadDir: _localToolDownloadDir,
+                    packageId,
+                    packageVersion,
+                    nugetPackageDownloader,
+                    packageSourceLocation,
+                    givenSpecificVersion,
+                    assetFileDirectory: _localToolAssetDir,
+                    targetFramework);
+
+                var toolPackageInstance = new ToolPackageInstance(id: packageId,
+                    version: packageVersion,
+                    packageDirectory: _localToolDownloadDir,
+                    assetsJsonParentDirectory: _localToolAssetDir);
+
+                return toolPackageInstance;
+            });
+    }
+
+    private void DownloadTool(
+        DirectoryPath packageDownloadDir,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        INuGetPackageDownloader nugetPackageDownloader,
+        PackageSourceLocation packageSourceLocation,
+        bool givenSpecificVersion,
+        DirectoryPath assetFileDirectory,
+        string targetFramework)
+    {
+        NuGetv3LocalRepository nugetLocalRepository = new(packageDownloadDir.Value);
+
+        var package = nugetLocalRepository.FindPackage(packageId.ToString(), packageVersion);
+
+        if (package == null)
+        {
+            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
+        }
+
+        CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), _runtimeJsonPath, targetFramework);
+
+        //  Also download RID-specific package if needed
+        var toolConfiguration = ToolPackageInstance.GetToolConfiguration(packageId, packageDownloadDir, assetFileDirectory);
+        if (toolConfiguration.RidSpecificPackages?.Any() == true)
+        {
+            var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(_runtimeJsonPath);
+            var bestRuntimeIdentifier = Microsoft.NET.Build.Tasks.NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeInformation.RuntimeIdentifier, toolConfiguration.RidSpecificPackages.Keys, out bool wasInGraph);
+            if (bestRuntimeIdentifier == null)
+            {
+                //  TODO: Localize
+                throw new ToolPackageException($"The tool does not support the current architecture or operating system (Runtime Identifier {RuntimeInformation.RuntimeIdentifier}");
+            }
+
+            var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
+
+            var resolvedLocalPackage = nugetLocalRepository.FindPackage(resolvedPackage.Id, resolvedPackage.Version);
+            if (resolvedLocalPackage == null)
+            {
+                DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, resolvedPackage.Version, packageSourceLocation, includeUnlisted: true).GetAwaiter().GetResult();
+            }
+
+            CreateAssetFile(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
+        }
     }
 
     // The following methods are copied from the LockFileUtils class in Nuget.Client
@@ -284,35 +372,55 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         bool includeUnlisted = false
         )
     {
-        var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation, includeUnlisted: includeUnlisted).ConfigureAwait(false);
+        var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
-        // look for package on disk and read the version
-        NuGetVersion version;
+        string? folderToDeleteOnFailure = null;
 
-        using (FileStream packageStream = File.OpenRead(packagePath))
+        try
         {
-            PackageArchiveReader reader = new(packageStream);
-            version = new NuspecReader(reader.GetNuspec()).GetVersion();
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
+                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false);
 
-            var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
-            var hashPath = new VersionFolderPathResolver(packagesRootPath).GetHashPath(packageId.ToString(), version);
+            folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
-            Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
-            File.WriteAllText(hashPath, packageHash);
+            // look for package on disk and read the version
+            NuGetVersion version;
+
+            using (FileStream packageStream = File.OpenRead(packagePath))
+            {
+                PackageArchiveReader reader = new(packageStream);
+                version = new NuspecReader(reader.GetNuspec()).GetVersion();
+
+                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
+                var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                File.WriteAllText(hashPath, packageHash);
+            }
+
+            // Extract the package
+            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
+            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+
+            return version;
         }
+        catch
+        {
+            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
+            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
+            {
+                Directory.Delete(folderToDeleteOnFailure, true);
+            }
 
-        // Extract the package
-        var nupkgDir = new VersionFolderPathResolver(packagesRootPath).GetInstallPath(packageId.ToString(), version);
-        await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
-
-        return version;
+            throw;
+        }
     }
 
     private static void CreateAssetFile(
         PackageId packageId,
         NuGetVersion version,
         DirectoryPath packagesRootPath,
-        DirectoryPath assetFileDirectory,
+        string assetFilePath,
         string runtimeJsonGraph,
         string targetFramework = null
         )
@@ -329,6 +437,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
             Name = packageId.ToString(),
             Version = version,
             Type = LibraryType.Package,
+            //  TODO: What about DotnetToolRidPackage type?
             PackageType = [PackageType.DotnetTool]
         };
 
@@ -358,6 +467,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         managedCriteria.Add(standardCriteria);
 
         //  Create asset file
+        //  TODO: What about DotnetToolRidPackage type?
         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
         {
             AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
@@ -371,7 +481,7 @@ internal class ToolPackageDownloader : IToolPackageDownloader
         };
         lockFileTarget.Libraries.Add(lockFileLib);
         lockFile.Targets.Add(lockFileTarget);
-        new LockFileFormat().Write(Path.Combine(assetFileDirectory.Value, "project.assets.json"), lockFile);
+        new LockFileFormat().Write(assetFilePath, lockFile);
     }
 
     public NuGetVersion GetNuGetVersion(

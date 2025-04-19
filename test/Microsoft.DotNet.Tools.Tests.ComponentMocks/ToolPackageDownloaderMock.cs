@@ -343,6 +343,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public IReadOnlyList<FilePath> PackagedShims { get; set; }
 
             public IEnumerable<NuGetFramework> Frameworks => throw new NotImplementedException();
+
+            public PackageId ResolvedPackageId { get; set; }
+
+            public NuGetVersion ResolvedPackageVersion { get; set; }
         }
     }
 }

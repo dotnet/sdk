@@ -13,6 +13,10 @@ internal interface IToolPackage
 
     NuGetVersion Version { get; }
 
+    public PackageId ResolvedPackageId { get; }
+
+    public NuGetVersion ResolvedPackageVersion { get; }
+
     DirectoryPath PackageDirectory { get; }
 
     RestoredCommand Command { get; }
