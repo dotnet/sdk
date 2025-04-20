@@ -157,4 +157,10 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildMinimumVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildMinimumVersion)" />
   </ItemGroup>
+
+  <!-- Import any local dev packages if they exist. -->
+  <PropertyGroup>
+    <LocalDevPackagesPath>$(MSBuildThisFileDirectory)LocalDev.Packages.props</LocalDevPackagesPath>
+  </PropertyGroup>
+  <Import Project="$(LocalDevPackagesPath)" Condition="Exists('$(LocalDevPackagesPath)') AND '$(SkipLocalDevSettings)' != 'true'" />
 </Project>
