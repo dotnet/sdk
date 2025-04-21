@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -62,6 +63,8 @@ namespace Analyzer.Utilities
         /// </summary>
         private readonly ConcurrentDictionary<string, INamedTypeSymbol?> _fullNameToTypeMap;
 
+        private ConcurrentCache<string, ImmutableArray<INamedTypeSymbol>>? _getTypesCache;
+
 #if !NETSTANDARD1_3 // Assuming we're on .NET Standard 2.0 or later, cache the type names that are probably compile time constants.
         /// <summary>
         /// Static cache of full type names (with namespaces) to namespace name parts,
@@ -77,6 +80,60 @@ namespace Analyzer.Utilities
         private static readonly ConcurrentDictionary<string, ImmutableArray<string>> _fullTypeNameToNamespaceNames =
             new(StringComparer.Ordinal);
 #endif
+
+        internal ImmutableArray<INamedTypeSymbol> GetTypesByMetadataName(string fullyQualifiedMetadataName)
+        {
+            var getTypesCache = LazyInitializer.EnsureInitialized(
+                ref _getTypesCache, static () => new ConcurrentCache<string, ImmutableArray<INamedTypeSymbol>>(50, ReferenceEqualityComparer.Instance))!;
+
+            if (!getTypesCache.TryGetValue(fullyQualifiedMetadataName, out ImmutableArray<INamedTypeSymbol> val))
+            {
+                val = getTypesByMetadataNameImpl();
+                var result = getTypesCache.TryAdd(fullyQualifiedMetadataName, val);
+                Debug.Assert(result
+                    || !getTypesCache.TryGetValue(fullyQualifiedMetadataName, out var addedArray) // Could fail if the type was already evicted from the cache
+                    || Enumerable.SequenceEqual(addedArray, val, ReferenceEqualityComparer.Instance));
+            }
+
+            return val;
+
+            ImmutableArray<INamedTypeSymbol> getTypesByMetadataNameImpl()
+            {
+                ArrayBuilder<INamedTypeSymbol>? typesByMetadataName = null;
+
+                // Start with the current assembly, then corlib, then look through all references, to mimic GetTypeByMetadataName search order.
+
+                addIfNotNull(Compilation.Assembly.GetTypeByMetadataName(fullyQualifiedMetadataName));
+
+                var corLib = Compilation.ObjectType.ContainingAssembly;
+
+                if (!ReferenceEquals(corLib, Compilation.Assembly))
+                {
+                    addIfNotNull(corLib.GetTypeByMetadataName(fullyQualifiedMetadataName));
+                }
+
+                foreach (var referencedAssembly in Compilation.SourceModule.ReferencedAssemblySymbols)
+                {
+                    if (ReferenceEquals(referencedAssembly, corLib))
+                    {
+                        continue;
+                    }
+
+                    addIfNotNull(referencedAssembly.GetTypeByMetadataName(fullyQualifiedMetadataName));
+                }
+
+                return typesByMetadataName?.ToImmutableAndFree() ?? ImmutableArray<INamedTypeSymbol>.Empty;
+
+                void addIfNotNull(INamedTypeSymbol? toAdd)
+                {
+                    if (toAdd != null)
+                    {
+                        typesByMetadataName ??= ArrayBuilder<INamedTypeSymbol>.GetInstance();
+                        typesByMetadataName.Add(toAdd);
+                    }
+                }
+            }
+        }
 
         /// <summary>
         /// Attempts to get the type by the full type name.

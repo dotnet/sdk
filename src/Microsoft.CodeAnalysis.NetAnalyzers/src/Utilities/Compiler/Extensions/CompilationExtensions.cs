@@ -2,11 +2,11 @@
 
 #if CODEANALYSIS_V3_OR_BETTER
 using System;
-using System.Collections.Immutable;
 using System.Linq;
 using Microsoft.CodeAnalysis.Diagnostics;
 #endif
 
+using System.Collections.Immutable;
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.CodeAnalysis;
 
@@ -48,6 +48,9 @@ namespace Analyzer.Utilities.Extensions
             return false;
         }
 #endif
+
+        public static ImmutableArray<INamedTypeSymbol> GetTypesByMetadataName(this Compilation compilation, string fullyQualifiedMetadataName)
+            => WellKnownTypeProvider.GetOrCreate(compilation).GetTypesByMetadataName(fullyQualifiedMetadataName);
 
         /// <summary>
         /// Gets a type by its full type name and cache it at the compilation level.
