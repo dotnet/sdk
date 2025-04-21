@@ -84,7 +84,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
-        public void It_errors_out_when_RuntimeIdentifier_architecture_and_PlatformTarget_do_not_match()
+        public void It_allows_mismatched_RuntimeIdentifier_and_PlatformTarget_in_netcore()
         {
             const string RuntimeIdentifier = $"{ToolsetInfo.LatestWinRuntimeIdentifier}-x64";
             const string PlatformTarget = "x86";
@@ -105,11 +105,8 @@ namespace Microsoft.NET.Build.Tests
             buildCommand
                 .Execute()
                 .Should()
-                .Fail()
-                .And.HaveStdOutContaining(string.Format(
-                    Strings.CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget,
-                    RuntimeIdentifier,
-                    PlatformTarget));
+                .Pass()
+                .And.NotHaveStdOutContaining(Strings.CannotHaveRuntimeIdentifierPlatformMismatchPlatformTarget);
         }
 
         [Fact]
