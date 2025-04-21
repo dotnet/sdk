@@ -132,6 +132,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Determine PlatformTarget (if not already set) from runtime identifier. -->
   <Choose>
+    <!-- For all targets other than .NETFramework, set $(PlatformTarget) to AnyCPU. -->
+    <When Condition="'$(TargetFrameworkIdentifier)' != '.NETFramework'">
+      <PropertyGroup>
+        <PlatformTarget>AnyCPU</PlatformTarget>
+      </PropertyGroup>
+    </When>
+
     <When Condition="'$(PlatformTarget)' != '' or '$(RuntimeIdentifier)' == ''" />
 
     <When Condition="$(RuntimeIdentifier.EndsWith('-x86')) or $(RuntimeIdentifier.Contains('-x86-'))">
