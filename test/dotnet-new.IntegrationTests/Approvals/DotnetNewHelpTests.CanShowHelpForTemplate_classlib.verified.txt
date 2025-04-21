@@ -1,6 +1,6 @@
 ﻿Class Library (C#)
 Author: Microsoft
-Description: A project for creating a class library that targets .NET or .NET Standard
+Description: Share code and logic across different .NET apps with a reusable library. 
 
 Usage:
   dotnet new classlib [options] [template options]

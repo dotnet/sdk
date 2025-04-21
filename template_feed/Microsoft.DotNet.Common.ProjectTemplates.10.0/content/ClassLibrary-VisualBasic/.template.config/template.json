@@ -7,7 +7,7 @@
   ],
   "name": "Class Library",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project for creating a class library that targets .NET or .NET Standard",
+  "description": "Share code and logic across different .NET apps with a reusable library. ",
   "groupIdentity": "Microsoft.Common.Library",
   "precedence": "12000",
   "identity": "Microsoft.Common.Library.VisualBasic.10.0",
