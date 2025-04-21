@@ -1719,7 +1719,7 @@ _testhost_tool_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-roll-forward --from-source --configfile --source --add-source --verbosity --ignore-failed-sources --interactive --help" 
+    opts="--allow-roll-forward --from-source --configfile --source --add-source --verbosity --interactive --yes --ignore-failed-sources --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1729,6 +1729,10 @@ _testhost_tool_run() {
     case $prev in
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --yes|-y)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
     esac

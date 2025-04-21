@@ -1110,8 +1110,10 @@ _testhost() {
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--yes[Overrides confirmation prompt with \"yes\" value. ]' \
+                                            '-y[Overrides confirmation prompt with \"yes\" value. ]' \
+                                            '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':commandName -- The command name of the tool to run.: ' \
