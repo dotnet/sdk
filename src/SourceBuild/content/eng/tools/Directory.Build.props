@@ -5,7 +5,7 @@
   <!-- Don't use these feeds when testing. Projects under this directory are referenced by
        test projects. This makes sure that the feeds aren't used. -->
   <PropertyGroup>
-    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(Test)' != 'true'">$(PreviouslySourceBuiltReferencePackagesDir);$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(Test)' != 'true'">$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
   </PropertyGroup>
 
 </Project>
