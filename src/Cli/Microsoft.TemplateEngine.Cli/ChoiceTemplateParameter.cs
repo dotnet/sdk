@@ -68,11 +68,11 @@ namespace Microsoft.TemplateEngine.Cli
             };
         }
 
-        protected override CliOption GetBaseOption(IReadOnlySet<string> aliases)
+        protected override Option GetBaseOption(IReadOnlySet<string> aliases)
         {
             string name = GetName(aliases);
 
-            CliOption<string> option = new(name)
+            Option<string> option = new(name)
             {
                 CustomParser = result => GetParseChoiceArgument(this)(result),
                 Arity = new ArgumentArity(DefaultIfOptionWithoutValue == null ? 1 : 0, AllowMultipleValues ? _choices.Count : 1),

@@ -4,23 +4,18 @@
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 
-namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
+namespace Microsoft.DotNet.Cli.NuGetPackageDownloader;
+
+// Extract NuGet package content directly to the specified target directory (instead of creating subdirs)
+internal class NuGetPackagePathResolver(string rootDirectory) : PackagePathResolver(rootDirectory, false)
 {
-    // Extract NuGet package content directly to the specified target directory (instead of creating subdirs)
-    internal class NuGetPackagePathResolver : PackagePathResolver
+    public override string GetPackageDirectoryName(PackageIdentity packageIdentity)
     {
-        public NuGetPackagePathResolver(string rootDirectory) : base(rootDirectory, false)
-        {
-        }
+        return string.Empty;
+    }
 
-        public override string GetPackageDirectoryName(PackageIdentity packageIdentity)
-        {
-            return string.Empty;
-        }
-
-        public override string GetPackageFileName(PackageIdentity packageIdentity)
-        {
-            return packageIdentity.Id + PackagingCoreConstants.NupkgExtension;
-        }
+    public override string GetPackageFileName(PackageIdentity packageIdentity)
+    {
+        return packageIdentity.Id + PackagingCoreConstants.NupkgExtension;
     }
 }

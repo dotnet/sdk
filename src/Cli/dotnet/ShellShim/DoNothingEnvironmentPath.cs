@@ -3,16 +3,15 @@
 
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.ShellShim
-{
-    internal class DoNothingEnvironmentPath : IEnvironmentPath
-    {
-        public void AddPackageExecutablePathToUserPath()
-        {
-        }
+namespace Microsoft.DotNet.Cli.ShellShim;
 
-        public void PrintAddPathInstructionIfPathDoesNotExist()
-        {
-        }
+internal class DoNothingEnvironmentPath : IEnvironmentPath
+{
+    public void AddPackageExecutablePathToUserPath()
+    {
+    }
+
+    public void PrintAddPathInstructionIfPathDoesNotExist()
+    {
     }
 }

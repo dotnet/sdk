@@ -2,11 +2,10 @@
 
 echo %* | findstr /C:"-pack" >nul
 if %errorlevel%==0 (
-    set PackInstaller=
+    set SkipBuildingInstallers=
 ) else (
-    REM disable crossgen for inner-loop builds to save a ton of time
-    set PackInstaller=/p:PackInstaller=false
-    set DISABLE_CROSSGEN=true
+    REM skip crossgen for inner-loop builds to save a ton of time
+    set skipFlags="/p:SkipUsingCrossgen=true /p:SkipBuildingInstallers=true"
 )
-powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -nativeToolsOnMachine -msbuildEngine dotnet %PackInstaller% %*"
+powershell -NoLogo -NoProfile -ExecutionPolicy ByPass -command "& """%~dp0eng\common\build.ps1""" -restore -build -msbuildEngine dotnet %skipFlags% %*"
 exit /b %ErrorLevel%

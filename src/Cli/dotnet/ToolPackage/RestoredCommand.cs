@@ -4,29 +4,21 @@
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.ToolPackage
+namespace Microsoft.DotNet.Cli.ToolPackage;
+
+internal class RestoredCommand(
+    ToolCommandName name,
+    string runner,
+    FilePath executable)
 {
-    internal class RestoredCommand
+    public ToolCommandName Name { get; private set; } = name;
+
+    public string Runner { get; private set; } = runner ?? throw new ArgumentNullException(nameof(runner));
+
+    public FilePath Executable { get; private set; } = executable;
+
+    public string DebugToString()
     {
-        public RestoredCommand(
-            ToolCommandName name,
-            string runner,
-            FilePath executable)
-        {
-            Name = name;
-            Runner = runner ?? throw new ArgumentNullException(nameof(runner));
-            Executable = executable;
-        }
-
-        public ToolCommandName Name { get; private set; }
-
-        public string Runner { get; private set; }
-
-        public FilePath Executable { get; private set; }
-
-        public string DebugToString()
-        {
-            return $"ToolCommandName: {Name.Value} - Runner: {Runner} - FilePath: {Executable.Value}";
-        }
+        return $"ToolCommandName: {Name.Value} - Runner: {Runner} - FilePath: {Executable.Value}";
     }
 }
