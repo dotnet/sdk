@@ -81,6 +81,9 @@
       <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).SourceBuiltArtifactsPath">
         <Value>$(SourceBuiltArtifactsPath)</Value>
       </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).RestoreAdditionalProjectSources">
+        <Value>$(RestoreAdditionalProjectSources)</Value>
+      </RuntimeHostConfigurationOption>
     </ItemGroup>
   </Target>
 

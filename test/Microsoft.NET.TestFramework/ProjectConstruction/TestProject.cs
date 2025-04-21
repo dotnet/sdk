@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
@@ -532,6 +533,15 @@ namespace {safeThisName}
         {
             return GetOutputPathCalculator(testRoot)
                 .GetOutputDirectory(targetFramework, configuration, runtimeIdentifier);
+        }
+
+        public string GetOutputFileName()
+        {
+            Debug.Assert(Name != null);
+            var extension = IsExe
+                ? (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty)
+                : ".dll";
+            return Name + extension;
         }
     }
 }
