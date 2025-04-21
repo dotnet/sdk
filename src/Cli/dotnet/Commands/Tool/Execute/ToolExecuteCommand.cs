@@ -6,26 +6,27 @@ using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ToolPackage;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Cli.Commands.Tool.Run
+namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 {
-    internal class ToolRunFromSourceCommand(ParseResult result) : CommandBase(result)
+    internal class ToolExecuteCommand(ParseResult result) : CommandBase(result)
     {
-        private readonly string? _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
-        private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolRunCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
-        private readonly bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
-        private readonly string? _configFile = result.GetValue(ToolRunCommandParser.FromSourceConfigFile);
-        private readonly string[] _sources = result.GetValue(ToolRunCommandParser.FromSourceSourceOption) ?? [];
-        private readonly string[] _addSource = result.GetValue(ToolRunCommandParser.FromSourceAddSourceOption) ?? [];
+        private readonly PackageIdentity? _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
+        private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
+        private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
+        private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
+        private readonly string[] _sources = result.GetValue(ToolExecuteCommandParser.SourceOption) ?? [];
+        private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
         private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
-        private readonly bool _interactive = result.GetValue(ToolRunCommandParser.FromSourceInteractiveOption);
-        private readonly VerbosityOptions _verbosity = result.GetValue(ToolRunCommandParser.FromSourceVerbosityOption);
-        private readonly bool _yes = result.GetValue(ToolRunCommandParser.FromSourceYesOption);
+        private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
+        private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
+        private readonly bool _yes = result.GetValue(ToolExecuteCommandParser.YesOption);
 
         public override int Execute()
         {
-            if (!UserAgreedToRunFromSource())
+            if (!UserAgreedToRunFromSource() || _packageToolIdentityArgument is null)
             {
                 return 1;
             }
@@ -35,7 +36,8 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run
                 _forwardArguments.Append("--allow-roll-forward");
             }
 
-            PackageId packageId = new(_toolCommandName);
+            PackageId packageId = new PackageId(_packageToolIdentityArgument.Id);
+
             VersionRange versionRange = _parseResult.GetVersionRange();
 
             string tempDirectory = PathUtilities.CreateTempSubdirectory();

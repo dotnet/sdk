@@ -21,7 +21,6 @@ internal class ToolRunCommand(
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
     private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
-    private readonly bool _fromSource = result.GetValue(ToolRunCommandParser.FromSourceOption);
 
     private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
     public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
@@ -35,12 +34,6 @@ internal class ToolRunCommand(
             CommandArguments = _forwardArgument,
 
         }, _allowRollForward);
-
-        if (commandSpec == null && _fromSource)
-        {
-            // Reroute to ToolRunFromSourceCommand
-            return new ToolRunFromSourceCommand(_parseResult).Execute();
-        }
 
         if (commandSpec == null)
         {
