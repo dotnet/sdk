@@ -2,8 +2,8 @@
   "Version": 1,
   "Hash": "__hash__",
   "Source": "blazorhosted",
-  "BasePath": "_content/blazorhosted",
-  "Mode": "Default",
+  "BasePath": "/",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [
     {
@@ -47,11 +47,11 @@
   ],
   "Assets": [
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.br",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.br",
       "SourceId": "blazorhosted",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/blazorhosted",
+      "BasePath": "/",
       "RelativePath": "blazorhosted.modules.json.br",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -65,16 +65,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\_content\\blazorhosted\\blazorhosted.modules.json.br",
+      "OriginalItemSpec": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\blazorhosted.modules.json.br",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.gz",
+      "Identity": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.gz",
       "SourceId": "blazorhosted",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/blazorhosted",
+      "BasePath": "/",
       "RelativePath": "blazorhosted.modules.json.gz",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -88,7 +88,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\_content\\blazorhosted\\blazorhosted.modules.json.gz",
+      "OriginalItemSpec": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\blazorhosted.modules.json.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -97,7 +97,7 @@
       "SourceId": "blazorhosted",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\jsmodules\\",
-      "BasePath": "_content/blazorhosted",
+      "BasePath": "/",
       "RelativePath": "blazorhosted.modules.json",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -5708,7 +5708,7 @@
   "Endpoints": [
     {
       "Route": "blazorhosted.modules.json.br",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5753,7 +5753,7 @@
     },
     {
       "Route": "blazorhosted.modules.json",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.br",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -5808,7 +5808,7 @@
     },
     {
       "Route": "blazorhosted.modules.json.gz",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -5853,7 +5853,7 @@
     },
     {
       "Route": "blazorhosted.modules.json",
-      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\blazorhosted\\blazorhosted.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\blazorhosted\\obj\\Debug\\${Tfm}\\compressed\\publish\\blazorhosted.modules.json.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
