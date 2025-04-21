@@ -57,6 +57,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
     NOTE:
 
+    • For all targets other than .NETFramework, set $(PlatformTarget) to AnyCPU.
+
      * We cannot compare against $(Platform) directly as that will give VS cause to instantiate extra
        configurations, for each combination, which leads to performance problems and clutter in the sln
        in the common AnyCPU-only case.
@@ -67,6 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        outside the 1:1 defaults below.
   -->
   <PropertyGroup>
+    <PlatformTarget Condition=" '$(TargetFrameworkIdentifier)' != '.NETFramework' ">AnyCPU</PlatformTarget>
     <_PlatformWithoutConfigurationInference>$(Platform)</_PlatformWithoutConfigurationInference>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'x64' ">
