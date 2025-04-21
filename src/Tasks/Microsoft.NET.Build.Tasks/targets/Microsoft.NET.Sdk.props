@@ -69,7 +69,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        outside the 1:1 defaults below.
   -->
   <PropertyGroup>
-    <PlatformTarget Condition=" '$(PlatformTarget)' == '' and '$(TargetFrameworkIdentifier)' != '.NETFramework' ">AnyCPU</PlatformTarget>
+    <PlatformTarget Condition=" '$(PlatformTarget)' == '' and '$(TargetFrameworkIdentifier)' != '.NETFramework' and '$(UseNativeCode)' != 'true' ">AnyCPU</PlatformTarget>
     <_PlatformWithoutConfigurationInference>$(Platform)</_PlatformWithoutConfigurationInference>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(_PlatformWithoutConfigurationInference)' == 'x64' ">
