@@ -1584,7 +1584,7 @@ _testhost_tool() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="install uninstall update list run search restore --help" 
+    opts="install uninstall update list run search restore execute --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1624,6 +1624,11 @@ _testhost_tool() {
             
         (restore)
             _testhost_tool_restore $(($1+1))
+            return
+            ;;
+            
+        (execute)
+            _testhost_tool_execute $(($1+1))
             return
             ;;
             
@@ -1729,23 +1734,12 @@ _testhost_tool_run() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-roll-forward --from-source --configfile --source --add-source --verbosity --interactive --yes --ignore-failed-sources --help" 
+    opts="--allow-roll-forward --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
         return
     fi
-    
-    case $prev in
-        --verbosity|-v)
-            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
-            return
-        ;;
-        --yes|-y)
-            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
-            return
-        ;;
-    esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
 }
@@ -1782,6 +1776,34 @@ _testhost_tool_restore() {
     fi
     
     case $prev in
+        --verbosity|-v)
+            COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+    esac
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_tool_execute() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--allow-roll-forward --prerelease --configfile --source --add-source --ignore-failed-sources --interactive --yes --verbosity --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    case $prev in
+        --yes|-y)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return

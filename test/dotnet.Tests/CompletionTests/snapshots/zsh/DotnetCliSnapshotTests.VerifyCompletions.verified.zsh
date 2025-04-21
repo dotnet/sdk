@@ -1127,16 +1127,6 @@ _testhost() {
                                     (run)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
-                                            '--from-source[Executes a tool from source without permanently installing it. ]' \
-                                            '--configfile=[The NuGet configuration file to use.]:FILE: ' \
-                                            '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
-                                            '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
-                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--yes[Overrides confirmation prompt with \"yes\" value. ]' \
-                                            '-y[Overrides confirmation prompt with \"yes\" value. ]' \
-                                            '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':commandName -- The command name of the tool to run.: ' \
@@ -1167,6 +1157,25 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
+                                            && ret=0
+                                        ;;
+                                    (execute)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
+                                            '--prerelease[Include pre-release packages.]' \
+                                            '--configfile=[The NuGet configuration file to use.]:FILE: ' \
+                                            '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
+                                            '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
+                                            '--ignore-failed-sources[Treat package source failures as warnings.]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--yes[Overrides confirmation prompt with \"yes\" value. ]' \
+                                            '-y[Overrides confirmation prompt with \"yes\" value. ]' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            '*::commandArguments -- arguments forwarded to the tool: ' \
                                             && ret=0
                                         ;;
                                 esac
@@ -1795,6 +1804,7 @@ _testhost__tool_commands() {
         'run:Run a local tool. Note that this command cannot be used to run a global tool. ' \
         'search:Search dotnet tools in nuget.org' \
         'restore:Restore tools defined in the local tool manifest.' \
+        'execute:Execute a tool command from source' \
     )
     _describe -t commands 'testhost tool commands' commands "$@"
 }
@@ -1839,6 +1849,12 @@ _testhost__tool__search_commands() {
 _testhost__tool__restore_commands() {
     local commands; commands=()
     _describe -t commands 'testhost tool restore commands' commands "$@"
+}
+
+(( $+functions[_testhost__tool__execute_commands] )) ||
+_testhost__tool__execute_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost tool execute commands' commands "$@"
 }
 
 (( $+functions[_testhost__vstest_commands] )) ||
