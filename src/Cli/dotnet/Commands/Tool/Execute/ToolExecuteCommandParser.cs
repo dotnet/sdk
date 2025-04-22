@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             Description = "arguments forwarded to the tool"
         };
 
+        public static readonly Option<string> VersionOption = ToolInstallCommandParser.VersionOption;
         public static readonly Option<bool> RollForwardOption = ToolInstallCommandParser.RollForwardOption;
         public static readonly Option<bool> PrereleaseOption = ToolInstallCommandParser.PrereleaseOption;
         public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
@@ -46,6 +47,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             command.Arguments.Add(PackageIdentityArgument);
             command.Arguments.Add(CommandArgument);
 
+            command.Options.Add(VersionOption);
             command.Options.Add(RollForwardOption);
             command.Options.Add(PrereleaseOption);
             command.Options.Add(ConfigOption);

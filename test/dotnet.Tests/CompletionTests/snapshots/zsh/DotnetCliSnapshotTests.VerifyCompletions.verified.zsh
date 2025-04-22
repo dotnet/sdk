@@ -1158,6 +1158,7 @@ _testhost() {
                                         ;;
                                     (execute)
                                         _arguments "${_arguments_options[@]}" : \
+                                            '--version=[The version of the tool package to install.]:VERSION: ' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--prerelease[Include pre-release packages.]' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \

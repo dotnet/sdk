@@ -1093,6 +1093,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;tool;execute' {
             $staticCompletions = @(
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the tool package to install.")
                 [CompletionResult]::new('--allow-roll-forward', '--allow-roll-forward', [CompletionResultType]::ParameterName, "Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn`'t installed.")
                 [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Include pre-release packages.")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")

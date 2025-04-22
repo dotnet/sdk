@@ -11,10 +11,16 @@ internal static class ParseResultExtension
 {
     public static VersionRange GetVersionRange(this ParseResult parseResult)
     {
-        string packageVersion =
-            parseResult.GetValue(CommonArguments.PackageIdentityArgument(false))?.Version?.ToString() ??
-            parseResult.GetValue(CommonArguments.PackageIdentityArgument(true))?.Version?.ToString() ??
-            parseResult.GetValue(ToolInstallCommandParser.VersionOption);
+        var packageVersionFromIdentityArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString();
+        var packageVersionFromVersionOption = parseResult.GetValue(ToolInstallCommandParser.VersionOption);
+
+        // Check that only one of these has a value
+        if (!string.IsNullOrEmpty(packageVersionFromIdentityArgument) && !string.IsNullOrEmpty(packageVersionFromVersionOption))
+        {
+            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
+        }
+
+        string packageVersion = packageVersionFromIdentityArgument ?? packageVersionFromVersionOption;
 
         bool prerelease = parseResult.GetValue(ToolInstallCommandParser.PrereleaseOption);
 
