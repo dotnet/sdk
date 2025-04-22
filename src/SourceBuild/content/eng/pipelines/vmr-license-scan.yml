@@ -101,7 +101,7 @@ extends:
           displayName: Get Matrix
 
       - job: LicenseScan
-        container: ubuntusdkcontainer
+        container: ubuntusdkamd64container
         dependsOn: Setup
         timeoutInMinutes: 420
         strategy:
