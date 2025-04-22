@@ -216,7 +216,7 @@ public class ApplyCompressionNegotiation : Task
             Route = relatedEndpointCandidate.Route,
             Selectors = [
                 ..relatedEndpointCandidate.Selectors,
-                            encodingSelector
+                encodingSelector
             ],
             EndpointProperties = relatedEndpointCandidate.EndpointProperties
         };
