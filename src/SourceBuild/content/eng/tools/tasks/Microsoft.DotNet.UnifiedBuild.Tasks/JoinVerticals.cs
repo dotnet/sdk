@@ -37,7 +37,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _assetsFolderName = "assets";
     private const string _packagesFolderName = "packages";
     private const string _releaseFolderName = "Release";
-    private const string _pdbFolderName = "pdbs";
+    private const string _pdbFolderName = "PDB";
 
     public override bool Execute()
     {
@@ -64,6 +64,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         ForceDirectory(packagesOutputDirectory);
         string assetsOutputDirectory = Path.Combine(OutputFolder, _assetsFolderName);
         ForceDirectory(assetsOutputDirectory);
+        string pdbOutputDirectory = Path.Combine(OutputFolder, _pdbFolderName);
+        ForceDirectory(pdbOutputDirectory);
 
         XDocument mergedManifest = JoinVerticalsManifestExportHelper.ExportMergedManifest(mainVerticalManifest, selectedVerticals);
         string manifestOutputAssetsPath = Path.Combine(assetsOutputDirectory, "VerticalsMergeManifest.xml");
@@ -92,7 +94,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
 
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _packagesFolderName, _releaseFolderName), packagesOutputDirectory, assetListPackages);
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _assetsFolderName, _releaseFolderName), assetsOutputDirectory, assetListBlobs);
-            CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _pdbFolderName, _releaseFolderName), assetsOutputDirectory, assetListPdbs);
+            CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _pdbFolderName, _releaseFolderName), pdbOutputDirectory, assetListPdbs);
         }
 
         return !Log.HasLoggedErrors;
