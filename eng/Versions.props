@@ -1,4 +1,4 @@
-ot<Project DefaultTargets="Build">
+<Project DefaultTargets="Build">
   <PropertyGroup>
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
