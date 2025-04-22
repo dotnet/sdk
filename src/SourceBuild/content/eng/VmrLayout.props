@@ -1,4 +1,5 @@
 <Project>
+  <!-- Add properties here that describe well-known directories in the VMR. -->
   <PropertyGroup>
     <!-- While the tarball infrastructure currently only supports non Windows, these properties
          are already defined for more flexibility in the future. -->

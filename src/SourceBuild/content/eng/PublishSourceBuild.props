@@ -1,5 +1,5 @@
 <Project>
-
+  <!-- Add targets here that run logic that depends on the merged asset manifest and published packages. -->
   <UsingTask TaskName="Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.CheckForPoison" AssemblyFile="$(MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly)" TaskFactory="TaskHostFactory" Condition="'$(EnablePoison)' == 'true'" />
   <Target Name="ReportPoisonUsage"
           AfterTargets="DiscoverArtifacts"
