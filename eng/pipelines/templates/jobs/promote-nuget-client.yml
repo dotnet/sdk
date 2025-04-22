@@ -31,14 +31,12 @@ jobs:
       scriptType: ps
       scriptLocation: inlineScript
       inlineScript: |
-        $ErrorActionPreference = 'Stop'
         $version = '$(AssetVersion)'
 
         Write-Host "Promoting build of asset ${{ parameters.assetName }} / $version..."
 
         $assets = .\.dotnet\dotnet darc get-asset --name '${{ parameters.assetName }}' --version "$version" --max-age 60 --output-format json --ci
-        Write-Host "Assets found: $assets" # TODO REMOVE
-        $buildId = ($assets | Out-String | ConvertFrom-Json)[0].build.id
+        $buildId = ($assets | ConvertFrom-Json)[0].build.id
 
         if ($buildId -eq $null) {
           Write-Error "No build found to promote version $version"
