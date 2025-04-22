@@ -57,7 +57,7 @@ $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true")
 
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
-  $actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true", "/p:IsTestRun=true")
+  $actions = @("/p:Restore=true", "/p:Build=true", "/p:Test=true", "/p:IsTestRun=true")
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"

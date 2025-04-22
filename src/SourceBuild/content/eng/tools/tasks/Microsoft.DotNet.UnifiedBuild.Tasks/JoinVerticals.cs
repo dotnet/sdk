@@ -37,6 +37,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _assetsFolderName = "assets";
     private const string _packagesFolderName = "packages";
     private const string _releaseFolderName = "Release";
+    private const string _pdbFolderName = "pdbs";
 
     public override bool Execute()
     {
@@ -84,8 +85,14 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
                 .Select(figureOutFileName)
                 .ToList();
 
+            var assetListPdbs = matchResult
+                .Where(o => o.Asset.AssetType == ManifestAssetType.Pdb)
+                .Select(figureOutFileName)
+                .ToList();
+
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _packagesFolderName, _releaseFolderName), packagesOutputDirectory, assetListPackages);
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _assetsFolderName, _releaseFolderName), assetsOutputDirectory, assetListBlobs);
+            CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _pdbFolderName, _releaseFolderName), assetsOutputDirectory, assetListPdbs);
         }
 
         return !Log.HasLoggedErrors;
@@ -97,6 +104,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             {
                 ManifestAssetType.Package => $"{matchResult.Asset.Id}.{matchResult.Asset.Version}.nupkg",
                 ManifestAssetType.Blob => matchResult.Asset.Id,
+                ManifestAssetType.Pdb => matchResult.Asset.Id,
                 _ => throw new ArgumentException($"Unknown asset type {matchResult.Asset.AssetType}")
             };
             return (matchResult, fileName);

@@ -114,6 +114,11 @@ stages:
             displayName: Publish Blob Artifacts
             sbomEnabled: false
           - output: buildArtifacts
+            PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/pdbs
+            ArtifactName: PdbArtifacts
+            displayName: Publish PDB Artifacts
+            sbomEnabled: false
+          - output: buildArtifacts
             PathtoPublish: $(Build.ArtifactStagingDirectory)/artifacts/packages
             ArtifactName: PackageArtifacts
             displayName: Publish Package Artifacts

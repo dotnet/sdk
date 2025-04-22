@@ -107,7 +107,11 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
         /// <summary>
         /// NuGet package
         /// </summary>
-        Package
+        Package,
+        /// <summary>
+        /// Pdb file
+        /// </summary>
+        Pdb
     }
 
     [DebuggerDisplay("{GetDebugDisplay(),nq}")]
@@ -278,6 +282,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
                 {
                     ManifestAssetType.Package => nameof(ManifestAssetType.Package),
                     ManifestAssetType.Blob => nameof(ManifestAssetType.Blob),
+                    ManifestAssetType.Pdb => nameof(ManifestAssetType.Pdb),
                     _ => throw new InvalidOperationException("Unknown asset type")
                 };
                 var assetElement = new XElement(nodeName);

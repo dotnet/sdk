@@ -55,7 +55,6 @@
         <IsShipping Condition="'%(ProducedPackage.NonShipping)' != 'true'">true</IsShipping>
         <IsShipping Condition="'%(ProducedPackage.NonShipping)' == 'true'">false</IsShipping>
         <Kind>Package</Kind>
-        <PublishFlatContainer>false</PublishFlatContainer>
         <PackageId>%(Identity)</PackageId>
       </ProducedPackage>
       <ProducedPackage>
