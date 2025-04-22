@@ -243,11 +243,11 @@ jobs:
 
   - name: targetProperties
     ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:
-      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+      value: -os ${{ parameters.targetOS }} -arch ${{ parameters.targetArchitecture }}
     ${{ elseif ne(parameters.targetOS, '') }}:
-      value: /p:TargetOS=${{ parameters.targetOS }}
+      value: -os ${{ parameters.targetOS }}
     ${{ else }}:
-      value: /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+      value: -arch ${{ parameters.targetArchitecture }}
 
   ### Signing
   - name: _SignDiagnosticFilesArgs
