@@ -1636,6 +1636,7 @@ _testhost_tool_install() {
     COMPREPLY=()
     
     opts="--global --local --tool-path --version --configfile --tool-manifest --add-source --source --framework --prerelease --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --arch --create-manifest-if-needed --allow-downgrade --allow-roll-forward --help" 
+    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1677,6 +1678,7 @@ _testhost_tool_update() {
     COMPREPLY=()
     
     opts="--global --local --tool-path --version --configfile --tool-manifest --add-source --source --framework --prerelease --disable-parallel --ignore-failed-sources --no-http-cache --interactive --verbosity --allow-downgrade --all --help" 
+    opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

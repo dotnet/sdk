@@ -12,25 +12,24 @@ namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        #region PackageIdentityArgument
-        public static Argument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
+        public static DynamicArgument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
-                CustomParser = ParsePackageIdentity,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
                 Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentity(ArgumentResult argumentResult)
+        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string packageIdentity, char versionSeparator = '@')
         {
-            if (argumentResult.Tokens.Count == 0)
+            if (string.IsNullOrEmpty(packageIdentity))
             {
                 return null;
             }
 
-            string[] splitToken = argumentResult.Tokens[0].Value.Split('@');
-            var (packageId, versionString) = (splitToken.ElementAtOrDefault(0), splitToken.ElementAtOrDefault(1));
+            string[] splitPackageIdentity = packageIdentity.Split(versionSeparator);
+            var (packageId, versionString) = (splitPackageIdentity.ElementAtOrDefault(0), splitPackageIdentity.ElementAtOrDefault(1));
 
             if (string.IsNullOrEmpty(packageId))
             {
@@ -49,6 +48,5 @@ namespace Microsoft.DotNet.Cli
 
             return new PackageIdentity(packageId, new NuGetVersion(version));
         }
-        #endregion
     }
 }

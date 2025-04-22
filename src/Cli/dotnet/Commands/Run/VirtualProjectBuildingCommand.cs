@@ -3,6 +3,7 @@
 
 #nullable enable
 
+using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
@@ -814,9 +815,11 @@ internal abstract class CSharpDirective
         };
     }
 
-    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
     {
-        var i = directiveText.IndexOf(' ', StringComparison.Ordinal);
+        var i = separators != null
+            ? directiveText.AsSpan().IndexOfAny(separators)
+            : directiveText.IndexOf(' ', StringComparison.Ordinal);
         var firstPart = checkFirstPart(i < 0 ? directiveText : directiveText[..i]);
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
@@ -912,6 +915,8 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Package : CSharpDirective
     {
+        private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
+
         private Package() { }
 
         public required string Name { get; init; }
@@ -919,7 +924,7 @@ internal abstract class CSharpDirective
 
         public static new Package Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
+            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText, s_separators);
 
             return new Package
             {
