@@ -1108,6 +1108,10 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;vstest' {
