@@ -342,7 +342,6 @@ jobs:
       parameters:
         ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
           vmrBranch: $(System.PullRequest.TargetBranch)
-          additionalReposToSync: [ 'nuget-client' ]
         ${{ else }}:
           vmrBranch: ${{ parameters.vmrBranch }}
 
@@ -353,6 +352,7 @@ jobs:
           vmrPath: $(vmrPath)
           vmrBranch: ${{ parameters.vmrBranch }}
           targetRef: $(Build.SourceVersion) # Synchronize the current sdk commit
+          additionalSyncs: [ 'NuGet.Protocol' ] # Also synchronize nuget-client. More information: https://github.com/dotnet/arcade-services/issues/4618
 
   - ${{ if parameters.buildFromArchive }}:
     - script: |
