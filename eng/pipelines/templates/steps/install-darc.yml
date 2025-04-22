@@ -5,7 +5,7 @@ steps:
     $dotnetRoot = InitializeDotNetCli -install:$true
     $dotnet = "$dotnetRoot\dotnet.exe"
     & "$dotnet" tool restore
-  displayName: Install darc (Windows)
+  displayName: 🟣 Install darc (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - script: |
@@ -14,5 +14,5 @@ steps:
     dotnetRoot=$(InitializeDotNetCli --install)
     dotnet="$dotnetRoot/dotnet"
     $dotnet tool restore
-  displayName: Install darc (Unix)
+  displayName: 🟣 Install darc (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
