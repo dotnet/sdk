@@ -342,6 +342,7 @@ jobs:
       parameters:
         ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
           vmrBranch: $(System.PullRequest.TargetBranch)
+          additionalReposToSync: [ 'nuget-client' ]
         ${{ else }}:
           vmrBranch: ${{ parameters.vmrBranch }}
 

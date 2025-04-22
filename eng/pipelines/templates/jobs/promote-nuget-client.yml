@@ -14,7 +14,7 @@ jobs:
   displayName: Promote NuGet Client
   pool:
     name: NetCore1ESPool-Publishing-Internal
-    image: 1es-windows-2022
+    image: windows.vs2019.amd64
     os: windows
 
   steps:

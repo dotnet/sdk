@@ -17,6 +17,11 @@ parameters:
   type: string
   default: $(Agent.BuildDirectory)/vmr
 
+- name: additionalSyncs
+  displayName: Optional list of package names whose repo's source will also be synchronized in the local VMR, e.g. NuGet.Protocol
+  type: object
+  default: []
+
 steps:
 - checkout: self
   displayName: Clone dotnet/sdk
@@ -59,7 +64,7 @@ steps:
       echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
       exit 1
     fi
-  displayName: Synchronize dotnet/dotnet (Unix)
+  displayName: Synchronize local VMR (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
@@ -85,7 +90,7 @@ steps:
       echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
       exit 1
     }
-  displayName: Synchronize dotnet/dotnet (Windows)
+  displayName: Synchronize local VMR (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
@@ -102,3 +107,54 @@ steps:
     artifact: $(System.JobDisplayName)_FailedPatches
     displayName: Upload failed patches
     condition: failed()
+
+- ${{ each assetName in parameters.additionalSyncs }}:
+  # The vmr-sync script ends up staging files in the local VMR so we have to commit those
+  - script:
+      git -C commit --allow-empty -am "Forward-flow dotnet/sdk"
+    displayName: Commit local VMR changes
+
+  - template: ./get-asset-info.yml@self
+    parameters:
+      assetName: $(assetName)
+
+  - script: |
+      ./eng/vmr-sync.sh                                                                                 \
+        --vmr ${{ parameters.vmrPath }}                                                                 \
+        --tmp $(Agent.TempDirectory)                                                                    \
+        --azdev-pat '$(dn-bot-all-orgs-code-r)'                                                         \
+        --branch ${{ parameters.vmrBranch }}                                                            \
+        --repository "sdk:${{ parameters.targetRef }}"                                                  \
+        --recursive                                                                                     \
+        --remote "sdk:$(Agent.BuildDirectory)/sdk"                                                      \
+        --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt \
+        --ci                                                                                            \
+        --debug
+
+      if [ "$?" -ne 0 ]; then
+        echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+        exit 1
+      fi
+    displayName: Synchronize dotnet/dotnet (Unix)
+    condition: ne(variables['Agent.OS'], 'Windows_NT')
+    workingDirectory: $(Agent.BuildDirectory)/sdk
+
+  - powershell: |
+      ./eng/vmr-sync.ps1 `
+        -vmr ${{ parameters.vmrPath }} `
+        -tmp $(Agent.TempDirectory) `
+        -azdevPat '$(dn-bot-all-orgs-code-r)' `
+        -branch ${{ parameters.vmrBranch }} `
+        -repository "sdk:${{ parameters.targetRef }}" `
+        -recursive `
+        -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
+        -ci `
+        -debugOutput
+
+      if ($LASTEXITCODE -ne 0) {
+        echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
+        exit 1
+      }
+    displayName: Synchronize dotnet/dotnet (Windows)
+    condition: eq(variables['Agent.OS'], 'Windows_NT')
+    workingDirectory: $(Agent.BuildDirectory)/sdk
