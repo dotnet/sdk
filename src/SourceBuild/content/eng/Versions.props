@@ -42,4 +42,13 @@
     <NewtonsoftJsonVersion>13.0.3</NewtonsoftJsonVersion>
     <OctokitVersion>10.0.0</OctokitVersion>
   </PropertyGroup>
+
+   <PropertyGroup>
+     <PreviouslySourceBuiltPackageVersionsPropsFile>$(PreviouslySourceBuiltPackagesPath)PackageVersions.props</PreviouslySourceBuiltPackageVersionsPropsFile>
+   </PropertyGroup>
+ 
+   <!-- For source only builds, override the version props with previously built artifacts.
+        If a version should be pinned, declare it after this import. -->
+   <Import Project="$(PreviouslySourceBuiltPackageVersionsPropsFile)"
+           Condition="Exists('$(PreviouslySourceBuiltPackageVersionsPropsFile)') and '$(DotNetBuildSourceOnly)' == 'true'"/>
 </Project>
