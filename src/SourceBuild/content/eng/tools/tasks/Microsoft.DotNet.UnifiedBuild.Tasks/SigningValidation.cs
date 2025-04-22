@@ -146,6 +146,12 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
         // Copy the shipping blobs and packages from the download directory to the signcheck directory
         foreach (string file in blobsToSignCheck.Concat(packagesToSignCheck))
         {
+            // Ignore files we don't care about
+            if (Path.GetExtension(file) == ".txt" || Path.GetExtension(file) == ".sha512")
+            {
+                continue;
+            }
+
             string? sourcePath = Directory.GetFiles(ArtifactDownloadDirectory, file, SearchOption.AllDirectories).FirstOrDefault();
             string destinationPath = Path.Combine(_signCheckFilesDirectory, file);
 
@@ -223,32 +229,64 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
             throw new FileNotFoundException($"SignCheck results XML file not found: {resultsXml}");
         }
 
-        IEnumerable<string> unsignedResults = XDocument.Load(resultsXml).Descendants("File")
-            .Where(result => ExtractAttribute(result, "Outcome") == "Unsigned")
-            .Select(unsignedResult =>
-            {
-                string fileName = ExtractAttribute(unsignedResult, "Name");
+        var results = XDocument.Load(resultsXml).Descendants("File");
 
+        var unsignedResults = ExtractResults(results, "Outcome", "Unsigned");
+        var doNotSignResults = ExtractResults(results, "Error", "matches a DO-NOT-SIGN exclusion and is signed");
+
+        bool hasUnsignedFiles = LogAndCheckResults(unsignedResults, "unsigned files");
+        bool signedDoNotSignFiles = LogAndCheckResults(doNotSignResults, "DO-NOT-SIGN violations");
+
+        if (hasUnsignedFiles || signedDoNotSignFiles)
+        {
+            throw new Exception("SignCheck detected signing issues. See logs for details.");
+        }
+    }
+
+    /// <summary>
+    /// Extracts the results from the SignCheck XML file based on the specified attribute and match value.
+    /// </summary>
+    /// <param name="results">The results from the SignCheck XML file.</param>
+    /// <param name="attributeName">The attribute name to match.</param>
+    /// <param name="matchValue">The value to match against the attribute.</param>
+    private IEnumerable<string> ExtractResults(IEnumerable<XElement> results, string attributeName, string matchValue)
+    {
+        return results
+            .Where(result => ExtractAttribute(result, attributeName).Contains(matchValue))
+            .Select(result =>
+            {
+                string fileName = ExtractAttribute(result, "Name");
                 if (string.IsNullOrEmpty(fileName))
                 {
                     return string.Empty;
                 }
 
-                string otherAttributes = string.Join(" ", unsignedResult.Attributes().Where(a => a.Name != "Name").Select(a => $"{a.Name}=\"{a.Value}\""));
+                string otherAttributes = string.Join(" ", result.Attributes()
+                    .Where(a => a.Name != "Name")
+                    .Select(a => $"{a.Name}=\"{a.Value}\""));
                 return $"{fileName}: {otherAttributes}";
             })
-            .Where(unsignedResult => !string.IsNullOrEmpty(unsignedResult));
+            .Where(result => !string.IsNullOrEmpty(result));
+    }
 
-        if (unsignedResults.Any())
+    /// <summary>
+    /// Logs the results and sets the error flag if there are any issues.
+    /// </summary>
+    /// <param name="results">The results to log.</param>
+    /// <param name="issueType">The type of issue (e.g., "unsigned files").</param>
+    /// <returns>True if there are issues, otherwise false.</returns>
+    private bool LogAndCheckResults(IEnumerable<string> results, string issueType)
+    {
+        if (results.Any())
         {
-            Log.LogWarning($"There are {unsignedResults.Count()} unsigned files.");
-            foreach (string result in unsignedResults)
+            Log.LogWarning($"There are {results.Count()} {issueType}.");
+            foreach (string result in results)
             {
                 Log.LogMessage(MessageImportance.High, $"   {result}");
             }
-
-            throw new Exception($"SignCheck detected unsigned files.");
+            return true;
         }
+        return false;
     }
 
     /// <summary>
@@ -299,14 +337,7 @@ public class SigningValidation : Microsoft.Build.Utilities.Task
     /// Extracts the value of the specified attribute from the element and logs an error if it's missing or empty.
     /// </summary>
     private string ExtractAttribute(XElement element, string attributeName)
-    {
-        string? value = element.Attribute(attributeName)?.Value;
-        if (string.IsNullOrEmpty(value))
-        {
-            Log.LogError($"{attributeName} is null or empty in element: {element}");
-        }
-        return value ?? string.Empty;
-    }
+        =>  element.Attribute(attributeName)?.Value ?? string.Empty;
 
     /// <summary>
     /// Gets the path to the log file in the output logs directory.
