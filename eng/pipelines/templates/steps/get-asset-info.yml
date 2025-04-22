@@ -35,3 +35,5 @@ steps:
       Write-Host "##vso[task.setvariable variable=AssetRepository]$repository"
       Write-Host "##vso[task.setvariable variable=AssetCommit]$commit"
       Write-Host "##vso[task.setvariable variable=AssetVersion]$version"
+
+      Write-Host "Asset ${{ parameters.assetName }} found with version $version, commit $commit, repository $repository"
