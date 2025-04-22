@@ -24,8 +24,8 @@ steps:
       $version -match 'Version:\s+([^\s]+)' | Out-Null
       $version = $matches[1]
 
-      $repository = $dependencies | Select-String -Pattern 'Repository:\s+([^\s]+)' | Select-Object -First 1
-      $repository -match 'Repository:\s+([^\s]+)' | Out-Null
+      $repository = $dependencies | Select-String -Pattern 'Repo:\s+([^\s]+)' | Select-Object -First 1
+      $repository -match 'Repo:\s+([^\s]+)' | Out-Null
       $repository = $matches[1]
 
       $commit = $dependencies | Select-String -Pattern 'Commit:\s+([^\s]+)' | Select-Object -First 1
