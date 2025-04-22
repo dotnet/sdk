@@ -63,9 +63,6 @@ function highlight () {
   echo "${COLOR_CYAN}$FAILURE_PREFIX${1//${COLOR_RESET}/${COLOR_CYAN}}${COLOR_CLEAR}"
 }
 
-# realpath is not available in macOS 12, try horrible-but-portable workaround
-repo_dir=$(cd "$scriptroot/../"; pwd -P)
-
 tmp_dir=''
 vmr_dir=''
 vmr_branch=''
@@ -118,11 +115,6 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validation
-
-if [[ ! -d "$repo_dir" ]]; then
-  fail "Directory '$repo_dir' does not exist. Please specify the path to the dotnet/sdk repo"
-  exit 1
-fi
 
 if [[ -z "$tmp_dir" ]]; then
   fail "Missing --tmp-dir argument. Please specify the path to the temporary folder where the repositories will be cloned"

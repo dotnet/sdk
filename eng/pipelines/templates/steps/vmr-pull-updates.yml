@@ -71,12 +71,12 @@ steps:
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
 - powershell: |
-    ./eng/vmr-sync.ps1 `
-      -vmr ${{ parameters.vmrPath }} `
-      -tmp $(Agent.TempDirectory) `
+    ./eng/vmr-sync.ps1                      `
+      -vmr ${{ parameters.vmrPath }}        `
+      -tmp $(Agent.TempDirectory)           `
       -azdevPat '$(dn-bot-all-orgs-code-r)' `
-      -branch ${{ parameters.vmrBranch }} `
-      -ci `
+      -branch ${{ parameters.vmrBranch }}   `
+      -ci                                   `
       -debugOutput
 
     if ($LASTEXITCODE -ne 0) {
@@ -107,23 +107,38 @@ steps:
       git -C commit --allow-empty -am "Forward-flow dotnet/sdk"
     displayName: Commit local VMR changes
 
-  - template: ./get-asset-info.yml@self
-    parameters:
-      assetName: $(assetName)
+  - template: ../steps/install-darc.yml@self
 
   - script: |
       set -ex
-      echo 'Updating the VMR from $(AssetRepository) / $(AssetCommit)...'
-      git clone $(AssetRepository) $(AssetCommit)
-      cd $(AssetCommit)
-      git checkout $(AssetCommit)
 
-      ./eng/vmr-sync.sh                                                                                 \
-        --vmr ${{ parameters.vmrPath }}                                                                 \
-        --tmp $(Agent.TempDirectory)                                                                    \
-        --azdev-pat '$(dn-bot-all-orgs-code-r)'                                                         \
-        --branch ${{ parameters.vmrBranch }}                                                            \
-        --ci                                                                                            \
+      echo "Searching for details of asset ${{ assetName }}..."
+
+      # Use darc to get dependencies information
+      dependencies=$(./.dotnet/dotnet darc get-dependencies --name '${{ assetName }}' --ci)
+
+      # Extract repository URL and commit hash
+      repository=$(echo "$dependencies" | grep -oP 'Repo:\s+\K[^\s]+' | head -1)
+
+      if [ -z "$repository" ]; then
+        echo "##vso[task.logissue type=error]Asset ${{ assetName }} not found in the dependency list"
+        exit 1
+      fi
+
+      commit=$(echo "$dependencies" | grep -oP 'Commit:\s+\K[^\s]+' | head -1)
+
+      echo "Updating the VMR from $repository / $commit..."
+      cd ..
+      git clone $repository $commit
+      cd $commit
+      git checkout $commit
+
+      ./eng/vmr-sync.sh                         \
+        --vmr ${{ parameters.vmrPath }}         \
+        --tmp $(Agent.TempDirectory)            \
+        --azdev-pat '$(dn-bot-all-orgs-code-r)' \
+        --branch ${{ parameters.vmrBranch }}    \
+        --ci                                    \
         --debug
 
       if [ "$?" -ne 0 ]; then
@@ -136,17 +151,36 @@ steps:
 
   - powershell: |
       $ErrorActionPreference = 'Stop'
-      Write-Host 'Updating the VMR from $(AssetRepository) / $(AssetCommit)...'
-      git clone $(AssetRepository) $(AssetCommit)
-      cd $(AssetCommit)
-      git checkout $(AssetCommit)
 
-      ./eng/vmr-sync.ps1 `
-        -vmr ${{ parameters.vmrPath }} `
-        -tmp $(Agent.TempDirectory) `
-        -azdevPat '$(dn-bot-all-orgs-code-r)' `
-        -branch ${{ parameters.vmrBranch }} `
-        -ci `
+      Write-Host "Searching for details of asset ${{ assetName }}..."
+
+      $dependencies = .\.dotnet\dotnet darc get-dependencies --name '${{ assetName }}' --ci
+
+      $repository = $dependencies | Select-String -Pattern 'Repo:\s+([^\s]+)' | Select-Object -First 1
+      $repository -match 'Repo:\s+([^\s]+)' | Out-Null
+      $repository = $matches[1]
+
+      if ($repository -eq $null) {
+          Write-Error "Asset ${{ assetName }} not found in the dependency list"
+          exit 1
+      }
+
+      $commit = $dependencies | Select-String -Pattern 'Commit:\s+([^\s]+)' | Select-Object -First 1
+      $commit -match 'Commit:\s+([^\s]+)' | Out-Null
+      $commit = $matches[1]
+
+      Write-Host "Updating the VMR from $repository / $commit..."
+      cd ..
+      git clone $repository $commit
+      cd $commit
+      git checkout $commit
+
+      $(Agent.BuildDirectory)/sdk/eng/vmr-sync.ps1 `
+        -vmr ${{ parameters.vmrPath }}             `
+        -tmp $(Agent.TempDirectory)                `
+        -azdevPat '$(dn-bot-all-orgs-code-r)'      `
+        -branch ${{ parameters.vmrBranch }}        `
+        -ci                                        `
         -debugOutput
 
       if ($LASTEXITCODE -ne 0) {
@@ -155,4 +189,4 @@ steps:
       }
     displayName: Synchronize dotnet/dotnet (Windows)
     condition: eq(variables['Agent.OS'], 'Windows_NT')
-    workingDirectory: $(Agent.BuildDirectory)
+    workingDirectory: $(Agent.BuildDirectory)/sdk
