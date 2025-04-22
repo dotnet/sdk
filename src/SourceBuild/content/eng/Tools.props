@@ -2,6 +2,6 @@
   <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
 
   <PropertyGroup>
-    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(IsTestRun)' != 'true'">$(PreviouslySourceBuiltReferencePackagesDir);$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(IsTestRun)' != 'true'">$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
   </PropertyGroup>
 </Project>
