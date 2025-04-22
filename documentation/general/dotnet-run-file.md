@@ -193,7 +193,7 @@ We could also consider [integrating with `dotnet clean`](#other-commands) for an
 
 ## Directives for project metadata
 
-It is possible to specify some project metadata via *project directives*
+It is possible to specify some project metadata via *app directives*
 which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
 Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
 Other directives result in an error, reserving them for future use.
@@ -220,7 +220,7 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-It is an error if a project directive appears in a non-entry-point file.
+It is an error if an app directive appears in a non-entry-point file.
 Otherwise it is unclear how the CLI would determine which files to parse directives from
 (presumably we would want to exclude other entry points but the CLI defers to the compiler to detect entry points).
 We could relax this in the future because it would allow:
