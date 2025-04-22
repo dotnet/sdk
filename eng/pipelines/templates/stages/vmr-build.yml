@@ -103,6 +103,7 @@ stages:
             publishUsingPipelines: true
             publishAssetsImmediately: true
             pool: ${{ parameters.pool_Linux }}
+            symbolPublishingAdditionalParameters: '/p:PublishSpecialClrFiles=true'
 
       - template: vmr-validation.yml
         parameters:
