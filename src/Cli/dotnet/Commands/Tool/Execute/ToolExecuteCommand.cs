@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
             Console.WriteLine();
-            Console.WriteLine(new string('-', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
+            Console.WriteLine(new string('─', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
             return userAccepted;
         }
     }
