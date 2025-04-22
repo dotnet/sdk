@@ -673,13 +673,13 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>e1702c393a1ef71b211f51d00beedec0151c9f25</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25216.3">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25222.5">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c5cfa8a7850acb4de6480be562b8ab1f7e32ed26</Sha>
+      <Sha>f960530233dc3a37398aabc056109f55f897e2ad</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25216.3">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25222.5">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>c5cfa8a7850acb4de6480be562b8ab1f7e32ed26</Sha>
+      <Sha>f960530233dc3a37398aabc056109f55f897e2ad</Sha>
     </Dependency>
     <!--
       Aspire isn't really a toolset dependency. However, it only inserts a baseline manifest in sdk,
