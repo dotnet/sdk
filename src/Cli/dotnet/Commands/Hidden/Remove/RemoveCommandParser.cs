@@ -12,19 +12,19 @@ internal static class RemoveCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-remove";
 
-    public static readonly CliArgument<string> ProjectArgument = new CliArgument<string>(CliStrings.ProjectArgumentName)
+    public static readonly Argument<string> ProjectArgument = new Argument<string>(CliStrings.ProjectArgumentName)
     {
         Description = CliStrings.ProjectArgumentDescription
     }.DefaultToCurrentDirectory();
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         var command = new DocumentedCommand("remove", DocsLink, CliCommandStrings.NetRemoveCommand)
         {

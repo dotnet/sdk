@@ -12,7 +12,7 @@
   {
     "issueType": "ExtraPackageContent",
     "idMatch": ".*microsoft-(signalr|dotnet-js-interop).*.tgz",
-    "descriptionMatch": "^package/(dist/(browser/|cjs/|esm/|webworker/)?|src/)$",
+    "descriptionMatch": "^package/(dist/(browser/|cjs/|esm/|webworker/|src/)?|src/)?$",
     "justification": "aspnetcore and VMR are using different linux distros and node versions, the .tgz from the VMR has separate entries for directories."
   },
   {
@@ -245,7 +245,7 @@
   },
   {
     "issueType": "MissingNonShipping",
-    "idMatch": "SOS\\.InstallHelper",
+    "idMatch": "SOS\\.Hosting",
     "justification": "Diagnostics does a minimal build in the VMR"
   },
   {
