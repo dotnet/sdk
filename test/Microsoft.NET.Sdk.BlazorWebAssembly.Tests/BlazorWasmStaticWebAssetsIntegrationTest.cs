@@ -9,7 +9,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     public class BlazorWasmStaticWebAssetsIntegrationTest(ITestOutputHelper log) : BlazorWasmBaselineTests(log, GenerateBaselines)
     {
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        // [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/114915")]
         public void StaticWebAssets_BuildMinimal_Works()
         {
             // Arrange
@@ -51,7 +52,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        // [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [Fact(Skip = "https://github.com/dotnet/runtime/issues/114915")]
         public void StaticWebAssets_PublishMinimal_Works()
         {
             // Arrange
