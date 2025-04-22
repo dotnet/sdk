@@ -7,11 +7,10 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishAot>true</PublishAot>
-    <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="../dotnet/dotnet.csproj" />
+    <ProjectReference Include="../dotnet-shared/dotnet-shared.csproj" />
   </ItemGroup>
 
 </Project>
