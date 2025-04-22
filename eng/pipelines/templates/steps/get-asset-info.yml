@@ -13,6 +13,9 @@ steps:
     scriptType: ps
     scriptLocation: inlineScript
     inlineScript: |
+      $ErrorActionPreference = 'Stop'
+      Write-Host "Searching for details of asset ${{ parameters.assetName }}..."
+
       $dependencies = .\.dotnet\dotnet darc get-dependencies --name '${{ parameters.assetName }}' --ci
       $version = $dependencies | Select-String -Pattern 'Version:\s+([^\s]+)' | Select-Object -First 1
 
