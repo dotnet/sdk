@@ -10,36 +10,36 @@ internal static class CleanCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-clean";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
         Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
         Description = CliCommandStrings.CleanCmdOutputDirDescription,
         HelpName = CliCommandStrings.CleanCmdOutputDir
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
         Description = CliCommandStrings.CleanCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    public static readonly CliOption FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
+    public static readonly Option FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.CleanFrameworkOptionDescription);
 
-    public static readonly CliOption ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
+    public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         DocumentedCommand command = new("clean", DocsLink, CliCommandStrings.CleanAppFullName);
 
