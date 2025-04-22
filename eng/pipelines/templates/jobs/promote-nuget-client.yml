@@ -2,20 +2,28 @@
 # Upon the version bump happens in dotnet/sdk, this job promotes that build of NuGet.Client to
 # another channel from where it flows into the VMR.
 # The sdk and nuget.client subscriptions are batched and go into the VMR in a single PR.
+# More information: https://github.com/dotnet/arcade-services/issues/4618
+
 parameters:
 - name: assetName
   type: string
-  displayName: 'Name of the asset to promote'
+  displayName: Name of the asset to promote
 
 jobs:
 - job: PromoteNuGetClient
   displayName: Promote NuGet Client
   pool:
     name: NetCore1ESPool-Publishing-Internal
-    image: windows.vs2019.amd64
+    image: 1es-windows-2022
     os: windows
 
   steps:
+  - template: ../steps/install-darc.yml@self
+
+  - template: ../steps/get-asset-info.yml@self
+    parameters:
+      assetName: ${{ parameters.assetName }}
+
   - task: AzureCLI@2
     displayName: 🟣 Assign build to channel
     inputs:
@@ -24,26 +32,8 @@ jobs:
       scriptLocation: inlineScript
       inlineScript: |
         $ErrorActionPreference = 'Stop'
-        . .\eng\common\tools.ps1
-        $dotnetRoot = InitializeDotNetCli -install:$true
-        $dotnet = "$dotnetRoot\dotnet.exe"
-        & "$dotnet" tool restore
-
-        $assetName = '${{ parameters.assetName }}'
-        $dependencies = .\.dotnet\dotnet darc get-dependencies --name "$assetName" --ci
-        $version = $dependencies | Select-String -Pattern 'Version:\s+([^\s]+)' | Select-Object -First 1
-
-        if ($version -eq $null) {
-          Write-Error "Asset $assetName not found in the dependency list"
-          exit 1
-        }
-
-        $version -match 'Version:\s+([^\s]+)' | Out-Null
-        $version = $matches[1]
-
-        Write-Host "Looking up build for version $version"
-
-        $assets = .\.dotnet\dotnet darc get-asset --name "$assetName" --version "$version" --max-age 60 --output-format json --ci
+        $version = '$(AssetVersion)'
+        $assets = .\.dotnet\dotnet darc get-asset --name '${{ parameters.assetName }}' --version "$version" --max-age 60 --output-format json --ci
         $buildId = ($assets | ConvertFrom-Json)[0].build.id
 
         if ($buildId -eq $null) {
