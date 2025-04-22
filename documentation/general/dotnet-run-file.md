@@ -182,9 +182,14 @@ Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or 
 
 ## Build outputs
 
-Build outputs are placed in a temp directory under a subdirectory whose name is hashed file path of the entry point
-and which is restricted to the current user per [runtime guidelines][temp-guidelines].
-Apart from keeping the source directory clean, this also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
+Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+inside a temp or app data directory which is owned by the current user per [runtime guidelines][temp-guidelines].
+Note that it is possible for multiple users to run the same file-based program, however each user's run works with different build artifacts.
+Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
+
+Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
+removes current user's `dotnet run` build outputs that haven't been used in some time.
+We could also consider [integrating with `dotnet clean`](#other-commands) for an explicit cleanup gesture.
 
 ## Directives for project metadata
 
