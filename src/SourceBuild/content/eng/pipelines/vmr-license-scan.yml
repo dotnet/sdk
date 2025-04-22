@@ -52,6 +52,9 @@ extends:
       name: NetCore1ESPool-Svc-Internal
       image: 1es-ubuntu-2204
       os: linux
+    containers:
+      ubuntusdkamd64container:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-sdk-amd64
     sdl:
       sourceAnalysisPool:
           name: NetCore1ESPool-Svc-Internal
@@ -98,6 +101,7 @@ extends:
           displayName: Get Matrix
 
       - job: LicenseScan
+        container: ubuntusdkcontainer
         dependsOn: Setup
         timeoutInMinutes: 420
         strategy:
@@ -111,23 +115,14 @@ extends:
             artifactName: $(Agent.JobName)_BuildLogs_Attempt$(System.JobAttempt)
         steps:
 
-        - script: |
-            source ./eng/common/tools.sh
-            InitializeDotNetCli true
-          displayName: Install .NET SDK
-          workingDirectory: $(Build.SourcesDirectory)
-
         - task: PipAuthenticate@1
           displayName: 'Pip Authenticate'
           inputs:
             artifactFeeds: public/dotnet-public-pypi
             onlyAddExtraIndex: false
 
-        - script: $(sdkRoot)/eng/install-scancode.sh
-          displayName: Install Scancode
-
         - script: >
-            $(Build.SourcesDirectory)/.dotnet/dotnet test
+            dotnet test
             $(Build.SourcesDirectory)/test/Microsoft.DotNet.SourceBuild.Tests/Microsoft.DotNet.SourceBuild.Tests.csproj
             --filter "FullyQualifiedName=Microsoft.DotNet.SourceBuild.Tests.LicenseScanTests.ScanForLicenses"
             --logger:'trx;LogFileName=$(Agent.JobName)_LicenseScan.trx'
