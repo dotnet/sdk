@@ -1174,9 +1174,19 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
                                             '*::commandArguments -- arguments forwarded to the tool: ' \
                                             && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
                                         ;;
                                 esac
                             ;;
