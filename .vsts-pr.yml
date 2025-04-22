@@ -38,7 +38,7 @@ resources:
   - container: ubuntu2204DebPkg
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
 
-stages:
+# stages: TODO REVERT SO THAT THIS PIPEPLINE WORKS AGAIN
 ############### BUILD STAGE ###############
 - stage: build
   displayName: Build
