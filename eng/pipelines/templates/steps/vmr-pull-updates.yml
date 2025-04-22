@@ -112,6 +112,12 @@ steps:
       assetName: $(assetName)
 
   - script: |
+      set -ex
+      echo 'Updating the VMR from $(AssetRepository) / $(AssetCommit)...'
+      git clone $(AssetRepository) $(AssetCommit)
+      cd $(AssetCommit)
+      git checkout $(AssetCommit)
+
       ./eng/vmr-sync.sh                                                                                 \
         --vmr ${{ parameters.vmrPath }}                                                                 \
         --tmp $(Agent.TempDirectory)                                                                    \
@@ -126,9 +132,15 @@ steps:
       fi
     displayName: Synchronize dotnet/dotnet (Unix)
     condition: ne(variables['Agent.OS'], 'Windows_NT')
-    workingDirectory: $(Agent.BuildDirectory)/sdk
+    workingDirectory: $(Agent.BuildDirectory)
 
   - powershell: |
+      $ErrorActionPreference = 'Stop'
+      Write-Host 'Updating the VMR from $(AssetRepository) / $(AssetCommit)...'
+      git clone $(AssetRepository) $(AssetCommit)
+      cd $(AssetCommit)
+      git checkout $(AssetCommit)
+
       ./eng/vmr-sync.ps1 `
         -vmr ${{ parameters.vmrPath }} `
         -tmp $(Agent.TempDirectory) `
@@ -143,4 +155,4 @@ steps:
       }
     displayName: Synchronize dotnet/dotnet (Windows)
     condition: eq(variables['Agent.OS'], 'Windows_NT')
-    workingDirectory: $(Agent.BuildDirectory)/sdk
+    workingDirectory: $(Agent.BuildDirectory)
