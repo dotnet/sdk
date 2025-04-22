@@ -36,13 +36,14 @@ jobs:
         Write-Host "Promoting build of asset ${{ parameters.assetName }} / $version..."
 
         $assets = .\.dotnet\dotnet darc get-asset --name '${{ parameters.assetName }}' --version "$version" --max-age 60 --output-format json --ci
-        $buildId = ($assets | ConvertFrom-Json)[0].build.id
+        $parsedAssets = $assets | ConvertFrom-Json
 
-        if ($buildId -eq $null) {
+        if (-not $parsedAssets -or -not $parsedAssets[0]) {
           Write-Error "No build found to promote version $version"
           exit 1
         }
 
+        $buildId = $parsedAssets[0].build.id
         try {
             $defaultChannels = .\.dotnet\dotnet darc get-default-channels --source-repo https://github.com/dotnet/sdk --branch "$(Build.SourceBranchName)" --output-format json --ci | ConvertFrom-Json
         } catch {
@@ -50,6 +51,10 @@ jobs:
             exit 0
         }
 
+        if ($defaultChannels.Count -eq 0) {
+            Write-Host "Default channels list is empty for branch $(Build.SourceBranchName) - no promotion will take place"
+            exit 0
+        }
         $targetChannel = $defaultChannels[0].channel.name
 
         Write-Host "Promoting build $buildId to channel $targetChannel"
