@@ -1,27 +1,16 @@
 #!/bin/bash
 
-### This script is used for synchronizing the dotnet/dotnet VMR locally. This means pulling new
-### code from various repositories into the 'dotnet/dotnet' repository.
+### This script is used for synchronizing the current repository into a local VMR.
+### It pulls the current repository's code into the specified VMR directory for local testing or
+### Source-Build validation.
 ###
-### The script is used during CI to ingest new code based on dotnet/sdk but it can also help
-### for reproducing potential failures during sdk's PRs, namely to fix the Source-Build.
-### Another usecase is to try manually synchronizing a given commit of some repo into the VMR and
-### trying to Source-Build the VMR. This can help when fixing the Source-Build but using a commit
-### from a not-yet merged branch (or fork) to test the fix will help.
-###
-### The tooling that synchronizes the VMR will need to clone the various repositories into a temporary
-### folder. These clones can be re-used in future synchronizations so it is advised you dedicate a
-### folder to this to speed up your re-runs.
+### The tooling used for synchronization will clone the VMR repository into a temporary folder if
+### it does not already exist. These clones can be reused in future synchronizations, so it is
+### recommended to dedicate a folder for this to speed up re-runs.
 ###
 ### USAGE:
-###   Synchronize current sdk and all dependencies into a local VMR:
-###     ./vmr-sync.sh --vmr "$HOME/repos/dotnet" --tmp "$HOME/repos/tmp"
-###
-###   Synchronize the VMR to a specific commit of dotnet/runtime using custom fork:
-###     ./vmr-sync.sh \
-###        --repository runtime:e7e71da303af8dc97df99b098f21f526398c3943 \
-###        --remote runtime:https://github.com/yourfork/runtime          \
-###        --tmp "$HOME/repos/tmp"
+###   Synchronize current repository into a local VMR:
+###     ./vmr-sync.sh --tmp "$HOME/repos/tmp" "$HOME/repos/dotnet"
 ###
 ### Options:
 ###   -t, --tmp, --tmp-dir PATH
@@ -33,25 +22,10 @@
 ###   --debug
 ###       Optional. Turns on the most verbose logging for the VMR tooling
 ###
-###   --recursive
-###       Optional. Recursively synchronize all the source build dependencies (declared in Version.Details.xml)
-###       This is used when performing the full synchronization during sdk's CI and the final VMR sync.
-###       Defaults to false unless no repository is supplied in which case a recursive sync of sdk is performed.
-###
 ###   --remote name:URI
 ###       Optional. Additional remote to use during the synchronization
 ###       This can be used to synchronize to a commit from a fork of the repository
 ###       Example: 'runtime:https://github.com/yourfork/runtime'
-###
-###   -r, --repository name:GIT_REF
-###       Optional. Repository + git ref separated by colon to synchronize to.
-###       This can be a specific commit, branch, tag.
-###       If not supplied, the revision of the parent sdk repository of this script will be used (recursively).
-###       Example: 'runtime:my-branch-name'
-###
-###   --tpn-template
-###       Optional. Template for the header of VMRs THIRD-PARTY-NOTICES file.
-###       Defaults to src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
 ###
 ###   --azdev-pat
 ###       Optional. Azure DevOps PAT to use for cloning private repositories.
@@ -90,24 +64,15 @@ function highlight () {
 }
 
 # realpath is not available in macOS 12, try horrible-but-portable workaround
-sdk_dir=$(cd "$scriptroot/../"; pwd -P)
+repo_dir=$(cd "$scriptroot/../"; pwd -P)
 
 tmp_dir=''
 vmr_dir=''
 vmr_branch=''
-repository=''
 additional_remotes=''
-recursive=false
 verbosity=verbose
-tpn_template="$sdk_dir/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt"
-enable_build_lookup=''
 azdev_pat=''
 ci=false
-
-# If sdk is a repo, we're in an sdk and not in the dotnet/dotnet repo
-if [[ -d "$sdk_dir/.git" ]]; then
-  additional_remotes="sdk:$sdk_dir"
-fi
 
 while [[ $# -gt 0 ]]; do
   opt="$(echo "$1" | tr "[:upper:]" "[:lower:]")"
@@ -124,23 +89,9 @@ while [[ $# -gt 0 ]]; do
       vmr_branch=$2
       shift
       ;;
-    -r|--repository)
-      repository=$2
-      shift
-      ;;
-    --recursive)
-      recursive=true
-      ;;
     --remote)
       additional_remotes="$additional_remotes $2"
       shift
-      ;;
-    --tpn-template)
-      tpn_template=$2
-      shift
-      ;;
-    --enable-build-lookup)
-      enable_build_lookup="--enable-build-lookup"
       ;;
     --azdev-pat)
       azdev_pat=$2
@@ -168,8 +119,8 @@ done
 
 # Validation
 
-if [[ ! -d "$sdk_dir" ]]; then
-  fail "Directory '$sdk_dir' does not exist. Please specify the path to the dotnet/sdk repo"
+if [[ ! -d "$repo_dir" ]]; then
+  fail "Directory '$repo_dir' does not exist. Please specify the path to the dotnet/sdk repo"
   exit 1
 fi
 
@@ -178,18 +129,7 @@ if [[ -z "$tmp_dir" ]]; then
   exit 1
 fi
 
-if [[ ! -f "$tpn_template" ]]; then
-  fail "File '$tpn_template' does not exist. Please specify a valid path to the THIRD-PARTY-NOTICES template"
-  exit 1
-fi
-
 # Sanitize the input
-
-# Default when no repository is provided
-if [[ -z "$repository" ]]; then
-  repository="sdk:$(git -C "$sdk_dir" rev-parse HEAD)"
-  recursive=true
-fi
 
 if [[ -z "$vmr_dir" ]]; then
   vmr_dir="$tmp_dir/dotnet"
@@ -236,13 +176,8 @@ dotnetDir=$( cd $scriptroot/../.dotnet/; pwd -P )
 dotnet=$dotnetDir/dotnet
 "$dotnet" tool restore
 
-highlight "Starting the synchronization of '$repository'.."
+highlight "Starting the synchronization of VMR.."
 set +e
-
-recursive_arg=''
-if [[ "$recursive" == "true" ]]; then
-  recursive_arg="--recursive"
-fi
 
 if [[ -n "$additional_remotes" ]]; then
   additional_remotes="--additional-remotes $additional_remotes"
@@ -259,24 +194,17 @@ fi
 
 # Synchronize the VMR
 
-"$dotnet" darc vmr update                    \
-  --vmr "$vmr_dir"                           \
+"$dotnet" darc vmr forwardflow "$vmr_dir"    \
   --tmp "$tmp_dir"                           \
   $azdev_pat                                 \
   --$verbosity                               \
-  $recursive_arg                             \
   $ci_arg                                    \
-  $additional_remotes                        \
-  --tpn-template "$tpn_template"             \
-  --discard-patches                          \
-  --generate-credscansuppressions            \
-  $enable_build_lookup                       \
-  "$repository"
+  $additional_remotes
 
 if [[ $? == 0 ]]; then
   highlight "Synchronization succeeded"
 else
-  fail "Synchronization of dotnet/dotnet to '$repository' failed!"
+  fail "Synchronization of repo to VMR failed!"
   fail "'$vmr_dir' is left in its last state (re-run of this script will reset it)."
   fail "Please inspect the logs which contain path to the failing patch file (use --debug to get all the details)."
   fail "Once you make changes to the conflicting VMR patch, commit it locally and re-run this script."
