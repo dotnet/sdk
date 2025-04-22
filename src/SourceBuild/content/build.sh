@@ -226,7 +226,8 @@ actions=( "/p:Restore=true" "/p:Build=true" "/p:Publish=true")
 
 if [[ "$test" == true ]]; then
   project="$scriptroot/test/tests.proj"
-  actions=( "/p:Restore=true" "/p:Build=true" "/p:Test=true" "/p:IsTestRun=true")
+  actions=( "/p:Restore=true" "/p:Build=true" "/p:Test=true" )
+  properties+=( "/p:IsTestRun=true" )
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   export MSBUILDENSURESTDOUTFORTASKPROCESSES=1
