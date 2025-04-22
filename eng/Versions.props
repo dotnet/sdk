@@ -315,7 +315,7 @@
     <AspireFeatureBand>8.0.100</AspireFeatureBand>
     <MicrosoftNETSdkAspireManifest80100PackageVersion>8.2.2</MicrosoftNETSdkAspireManifest80100PackageVersion>
     <MauiFeatureBand>10.0.100-preview.3</MauiFeatureBand>
-    <MauiWorkloadManifestVersion>10.0.0-preview.3.25203.16</MauiWorkloadManifestVersion>
+    <MauiWorkloadManifestVersion>10.0.0-preview.3.25208.1</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.0.0-preview.3.22</XamarinAndroidWorkloadManifestVersion>
     <XamarinIOSWorkloadManifestVersion>18.2.10695-net10-p3</XamarinIOSWorkloadManifestVersion>
     <XamarinMacCatalystWorkloadManifestVersion>18.2.10695-net10-p3</XamarinMacCatalystWorkloadManifestVersion>
