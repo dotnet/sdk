@@ -1792,7 +1792,7 @@ _testhost_tool_execute() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--allow-roll-forward --prerelease --configfile --source --add-source --ignore-failed-sources --interactive --yes --verbosity --help" 
+    opts="--version --allow-roll-forward --prerelease --configfile --source --add-source --ignore-failed-sources --interactive --yes --verbosity --help" 
     opts="$opts $(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" 
     
     if [[ $COMP_CWORD == "$1" ]]; then

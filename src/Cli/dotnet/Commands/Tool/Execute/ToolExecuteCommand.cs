@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
         private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
         private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
         private readonly bool _yes = result.GetValue(ToolExecuteCommandParser.YesOption);
+        private readonly bool _prerelease = result.GetValue(ToolExecuteCommandParser.PrereleaseOption);
 
         public override int Execute()
         {
