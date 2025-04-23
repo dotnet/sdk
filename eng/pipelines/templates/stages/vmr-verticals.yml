@@ -88,7 +88,7 @@ stages:
     - template: ../variables/vmr-build.yml
       parameters:
         vmrBranch: ${{ parameters.vmrBranch }}
-
+        buildSourceOnly: true
     jobs:
 
     ### Jobs for ultralite builds ###
@@ -995,3 +995,12 @@ stages:
             - Windows_x64
             - Windows_x86
             - Windows_arm64
+
+        - template: ../jobs/source-only-build-and-validate.yml
+          parameters:
+            buildNamePrefix: ${{ variables.centOSStreamName }}
+            runOnline: true
+            targetArchitecture: x64
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}

@@ -8,45 +8,45 @@ namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 internal static class WorkloadUpdateCommandParser
 {
-    public static readonly CliOption<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
+    public static readonly Option<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
 
-    public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
+    public static readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
     {
         Description = CliCommandStrings.FromPreviousSdkOptionDescription
     };
 
-    public static readonly CliOption<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
+    public static readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
     {
         Description = CliCommandStrings.AdManifestOnlyOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> PrintRollbackOption = new("--print-rollback")
+    public static readonly Option<bool> PrintRollbackOption = new("--print-rollback")
     {
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<int> FromHistoryOption = new("--from-history")
+    public static readonly Option<int> FromHistoryOption = new("--from-history")
     {
         Description = CliCommandStrings.FromHistoryOptionDescription
     };
 
-    public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+    public static readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
     {
         Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
+        Command command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
 
         InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

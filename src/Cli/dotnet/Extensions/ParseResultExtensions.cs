@@ -30,7 +30,7 @@ public static class ParseResultExtensions
     {
         // take from the start of the list until we hit an option/--/unparsed token
         // since commands can have arguments, we must take those as well in order to get accurate help
-        var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == CliTokenType.Argument || token.Type == CliTokenType.Command || token.Type == CliTokenType.Directive).Select(t => t.Value).ToList();
+        var tokenList = parseResult.Tokens.TakeWhile(token => token.Type == TokenType.Argument || token.Type == TokenType.Command || token.Type == TokenType.Directive).Select(t => t.Value).ToList();
         tokenList.Add("-h");
         Instance.Parse(tokenList).Invoke();
     }
@@ -97,13 +97,13 @@ public static class ParseResultExtensions
 
     public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
     {
-        return parseResult.CommandResult.Command.Equals(RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+        return parseResult.CommandResult.Command.Equals(Microsoft.DotNet.Cli.Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
     public static bool CanBeInvoked(this ParseResult parseResult)
     {
         return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-            parseResult.Tokens.Any(token => token.Type == CliTokenType.Directive) ||
+            parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
             (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
     }
 
@@ -225,14 +225,14 @@ public static class ParseResultExtensions
         var propertyValues = propertyOptions.SelectMany(o => o.Tokens.Select(t => t.Value)).ToArray();
         return propertyValues;
 
-        static CliToken GetOptionTokenOrDefault(SymbolResult symbolResult)
+        static Token GetOptionTokenOrDefault(SymbolResult symbolResult)
         {
             if (symbolResult is not OptionResult optionResult)
             {
                 return null;
             }
 
-            return optionResult.IdentifierToken ?? new CliToken($"--{optionResult.Option.Name}", CliTokenType.Option, optionResult.Option);
+            return optionResult.IdentifierToken ?? new Token($"--{optionResult.Option.Name}", TokenType.Option, optionResult.Option);
         }
     }
 
@@ -251,7 +251,7 @@ public static class ParseResultExtensions
     /// If you are inside a command handler or 'normal' System.CommandLine code then you don't need this - the parse error handling
     /// will have covered these cases.
     /// </summary>
-    public static T SafelyGetValueForOption<T>(this ParseResult parseResult, CliOption<T> optionToGet)
+    public static T SafelyGetValueForOption<T>(this ParseResult parseResult, Option<T> optionToGet)
     {
         if (parseResult.GetResult(optionToGet) is OptionResult optionResult &&
             !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
@@ -268,5 +268,5 @@ public static class ParseResultExtensions
     /// Checks if the option is present and not implicit (i.e. not set by default).
     /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
     /// </summary>
-    public static bool HasOption(this ParseResult parseResult, CliOption option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
+    public static bool HasOption(this ParseResult parseResult, Option option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
 }

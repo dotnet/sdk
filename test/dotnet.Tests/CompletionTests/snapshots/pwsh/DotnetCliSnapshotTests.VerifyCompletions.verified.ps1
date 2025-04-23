@@ -804,6 +804,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before running. Implies --no-restore.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
+                [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, "Skip up to date checks and always build the program before running.")
                 [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--no-self-contained', '--no-self-contained', [CompletionResultType]::ParameterName, "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")
@@ -987,6 +988,10 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;tool;uninstall' {
@@ -1027,6 +1032,10 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;tool;list' {
