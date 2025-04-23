@@ -44,8 +44,6 @@ param (
   [switch]$debugOutput
 )
 
-$scriptRoot = $PSScriptRoot
-
 function Fail {
   Write-Host "> $($args[0])" -ForegroundColor 'Red'
 }
@@ -103,7 +101,7 @@ Set-StrictMode -Version Latest
 # Prepare darc
 
 Highlight 'Installing .NET, preparing the tooling..'
-. $scriptRoot\common\tools.ps1
+. .\eng\common\tools.ps1
 $dotnetRoot = InitializeDotNetCli -install:$true
 $dotnet = "$dotnetRoot\dotnet.exe"
 & "$dotnet" tool restore

@@ -162,9 +162,9 @@ set -e
 # Prepare darc
 
 highlight 'Installing .NET, preparing the tooling..'
-source "$scriptroot/common/tools.sh"
+source "./eng/common/tools.sh"
 InitializeDotNetCli true
-dotnetDir=$( cd $scriptroot/../.dotnet/; pwd -P )
+dotnetDir=$( cd ./.dotnet/; pwd -P )
 dotnet=$dotnetDir/dotnet
 "$dotnet" tool restore
 

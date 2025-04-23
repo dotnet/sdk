@@ -128,12 +128,12 @@ steps:
 
       echo "Updating the VMR from $repository / $commit..."
       cd ..
-      git clone $repository $commit
-      cd $commit
+      git clone $repository ${{ assetName }}
+      cd ${{ assetName }}
       git checkout $commit
       git branch "sync/$commit"
 
-      ./eng/vmr-sync.sh                         \
+      $(Agent.BuildDirectory)/sdk/eng/vmr-sync.sh                         \
         --vmr ${{ parameters.vmrPath }}         \
         --tmp $(Agent.TempDirectory)            \
         --azdev-pat '$(dn-bot-all-orgs-code-r)' \
@@ -171,12 +171,12 @@ steps:
 
       Write-Host "Updating the VMR from $repository / $commit..."
       cd ..
-      git clone $repository $commit
-      cd $commit
+      git clone $repository ${{ assetName }}
+      cd ${{ assetName }}
       git checkout $commit
       git branch "sync/$commit"
 
-      $(Agent.BuildDirectory)/sdk/eng/vmr-sync.ps1 `
+      $(Agent.BuildDirectory)\sdk\eng\vmr-sync.ps1 `
         -vmr ${{ parameters.vmrPath }}             `
         -tmp $(Agent.TempDirectory)                `
         -azdevPat '$(dn-bot-all-orgs-code-r)'      `
