@@ -117,14 +117,14 @@ steps:
       dependencies=$(./.dotnet/dotnet darc get-dependencies --name '${{ assetName }}' --ci)
 
       # Extract repository URL and commit hash
-      repository=$(echo "$dependencies" | grep -oP 'Repo:\s+\K[^\s]+' | head -1)
+      repository=$(echo "$dependencies" | grep 'Repo:' | sed 's/Repo:[[:space:]]*//' | head -1)
 
       if [ -z "$repository" ]; then
         echo "##vso[task.logissue type=error]Asset ${{ assetName }} not found in the dependency list"
         exit 1
       fi
 
-      commit=$(echo "$dependencies" | grep -oP 'Commit:\s+\K[^\s]+' | head -1)
+      commit=$(echo "$dependencies" | grep 'Commit:' | sed 's/Commit:[[:space:]]*//' | head -1)
 
       echo "Updating the VMR from $repository / $commit..."
       cd ..
