@@ -1,3 +1,8 @@
+parameters:
+  - name: workingDirectory
+    type: string
+    default: '$(Build.SourcesDirectory)'
+
 steps:
 - powershell: |
     $ErrorActionPreference = 'Stop'
@@ -7,12 +12,14 @@ steps:
     & "$dotnet" tool restore
   displayName: 🟣 Install darc (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
+  workingDirectory: ${{ parameters.workingDirectory }}
 
 - script: |
     set -e
-    . .\eng\common\tools.sh
+    . ./eng/common/tools.sh
     dotnetRoot=$(InitializeDotNetCli --install)
     dotnet="$dotnetRoot/dotnet"
     $dotnet tool restore
   displayName: 🟣 Install darc (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
+  workingDirectory: ${{ parameters.workingDirectory }}

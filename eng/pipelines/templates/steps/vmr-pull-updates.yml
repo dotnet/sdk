@@ -106,8 +106,11 @@ steps:
   - script:
       git -C commit --allow-empty -am "Forward-flow dotnet/sdk"
     displayName: Commit local VMR changes
+    workingDirectory: ${{ parameters.vmrPath }}
 
   - template: ../steps/install-darc.yml@self
+    parameters:
+      workingDirectory: $(Agent.BuildDirectory)/sdk
 
   - script: |
       set -ex
@@ -147,7 +150,7 @@ steps:
       fi
     displayName: Synchronize dotnet/dotnet (Unix)
     condition: ne(variables['Agent.OS'], 'Windows_NT')
-    workingDirectory: $(Agent.BuildDirectory)
+    workingDirectory: $(Agent.BuildDirectory)/sdk
 
   - powershell: |
       $ErrorActionPreference = 'Stop'
