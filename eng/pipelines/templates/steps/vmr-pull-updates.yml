@@ -60,7 +60,7 @@ steps:
       echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
       exit 1
     fi
-  displayName: Synchronize local VMR (Unix)
+  displayName: Sync sdk into VMR (Unix)
   condition: ne(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
@@ -83,7 +83,7 @@ steps:
       echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
       exit 1
     }
-  displayName: Synchronize local VMR (Windows)
+  displayName: Sync sdk into VMR (Windows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
   workingDirectory: $(Agent.BuildDirectory)/sdk
 
@@ -145,7 +145,7 @@ steps:
         echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
         exit 1
       fi
-    displayName: Synchronize dotnet/dotnet (Unix)
+    displayName: Sync ${{ assetName }} into (Unix)
     condition: ne(variables['Agent.OS'], 'Windows_NT')
     workingDirectory: $(Agent.BuildDirectory)/sdk
 
@@ -188,6 +188,6 @@ steps:
         echo "##vso[task.logissue type=error]Failed to synchronize the VMR"
         exit 1
       }
-    displayName: Synchronize dotnet/dotnet (Windows)
+    displayName: Sync ${{ assetName }} into (Windows)
     condition: eq(variables['Agent.OS'], 'Windows_NT')
     workingDirectory: $(Agent.BuildDirectory)/sdk

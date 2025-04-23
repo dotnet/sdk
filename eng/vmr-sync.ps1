@@ -60,12 +60,6 @@ if ($debugOutput) {
 }
 # Validation
 
-$sdkDir = (Split-Path -Parent $scriptRoot)
-if (-not (Test-Path -Path $sdkDir -PathType Container)) {
-  Fail "Directory '$sdkDir' does not exist. Please specify the path to the dotnet/sdk repo"
-  exit 1
-}
-
 if (-not $tmpDir) {
   Fail "Missing -tmpDir argument. Please specify the path to the temporary folder where the repositories will be cloned"
   exit 1
@@ -118,10 +112,10 @@ Highlight "Starting the synchronization of VMR.."
 
 # Synchronize the VMR
 $darcArgs = (
-    "darc", "vmr", "forwardflow",
-    $vmrDir,
-    "--tmp", $tmpDir,
-    "--$verbosity"
+  "darc", "vmr", "forwardflow",
+  "--tmp", $tmpDir,
+  "--$verbosity",
+  $vmrDir
 )
 
 if ($ci) {

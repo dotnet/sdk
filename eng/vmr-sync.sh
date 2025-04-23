@@ -186,12 +186,13 @@ fi
 
 # Synchronize the VMR
 
-"$dotnet" darc vmr forwardflow "$vmr_dir"    \
-  --tmp "$tmp_dir"                           \
-  $azdev_pat                                 \
-  --$verbosity                               \
-  $ci_arg                                    \
-  $additional_remotes
+"$dotnet" darc vmr forwardflow \
+  --tmp "$tmp_dir"             \
+  $azdev_pat                   \
+  --$verbosity                 \
+  $ci_arg                      \
+  $additional_remotes          \
+  "$vmr_dir"
 
 if [[ $? == 0 ]]; then
   highlight "Synchronization succeeded"
