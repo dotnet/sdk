@@ -438,10 +438,9 @@ jobs:
         parameters:
           isOfficialBuild: true
           certNames:
-          - 'dotnetesrp-diagnostics-aad-ssl-cert'
-          - 'dotnet-diagnostics-esrp-pki-onecert'
-          vaultName: 'clrdiag-esrp-id'
-          azureSubscription: 'diagnostics-esrp-kvcertuser'
+          - 'dac-dnceng-ssl-cert'
+          vaultName: 'clrdiag-esrp-pme'
+          azureSubscription: 'diagnostics-esrp-kvcertuser-pme'
           scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - script: build.cmd
@@ -584,7 +583,7 @@ jobs:
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
       - ${{ parameters.testInitSteps }}
-      
+
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
       # builds where the packages are only available in the private feeds. This allows the tests to restore from those feeds.
       - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
