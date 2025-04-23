@@ -175,9 +175,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             }   
         }
 
-        using (var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            TimeSpan.Zero))
+        TransactionalAction.Run(() =>
         {
             if (oldPackageNullable != null)
             {
@@ -232,10 +230,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
                 PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
             }, packageId);
-
-            scope.Complete();
-
-        }
+        });
         return 0;
     }
 
