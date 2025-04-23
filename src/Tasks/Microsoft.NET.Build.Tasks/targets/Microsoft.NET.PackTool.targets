@@ -41,7 +41,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
-  <Target Name="SetupPackToolDependencies">
+ <!--
+    PackageId must be set before:
+     - _GenerateRestoreProjectSpec -> _GetRestoreSettings
+     - _GenerateToolsSettingsFileInputCache
+     - _GenerateShimInputCache
+     - _GetOutputItemsFromPack
+  -->
+  <Target Name="SetPackToolProperties"
+          BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
+
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <PropertyGroup Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">
@@ -61,21 +70,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- TODO: What property to use for single file (non AOT) or other modes? -->
       <ToolEntryPoint Condition=" '$(PublishAot)' == 'true' ">$([System.IO.Path]::GetFileName($(NativeBinary)))</ToolEntryPoint>
     </PropertyGroup>
-  </Target>
 
-  <!--
-    PackageId must be set before:
-     - _GenerateRestoreProjectSpec -> _GetRestoreSettings
-     - _GenerateToolsSettingsFileInputCache
-     - _GenerateShimInputCache
-     - _GetOutputItemsFromPack
-  -->
-  <Target Name="SetToolPackageId"
-          DependsOnTargets="SetupPackToolDependencies"
-          BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack"
-          Condition="'@(ToolPackageRuntimeIdentifier)' != '' And '$(RuntimeIdentifier)' != ''">
-
-    <PropertyGroup>
+    <PropertyGroup Condition="'@(ToolPackageRuntimeIdentifier)' != '' And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
 
@@ -92,11 +88,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     
   </Target>
 
-  <!-- This indirection target essentially allows one target dependency (SetupPackToolDependencies) of PackTool modify the dependencies of PackTool. -->
+  <!-- This indirection target essentially allows one target dependency (SetPackToolProperties) of PackTool modify the dependencies of PackTool. -->
   <Target Name="PackToPublishDependencyIndirection"
           DependsOnTargets="$(_PackToolPublishDependency)"/>
   
-  <Target Name="PackTool" DependsOnTargets="SetupPackToolDependencies;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
