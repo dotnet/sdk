@@ -93,10 +93,15 @@ and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` ru
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
 We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
 
-We modify Roslyn to accept the entry-point path and then it is its responsibility
-to check whether the file contains an entry point (top-level statements or a valid Main method) and report an error otherwise.
-(We cannot simply use Roslyn APIs to detect entry points ourselves because parsing depends on conditional symbols like those from `<DefineConstants>`
-and we can reliably know the set of those only after invoking MSBuild, and doing that up front would be an unnecessary performance hit just to detect entry points.)
+Internally, the SDK CLI detects entry points by parsing all C# files with default parsing options (in particular, no `<DefineConstants>`)
+and checking which ones contain top-level statements (`Main` methods are not supported for now as that would require full semantic analysis, not just parsing).
+Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [app directive collection](#directives-for-project-metadata).
+This means the CLI might consider a file to be an entry point which later the compiler doesn't
+(for example because its top-level statements are under `#if SYMBOL` and the build has `DefineConstants=SYMBOL`).
+However such inconsistencies should be rare and hence that is a better trade off than letting the compiler decide which files are entry points
+because that could require multiple builds (first determine entry points and then re-build with app directives except those from other entry points).
+To avoid parsing all C# files twice (in CLI and in the compiler), the CLI could use the compiler server for parsing so the trees are reused
+(unless the parse options change via the directives), and also [cache](#optimizations) the results to avoid parsing on subsequent runs.
 
 Similarly, during [grow up](#grow-up), we ask Roslyn via MSBuild to give us the set of entry-point files
 (we can also use this to ask user during the conversion whether they want to continue despite compilation errors if there are any).
@@ -220,13 +225,11 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-It is an error if an app directive appears in a non-entry-point file.
-Otherwise it is unclear how the CLI would determine which files to parse directives from
-(presumably we would want to exclude other entry points but the CLI defers to the compiler to detect entry points).
-We could relax this in the future because it would allow:
+For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point files.
+We do not limit these directives to appear only in entry point files because it allows:
 - a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
-- which would also make it possible to share it independently or symlink it to multiple script folders,
-- and it would be similar to `global using`s which users usually put into a single file but don't have to.
+- which also makes it possible to share it independently or symlink it to multiple script folders,
+- and it's similar to `global using`s which users usually put into a single file but don't have to.
 
 We could consider deduplicating `#:` directives
 (e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
