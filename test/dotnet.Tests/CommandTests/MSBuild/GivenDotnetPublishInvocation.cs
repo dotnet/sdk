@@ -70,7 +70,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var command = PublishCommand.FromArgs(args, msbuildPath);
 
             var restoreTokens =
-                command.SeparateRestoreCommand
+                command.SeparateRestoreCommand.ForwardingApp
                    .GetArgumentTokensToMSBuild();
             output.WriteLine("restore tokens:");
             output.WriteLine(string.Join(" ", restoreTokens));

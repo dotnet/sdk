@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
@@ -33,7 +34,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
-                BuildCommand.FromArgs(arguments) :
+                ((ForwardingBuildCommand)BuildCommand.FromArgs(arguments)).RestoringCommand :
                 PublishCommand.FromArgs(arguments);
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
