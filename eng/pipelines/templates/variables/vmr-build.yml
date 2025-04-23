@@ -86,7 +86,7 @@ variables:
   - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
     - name: signEnabled
       value: true
-  # Pass sign on the internal project if the, branch is a main or release branch
+  # Pass sign on the internal project if the, branch is a release branch
   - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) }}:
     - name: signEnabled
       value: true
