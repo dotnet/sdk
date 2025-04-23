@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
+using System.Runtime.Serialization;
 
 [XmlRoot("SignCheckResults")]
 public class SignCheckResults
@@ -11,8 +12,18 @@ public class SignCheckResults
 
 public class SignCheckResultFile
 {
+    private string _rawName;
+    private string _normalizedName;
+
     [XmlAttribute("Name")]
-    public string Name { get; set; }
+    public string Name { 
+        get => _rawName;
+        set
+        {
+            _rawName = value;
+            _normalizedName = value.RemoveVersionsNormalized();
+        }
+    }
 
     [XmlAttribute("Outcome")]
     public SignCheckOutcome Outcome { get; set; }
@@ -20,7 +31,8 @@ public class SignCheckResultFile
     [XmlElement("File")]
     public List<SignCheckResultFile> NestedFiles { get; set; }
 
-    public string NormalizedName => Name.RemoveVersionsNormalized();
+    [XmlIgnore]
+    public string NormalizedName => _normalizedName;
 }
 
 public enum SignCheckOutcome

@@ -55,8 +55,8 @@ public class SigningComparer : BuildComparer
         Directory.CreateDirectory(logsDirectory);
         try
         {
-            var initializeSignCheck = _signCheckExecuter.ExecuteAsync(packageBasePath: null, logsDirectory: logsDirectory);
-            await ProcessSignCheckExitStatusAsync(initializeSignCheck);
+            var initializeSignCheckResult = await _signCheckExecuter.ExecuteAsync(packageBasePath: null, logsDirectory: logsDirectory);
+            ProcessSignCheckExitStatus(initializeSignCheckResult);
         }
         finally
         {
@@ -93,14 +93,17 @@ public class SigningComparer : BuildComparer
             Console.WriteLine($"Evaluating '{mapping.Id}'");
 
             // Execute the msft and vmr signing checks in parallel
-            var msftTask = ProcessSignCheckExitStatusAsync(_signCheckExecuter.ExecuteAsync(msftBasePath, msftLogsDirectory));
-            var vmrTask = ProcessSignCheckExitStatusAsync(_signCheckExecuter.ExecuteAsync(vmrBasePath, vmrLogsDirectory));
+            var msftTask = _signCheckExecuter.ExecuteAsync(msftBasePath, msftLogsDirectory);
+            var vmrTask = _signCheckExecuter.ExecuteAsync(vmrBasePath, vmrLogsDirectory);
             await Task.WhenAll(msftTask, vmrTask);
+
+            ProcessSignCheckExitStatus(msftTask.Result);
+            ProcessSignCheckExitStatus(vmrTask.Result);
 
             // Process the results
             string msftResults = _signCheckExecuter.GetResults(msftLogsDirectory);
             string vmrResults = _signCheckExecuter.GetResults(vmrLogsDirectory);
-            CompareSignCheckResults(
+            await CompareSignCheckResultsAsync(
                 DeserializeSignCheckResults(msftResults),
                 DeserializeSignCheckResults(vmrResults),
                 mapping);
@@ -108,7 +111,6 @@ public class SigningComparer : BuildComparer
         catch (Exception ex)
         {
             mapping.EvaluationErrors.Add(ex.ToString());
-            return;
         }
         finally
         {
@@ -119,9 +121,8 @@ public class SigningComparer : BuildComparer
         }
     }
 
-    private async Task ProcessSignCheckExitStatusAsync(Task<(int exitCode, string output, string error)> signCheckExecutionTask)
+    private void ProcessSignCheckExitStatus((int exitCode, string output, string error) result)
     {
-        var result = await signCheckExecutionTask;
         if (result.exitCode != 0 && !string.IsNullOrWhiteSpace(result.error))
         {
             throw new Exception($"Sign check failed with exit code {result.exitCode}: {result.error} {result.output}");
@@ -137,7 +138,7 @@ public class SigningComparer : BuildComparer
         }
     }
 
-    private void CompareSignCheckResults(SignCheckResults msftResults, SignCheckResults vmrResults, AssetMapping mapping)
+    private async Task CompareSignCheckResultsAsync(SignCheckResults msftResults, SignCheckResults vmrResults, AssetMapping mapping)
     {
         if (msftResults.Files.Count == 0)
         {
@@ -149,7 +150,7 @@ public class SigningComparer : BuildComparer
             throw new Exception($"No files found in VMR sign check results.");
         }
 
-        CompareSignCheckResults(msftResults.Files, vmrResults.Files, mapping);
+        await Task.Run(() => CompareSignCheckResults(msftResults.Files, vmrResults.Files, mapping));
     }
 
     private void CompareSignCheckResults(List<SignCheckResultFile> msftFiles, List<SignCheckResultFile> vmrFiles, AssetMapping mapping)
@@ -196,7 +197,7 @@ public class SigningComparer : BuildComparer
         private const string _logFileName = "signcheck.log";
         private const string _errorFileName = "signcheck.error";
         private const string _xmlFileName = "signcheck.xml";
-        private const int _timeout = 5 * 60 * 1000; // 5 minutes
+        private const int _timeout = 10 * 60 * 1000; // 10 minutes
 
         public SignCheckExecuter(string exclusionsFilePath, string sdkTaskScript)
         {
@@ -296,7 +297,7 @@ public class SigningComparer : BuildComparer
                         Console.WriteLine($"Failed to run SignCheck for {packageBasePath} within the timeout of {_timeout / 1000} seconds. Killing process.");
                         if (!process.HasExited)
                         {
-                            process.Kill(true);
+                            process.Kill();
                         }
                         throw new TimeoutException($"Process timed out after {_timeout / 1000} seconds.");
                     }
