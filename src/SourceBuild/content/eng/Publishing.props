@@ -12,6 +12,7 @@
     <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
     <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
     <AssetManifestFileName Condition="'$(MergedAssetManifestName)' != ''">$(MergedAssetManifestName)</AssetManifestFileName>
+    <ManifestBuildData Condition="'$(VerticalName)' != ''">VerticalName=$(VerticalName)</ManifestBuildData>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
