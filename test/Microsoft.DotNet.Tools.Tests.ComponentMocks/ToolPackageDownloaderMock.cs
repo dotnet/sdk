@@ -174,7 +174,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
+                            Command = new ToolCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -336,7 +336,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public RestoredCommand Command { get; set; }
+            public ToolCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 
