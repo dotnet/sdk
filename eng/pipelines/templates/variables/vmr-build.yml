@@ -86,8 +86,8 @@ variables:
   - ${{ elseif eq(variables['Build.Reason'], 'PullRequest') }}:
     - name: signEnabled
       value: true
-  # Pass sign on the internal project if the, branch is a main or release branch
-  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(eq(variables['Build.SourceBranch'], 'refs/heads/main'), startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+  # Pass sign on the internal project if the, branch is a release branch
+  - ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) }}:
     - name: signEnabled
       value: true
   # Do not sign otherwise.
@@ -104,7 +104,7 @@ variables:
     value: false
 # Otherwise, sign if the branch is a release branch.
 # We can't sign the DAC in main because the certificates are locked down.
-- ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/reltest/'), and(startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'), contains(variables['Build.SourceBranch'], '-preview')))) }}:
+- ${{ elseif and(eq(variables['System.TeamProject'], 'internal'), or(startsWith(variables['Build.SourceBranch'], 'refs/heads/internal/release/'), startsWith(variables['Build.SourceBranch'], 'refs/heads/release/'))) }}:
   - name: signDacEnabled
     value: true
 - ${{ else }}:
