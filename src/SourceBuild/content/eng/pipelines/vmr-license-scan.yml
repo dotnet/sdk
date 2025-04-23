@@ -53,8 +53,8 @@ extends:
       image: 1es-ubuntu-2204
       os: linux
     containers:
-      ubuntusdkamd64container:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-24.04-sdk-amd64
+      azurelinuxSourceBuildTestContainer:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-source-build-test-amd64
     sdl:
       sourceAnalysisPool:
           name: NetCore1ESPool-Svc-Internal
@@ -101,7 +101,7 @@ extends:
           displayName: Get Matrix
 
       - job: LicenseScan
-        container: ubuntusdkamd64container
+        container: azurelinuxSourceBuildTestContainer
         dependsOn: Setup
         timeoutInMinutes: 420
         strategy:
