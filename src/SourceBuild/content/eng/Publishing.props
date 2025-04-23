@@ -12,7 +12,6 @@
     <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
     <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
     <AssetManifestFileName Condition="'$(MergedAssetManifestName)' != ''">$(MergedAssetManifestName)</AssetManifestFileName>
-    <ManifestBuildData Condition="'$(VerticalName)' != ''">VerticalName=$(VerticalName)</ManifestBuildData>
   </PropertyGroup>
   <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
@@ -25,6 +24,10 @@
     <SourceBuiltShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
     <SourceBuiltNonShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ManifestBuildData Include="VerticalName=$(VerticalName)" Condition="'$(VerticalName)' != ''" />
+  </ItemGroup>
 
   <!--
     Don't binplace any artifacts with vertical visibility. These are only used for building other repos within this vertical
