@@ -106,7 +106,7 @@ internal class ToolRestoreCommand : CommandBase
                 .AsEnumerable()
                 .Select(package => InstallPackages(package, configFile))];
 
-        Dictionary<RestoredCommandIdentifier, RestoredCommand> downloaded =
+        Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.SelectMany(result => result.SaveToCache)
                 .ToDictionary(pair => pair.Item1, pair => pair.Item2);
 
@@ -214,7 +214,7 @@ internal class ToolRestoreCommand : CommandBase
 
     private static bool ManifestCommandMatchesActualInPackage(
         ToolCommandName[] commandsFromManifest,
-        IReadOnlyList<RestoredCommand> toolPackageCommands)
+        IReadOnlyList<ToolCommand> toolPackageCommands)
     {
         ToolCommandName[] commandsFromPackage = [.. toolPackageCommands.Select(t => t.Name)];
         foreach (var command in commandsFromManifest)
@@ -249,8 +249,8 @@ internal class ToolRestoreCommand : CommandBase
 
         return _localToolsResolverCache.TryLoad(
                    sampleRestoredCommandIdentifierOfThePackage,
-                   out var restoredCommand)
-               && _fileSystem.File.Exists(restoredCommand.Executable.Value);
+                   out var toolCommand)
+               && _fileSystem.File.Exists(toolCommand.Executable.Value);
     }
 
     private FilePath? GetCustomManifestFileLocation()
@@ -269,7 +269,7 @@ internal class ToolRestoreCommand : CommandBase
         return customManifestFileLocation;
     }
 
-    private static void EnsureNoCommandNameCollision(Dictionary<RestoredCommandIdentifier, RestoredCommand> dictionary)
+    private static void EnsureNoCommandNameCollision(Dictionary<RestoredCommandIdentifier, ToolCommand> dictionary)
     {
         string[] errors = [.. dictionary
             .Select(pair => (pair.Key.PackageId, pair.Key.CommandName))
@@ -306,12 +306,12 @@ internal class ToolRestoreCommand : CommandBase
 
     private struct ToolRestoreResult
     {
-        public (RestoredCommandIdentifier, RestoredCommand)[] SaveToCache { get; }
+        public (RestoredCommandIdentifier, ToolCommand)[] SaveToCache { get; }
         public bool IsSuccess { get; }
         public string Message { get; }
 
         private ToolRestoreResult(
-            (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
             bool isSuccess, string message)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -325,7 +325,7 @@ internal class ToolRestoreCommand : CommandBase
         }
 
         public static ToolRestoreResult Success(
-            (RestoredCommandIdentifier, RestoredCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
             string message)
         {
             return new ToolRestoreResult(saveToCache, true, message);

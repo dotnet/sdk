@@ -19,7 +19,7 @@ internal interface IToolPackage
 
     DirectoryPath PackageDirectory { get; }
 
-    RestoredCommand Command { get; }
+    ToolCommand Command { get; }
 
     IEnumerable<string> Warnings { get; }
 

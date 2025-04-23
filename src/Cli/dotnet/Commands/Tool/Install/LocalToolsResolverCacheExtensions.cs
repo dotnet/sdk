@@ -31,7 +31,7 @@ internal static class LocalToolsResolverCacheExtensions
         }
 
         localToolsResolverCache.Save(
-            new Dictionary<RestoredCommandIdentifier, RestoredCommand>
+            new Dictionary<RestoredCommandIdentifier, ToolCommand>
             {
                 [new RestoredCommandIdentifier(
                         toolDownloadedPackage.Id,

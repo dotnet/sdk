@@ -29,7 +29,7 @@ internal class ToolPackageInstance : IToolPackage
 
     public DirectoryPath PackageDirectory { get; private set; }
 
-    public RestoredCommand Command { get; private set; }
+    public ToolCommand Command { get; private set; }
 
     public IReadOnlyList<FilePath> PackagedShims { get; private set; }
 
@@ -117,7 +117,7 @@ internal class ToolPackageInstance : IToolPackage
                     toolConfiguration.CommandName));
         }
 
-        Command = new RestoredCommand(
+        Command = new ToolCommand(
                 new ToolCommandName(toolConfiguration.CommandName),
                 toolConfiguration.Runner,
                 LockFileRelativePathToFullFilePath(entryPointFromLockFile.Path, library));
