@@ -15,7 +15,7 @@ steps:
   workingDirectory: ${{ parameters.workingDirectory }}
 
 - script: |
-    set -e
+    set -ex
     . ./eng/common/tools.sh
     dotnetRoot=$(InitializeDotNetCli --install)
     dotnet="$dotnetRoot/dotnet"
