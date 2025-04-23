@@ -65,7 +65,7 @@ resources:
     endpoint: dotnet
     ref: ${{ variables.VmrBranch }}
 
-stages:
+# stages: TODO REVERT SO THAT THIS PIPEPLINE WORKS AGAIN
 # You can temporarily disable the VMR Build stage by setting the disableBuild variable
 - ${{ if not(parameters.disableBuild) }}:
   - template: templates/stages/vmr-build.yml
