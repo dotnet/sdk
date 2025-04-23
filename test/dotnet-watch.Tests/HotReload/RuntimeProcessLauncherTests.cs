@@ -526,7 +526,6 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for change handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
-        w.Reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
         w.Reporter.ProcessOutput.Contains($"verbose ❌ {serviceSourceA2}(1,12): error ENC0003: Updating 'attribute' requires restarting the application.");
     }
 
