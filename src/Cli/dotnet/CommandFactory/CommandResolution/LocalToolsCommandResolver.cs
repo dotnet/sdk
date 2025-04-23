@@ -82,9 +82,9 @@ internal class LocalToolsCommandResolver(
                 NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                 Constants.AnyRid,
                 toolCommandName),
-            out var restoredCommand))
+            out var toolCommand))
         {
-            if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
+            if (!_fileSystem.File.Exists(toolCommand.Executable.Value))
             {
                 throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
@@ -96,7 +96,7 @@ internal class LocalToolsCommandResolver(
             }
 
             return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                restoredCommand.Executable.Value,
+                toolCommand.Executable.Value,
                 arguments.CommandArguments);
         }
         else

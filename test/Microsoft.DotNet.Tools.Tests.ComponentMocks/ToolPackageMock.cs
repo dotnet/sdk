@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
     internal class ToolPackageMock : IToolPackage
     {
         private IFileSystem _fileSystem;
-        private Lazy<RestoredCommand> _command;
+        private Lazy<ToolCommand> _command;
         private IEnumerable<string> _warnings;
         private readonly IReadOnlyList<FilePath> _packagedShims;
 
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             Id = id;
             Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageDirectory = packageDirectory;
-            _command = new Lazy<RestoredCommand>(GetCommand);
+            _command = new Lazy<ToolCommand>(GetCommand);
             _warnings = warnings ?? new List<string>();
             _packagedShims = packagedShims ?? new List<FilePath>();
             Frameworks = frameworks ?? new List<NuGetFramework>();
@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public NuGetVersion Version { get; private set; }
         public DirectoryPath PackageDirectory { get; private set; }
 
-        public RestoredCommand Command
+        public ToolCommand Command
         {
             get
             {
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public NuGetVersion ResolvedPackageVersion { get; private set; }
 
-        private RestoredCommand GetCommand()
+        private ToolCommand GetCommand()
         {
             try
             {
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     name = root.GetProperty("Name").GetString();
                 }
 
-                return new RestoredCommand(
+                return new ToolCommand(
                         new ToolCommandName(name),
                         "dotnet",
                         PackageDirectory.WithFile(executablePath));

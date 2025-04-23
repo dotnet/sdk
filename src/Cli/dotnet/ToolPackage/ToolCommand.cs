@@ -8,7 +8,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class RestoredCommand(
+internal class ToolCommand(
     ToolCommandName name,
     string runner,
     FilePath executable)
