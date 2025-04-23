@@ -104,7 +104,7 @@ steps:
 - ${{ each assetName in parameters.additionalSyncs }}:
   # The vmr-sync script ends up staging files in the local VMR so we have to commit those
   - script:
-      git -C commit --allow-empty -am "Forward-flow dotnet/sdk"
+      git commit --allow-empty -am "Forward-flow dotnet/sdk"
     displayName: Commit local VMR changes
     workingDirectory: ${{ parameters.vmrPath }}
 
@@ -135,6 +135,7 @@ steps:
       git clone $repository $commit
       cd $commit
       git checkout $commit
+      git branch "sync/$commit"
 
       ./eng/vmr-sync.sh                         \
         --vmr ${{ parameters.vmrPath }}         \
@@ -177,6 +178,7 @@ steps:
       git clone $repository $commit
       cd $commit
       git checkout $commit
+      git branch "sync/$commit"
 
       $(Agent.BuildDirectory)/sdk/eng/vmr-sync.ps1 `
         -vmr ${{ parameters.vmrPath }}             `
