@@ -472,9 +472,9 @@
       <Sha>cbcc6ddf3db6dedff5049f0397e1351951c13271</Sha>
       <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="System.CommandLine" Version="2.0.0-beta5.25218.1">
+    <Dependency Name="System.CommandLine" Version="2.0.0-beta5.25222.1">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>51366ef782ef34c51db469cead5c01f551249f86</Sha>
+      <Sha>8b30ff9e4900d220c2979f1bbb5647154e438edd</Sha>
     </Dependency>
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
@@ -485,9 +485,9 @@
       <Sha>d1c0c096d93db9c45001409afbb3dfec4bce89bb</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.621801">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.622201">
       <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>51366ef782ef34c51db469cead5c01f551249f86</Sha>
+      <Sha>8b30ff9e4900d220c2979f1bbb5647154e438edd</Sha>
       <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
