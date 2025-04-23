@@ -85,11 +85,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgsForRestore = expectedAdditionalArgsForRestore
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar)
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("myoutput", "myoutput" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
