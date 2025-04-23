@@ -96,18 +96,18 @@
       <Sha>1257632985b401d81f8b295d158065d9d10f8d61</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25217-10">
+    <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25222-10">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>a9d68ab58eab3c25b6378a90be8060dd1429a6ef</Sha>
+      <Sha>d5ac662019bc8456cc48f3e1b340f55572e6d059</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.15.0-preview-25217-10">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.15.0-preview-25222-10">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>a9d68ab58eab3c25b6378a90be8060dd1429a6ef</Sha>
+      <Sha>d5ac662019bc8456cc48f3e1b340f55572e6d059</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.15.0-preview-25217-10">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.15.0-preview-25222-10">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>a9d68ab58eab3c25b6378a90be8060dd1429a6ef</Sha>
+      <Sha>d5ac662019bc8456cc48f3e1b340f55572e6d059</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25207.2">
@@ -273,20 +273,20 @@
       <Uri>https://github.com/dotnet/runtime</Uri>
       <Sha>8c3a2e15a63d1a7b2b54312b79f8a725ccdc2d4d</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25222.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="10.0.0-preview.4.25222.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>5aad917e7cd9d26645f3a3eefc7aae482ceeb3ab</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25222.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.10.0" Version="10.0.0-preview.4.25222.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>5aad917e7cd9d26645f3a3eefc7aae482ceeb3ab</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25222.1">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.4.25222.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>5aad917e7cd9d26645f3a3eefc7aae482ceeb3ab</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25222.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.10.0" Version="10.0.0-preview.4.25222.2">
       <Uri>https://github.com/dotnet/windowsdesktop</Uri>
       <Sha>5aad917e7cd9d26645f3a3eefc7aae482ceeb3ab</Sha>
     </Dependency>
