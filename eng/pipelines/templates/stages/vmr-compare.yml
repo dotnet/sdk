@@ -82,7 +82,9 @@ stages:
           sourceManifestCommit: ${{ parameters.sourceManifestCommit }}
           command: assets
 
-  - ${{ if ne(parameters.comparisonType, 'assets') }}:
+# On manual builds, run of comparisionType is not assets
+# On automated builds, run if eq(variables.signEnabled, 'true')
+  - ${{ if or(and(ne(parameters.comparisonType, 'assets'), eq(variables['Build.Reason'], 'Manual')), and(eq(variables.signEnabled, 'true'), ne(variables['Build.Reason'], 'Manual'))) }}:
     - job: CompareSigning_Windows
       displayName: Compare Signing - Windows
       pool: ${{ parameters.pool_Windows }}
