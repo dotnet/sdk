@@ -244,9 +244,9 @@ variables:
       value: NetCore1ESPool-Internal
   - ${{ else }}:
     - name: defaultPoolName
-      value: $(DncEngInternalBuildPool)
+      value: NetCore1ESPool-Internal
     - name: shortStackPoolName
-      value: $(DncEngInternalBuildPool)
+      value: NetCore1ESPool-Internal
   - name: poolImage_Linux
     value: build.ubuntu.2204.amd64
   - name: poolImage_LinuxArm64
