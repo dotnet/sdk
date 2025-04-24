@@ -66,7 +66,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "RuntimeIdentifierGraph.json");
     }
 
-    protected abstract NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
+    protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
         VerbosityOptions verbosity,
         RestoreActionConfig? restoreActionConfig);
@@ -126,7 +126,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected IToolPackage InstallGlobalToolPackageInternal(
         PackageSourceLocation packageSourceLocation,
-        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+        INuGetPackageDownloader nugetPackageDownloader,
         PackageId packageId,
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
@@ -202,7 +202,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected IToolPackage InstallLocalToolPackageInternal(
         PackageSourceLocation packageSourceLocation,
-        NuGetPackageDownloader.NuGetPackageDownloader nugetPackageDownloader,
+        INuGetPackageDownloader nugetPackageDownloader,
         PackageId packageId,
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
