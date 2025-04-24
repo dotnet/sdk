@@ -48,7 +48,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected readonly string _runtimeJsonPath;
 
-    private readonly string _currentWorkingDirectory;
+    protected readonly string _currentWorkingDirectory;
 
     protected ToolPackageDownloaderBase(
         IToolPackageStore store,
@@ -66,6 +66,13 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
     }
 
+    protected abstract NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
+        DirectoryPath packageInstallDir,
+        ILogger verboseLogger,
+        bool verifySignatures,
+        VerbosityOptions verbosity,
+        RestoreActionConfig restoreActionConfig);
+
     public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         VersionRange versionRange = null,
@@ -75,7 +82,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool verifySignatures = true,
         RestoreActionConfig restoreActionConfig = null)
     {
-
         ILogger nugetLogger = new NullLogger();
         if (verbosity.IsDetailedOrDiagnostic())
         {
@@ -88,14 +94,12 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             versionRange = VersionRange.Parse(versionString);
         }
 
-        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+        var nugetPackageDownloader = CreateNuGetPackageDownloader(
             new DirectoryPath(),
-            verboseLogger: nugetLogger,
-            verifySignatures: verifySignatures,
-            shouldUsePackageSourceMapping: true,
-            restoreActionConfig: restoreActionConfig,
-            verbosityOptions: verbosity,
-            currentWorkingDirectory: _currentWorkingDirectory);
+            nugetLogger,
+            verifySignatures,
+            verbosity,
+            restoreActionConfig);
 
         var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
@@ -505,12 +509,12 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             versionRange = VersionRange.Parse(versionString);
         }
 
-        var nugetPackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
-            packageInstallDir: isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
-            verboseLogger: nugetLogger,
-            shouldUsePackageSourceMapping: true,
-            verbosityOptions: verbosity,
-            restoreActionConfig: restoreActionConfig);
+        var nugetPackageDownloader = CreateNuGetPackageDownloader(
+            isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
+            nugetLogger,
+            false,
+            verbosity,
+            restoreActionConfig);
 
         var packageSourceLocation = new PackageSourceLocation(
             nugetConfig: packageLocation.NugetConfig,
