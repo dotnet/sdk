@@ -103,5 +103,16 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="AddVerticalNameToPdbArtifacts"
+          DependsOnTargets="GetNonStableProductVersion"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateChecksumsFromArtifacts"
+          Condition="'$(VerticalName)' != ''">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.Kind)' == 'PDB'"
+                RelativePDBPath="$(VerticalName)/%(Artifact.RelativeBlobPath)" />
+    </ItemGroup>
+  </Target>
+
   <Import Project="$(RepositoryEngineeringDir)PublishSourceBuild.props" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
 </Project>
