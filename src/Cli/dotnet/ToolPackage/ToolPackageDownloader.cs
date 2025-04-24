@@ -35,4 +35,21 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     ) : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
     {
     }
+
+    protected override NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
+        DirectoryPath packageInstallDir,
+        ILogger verboseLogger,
+        bool verifySignatures,
+        VerbosityOptions verbosity,
+        RestoreActionConfig restoreActionConfig)
+    {
+        return new NuGetPackageDownloader.NuGetPackageDownloader(
+            packageInstallDir,
+            verboseLogger: verboseLogger,
+            verifySignatures: verifySignatures,
+            shouldUsePackageSourceMapping: true,
+            restoreActionConfig: restoreActionConfig,
+            verbosityOptions: verbosity,
+            currentWorkingDirectory: _currentWorkingDirectory);
+    }
 }
