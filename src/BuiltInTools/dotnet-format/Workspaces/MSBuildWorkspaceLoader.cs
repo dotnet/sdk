@@ -2,6 +2,7 @@
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.MSBuild;
+using Microsoft.CodeAnalysis.Tools.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.CodeAnalysis.Tools.Workspaces
@@ -39,6 +40,8 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 };
             }
 
+            var loggerFactory = (ILoggerFactory)workspace.GetType()!.GetField("_loggerFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(workspace)!;
+            loggerFactory.AddProvider(SimpleConsoleLoggerFactoryExtensions.Provider);
             if (workspaceType == WorkspaceType.Solution)
             {
                 await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);

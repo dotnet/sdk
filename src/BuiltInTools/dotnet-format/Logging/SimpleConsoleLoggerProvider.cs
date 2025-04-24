@@ -20,7 +20,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 
         public ILogger CreateLogger(string name)
         {
-            return new SimpleConsoleLogger(_console, _minimalLogLevel, _minimalErrorLevel);
+            return new SimpleConsoleLogger(name, _console, _minimalLogLevel, _minimalErrorLevel);
         }
 
         public void Dispose()

@@ -11,6 +11,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
     {
         private readonly object _gate = new object();
 
+        private readonly string _name;
         private readonly IConsole _console;
         private readonly ITerminal _terminal;
         private readonly LogLevel _minimalLogLevel;
@@ -27,8 +28,9 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
             [LogLevel.None] = ConsoleColor.White,
         }.ToImmutableDictionary();
 
-        public SimpleConsoleLogger(IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
+        public SimpleConsoleLogger(string name, IConsole console, LogLevel minimalLogLevel, LogLevel minimalErrorLevel)
         {
+            _name = name;
             _terminal = console.GetTerminal();
             _console = console;
             _minimalLogLevel = minimalLogLevel;
@@ -44,7 +46,7 @@ namespace Microsoft.CodeAnalysis.Tools.Logging
 
             lock (_gate)
             {
-                var message = formatter(state, exception);
+                var message = $"[{_name}] {formatter(state, exception)}";
                 var logToErrorStream = logLevel >= _minimalErrorLevel;
                 if (_terminal is null)
                 {
