@@ -36,7 +36,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     {
     }
 
-    protected override NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
+    protected override INuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
         VerbosityOptions verbosity,
         RestoreActionConfig restoreActionConfig)
