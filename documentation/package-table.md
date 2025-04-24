@@ -2,7 +2,7 @@
 
 --------------------------------------------------------------------------------------
 | Platform | main<br>(10.0.x&nbsp;Runtime) | 9.0.3xx<br>(9.0.x&nbsp;Runtime) |
-| :--------- | :----------: | :----------: | :----------: |
+| :--------- | :----------: | :----------: |
 | **Windows x64** | [![][win-x64-badge-main]][win-x64-version-main]<br>[Installer][win-x64-installer-main] - [Checksum][win-x64-installer-checksum-main]<br>[zip][win-x64-zip-main] - [Checksum][win-x64-zip-checksum-main] | [![][win-x64-badge-9.0.3XX]][win-x64-version-9.0.3XX]<br>[Installer][win-x64-installer-9.0.3XX] - [Checksum][win-x64-installer-checksum-9.0.3XX]<br>[zip][win-x64-zip-9.0.3XX] - [Checksum][win-x64-zip-checksum-9.0.3XX] |
 | **Windows x86** | [![][win-x86-badge-main]][win-x86-version-main]<br>[Installer][win-x86-installer-main] - [Checksum][win-x86-installer-checksum-main]<br>[zip][win-x86-zip-main] - [Checksum][win-x86-zip-checksum-main] | [![][win-x86-badge-9.0.3XX]][win-x86-version-9.0.3XX]<br>[Installer][win-x86-installer-9.0.3XX] - [Checksum][win-x86-installer-checksum-9.0.3XX]<br>[zip][win-x86-zip-9.0.3XX] - [Checksum][win-x86-zip-checksum-9.0.3XX] |
 | **Windows arm64** | [![][win-arm64-badge-main]][win-arm64-version-main]<br>[Installer][win-arm64-installer-main] - [Checksum][win-arm64-installer-checksum-main]<br>[zip][win-arm64-zip-main] - [Checksum][win-arm64-zip-checksum-main] | [![][win-arm64-badge-9.0.3XX]][win-arm64-version-9.0.3XX]<br>[Installer][win-arm64-installer-9.0.3XX] - [Checksum][win-arm64-installer-checksum-9.0.3XX]<br>[zip][win-arm64-zip-9.0.3XX] |
