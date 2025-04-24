@@ -37,12 +37,18 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     }
 
     protected override NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
-        DirectoryPath packageInstallDir,
-        ILogger verboseLogger,
         bool verifySignatures,
         VerbosityOptions verbosity,
         RestoreActionConfig restoreActionConfig)
     {
+        ILogger verboseLogger = new NullLogger();
+        if (verbosity.IsDetailedOrDiagnostic())
+        {
+            verboseLogger = new NuGetConsoleLogger();
+        }
+
+        DirectoryPath packageInstallDir = new DirectoryPath();
+        
         return new NuGetPackageDownloader.NuGetPackageDownloader(
             packageInstallDir,
             verboseLogger: verboseLogger,
