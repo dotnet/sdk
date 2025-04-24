@@ -7,34 +7,34 @@ namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
 internal static class BuildServerShutdownCommandParser
 {
-    public static readonly CliOption<bool> MSBuildOption = new("--msbuild")
+    public static readonly Option<bool> MSBuildOption = new("--msbuild")
     {
         Description = CliCommandStrings.MSBuildOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> VbcsOption = new("--vbcscompiler")
+    public static readonly Option<bool> VbcsOption = new("--vbcscompiler")
     {
         Description = CliCommandStrings.VBCSCompilerOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> RazorOption = new("--razor")
+    public static readonly Option<bool> RazorOption = new("--razor")
     {
         Description = CliCommandStrings.RazorOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("shutdown", CliCommandStrings.BuildServerShutdownCommandDescription);
+        Command command = new("shutdown", CliCommandStrings.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

@@ -18,6 +18,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 using IReporter = Microsoft.DotNet.Cli.Utils.IReporter;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
@@ -25,21 +26,21 @@ internal static class WorkloadCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static readonly CliOption<bool> InfoOption = new("--info")
+    public static readonly Option<bool> InfoOption = new("--info")
     {
         Description = CliCommandStrings.WorkloadInfoDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> VersionOption = new("--version")
+    public static readonly Option<bool> VersionOption = new("--version")
     {
         Description = CliCommandStrings.WorkloadVersionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         Command.Options.Add(InfoOption);
         Command.Options.Add(VersionOption);
@@ -150,7 +151,7 @@ internal static class WorkloadCommandParser
         return parseResult.HandleMissingCommand();
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         DocumentedCommand command = new("workload", DocsLink, CliCommandStrings.WorkloadCommandDescription);
 

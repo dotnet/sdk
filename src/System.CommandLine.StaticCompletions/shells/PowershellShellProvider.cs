@@ -21,7 +21,7 @@ public class PowershellShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    public string GenerateCompletions(CliCommand command)
+    public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;
 
@@ -83,14 +83,14 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
     private static string ParameterValueResult(string name, string value, string? helpText) => CompletionResult(name, value, "ParameterValue", helpText);
 
-    private static string? SanitizeHelpDescription(CliSymbol s) => s.Description?.ReplaceLineEndings(" ").Replace("`", "``").Replace("'", "`'").Replace("\"", "`\"").Replace("$", "`$");
+    private static string? SanitizeHelpDescription(Symbol s) => s.Description?.ReplaceLineEndings(" ").Replace("`", "``").Replace("'", "`'").Replace("\"", "`\"").Replace("$", "`$");
 
     /// <summary>
     /// Generations completion-list items for the names of the given option. Typically used by commands/subcommands for static lookup lists.
     /// </summary>
     /// <param name="o"></param>
     /// <returns></returns>
-    private static IEnumerable<string> GenerateOptionNameCompletions(CliOption o)
+    private static IEnumerable<string> GenerateOptionNameCompletions(Option o)
     {
         if (o.Hidden)
         {
@@ -116,7 +116,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// </summary>
     /// <param name="argument"></param>
     /// <returns></returns>
-    private static IEnumerable<string> GenerateArgumentCompletions(CliArgument argument)
+    private static IEnumerable<string> GenerateArgumentCompletions(Argument argument)
     {
         if (argument.Hidden)
         {
@@ -146,7 +146,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <param name="writer"></param>
     /// <param name="command"></param>
     /// <remarks>Dynamically-generated completions are not yet supported</remarks>
-    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, CliCommand command)
+    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, Command command)
     {
         string[] commandNameList = parentCommandNames switch
         {
@@ -173,7 +173,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <summary>
     /// Generate completions for the statically-known options, arguments, and subcommands of a given command.
     /// </summary>
-    private static void GenerateStaticCompletionsForCommand(string[] commandPath, CliCommand command, IndentedTextWriter writer)
+    private static void GenerateStaticCompletionsForCommand(string[] commandPath, Command command, IndentedTextWriter writer)
     {
         List<string> completions = new();
 
@@ -237,11 +237,11 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     }
 
 
-    private static void GenerateDynamicCompletionsForArguments(string[] commandNameList, IList<CliArgument> arguments, IndentedTextWriter writer)
+    private static void GenerateDynamicCompletionsForArguments(string[] commandNameList, IList<Argument> arguments, IndentedTextWriter writer)
     {
 
     }
-    private static void GenerateDynamicCompletionsForOptions(string[] commandNameList, IList<CliOption> options, IndentedTextWriter writer)
+    private static void GenerateDynamicCompletionsForOptions(string[] commandNameList, IList<Option> options, IndentedTextWriter writer)
     {
 
     }

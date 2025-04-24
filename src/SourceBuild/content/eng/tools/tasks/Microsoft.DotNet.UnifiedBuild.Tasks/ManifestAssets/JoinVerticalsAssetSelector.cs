@@ -35,6 +35,7 @@ namespace Microsoft.DotNet.UnifiedBuild.Tasks.ManifestAssets
             return
                 // Skip packages with stable version
                 // - this can be removed after this issue is resolved: https://github.com/dotnet/source-build/issues/4892
+                StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "dotnet-suggest") ||
                 StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.Diagnostics.NETCore.Client") ||
                 StringComparer.OrdinalIgnoreCase.Equals(assetVerticalMatch.AssetId, "Microsoft.NET.Sdk.Aspire.Manifest-8.0.100");
         }

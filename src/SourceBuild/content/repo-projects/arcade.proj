@@ -10,10 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ExtraPackageVersionPropsPackageInfo Include="NuGetVersion" Version="%24(NuGetPackagingVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <BuiltSdkPackage Include="Microsoft.DotNet.Arcade.Sdk" />
     <BuiltSdkPackage Include="Microsoft.DotNet.SharedFramework.Sdk" />
     <BuiltSdkPackage Include="Microsoft.DotNet.CMake.Sdk" />

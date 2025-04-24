@@ -207,7 +207,7 @@ Other directives result in an error, reserving them for future use.
 #:sdk Microsoft.NET.Sdk.Web
 #:property TargetFramework net11.0
 #:property LangVersion preview
-#:package System.CommandLine 2.0.0-*
+#:package System.CommandLine@2.0.0-*
 ```
 
 The value must be separated from the name of the directive by white space (`@` is additionally allowed separator for the package directive)

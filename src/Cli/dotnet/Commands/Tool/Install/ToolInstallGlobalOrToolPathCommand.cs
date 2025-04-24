@@ -68,7 +68,9 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Id;
+
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
         _configFilePath = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
         _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
@@ -106,7 +108,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         _reporter = reporter ?? Reporter.Output;
     }
 
-    public static T GetValueOrDefault<T>(CliOption<T> option, T defaultOption, ParseResult parseResult)
+    public static T GetValueOrDefault<T>(Option<T> option, T defaultOption, ParseResult parseResult)
     {
         if (parseResult.GetResult(option) is { } result &&
             result.GetValueOrDefault<T>() is { } t)

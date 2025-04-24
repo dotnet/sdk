@@ -407,6 +407,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:sdk Third 3.0=a/b
                 #:package P1 1.0/a=b
                 #:package P2 2.0/a=b
+                #:package P3@1.0 ab
                 """,
             expectedProject: $"""
                 <Project Sdk="First/1.0=a/b">
@@ -429,6 +430,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   <ItemGroup>
                     <PackageReference Include="P1" Version="1.0/a=b" />
                     <PackageReference Include="P2" Version="2.0/a=b" />
+                    <PackageReference Include="P3" Version="1.0 ab" />
                   </ItemGroup>
 
                 </Project>

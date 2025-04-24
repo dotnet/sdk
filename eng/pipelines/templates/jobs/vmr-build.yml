@@ -63,6 +63,18 @@ parameters:
   type: boolean
   default: false
 
+# Name of previous job(s) (from the same template as this) whose output will be used to build this job
+# The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
+- name: reuseBuildArtifactsFrom
+  type: object
+  default: ''
+
+# Names of jobs that this job depends on. This only provides a job dependency and does not automatically
+# download artifacts from the other job. Use reuseBuildArtifactsFrom for that.
+- name: dependsOn
+  type: object
+  default: ''
+
 #### SOURCE-ONLY parameters ####
 
 # Instead of building the VMR directly, exports the sources into a tarball and builds from that
@@ -83,12 +95,6 @@ parameters:
   type: boolean
   default: false
 
-# Name of previous job(s) (from the same template as this) whose output will be used to build this job
-# The SDK from its artifacts is copied to $(sourcesPath)/.dotnet
-- name: reuseBuildArtifactsFrom
-  type: object
-  default: ''
-
 # Allow downloading artifacts from the internet during the build
 - name: runOnline
   type: boolean
@@ -107,6 +113,16 @@ parameters:
 - name: withPreviousSDK
   type: boolean
   default: false
+
+# Skip the build step (this would be used when wanting to run tests only)
+- name: skipBuild
+  type: boolean
+  default: false
+
+# Custom steps to run before running tests
+- name: testInitSteps
+  type: stepList
+  default: []
 
 #### sdk parameters ####
 
@@ -138,7 +154,7 @@ jobs:
         image: ${{ parameters.container.image }}
         options: $(defaultContainerOptions)
 
-  ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
+  ${{ if or(ne(parameters.reuseBuildArtifactsFrom, ''), ne(parameters.dependsOn, '')) }}:
     ${{ if eq(parameters.buildPass, '') }}:
       # For PR builds, skip the stage 2 build if the stage 1 build fails.
       # Otherwise, run the stage 2 build even if the stage 1 build fails so that we can get a complete assessment of the build status.
@@ -149,7 +165,11 @@ jobs:
         condition: succeededOrFailed()
     ${{ else }}:
       condition: succeeded()
-    dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}
+    dependsOn:
+    - ${{ if ne(parameters.reuseBuildArtifactsFrom, '') }}:
+      - ${{ parameters.reuseBuildArtifactsFrom }}
+    - ${{ if ne(parameters.dependsOn, '') }}:
+      - ${{ parameters.dependsOn }}
   variables:
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
     - group: AzureDevOps-Artifact-Feeds-Pats
@@ -219,15 +239,15 @@ jobs:
     value: $(commandPrefix)ci $(commandPrefix)$(cleanArgument) $(commandPrefix)prepareMachine -c ${{ parameters.configuration }}
 
   - name: baseProperties
-    value: $(officialBuildParameter) /p:VerticalName=$(Agent.JobName) /p:ArtifactsStagingDir=$(artifactsStagingDir)
+    value: $(officialBuildProperties) /p:VerticalName=$(Agent.JobName)
 
   - name: targetProperties
     ${{ if and(ne(parameters.targetOS, ''), ne(parameters.targetArchitecture, '')) }}:
-      value: /p:TargetOS=${{ parameters.targetOS }} /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+      value: -os ${{ parameters.targetOS }} -arch ${{ parameters.targetArchitecture }}
     ${{ elseif ne(parameters.targetOS, '') }}:
-      value: /p:TargetOS=${{ parameters.targetOS }}
+      value: -os ${{ parameters.targetOS }}
     ${{ else }}:
-      value: /p:TargetArchitecture=${{ parameters.targetArchitecture }}
+      value: -arch ${{ parameters.targetArchitecture }}
 
   ### Signing
   - name: _SignDiagnosticFilesArgs
@@ -295,14 +315,14 @@ jobs:
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
     # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
     - output: pipelineArtifact
-      path: $(artifactsStagingDir)
+      path: $(Build.ArtifactStagingDirectory)
       artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts (On Success)
       condition: succeeded()
       sbomEnabled: true
 
     - output: pipelineArtifact
-      path: $(artifactsStagingDir)
+      path: $(Build.ArtifactStagingDirectory)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()
@@ -311,7 +331,7 @@ jobs:
     # Using build artifacts to enable publishing the vertical manifests to a single artifact from different jobs
     - ${{ if ne(parameters.buildSourceOnly, true) }}:
       - output: buildArtifacts
-        PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+        PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
         ArtifactName: VerticalManifests
         displayName: Publish Vertical Manifest
         sbomEnabled: false
@@ -344,20 +364,15 @@ jobs:
   - ${{ if ne(parameters.reuseBuildArtifactsFrom,'') }}:
     - ${{ each reuseBuildArtifacts in parameters.reuseBuildArtifactsFrom }}:
       - ${{ if eq(parameters.buildSourceOnly, true) }}:
-        - download: current
-          artifact: ${{ reuseBuildArtifacts }}_Artifacts
-          patterns: |
-            **/Private.SourceBuilt.Artifacts.*.tar.gz
-            **/dotnet-sdk-*.tar.gz
-            **/*.nupkg
-          displayName: Download Previous Build (${{ reuseBuildArtifacts }})
-
-        - task: CopyFiles@2
-          displayName: Copy Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
-          inputs:
-            SourceFolder: $(Pipeline.Workspace)/${{ reuseBuildArtifacts }}_Artifacts/assets/Release
-            Contents: '*.tar.gz'
-            TargetFolder: $(sourcesPath)/prereqs/packages/archive/
+        - template: ../steps/download-artifacts.yml@self
+          parameters:
+            artifactDescription: Previous Build (${{ reuseBuildArtifacts }} - Source Build artifacts)
+            artifactName: ${{ reuseBuildArtifacts }}_Artifacts
+            downloadFilePatterns: |
+              **/Private.SourceBuilt.Artifacts.*.tar.gz
+              **/dotnet-sdk-*.tar.gz
+            copyDestination: $(sourcesPath)/prereqs/packages/archive/
+            flattenDirs: true
 
       - ${{ else }}:
         - task: DownloadPipelineArtifact@2
@@ -423,16 +438,16 @@ jobs:
         parameters:
           isOfficialBuild: true
           certNames:
-          - 'dotnetesrp-diagnostics-aad-ssl-cert'
-          - 'dotnet-diagnostics-esrp-pki-onecert'
-          vaultName: 'clrdiag-esrp-id'
-          azureSubscription: 'diagnostics-esrp-kvcertuser'
+          - 'dac-dnceng-ssl-cert'
+          vaultName: 'clrdiag-esrp-pme'
+          azureSubscription: 'diagnostics-esrp-kvcertuser-pme'
           scriptRoot: '$(Build.SourcesDirectory)/src/runtime'
 
     - script: build.cmd
         $(baseArguments)
         $(signArguments)
         $(baseProperties)
+        /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory)
         $(targetProperties)
         $(signProperties)
         $(buildPassProperties)
@@ -501,71 +516,74 @@ jobs:
         displayName: Prep the Build
         workingDirectory: $(sourcesPath)
 
-    - script: |
-        set -ex
-        df -h
+    - ${{ if ne(parameters.skipBuild, 'true') }}:
 
-        customEnvVars=""
-        customPreBuildArgs=""
-        customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
-        extraBuildProperties="$(baseProperties) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
+      - script: |
+          set -ex
+          df -h
 
-        if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --online"
-        else
-          customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
-        fi
+          customEnvVars=""
+          customPreBuildArgs=""
+          customBuildArgs="$(baseArguments) $(signArguments) $(_SignDiagnosticFilesArgs)"
+          extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) $(signProperties) $(buildPassProperties) ${{ parameters.extraProperties }}"
 
-        if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --poison"
-        fi
-
-        if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --source-repository https://github.com/dotnet/dotnet"
-          customBuildArgs="$customBuildArgs --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
-        fi
-
-        if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --source-only"
-          extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
-        fi
-
-        if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
-          customBuildArgs="$customBuildArgs --use-mono-runtime"
-        fi
-
-        if [[ -n "${{ parameters.targetRid }}" ]]; then
-          customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
-        fi
-
-        if [[ -n "${{ parameters.crossRootFs }}" ]]; then
-          customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
-          if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
-            extraBuildProperties="$extraBuildProperties /p:CrossBuild=true"
+          if [[ '${{ parameters.runOnline }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --online"
+          else
+            customPreBuildArgs="$customPreBuildArgs sudo unshare -n"
           fi
-        fi
 
-        buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
-        buildArgs=$(echo $buildArgs | xargs) # Remove extra spaces
+          if [[ '${{ parameters.enablePoison }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --poison"
+          fi
 
-        for envVar in $customEnvVars; do
-          customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
-        done
+          if [[ '${{ parameters.buildFromArchive }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --source-repository https://github.com/dotnet/dotnet"
+            customBuildArgs="$customBuildArgs --source-version $(git -C "$(vmrPath)" rev-parse HEAD)"
+          fi
 
-        eval $customEnvVarsWithBashSyntax
-        $customPreBuildArgs ./build.sh $buildArgs
-      displayName: Build
-      workingDirectory: $(sourcesPath)
+          if [[ '${{ parameters.buildSourceOnly }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --source-only"
+            extraBuildProperties="$extraBuildProperties /p:ReportSbrpUsage=true"
+          fi
+
+          if [[ '${{ parameters.useMonoRuntime }}' == 'True' ]]; then
+            customBuildArgs="$customBuildArgs --use-mono-runtime"
+          fi
+
+          if [[ -n "${{ parameters.targetRid }}" ]]; then
+            customBuildArgs="$customBuildArgs --target-rid ${{ parameters.targetRid }}"
+          fi
+
+          if [[ -n "${{ parameters.crossRootFs }}" ]]; then
+            customEnvVars="$customEnvVars ROOTFS_DIR=${{ parameters.crossRootFs}}"
+            if [[ '${{ parameters.targetArchitecture }}' != 'wasm' ]]; then
+              extraBuildProperties="$extraBuildProperties /p:CrossBuild=true"
+            fi
+          fi
+
+          buildArgs="$(additionalBuildArgs) $customBuildArgs $extraBuildProperties"
+
+          for envVar in $customEnvVars; do
+            customEnvVarsWithBashSyntax="$customEnvVarsWithBashSyntax export $envVar;"
+          done
+
+          eval $customEnvVarsWithBashSyntax
+          $customPreBuildArgs ./build.sh $buildArgs
+        displayName: Build
+        workingDirectory: $(sourcesPath)
 
     - ${{ if ne(parameters.runOnline, 'True' )}}:
       - script: |
           set -ex
           # Update the owner of the staging directory to the current user
-          sudo chown -R $(whoami) $(artifactsStagingDir)
+          sudo chown -R $(whoami) $(Build.ArtifactStagingDirectory)
         displayName: Update owner of artifacts staging directory
 
     # Only run tests if enabled
     - ${{ if eq(parameters.runTests, 'True') }}:
+      - ${{ parameters.testInitSteps }}
+
       # Setup the NuGet sources used by the tests to use private feeds. This is necessary when testing internal-only product
       # builds where the packages are only available in the private feeds. This allows the tests to restore from those feeds.
       - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
@@ -585,7 +603,7 @@ jobs:
 
           customPreBuildArgs=''
           customBuildArgs="--test --excludeCIBinarylog /bl:artifacts/log/Release/Test.binlog $(baseArguments)"
-          extraBuildProperties="$(baseProperties) $(targetProperties) ${{ parameters.extraProperties }}"
+          extraBuildProperties="$(baseProperties) /p:ArtifactsStagingDir=$(Build.ArtifactStagingDirectory) $(targetProperties) ${{ parameters.extraProperties }}"
 
           if [[ '${{ parameters.runOnline }}' == 'False' ]]; then
             customPreBuildArgs="$customPreBuildArgs sudo"
@@ -680,13 +698,13 @@ jobs:
     # Both publishing steps are necessary to ensure artifacts are published on both success and failure.
     # This prevents overwrite conflicts in the event of a failed build followed by a rerun.
     # Additionally, the 'Download Previous Build *' steps depend on a fixed name to acquire specific assets in multi-stage builds.
-    - publish: $(artifactsStagingDir)
+    - publish: $(Build.ArtifactStagingDirectory)
       artifact: $(successfulJobArtifactName)
       displayName: Publish Artifacts (On Success)
       condition: succeeded()
       continueOnError: true
 
-    - publish: $(artifactsStagingDir)
+    - publish: $(Build.ArtifactStagingDirectory)
       artifact: $(failedJobArtifactName)
       displayName: Publish Artifacts (On Failure)
       condition: failed()
@@ -696,6 +714,6 @@ jobs:
     - ${{ if ne(parameters.buildSourceOnly, true) }}:
       - task: PublishBuildArtifacts@1
         inputs:
-          PathtoPublish: $(artifactsStagingDir)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
+          PathtoPublish: $(Build.ArtifactStagingDirectory)/manifests/${{ parameters.configuration }}/$(Agent.JobName).xml
           ArtifactName: VerticalManifests
         displayName: Publish Vertical Manifest

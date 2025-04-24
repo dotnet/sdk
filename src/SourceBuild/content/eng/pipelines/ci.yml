@@ -33,11 +33,11 @@ parameters:
 - name: desiredSigning
   displayName: 'Sign?'
   type: string
-  default: 'Default (unsigned for manual and non-main/release builds)'
+  default: 'Default (unsigned for non release-branch builds)'
   values:
     - Signed
     - Unsigned
-    - Default (unsigned for manual and non-main/release builds)
+    - Default (unsigned for non release-branch builds)
 
 - name: desiredIBC
   displayName: 'Enable IBC?'

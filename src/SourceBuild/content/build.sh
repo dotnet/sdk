@@ -13,6 +13,8 @@ usage()
   echo "  --binaryLog                     Create MSBuild binary log (short: -bl)"
   echo "  --configuration <value>         Build configuration: 'Debug' or 'Release' (short: -c)"
   echo "  --rid, --target-rid <value>     Overrides the rid that is produced by the build. e.g. alpine.3.18-arm64, fedora.37-x64, freebsd.13-arm64, ubuntu.19.10-x64"
+  echo "  --os, --target-os <value>       Target operating system: e.g. linux, osx, freebsd. Note: this is the base OS name, not the distro"
+  echo "  --arch, --target-arch <value>   Target architecture: e.g. x64, x86, arm64, arm, riscv64"
   echo "  --verbosity <value>             Msbuild verbosity: q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic] (short: -v)"
   echo "  --with-system-libs <libs>       Use system versions of these libraries. Combine with a plus. eg brotli+libunwind+rapidjson+zlib"
   echo ""
@@ -87,8 +89,6 @@ projects=''
 ci=false
 exclude_ci_binary_log=false
 prepare_machine=false
-target_rid=
-system_libs=
 
 properties=()
 while [[ $# > 0 ]]; do
@@ -103,11 +103,19 @@ while [[ $# > 0 ]]; do
       shift
       ;;
     -rid|-target-rid)
-      target_rid=$2
+      properties+=( "/p:TargetRid=$2" )
+      shift
+      ;;
+    -os|-target-os)
+      properties+=( "/p:TargetOS=$2" )
+      shift
+      ;;
+    -arch|-target-arch)
+      properties+=( "/p:TargetArchitecture=$2" )
       shift
       ;;
     -with-system-libs)
-      system_libs=$2
+      properties+=( "/p:UseSystemLibs=$2" )
       shift
       ;;
     -verbosity|-v)
@@ -291,12 +299,6 @@ fi
 source $scriptroot/eng/common/native/init-os-and-arch.sh
 source $scriptroot/eng/common/native/init-distro-rid.sh
 initDistroRidGlobal "$os" "$arch" ""
-if [[ -n "$target_rid" ]]; then
-  properties+=( "/p:TargetRid=$target_rid" )
-fi
-if [[ -n "$system_libs" ]]; then
-  properties+=( "/p:UseSystemLibs=$system_libs" )
-fi
 
 # Source-only settings
 if [[ "$sourceOnly" == "true" ]]; then
@@ -362,7 +364,7 @@ if [[ "$sourceOnly" == "true" ]]; then
     if [ "$test" == "true" ]; then
       properties+=( "/p:CustomSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     else
-      properties+=( "/p:CustomPrebuiltSourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
+      properties+=( "/p:CustomPreviouslySourceBuiltPackagesPath=$CUSTOM_PACKAGES_DIR" )
     fi
   fi
 
