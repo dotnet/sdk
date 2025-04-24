@@ -11,7 +11,7 @@ using Microsoft.Win32.Msi;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal partial class NetSdkMsiInstallerClient
 {

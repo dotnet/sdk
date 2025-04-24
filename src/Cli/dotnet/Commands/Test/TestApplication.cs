@@ -3,8 +3,10 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
+using Microsoft.DotNet.Cli.Commands.Test.IPC;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
+using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -73,8 +75,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
                 processStartInfo.EnvironmentVariables[entry.Key] = value;
             }
 
-            // TODO: Support --no-launch-profile-arguments
-            if (!string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
+            if (!_buildOptions.NoLaunchProfileArguments &&
+                !string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
@@ -93,9 +95,8 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
             return BuildArgs(testOptions, isDll);
         }
 
-        // We fallback to dotnet run only when we have a dll and an architecture is specified.
-        // TODO: Is this a valid case?
-        return BuildArgsWithDotnetRun(testOptions);
+        // If we reach here, that means we have a test project that doesn't produce an executable.
+        throw new InvalidOperationException($"A Microsoft.Testing.Platform test project should produce an executable. The file '{Module.RunProperties.RunCommand}' is dll.");
     }
 
     private static bool IsArchitectureSpecified(TestOptions testOptions)
@@ -187,7 +188,7 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
 
                 default:
                     // If it doesn't match any of the above, throw an exception
-                    throw new NotSupportedException(string.Format(Tools.Test.LocalizableStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+                    throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
             }
         }
         catch (Exception ex)
@@ -282,33 +283,6 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
         {
             builder.Append($"exec {Module.RunProperties.RunCommand} ");
         }
-
-        AppendCommonArgs(builder, testOptions);
-
-        return builder.ToString();
-    }
-
-    private string BuildArgsWithDotnetRun(TestOptions testOptions)
-    {
-        StringBuilder builder = new();
-
-        builder.Append($"{CliConstants.DotnetRunCommand} {TestingPlatformOptions.ProjectOption.Name} \"{Module.ProjectFullPath}\"");
-
-        // Because we restored and built before in MSHandler, we will skip those with dotnet run
-        builder.Append($" {CommonOptions.NoRestoreOption.Name}");
-        builder.Append($" {TestingPlatformOptions.NoBuildOption.Name}");
-
-        foreach (var arg in _buildOptions.MSBuildArgs)
-        {
-            builder.Append($" {arg}");
-        }
-
-        if (!string.IsNullOrEmpty(Module.TargetFramework))
-        {
-            builder.Append($" {CliConstants.FrameworkOptionKey} {Module.TargetFramework}");
-        }
-
-        builder.Append($" {CliConstants.ParametersSeparator} ");
 
         AppendCommonArgs(builder, testOptions);
 

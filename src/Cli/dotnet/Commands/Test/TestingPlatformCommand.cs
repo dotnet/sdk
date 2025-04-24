@@ -2,15 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.TemplateEngine.Cli.Commands;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
+internal partial class TestingPlatformCommand : Command, ICustomHelp
 {
     private MSBuildHandler _msBuildHandler;
     private TerminalTestReporter _output;
@@ -49,9 +47,10 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
         InitializeOutput(degreeOfParallelism, parseResult, testOptions.IsHelp);
 
-        InitializeActionQueue(degreeOfParallelism, testOptions, testOptions.IsHelp);
-
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult, degreeOfParallelism);
+
+        InitializeActionQueue(degreeOfParallelism, testOptions, buildOptions);
+
         _msBuildHandler = new(buildOptions, _actionQueue, _output);
         TestModulesFilterHandler testModulesFilterHandler = new(_actionQueue, _output);
 
@@ -59,7 +58,7 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
         if (testOptions.HasFilterMode)
         {
-            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions))
+            if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult))
             {
                 return ExitCode.GenericFailure;
             }
@@ -98,15 +97,15 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         _isRetry = arguments.Contains("--retry-failed-tests");
     }
 
-    private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, bool isHelp)
+    private void InitializeActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        if (isHelp)
+        if (testOptions.IsHelp)
         {
-            InitializeHelpActionQueue(degreeOfParallelism, testOptions);
+            InitializeHelpActionQueue(degreeOfParallelism, testOptions, buildOptions);
         }
         else
         {
-            InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions);
+            InitializeTestExecutionActionQueue(degreeOfParallelism, testOptions, buildOptions);
         }
     }
 
@@ -138,9 +137,9 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         _output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, _isDiscovery, isHelp, _isRetry);
     }
 
-    private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions)
+    private void InitializeHelpActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
         {
             testApp.HelpRequested += OnHelpRequested;
             testApp.ErrorReceived += _eventHandlers.OnErrorReceived;
@@ -150,9 +149,9 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
         });
     }
 
-    private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions)
+    private void InitializeTestExecutionActionQueue(int degreeOfParallelism, TestOptions testOptions, BuildOptions buildOptions)
     {
-        _actionQueue = new(degreeOfParallelism, async (TestApplication testApp) =>
+        _actionQueue = new(degreeOfParallelism, buildOptions, async (TestApplication testApp) =>
         {
             testApp.HandshakeReceived += _eventHandlers.OnHandshakeReceived;
             testApp.DiscoveredTestsReceived += _eventHandlers.OnDiscoveredTestsReceived;
@@ -198,7 +197,6 @@ internal partial class TestingPlatformCommand : CliCommand, ICustomHelp
 
     private void CleanUp()
     {
-        _msBuildHandler?.Dispose();
         _eventHandlers?.Dispose();
     }
 }

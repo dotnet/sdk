@@ -8,7 +8,6 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload;
 
@@ -86,7 +85,7 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        CliOption<VerbosityOptions> verbosityOptions = null,
+        Option<VerbosityOptions> verbosityOptions = null,
         IReporter? reporter = null,
         string tempDirPath = null,
         INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
@@ -145,7 +144,7 @@ internal abstract class WorkloadCommandBase : CommandBase
         if (skipSignCheck && policyEnabled)
         {
             // Can't override the global policy by using the skip option.
-            throw new GracefulException(LocalizableStrings.SkipSignCheckInvalidOption);
+            throw new GracefulException(CliCommandStrings.SkipSignCheckInvalidOption);
         }
 
         return !skipSignCheck;

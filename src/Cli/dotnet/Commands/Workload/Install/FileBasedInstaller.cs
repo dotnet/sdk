@@ -4,19 +4,17 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.NativeWrapper;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using NuGet.Common;
 using NuGet.Versioning;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Install.LocalizableStrings;
 using PathUtility = Microsoft.DotNet.Cli.Utils.PathUtility;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -117,7 +115,7 @@ internal class FileBasedInstaller : IInstaller
         }
         catch (Exception ex)
         {
-            throw new Exception(string.Format(LocalizableStrings.FailedToInstallWorkloadSet, workloadSetVersion, ex.Message), ex);
+            throw new Exception(string.Format(CliCommandStrings.FailedToInstallWorkloadSet, workloadSetVersion, ex.Message), ex);
         }
 
         return WorkloadSet.FromWorkloadSetFolder(workloadSetPath, workloadSetVersion, _sdkFeatureBand);
@@ -148,7 +146,7 @@ internal class FileBasedInstaller : IInstaller
         {
             if (PackIsInstalled(packInfo) && !overwriteExistingPacks)
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
+                _reporter.WriteLine(string.Format(CliCommandStrings.WorkloadPackAlreadyInstalledMessage, packInfo.ResolvedPackageId, packInfo.Version));
                 WritePackInstallationRecord(packInfo, sdkFeatureBand);
             }
             else
@@ -171,11 +169,11 @@ internal class FileBasedInstaller : IInstaller
             }
             else
             {
-                _reporter.WriteLine(string.Format(LocalizableStrings.UsingCacheForPackInstall, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
+                _reporter.WriteLine(string.Format(CliCommandStrings.UsingCacheForPackInstall, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
                 var packagePath = Path.Combine(offlineCache.Value.Value, $"{packInfo.ResolvedPackageId}.{packInfo.Version}.nupkg");
                 if (!File.Exists(packagePath))
                 {
-                    throw new Exception(string.Format(LocalizableStrings.CacheMissingPackage, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
+                    throw new Exception(string.Format(CliCommandStrings.CacheMissingPackage, packInfo.ResolvedPackageId, packInfo.Version, offlineCache));
                 }
                 return (packagePath, packInfo);
             }
@@ -183,7 +181,7 @@ internal class FileBasedInstaller : IInstaller
 
         foreach (var (packagePath, packInfo) in packagePaths)
         {
-            _reporter.WriteLine(string.Format(LocalizableStrings.InstallingPackVersionMessage, packInfo.ResolvedPackageId, packInfo.Version));
+            _reporter.WriteLine(string.Format(CliCommandStrings.InstallingPackVersionMessage, packInfo.ResolvedPackageId, packInfo.Version));
             var tempDirsToDelete = new List<string>();
 
             transactionContext.Run(
@@ -226,7 +224,7 @@ internal class FileBasedInstaller : IInstaller
                 {
                     try
                     {
-                        _reporter.WriteLine(string.Format(LocalizableStrings.RollingBackPackInstall, packInfo.ResolvedPackageId));
+                        _reporter.WriteLine(string.Format(CliCommandStrings.RollingBackPackInstall, packInfo.ResolvedPackageId));
                         DeletePackInstallationRecord(packInfo, sdkFeatureBand);
                         if (!PackHasInstallRecords(packInfo))
                         {
@@ -236,7 +234,7 @@ internal class FileBasedInstaller : IInstaller
                     catch (Exception e)
                     {
                         // Don't hide the original error if roll back fails
-                        _reporter.WriteLine(string.Format(LocalizableStrings.RollBackFailedMessage, e.Message));
+                        _reporter.WriteLine(string.Format(CliCommandStrings.WorkloadInstallRollBackFailedMessage, e.Message));
                     }
                 },
                 cleanup: () =>
@@ -274,7 +272,7 @@ internal class FileBasedInstaller : IInstaller
     {
         var newManifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestUpdate.NewFeatureBand), manifestUpdate.ManifestId.ToString(), manifestUpdate.NewVersion.ToString());
 
-        _reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion));
+        _reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion));
 
         try
         {
@@ -294,7 +292,7 @@ internal class FileBasedInstaller : IInstaller
         }
         catch (Exception e)
         {
-            throw new Exception(string.Format(LocalizableStrings.FailedToInstallWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion, e.Message), e);
+            throw new Exception(string.Format(CliCommandStrings.FailedToInstallWorkloadManifest, manifestUpdate.ManifestId, manifestUpdate.NewVersion, e.Message), e);
         }
     }
 
@@ -317,7 +315,7 @@ internal class FileBasedInstaller : IInstaller
                     packagePath = Path.Combine(offlineCache.Value.Value, $"{packageId}.{packageVersion}.nupkg");
                     if (!File.Exists(packagePath))
                     {
-                        throw new Exception(string.Format(LocalizableStrings.CacheMissingPackage, packageId, packageVersion, offlineCache));
+                        throw new Exception(string.Format(CliCommandStrings.CacheMissingPackage, packageId, packageVersion, offlineCache));
                     }
                 }
 
@@ -408,7 +406,7 @@ internal class FileBasedInstaller : IInstaller
         //  Tests will often use a dotnet folder without any SDKs installed.  To work around this, always add the current feature band to the list of installed feature bands
         installedSdkFeatureBands.Add(_sdkFeatureBand);
 
-        _reporter.WriteLine(string.Format(LocalizableStrings.GarbageCollectingSdkFeatureBandsMessage, string.Join(" ", installedSdkFeatureBands)));
+        _reporter.WriteLine(string.Format(CliCommandStrings.GarbageCollectingSdkFeatureBandsMessage, string.Join(" ", installedSdkFeatureBands)));
 
         //  Garbage collect workload sets
         var installedWorkloadSets = _workloadResolver.GetWorkloadManifestProvider().GetAvailableWorkloadSets();
@@ -453,7 +451,7 @@ internal class FileBasedInstaller : IInstaller
                 {
                     //  If the directory doesn't exist, the workload set is probably from a directory specified via the DOTNETSDK_WORKLOAD_MANIFEST_ROOTS environment variable
                     //  In that case just ignore it, as the CLI doesn't manage that install
-                    _reporter.WriteLine(string.Format(LocalizableStrings.DeletingWorkloadSet, workloadSetVersion));
+                    _reporter.WriteLine(string.Format(CliCommandStrings.DeletingWorkloadSet, workloadSetVersion));
                     Directory.Delete(workloadSetDirectory, true);
                 }
             }
@@ -488,7 +486,7 @@ internal class FileBasedInstaller : IInstaller
             if (featureBandsToRemove.Count == referencingFeatureBands.Count)
             {
                 //  All installation records for the manifest were removed, so we can delete the manifest
-                _reporter.WriteLine(string.Format(LocalizableStrings.DeletingWorkloadManifest, manifestId, $"{manifestVersion}/{manifestFeatureBand}"));
+                _reporter.WriteLine(string.Format(CliCommandStrings.DeletingWorkloadManifest, manifestId, $"{manifestVersion}/{manifestFeatureBand}"));
                 var manifestPath = Path.Combine(GetManifestInstallDirForFeatureBand(manifestFeatureBand.ToString()), manifestId.ToString(), manifestVersion.ToString());
                 Directory.Delete(manifestPath, true);
             }
@@ -581,7 +579,7 @@ internal class FileBasedInstaller : IInstaller
         UpdateInstallState(sdkFeatureBand, contents => contents.UseWorkloadSets = newMode);
 
         var newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
-        _reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
+        _reporter.WriteLine(string.Format(CliCommandStrings.UpdatedWorkloadMode, newModeString));
     }
 
     private void UpdateInstallState(SdkFeatureBand sdkFeatureBand, Action<InstallStateContents> update)
@@ -702,7 +700,7 @@ internal class FileBasedInstaller : IInstaller
     {
         if (PackIsInstalled(packInfo))
         {
-            _reporter.WriteLine(string.Format(LocalizableStrings.DeletingWorkloadPack, packInfo.Id, packInfo.Version));
+            _reporter.WriteLine(string.Format(CliCommandStrings.DeletingWorkloadPack, packInfo.Id, packInfo.Version));
             if (IsSingleFilePack(packInfo))
             {
                 File.Delete(packInfo.Path);
@@ -868,7 +866,7 @@ internal class FileBasedInstaller : IInstaller
 
     private void WritePackInstallationRecord(PackInfo packInfo, SdkFeatureBand featureBand)
     {
-        _reporter.WriteLine(string.Format(LocalizableStrings.WritingPackInstallRecordMessage, packInfo.ResolvedPackageId, packInfo.Version));
+        _reporter.WriteLine(string.Format(CliCommandStrings.WritingPackInstallRecordMessage, packInfo.ResolvedPackageId, packInfo.Version));
         var path = GetPackInstallRecordPath(new WorkloadPackId(packInfo.ResolvedPackageId), packInfo.Version, featureBand);
         if (!Directory.Exists(Path.GetDirectoryName(path)))
         {

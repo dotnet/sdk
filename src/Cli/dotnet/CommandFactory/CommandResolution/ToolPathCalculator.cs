@@ -29,7 +29,7 @@ public class ToolPathCalculator(string packagesDirectory)
         if (bestVersion == null)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.VersionForPackageCouldNotBeResolved,
+                CliStrings.VersionForPackageCouldNotBeResolved,
                 packageId));
         }
 

@@ -3,91 +3,95 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Test;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class TestingPlatformOptions
 {
-    public static readonly CliOption<string> ProjectOption = new("--project")
+    public static readonly Option<string> ProjectOption = new("--project")
     {
-        Description = LocalizableStrings.CmdProjectDescription,
-        HelpName = LocalizableStrings.CmdProjectPathName,
+        Description = CliCommandStrings.CmdProjectDescription,
+        HelpName = CliCommandStrings.CmdProjectPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> SolutionOption = new("--solution")
+    public static readonly Option<string> SolutionOption = new("--solution")
     {
-        Description = LocalizableStrings.CmdSolutionDescription,
-        HelpName = LocalizableStrings.CmdSolutionPathName,
+        Description = CliCommandStrings.CmdSolutionDescription,
+        HelpName = CliCommandStrings.CmdSolutionPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> DirectoryOption = new("--directory")
+    public static readonly Option<string> DirectoryOption = new("--directory")
     {
-        Description = LocalizableStrings.CmdDirectoryDescription,
-        HelpName = LocalizableStrings.CmdDirectoryPathName,
+        Description = CliCommandStrings.CmdDirectoryDescription,
+        HelpName = CliCommandStrings.CmdDirectoryPathName,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> TestModulesFilterOption = new("--test-modules")
+    public static readonly Option<string> TestModulesFilterOption = new("--test-modules")
     {
-        Description = LocalizableStrings.CmdTestModulesDescription,
-        HelpName = LocalizableStrings.CmdExpressionName
+        Description = CliCommandStrings.CmdTestModulesDescription,
+        HelpName = CliCommandStrings.CmdExpressionName
     };
 
-    public static readonly CliOption<string> TestModulesRootDirectoryOption = new("--root-directory")
+    public static readonly Option<string> TestModulesRootDirectoryOption = new("--root-directory")
     {
-        Description = LocalizableStrings.CmdTestModulesRootDirectoryDescription,
-        HelpName = LocalizableStrings.CmdRootPathName,
+        Description = CliCommandStrings.CmdTestModulesRootDirectoryDescription,
+        HelpName = CliCommandStrings.CmdRootPathName,
     };
 
-    public static readonly CliOption<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
+    public static readonly Option<string> MaxParallelTestModulesOption = new("--max-parallel-test-modules")
     {
-        Description = LocalizableStrings.CmdMaxParallelTestModulesDescription,
-        HelpName = LocalizableStrings.CmdNumberName
+        Description = CliCommandStrings.CmdMaxParallelTestModulesDescription,
+        HelpName = CliCommandStrings.CmdNumberName
     };
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
-    public static readonly CliOption<string> FrameworkOption = CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription);
+    public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.TestFrameworkOptionDescription);
 
-    public static readonly CliOption<bool> NoBuildOption = new("--no-build")
+    public static readonly Option<bool> NoBuildOption = new("--no-build")
     {
-        Description = LocalizableStrings.CmdNoBuildDescription
+        Description = CliCommandStrings.CmdNoBuildDescription
     };
 
-    public static readonly CliOption<bool> NoAnsiOption = new("--no-ansi")
+    public static readonly Option<bool> NoAnsiOption = new("--no-ansi")
     {
-        Description = LocalizableStrings.CmdNoAnsiDescription,
+        Description = CliCommandStrings.CmdNoAnsiDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> NoLaunchProfileOption = new("--no-launch-profile")
+    public static readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
     {
-        Description = Tools.Run.LocalizableStrings.CommandOptionNoLaunchProfileDescription,
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> NoProgressOption = new("--no-progress")
+    public static readonly Option<bool> NoLaunchProfileArgumentsOption = new("--no-launch-profile-arguments")
     {
-        Description = LocalizableStrings.CmdNoProgressDescription,
+        Description = CliCommandStrings.CommandOptionNoLaunchProfileArgumentsDescription
+    };
+
+    public static readonly Option<bool> NoProgressOption = new("--no-progress")
+    {
+        Description = CliCommandStrings.CmdNoProgressDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<OutputOptions> OutputOption = new("--output")
+    public static readonly Option<OutputOptions> OutputOption = new("--output")
     {
-        Description = LocalizableStrings.CmdTestOutputDescription,
+        Description = CliCommandStrings.CmdTestOutputDescription,
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly CliOption<string> ListTestsOption = new("--list-tests")
+    public static readonly Option<string> ListTestsOption = new("--list-tests")
     {
-        Description = LocalizableStrings.CmdListTestsDescription,
+        Description = CliCommandStrings.CmdListTestsDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<string> HelpOption = new("--help", ["-h", "-?"])
+    public static readonly Option<string> HelpOption = new("--help", ["-h", "-?"])
     {
         Arity = ArgumentArity.Zero
     };

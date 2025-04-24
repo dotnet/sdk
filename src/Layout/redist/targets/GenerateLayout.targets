@@ -50,6 +50,8 @@
       <RoslynFrameworkAssembly Include="$(RoslynPackagePath)System.*.dll;
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
                                Exclude="$(RoslynPackagePath)runtimes\**\System.IO.Pipes.AccessControl.dll"/>
+      <!-- binfx folder contains full framework dlls that are needed only on Windows -->
+      <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/>
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
     </ItemGroup>
 
@@ -444,6 +446,7 @@
   <Target Name="CopyKnownWorkloadManifestFile">
     <ItemGroup>
       <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
+      <WorkloadManifestFilesContent Include="%(BuiltinManifests.Identity)" />
     </ItemGroup>
 
     <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />

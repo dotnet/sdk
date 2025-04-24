@@ -2,15 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Add.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Add;
 
 internal static class ReferenceAddCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new(LocalizableStrings.ProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new(CliCommandStrings.ReferenceAddProjectPathArgumentName)
     {
-        Description = LocalizableStrings.ProjectPathArgumentDescription,
+        Description = CliCommandStrings.ReferenceAddProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
         CustomParser = arguments =>
         {
@@ -20,31 +19,31 @@ internal static class ReferenceAddCommandParser
         }
     };
 
-    public static readonly CliOption<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new DynamicOption<string>("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CmdFramework
+        Description = CliCommandStrings.ReferenceAddCmdFrameworkDescription,
+        HelpName = CliStrings.CommonCmdFramework
 
-    }.AddCompletions(Complete.Complete.TargetFrameworksFromProjectFile);
+    }.AddCompletions(CliCompletion.TargetFrameworksFromProjectFile);
 
-    public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption();
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("add", LocalizableStrings.AppFullName);
+        Command command = new("add", CliCommandStrings.ReferenceAddAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
         command.Options.Add(InteractiveOption);
 
-        command.SetAction((parseResult) => new AddProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceAddCommand(parseResult).Execute());
 
         return command;
     }

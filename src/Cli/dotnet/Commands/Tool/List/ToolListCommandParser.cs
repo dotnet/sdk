@@ -4,47 +4,46 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
 internal static class ToolListCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+    public static readonly Argument<string> PackageIdArgument = new("packageId")
     {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription,
+        HelpName = CliCommandStrings.ToolListPackageIdArgumentName,
+        Description = CliCommandStrings.ToolListPackageIdArgumentDescription,
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
 
-    public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
 
-    public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
 
-    public static readonly CliOption<ToolListOutputFormat> ToolListFormatOption = new("--format")
+    public static readonly Option<ToolListOutputFormat> ToolListFormatOption = new("--format")
     {
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => ToolListOutputFormat.table,
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        Command command = new("list", CliCommandStrings.ToolListCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
-        command.Options.Add(ToolListFormatOption.WithHelpDescription(command, LocalizableStrings.ToolListFormatOptionDescription));
+        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolListGlobalOptionDescription));
+        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolListLocalOptionDescription));
+        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolListToolPathOptionDescription));
+        command.Options.Add(ToolListFormatOption.WithHelpDescription(command, CliCommandStrings.ToolListFormatOptionDescription));
 
         command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 

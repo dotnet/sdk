@@ -4,18 +4,12 @@
 using System.CommandLine;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Install;
-using Microsoft.DotNet.Workloads.Workload.Restore;
-using Microsoft.DotNet.Workloads.Workload.Update;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Restore;
 
@@ -53,7 +47,7 @@ internal class WorkloadRestoreCommand(
             new WorkloadUpdateCommand(_result, recorder: recorder, isRestoring: true).Execute();
 
             List<WorkloadId> allWorkloadId = RunTargetToGetWorkloadIds(allProjects);
-            Reporter.WriteLine(string.Format(LocalizableStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
+            Reporter.WriteLine(string.Format(CliCommandStrings.InstallingWorkloads, string.Join(" ", allWorkloadId)));
 
             new WorkloadInstallCommand(_result,
                 workloadIds: allWorkloadId.Select(a => a.ToString()).ToList().AsReadOnly(),
@@ -97,7 +91,7 @@ internal class WorkloadRestoreCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.FailedToRunTarget,
+                        CliCommandStrings.FailedToRunTarget,
                         projectFile),
                     isUserError: false);
             }
@@ -141,7 +135,7 @@ internal class WorkloadRestoreCommand(
         if (projectFiles.Count == 0)
         {
             throw new GracefulException(
-                LocalizableStrings.CouldNotFindAProject,
+                CliCommandStrings.CouldNotFindAProject,
                 currentDirectory, "--project");
         }
 

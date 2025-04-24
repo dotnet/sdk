@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.List.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.List;
 
@@ -22,7 +21,7 @@ internal class ToolListCommand(
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.ListToolCommandInvalidGlobalAndLocalAndToolPath);
 
         if (_parseResult.GetValue(ToolListCommandParser.GlobalOption)
             || _parseResult.GetResult(ToolListCommandParser.ToolPathOption) is not null)

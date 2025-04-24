@@ -113,13 +113,13 @@ extends:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
             displayName: Create artifacts/bin directory
           ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
-            timeoutInMinutes: 90
+            timeoutInMinutes: 180
             windowsJobParameterSets:
             ### OFFICIAL ###
             - categoryName: Official
               publishArgument: $(_publishArgument)
               signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
+              officialBuildProperties: $(_officialBuildProperties) /p:BuildWorkloads=true
               enableDefaultArtifacts: true
               runTests: false
               publishRetryConfig: true
@@ -133,6 +133,8 @@ extends:
               runTests: false
               variables:
                 _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
             - categoryName: Official
               targetArchitecture: arm64
               publishArgument: $(_publishArgument)
@@ -141,6 +143,8 @@ extends:
               runTests: false
               variables:
                 _SignType: real
+              dependsOn: Official_windows_x64
+              downloadManifestMsiPackages: true
             ### PGO ###
             - categoryName: PGO
               pgoInstrument: true
@@ -341,3 +345,7 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+        - template: /eng/pipelines/templates/jobs/promote-nuget-client.yml@self
+          parameters:
+            assetName: NuGet.Protocol

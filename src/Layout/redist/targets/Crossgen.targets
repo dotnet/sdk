@@ -2,7 +2,10 @@
 
   <PropertyGroup>
     <!-- Crossgen is currently not supported on the s390x, ppc64le architecture as using mono instead of CoreCLR. -->
-    <IsCrossgenSupported Condition="'$(DISABLE_CROSSGEN)' == '' AND '$(TargetArchitecture)' != 's390x' AND '$(TargetArchitecture)' != 'ppc64le'">true</IsCrossgenSupported>
+    <IsCrossgenSupported Condition="'$(SkipUsingCrossgen)' != 'true' and
+                                    '$(TargetArchitecture)' != 's390x' and
+                                    '$(TargetArchitecture)' != 'ppc64le' and
+                                    '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
     <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
     <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
@@ -54,7 +57,7 @@
 
       <RazorToolFiles Include="$(InstallerOutputDirectory)Sdks\Microsoft.NET.Sdk.Razor\tools\**\*" />
 
-      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles)" />
+      <RemainingFiles Include="$(InstallerOutputDirectory)**\*" Exclude="$(InstallerOutputDirectory)FSharp\FSharp.Build.dll;@(RoslynFiles);@(FSharpFiles);$(InstallerOutputDirectory)Roslyn\binfx\**\*" />
 
       <!-- Don't crossgen VB since the usage doesn't justify the size cost for everyone -->
       <RoslynFiles Remove="$(InstallerOutputDirectory)Roslyn\bincore\Microsoft.CodeAnalysis.VisualBasic.dll" />

@@ -9,19 +9,17 @@
 
     <!-- Don't use the updated NuGet.config file that includes the live package feeds when testing source-only as in that configuration
          the Microsoft built packages should be used. -->
-    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
+    <TestArgs Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'">$(TestArgs) /p:TestRestoreConfigFile=$(OriginalNuGetConfigFile)</TestArgs>
+    <UseBootstrapArcade Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' == 'true'">true</UseBootstrapArcade>
   </PropertyGroup>
 
-  <ItemGroup>
+  <!-- In source only test mode, do not depend on other repositories as the scenario tests repo needs to be capable of being built
+       by itself in a standalone validation job. -->
+  <ItemGroup Condition="'$(DotNetSourceOnlyTestOnly)' != 'true'">
     <RepositoryReference Include="arcade" />
     <RepositoryReference Include="command-line-api" />
     <!-- Depend on NuGet packages from the sdk repo and transitive repositories. -->
     <RepositoryReference Include="sdk" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
-    <RepositoryReference Include="source-build-externals" />
-    <RepositoryReference Include="source-build-reference-packages" />
   </ItemGroup>
 
   <Target Name="PrepareScenarioTestsInputs"
@@ -36,6 +34,7 @@
       <ScenarioTestsResultsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsTestResultsDir)', 'scenario-tests'))</ScenarioTestsResultsDir>
       <TestXmlOutputPath>$(ScenarioTestsResultsDir)$([System.DateTime]::Now.ToString("yyyy-MM-dd_HH_mm_ss")).xml</TestXmlOutputPath>
       <ScenarioTestsAdditionalArgs>--xml $(TestXmlOutputPath) --target-rid $(TargetRid) --portable-rid $(PortableRid) --no-cleanup --no-traits Category=MultiTFM</ScenarioTestsAdditionalArgs>
+      <ScenarioTestsAdditionalArgs Condition="'$(DotNetBuildPass)' == '' or '$(DotNetBuildPass)' == '1'">$(ScenarioTestsAdditionalArgs) --no-traits Category=RequiresNonTargetRidPackages</ScenarioTestsAdditionalArgs>
     </PropertyGroup>
 
     <!-- Needs to be set as an env var as the eng/common/tools parser can't handle this string. -->

@@ -9,7 +9,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
@@ -68,9 +67,9 @@ internal class ToolUpdateCommand : CommandBase
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdArgument) is not null)
+        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdentityArgument) is not null)
         {
-            options.Add(ToolUpdateCommandParser.PackageIdArgument.Name);
+            options.Add(ToolUpdateCommandParser.PackageIdentityArgument.Name);
         }
 
         if (options.Count != 1)
@@ -79,21 +78,32 @@ internal class ToolUpdateCommand : CommandBase
         }
     }
 
+    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
+    {
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
+            !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
+        {
+            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
+        }
+    }
+
     public override int Execute()
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
         ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndVersion);
 
         EnsureEitherUpdateAllOrUpdateOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
+
+        EnsureNoConflictPackageIdentityVersionOption(_parseResult);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {

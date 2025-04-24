@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Extensions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Restore.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -12,20 +10,20 @@ internal static class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
-        Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly CliOption<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
+    public static readonly Option<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {
-        Description = LocalizableStrings.CmdSourceOptionDescription,
-        HelpName = LocalizableStrings.CmdSourceOption
+        Description = CliCommandStrings.CmdSourceOptionDescription,
+        HelpName = CliCommandStrings.CmdSourceOption
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
-    private static IEnumerable<CliOption> FullRestoreOptions() =>
+    private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(
             [
                 CommonOptions.VerbosityOption,
@@ -33,36 +31,36 @@ internal static class RestoreCommandParser
                 CommonOptions.ArtifactsPathOption,
                 new ForwardedOption<bool>("--use-lock-file")
                 {
-                    Description = LocalizableStrings.CmdUseLockFileOptionDescription,
+                    Description = CliCommandStrings.CmdUseLockFileOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestorePackagesWithLockFile=true"),
                 new ForwardedOption<bool>("--locked-mode")
                 {
-                    Description = LocalizableStrings.CmdLockedModeOptionDescription,
+                    Description = CliCommandStrings.CmdLockedModeOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestoreLockedMode=true"),
                 new ForwardedOption<string>("--lock-file-path")
                 {
-                    Description = LocalizableStrings.CmdLockFilePathOptionDescription,
-                    HelpName = LocalizableStrings.CmdLockFilePathOption
+                    Description = CliCommandStrings.CmdLockFilePathOptionDescription,
+                    HelpName = CliCommandStrings.CmdLockFilePathOption
                 }.ForwardAsSingle(o => $"-property:NuGetLockFilePath={o}"),
                 new ForwardedOption<bool>("--force-evaluate")
                 {
-                    Description = LocalizableStrings.CmdReevaluateOptionDescription,
+                    Description = CliCommandStrings.CmdReevaluateOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestoreForceEvaluate=true"),
             ]);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("restore", DocsLink, LocalizableStrings.AppFullName);
+        var command = new DocumentedCommand("restore", DocsLink, CliCommandStrings.RestoreAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
@@ -78,7 +76,7 @@ internal static class RestoreCommandParser
         return command;
     }
 
-    public static void AddImplicitRestoreOptions(CliCommand command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
+    public static void AddImplicitRestoreOptions(Command command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
     {
         foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions, includeRuntimeOption, includeNoDependenciesOption))
         {
@@ -104,7 +102,7 @@ internal static class RestoreCommandParser
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
-    private static IEnumerable<CliOption> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
+    private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
     {
         if (showHelp && useShortOptions)
         {
@@ -112,10 +110,10 @@ internal static class RestoreCommandParser
         }
         else
         {
-            CliOption<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+            Option<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
             {
-                Description = showHelp ? LocalizableStrings.CmdSourceOptionDescription : string.Empty,
-                HelpName = LocalizableStrings.CmdSourceOption,
+                Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
+                HelpName = CliCommandStrings.CmdSourceOption,
                 Hidden = !showHelp
             }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}") // '%3B' corresponds to ';'
             .AllowSingleArgPerToken();
@@ -130,24 +128,24 @@ internal static class RestoreCommandParser
 
         yield return new ForwardedOption<string>("--packages")
         {
-            Description = showHelp ? LocalizableStrings.CmdPackagesOptionDescription : string.Empty,
-            HelpName = LocalizableStrings.CmdPackagesOption,
+            Description = showHelp ? CliCommandStrings.CmdPackagesOptionDescription : string.Empty,
+            HelpName = CliCommandStrings.CmdPackagesOption,
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestorePackagesPath={CommandDirectoryContext.GetFullPath(o)}");
 
-        yield return CommonOptions.CurrentRuntimeOption(LocalizableStrings.CmdCurrentRuntimeOptionDescription);
+        yield return CommonOptions.CurrentRuntimeOption(CliCommandStrings.CmdCurrentRuntimeOptionDescription);
 
         yield return new ForwardedOption<bool>("--disable-parallel")
         {
-            Description = showHelp ? LocalizableStrings.CmdDisableParallelOptionDescription : string.Empty,
+            Description = showHelp ? CliCommandStrings.CmdDisableParallelOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreDisableParallel=true");
 
         yield return new ForwardedOption<string>("--configfile")
         {
-            Description = showHelp ? LocalizableStrings.CmdConfigFileOptionDescription : string.Empty,
-            HelpName = LocalizableStrings.CmdConfigFileOption,
+            Description = showHelp ? CliCommandStrings.CmdConfigFileOptionDescription : string.Empty,
+            HelpName = CliCommandStrings.CmdConfigFileOption,
             Hidden = !showHelp
         }.ForwardAsSingle(o => $"-property:RestoreConfigFile={CommandDirectoryContext.GetFullPath(o)}");
 
@@ -160,21 +158,21 @@ internal static class RestoreCommandParser
 
         yield return new ForwardedOption<bool>("--no-http-cache")
         {
-            Description = showHelp ? LocalizableStrings.CmdNoHttpCacheOptionDescription : string.Empty,
+            Description = showHelp ? CliCommandStrings.CmdNoHttpCacheOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreNoHttpCache=true");
 
         yield return new ForwardedOption<bool>("--ignore-failed-sources")
         {
-            Description = showHelp ? LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
+            Description = showHelp ? CliCommandStrings.CmdIgnoreFailedSourcesOptionDescription : string.Empty,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreIgnoreFailedSources=true");
 
         ForwardedOption<bool> forceOption = new ForwardedOption<bool>("--force")
         {
-            Description = LocalizableStrings.CmdForceRestoreOptionDescription,
+            Description = CliCommandStrings.CmdForceRestoreOptionDescription,
             Hidden = !showHelp,
             Arity = ArgumentArity.Zero
         }.ForwardAs("-property:RestoreForce=true");
@@ -188,14 +186,14 @@ internal static class RestoreCommandParser
 
         if (includeRuntimeOption)
         {
-            CliOption<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
+            Option<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
             {
-                Description = LocalizableStrings.CmdRuntimeOptionDescription,
-                HelpName = LocalizableStrings.CmdRuntimeOption,
+                Description = CliCommandStrings.CmdRuntimeOptionDescription,
+                HelpName = CliCommandStrings.CmdRuntimeOption,
                 Hidden = !showHelp,
             }.ForwardAsSingle(RestoreRuntimeArgFunc)
              .AllowSingleArgPerToken()
-             .AddCompletions(Complete.Complete.RunTimesFromProjectFile);
+             .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
             if (useShortOptions)
             {
@@ -209,7 +207,7 @@ internal static class RestoreCommandParser
         {
             yield return new ForwardedOption<bool>("--no-dependencies")
             {
-                Description = LocalizableStrings.CmdNoDependenciesOptionDescription,
+                Description = CliCommandStrings.CmdNoDependenciesOptionDescription,
                 Arity = ArgumentArity.Zero,
                 Hidden = !showHelp
             }.ForwardAs("-property:RestoreRecursive=false");

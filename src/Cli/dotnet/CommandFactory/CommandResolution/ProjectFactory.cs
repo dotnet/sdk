@@ -33,14 +33,14 @@ internal class ProjectFactory(IEnvironmentProvider environment)
             msBuildExePath;
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildExePath,
+            CliStrings.MSBuildExePath,
             ProjectFactoryName,
             msBuildExePath));
 
         string msBuildProjectPath = GetMSBuildProjPath(projectDirectory);
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildProjectPath,
+            CliStrings.MSBuildProjectPath,
             ProjectFactoryName,
             msBuildProjectPath));
 
@@ -74,7 +74,7 @@ internal class ProjectFactory(IEnvironmentProvider environment)
         else if (projectFiles.Count() > 1)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.MultipleProjectFilesFound,
+                CliStrings.MultipleProjectFilesFound,
                 projectDirectory));
         }
 

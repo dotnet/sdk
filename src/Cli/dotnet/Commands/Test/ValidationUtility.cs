@@ -2,11 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
-
-using LocalizableStrings = Microsoft.DotNet.Tools.Test.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -33,7 +31,7 @@ internal static class ValidationUtility
                 count++;
 
             if (count > 1)
-                throw new GracefulException(LocalizableStrings.CmdMultipleBuildPathOptionsErrorDescription);
+                throw new GracefulException(CliCommandStrings.CmdMultipleBuildPathOptionsErrorDescription);
         }
 
         static void ValidateOptionsIrrelevantToModulesFilter(ParseResult parseResult)
@@ -50,7 +48,7 @@ internal static class ValidationUtility
                 parseResult.HasOption(CommonOptions.RuntimeOption)
                 )
             {
-                throw new GracefulException(LocalizableStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
+                throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
         }
     }
@@ -60,17 +58,17 @@ internal static class ValidationUtility
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateFilePath(pathOptions.ProjectPath, CliConstants.ProjectExtensions, LocalizableStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
+            return ValidateFilePath(pathOptions.ProjectPath, CliConstants.ProjectExtensions, CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateFilePath(pathOptions.SolutionPath, CliConstants.SolutionExtensions, LocalizableStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
+            return ValidateFilePath(pathOptions.SolutionPath, CliConstants.SolutionExtensions, CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
         {
-            output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
+            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, pathOptions.DirectoryPath));
             return false;
         }
 
@@ -87,7 +85,7 @@ internal static class ValidationUtility
 
         if (!File.Exists(filePath))
         {
-            output.WriteMessage(string.Format(LocalizableStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
+            output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
             return false;
         }
 

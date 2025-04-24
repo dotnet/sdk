@@ -35,7 +35,7 @@ internal class OsxZshEnvironmentPathInstruction(
             // similar to https://code.visualstudio.com/docs/setup/mac
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathOSXZshManualInstructions,
+                    CliStrings.EnvironmentPathOSXZshManualInstructions,
                     _packageExecutablePath.Path));
         }
     }

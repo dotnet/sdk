@@ -10,7 +10,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Uninstall.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
@@ -40,7 +39,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
             {
                 throw new GracefulException(
                     string.Format(
-                        LocalizableStrings.InvalidToolPathOption,
+                        CliCommandStrings.ToolUninstallInvalidToolPathOption,
                         toolPath));
             }
 
@@ -52,19 +51,19 @@ internal class ToolUninstallGlobalOrToolPathCommand(
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolDirectoryPath);
 
-        var packageId = new PackageId(_parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument));
-        IToolPackage package;
+        var packageId = new PackageId(_parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
+        IToolPackage package = null;
         try
         {
             package = toolPackageStoreQuery.EnumeratePackageVersions(packageId).SingleOrDefault();
             if (package == null)
             {
-                throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolNotInstalled, packageId)], isUserError: false);
+                throw new GracefulException(messages: [string.Format(CliCommandStrings.ToolUninstallToolNotInstalled, packageId)], isUserError: false);
             }
         }
         catch (InvalidOperationException)
         {
-            throw new GracefulException(messages: [string.Format(LocalizableStrings.ToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
+            throw new GracefulException(messages: [string.Format(CliCommandStrings.ToolUninstallToolHasMultipleVersionsInstalled, packageId)], isUserError: false);
         }
 
         try
@@ -82,7 +81,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.UninstallSucceeded,
+                    CliCommandStrings.ToolUninstallUninstallSucceeded,
                     package.Id,
                     package.Version.ToNormalizedString()).Green());
             return 0;

@@ -4,41 +4,39 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Utils;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Common.LocalizableStrings;
-using UpdateToolsLocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 internal class ToolAppliedOption
 {
-    public static CliOption<bool> GlobalOption = new("--global", "-g")
+    public static Option<bool> GlobalOption = new("--global", "-g")
     {
         Arity = ArgumentArity.Zero
     };
 
-    public static CliOption<bool> LocalOption = new("--local")
+    public static Option<bool> LocalOption = new("--local")
     {
         Arity = ArgumentArity.Zero
     };
 
-    public static CliOption<bool> UpdateAllOption = new("--all")
+    public static Option<bool> UpdateAllOption = new("--all")
     {
-        Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription,
+        Description = CliCommandStrings.UpdateAllOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<string> VersionOption
+    public static readonly Option<string> VersionOption
         = ToolInstallCommandParser.VersionOption
           ?? new("--version"); // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
 
-    public static CliOption<string> ToolPathOption = new("--tool-path")
+    public static Option<string> ToolPathOption = new("--tool-path")
     {
-        HelpName = Tools.Tool.Install.LocalizableStrings.ToolPathOptionName
+        HelpName = CliCommandStrings.ToolInstallToolPathOptionName
     };
 
-    public static CliOption<string> ToolManifestOption = new("--tool-manifest")
+    public static Option<string> ToolManifestOption = new("--tool-manifest")
     {
-        HelpName = Tools.Tool.Install.LocalizableStrings.ManifestPathOptionName,
+        HelpName = CliCommandStrings.ToolInstallManifestPathOptionName,
         Arity = ArgumentArity.ZeroOrOne
     };
 
@@ -102,7 +100,7 @@ internal class ToolAppliedOption
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
         }
     }
 

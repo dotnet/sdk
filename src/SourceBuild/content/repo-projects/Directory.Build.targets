@@ -60,7 +60,6 @@
 
     <PackageReportDataFile>$(PackageReportDir)prebuilt-usage.xml</PackageReportDataFile>
     <ProjectAssetsJsonArchiveFile>$(PackageReportDir)all-project-assets-json-files.zip</ProjectAssetsJsonArchiveFile>
-    <ProdConManifestFile>$(PackageReportDir)prodcon-build.xml</ProdConManifestFile>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.ReplaceTextInFile" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
@@ -173,6 +172,9 @@
       <PrebuiltNuGetSourceName>prebuilt</PrebuiltNuGetSourceName>
       <PreviouslySourceBuiltNuGetSourceName>previously-source-built</PreviouslySourceBuiltNuGetSourceName>
       <ReferencePackagesNuGetSourceName>reference-packages</ReferencePackagesNuGetSourceName>
+      
+      <AddPrebuiltFeeds>true</AddPrebuiltFeeds>
+      <AddPrebuiltFeeds Condition="'$(DotNetSourceOnlyTestOnly)' == 'true' or '$(DotNetBuildSourceOnly)' != 'true'">false</AddPrebuiltFeeds>
     </PropertyGroup>
 
     <ItemGroup>
@@ -198,7 +200,7 @@
 
     <ItemGroup>
       <_BuildSources Include="$(PrebuiltNuGetSourceName);$(PreviouslySourceBuiltNuGetSourceName);$(ReferencePackagesNuGetSourceName)"
-                     Condition="'$(DotNetBuildSourceOnly)' == 'true'"/>
+                     Condition="'$(AddPrebuiltFeeds)' == 'true'"/>
       <_BuildSources Include="@(_CommonBuildSources)" />
       <_BuildSources Include="$(NetSdkSupportingFeedName)"
                      Condition="'$(AddNetSdkSupportingFeed)' == 'true'" />
@@ -208,22 +210,22 @@
       NuGetConfigFile="$(NuGetConfigFile)"
       BuildWithOnlineFeeds="$(DotNetBuildWithOnlineFeeds)"
       KeepFeedPrefixes="@(KeepFeedPrefixes)"
-      Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+      Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetSourceOnlyTestOnly)' != 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PrebuiltNuGetSourceName)"
                             SourcePath="$(PrebuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(PreviouslySourceBuiltNuGetSourceName)"
-                            SourcePath="$(PrebuiltSourceBuiltPackagesPath)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+                            SourcePath="$(PreviouslySourceBuiltPackagesPath)"
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="$(ReferencePackagesNuGetSourceName)"
                             SourcePath="$(ReferencePackagesDir)"
-                            Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+                            Condition="'$(AddPrebuiltFeeds)' == 'true'" />
 
     <AddSourceToNuGetConfig NuGetConfigFile="$(NuGetConfigFile)"
                             SourceName="%(RepositoryReferenceInfo.ShippingSourceName)"
@@ -257,7 +259,8 @@
       PrebuiltSourceName="$(PrebuiltNuGetSourceName)"
       SourceBuiltSourceNamePrefix="$(SourceBuiltSourceNamePrefix)"
       PreviousBuildPassSourceNamePrefix="$(PreviousBuildPassSourceNamePrefix)"
-      CustomSources="$(NetSdkSupportingFeedName)" />
+      CustomSources="$(NetSdkSupportingFeedName)"
+      Condition="'$(DotNetSourceOnlyTestOnly)' != 'true'" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)UpdateNuGetConfig.complete" AlwaysCreate="true">
@@ -321,10 +324,10 @@
 
     <!-- Get the previously-built-source-built package information from the manifest from that build. -->
     <ItemGroup>
-      <_PrebuiltSourceBuiltAssetManifests Include="$(PrebuiltSourceBuiltPackagesPath)VerticalManifest.xml" />
+      <_PreviouslySourceBuiltAssetManifests Include="$(PreviouslySourceBuiltPackagesPath)VerticalManifest.xml" />
     </ItemGroup>
 
-    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PrebuiltSourceBuiltAssetManifests)" Condition="Exists(@(_PrebuiltSourceBuiltAssetManifests))">
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(_PreviouslySourceBuiltAssetManifests)" Condition="Exists(@(_PreviouslySourceBuiltAssetManifests))">
       <Output TaskParameter="KnownPackages" ItemName="_PreviouslyBuiltSourceBuiltPackages" />
     </GetKnownArtifactsFromAssetManifests>
 
@@ -333,6 +336,8 @@
 
     <PropertyGroup>
       <_VersionDetailsXml Condition="'$(PackageVersionPropsFlowType)' == 'DependenciesOnly'">$(ProjectDirectory)eng/Version.Details.xml</_VersionDetailsXml>
+      <_ImportPreviousAndCurrentVersionProps>true</_ImportPreviousAndCurrentVersionProps>
+      <_ImportPreviousAndCurrentVersionProps Condition="'$(DotNetSourceOnlyTestOnly)' == 'true'">false</_ImportPreviousAndCurrentVersionProps>
     </PropertyGroup>
 
     <!-- Write the build input properties, then save off a copy that will be used for generating usage reports later -->
@@ -340,13 +345,15 @@
                                ExtraProperties="@(ExtraPackageVersionPropsPackageInfo)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
-                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+                               OutputPath="$(CurrentSourceBuiltPackageVersionPropsPath)"
+                               Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <!-- Create previously source-built inputs info -->
     <WritePackageVersionsProps KnownPackages="@(_PreviouslyBuiltSourceBuiltPackages)"
                                VersionPropsFlowType="$(PackageVersionPropsFlowType)"
                                VersionDetails="$(_VersionDetailsXml)"
-                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
+                               OutputPath="$(PreviouslySourceBuiltPackageVersionPropsPath)"
+                               Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <!-- Write a full package version props (unfiltered) that will be used to track which repo creates a package.
          Because not all repos implement the repo API (e.g. some are external), it's difficult to consistently gather
@@ -363,11 +370,17 @@
 
     <!-- Write a single file that contains imports for both the current and previously built packages -->
     <PropertyGroup>
-      <PackageVersionsPropsContents>
+      <PackageVersionsPropsContents Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'">
         <![CDATA[
 <Project>
   <Import Project="$(PreviouslySourceBuiltPackageVersionPropsPath)" />
   <Import Project="$(CurrentSourceBuiltPackageVersionPropsPath)" />
+</Project>
+]]>
+      </PackageVersionsPropsContents>
+      <PackageVersionsPropsContents Condition="'$(_ImportPreviousAndCurrentVersionProps)' != 'true'">
+        <![CDATA[
+<Project>
 </Project>
 ]]>
       </PackageVersionsPropsContents>
@@ -377,7 +390,8 @@
                       Lines="$(PackageVersionsPropsContents)"
                       Overwrite="true" />
 
-    <Message Importance="High" Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)" />
+    <Message Text="$(RepositoryName) using package version properties saved at $(CurrentSourceBuiltPackageVersionPropsPath) and $(PreviouslySourceBuiltPackageVersionPropsPath)"
+             Condition="'$(_ImportPreviousAndCurrentVersionProps)' == 'true'" />
 
     <MakeDir Directories="$(BaseIntermediateOutputPath)" />
     <Touch Files="$(BaseIntermediateOutputPath)CreateBuildInputProps.complete" AlwaysCreate="true">
@@ -510,7 +524,6 @@
 
     <PropertyGroup>
       <FullCommand>$(BuildCommand)</FullCommand>
-      <FullCommand Condition="'$(LogVerbosityOptOut)' != 'true'">$(FullCommand) /v:$(LogVerbosity)</FullCommand>
       <FullCommand Condition="'$(MinimalConsoleLogOutput)' == 'true'">$(FullCommand) &gt; $(RepoConsoleLogFile) 2&gt;&amp;1</FullCommand>
     </PropertyGroup>
 
@@ -875,7 +888,7 @@
       <TarballPrebuiltPackageFile Include="$(PrebuiltPackagesPath)*.nupkg" />
 
       <SourceBuiltPackageFile Include="$(ArtifactsPackagesDir)**/*.nupkg" />
-      <SourceBuiltPackageFile Include="$(PrebuiltSourceBuiltPackagesPath)*.nupkg" />
+      <SourceBuiltPackageFile Include="$(PreviouslySourceBuiltPackagesPath)*.nupkg" />
       <ReferencePackageFile Include="$(ReferencePackagesDir)**/*.nupkg" />
 
       <!-- Check all RIDs from all restored Microsoft.NETCore.Platforms packages. -->
@@ -948,7 +961,6 @@
 
     <WriteUsageReports DataFile="$(PackageReportDataFile)"
                        PackageVersionPropsSnapshots="@(PackageVersionPropsSavedSnapshotFile)"
-                       ProdConBuildManifestFile="$(ProdConManifestFile)"
                        PoisonedReportFile="$(PoisonedReportFile)"
                        OutputDirectory="$(PackageReportDir)" />
 
