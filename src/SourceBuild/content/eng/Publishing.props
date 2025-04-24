@@ -104,7 +104,6 @@
   </Target>
 
   <Target Name="AddVerticalNameToPdbArtifacts"
-          DependsOnTargets="GetNonStableProductVersion"
           BeforeTargets="PublishToAzureDevOpsArtifacts"
           AfterTargets="GenerateChecksumsFromArtifacts"
           Condition="'$(VerticalName)' != ''">
