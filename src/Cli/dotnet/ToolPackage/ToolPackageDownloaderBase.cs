@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Reflection;
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
-    private readonly IToolPackageStore _toolPackageStore;
+    protected readonly IToolPackageStore _toolPackageStore;
 
     // The directory that the tool package is returned 
     protected DirectoryPath _toolReturnPackageDirectory;
@@ -48,7 +48,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected readonly string _runtimeJsonPath;
 
-    private readonly string _currentWorkingDirectory;
+    protected readonly string _currentWorkingDirectory;
 
     protected ToolPackageDownloaderBase(
         IToolPackageStore store,
@@ -75,7 +75,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool verifySignatures = true,
         RestoreActionConfig restoreActionConfig = null)
     {
-
         ILogger nugetLogger = new NullLogger();
         if (verbosity.IsDetailedOrDiagnostic())
         {
@@ -519,16 +518,5 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             additionalSourceFeeds: packageLocation.AdditionalFeeds);
 
         return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
-    }
-}
-
-internal class ToolPackageDownloader : ToolPackageDownloaderBase
-{
-    public ToolPackageDownloader(
-        IToolPackageStore store,
-        string runtimeJsonPathForTests = null,
-        string currentWorkingDirectory = null
-    ) : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
-    {
     }
 }
