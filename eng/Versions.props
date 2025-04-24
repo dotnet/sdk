@@ -31,22 +31,6 @@
     <FlagNetStandard1XDependencies Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</FlagNetStandard1XDependencies>
     <!-- This property is only used in the dotnet test integration tests. -->
     <MicrosoftTestingPlatformVersion>1.7.0-preview.25223.3</MicrosoftTestingPlatformVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx64100Version>10.0.0-preview.5.25223.119</VSRedistCommonWindowsDesktopTargetingPackx64100Version>
-    <MicrosoftAspNetCoreAuthenticationFacebookVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationFacebookVersion>
-    <MicrosoftAspNetCoreAuthenticationGoogleVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationGoogleVersion>
-    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>
-    <MicrosoftAspNetCoreComponentsVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsVersion>
-    <MicrosoftAspNetCoreComponentsAnalyzersVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsAnalyzersVersion>
-    <MicrosoftAspNetCoreComponentsFormsVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsFormsVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
-    <MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>
-    <MicrosoftAspNetCoreComponentsWebViewVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebViewVersion>
-    <MicrosoftAspNetCoreMetadataVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreMetadataVersion>
-    <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.0-preview.5.25223.119</MicrosoftExtensionsFileProvidersEmbeddedVersion>
-    <MicrosoftAspNetCoreAuthorizationVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthorizationVersion>
-    <MicrosoftAspNetCoreComponentsWebVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebVersion>
-    <MicrosoftJSInteropVersion>10.0.0-preview.5.25223.119</MicrosoftJSInteropVersion>
-    <MicrosoftExtensionsObjectPoolVersion>10.0.0-preview.5.25223.119</MicrosoftExtensionsObjectPoolVersion>
   </PropertyGroup>
   <PropertyGroup Label="Servicing version information">
     <VersionFeature21>30</VersionFeature21>
@@ -129,6 +113,7 @@
     <SystemServiceProcessServiceControllerVersion>10.0.0-preview.4.25223.119</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.0-preview.4.25223.119</MicrosoftNETCorePlatformsPackageVersion>
+    <VSRedistCommonWindowsDesktopTargetingPackx64100Version>10.0.0-preview.5.25223.119</VSRedistCommonWindowsDesktopTargetingPackx64100Version>
     <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-preview.4.25223.119</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
     <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-preview.4.25223.119</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-preview.4.25223.119</MicrosoftBclAsyncInterfacesPackageVersion>
@@ -262,6 +247,21 @@
     <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreTestHostPackageVersion>
     <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
     <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAppRefInternalPackageVersion>
+    <MicrosoftAspNetCoreAuthenticationFacebookVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationFacebookVersion>
+    <MicrosoftAspNetCoreAuthenticationGoogleVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationGoogleVersion>
+    <MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthenticationMicrosoftAccountVersion>
+    <MicrosoftAspNetCoreComponentsVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsVersion>
+    <MicrosoftAspNetCoreComponentsAnalyzersVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsAnalyzersVersion>
+    <MicrosoftAspNetCoreComponentsFormsVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsFormsVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebAssemblyVersion>
+    <MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebAssemblyServerVersion>
+    <MicrosoftAspNetCoreComponentsWebViewVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebViewVersion>
+    <MicrosoftAspNetCoreMetadataVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreMetadataVersion>
+    <MicrosoftAspNetCoreAuthorizationVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreAuthorizationVersion>
+    <MicrosoftAspNetCoreComponentsWebVersion>10.0.0-preview.5.25223.119</MicrosoftAspNetCoreComponentsWebVersion>
+    <MicrosoftJSInteropVersion>10.0.0-preview.5.25223.119</MicrosoftJSInteropVersion>
+    <MicrosoftExtensionsObjectPoolVersion>10.0.0-preview.5.25223.119</MicrosoftExtensionsObjectPoolVersion>
+    <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.0-preview.5.25223.119</MicrosoftExtensionsFileProvidersEmbeddedVersion>
     <MicrosoftDotNetWebItemTemplates100PackageVersion>10.0.0-preview.5.25223.119</MicrosoftDotNetWebItemTemplates100PackageVersion>
     <MicrosoftDotNetWebProjectTemplates100PackageVersion>10.0.0-preview.5.25223.119</MicrosoftDotNetWebProjectTemplates100PackageVersion>
     <VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>10.0.0-preview.5.25223.119</VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>
