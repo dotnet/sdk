@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
-    protected readonly IToolPackageStore _toolPackageStore;
+    private readonly IToolPackageStore _toolPackageStore;
 
     // The directory that the tool package is returned 
     protected DirectoryPath _toolReturnPackageDirectory;
@@ -48,12 +48,12 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected readonly string _runtimeJsonPath;
 
-    protected readonly string _currentWorkingDirectory;
+    private readonly string? _currentWorkingDirectory;
 
     protected ToolPackageDownloaderBase(
         IToolPackageStore store,
-        string runtimeJsonPathForTests = null,
-        string currentWorkingDirectory = null
+        string? runtimeJsonPathForTests = null,
+        string? currentWorkingDirectory = null
     )
     {
         _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
@@ -61,20 +61,21 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
         _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
         _currentWorkingDirectory = currentWorkingDirectory;
-        
+
         _localToolAssetDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
-        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "RuntimeIdentifierGraph.json");
+        _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "RuntimeIdentifierGraph.json");
     }
 
     public virtual IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
         VerbosityOptions verbosity = VerbosityOptions.normal,
-        VersionRange versionRange = null,
-        string targetFramework = null,
+        VersionRange? versionRange = null,
+        string? targetFramework = null,
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig restoreActionConfig = null)
+        RestoreActionConfig? restoreActionConfig = null)
     {
+
         ILogger nugetLogger = new NullLogger();
         if (verbosity.IsDetailedOrDiagnostic())
         {
@@ -96,37 +97,37 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             verbosityOptions: verbosity,
             currentWorkingDirectory: _currentWorkingDirectory);
 
-            var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
+        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
 
-            NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
+        NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
-            bool givenSpecificVersion = false;
-            if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
-            {
-                givenSpecificVersion = true;
-            }
+        bool givenSpecificVersion = false;
+        if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
+        {
+            givenSpecificVersion = true;
+        }
 
-            if (isGlobalTool)
-            {
-                return InstallGlobalToolPackageInternal(
-                    packageSourceLocation,
-                    nugetPackageDownloader,
-                    packageId, 
-                    packageVersion,
-                    givenSpecificVersion,
-                    targetFramework, 
-                    isGlobalToolRollForward);
-            }
-            else
-            {
-                return InstallLocalToolPackageInternal(
-                    packageSourceLocation,
-                    nugetPackageDownloader,
-                    packageId,
-                    packageVersion,
-                    givenSpecificVersion, 
-                    targetFramework);
-            }
+        if (isGlobalTool)
+        {
+            return InstallGlobalToolPackageInternal(
+                packageSourceLocation,
+                nugetPackageDownloader,
+                packageId,
+                packageVersion,
+                givenSpecificVersion,
+                targetFramework,
+                isGlobalToolRollForward);
+        }
+        else
+        {
+            return InstallLocalToolPackageInternal(
+                packageSourceLocation,
+                nugetPackageDownloader,
+                packageId,
+                packageVersion,
+                givenSpecificVersion,
+                targetFramework);
+        }
     }
 
     protected virtual IToolPackage InstallGlobalToolPackageInternal(
@@ -135,7 +136,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageId packageId,
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
-        string targetFramework,
+        string? targetFramework,
         bool isGlobalToolRollForward)
     {
         // Check if package already exists in global tools location
@@ -211,7 +212,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageId packageId,
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
-        string targetFramework)
+        string? targetFramework)
     {
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
@@ -243,7 +244,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageSourceLocation packageSourceLocation,
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
-        string targetFramework)
+        string? targetFramework)
     {
         NuGetv3LocalRepository nugetLocalRepository = new(packageDownloadDir.Value);
 
@@ -327,7 +328,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
     protected static IEnumerable<LockFileItem> GetLockFileItems(
        IReadOnlyList<SelectionCriteria> criteria,
        ContentItemCollection items,
-       Action<LockFileItem> additionalAction,
+       Action<LockFileItem>? additionalAction,
        params PatternSet[] patterns)
     {
         // Loop through each criteria taking the first one that matches one or more items.
@@ -393,7 +394,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
                 File.WriteAllText(hashPath, packageHash);
             }
 
@@ -421,7 +422,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         DirectoryPath packagesRootPath,
         string assetFilePath,
         string runtimeJsonGraph,
-        string targetFramework = null
+        string? targetFramework = null
         )
     {
         // To get runtimeGraph:
@@ -451,9 +452,9 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         var managedCriteria = new List<SelectionCriteria>(1);
         // Use major.minor version of currently running version of .NET
         NuGetFramework currentTargetFramework;
-        if(targetFramework != null)
+        if (targetFramework != null)
         {
-            currentTargetFramework = NuGetFramework.Parse(targetFramework); 
+            currentTargetFramework = NuGetFramework.Parse(targetFramework);
         }
         else
         {
@@ -487,9 +488,9 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
-        VersionRange versionRange = null,
+        VersionRange? versionRange = null,
         bool isGlobalTool = false,
-        RestoreActionConfig restoreActionConfig = null)
+        RestoreActionConfig? restoreActionConfig = null)
     {
         ILogger nugetLogger = new NullLogger();
 
