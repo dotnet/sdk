@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.CommandLine" VersionOverride="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 
 </Project>
