@@ -15,12 +15,13 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal class ToolRunCommand(
     ParseResult result,
-    LocalToolsCommandResolver localToolsCommandResolver = null) : CommandBase(result)
+    LocalToolsCommandResolver localToolsCommandResolver = null,
+    ToolManifestFinder toolManifest = null) : CommandBase(result)
 {
     private readonly string _toolCommandName = result.GetValue(ToolRunCommandParser.CommandNameArgument);
     private readonly IEnumerable<string> _forwardArgument = result.GetValue(ToolRunCommandParser.CommandArgument);
 
-    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver();
+    private readonly LocalToolsCommandResolver _localToolsCommandResolver = localToolsCommandResolver ?? new LocalToolsCommandResolver(toolManifest);
     public bool _allowRollForward = result.GetValue(ToolRunCommandParser.RollForwardOption);
 
     public override int Execute()
