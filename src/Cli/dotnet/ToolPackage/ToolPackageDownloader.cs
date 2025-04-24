@@ -56,4 +56,57 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             verbosityOptions: verbosity,
             currentWorkingDirectory: _currentWorkingDirectory);
     }
+
+    protected override async Task<NuGetVersion> DownloadAndExtractPackage(
+        PackageId packageId,
+        INuGetPackageDownloader nugetPackageDownloader,
+        string packagesRootPath,
+        NuGetVersion packageVersion,
+        PackageSourceLocation packageSourceLocation,
+        bool includeUnlisted = false
+        )
+    {
+        var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
+
+        string folderToDeleteOnFailure = null;
+
+        try
+        {
+            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
+                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false);
+
+            folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
+
+            // look for package on disk and read the version
+            NuGetVersion version;
+
+            using (FileStream packageStream = File.OpenRead(packagePath))
+            {
+                PackageArchiveReader reader = new(packageStream);
+                version = new NuspecReader(reader.GetNuspec()).GetVersion();
+
+                var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
+                var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
+
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                File.WriteAllText(hashPath, packageHash);
+            }
+
+            // Extract the package
+            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
+            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+
+            return version;
+        }
+        catch
+        {
+            //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
+            if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
+            {
+                Directory.Delete(folderToDeleteOnFailure, true);
+            }
+
+            throw;
+        }
+    }
 }
