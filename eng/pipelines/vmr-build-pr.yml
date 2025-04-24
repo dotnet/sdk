@@ -13,7 +13,6 @@ trigger: none
 pr:
   branches:
     include:
-    - main
     - release/*
     exclude:
     - release/*.0.2xx
