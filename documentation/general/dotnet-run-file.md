@@ -226,6 +226,7 @@ dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge o
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
 For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point files.
+The order in which other files are processed is currently unspecified (can change across SDK versions) but deterministic (stable in a given SDK version).
 We do not limit these directives to appear only in entry point files because it allows:
 - a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
 - which also makes it possible to share it independently or symlink it to multiple script folders,
