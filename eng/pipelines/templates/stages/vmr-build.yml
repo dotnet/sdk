@@ -114,6 +114,7 @@ stages:
   # This template call is temporary while we still maintain a separate source-build pipeline
   - template: source-build.yml
     parameters:
+      isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       pool_Linux: ${{ parameters.pool_Linux }}
       pool_LinuxArm64: ${{ parameters.pool_LinuxArm64 }}
       scope: ${{ parameters.scope }}
@@ -122,6 +123,7 @@ stages:
 - ${{ elseif ne(variables['Build.Reason'], 'PullRequest') }}:
   - template: source-build.yml
     parameters:
+      isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       pool_Linux: ${{ parameters.pool_Linux }}
       pool_LinuxArm64: ${{ parameters.pool_LinuxArm64 }}
       scope: ${{ parameters.scope }}
