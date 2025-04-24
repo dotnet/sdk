@@ -46,11 +46,9 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         {
             verboseLogger = new NuGetConsoleLogger();
         }
-
-        DirectoryPath packageInstallDir = new DirectoryPath();
         
         return new NuGetPackageDownloader.NuGetPackageDownloader(
-            packageInstallDir,
+            new DirectoryPath(),
             verboseLogger: verboseLogger,
             verifySignatures: verifySignatures,
             shouldUsePackageSourceMapping: true,
