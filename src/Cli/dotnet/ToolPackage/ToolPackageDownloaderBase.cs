@@ -67,8 +67,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
     }
 
     protected abstract NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
-        DirectoryPath packageInstallDir,
-        ILogger verboseLogger,
         bool verifySignatures,
         VerbosityOptions verbosity,
         RestoreActionConfig restoreActionConfig);
@@ -82,12 +80,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool verifySignatures = true,
         RestoreActionConfig restoreActionConfig = null)
     {
-        ILogger nugetLogger = new NullLogger();
-        if (verbosity.IsDetailedOrDiagnostic())
-        {
-            nugetLogger = new NuGetConsoleLogger();
-        }
-
         if (versionRange == null)
         {
             var versionString = "*";
@@ -95,8 +87,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
 
         var nugetPackageDownloader = CreateNuGetPackageDownloader(
-            new DirectoryPath(),
-            nugetLogger,
             verifySignatures,
             verbosity,
             restoreActionConfig);
@@ -496,13 +486,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalTool = false,
         RestoreActionConfig restoreActionConfig = null)
     {
-        ILogger nugetLogger = new NullLogger();
-
-        if (verbosity.IsDetailedOrDiagnostic())
-        {
-            nugetLogger = new NuGetConsoleLogger();
-        }
-
         if (versionRange == null)
         {
             var versionString = "*";
@@ -510,8 +493,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
 
         var nugetPackageDownloader = CreateNuGetPackageDownloader(
-            isGlobalTool ? _globalToolStageDir : _localToolDownloadDir,
-            nugetLogger,
             false,
             verbosity,
             restoreActionConfig);
