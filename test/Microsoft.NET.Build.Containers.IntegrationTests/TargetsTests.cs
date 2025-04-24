@@ -22,6 +22,7 @@ public class TargetsTests
         {
             [prop] = value.ToString(),
             [ContainerRuntimeIdentifier] = $"{os}-x64",
+            ["_IsSingleRIDBuild"] = "true",
 
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
@@ -310,7 +311,8 @@ public class TargetsTests
             ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["TargetFrameworkVersion"] = tfm,
             ["TargetFramework"] = "net" + tfm.TrimStart('v'),
-            ["ContainerRuntimeIdentifier"] = rid
+            ["ContainerRuntimeIdentifier"] = rid,
+            ["_IsSingleRIDBuild"] = "true",
         }, projectName: $"{nameof(CanComputeContainerUser)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
