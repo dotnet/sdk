@@ -409,8 +409,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         AssertManifest(publishManifest, LoadPublishManifest());
     }
 
-    //[RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
-    [Fact(Skip = "https://github.com/dotnet/runtime/issues/114915")]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Build_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -463,8 +462,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorhosted", readFromDevManifest: true);
     }
 
-    //[RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
-    [Fact(Skip = "https://github.com/dotnet/runtime/issues/114915")]
+    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Publish_EndpointManifestContainsEndpoints()
     {
         // Arrange
