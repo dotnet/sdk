@@ -107,8 +107,8 @@ public class DiffInterfaceTests : DiffBaseTests
                   {
                 -     public interface IMyInterface
                 -     {
-                +         int MyMethod();
-                +         long MyProperty { get; }
+                -         int MyMethod();
+                -         long MyProperty { get; }
                 -     }
                   }
                 """);
