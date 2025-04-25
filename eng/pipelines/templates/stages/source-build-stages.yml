@@ -37,6 +37,7 @@ stages:
           buildName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}
           container:
             name: ${{ variables.centOSStreamContainerName }}
+            image: ${{ variables.centOSStreamContainerImage }}
           ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
             reuseBuildArtifactsFrom:
             - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
@@ -47,6 +48,7 @@ stages:
           buildName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}
           container:
             name: ${{ variables.fedoraContainerName }}
+            image: ${{ variables.fedoraContainerImage }}
           ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
             reuseBuildArtifactsFrom:
             - ${{ format(leg.reuseBuildArtifactsFrom, variables.fedoraName) }}
@@ -56,9 +58,11 @@ stages:
           ${{ if eq(leg.targetArchitecture, 'arm64') }}:
             container:
               name: ${{ variables.ubuntuArmContainerName }}
+              image: ${{ variables.ubuntuArmContainerImage }}
           ${{ else }}:
             container:
               name: ${{ variables.ubuntuContainerName }}
+              image: ${{ variables.ubuntuContainerImage }}
           ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
             reuseBuildArtifactsFrom:
             - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
@@ -67,6 +71,7 @@ stages:
           buildName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}
           container:
             name: ${{ variables.almaLinuxContainerName }}
+            image: ${{ variables.almaLinuxContainerImage }}
           ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
             reuseBuildArtifactsFrom:
             - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
@@ -76,6 +81,7 @@ stages:
           buildName: ${{ format(leg.buildNameFormat, variables.alpineName) }}
           container:
             name: ${{ variables.alpineContainerName }}
+            image: ${{ variables.alpineContainerImage }}
           ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
             reuseBuildArtifactsFrom:
             - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
@@ -117,31 +123,37 @@ stages:
             buildName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}_Validation
             container:
               name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
           # Fedora
           ${{ elseif eq(leg.distro, 'fedora') }}:
             buildName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}_Validation
             container:
               name: ${{ variables.fedoraContainerName }}
+              image: ${{ variables.fedoraContainerImage }}
           # Ubuntu
           ${{ elseif eq(leg.distro, 'ubuntu') }}:
             buildName: ${{ format(leg.buildNameFormat, variables.ubuntuName) }}_Validation
             ${{ if eq(leg.targetArchitecture, 'arm64') }}:
               container:
                 name: ${{ variables.ubuntuArmContainerName }}
+                image: ${{ variables.ubuntuArmContainerImage }}
             ${{ else }}:
               container:
                 name: ${{ variables.ubuntuContainerName }}
+                image: ${{ variables.ubuntuContainerImage }}
           # AlmaLinux
           ${{ elseif eq(leg.distro, 'almalinux') }}:
             buildName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}_Validation
             container:
               name: ${{ variables.almaLinuxContainerName }}
+              image: ${{ variables.almaLinuxContainerImage }}
             targetRid: ${{ variables.almaLinuxX64Rid }}
           # Alpine
           ${{ elseif eq(leg.distro, 'alpine') }}:
             buildName: ${{ format(leg.buildNameFormat, variables.alpineName) }}_Validation
             container:
               name: ${{ variables.alpineContainerName }}
+              image: ${{ variables.alpineContainerImage }}
             targetRid: ${{ variables.alpineX64Rid }}
 
           isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
