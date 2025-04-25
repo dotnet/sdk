@@ -71,7 +71,7 @@ public static class Program
         {
             Description = $"The optional title of the markdown table of contents file that is placed in the output folder.",
             Arity = ArgumentArity.ZeroOrMore,
-            Required = true,
+            Required = false,
             DefaultValueFactory = _ => "api_diff"
         };
 
