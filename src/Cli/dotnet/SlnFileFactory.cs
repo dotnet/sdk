@@ -11,8 +11,8 @@ namespace Microsoft.DotNet.Cli;
 
 public static class SlnFileFactory
 {
-    public static string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
-    public static string[] DefaultBuildTypes = new[] { "Debug", "Release" };
+    public static readonly string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
+    public static readonly string[] DefaultBuildTypes = new[] { "Debug", "Release" };
 
     public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
     {
