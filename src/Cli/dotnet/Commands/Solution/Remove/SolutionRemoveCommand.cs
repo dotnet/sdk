@@ -25,7 +25,7 @@ internal class SolutionRemoveCommand : CommandBase
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
+        string solutionFileFullPath = SolutionModelUtils.GetSolutionFileFullPath(_fileOrDirectory);
         if (_projects.Count == 0)
         {
             throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToRemove);
@@ -56,7 +56,7 @@ internal class SolutionRemoveCommand : CommandBase
 
     private static async Task RemoveProjectsAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        SolutionModel solution = SolutionModelUtils.CreateFromFileOrDirectory(solutionFileFullPath);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
         // set UTF-8 BOM encoding for .sln

@@ -15,7 +15,7 @@ internal class SolutionListCommand(
 
     public override int Execute()
     {
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
+        string solutionFileFullPath = SolutionModelUtils.GetSolutionFileFullPath(_fileOrDirectory, includeSolutionFilterFiles: true);
         try
         {
             ListAllProjectsAsync(solutionFileFullPath);
@@ -29,7 +29,7 @@ internal class SolutionListCommand(
 
     private void ListAllProjectsAsync(string solutionFileFullPath)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        SolutionModel solution = SolutionModelUtils.CreateFromFileOrDirectory(solutionFileFullPath);
         string[] paths;
         if (_displaySolutionFolders)
         {

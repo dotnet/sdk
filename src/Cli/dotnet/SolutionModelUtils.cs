@@ -9,8 +9,11 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class SlnFileFactory
+public static class SolutionModelUtils
 {
+    public static string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
+    public static string[] DefaultBuildTypes = new[] { "Debug", "Release" };
+
     public static string GetSolutionFileFullPath(string slnFileOrDirectory, bool includeSolutionFilterFiles = false, bool includeSolutionXmlFiles = true)
     {
         // Throw error if slnFileOrDirectory is an invalid path
