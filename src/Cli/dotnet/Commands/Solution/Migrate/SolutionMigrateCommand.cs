@@ -17,7 +17,7 @@ internal class SolutionMigrateCommand(
 
     public override int Execute()
     {
-        string slnFileFullPath = SolutionModelUtils.GetSolutionFileFullPath(_slnFileOrDirectory);
+        string slnFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_slnFileOrDirectory);
         if (slnFileFullPath.HasExtension(".slnx"))
         {
             throw new GracefulException(CliCommandStrings.CannotMigrateSlnx);
@@ -34,7 +34,7 @@ internal class SolutionMigrateCommand(
 
     private async Task ConvertToSlnxAsync(string filePath, string slnxFilePath, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SolutionModelUtils.CreateFromFileOrDirectory(filePath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(filePath);
         await SolutionSerializers.SlnXml.SaveAsync(slnxFilePath, solution, cancellationToken);
         _reporter.WriteLine(CliCommandStrings.SlnxGenerated, slnxFilePath);
     }

@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 
 namespace Microsoft.DotNet.Cli;
 
-public static class SolutionModelUtils
+public static class SlnFileFactory
 {
     public static string[] DefaultPlatforms = new[] { "Any CPU", "x64", "x86" };
     public static string[] DefaultBuildTypes = new[] { "Debug", "Release" };

@@ -124,7 +124,7 @@ internal class ReleasePropertyProjectLocator
                 }
                 catch (GracefulException)  // Fall back to looking for a solution if multiple project files are found, or there's no project in the directory.
                 {
-                    string? potentialSln = SolutionModelUtils.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
+                    string? potentialSln = SlnFileFactory.ListSolutionFilesInDirectory(arg, false).FirstOrDefault();
 
                     if (!string.IsNullOrEmpty(potentialSln))
                     {
@@ -148,7 +148,7 @@ internal class ReleasePropertyProjectLocator
         SolutionModel sln;
         try
         {
-            sln = SolutionModelUtils.CreateFromFileOrDirectory(slnFullPath, false, false);
+            sln = SlnFileFactory.CreateFromFileOrDirectory(slnFullPath, false, false);
         }
         catch (GracefulException)
         {

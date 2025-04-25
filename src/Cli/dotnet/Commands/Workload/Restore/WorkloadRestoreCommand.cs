@@ -112,7 +112,7 @@ internal class WorkloadRestoreCommand(
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = [.. SolutionModelUtils.ListSolutionFilesInDirectory(currentDirectory, false)];
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
@@ -127,7 +127,7 @@ internal class WorkloadRestoreCommand(
 
         foreach (string solutionFilePath in slnFiles)
         {
-            var solutionFile = SolutionModelUtils.CreateFromFileOrDirectory(solutionFilePath);
+            var solutionFile = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath);
             projectFiles.AddRange(solutionFile.SolutionProjects.Select(
                 p => Path.GetFullPath(p.FilePath, Path.GetDirectoryName(solutionFilePath))));
         }

@@ -42,7 +42,7 @@ internal class SolutionAddCommand : CommandBase
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
-        _solutionFileFullPath = SolutionModelUtils.GetSolutionFileFullPath(_fileOrDirectory);
+        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
 
     public override int Execute()
@@ -77,7 +77,7 @@ internal class SolutionAddCommand : CommandBase
 
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
-        SolutionModel solution = SolutionModelUtils.CreateFromFileOrDirectory(_solutionFileFullPath);
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
         // set UTF8 BOM encoding for .sln
@@ -89,8 +89,8 @@ internal class SolutionAddCommand : CommandBase
             });
 
             // Set default configurations and platforms for sln file
-            SolutionModelUtils.DefaultPlatforms.ToList().ForEach(solution.AddPlatform);
-            SolutionModelUtils.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
+            SlnFileFactory.DefaultPlatforms.ToList().ForEach(solution.AddPlatform);
+            SlnFileFactory.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
         }
 
 
