@@ -1,9 +1,0 @@
-{
-  "profiles": {
-    "Microsoft.DotNet.ApiDiff.Tool": {
-      "commandName": "Project",
-      "commandLineArgs": "-b \"C:/Users/calope/source/repos/tmp/Microsoft.NETCore.App.Before/ref/net10.0/\" -a \"C:/Users/calope/source/repos/tmp/Microsoft.NETCore.App.After/ref/net10.0/\" -o \"C:/Users/calope/source/repos/tmp/output/\" -tc \"perf-prev-2\" -bfn \"before\" -afn \"after\"\r\n\r\n",
-      "workingDirectory": "C:\\Users\\calope\\source\\repos\\sdk2\\artifacts\\bin\\Microsoft.DotNet.ApiDiff.Tool\\Release\\net8.0\\"
-    }
-  }
-}
