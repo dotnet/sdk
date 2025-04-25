@@ -4,6 +4,7 @@
     <TargetFramework>$(NetToolMinimum)</TargetFramework>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
+    <IsShippingPackage>false</IsShippingPackage>
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>apidiff</ToolCommandName>
     <PackageDescription>Tool to emit markdown diffs between sets of assemblies.</PackageDescription>
