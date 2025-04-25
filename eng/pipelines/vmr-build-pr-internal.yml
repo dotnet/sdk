@@ -26,7 +26,6 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
-- template: /eng/pipelines/templates/variables/vmr-build.yml@self
 
 - ${{ if ne(parameters.vmrBranch, ' ') }}:
   - name: VmrBranch
@@ -45,56 +44,6 @@ resources:
     name: dotnet-dotnet
     type: git
     ref: ${{ variables.VmrBranch }}
-  
-  containers:
-    ${{ variables.almaLinuxContainerName }}:
-      image: ${{ variables.almaLinuxContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.alpineContainerName }}:
-      image: ${{ variables.alpineContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.centOSStreamContainerName }}:
-      image: ${{ variables.centOSStreamContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.fedoraContainerName }}:
-      image: ${{ variables.fedoraContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.ubuntuContainerName }}:
-      image: ${{ variables.ubuntuContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.ubuntuArmContainerName }}:
-      image: ${{ variables.ubuntuArmContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxX64CrossContainerName }}:
-      image: ${{ variables.azurelinuxX64CrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxArmCrossContainerName }}:
-      image: ${{ variables.azurelinuxArmCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxArm64CrossContainerName }}:
-      image: ${{ variables.azurelinuxArm64CrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxX64MuslCrossContainerName }}:
-      image: ${{ variables.azurelinuxX64MuslCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxArmMuslCrossContainerName }}:
-      image: ${{ variables.azurelinuxArmMuslCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.azurelinuxArm64MuslCrossContainerName }}:
-      image: ${{ variables.azurelinuxArm64MuslCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.androidCrossContainerName }}:
-      image: ${{ variables.androidCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.linuxBionicCrossContainerName }}:
-      image: ${{ variables.linuxBionicCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.browserCrossContainerName }}:
-      image: ${{ variables.browserCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
-    ${{ variables.wasiCrossContainerName }}:
-      image: ${{ variables.wasiCrossContainerImage }}
-      options: ${{ variables.defaultContainerOptions }}
 
 stages:
 # You can temporarily disable the VMR Build stage by setting the disableBuild variable
