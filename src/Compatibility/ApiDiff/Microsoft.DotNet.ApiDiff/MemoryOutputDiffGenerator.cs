@@ -189,8 +189,8 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         CSharpAssemblyDocumentGenerator docGenerator = new(_log, options);
 
         Document document = await docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).ConfigureAwait(false); // Super hot and resource-intensive path
-        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.RootNodeNotFound, assemblySymbol.Name));
-        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(string.Format(Resources.SemanticModelNotFound, assemblySymbol.Name));
+        SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException($"Root node could not be found for document of assembly '{assemblySymbol.Name}'.");
+        SemanticModel model = await document.GetSemanticModelAsync().ConfigureAwait(false) ?? throw new InvalidOperationException($"Semantic model could not be found for document of assembly '{assemblySymbol.Name}'.");
 
         return (root, model);
     }
@@ -353,7 +353,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         }
         else
         {
-            throw new InvalidOperationException(string.Format(Resources.UnexpectedNodeType, parentNode.Kind()));
+            throw new InvalidOperationException($"Unexpected node type '{parentNode.Kind()}'");
         }
 
         return dictionary;
@@ -410,7 +410,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 }
                 break;
             default:
-                throw new NotSupportedException(string.Format(Resources.UnexpectedChangeType, changeType));
+                throw new NotSupportedException($"Unexpected change type '{changeType}'.");
         }
 
         return sb.Length > 0 ? sb.ToString() : null;
@@ -520,7 +520,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
 
                 if (!dictionary.TryAdd(GetAttributeDocId(constructor, attributeNode, model), realAttributeNode))
                 {
-                    _log.LogWarning(string.Format(Resources.AttributeAlreadyExists, realAttributeNode.ToFullString(), GetDocId(memberNode, model)));
+                    _log.LogWarning($"Attribute already exists in dictionary. Attribute: '{realAttributeNode.ToFullString()}', Member: '{GetDocId(memberNode, model)}'");
                 }
             }
         }
@@ -568,7 +568,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
                 ChangeType.Inserted  => GenerateAddedDiff(codeToDiff),
                 ChangeType.Deleted   => GenerateDeletedDiff(codeToDiff),
                 ChangeType.Unchanged => codeToDiff,
-                _ => throw new InvalidOperationException(string.Format(Resources.UnexpectedChangeType, parentChangeType)),
+                _ => throw new InvalidOperationException($"Unexpected change type '{parentChangeType}'."),
             };
         }
     }
@@ -627,7 +627,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             RecordDeclarationSyntax recordDecl => recordDecl.CloseBraceToken.IsMissing ? _missingCloseBrace : recordDecl.CloseBraceToken,
             BaseTypeDeclarationSyntax typeDecl => typeDecl.CloseBraceToken,
             NamespaceDeclarationSyntax nsDecl => nsDecl.CloseBraceToken,
-            _ => throw new InvalidOperationException(string.Format(Resources.UnexpectedNodeType, childlessNode.Kind()))
+            _ => throw new InvalidOperationException($"Unexpected node type '{childlessNode.Kind()}'")
         };
 
         return closeBrace.WithTrailingTrivia(_endOfLineTrivia)
@@ -691,7 +691,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             EventFieldDeclarationSyntax eventFieldDeclaration => model.GetDeclaredSymbol(eventFieldDeclaration.Declaration.Variables.First()),
             PropertyDeclarationSyntax propertyDeclaration     => model.GetDeclaredSymbol(propertyDeclaration),
             _ => model.GetDeclaredSymbol(node)
-        }; 
+        };
 
         if (symbol?.GetDocumentationCommentId() is string docId)
         {
@@ -704,7 +704,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
             return docId;
         }
 
-        throw new NullReferenceException(string.Format(Resources.CouldNotGetDocIdForNode, node));
+        throw new NullReferenceException($"Could not get the DocID for node: {node}");
     }
 
     private static string? GenerateAddedDiff(SyntaxNode afterNode) => GenerateAddedDiff(afterNode.ToFullString());
