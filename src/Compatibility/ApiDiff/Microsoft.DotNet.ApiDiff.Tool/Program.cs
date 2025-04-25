@@ -14,6 +14,8 @@ namespace Microsoft.DotNet.ApiDiff.Tool;
 /// </summary>
 public static class Program
 {
+    private static readonly string AttributesToExcludeDefaultFileName = "AttributesToExclude.txt";
+
     public static async Task Main(string[] args)
     {
         RootCommand rootCommand = new("genapidiff");
@@ -85,10 +87,10 @@ public static class Program
 
         Option<FileInfo[]?> optionFilesWithAttributesToExclude = new(name: "", aliases: ["--attributesToExclude", "-eattrs"])
         {
-            Description = "An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line.",
+            Description = $"An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line. You can either modify the default file '{AttributesToExcludeDefaultFileName}' to add your own attributes, or include additional files using this command line option.",
             Arity = ArgumentArity.ZeroOrMore,
             Required = false,
-            DefaultValueFactory = _ => null
+            DefaultValueFactory = _ => [new FileInfo(AttributesToExcludeDefaultFileName)]
         };
 
         Option<FileInfo[]?> optionFilesWithApisToExclude = new(name: "", aliases: ["--apisToExclude", "-eapis"])

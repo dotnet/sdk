@@ -10,16 +10,6 @@ namespace Microsoft.DotNet.ApiDiff;
 public static class DiffGeneratorFactory
 {
     /// <summary>
-    /// The default attributes to exclude from the diff.
-    /// </summary>
-    public static readonly string[] DefaultAttributesToExclude = [
-        "T:System.AttributeUsageAttribute",
-        "T:System.ComponentModel.EditorBrowsableAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresDynamicCodeAttribute",
-        "T:System.Diagnostics.CodeAnalysis.RequiresUnreferencedCodeAttribute"
-    ];
-
-    /// <summary>
     /// The default diagnostic options to use when generating the diff.
     /// </summary>
     public static readonly IEnumerable<KeyValuePair<string, ReportDiagnostic>> DefaultDiagnosticOptions = [
@@ -43,7 +33,7 @@ public static class DiffGeneratorFactory
     /// <param name="afterFriendlyName">The friendly name for the assemblies after the change.</param>
     /// <param name="tableOfContentsTitle">The title for the table of contents in the generated diff.</param>
     /// <param name="filesWithAssembliesToExclude">An optional array of filepaths each containing a list of assemblies to avoid showing in the diff. If <see langword="null"/>, no assemblies are excluded.</param>
-    /// <param name="filesWithAttributesToExclude">An optional array of filepaths each containing a list of  attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="filesWithAttributesToExclude">An optional array of filepaths each containing a list of  attributes to avoid showing in the diff.</param>
     /// <param name="filesWithApisToExclude">An optional array of filepaths each containing a list of  APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="IDiffGenerator.RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="IDiffGenerator.RunAsync"/>, the generated markdown files get added to the <see cref="IDiffGenerator.RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
@@ -91,7 +81,7 @@ public static class DiffGeneratorFactory
     /// <param name="afterLoader">The loader to use for loading the assemblies after the change.</param>
     /// <param name="beforeAssemblySymbols">The dictionary containing the assembly symbols before the change.</param>
     /// <param name="afterAssemblySymbols">The dictionary containing the assembly symbols after the change.</param>
-    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">Indicates whether to add the partial modifier to types.</param>
     /// <param name="diagnosticOptions">An optional list of diagnostic options to use when generating the diff.</param>

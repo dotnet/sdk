@@ -732,10 +732,19 @@ public class DiffAttributeTests : DiffBaseTests
     #region Attribute exclusion
 
     [Fact]
-    public Task SuppressAllDefaultAttributes() =>
+    public Task SuppressAllDefaultAttributesUsedByTool()
+    {
         // The attributes that should get hidden in this test must all be part of
-        // the DiffGeneratorFactory.DefaultAttributesToExclude list.
-        RunTestAsync(
+        // the AttributesToExclude.txt file that the ApiDiff tool uses by default.
+
+        FileInfo file = new FileInfo("AttributesToExclude.txt");
+        if (!file.Exists)
+        {
+            throw new FileNotFoundException($"{file.FullName} file not found.");
+        }
+        string[] attributesToExclude = File.ReadAllLines(file.FullName);
+
+        return RunTestAsync(
                 beforeCode: """
                 namespace MyNamespace
                 {
@@ -775,7 +784,8 @@ public class DiffAttributeTests : DiffBaseTests
                 +     }
                   }
                 """,
-                attributesToExclude: null); // null forces using the default list
+                attributesToExclude: attributesToExclude);
+    }
 
     [Fact]
     public Task SuppressNone() => RunTestAsync(

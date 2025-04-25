@@ -49,7 +49,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     /// <param name="afterLoader">The loader for the "after" assembly symbols.</param>
     /// <param name="beforeAssemblySymbols">The dictionary of "before" assembly symbols.</param>
     /// <param name="afterAssemblySymbols">The dictionary of "after" assembly symbols.</param>
-    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="attributesToExclude">An optional list of attributes to avoid showing in the diff.</param>
     /// <param name="apisToExclude">An optional list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">A boolean indicating whether to add the partial modifier to types.</param>
     /// <param name="diagnosticOptions">An optional dictionary of diagnostic options.</param>
@@ -71,7 +71,7 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         _afterAssemblySymbols = new ConcurrentDictionary<string, IAssemblySymbol>(afterAssemblySymbols);
         _addPartialModifier = addPartialModifier;
         _diagnosticOptions = diagnosticOptions ?? DiffGeneratorFactory.DefaultDiagnosticOptions;
-        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? DiffGeneratorFactory.DefaultAttributesToExclude, includeExplicitInterfaceImplementationSymbols: true);
+        _attributeSymbolFilter = SymbolFilterFactory.GetFilterFromList(attributesToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
         _symbolFilter = SymbolFilterFactory.GetFilterFromList(apisToExclude ?? [], includeExplicitInterfaceImplementationSymbols: true);
         _twoSpacesTrivia = SyntaxFactory.TriviaList(SyntaxFactory.Space, SyntaxFactory.Space);
         _missingCloseBrace = SyntaxFactory.MissingToken(SyntaxKind.CloseBraceToken);

@@ -43,7 +43,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
     /// <param name="afterFriendlyName">The friendly name for the after version of the assemblies.</param>
     /// <param name="tableOfContentsTitle">The title for the table of contents.</param>
     /// <param name="filesWithAssembliesToExclude">An optional array of filepaths each containing a list of assemblies to avoid showing in the diff.</param>
-    /// <param name="filesWithAttributesToExclude">An optional array of filepaths each containing a list of attributes to avoid showing in the diff. If <see langword="null"/>, the default list of attributes to exclude <see cref="DiffGeneratorFactory.DefaultAttributesToExclude"/> is used. If an empty list, no attributes are excluded.</param>
+    /// <param name="filesWithAttributesToExclude">An optional array of filepaths each containing a list of attributes to avoid showing in the diff.</param>
     /// <param name="filesWithApisToExclude">An optional array of filepaths each containing a list of APIs to avoid showing in the diff.</param>
     /// <param name="addPartialModifier">A value indicating whether to add the partial modifier to types.</param>
     /// <param name="writeToDisk">If <see langword="true"/>, when calling <see cref="RunAsync"/>, the generated markdown files get written to disk, and no item is added to the <see cref="RunAsync"/> dictionary. If <see langword="false"/>, when calling <see cref="RunAsync"/>, the generated markdown files get added to the <see cref="RunAsync"/> dictionary (with the file path as the dictionary key) and none of them is written to disk. This is meant for testing purposes.</param>
@@ -75,7 +75,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         _afterFriendlyName = afterFriendlyName;
         _tableOfContentsTitle = tableOfContentsTitle;
         _assembliesToExclude = CollectListsFromFiles(filesWithAssembliesToExclude);
-        _attributesToExclude = filesWithAttributesToExclude != null ? CollectListsFromFiles(filesWithAttributesToExclude) : DiffGeneratorFactory.DefaultAttributesToExclude;
+        _attributesToExclude = filesWithAttributesToExclude != null ? CollectListsFromFiles(filesWithAttributesToExclude) : [];
         _apisToExclude = CollectListsFromFiles(filesWithApisToExclude);
         _addPartialModifier = addPartialModifier;
         _writeToDisk = writeToDisk;
