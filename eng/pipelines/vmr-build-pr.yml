@@ -38,7 +38,7 @@ parameters:
 
 variables:
 - template: /eng/common/templates/variables/pool-providers.yml@self
-- template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
+- template: /eng/pipelines/templates/variables/vmr-build.yml@self
 
 - ${{ if eq(variables['System.TeamProject'], 'public') }}:
   - name: skipComponentGovernanceDetection  # we run CG on internal builds only
