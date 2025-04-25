@@ -30,7 +30,7 @@ internal class SolutionAddCommand : CommandBase
 
     private static bool IsSolutionFolderPathInDirectoryScope(string relativePath)
     {
-        return !string.IsNullOrEmpty(relativePath)
+        return !string.IsNullOrWhiteSpace(relativePath)
             && !Path.IsPathRooted(relativePath) // This means path is in a different volume
             && !relativePath.StartsWith(".."); // This means path is outside the solution directory
     }
