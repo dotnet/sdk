@@ -18,20 +18,7 @@
 
     // Some files are copied outside of the src/ directory into other locations
     // When files in the source paths are changed, they are automatically synchronized too
-    "additionalMappings": [
-        {
-            "source": "src/sdk/src/SourceBuild/content",
-            "destination": ""
-        },
-        {
-            "source": "src/sdk/eng/common",
-            "destination": "eng/common"
-        },
-        {
-            "source": "src/sdk/src/VirtualMonoRepo/source-mappings.json",
-            "destination": "src"
-        }
-    ],
+    "additionalMappings": [ /* These are not supported with the flat flow anymore */],
 
     // These defaults are added to all mappings unless `ignoreDefaults: true` is specified
     // When no "include" filter is specified, "**/*" is used
@@ -42,10 +29,13 @@
     },
 
     // Each of these mappings has a corresponding folder in the src/ directory
+    // We set disableSynchronization to true for all of them to be sure the old one-way synchronization does not happen
+    // This setting does not affect the code flow subscriptions
     "mappings": [
         {
             "name": "arcade",
-            "defaultRemote": "https://github.com/dotnet/arcade"
+            "defaultRemote": "https://github.com/dotnet/arcade",
+            "disableSynchronization": true
         },
         {
             "name": "aspire",
@@ -54,65 +44,78 @@
                 "src/Aspire.Dashboard/**/*",
                 "samples/**/*"
             ],
-            // Aspire no longer flows/changes, we only keep it for the workload manifest generation
             "disableSynchronization": true
         },
         {
             "name": "aspnetcore",
-            "defaultRemote": "https://github.com/dotnet/aspnetcore"
+            "defaultRemote": "https://github.com/dotnet/aspnetcore",
+            "disableSynchronization": true
         },
         {
             "name": "cecil",
-            "defaultRemote": "https://github.com/dotnet/cecil"
+            "defaultRemote": "https://github.com/dotnet/cecil",
+            "disableSynchronization": true
         },
         {
             "name": "command-line-api",
-            "defaultRemote": "https://github.com/dotnet/command-line-api"
+            "defaultRemote": "https://github.com/dotnet/command-line-api",
+            "disableSynchronization": true
         },
         {
             "name": "deployment-tools",
-            "defaultRemote": "https://github.com/dotnet/deployment-tools"
+            "defaultRemote": "https://github.com/dotnet/deployment-tools",
+            "disableSynchronization": true
         },
         {
             "name": "diagnostics",
-            "defaultRemote": "https://github.com/dotnet/diagnostics"
+            "defaultRemote": "https://github.com/dotnet/diagnostics",
+            "disableSynchronization": true
         },
         {
             "name": "efcore",
-            "defaultRemote": "https://github.com/dotnet/efcore"
+            "defaultRemote": "https://github.com/dotnet/efcore",
+            "disableSynchronization": true
         },
         {
             "name": "emsdk",
-            "defaultRemote": "https://github.com/dotnet/emsdk"
+            "defaultRemote": "https://github.com/dotnet/emsdk",
+            "disableSynchronization": true
         },
         {
             "name": "fsharp",
-            "defaultRemote": "https://github.com/dotnet/fsharp"
+            "defaultRemote": "https://github.com/dotnet/fsharp",
+            "disableSynchronization": true
         },
         {
             "name": "msbuild",
-            "defaultRemote": "https://github.com/dotnet/msbuild"
+            "defaultRemote": "https://github.com/dotnet/msbuild",
+            "disableSynchronization": true
         },
         {
             "name": "nuget-client",
             "defaultRemote": "https://github.com/NuGet/NuGet.Client",
-            "defaultRef": "dev"
+            "defaultRef": "dev",
+            "disableSynchronization": true
         },
         {
             "name": "razor",
-            "defaultRemote": "https://github.com/dotnet/razor"
+            "defaultRemote": "https://github.com/dotnet/razor",
+            "disableSynchronization": true
         },
         {
             "name": "roslyn",
-            "defaultRemote": "https://github.com/dotnet/roslyn"
+            "defaultRemote": "https://github.com/dotnet/roslyn",
+            "disableSynchronization": true
         },
         {
             "name": "roslyn-analyzers",
-            "defaultRemote": "https://github.com/dotnet/roslyn-analyzers"
+            "defaultRemote": "https://github.com/dotnet/roslyn-analyzers",
+            "disableSynchronization": true
         },
         {
             "name": "runtime",
-            "defaultRemote": "https://github.com/dotnet/runtime"
+            "defaultRemote": "https://github.com/dotnet/runtime",
+            "disableSynchronization": true
         },
         {
             "name": "scenario-tests",
@@ -126,7 +129,8 @@
             "exclude": [
               // Exclude the VMR content as this is copied to the root of VMR via the synchronization process.
               "src/SourceBuild/content/**/*"
-            ]
+            ],
+            "disableSynchronization": true
         },
         {
             "name": "source-build-externals",
@@ -142,25 +146,28 @@
                 "src/spectre-console/NuGet.Config",
                 "src/spectre-console/examples/Console/Canvas/Mandelbrot.cs",
                 "src/xunit/NuGet.Config"
-            ]
+            ],
+            "disableSynchronization": true
         },
         {
             "name": "source-build-reference-packages",
-            "defaultRemote": "https://github.com/dotnet/source-build-reference-packages"
+            "defaultRemote": "https://github.com/dotnet/source-build-reference-packages",
+            "disableSynchronization": true
         },
         {
             "name": "sourcelink",
             "defaultRemote": "https://github.com/dotnet/sourcelink",
-            // Migrated onto the flat flow
             "disableSynchronization": true
         },
         {
             "name": "symreader",
-            "defaultRemote": "https://github.com/dotnet/symreader"
+            "defaultRemote": "https://github.com/dotnet/symreader",
+            "disableSynchronization": true
         },
         {
             "name": "templating",
-            "defaultRemote": "https://github.com/dotnet/templating"
+            "defaultRemote": "https://github.com/dotnet/templating",
+            "disableSynchronization": true
         },
         {
             "name": "vstest",
@@ -170,21 +177,12 @@
                 // Non-OSS license - https://github.com/dotnet/source-build/issues/4255
                 "src/package/licenses/LICENSE_VS.txt",
                 "test/Microsoft.TestPlatform.CoreUtilities.UnitTests/TestAssets/dotnetWinX86.exe"
-            ]
+            ],
+            "disableSynchronization": true
         },
         {
             "name": "xdt",
-            "defaultRemote": "https://github.com/dotnet/xdt"
-        },
-        {
-            // TODO: Remove the xliff-tasks mapping once the synchronization flags it as unused
-            // We no longer synchronize it but we can't remove it yet until
-            // it disappears from all of the Version.Details.xml files.
-            // https://github.com/dotnet/source-build/issues/4359
-            "name": "xliff-tasks",
-            "defaultRemote": "https://github.com/dotnet/xliff-tasks",
-            "ignoreDefaults": true,
-            "exclude": [ "**/*" ],
+            "defaultRemote": "https://github.com/dotnet/xdt",
             "disableSynchronization": true
         },
         {
@@ -196,15 +194,18 @@
                 "src/test/integration/DesignSurface/**/*.ico",
                 "src/test/integration/DesignSurface/**/*.resx",
                 "src/test/integration/DesignSurface/THIRD-PARTY-NOTICE.txt"
-            ]
+            ],
+            "disableSynchronization": true
         },
         {
             "name": "wpf",
-            "defaultRemote": "https://github.com/dotnet/wpf"
+            "defaultRemote": "https://github.com/dotnet/wpf",
+            "disableSynchronization": true
         },
         {
             "name": "windowsdesktop",
-            "defaultRemote": "https://github.com/dotnet/windowsdesktop"
+            "defaultRemote": "https://github.com/dotnet/windowsdesktop",
+            "disableSynchronization": true
         }
     ]
 }
