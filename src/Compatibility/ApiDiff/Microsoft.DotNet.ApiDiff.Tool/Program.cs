@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.ComponentModel;
 using System.Diagnostics;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
 
@@ -17,124 +18,134 @@ public static class Program
     {
         RootCommand rootCommand = new("genapidiff");
 
-        Option<string> optionBeforeAssembliesFolderPath = new(["--before", "-b"])
+        Option<string> optionBeforeAssembliesFolderPath = new(name: "", aliases: ["--before", "-b"])
         {
             Description = "The path to the folder containing the old (before) assemblies to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Required = true
         };
 
-        Option<string> optionBeforeRefAssembliesFolderPath = new(["--refbefore", "-rb"])
+        Option<string> optionBeforeRefAssembliesFolderPath = new(name: "", aliases: ["--refbefore", "-rb"])
         {
             Description = "The path to the folder containing the references required by old (before) assemblies, not to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = false
+            Required = false
         };
 
-        Option<string> optionAfterAssembliesFolderPath = new(["--after", "-a"])
+        Option<string> optionAfterAssembliesFolderPath = new(name: "", aliases: ["--after", "-a"])
         {
             Description = "The path to the folder containing the new (after) assemblies to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Required = true
         };
 
-        Option<string> optionAfterRefAssembliesFolderPath = new(["--refafter", "-ra"])
+        Option<string> optionAfterRefAssembliesFolderPath = new(name: "", aliases: ["--refafter", "-ra"])
         {
             Description = "The path to the folder containing references required by the new (after) reference assemblies, not to be included in the diff.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = false
+            Required = false
         };
 
-        Option<string> optionOutputFolderPath = new(["--output", "-o"])
+        Option<string> optionOutputFolderPath = new(name: "", aliases: ["--output", "-o"])
         {
             Description = "The path to the output folder.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Required = true
         };
 
-        Option<string> optionBeforeFriendlyName = new(["--beforeFriendlyName", "-bfn"])
+        Option<string> optionBeforeFriendlyName = new(name: "", aliases: ["--beforeFriendlyName", "-bfn"])
         {
             Description = "The friendly name to describe the 'before' assembly.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Required = true
         };
 
-        Option<string> optionAfterFriendlyName = new(["--afterFriendlyName", "-afn"])
+        Option<string> optionAfterFriendlyName = new(name: "", aliases: ["--afterFriendlyName", "-afn"])
         {
             Description = "The friendly name to describe the 'after' assembly.",
             Arity = ArgumentArity.ExactlyOne,
-            IsRequired = true
+            Required = true
         };
 
-        Option<string> optionTableOfContentsTitle = new(["--tableOfContentsTitle", "-tc"], () => "api_diff")
+        Option<string> optionTableOfContentsTitle = new(name: "", aliases: ["--tableOfContentsTitle", "-tc"])
         {
             Description = $"The optional title of the markdown table of contents file that is placed in the output folder.",
             Arity = ArgumentArity.ZeroOrMore,
-            IsRequired = true
+            Required = true,
+            DefaultValueFactory = _ => "api_diff"
         };
 
-        Option<FileInfo[]?> optionFilesWithAssembliesToExclude = new(["--assembliesToExclude", "-eas"], () => null)
+        Option<FileInfo[]?> optionFilesWithAssembliesToExclude = new(name: "", aliases: ["--assembliesToExclude", "-eas"])
         {
             Description = "An optional array of filepaths, each containing a list of assemblies that should be excluded from the diff. Each file should contain one assembly name per line, with no extensions.",
             Arity = ArgumentArity.ZeroOrMore,
-            IsRequired = false,
+            Required = false,
+            DefaultValueFactory = _ => null
         };
 
-        Option<FileInfo[]?> optionFilesWithAttributesToExclude = new(["--attributesToExclude", "-eattrs"], () => null)
+        Option<FileInfo[]?> optionFilesWithAttributesToExclude = new(name: "", aliases: ["--attributesToExclude", "-eattrs"])
         {
             Description = "An optional array of filepaths, each containing a list of attributes to exclude from the diff. Each file should contain one API full name per line.",
             Arity = ArgumentArity.ZeroOrMore,
-            IsRequired = false
+            Required = false,
+            DefaultValueFactory = _ => null
         };
 
-        Option<FileInfo[]?> optionFilesWithApisToExclude = new(["--apisToExclude", "-eapis"], () => null)
+        Option<FileInfo[]?> optionFilesWithApisToExclude = new(name: "", aliases: ["--apisToExclude", "-eapis"])
         {
             Description = "An optional array of filepaths, each containing a list of APIs to exclude from the diff. Each file should contain one API full name per line.",
             Arity = ArgumentArity.ZeroOrMore,
-            IsRequired = false
+            Required = false,
+            DefaultValueFactory = _ => null
         };
 
-        Option<bool> optionAddPartialModifier = new(["--addPartialModifier", "-apm"], () => false)
+        Option<bool> optionAddPartialModifier = new(name: "", aliases: ["--addPartialModifier", "-apm"])
         {
-            Description = "Add the 'partial' modifier to types."
+            Description = "Add the 'partial' modifier to types.",
+            DefaultValueFactory = _ => false
         };
 
-        Option<bool> optionAttachDebugger = new(["--attachDebugger", "-d"], () => false)
+        Option<bool> optionAttachDebugger = new(name: "", aliases: ["--attachDebugger", "-d"])
         {
-            Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach."
+            Description = "Stops the tool at startup, prints the process ID and waits for a debugger to attach.",
+            DefaultValueFactory = _ => false
         };
 
         // Custom ordering for the help menu.
-        rootCommand.Add(optionBeforeAssembliesFolderPath);
-        rootCommand.Add(optionBeforeRefAssembliesFolderPath);
-        rootCommand.Add(optionAfterAssembliesFolderPath);
-        rootCommand.Add(optionAfterRefAssembliesFolderPath);
-        rootCommand.Add(optionOutputFolderPath);
-        rootCommand.Add(optionBeforeFriendlyName);
-        rootCommand.Add(optionAfterFriendlyName);
-        rootCommand.Add(optionTableOfContentsTitle);
-        rootCommand.Add(optionFilesWithAssembliesToExclude);
-        rootCommand.Add(optionFilesWithAttributesToExclude);
-        rootCommand.Add(optionFilesWithApisToExclude);
-        rootCommand.Add(optionAddPartialModifier);
-        rootCommand.Add(optionAttachDebugger);
+        rootCommand.Options.Add(optionBeforeAssembliesFolderPath);
+        rootCommand.Options.Add(optionBeforeRefAssembliesFolderPath);
+        rootCommand.Options.Add(optionAfterAssembliesFolderPath);
+        rootCommand.Options.Add(optionAfterRefAssembliesFolderPath);
+        rootCommand.Options.Add(optionOutputFolderPath);
+        rootCommand.Options.Add(optionBeforeFriendlyName);
+        rootCommand.Options.Add(optionAfterFriendlyName);
+        rootCommand.Options.Add(optionTableOfContentsTitle);
+        rootCommand.Options.Add(optionFilesWithAssembliesToExclude);
+        rootCommand.Options.Add(optionFilesWithAttributesToExclude);
+        rootCommand.Options.Add(optionFilesWithApisToExclude);
+        rootCommand.Options.Add(optionAddPartialModifier);
+        rootCommand.Options.Add(optionAttachDebugger);
 
-        GenAPIDiffConfigurationBinder c = new(optionBeforeAssembliesFolderPath,
-                                              optionBeforeRefAssembliesFolderPath,
-                                              optionAfterAssembliesFolderPath,
-                                              optionAfterRefAssembliesFolderPath,
-                                              optionOutputFolderPath,
-                                              optionBeforeFriendlyName,
-                                              optionAfterFriendlyName,
-                                              optionTableOfContentsTitle,
-                                              optionFilesWithAssembliesToExclude,
-                                              optionFilesWithAttributesToExclude,
-                                              optionFilesWithApisToExclude,
-                                              optionAddPartialModifier,
-                                              optionAttachDebugger);
-
-        rootCommand.SetHandler(async (DiffConfiguration diffConfig) => await HandleCommandAsync(diffConfig).ConfigureAwait(false), c);
-        await rootCommand.InvokeAsync(args);
+        rootCommand.SetAction(async (ParseResult result) =>
+        {
+            DiffConfiguration c = new(
+                BeforeAssembliesFolderPath: result.GetValue(optionBeforeAssembliesFolderPath) ?? throw new NullReferenceException("Null before assemblies directory"),
+                BeforeAssemblyReferencesFolderPath: result.GetValue(optionBeforeRefAssembliesFolderPath),
+                AfterAssembliesFolderPath: result.GetValue(optionAfterAssembliesFolderPath) ?? throw new NullReferenceException("Null after assemblies directory"),
+                AfterAssemblyReferencesFolderPath: result.GetValue(optionAfterRefAssembliesFolderPath),
+                OutputFolderPath: result.GetValue(optionOutputFolderPath) ?? throw new NullReferenceException("Null output directory"),
+                BeforeFriendlyName: result.GetValue(optionBeforeFriendlyName) ?? throw new NullReferenceException("Null before friendly name"),
+                AfterFriendlyName: result.GetValue(optionAfterFriendlyName) ?? throw new NullReferenceException("Null after friendly name"),
+                TableOfContentsTitle: result.GetValue(optionTableOfContentsTitle) ?? throw new NullReferenceException("Null table of contents title"),
+                FilesWithAssembliesToExclude: result.GetValue(optionFilesWithAssembliesToExclude),
+                FilesWithAttributesToExclude: result.GetValue(optionFilesWithAttributesToExclude),
+                FilesWithApisToExclude: result.GetValue(optionFilesWithApisToExclude),
+                AddPartialModifier: result.GetValue(optionAddPartialModifier),
+                AttachDebugger: result.GetValue(optionAttachDebugger)
+            );
+            await HandleCommandAsync(c).ConfigureAwait(false);
+        });
+        await rootCommand.Parse(args).InvokeAsync();
     }
 
     private static Task HandleCommandAsync(DiffConfiguration diffConfig)
