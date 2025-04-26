@@ -13,44 +13,8 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {
-    public static PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
-    {
-        // per the Arity of the CmdPackageArgument's Arity, we should have exactly one token - 
-        // this is a safety net for if we change the Arity in the future and forget to update this parser.
-        if (packageArgResult.Tokens.Count != 1)
-        {
-            throw new ArgumentException($"Expected exactly one token, but got {packageArgResult.Tokens.Count}.");
-        }
-        var token = packageArgResult.Tokens[0].Value;
-        var indexOfAt = token.IndexOf('@');
-        if (indexOfAt == -1)
-        {
-            // no version specified, so we just return the package id
-            return new PackageIdentity(token, null);
-        }
-        // we have a version specified, so we need to split the token into id and version
-        else
-        {
-            var id = token[0..indexOfAt];
-            var versionString = token[(indexOfAt + 1)..];
-            if (SemanticVersion.TryParse(versionString, out var version))
-            {
-                return new PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
-            }
-            else
-            {
-                throw new ArgumentException(string.Format(CliCommandStrings.InvalidSemVerVersionString, versionString));
-            }
-        };
-    }
-
-    public static readonly Argument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(CliCommandStrings.CmdPackage)
-    {
-        Description = CliCommandStrings.CmdPackageDescription,
-        Arity = ArgumentArity.ExactlyOne,
-        CustomParser = ParsePackageIdentity,
-
-    }.AddCompletions((context) =>
+    public static readonly Argument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
+    .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
         var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);

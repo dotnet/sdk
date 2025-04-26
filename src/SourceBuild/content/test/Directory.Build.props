@@ -1,9 +1,0 @@
-<Project>
-
-  <Import Project="..\Directory.Build.props" />
-
-  <PropertyGroup>
-    <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
-  </PropertyGroup>
-
-</Project>

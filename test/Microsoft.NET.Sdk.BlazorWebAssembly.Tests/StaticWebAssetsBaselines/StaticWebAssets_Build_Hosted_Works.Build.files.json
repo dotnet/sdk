@@ -391,8 +391,6 @@
   "${OutputPath}\\wwwroot\\_framework\\blazorwasm.pdb.gz",
   "${OutputPath}\\wwwroot\\_framework\\blazorwasm.wasm",
   "${OutputPath}\\wwwroot\\_framework\\blazorwasm.wasm.gz",
-  "${OutputPath}\\wwwroot\\_framework\\dotnet.boot.js",
-  "${OutputPath}\\wwwroot\\_framework\\dotnet.boot.js.gz",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js.gz",
   "${OutputPath}\\wwwroot\\_framework\\dotnet.js.map",

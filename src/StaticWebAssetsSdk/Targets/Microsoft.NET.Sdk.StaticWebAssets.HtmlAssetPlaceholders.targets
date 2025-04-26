@@ -23,8 +23,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ResolveHtmlAssetPlaceholdersBuildConfiguration
      -->
     <ResolveBuildRelatedStaticWebAssetsDependsOn>
-      $(ResolveBuildRelatedStaticWebAssetsDependsOn);
       ResolveHtmlAssetPlaceholdersBuildStaticWebAssets;
+      $(ResolveBuildRelatedStaticWebAssetsDependsOn)
     </ResolveBuildRelatedStaticWebAssetsDependsOn>
     <ResolveCompressedFilesDependsOn>
       $(ResolveCompressedFilesDependsOn);
@@ -50,8 +50,8 @@ Copyright (c) .NET Foundation. All rights reserved.
               ResolveHtmlAssetPlaceholdersPublishConfiguration
      -->
     <ResolvePublishRelatedStaticWebAssetsDependsOn>
-      $(ResolvePublishRelatedStaticWebAssetsDependsOn);
-      ResolveHtmlAssetPlaceholdersPublishStaticWebAssets
+      ResolveHtmlAssetPlaceholdersPublishStaticWebAssets;
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn)
     </ResolvePublishRelatedStaticWebAssetsDependsOn>
     <ResolvePublishCompressedStaticWebAssetsDependsOn>
       $(ResolvePublishCompressedStaticWebAssetsDependsOn);
