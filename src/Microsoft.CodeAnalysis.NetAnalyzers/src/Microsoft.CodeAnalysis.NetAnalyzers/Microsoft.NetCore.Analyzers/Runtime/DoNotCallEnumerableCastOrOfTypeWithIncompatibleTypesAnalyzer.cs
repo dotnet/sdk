@@ -216,16 +216,40 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return false;
                 }
 
-                static bool IsUnconstrainedTypeParameter(ITypeParameterSymbol typeParameterSymbol)
-                    => !typeParameterSymbol.HasValueTypeConstraint
-                    && typeParameterSymbol.ConstraintTypes.IsEmpty;
-                // because object is a reference type the 'class' reference type constraint
-                // doesn't actually constrain unless a type is specified too
-                // not implemented:
-                //   NotNullConstraint
-                //   ConstructorConstraint
-                //   UnmanagedTypeConstraint
-                //   Nullability annotations
+                static bool CastToTypeParamWillAlwaysFail(ITypeSymbol castFrom, ITypeParameterSymbol castToTypeParam)
+                {
+                    if (castToTypeParam.HasValueTypeConstraint
+                        && ValueTypeConstraintImpossible(castFrom))
+                    {
+                        return true;
+                    }
+
+                    // because object is a reference type the 'class' reference type constraint
+                    // doesn't actually constrain unless a type is specified too
+                    // not implemented:
+                    //   NotNullConstraint
+                    //   ConstructorConstraint
+                    //   UnmanagedTypeConstraint
+                    //   Nullability annotations
+
+                    if (castToTypeParam.ConstraintTypes.Any(constraintType => CastWillAlwaysFail(castFrom, constraintType)))
+                    {
+                        return true;
+                    }
+
+                    return false;
+                }
+
+                static bool ValueTypeConstraintImpossible(ITypeSymbol t)
+                {
+                    if (t.TypeKind == TypeKind.Class)
+                    {
+                        return t.SpecialType is not SpecialType.System_Enum
+                                            and not SpecialType.System_ValueType;
+                    }
+
+                    return false;
+                }
 
                 switch (castFrom.TypeKind, castTo.TypeKind)
                 {
@@ -235,42 +259,25 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                     case (TypeKind.TypeParameter, _):
                         var castFromTypeParam = (ITypeParameterSymbol)castFrom;
-                        if (IsUnconstrainedTypeParameter(castFromTypeParam))
-                        {
-                            return false;
-                        }
-
                         if (castFromTypeParam.ConstraintTypes.Any(constraintType => CastWillAlwaysFail(constraintType, castTo)))
                         {
                             return true;
                         }
 
                         if (castFromTypeParam.HasValueTypeConstraint
-                            && castTo.TypeKind == TypeKind.Class)
+                            && ValueTypeConstraintImpossible(castTo))
                         {
                             return true;
+                        }
+
+                        if (castTo.TypeKind == TypeKind.TypeParameter)
+                        {
+                            return CastToTypeParamWillAlwaysFail(castFrom, (ITypeParameterSymbol)castTo);
                         }
 
                         return false;
                     case (_, TypeKind.TypeParameter):
-                        var castToTypeParam = (ITypeParameterSymbol)castTo;
-                        if (IsUnconstrainedTypeParameter(castToTypeParam))
-                        {
-                            return false;
-                        }
-
-                        if (castToTypeParam.ConstraintTypes.Any(constraintType => CastWillAlwaysFail(castFrom, constraintType)))
-                        {
-                            return true;
-                        }
-
-                        if (castToTypeParam.HasValueTypeConstraint
-                            && castFrom.TypeKind == TypeKind.Class)
-                        {
-                            return true;
-                        }
-
-                        return false;
+                        return CastToTypeParamWillAlwaysFail(castFrom, (ITypeParameterSymbol)castTo);
 
                     case (TypeKind.Class, TypeKind.Class):
                         return !castFromParam.DerivesFrom(castToParam)

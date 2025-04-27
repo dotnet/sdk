@@ -910,6 +910,82 @@ class GenericDerived : GenericBase<int>
             await test.RunAsync();
         }
 
+        [Fact, WorkItem(7031, "https://github.com/dotnet/roslyn-analyzers/issues/7031")]
+        public async Task GenericConstraints()
+        {
+            // ensure runtime behavior is matches
+            _ = new Enum[] { StringComparison.OrdinalIgnoreCase }.Cast<StringComparison>().ToArray();
+            _ = new ValueType[] { int.MaxValue }.Cast<int>().ToArray();
+
+            var test = new VerifyCS.Test
+            {
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net90,
+                LanguageVersion = LanguageVersion.Latest,
+
+                TestCode = @"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
+public static class Program
+{
+    public static IEnumerable<T> CastFromEnums<T>(IEnumerable<Enum> values) where T : struct, Enum
+          => values.Cast<T>();
+
+    public static IEnumerable<T> CastFromValueTypes<T>(IEnumerable<ValueType> values) where T : struct
+          => values.Cast<T>();
+
+    public static IEnumerable<Enum> CastToEnums<T>(IEnumerable<T> values) where T : struct, Enum
+          => values.Cast<Enum>();
+
+    public static IEnumerable<ValueType> CastToValueTypes<T>(IEnumerable<T> values) where T : struct
+          => values.Cast<ValueType>();
+
+    public static IEnumerable<T> CastValueTypes<T>(IEnumerable<ValueType> values) where T : struct
+          => values.Cast<T>();
+
+    public static IEnumerable<TOut> CastUnconstrainedGeneric<TIn, TOut>(IEnumerable<TIn> values)
+          => values.Cast<TOut>();
+
+    public static IEnumerable<TOut> CastGenericUnmanagedToGeneric<TIn, TOut>(IEnumerable<TIn> values)
+        where TOut : unmanaged
+          => values.Cast<TOut>();
+
+    public static IEnumerable<TOut> CastGenericUnmanagedToGenericUnmanagedl<TIn, TOut>(IEnumerable<TIn> values)
+        where TIn : unmanaged
+        where TOut : unmanaged
+          => values.Cast<TOut>();
+
+    public static IEnumerable<TOut> CastGenericNotNullToGenericNotNull<TIn, TOut>(IEnumerable<TIn> values)
+        where TIn : notnull
+        where TOut : notnull
+          => values.Cast<TOut>();
+
+    public static IEnumerable<TOut> CastGenericToGeneric<TIn, TOut>(IEnumerable<TIn> values)
+        where TIn : Enum
+        where TOut : Uri
+          => {|#1:values.Cast<TOut>()|};
+
+    public static IEnumerable<TOut> CastGenericStructToGeneric<TIn, TOut>(IEnumerable<TIn> values)
+        where TIn : struct
+        where TOut : Uri
+          => {|#2:values.Cast<TOut>()|};
+
+    public static IEnumerable<TOut> CastGenericToGenericStruct<TIn, TOut>(IEnumerable<TIn> values)
+        where TIn : Uri
+        where TOut : struct
+          => {|#3:values.Cast<TOut>()|};
+}",
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(castRule).WithLocation(1).WithArguments("TIn", "TOut"),
+                    VerifyCS.Diagnostic(castRule).WithLocation(2).WithArguments("TIn", "TOut"),
+                    VerifyCS.Diagnostic(castRule).WithLocation(3).WithArguments("TIn", "TOut"),
+                }
+            };
+            await test.RunAsync();
+        }
+
         [Fact]
         public async Task NonGenericCasesVB()
         {
