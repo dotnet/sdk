@@ -207,6 +207,21 @@
         <target state="translated">Nepřetěžujte operátor rovnosti na odkazových typech</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksDescription">
+        <source>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</source>
+        <target state="new">Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksMessage">
+        <source>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</source>
+        <target state="new">Ensure tasks using 'IDisposable' instances complete before the instances are disposed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksTitle">
+        <source>Do not pass 'IDisposable' instances into unawaited tasks</source>
+        <target state="new">Do not pass 'IDisposable' instances into unawaited tasks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">Předávání typů podle odkazu (jako out nebo ref) vyžaduje zkušenost s ukazateli, porozumění rozdílu mezi hodnotovými a odkazovými typy a obeznámenost s metodami s více návratovými hodnotami. Navíc není široce rozšířeno chápání rozdílu mezi parametry out a ref.</target>

@@ -207,6 +207,21 @@
         <target state="translated">Ne pas surcharger l'opérateur d'égalité sur les types référence</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksDescription">
+        <source>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</source>
+        <target state="new">Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksMessage">
+        <source>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</source>
+        <target state="new">Ensure tasks using 'IDisposable' instances complete before the instances are disposed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksTitle">
+        <source>Do not pass 'IDisposable' instances into unawaited tasks</source>
+        <target state="new">Do not pass 'IDisposable' instances into unawaited tasks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">Le passage de types par référence (via out ou ref) nécessite une bonne connaissance des pointeurs, une bonne compréhension des différences entre les types valeur et les types référence ainsi qu'une certaine expérience de la gestion des méthodes ayant plusieurs valeurs de retour. En effet, la différence entre les paramètres out et ref n'est pas comprise par tout le monde.</target>

@@ -2130,6 +2130,18 @@ The property 'StreamReader.EndOfStream' can cause unintended synchronous blockin
 |CodeFix|False|
 ---
 
+## [CA2025](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025): Do not pass 'IDisposable' instances into unawaited tasks
+
+Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.
+
+|Item|Value|
+|-|-|
+|Category|Reliability|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|False|
+---
+
 ## [CA2100](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2100): Review SQL queries for security vulnerabilities
 
 SQL queries that directly use user input can be vulnerable to SQL injection attacks. Review this SQL query for potential vulnerabilities, and consider using a parameterized SQL query.

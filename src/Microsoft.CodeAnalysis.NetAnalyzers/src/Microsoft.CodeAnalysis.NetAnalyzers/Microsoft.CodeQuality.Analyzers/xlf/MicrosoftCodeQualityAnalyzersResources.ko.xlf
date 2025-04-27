@@ -207,6 +207,21 @@
         <target state="translated">참조 형식에 같음 연산자를 오버로드하지 마세요.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksDescription">
+        <source>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</source>
+        <target state="new">Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksMessage">
+        <source>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</source>
+        <target state="new">Ensure tasks using 'IDisposable' instances complete before the instances are disposed</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="DoNotPassDisposablesIntoUnawaitedTasksTitle">
+        <source>Do not pass 'IDisposable' instances into unawaited tasks</source>
+        <target state="new">Do not pass 'IDisposable' instances into unawaited tasks</target>
+        <note />
+      </trans-unit>
       <trans-unit id="DoNotPassTypesByReferenceDescription">
         <source>Passing types by reference (using out or ref) requires experience with pointers, understanding how value types and reference types differ, and handling methods that have multiple return values. Also, the difference between out and ref parameters is not widely understood.</source>
         <target state="translated">out 또는 ref를 사용하여 참조로 형식을 전달하려면 포인터 사용 경험이 있고, 값 형식과 참조 형식의 차이점을 알고 있으며, 반환 값이 여러 개인 메서드를 처리해야 합니다. 또한 out 매개 변수와 ref 매개 변수의 차이점은 널리 알려져 있지 않습니다.</target>

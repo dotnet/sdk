@@ -1312,6 +1312,15 @@
     <value>Because an application's API isn't typically referenced from outside the assembly, types can be made internal</value>
   </data>
   <data name="MakeTypesInternalTitle" xml:space="preserve">
-  <value>Consider making public types internal</value>
+    <value>Consider making public types internal</value>
+  </data>
+  <data name="DoNotPassDisposablesIntoUnawaitedTasksTitle" xml:space="preserve">
+    <value>Do not pass 'IDisposable' instances into unawaited tasks</value>
+  </data>
+  <data name="DoNotPassDisposablesIntoUnawaitedTasksMessage" xml:space="preserve">
+    <value>Ensure tasks using 'IDisposable' instances complete before the instances are disposed</value>
+  </data>
+  <data name="DoNotPassDisposablesIntoUnawaitedTasksDescription" xml:space="preserve">
+    <value>Unawaited tasks that use 'IDisposable' instances may use those instances long after they have been disposed. Ensure tasks using those instances are completed before the instances are disposed.</value>
   </data>
 </root>
