@@ -29,6 +29,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             ("string.Compare(x, y, StringComparison.CurrentCulture)", "string.Equals(x, y, StringComparison.CurrentCulture)"),
             ("string.Compare(x, y, StringComparison.Ordinal)", "string.Equals(x, y, StringComparison.Ordinal)"),
             ("string.Compare(x, y, StringComparison.OrdinalIgnoreCase)", "string.Equals(x, y, StringComparison.OrdinalIgnoreCase)"),
+            ("string.CompareOrdinal(x, y)", "string.Equals(x, y)"),
         };
 
         private static readonly (string CompareCall, string EqualsCall)[] VB_ComparisonEqualityMethodPairs = new[]
@@ -39,6 +40,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             ("String.Compare(x, y, StringComparison.CurrentCulture)", "String.Equals(x, y, StringComparison.CurrentCulture)"),
             ("String.Compare(x, y, StringComparison.Ordinal)", "String.Equals(x, y, StringComparison.Ordinal)"),
             ("String.Compare(x, y, StringComparison.OrdinalIgnoreCase)", "String.Equals(x, y, StringComparison.OrdinalIgnoreCase)"),
+            ("String.CompareOrdinal(x, y)", "String.Equals(x, y)"),
         };
 
         public static IEnumerable<object[]> CS_ComparisonLeftOfLiteralTestData { get; } = CS_ComparisonEqualityMethodCallPairs
@@ -83,6 +85,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 yield return new[] { "string.Compare(x, y, true, System.Globalization.CultureInfo.InvariantCulture)" };
                 yield return new[] { "string.Compare(x, y, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.CompareOptions.None)" };
+                yield return new[] { "string.CompareOrdinal(x, indexA: 0, y, indexB: 0, length: 0)" };
             }
         }
 
@@ -92,6 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 yield return new[] { "String.Compare(x, y, true, System.Globalization.CultureInfo.InvariantCulture)" };
                 yield return new[] { "String.Compare(x, y, System.Globalization.CultureInfo.InvariantCulture, System.Globalization.CompareOptions.None)" };
+                yield return new[] { "String.CompareOrdinal(x, indexA:= 0, y, indexB:= 0, length:= 0)" };
             }
         }
 

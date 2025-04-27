@@ -79,6 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 IMethodSymbol? compareStringString,
                 IMethodSymbol? compareStringStringBool,
                 IMethodSymbol? compareStringStringStringComparison,
+                IMethodSymbol? compareOrdinalStringString,
                 IMethodSymbol? equalsStringString,
                 IMethodSymbol? equalsStringStringStringComparison,
                 IMethodSymbol intEquals)
@@ -89,6 +90,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 CompareStringString = compareStringString;
                 CompareStringStringBool = compareStringStringBool;
                 CompareStringStringStringComparison = compareStringStringStringComparison;
+                CompareOrdinalStringString = compareOrdinalStringString;
                 EqualsStringString = equalsStringString;
                 EqualsStringStringStringComparison = equalsStringStringStringComparison;
                 IntEquals = intEquals;
@@ -115,12 +117,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var compareStringStringBool = compareMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType, boolType);
                 var compareStringStringStringComparison = compareMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType, stringComparisonType);
 
+                var compareOrdinalMethods = stringType.GetMembers(nameof(string.CompareOrdinal))
+                    .OfType<IMethodSymbol>()
+                    .Where(x => x.IsStatic);
+                var compareOrdinalStringString = compareOrdinalMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType);
+
                 var equalsMethods = stringType.GetMembers(nameof(string.Equals))
                     .OfType<IMethodSymbol>()
                     .Where(x => x.IsStatic);
                 var equalsStringString = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType);
                 var equalsStringStringStringComparison = equalsMethods.GetFirstOrDefaultMemberWithParameterTypes(stringType, stringType, stringComparisonType);
-                var intType = typeProvider.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemInt32);
+                var intType = compilation.GetSpecialType(SpecialType.System_Int32);
                 var intEquals = intType
                     ?.GetMembers(nameof(int.Equals))
                     .OfType<IMethodSymbol>()
@@ -133,14 +140,15 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // Bail if we do not have at least one complete pair of Compare-Equals methods in the compilation.
                 if ((compareStringString is null || equalsStringString is null) &&
                     (compareStringStringBool is null || equalsStringStringStringComparison is null) &&
-                    (compareStringStringStringComparison is null || equalsStringStringStringComparison is null))
+                    (compareStringStringStringComparison is null || equalsStringStringStringComparison is null) &&
+                    (compareOrdinalStringString is null || equalsStringString is null))
                 {
                     return false;
                 }
 
                 symbols = new RequiredSymbols(
                     stringType, boolType, stringComparisonType,
-                    compareStringString, compareStringStringBool, compareStringStringStringComparison,
+                    compareStringString, compareStringStringBool, compareStringStringStringComparison, compareOrdinalStringString,
                     equalsStringString, equalsStringStringStringComparison, intEquals);
                 return true;
             }
@@ -151,6 +159,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IMethodSymbol? CompareStringString { get; }
             public IMethodSymbol? CompareStringStringBool { get; }
             public IMethodSymbol? CompareStringStringStringComparison { get; }
+            public IMethodSymbol? CompareOrdinalStringString { get; }
             public IMethodSymbol? EqualsStringString { get; }
             public IMethodSymbol? EqualsStringStringStringComparison { get; }
             public IMethodSymbol IntEquals { get; }
@@ -291,10 +300,39 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 invocation.TargetMethod.Equals(symbols.CompareStringStringStringComparison, SymbolEqualityComparer.Default);
         }
 
+        /// <summary>
+        /// Returns <c>true</c> if the specified <paramref name="operation"/> is an <see cref="IBinaryOperation"/> or <see cref="IInvocationOperation"/>:
+        /// <list type="bullet">
+        /// <item>Is an equals or not-equals operation</item>
+        /// <item>One operand is a literal zero</item>
+        /// <item>The other operand is any invocation of <see cref="string.CompareOrdinal(string, string)"/></item>
+        /// </list>
+        /// </summary>
+        /// <param name="operation">The operation to check</param>
+        /// <param name="symbols">The cache of symbols to be used for checking against known symbols.</param>
+        /// <returns><c>true</c> if the <paramref name="operation"/> is one of the matching symbols.</returns>
+        internal static bool IsOrdinalStringStringCase(IOperation operation, RequiredSymbols symbols)
+        {
+            //  Don't report a diagnostic if either the string.CompareOrdinal overload or the
+            //  corresponding string.Equals overload is missing.
+            if (symbols.CompareOrdinalStringString is null ||
+                symbols.EqualsStringString is null)
+            {
+                return false;
+            }
+
+            var invocation = GetInvocationFromEqualityCheckWithLiteralZero(operation as IBinaryOperation)
+                ?? GetInvocationFromEqualsCheckWithLiteralZero(operation as IInvocationOperation, symbols.IntEquals);
+
+            return invocation is not null &&
+                invocation.TargetMethod.Equals(symbols.CompareOrdinalStringString, SymbolEqualityComparer.Default);
+        }
+
         private static readonly ImmutableArray<Func<IOperation, RequiredSymbols, bool>> CaseSelectors =
             ImmutableArray.Create<Func<IOperation, RequiredSymbols, bool>>(
                 IsStringStringCase,
                 IsStringStringBoolCase,
-                IsStringStringStringComparisonCase);
+                IsStringStringStringComparisonCase,
+                IsOrdinalStringStringCase);
     }
 }

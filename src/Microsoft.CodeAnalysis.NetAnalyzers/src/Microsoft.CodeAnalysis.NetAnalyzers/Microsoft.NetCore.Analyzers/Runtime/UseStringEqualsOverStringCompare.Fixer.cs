@@ -68,7 +68,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return ImmutableArray.Create<OperationReplacer>(
                 new StringStringCaseReplacer(symbols),
                 new StringStringBoolReplacer(symbols),
-                new StringStringStringComparisonReplacer(symbols));
+                new StringStringStringComparisonReplacer(symbols),
+                new OrdinalStringStringCaseReplacer(symbols));
         }
 
         /// <summary>
@@ -86,7 +87,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             /// <summary>
             /// Indicates whether the current <see cref="OperationReplacer"/> applies to the specified violation.
             /// </summary>
-            /// <param name="violation">The <see cref="IBinaryOperation"/> at the location reported by the analyzer.</param>
+            /// <param name="violation">The <see cref="IBinaryOperation"/> or <see cref="IInvocationOperation"/> at the location reported by the analyzer.</param>
             /// <returns>True if the current <see cref="OperationReplacer"/> applies to the specified violation.</returns>
             public abstract bool IsMatch(IOperation violation);
 
@@ -94,7 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             /// Creates a replacement node for a violation that the current <see cref="OperationReplacer"/> applies to.
             /// Asserts if the current <see cref="OperationReplacer"/> does not apply to the specified violation.
             /// </summary>
-            /// <param name="violation">The <see cref="IBinaryOperation"/> obtained at the location reported by the analyzer.
+            /// <param name="violation">The <see cref="IBinaryOperation"/> or <see cref="IInvocationOperation"/> obtained at the location reported by the analyzer.
             /// <see cref="IsMatch(IOperation)"/> must return <see langword="true"/> for this operation.</param>
             /// <param name="generator"></param>
             /// <returns></returns>
@@ -225,6 +226,30 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 var equalsInvocationSyntax = generator.InvocationExpression(
                     CreateEqualsMemberAccess(generator),
                     invocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
+
+                return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
+            }
+        }
+
+        /// <summary>
+        /// Replaces <see cref="string.CompareOrdinal(string, string)"/> violations.
+        /// </summary>
+        private sealed class OrdinalStringStringCaseReplacer : OperationReplacer
+        {
+            public OrdinalStringStringCaseReplacer(RequiredSymbols symbols)
+                : base(symbols)
+            { }
+
+            public override bool IsMatch(IOperation violation) => UseStringEqualsOverStringCompare.IsOrdinalStringStringCase(violation, Symbols);
+
+            public override SyntaxNode CreateReplacementExpression(IOperation violation, SyntaxGenerator generator)
+            {
+                RoslynDebug.Assert(IsMatch(violation));
+
+                var compareInvocation = GetInvocation(violation);
+                var equalsInvocationSyntax = generator.InvocationExpression(
+                    CreateEqualsMemberAccess(generator),
+                    compareInvocation.Arguments.GetArgumentsInParameterOrder().Select(x => x.Value.Syntax));
 
                 return InvertIfNotEquals(equalsInvocationSyntax, violation, generator);
             }
