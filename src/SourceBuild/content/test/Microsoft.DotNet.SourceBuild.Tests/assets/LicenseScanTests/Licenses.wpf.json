@@ -1,0 +1,8 @@
+{
+  "files": [
+    {
+      "path": "src/Microsoft.DotNet.Wpf/src/Themes/PresentationFramework.Fluent/Styles/RichTextBox.xaml",
+      "detected_license_expression": "mit AND bsd-2-clause-views AND ecl-2.0"
+    }
+  ]
+}
