@@ -129,7 +129,10 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     {
         foreach (var sourceFile in assets)
         {
-            string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile.fileName));
+            // Most files get flattened, PDBs do not
+            string destinationFileSubPath = sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Pdb ?
+                sourceFile.fileName : Path.GetFileName(sourceFile.fileName);
+            string destinationFilePath = Path.Combine(destinationDirectory, destinationFileSubPath);
             Log.LogMessage(MessageImportance.High, $"Copying {sourceFile} to {destinationFilePath}");
 
             if (sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Package)
