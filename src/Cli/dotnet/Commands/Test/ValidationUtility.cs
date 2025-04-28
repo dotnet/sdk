@@ -58,12 +58,12 @@ internal static class ValidationUtility
 
         if (!string.IsNullOrEmpty(pathOptions.ProjectPath))
         {
-            return ValidateFilePath(pathOptions.ProjectPath, CliConstants.ProjectExtensions, CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, output);
+            return ValidateProjectFilePath(pathOptions.ProjectPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.SolutionPath))
         {
-            return ValidateFilePath(pathOptions.SolutionPath, CliConstants.SolutionExtensions, CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, output);
+            return ValidateSolutionFilePath(pathOptions.SolutionPath, output);
         }
 
         if (!string.IsNullOrEmpty(pathOptions.DirectoryPath) && !Directory.Exists(pathOptions.DirectoryPath))
@@ -75,14 +75,30 @@ internal static class ValidationUtility
         return true;
     }
 
-    private static bool ValidateFilePath(string filePath, string[] validExtensions, string errorMessage, TerminalTestReporter output)
+    private static bool ValidateSolutionFilePath(string filePath, TerminalTestReporter output)
     {
-        if (!validExtensions.Contains(Path.GetExtension(filePath)))
+        if (!CliConstants.SolutionExtensions.Contains(Path.GetExtension(filePath)))
         {
-            output.WriteMessage(string.Format(errorMessage, filePath));
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidSolutionFileExtensionErrorDescription, filePath));
             return false;
         }
 
+        return ValidateFilePathExists(filePath, output);
+    }
+
+    private static bool ValidateProjectFilePath(string filePath, TerminalTestReporter output)
+    {
+        if (!Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+        {
+            output.WriteMessage(string.Format(CliCommandStrings.CmdInvalidProjectFileExtensionErrorDescription, filePath));
+            return false;
+        }
+
+        return ValidateFilePathExists(filePath, output);
+    }
+
+    private static bool ValidateFilePathExists(string filePath, TerminalTestReporter output)
+    {
         if (!File.Exists(filePath))
         {
             output.WriteMessage(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, Path.GetFullPath(filePath)));
