@@ -32,7 +32,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         IToolPackageStore store,
         string runtimeJsonPathForTests = null,
         string currentWorkingDirectory = null
-    ) : base(store, runtimeJsonPathForTests, currentWorkingDirectory)
+    ) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, FileSystemWrapper.Default)
     {
     }
 
@@ -108,5 +108,14 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
             throw;
         }
+    }
+
+    protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
+    {
+        NuGetv3LocalRepository nugetLocalRepository = new(packagesRootPath);
+
+        var package = nugetLocalRepository.FindPackage(packageId.ToString(), packageVersion);
+
+        return package != null;
     }
 }
