@@ -1,8 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.Api;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -702,7 +706,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programFile, s_program);
 
         // Remove artifacts from possible previous runs of this test.
-        var artifactsDir = new VirtualProjectBuildingCommand { EntryPointFileFullPath = programFile }.GetArtifactsPath();
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
@@ -1023,5 +1027,281 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
+    }
+
+    [Fact]
+    public void Api()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/program
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.Hosting.Sdk 9.1.0
+            #:property TargetFramework net11.0
+            #:package System.CommandLine 2.0.0-beta4.22272.1
+            #:property LangVersion preview
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
+            {
+                Content = $"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <TargetFramework>net11.0</TargetFramework>
+                        <LangVersion>preview</LangVersion>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+                      </ItemGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """,
+                Diagnostics = [],
+            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
+    }
+
+    [Fact]
+    public void Api_Diagnostic_01()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            #:property LangVersion preview
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
+            {
+                Content = $"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """,
+                Diagnostics =
+                [
+                    new()
+                    {
+                        Location = new FileLinePositionSpan(programPath, new LinePosition(1, 0), new LinePosition(1, 30)),
+                        Message = string.Format(CliCommandStrings.CannotConvertDirective, $"{programPath}:2"),
+                    },
+                ],
+            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
+    }
+
+    [Fact]
+    public void Api_Diagnostic_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:unknown directive
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
+            {
+                Content = $"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """,
+                Diagnostics =
+                [
+                    new()
+                    {
+                        Location = new FileLinePositionSpan(programPath, new LinePosition(0, 0), new LinePosition(1, 0)),
+                        Message = string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"),
+                    },
+                ],
+            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
     }
 }
