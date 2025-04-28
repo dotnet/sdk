@@ -22,7 +22,7 @@ index bc149ea32..d3f15f89a 100644
 +
 +    <!-- Relative PDB path differentiator to ensure that multiple VMR legs that happen to produce the same PDBs
 +         and need them all indexed get them published to different relative paths -->
-+    <LoosePDBRelativeBasePath Condition="'$(LoosePDBRelativeBasePath)' != '' and '$(SYSTEM_PHASENAME)' != ''">$(SYSTEM_PHASENAME)/</LoosePDBRelativeBasePath>
++    <LoosePDBRelativeBasePath Condition="'$(LoosePDBRelativeBasePath)' == '' and '$(SYSTEM_PHASENAME)' != ''">$(SYSTEM_PHASENAME)/</LoosePDBRelativeBasePath>
    </PropertyGroup>
  
    <!-- Keep these asset manifest properties here as other repos already depend on them in Publishing.props. -->
