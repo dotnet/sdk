@@ -27,60 +27,91 @@ internal static class SolutionAndProjectUtility
             return (false, string.Format(CliCommandStrings.CmdNonExistentDirectoryErrorDescription, directory));
         }
 
-        var solutionPaths = GetSolutionFilePaths(directory);
+        var actualSolutionFiles = GetSolutionFilePaths(directory);
+        var solutionFilterFiles = GetSolutionFilterFilePaths(directory);
+        var actualProjectFiles = GetProjectFilePaths(directory);
 
-        // If more than a single sln file is found, an error is thrown since we can't determine which one to choose.
-        if (solutionPaths.Length > 1)
+        // NOTE: The logic here is duplicated from https://github.com/dotnet/msbuild/blob/b878078fbaa28491a3a7fb273474ba71675c1613/src/MSBuild/XMake.cs#L3589
+        // If there is exactly 1 project file and exactly 1 solution file
+        if (actualProjectFiles.Length == 1 && actualSolutionFiles.Length == 1)
+        {
+            // Grab the name of both project and solution without extensions
+            string solutionName = Path.GetFileNameWithoutExtension(actualSolutionFiles[0]);
+            string projectName = Path.GetFileNameWithoutExtension(actualProjectFiles[0]);
+
+            // Compare the names and error if they are not identical
+            if (!string.Equals(solutionName, projectName))
+            {
+                return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+            }
+
+            projectOrSolutionFilePath = actualSolutionFiles[0];
+            isSolution = true;
+        }
+        // If there is more than one solution file in the current directory we have no idea which one to use
+        else if (actualSolutionFiles.Length > 1)
         {
             return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
         }
-
-        if (solutionPaths.Length == 1)
+        // If there is more than one project file in the current directory we may be able to figure it out
+        else if (actualProjectFiles.Length > 1)
         {
-            var projectPaths = GetProjectFilePaths(directory);
+            // We have more than one project, it is ambiguous at the moment
+            bool isAmbiguousProject = true;
 
-            if (projectPaths.Length == 0)
+            // If there are exactly two projects and one of them is a .proj use that one and ignore the other
+            if (actualProjectFiles.Length == 2)
             {
-                projectOrSolutionFilePath = solutionPaths[0];
-                isSolution = true;
-                return (true, string.Empty);
+                string firstPotentialProjectExtension = Path.GetExtension(actualProjectFiles[0]);
+                string secondPotentialProjectExtension = Path.GetExtension(actualProjectFiles[1]);
+
+                // If the two projects have the same extension we can't decide which one to pick
+                if (!string.Equals(firstPotentialProjectExtension, secondPotentialProjectExtension, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Check to see if the first project is the proj, if it is use it
+                    if (string.Equals(firstPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        projectOrSolutionFilePath = actualProjectFiles[0];
+                        // We have made a decision
+                        isAmbiguousProject = false;
+                    }
+                    // If the first project is not the proj check to see if the second one is the proj, if so use it
+                    else if (string.Equals(secondPotentialProjectExtension, ".proj", StringComparison.OrdinalIgnoreCase))
+                    {
+                        projectOrSolutionFilePath = actualProjectFiles[1];
+                        // We have made a decision
+                        isAmbiguousProject = false;
+                    }
+                }
             }
 
-            return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+            if (isAmbiguousProject)
+            {
+                return (false, string.Format(CliStrings.MoreThanOneProjectInDirectory, directory));
+            }
         }
-        else  // If no solutions are found, look for a project file
+        // if there are no project, solution filter, or solution files in the directory, we can't build
+        else if (actualProjectFiles.Length == 0 &&
+                 actualSolutionFiles.Length == 0 &&
+                 solutionFilterFiles.Length == 0)
         {
-            string[] projectPaths = GetProjectFilePaths(directory);
-
-            if (projectPaths.Length == 0)
-            {
-                var solutionFilterPaths = GetSolutionFilterFilePaths(directory);
-
-                if (solutionFilterPaths.Length == 0)
-                {
-                    return (false, CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
-                }
-
-                if (solutionFilterPaths.Length == 1)
-                {
-                    projectOrSolutionFilePath = solutionFilterPaths[0];
-                    isSolution = true;
-                    return (true, string.Empty);
-                }
-                else
-                {
-                    return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
-                }
-            }
-
-            if (projectPaths.Length == 1)
-            {
-                projectOrSolutionFilePath = projectPaths[0];
-                return (true, string.Empty);
-            }
-
-            return (false, string.Format(CliStrings.MoreThanOneSolutionInDirectory, directory));
+            return (false, CliCommandStrings.CmdNoProjectOrSolutionFileErrorDescription);
         }
+        else
+        {
+            // We are down to only one project, solution, or solution filter.
+            // If only 1 solution build the solution.  If only 1 project build the project. Otherwise, build the solution filter.
+            projectOrSolutionFilePath = actualSolutionFiles.Length == 1 ? actualSolutionFiles[0] : actualProjectFiles.Length == 1 ? actualProjectFiles[0] : solutionFilterFiles[0];
+            isSolution = actualSolutionFiles.Length == 1 || (actualProjectFiles.Length != 1 && solutionFilterFiles.Length == 1);
+            if (actualSolutionFiles.Length != 1 &&
+                actualProjectFiles.Length != 1 &&
+                solutionFilterFiles.Length != 1)
+            {
+                return (false, CliCommandStrings.CmdMultipleProjectOrSolutionFilesErrorDescription);
+            }
+        }
+
+        return (true, string.Empty);
     }
 
     private static string[] GetSolutionFilePaths(string directory) => [
@@ -93,9 +124,7 @@ internal static class SolutionAndProjectUtility
         return Directory.GetFiles(directory, CliConstants.SolutionFilterExtensionPattern, SearchOption.TopDirectoryOnly);
     }
 
-    private static string[] GetProjectFilePaths(string directory) => [.. Directory.EnumerateFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly).Where(IsProjectFile)];
-
-    private static bool IsProjectFile(string filePath) => CliConstants.ProjectExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase);
+    private static string[] GetProjectFilePaths(string directory) => Directory.GetFiles(directory, CliConstants.ProjectExtensionPattern, SearchOption.TopDirectoryOnly);
 
     private static ProjectInstance EvaluateProject(ProjectCollection collection, string projectFilePath, string? tfm)
     {
