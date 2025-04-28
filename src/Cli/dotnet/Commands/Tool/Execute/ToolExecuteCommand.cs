@@ -80,8 +80,17 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             // TODO: Use a better way to ask for user input
             Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
-            Console.WriteLine();
-            Console.WriteLine(new string('─', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
+            if (_verbosity >= VerbosityOptions.detailed)
+            {
+                Console.WriteLine();
+                Console.WriteLine(new String('-', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
+            }
+            else
+            {
+                // Clear the line
+                Console.Write("\r" + new string(' ', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length + 1) + "\r");
+            }
+
             return userAccepted;
         }
     }
