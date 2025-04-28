@@ -679,6 +679,154 @@ End Class"
         }
 
         [Fact]
+        public async Task EditorConfigConfiguration_StringSyntaxAnnotatedMethodsMultipleFrameworksAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        """
+                        using System.Diagnostics.CodeAnalysis;
+
+                        class Test
+                        {
+                            public static string MyFormat([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string specification, params object[] args) => specification;
+
+                            void M1(string param)
+                            {
+                                var a = [|MyFormat("", 1)|];
+                                var b = [|NetStandardTest.MyFormat("", 1)|];
+                            }
+                        }
+                        """
+                    },
+                    AdditionalProjects =
+                    {
+                        ["NetstandardReference"] =
+                        {
+                            ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20,
+                            Sources =
+                            {
+                                """
+                                using System.Diagnostics.CodeAnalysis;
+
+                                public class NetStandardTest
+                                {
+                                    public static string MyFormat([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string specification, params object[] args) => specification;
+                                }
+                                """,
+                                """
+                                namespace System.Diagnostics.CodeAnalysis
+                                {
+                                    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+                                    internal sealed class StringSyntaxAttribute : Attribute
+                                    {
+                                        public StringSyntaxAttribute(string syntax)
+                                        {
+                                            Syntax = syntax;
+                                            Arguments = Array.Empty<object?>();
+                                        }
+
+                                        public StringSyntaxAttribute(string syntax, params object?[] arguments)
+                                        {
+                                            Syntax = syntax;
+                                            Arguments = arguments;
+                                        }
+
+                                        public string Syntax { get; }
+                                        public object?[] Arguments { get; }
+                                        public const string CompositeFormat = nameof(CompositeFormat);
+                                    }
+                                }
+                                """
+                            },
+                        }
+                    },
+                    AdditionalProjectReferences =
+                    {
+                        "NetstandardReference"
+                    },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                },
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
+            }.RunAsync();
+
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        """
+                        Imports System.Diagnostics.CodeAnalysis
+
+                        Class Test
+                            Public Shared Function MyFormat(<StringSyntax(StringSyntaxAttribute.CompositeFormat)> specification As String, ParamArray args As Object()) As String
+                                Return specification
+                            End Function
+
+                            Private Sub M1(ByVal param As String)
+                                Dim a = [|MyFormat("", 1)|]
+                                Dim b = [|NetStandardTest.MyFormat("", 1)|]
+                            End Sub
+                        End Class
+                        """
+                    },
+                    AdditionalProjects =
+                    {
+                        ["NetstandardReference", LanguageNames.CSharp] =
+                        {
+                            ReferenceAssemblies = ReferenceAssemblies.NetStandard.NetStandard20,
+                            Sources =
+                            {
+                                """
+                                using System.Diagnostics.CodeAnalysis;
+
+                                public class NetStandardTest
+                                {
+                                    public static string MyFormat([StringSyntax(StringSyntaxAttribute.CompositeFormat)] string specification, params object[] args) => specification;
+                                }
+                                """,
+                                """
+                                namespace System.Diagnostics.CodeAnalysis
+                                {
+                                    [AttributeUsage(AttributeTargets.Parameter | AttributeTargets.Field | AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+                                    internal sealed class StringSyntaxAttribute : Attribute
+                                    {
+                                        public StringSyntaxAttribute(string syntax)
+                                        {
+                                            Syntax = syntax;
+                                            Arguments = Array.Empty<object?>();
+                                        }
+
+                                        public StringSyntaxAttribute(string syntax, params object?[] arguments)
+                                        {
+                                            Syntax = syntax;
+                                            Arguments = arguments;
+                                        }
+
+                                        public string Syntax { get; }
+                                        public object?[] Arguments { get; }
+                                        public const string CompositeFormat = nameof(CompositeFormat);
+                                    }
+                                }
+                                """
+                            },
+                        }
+                    },
+                    AdditionalProjectReferences =
+                    {
+                        "NetstandardReference"
+                    },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                },
+                MarkupOptions = MarkupOptions.UseFirstDescriptor,
+            }.RunAsync();
+        }
+
+        [Fact]
         [WorkItem(90357, "https://github.com/dotnet/runtime/issues/90357")]
         public async Task CA2241CSharpMethodWithNoPossibleArgumentsOnlyChecksFormat()
         {

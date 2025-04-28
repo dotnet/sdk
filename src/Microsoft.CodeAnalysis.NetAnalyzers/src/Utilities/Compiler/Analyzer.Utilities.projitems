@@ -43,6 +43,8 @@
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)AdditionalFileProvider.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)BoundedCacheWithFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CachingBase`1.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConcurrentCache`2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Debug.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DiagnosticDescriptorHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)DoNotCatchGeneralUnlessRethrown.cs" />
@@ -119,6 +121,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)PooledObjects\TemporaryDictionary`2.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PooledObjects\TemporarySet`1.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Range.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ReferenceEqualityComparer.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoslynHashCode.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RoslynString.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)RuleLevel.cs" />

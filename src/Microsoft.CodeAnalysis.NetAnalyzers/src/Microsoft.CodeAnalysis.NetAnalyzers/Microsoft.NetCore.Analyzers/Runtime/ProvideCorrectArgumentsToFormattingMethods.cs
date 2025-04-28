@@ -355,12 +355,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                 String = @string;
                 Object = compilation.GetSpecialType(SpecialType.System_Object);
-                StringSyntaxAttribute = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsCodeAnalysisStringSyntaxAttributeName);
+                StringSyntaxAttributes = compilation.GetTypesByMetadataName(WellKnownTypeNames.SystemDiagnosticsCodeAnalysisStringSyntaxAttributeName);
             }
 
             public INamedTypeSymbol String { get; }
             public INamedTypeSymbol Object { get; }
-            public INamedTypeSymbol? StringSyntaxAttribute { get; }
+            public ImmutableArray<INamedTypeSymbol> StringSyntaxAttributes { get; }
 
             public Info? TryGet(IMethodSymbol method, OperationAnalysisContext context)
             {
@@ -369,7 +369,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     return info;
                 }
 
-                if (StringSyntaxAttribute is not null &&
+                if (!StringSyntaxAttributes.IsEmpty &&
                     TryGetFormatInfoByCompositeFormatStringSyntaxAttribute(method, out info))
                 {
                     return info;
@@ -494,7 +494,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         foreach (AttributeData attribute in parameters[i].GetAttributes())
                         {
-                            if (StringSyntaxAttribute!.Equals(attribute.AttributeClass, SymbolEqualityComparer.Default))
+                            if (StringSyntaxAttributes.Contains(attribute.AttributeClass, SymbolEqualityComparer.Default))
                             {
                                 ImmutableArray<TypedConstant> arguments = attribute.ConstructorArguments;
                                 if (arguments.Length == 1 && CompositeFormat.Equals(arguments[0].Value))
