@@ -1,0 +1,25 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Wed, 23 Apr 2025 14:04:23 -0700
+Subject: [PATCH] Temporarily work around tar issues by not unpacking tar.gz
+ and deb
+
+---
+ src/Microsoft.DotNet.SignTool/src/FileSignInfo.cs | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.SignTool/src/FileSignInfo.cs b/src/Microsoft.DotNet.SignTool/src/FileSignInfo.cs
+index 62e5c8636..eae7bf84d 100644
+--- a/src/Microsoft.DotNet.SignTool/src/FileSignInfo.cs
++++ b/src/Microsoft.DotNet.SignTool/src/FileSignInfo.cs
+@@ -111,8 +111,8 @@ internal bool IsExecutableWixContainer() =>
+         internal bool IsUnpackableContainer() => IsZip() || 
+                                                  (IsUnpackableWixContainer() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) || 
+                                                  IsMPack() || 
+-                                                 IsTarGZip() || 
+-                                                 IsDeb() ||
++                                                 // IsTarGZip() ||
++                                                 // IsDeb() ||
+                                                  (IsPkg() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ||
+                                                  (IsAppBundle() && RuntimeInformation.IsOSPlatform(OSPlatform.OSX)) ||
+                                                  IsNupkg() ||
