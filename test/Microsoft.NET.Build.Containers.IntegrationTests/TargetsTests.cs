@@ -22,11 +22,12 @@ public class TargetsTests
         {
             [prop] = value.ToString(),
             [ContainerRuntimeIdentifier] = $"{os}-x64",
+            ["_IsSingleRIDBuild"] = "true",
 
         }, projectName: $"{nameof(CanDeferContainerAppCommand)}_{prop}_{value}_{string.Join("_", expectedAppCommandArgs)}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        instance.Build([ _ComputeContainerExecutionArgs ], []);
+        instance.Build([ ComputeContainerConfig ], []);
         var computedAppCommand = instance.GetItems(ContainerAppCommand).Select(i => i.EvaluatedInclude);
 
         // The test was not testing anything previously, as the list returned was zero length,
@@ -310,11 +311,12 @@ public class TargetsTests
             ["TargetFrameworkIdentifier"] = ".NETCoreApp",
             ["TargetFrameworkVersion"] = tfm,
             ["TargetFramework"] = "net" + tfm.TrimStart('v'),
-            ["ContainerRuntimeIdentifier"] = rid
+            ["ContainerRuntimeIdentifier"] = rid,
+            ["_IsSingleRIDBuild"] = "true",
         }, projectName: $"{nameof(CanComputeContainerUser)}_{tfm}_{rid}_{expectedUser}");
         using var _ = d;
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
-        instance.Build(new[] { _ComputeContainerExecutionArgs }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
+        instance.Build(new[] { ComputeContainerConfig }, new[] { logger }, null, out var outputs).Should().BeTrue(String.Join(Environment.NewLine, logger.Errors));
         var computedTag = instance.GetProperty("ContainerUser")?.EvaluatedValue;
         computedTag.Should().Be(expectedUser);
     }
