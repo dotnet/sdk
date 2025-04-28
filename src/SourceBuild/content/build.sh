@@ -316,6 +316,12 @@ if [[ "$sourceOnly" == "true" ]]; then
 
   # For build purposes, we need to make sure we have all the SourceLink information
   if [ "$test" != "true" ]; then
+    get_property() {
+      local json_file_path="$1"
+      local property_name="$2"
+      grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
+    }
+
     GIT_DIR="$scriptroot/.git"
     if [ -f "$GIT_DIR/index" ]; then # We check for index because if outside of git, we create config and HEAD manually
       if [ -n "$sourceRepository" ] || [ -n "$sourceVersion" ] || [ -n "$releaseManifest" ]; then
@@ -334,12 +340,6 @@ if [[ "$sourceOnly" == "true" ]]; then
           exit 1
         fi
 
-        get_property() {
-          local json_file_path="$1"
-          local property_name="$2"
-          grep -oP '(?<="'$property_name'": ")[^"]*' "$json_file_path"
-        }
-
         sourceRepository=$(get_property "$releaseManifest" sourceRepository) \
           || (echo "ERROR: Failed to find sourceRepository in $releaseManifest" && exit 1)
         sourceVersion=$(get_property "$releaseManifest" sourceVersion) \
@@ -356,6 +356,25 @@ if [[ "$sourceOnly" == "true" ]]; then
       echo '[remote "origin"]' > "$GIT_DIR/config"
       echo "url=\"$sourceRepository\"" >> "$GIT_DIR/config"
       echo "$sourceVersion" > "$GIT_DIR/HEAD"
+    fi
+
+    # If the release manifest is provided
+    if [ -n "$releaseManifest" ] ; then
+      # Check if OfficialBuildId was explicitly provided as an MSBuild property. This overrides any value in the release manifest.
+      officialBuildIdProvided=false
+      for prop in "${properties[@]}"; do
+        if [[ $prop =~ ^[-/]p:OfficialBuildId=[^\s]+$ ]]; then
+          officialBuildIdProvided=true
+          break
+        fi
+      done
+
+      # If OfficialBuildId was not provided, extract it from the release manifest
+      if [ "$officialBuildIdProvided" == "false" ]; then
+        officialBuildId=$(get_property "$releaseManifest" officialBuildId) \
+            || (echo "ERROR: Failed to find officialBuildId in $releaseManifest" && exit 1)
+        properties+=( "/p:OfficialBuildId=$officialBuildId" )
+      fi
     fi
   fi
 
