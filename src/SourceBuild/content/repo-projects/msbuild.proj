@@ -3,6 +3,8 @@
   <PropertyGroup>
     <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)warnAsError $(ArcadeFalseBoolBuildArg)</BuildArgs>
     <BuildArgs Condition="'$(EnableIBCOptimization)' != 'true'">$(BuildArgs) /p:EnableNgenOptimization=false</BuildArgs>
+    <!-- Force the use of the compiler in the .NET SDK compiler to avoid torn state issues. -->
+    <BuildArgs>$(BuildArgs) /p:UsingToolMicrosoftNetCompilers=false</BuildArgs>
   </PropertyGroup>
 
   <ItemGroup>
