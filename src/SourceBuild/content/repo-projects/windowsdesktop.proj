@@ -1,8 +1,0 @@
-<Project Sdk="Microsoft.Build.NoTargets">
-
-  <ItemGroup>
-    <RepositoryReference Include="arcade" />
-    <RepositoryReference Include="wpf" />
-  </ItemGroup>
-
-</Project>
