@@ -112,7 +112,7 @@ stages:
 #### SOURCE-ONLY BUILD ####
 - ${{ if parameters.isSourceOnlyBuild }}:
   # This template call is temporary while we still maintain a separate source-build pipeline
-  - template: source-build.yml
+  - template: source-build-stages.yml
     parameters:
       isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       pool_Linux: ${{ parameters.pool_Linux }}
@@ -121,7 +121,7 @@ stages:
       useMicrosoftBuildAssetsForTests: false
 # Pull requests aren't supported until https://github.com/dotnet/source-build/issues/5061 is fixed
 - ${{ elseif ne(variables['Build.Reason'], 'PullRequest') }}:
-  - template: source-build.yml
+  - template: source-build-stages.yml
     parameters:
       isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
       pool_Linux: ${{ parameters.pool_Linux }}
