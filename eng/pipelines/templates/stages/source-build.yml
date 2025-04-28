@@ -19,7 +19,7 @@ parameters:
   default: true
 
 stages:
-- template: source-build-stages.yml
+- template: source-build-and-validate.yml
   parameters:
     isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
     pool_Linux: ${{ parameters.pool_Linux }}
@@ -31,7 +31,7 @@ stages:
     # This is described here as a parameter to allow two separate stages to be produced from this list (one for building
     # and one for validation). Because this template is not directly within a pipeline, stage, or job, we can't reference
     # variables as template expressions. So we can't do things like '${{ format('{0}_Online_MsftSdk', variables.centOSStreamName) }}'.
-    # The variable value will be empty in that case. Instead, each leg defines a distro name that source-build-stages.yml uses
+    # The variable value will be empty in that case. Instead, each leg defines a distro name that source-build-and-validate.yml uses
     # to determine which variable to use for determining the various parameter values which are based on variables.
     #
     # Changing the build name requires updating the referenced name in the source-build-sdk-diff-tests.yml pipeline
