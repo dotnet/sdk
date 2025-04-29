@@ -3,10 +3,8 @@
 
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Commands.Run.Api;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
@@ -1029,6 +1027,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
     }
 
+    private static string ToJson(string s) => JsonSerializer.Serialize(s);
+
+    /// <summary>
+    /// Simplifies using interpolated raw strings with nested JSON,
+    /// e.g, in <c>$$"""{x:{y:1}}"""</c>, the <c>}}</c> would result in an error.
+    /// </summary>
+    private const string nop = "";
+
     [Fact]
     public void Api()
     {
@@ -1045,12 +1051,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         new DotnetCommand(Log, "run-api")
-            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
-            {
-                Content = $"""
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1122,9 +1129,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """,
-                Diagnostics = [],
-            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
+                    """)}},"Diagnostics":[]}
+                """);
     }
 
     [Fact]
@@ -1138,12 +1144,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         new DotnetCommand(Log, "run-api")
-            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
-            {
-                Content = $"""
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1204,16 +1211,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """,
-                Diagnostics =
-                [
-                    new()
-                    {
-                        Location = new FileLinePositionSpan(programPath, new LinePosition(1, 0), new LinePosition(1, 30)),
-                        Message = string.Format(CliCommandStrings.CannotConvertDirective, $"{programPath}:2"),
-                    },
-                ],
-            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.CannotConvertDirective, $"{programPath}:2"))}}}]}
+                """.ReplaceLineEndings(""));
     }
 
     [Fact]
@@ -1227,12 +1230,13 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             """);
 
         new DotnetCommand(Log, "run-api")
-            .WithStandardInput(JsonSerializer.Serialize(new RunApiInput.GetProject { EntryPointFileFullPath = programPath, ArtifactsPath = "/artifacts" }, RunFileApiJsonSerializerContext.Default.RunApiInput))
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOut(JsonSerializer.Serialize(new RunApiOutput.Project
-            {
-                Content = $"""
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1293,15 +1297,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                     </Project>
 
-                    """,
-                Diagnostics =
-                [
-                    new()
-                    {
-                        Location = new FileLinePositionSpan(programPath, new LinePosition(0, 0), new LinePosition(1, 0)),
-                        Message = string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"),
-                    },
-                ],
-            }, RunFileApiJsonSerializerContext.Default.RunApiOutput));
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"))}}}]}
+                """.ReplaceLineEndings(""));
     }
 }
