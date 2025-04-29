@@ -38,12 +38,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="10.0.100-preview.5.25222.3">
-      <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>41b23801b97dab68e3e55ce53c6bca7d649b44a7</Sha>
-      <SourceBuild RepoName="templating" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="10.0.0-preview.5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
@@ -80,12 +74,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.runtime.linux-x64" Version="10.0.0-preview.5.25223.12">
-      <Uri>https://github.com/dotnet/runtime</Uri>
-      <Sha>5d3fe140d7565461e02b515a49f3155106048926</Sha>
-      <SourceBuild RepoName="runtime" ManagedOnly="false" />
-    </Dependency>
     <!-- Change blob version in GenerateInstallerLayout.targets if this is unpinned to service targeting pack -->
     <!-- No new netstandard.library planned for 3.1 timeframe at this time. -->
     <Dependency Name="NETStandard.Library.Ref" Version="2.1.0" Pinned="true">
@@ -105,31 +93,13 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.15.0-preview-25222-10">
-      <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>d5ac662019bc8456cc48f3e1b340f55572e6d059</Sha>
-      <SourceBuild RepoName="msbuild" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="14.0.100-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.fsharp" Version="10.0.100-beta.25215.1">
-      <Uri>https://github.com/dotnet/fsharp</Uri>
-      <Sha>547a1ca0fcbed748f376cdc0e2ddc744d43c391c</Sha>
-      <SourceBuild RepoName="fsharp" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="5.0.0-1.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn" Version="5.0.0-1.25220.1">
-      <Uri>https://github.com/dotnet/roslyn</Uri>
-      <Sha>024254813274b5e545585a73b766203c5d979dd7</Sha>
-      <SourceBuild RepoName="roslyn" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset.Framework" Version="5.0.0-1.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -243,12 +213,6 @@
     <Dependency Name="Microsoft.TestPlatform.Build" Version="17.15.0-preview-25228-104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.vstest" Version="17.15.0-preview-25223-02">
-      <Uri>https://github.com/microsoft/vstest</Uri>
-      <Sha>377623d4d0b6e00d8e6a0be47268866ac14f8c49</Sha>
-      <SourceBuild RepoName="vstest" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NET.ILLink.Tasks" Version="10.0.0-preview.5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -416,12 +380,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.aspnetcore" Version="10.0.0-preview.5.25222.16">
-      <Uri>https://github.com/dotnet/aspnetcore</Uri>
-      <Sha>7c7f56f5af049b79488190d428ef257b92597766</Sha>
-      <SourceBuild RepoName="aspnetcore" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.Razor.Tooling.Internal" Version="10.0.0-preview.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
@@ -433,12 +391,6 @@
     <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="10.0.0-preview.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.razor" Version="10.0.0-preview.25223.5">
-      <Uri>https://github.com/dotnet/razor</Uri>
-      <Sha>4c61ce2cff821a0fadf2bccda54af384e09b7307</Sha>
-      <SourceBuild RepoName="razor" ManagedOnly="true" />
     </Dependency>
     <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
     <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.5.25228.104">
@@ -453,12 +405,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.xdt" Version="10.0.0-preview.25210.1">
-      <Uri>https://github.com/dotnet/xdt</Uri>
-      <Sha>c49d8039632d608391880555414a1e226c6944ee</Sha>
-      <SourceBuild RepoName="xdt" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="Microsoft.CodeAnalysis.NetAnalyzers" Version="10.0.0-preview.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
@@ -467,12 +413,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
     </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.roslyn-analyzers" Version="10.0.0-preview.25217.1">
-      <Uri>https://github.com/dotnet/roslyn-analyzers</Uri>
-      <Sha>cbcc6ddf3db6dedff5049f0397e1351951c13271</Sha>
-      <SourceBuild RepoName="roslyn-analyzers" ManagedOnly="true" />
-    </Dependency>
     <Dependency Name="System.CommandLine" Version="2.0.0-beta5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
@@ -480,28 +420,9 @@
     <!-- Microsoft.CodeAnalysis.Workspaces.MSBuild transitively references M.Bcl.AsyncInterfaces.
          Adding an explicit dependency to make sure the latest version is used instead of the SBRP
          one under source build. -->
-    <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.DiaSymReader" Version="2.2.0-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.command-line-api" Version="0.1.622201">
-      <Uri>https://github.com/dotnet/command-line-api</Uri>
-      <Sha>8b30ff9e4900d220c2979f1bbb5647154e438edd</Sha>
-      <SourceBuild RepoName="command-line-api" ManagedOnly="true" />
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-externals" Version="10.0.622101">
-      <Uri>https://github.com/dotnet/source-build-externals</Uri>
-      <Sha>212859a43b003e685ad7ea5f8b60ba5eb16ff31d</Sha>
-      <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="10.0.622301">
-      <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>b1bc853ef5fb0c9af3d9f853a0c93df234366eb7</Sha>
-      <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-preview.1.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -530,24 +451,6 @@
     <Dependency Name="Microsoft.SourceLink.Bitbucket.Git" Version="10.0.0-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.sourcelink" Version="10.0.0-beta.25216.2">
-      <Uri>https://github.com/dotnet/sourcelink</Uri>
-      <Sha>69fb72fe134c7593e530446209cf26f4b2ac79f1</Sha>
-      <SourceBuild RepoName="sourcelink" ManagedOnly="true" />
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.deployment-tools" Version="9.0.0-preview.1.25217.1">
-      <Uri>https://github.com/dotnet/deployment-tools</Uri>
-      <Sha>d9ea1fb564f72b2b9668412fbd28b7dbf81cd043</Sha>
-      <SourceBuild RepoName="deployment-tools" ManagedOnly="true" />
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.symreader" Version="2.2.0-beta.25207.2">
-      <Uri>https://github.com/dotnet/symreader</Uri>
-      <Sha>d1c0c096d93db9c45001409afbb3dfec4bce89bb</Sha>
-      <SourceBuild RepoName="symreader" ManagedOnly="true" />
     </Dependency>
     <!-- Dependency required for flowing correct package version in source-build, using PVP flow. -->
     <Dependency Name="Microsoft.Extensions.Logging" Version="10.0.0-preview.5.25228.104">
@@ -663,12 +566,6 @@
     <Dependency Name="Microsoft.DotNet.XliffTasks" Version="10.0.0-beta.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>efbfb137a317fb339a6b7be36af7188cc508dc95</Sha>
-    </Dependency>
-    <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="10.0.0-beta.25221.2">
-      <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>f68e9e905ba5a7b6437b7560d5a6b170057ecb2f</Sha>
-      <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="10.0.0-preview.5.25228.104">
       <Uri>https://github.com/dotnet/dotnet</Uri>
