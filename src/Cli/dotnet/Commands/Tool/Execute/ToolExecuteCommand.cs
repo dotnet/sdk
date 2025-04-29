@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ToolPackage;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
             VersionRange versionRange = _parseResult.GetVersionRange();
 
-            string tempDirectory = PathUtilities.CreateTempSubdirectory();
+            string tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
 
             ToolPackageStoreAndQuery toolPackageStoreAndQuery = new(new(tempDirectory));
             ToolPackageDownloader toolPackageDownloader = new(toolPackageStoreAndQuery);
@@ -80,6 +81,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             // TODO: Use a better way to ask for user input
             Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
+
             if (_verbosity >= VerbosityOptions.detailed)
             {
                 Console.WriteLine();
