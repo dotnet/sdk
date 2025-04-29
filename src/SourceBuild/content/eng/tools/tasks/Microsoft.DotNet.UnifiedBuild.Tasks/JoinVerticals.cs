@@ -133,6 +133,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             string destinationFileSubPath = sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Pdb ?
                 sourceFile.fileName : Path.GetFileName(sourceFile.fileName);
             string destinationFilePath = Path.Combine(destinationDirectory, destinationFileSubPath);
+            // Ensure the directory is created. PDBs go in subdirs that may not be created.
+            ForceDirectory(Path.GetDirectoryName(destinationFileSubPath)!);
             Log.LogMessage(MessageImportance.High, $"Copying {sourceFile} to {destinationFilePath}");
 
             if (sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Package)
