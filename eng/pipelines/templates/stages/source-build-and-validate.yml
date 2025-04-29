@@ -1,0 +1,242 @@
+parameters:
+- name: isBuiltFromVmr
+  type: boolean
+  default: false
+
+- name: pool_Linux
+  type: object
+
+- name: pool_LinuxArm64
+  type: object
+
+# Scope of jobs which are executed
+- name: scope
+  type: string
+
+- name: useMicrosoftBuildAssetsForTests
+  type: boolean
+
+- name: legs
+  type: object
+
+stages:
+- stage: VMR_SourceOnly_Build
+  displayName: VMR Source-Only Build
+  dependsOn: []
+  variables:
+  - template: ../variables/vmr-build.yml
+    parameters:
+      vmrBranch: ${{ variables.VmrBranch }}
+      buildSourceOnly: true
+  jobs:
+  - ${{ each leg in parameters.legs }}:
+    - template: ../jobs/vmr-build.yml
+      parameters:
+        # CentOS
+        ${{ if eq(leg.distro, 'centos') }}:
+          buildName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}
+          container:
+            name: ${{ variables.centOSStreamContainerName }}
+            image: ${{ variables.centOSStreamContainerImage }}
+          ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
+            reuseBuildArtifactsFrom:
+            - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
+          ${{ if and(contains(leg.buildNameFormat, 'Previous'), eq(leg.targetArchitecture, 'x64')) }}:
+            artifactsRid: ${{ variables.centOSStreamX64Rid }}
+        # Fedora
+        ${{ elseif eq(leg.distro, 'fedora') }}:
+          buildName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}
+          container:
+            name: ${{ variables.fedoraContainerName }}
+            image: ${{ variables.fedoraContainerImage }}
+          ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
+            reuseBuildArtifactsFrom:
+            - ${{ format(leg.reuseBuildArtifactsFrom, variables.fedoraName) }}
+        # Ubuntu
+        ${{ elseif eq(leg.distro, 'ubuntu') }}:
+          buildName: ${{ format(leg.buildNameFormat, variables.ubuntuName) }}
+          ${{ if eq(leg.targetArchitecture, 'arm64') }}:
+            container:
+              name: ${{ variables.ubuntuArmContainerName }}
+              image: ${{ variables.ubuntuArmContainerImage }}
+          ${{ else }}:
+            container:
+              name: ${{ variables.ubuntuContainerName }}
+              image: ${{ variables.ubuntuContainerImage }}
+          ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
+            reuseBuildArtifactsFrom:
+            - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
+        # AlmaLinux
+        ${{ elseif eq(leg.distro, 'almalinux') }}:
+          buildName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}
+          container:
+            name: ${{ variables.almaLinuxContainerName }}
+            image: ${{ variables.almaLinuxContainerImage }}
+          ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
+            reuseBuildArtifactsFrom:
+            - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
+          targetRid: ${{ variables.almaLinuxX64Rid }}
+        # Alpine
+        ${{ elseif eq(leg.distro, 'alpine') }}:
+          buildName: ${{ format(leg.buildNameFormat, variables.alpineName) }}
+          container:
+            name: ${{ variables.alpineContainerName }}
+            image: ${{ variables.alpineContainerImage }}
+          ${{ if ne(leg.reuseBuildArtifactsFrom, '') }}:
+            reuseBuildArtifactsFrom:
+            - ${{ format(leg.reuseBuildArtifactsFrom, variables.centOSStreamName) }}
+          targetRid: ${{ variables.alpineX64Rid }}
+        
+        isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+        vmrBranch: ${{ variables.VmrBranch }}
+        targetArchitecture: ${{ leg.targetArchitecture }}
+        ${{ if eq(leg.targetArchitecture, 'arm64') }}:
+          pool: ${{ parameters.pool_LinuxArm64 }}
+        ${{ else }}:
+          pool: ${{ parameters.pool_Linux }}
+        buildSourceOnly: true
+        ${{ if eq(parameters.useMicrosoftBuildAssetsForTests, false) }}:
+          runTests: false
+          extraProperties: "/p:DisableDevBuildAsDefaultForSourceOnly=true"
+        buildFromArchive: ${{ leg.buildFromArchive }}
+        runOnline: ${{ leg.runOnline }}
+        useMonoRuntime: ${{ leg.useMonoRuntime }}
+        withPreviousSDK: ${{ leg.withPreviousSDK }}
+
+- ${{ if eq(parameters.useMicrosoftBuildAssetsForTests, true) }}:
+  - stage: VMR_SourceOnly_Validation
+    displayName: VMR Source-Only Validation
+    dependsOn:
+    - VMR_Vertical_Build
+    - VMR_SourceOnly_Build
+    variables:
+    - template: ../variables/vmr-build.yml
+      parameters:
+        vmrBranch: ${{ variables.VmrBranch }}
+        buildSourceOnly: true
+    jobs:
+    - ${{ each leg in parameters.legs }}:
+      - template: ../jobs/vmr-build.yml
+        parameters:
+          # CentOS
+          ${{ if eq(leg.distro, 'centos') }}:
+            buildName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}_Validation
+            container:
+              name: ${{ variables.centOSStreamContainerName }}
+              image: ${{ variables.centOSStreamContainerImage }}
+          # Fedora
+          ${{ elseif eq(leg.distro, 'fedora') }}:
+            buildName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}_Validation
+            container:
+              name: ${{ variables.fedoraContainerName }}
+              image: ${{ variables.fedoraContainerImage }}
+          # Ubuntu
+          ${{ elseif eq(leg.distro, 'ubuntu') }}:
+            buildName: ${{ format(leg.buildNameFormat, variables.ubuntuName) }}_Validation
+            ${{ if eq(leg.targetArchitecture, 'arm64') }}:
+              container:
+                name: ${{ variables.ubuntuArmContainerName }}
+                image: ${{ variables.ubuntuArmContainerImage }}
+            ${{ else }}:
+              container:
+                name: ${{ variables.ubuntuContainerName }}
+                image: ${{ variables.ubuntuContainerImage }}
+          # AlmaLinux
+          ${{ elseif eq(leg.distro, 'almalinux') }}:
+            buildName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}_Validation
+            container:
+              name: ${{ variables.almaLinuxContainerName }}
+              image: ${{ variables.almaLinuxContainerImage }}
+            targetRid: ${{ variables.almaLinuxX64Rid }}
+          # Alpine
+          ${{ elseif eq(leg.distro, 'alpine') }}:
+            buildName: ${{ format(leg.buildNameFormat, variables.alpineName) }}_Validation
+            container:
+              name: ${{ variables.alpineContainerName }}
+              image: ${{ variables.alpineContainerImage }}
+            targetRid: ${{ variables.alpineX64Rid }}
+
+          isBuiltFromVmr: ${{ parameters.isBuiltFromVmr }}
+          vmrBranch: ${{ variables.VmrBranch }}
+          targetArchitecture: ${{ leg.targetArchitecture }}
+          ${{ if eq(leg.targetArchitecture, 'arm64') }}:
+            pool: ${{ parameters.pool_LinuxArm64 }}
+          ${{ else }}:
+            pool: ${{ parameters.pool_Linux }}
+          buildSourceOnly: true
+          runOnline: ${{ leg.runOnline }}
+          runTests: true
+          enablePoison: ${{ leg.enablePoison }}
+          skipBuild: true
+          extraProperties: >
+            /p:DotNetSourceOnlyTestOnly=true
+            /p:ExtraRestoreSourcePath=$(Pipeline.Workspace)/msft-pkgs
+            /p:RestoreAdditionalProjectSources=$(Pipeline.Workspace)/msft-pkgs
+          
+          testInitSteps:
+          # Ensure the artifacts staging directory exists so that even if no files get placed there, it won't fail
+          # when publishing the artifacts.
+          - script: mkdir -p $(artifactsStagingDir)
+            displayName: Create Artifacts Staging Directory
+          - ${{ if eq(leg.distro, 'alpine') }}:
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Microsoft Linux (musl) Packages
+                artifactName: AzureLinux_x64_Cross_Alpine_${{ leg.targetArchitecture }}_Artifacts
+                downloadFilePatterns: packages/Release/Shipping/**
+                copyDestination: $(Pipeline.Workspace)/msft-pkgs
+                flattenDirs: true
+          - ${{ else }}:
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Microsoft Linux Packages
+                artifactName: AzureLinux_x64_Cross_${{ leg.targetArchitecture }}_Artifacts
+                downloadFilePatterns: packages/Release/Shipping/**
+                copyDestination: $(Pipeline.Workspace)/msft-pkgs
+                flattenDirs: true
+          - template: ../steps/download-artifacts.yml
+            parameters:
+              artifactDescription: Microsoft WASM Packages
+              artifactName: Browser_Shortstack_wasm_Artifacts
+              downloadFilePatterns: packages/Release/Shipping/**
+              copyDestination: $(Pipeline.Workspace)/msft-pkgs
+              flattenDirs: true
+          - template: ../steps/download-artifacts.yml
+            parameters:
+              artifactDescription: Microsoft Windows Packages
+              artifactName: Windows_x64_Artifacts
+              downloadFilePatterns: packages/Release/Shipping/**
+              copyDestination: $(Pipeline.Workspace)/msft-pkgs
+              flattenDirs: true
+          - template: ../steps/download-artifacts.yml
+            parameters:
+              artifactDescription: Source Build Assets
+              downloadFilePatterns: assets/Release/**/*.tar.gz
+              copyDestination: $(Build.SourcesDirectory)/artifacts
+              ${{ if eq(leg.distro, 'centos') }}:
+                artifactName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}_${{ leg.targetArchitecture}}_Artifacts
+              ${{ elseif eq(leg.distro, 'fedora') }}:
+                artifactName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}_${{ leg.targetArchitecture}}_Artifacts
+              ${{ elseif eq(leg.distro, 'ubuntu') }}:
+                artifactName: ${{ format(leg.buildNameFormat, variables.ubuntuName) }}_${{ leg.targetArchitecture}}_Artifacts
+              ${{ elseif eq(leg.distro, 'almalinux') }}:
+                artifactName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}_${{ leg.targetArchitecture}}_Artifacts
+              ${{ elseif eq(leg.distro, 'alpine') }}:
+                artifactName: ${{ format(leg.buildNameFormat, variables.alpineName) }}_${{ leg.targetArchitecture}}_Artifacts
+          - ${{ if eq(leg.enablePoison, true) }}:
+            - template: ../steps/download-artifacts.yml
+              parameters:
+                artifactDescription: Source Build Poison Report
+                downloadFilePatterns: BuildLogs/artifacts/prebuilt-report/poison-usage.xml
+                copyDestination: $(Build.SourcesDirectory)/artifacts/prebuilt-report
+                flattenDirs: true
+                ${{ if eq(leg.distro, 'centos') }}:
+                  artifactName: ${{ format(leg.buildNameFormat, variables.centOSStreamName) }}_${{ leg.targetArchitecture}}_Artifacts
+                ${{ elseif eq(leg.distro, 'fedora') }}:
+                  artifactName: ${{ format(leg.buildNameFormat, variables.fedoraName) }}_${{ leg.targetArchitecture}}_Artifacts
+                ${{ elseif eq(leg.distro, 'ubuntu') }}:
+                  artifactName: ${{ format(leg.buildNameFormat, variables.ubuntuName) }}_${{ leg.targetArchitecture}}_Artifacts
+                ${{ elseif eq(leg.distro, 'almalinux') }}:
+                  artifactName: ${{ format(leg.buildNameFormat, variables.almaLinuxName) }}_${{ leg.targetArchitecture}}_Artifacts
+                ${{ elseif eq(leg.distro, 'alpine') }}:
+                  artifactName: ${{ format(leg.buildNameFormat, variables.alpineName) }}_${{ leg.targetArchitecture}}_Artifacts

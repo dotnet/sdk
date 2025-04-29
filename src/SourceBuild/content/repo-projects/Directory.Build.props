@@ -15,9 +15,9 @@
     <RunEachTargetSeparately Condition="'$(BuildInParallel)' == 'true' and '$(ContinuousIntegrationBuild)' != 'true'">true</RunEachTargetSeparately>
   </PropertyGroup>
 
-  <!-- TODO: Remove this import and the EnableDevBuildAsDefaultForSourceOnly when dev builds are the default for source only.
+  <!-- TODO: Remove this import and the DisableDevBuildAsDefaultForSourceOnly when dev builds are the default for source only.
         https://github.com/dotnet/source-build/issues/4922 -->
-  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(DotNetBuildSourceOnly)' == 'true' and '$(EnableDevBuildAsDefaultForSourceOnly)' != 'true'" />
+  <Import Project="$(GitInfoRepoPropsFile)" Condition="Exists('$(GitInfoRepoPropsFile)') and '$(DotNetBuildSourceOnly)' == 'true' and '$(DisableDevBuildAsDefaultForSourceOnly)' == 'true'" />
 
   <PropertyGroup>
     <!-- Fake, to satisfy the SDK. -->
@@ -85,7 +85,7 @@
   <!-- Add 100 to the revision number to avoid clashing with the existing msft official builds.
        This is necessary for source-only builds as well so that the version numbers are identical between the two builds
        since testing of source-build only requires some packages from the msft build. -->
-  <PropertyGroup Condition="'$(OfficialBuildId)' != '' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(EnableDevBuildAsDefaultForSourceOnly)' == 'true')">
+  <PropertyGroup Condition="'$(OfficialBuildId)' != '' and ('$(DotNetBuildSourceOnly)' != 'true' or '$(DisableDevBuildAsDefaultForSourceOnly)' != 'true')">
     <OfficialBuildId>$(OfficialBuildId.Split('.')[0]).$([MSBuild]::Add($(OfficialBuildId.Split('.')[1]), 100))</OfficialBuildId>
   </PropertyGroup>
 
@@ -104,9 +104,9 @@
 
   <!-- Common args used for building and testing. -->
   <PropertyGroup>
-    <!-- TODO: Remove the EnableDevBuildAsDefaultForSourceOnly condition when dev builds are the default for source only.
+    <!-- TODO: Remove the DisableDevBuildAsDefaultForSourceOnly condition when dev builds are the default for source only.
          https://github.com/dotnet/source-build/issues/4922 -->
-    <CommonArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or ('$(DotNetBuildSourceOnly)' == 'true' and '$(EnableDevBuildAsDefaultForSourceOnly)' != 'true')">$(FlagParameterPrefix)ci</CommonArgs>
+    <CommonArgs Condition="'$(ContinuousIntegrationBuild)' == 'true' or ('$(DotNetBuildSourceOnly)' == 'true' and '$(DisableDevBuildAsDefaultForSourceOnly)' == 'true')">$(FlagParameterPrefix)ci</CommonArgs>
 
     <!-- Pass down configuration properties -->
     <CommonArgs>$(CommonArgs) $(FlagParameterPrefix)configuration $(Configuration)</CommonArgs>
@@ -178,9 +178,9 @@
                           Condition="'$(UseBootstrapArcade)' != 'true'" />
 
     <!-- We pass '-ci', but also apply ci mode via env var for edge cases. (E.g. misbehaving inner builds.).
-         TODO: Remove the EnableDevBuildAsDefaultForSourceOnly condition when dev builds are the default for source only.
+         TODO: Remove the DisableDevBuildAsDefaultForSourceOnly condition when dev builds are the default for source only.
          https://github.com/dotnet/source-build/issues/4922 -->
-    <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or ('$(DotNetBuildSourceOnly)' == 'true' and '$(EnableDevBuildAsDefaultForSourceOnly)' != 'true')" Include="ContinuousIntegrationBuild=true" />
+    <EnvironmentVariables Condition="'$(ContinuousIntegrationBuild)' == 'true' or ('$(DotNetBuildSourceOnly)' == 'true' and '$(DisableDevBuildAsDefaultForSourceOnly)' == 'true')" Include="ContinuousIntegrationBuild=true" />
 
     <!-- Turn off node reuse for source build because repos use conflicting versions
          of compilers which cause assembly load errors.
