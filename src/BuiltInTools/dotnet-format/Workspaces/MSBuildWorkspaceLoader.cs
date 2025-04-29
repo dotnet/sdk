@@ -40,8 +40,16 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 };
             }
 
-            var loggerFactory = (ILoggerFactory)workspace.GetType()!.GetField("_loggerFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!.GetValue(workspace)!;
+            var loggerFactory = (LoggerFactory)workspace.GetType()!
+                .GetField("_loggerFactory", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .GetValue(workspace)!;
             loggerFactory.AddProvider(SimpleConsoleLoggerFactoryExtensions.Provider);
+
+            var filterOptions = (LoggerFilterOptions)loggerFactory.GetType()!
+                .GetField("_filterOptions", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance)!
+                .GetValue(loggerFactory)!;
+            filterOptions.MinLevel = LogLevel.Trace;
+
             if (workspaceType == WorkspaceType.Solution)
             {
                 await workspace.OpenSolutionAsync(solutionOrProjectPath, msbuildLogger: binlog, cancellationToken: cancellationToken).ConfigureAwait(false);
