@@ -982,8 +982,23 @@ internal abstract class CSharpDirective
 
 internal sealed class SimpleDiagnostic
 {
-    public required FileLinePositionSpan Location { get; init; }
+    public required Position Location { get; init; }
     public required string Message { get; init; }
+
+    /// <summary>
+    /// An adapter of <see cref="FileLinePositionSpan"/> that ensures we JSON-serialize only the necessary fields.
+    /// </summary>
+    public readonly struct Position
+    {
+        public string Path { get; init; }
+        public LinePositionSpan Span { get; init; }
+
+        public static implicit operator Position(FileLinePositionSpan fileLinePositionSpan) => new()
+        {
+            Path = fileLinePositionSpan.Path,
+            Span = fileLinePositionSpan.Span,
+        };
+    }
 }
 
 internal sealed class RunFileBuildCacheEntry
