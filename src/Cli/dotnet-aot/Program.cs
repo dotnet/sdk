@@ -37,20 +37,71 @@ public class Program
             return 1;
         }
 
-        return RunCli(hostfxrPath, dotnetPath, args[2..]);
+        return RunSdk(hostfxrPath, dotnetPath, args[2..]);
     }
 
-    public static int RunCli(string hostfxrPath, string dotnetPath, string[] dotnetArgs)
+    /// <summary>
+    /// Run the CLI SDK with the provided arguments.
+    /// </summary>
+    /// <param name="dotnetDllPathPtr">
+    /// Null-terminated absolute path to dotnet.dll. Wstring on Windows, UTF-8 on Unix.
+    /// </param>
+    /// <param name="sdkArgsPtr">Pointer to array of null-terminated command line args.</param>
+    /// <param name="sdkArgc">Length of command line arg array.</param>
+    [UnmanagedCallersOnly(EntryPoint = "run_sdk")]
+    public unsafe static int RunSdk(
+        IntPtr hostfxrPathPtr,
+        IntPtr dotnetDllPathPtr,
+        IntPtr* sdkArgsPtr,
+        int sdkArgc)
     {
-        // Try to handle AOT-compatible options inline
-        // TODO: The dotnet CLI parser is not AOT-compatible because it includes running commands in
-        // the same code paths as the parser. We need to separate the two.
-        if (dotnetArgs.SequenceEqual([ "--info" ]))
+        var hostfxrPath = Marshal.PtrToStringAuto(hostfxrPathPtr)
+            ?? throw new ArgumentNullException(nameof(hostfxrPathPtr));
+        var dotnetDllPath = Marshal.PtrToStringAuto(dotnetDllPathPtr)
+            ?? throw new ArgumentNullException(nameof(dotnetDllPathPtr));
+        var sdkArgs = new string[sdkArgc];
+        for (int i = 0; i < sdkArgc; i++)
         {
-            CommandLineInfo.PrintInfo();
-            return 0;
+            var arg = Marshal.PtrToStringAuto(sdkArgsPtr[i])
+                ?? throw new ArgumentNullException(nameof(sdkArgsPtr), $"Argument {i} is null");
+            sdkArgs[i] = arg;
+        }
+        return RunSdk(
+            hostfxrPath,
+            dotnetDllPath,
+            sdkArgs);
+    }
+
+    private static int RunSdk(
+        string hostfxrPath,
+        string dotnetDllPath,
+        string[] sdkArgs)
+    {
+        if (TryRunAotCli(dotnetDllPath, sdkArgs, out int exitCode))
+        {
+            // If these arguments were be handled by the AOT CLI, run directly. Otherwise
+            // bail out to load CoreCLR and run the full CLI.
+            return exitCode;
         }
 
+        return LoadClrAndRun(hostfxrPath, dotnetDllPath, sdkArgs);
+    }
+
+    private static bool TryRunAotCli(string dotnetDllPath, string[] sdkArgs, out int exitCode)
+    {
+        // Only supported command right now is "--version"
+        if (sdkArgs is ["--version"])
+        {
+            CommandLineInfo.PrintVersion(dotnetDllPath);
+            exitCode = 0;
+            return true;
+        }
+        exitCode = 0;
+        return false;
+    }
+
+    public static int LoadClrAndRun(string hostfxrPath, string dotnetPath, string[] dotnetArgs)
+    {
         // We need CoreCLR. Load it and run 'dotnet.dll'
         var hostFxr = HostFxr.Load(hostfxrPath);
         return hostFxr.Run(dotnetPath, dotnetArgs);

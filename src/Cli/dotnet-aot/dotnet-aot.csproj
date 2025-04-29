@@ -2,11 +2,13 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <OutputType>Exe</OutputType>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <PublishAot>true</PublishAot>
+    <!-- Use lib prefix on non-Windows -->
+    <TargetName>dotnet_aot</TargetName>
+    <TargetName Condition="'$(OS)' != 'Windows_NT'">lib$(TargetName)</TargetName>
   </PropertyGroup>
 
   <ItemGroup>
