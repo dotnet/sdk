@@ -15,8 +15,10 @@ internal static class DotnetFiles
     private static string GetSdkRootFolder(string sdkAssemblyPath) => Path.Combine(sdkAssemblyPath, "..");
 
     private static readonly Lazy<DotnetVersionFile> s_versionFileObject = new(
+#if NET
         [UnconditionalSuppressMessage("SingleFile", "IL3002", Justification = "All accesses are marked RAF")]
-    () => new DotnetVersionFile(VersionFile));
+#endif
+        () => new DotnetVersionFile(VersionFile));
 
     public static string GetVersionFilePath(string dotnetDllPath)
     {
@@ -27,9 +29,13 @@ internal static class DotnetFiles
     /// <summary>
     /// The SDK ships with a .version file that stores the commit information and SDK version
     /// </summary>
+#if NET
     [RequiresAssemblyFiles]
+#endif
     public static string VersionFile => GetVersionFilePath(typeof(DotnetFiles).Assembly.Location);
 
+#if NET
     [RequiresAssemblyFiles]
+#endif
     internal static DotnetVersionFile VersionFileObject => s_versionFileObject.Value;
 }

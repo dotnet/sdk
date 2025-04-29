@@ -11,7 +11,9 @@ public class Product
     public static string LongName => LocalizableStrings.DotNetSdkInfo;
     public static readonly string Version = GetProductVersion();
 
+#if NET
     [RequiresAssemblyFiles]
+#endif
     private static string GetProductVersion()
     {
         return GetProductVersion(typeof(Product).Assembly.Location);
