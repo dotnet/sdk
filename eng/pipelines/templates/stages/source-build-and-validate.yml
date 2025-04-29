@@ -96,8 +96,9 @@ stages:
           pool: ${{ parameters.pool_Linux }}
         buildSourceOnly: true
         ${{ if eq(parameters.useMicrosoftBuildAssetsForTests, false) }}:
-          runTests: false
           extraProperties: "/p:DisableDevBuildAsDefaultForSourceOnly=true"
+        ${{ else }}:
+          runTests: false
         buildFromArchive: ${{ leg.buildFromArchive }}
         runOnline: ${{ leg.runOnline }}
         useMonoRuntime: ${{ leg.useMonoRuntime }}
