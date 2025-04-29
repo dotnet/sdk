@@ -2,23 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
-public abstract class BuildCommand
+public static class BuildCommand
 {
-    public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;
         var parseResult = parser.ParseFrom("dotnet build", args);
         return FromParseResult(parseResult, msbuildPath);
     }
 
-    public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string msbuildPath = null)
     {
         PerformanceLogEventSource.Log.CreateBuildCommandStart();
 
@@ -36,22 +35,19 @@ public abstract class BuildCommand
 
         bool noIncremental = parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null;
 
-        BuildCommand command;
+        CommandBase command;
 
         if (fileArgument is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            command = new VirtualBuildCommand
+            command = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: Path.GetFullPath(arg),
+                msbuildArgs: forwardedOptions,
+                verbosity: parseResult.GetValue(CommonOptions.VerbosityOption),
+                interactive: parseResult.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
             {
-                VirtualBuildingCommand = new(
-                    entryPointFileFullPath: Path.GetFullPath(arg),
-                    msbuildArgs: forwardedOptions,
-                    verbosity: parseResult.GetValue(CommonOptions.VerbosityOption),
-                    interactive: parseResult.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
-                {
-                    NoRestore = noRestore,
-                    NoCache = true,
-                    NoIncremental = noIncremental,
-                },
+                NoRestore = noRestore,
+                NoCache = true,
+                NoIncremental = noIncremental,
             };
         }
         else
@@ -69,7 +65,7 @@ public abstract class BuildCommand
 
             msbuildArgs.AddRange(fileArgument);
 
-            command = new ForwardingBuildCommand(
+            command = new RestoringCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
                 msbuildPath: msbuildPath);
@@ -86,21 +82,4 @@ public abstract class BuildCommand
 
         return FromParseResult(parseResult).Execute();
     }
-
-    public abstract int Execute();
-}
-
-public sealed class ForwardingBuildCommand(
-    IEnumerable<string> msbuildArgs, bool noRestore, string msbuildPath = null) : BuildCommand
-{
-    public RestoringCommand RestoringCommand { get; } = new RestoringCommand(msbuildArgs, noRestore, msbuildPath);
-
-    public override int Execute() => RestoringCommand.Execute();
-}
-
-internal sealed class VirtualBuildCommand : BuildCommand
-{
-    public required VirtualProjectBuildingCommand VirtualBuildingCommand { get; init; }
-
-    public override int Execute() => VirtualBuildingCommand.Execute();
 }

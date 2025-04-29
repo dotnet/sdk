@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -46,10 +46,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (ForwardingBuildCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
-                command.RestoringCommand.SeparateRestoreCommand.Should().BeNull();
-                var commandArgs = command.RestoringCommand.GetArgumentTokensToMSBuild();
+                command.SeparateRestoreCommand.Should().BeNull();
+                var commandArgs = command.GetArgumentTokensToMSBuild();
                 commandArgs[0..6].Should().BeEquivalentTo([.. ExpectedPrefix, "-restore", "-consoleloggerparameters:Summary"]);
                 commandArgs[6..].Should()
                     .BeEquivalentTo([NugetInteractiveProperty, .. expectedAdditionalArgs]);
@@ -94,13 +94,13 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = (ForwardingBuildCommand)BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
-                command.RestoringCommand.SeparateRestoreCommand.ForwardingApp.GetArgumentTokensToMSBuild()
+                command.SeparateRestoreCommand.GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgsForRestore, NugetInteractiveProperty]);
 
-                command.RestoringCommand.GetArgumentTokensToMSBuild()
+                command.GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, "-nologo", "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });

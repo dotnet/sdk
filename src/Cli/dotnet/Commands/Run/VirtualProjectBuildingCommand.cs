@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.
 /// </summary>
-internal sealed class VirtualProjectBuildingCommand
+internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
     /// <summary>
     /// A file put into the artifacts directory when build starts.
@@ -86,7 +86,7 @@ internal sealed class VirtualProjectBuildingCommand
     public bool NoBuild { get; init; }
     public bool NoIncremental { get; init; }
 
-    public int Execute()
+    public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
 

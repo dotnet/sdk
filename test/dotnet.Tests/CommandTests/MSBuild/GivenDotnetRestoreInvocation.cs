@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -48,8 +48,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                ((ForwardingRestoreCommand)RestoreCommand.FromArgs(args, msbuildPath))
-                    .ForwardingApp
+                ((MSBuildForwardingApp)RestoreCommand.FromArgs(args, msbuildPath))
                     .GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs, NuGetDisabledProperty]);

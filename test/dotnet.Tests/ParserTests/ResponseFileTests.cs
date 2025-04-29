@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var tokens = parseResult.Tokens.Select(t => t.Value);
             var tokenString = string.Join(", ", tokens);
-            var bc = (ForwardingBuildCommand)Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
+            var bc = (RestoringCommand)Cli.Commands.Build.BuildCommand.FromParseResult(parseResult);
             var tokenized = new[] {
                 "build",
                 "a b",
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
                 "VSTestTestAdapterPath=\".;/opt/buildagent/plugins/dotnet/tools/vstest15\""
             };
 
-            Log.WriteLine($"MSbuild Args are {string.Join(" ", bc.RestoringCommand.MSBuildArguments)}");
+            Log.WriteLine($"MSbuild Args are {string.Join(" ", bc.MSBuildArguments)}");
             Log.WriteLine($"Parse Diagram is {parseResult.ToString()}");
             Log.WriteLine($"Token string is {tokenString}");
             tokens.Skip(1).Should().BeEquivalentTo(tokenized);
