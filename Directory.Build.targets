@@ -9,7 +9,8 @@
       We still check $(TargetFrameworks) for empty though, because for single-targeted builds we want to
       allow nullable warnings regardless of target framework.
     -->
-    <NoWarn Condition="'$(DisableNullableWarnings)' == '' AND  '$(TargetFrameworks)' != '' AND '$(TargetFramework)' != '' AND '$(TargetFrameworkIdentifier)' != '.NETCoreApp'">$(NoWarn);Nullable</NoWarn>
+    <DisableNullableWarnings Condition="'$(DisableNullableWarnings)' == '' AND  '$(TargetFrameworks)' != '' AND '$(TargetFramework)' != '' AND '$(TargetFrameworkIdentifier)' != '.NETCoreApp'">true</DisableNullableWarnings>
+    <NoWarn Condition="'$(DisableNullableWarnings)' == 'true'">$(NoWarn);Nullable</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
