@@ -1935,6 +1935,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         attributes.UnsupportedMessage = childAttribute.UnsupportedMessage;
                                     }
                                 }
+                                else if (relatedPlatforms.TryGetValue(platform, out var relation) && !relation.isSubset && !childAttribute.IsSet())
+                                // if it was related platform like MacCatalyst and child attributes are empty then the supported attribute(s) must have
+                                // suppressed with UnsupportedOSPlatform attribute, we need to apply the same to the parent attribute list
+                                {
+                                    attributes.SupportedFirst = null;
+                                    attributes.SupportedSecond = null;
+                                }
                             }
                             else
                             {

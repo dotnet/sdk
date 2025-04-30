@@ -4158,6 +4158,34 @@ class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [Fact, WorkItem(7633, "https://github.com/dotnet/roslyn-analyzers/issues/7633")]
+        public async Task SuppressedMacCatalystWithinChildAttributesShouldAlsoAppliedToParentAttributesOnMerge()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform (""maccatalyst"")]
+[SupportedOSPlatform (""ios"")]
+partial class TestType {
+    [UnsupportedOSPlatform (""maccatalyst"")]
+    [SupportedOSPlatform (""ios"")]
+    void DoSomething ()
+    {
+        Console.WriteLine (GetSomething);
+    }
+
+    [UnsupportedOSPlatform (""maccatalyst"")]
+    [SupportedOSPlatform (""ios"")]
+    public static object GetSomething {
+        [UnsupportedOSPlatform (""maccatalyst"")]
+        [SupportedOSPlatform (""ios"")]
+        get => """";
+    }
+}";
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         private string GetFormattedString(string resource, params string[] args) =>
             string.Format(CultureInfo.InvariantCulture, resource, args);
 
