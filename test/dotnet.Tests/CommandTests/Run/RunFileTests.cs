@@ -1376,4 +1376,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"))}}}]}
                 """.ReplaceLineEndings(""));
     }
+
+    [Fact]
+    public void Api_Error()
+    {
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput("""
+                {"$type":"Unknown1"}
+                {"$type":"Unknown2"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                {"$type":"Error","Version":1,"Message":
+                """)
+            .And.HaveStdOutContaining("Unknown1")
+            .And.HaveStdOutContaining("Unknown2");
+    }
 }
