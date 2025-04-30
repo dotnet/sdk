@@ -15,6 +15,9 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
+        var testDir = _testAssetsManager.CreateTestDirectory().Path;
+        var cliHome = Path.Combine(testDir, ".home");
+
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(DcProjAssetName)
@@ -23,6 +26,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
+        .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
         .Execute()
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
@@ -32,6 +36,9 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
+        var testDir = _testAssetsManager.CreateTestDirectory().Path;
+        var cliHome = Path.Combine(testDir, ".home");
+
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
@@ -40,6 +47,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
+        .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
         .Execute()
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
