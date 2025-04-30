@@ -59,19 +59,17 @@ if ($help) {
 }
 
 $project = Join-Path $RepoRoot "build.proj"
-$arguments = @()
-$targets = "/t:Build"
+$actions = @("/p:Restore=true", "/p:Build=true", "/p:Publish=true")
 
-# This repo uses the VSTest integration instead of the Arcade Test target
 if ($test) {
   $project = Join-Path (Join-Path $RepoRoot "test") "tests.proj"
-  $targets += ";VSTest"
-  $arguments += "/p:Test=true"
+  $actions = @("/p:Restore=true", "/p:Build=true", "/p:Test=true", "/p:IsTestRun=true")
 
   # Workaround for vstest hangs (https://github.com/microsoft/vstest/issues/5091) [TODO]
   $env:MSBUILDENSURESTDOUTFORTASKPROCESSES="1"
 }
 
+$arguments = @()
 # Override project if specified on cmd-line
 if ($projects) {
   $project = $projects
@@ -90,7 +88,7 @@ if ($targetArch) {
 }
 
 if ($sign) {
-  $arguments += "/p:Sign=true"
+  $arguments += "/p:DotNetBuildSign=true"
 }
 
 if ($buildRepoTests) {
@@ -102,15 +100,18 @@ if ($cleanWhileBuilding) {
 }
 
 function Build {
-  InitializeToolset
+  $buildProj = InitializeToolset
 
   $bl = if ($binaryLog) { '/bl:' + (Join-Path $LogDir 'Build.binlog') } else { '' }
 
   MSBuild -restore `
-    $project `
+    $buildProj `
+    /p:Projects=$project `
+    /p:RepoRoot=$RepoRoot `
+    "-tl:off" `
     $bl `
-    $targets `
     /p:Configuration=$configuration `
+    @actions `
     @properties `
     @arguments
 }

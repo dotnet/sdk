@@ -37,6 +37,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     private const string _assetsFolderName = "assets";
     private const string _packagesFolderName = "packages";
     private const string _releaseFolderName = "Release";
+    private const string _pdbFolderName = "PDB";
 
     public override bool Execute()
     {
@@ -63,6 +64,8 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
         ForceDirectory(packagesOutputDirectory);
         string assetsOutputDirectory = Path.Combine(OutputFolder, _assetsFolderName);
         ForceDirectory(assetsOutputDirectory);
+        string pdbOutputDirectory = Path.Combine(OutputFolder, _pdbFolderName);
+        ForceDirectory(pdbOutputDirectory);
 
         XDocument mergedManifest = JoinVerticalsManifestExportHelper.ExportMergedManifest(mainVerticalManifest, selectedVerticals);
         string manifestOutputAssetsPath = Path.Combine(assetsOutputDirectory, "VerticalsMergeManifest.xml");
@@ -84,8 +87,14 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
                 .Select(figureOutFileName)
                 .ToList();
 
+            var assetListPdbs = matchResult
+                .Where(o => o.Asset.AssetType == ManifestAssetType.Pdb)
+                .Select(figureOutFileName)
+                .ToList();
+
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _packagesFolderName, _releaseFolderName), packagesOutputDirectory, assetListPackages);
             CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _assetsFolderName, _releaseFolderName), assetsOutputDirectory, assetListBlobs);
+            CopyVerticalAssets(Path.Combine(VerticalArtifactsBaseFolder, verticalName, _pdbFolderName, _releaseFolderName), pdbOutputDirectory, assetListPdbs);
         }
 
         return !Log.HasLoggedErrors;
@@ -97,6 +106,7 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
             {
                 ManifestAssetType.Package => $"{matchResult.Asset.Id}.{matchResult.Asset.Version}.nupkg",
                 ManifestAssetType.Blob => matchResult.Asset.Id,
+                ManifestAssetType.Pdb => matchResult.Asset.Id,
                 _ => throw new ArgumentException($"Unknown asset type {matchResult.Asset.AssetType}")
             };
             return (matchResult, fileName);
@@ -119,7 +129,12 @@ public class JoinVerticals : Microsoft.Build.Utilities.Task
     {
         foreach (var sourceFile in assets)
         {
-            string destinationFilePath = Path.Combine(destinationDirectory, Path.GetFileName(sourceFile.fileName));
+            // Most files get flattened, PDBs do not
+            string destinationFileSubPath = sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Pdb ?
+                sourceFile.fileName : Path.GetFileName(sourceFile.fileName);
+            string destinationFilePath = Path.Combine(destinationDirectory, destinationFileSubPath);
+            // Ensure the directory is created. PDBs go in subdirs that may not be created.
+            ForceDirectory(Path.GetDirectoryName(destinationFilePath)!);
             Log.LogMessage(MessageImportance.High, $"Copying {sourceFile} to {destinationFilePath}");
 
             if (sourceFile.matchResult.Asset.AssetType == ManifestAssetType.Package)

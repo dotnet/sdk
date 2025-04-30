@@ -1,0 +1,47 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: "Matt Mitchell (.NET)" <mmitche@microsoft.com>
+Date: Thu, 24 Apr 2025 18:26:28 -0700
+Subject: [PATCH] Add loose PDB relative blob path In VMR builds, we do
+ sometimes have multiple legs producing the same pdbs. We do often want to
+ publish those PDBs from multiple legs and there could be overlap in the local
+ symbol path coming out of the build. Ensure we can disambiguate these by
+ prepending the SYSTEM_PHASENAME when available.
+
+---
+ src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj | 14 ++++++++++++--
+ 1 file changed, 12 insertions(+), 2 deletions(-)
+
+diff --git a/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj b/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
+index bc149ea32..d3f15f89a 100644
+--- a/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
++++ b/src/Microsoft.DotNet.Arcade.Sdk/tools/Publish.proj
+@@ -89,6 +89,10 @@
+     <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_REPOSITORY_NAME)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(BUILD_REPOSITORY_NAME)/</SymbolPackageBaseRelativeBlobPath>
+     <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_REPOSITORY_NAME)' == '' and '$(GitHubRepositoryName)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(GitHubRepositoryName)/</SymbolPackageBaseRelativeBlobPath>
+     <SymbolPackageBaseRelativeBlobPath Condition="'$(BUILD_BUILDNUMBER)' != ''">$(SymbolPackageBaseRelativeBlobPath)$(BUILD_BUILDNUMBER)/</SymbolPackageBaseRelativeBlobPath>
++
++    <!-- Relative PDB path differentiator to ensure that multiple VMR legs that happen to produce the same PDBs
++         and need them all indexed get them published to different relative paths -->
++    <LoosePDBRelativeBasePath Condition="'$(LoosePDBRelativeBasePath)' == '' and '$(SYSTEM_PHASENAME)' != ''">$(SYSTEM_PHASENAME)/</LoosePDBRelativeBasePath>
+   </PropertyGroup>
+ 
+   <!-- Keep these asset manifest properties here as other repos already depend on them in Publishing.props. -->
+@@ -164,10 +168,16 @@
+       <!-- Support existing uses of FilesToPublishToSymbolServer by translating this ItemGroup into ItemsToPushToBlobFeed,
+            with type PDB. Repositories can also add these items manually if desired.
+            Note that we are careful here to include the relative paths of those PDBs. Unlike most artifacts
+-           that we deal with, many PDBs can have the same name but different contents. -->
++           that we deal with, many PDBs can have the same name but different contents.
++
++           The other thing to remember is that in builds where PDBs are produced by multiple
++           jobs, but could have the same relative path within the build. In some cases we would want
++           both of those PDBs to be indexed. To achieve this, the relative PDB path will include the
++           LoosePDBRelativeBasePath. This may be set to SYSTEM_PHASENAME if available.
++           -->
+       <_SymbolsToPushToBlobFeed Include="@(FilesToPublishToSymbolServer)">
+         <Kind>PDB</Kind>
+-        <RelativePDBPath>%(RecursiveDir)%(Filename)%(Extension)</RelativePDBPath>
++        <RelativePDBPath>$(LoosePDBRelativeBasePath)%(RecursiveDir)%(Filename)%(Extension)</RelativePDBPath>
+       </_SymbolsToPushToBlobFeed>
+       <ItemsToPushToBlobFeed Include="@(_SymbolsToPushToBlobFeed)" />
+     </ItemGroup>

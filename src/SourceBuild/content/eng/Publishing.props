@@ -1,0 +1,117 @@
+<Project InitialTargets="DiscoverArtifacts">
+  <Import Project="$(RepositoryEngineeringDir)RuntimeIdentifier.props" />
+  <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
+
+  <PropertyGroup>
+    <EnableDefaultArtifacts>false</EnableDefaultArtifacts>
+    <PushToLocalStorage>true</PushToLocalStorage>
+    <PreserveRepoOrigin>true</PreserveRepoOrigin>
+    <ArtifactsStagingDir Condition="'$(ArtifactsStagingDir)' == ''">$(ArtifactsDir)/staging/</ArtifactsStagingDir>
+    <SourceBuiltAssetsDir>$(ArtifactsStagingDir)/assets/$(Configuration)</SourceBuiltAssetsDir>
+    <SourceBuiltAssetManifestsDir>$(ArtifactsStagingDir)/manifests/$(Configuration)</SourceBuiltAssetManifestsDir>
+    <SourceBuiltPdbArtifactsDir>$(ArtifactsStagingDir)/PDB/$(Configuration)</SourceBuiltPdbArtifactsDir>
+    <PublishingUseHardlinksIfPossible>true</PublishingUseHardlinksIfPossible>
+    <AssetManifestFileName Condition="'$(MergedAssetManifestName)' != ''">$(MergedAssetManifestName)</AssetManifestFileName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+    <SourceBuiltShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(ArtifactsStagingDir)/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+  <!--
+    When building from source, the Private.SourceBuilt.Artifacts archive will contain the nuget packages, so don't push them where we'll upload from.
+  -->
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <SourceBuiltShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/Shipping</SourceBuiltShippingPackagesDir>
+    <SourceBuiltNonShippingPackagesDir>$(ArtifactsTmpDir)/staging/packages/$(Configuration)/NonShipping</SourceBuiltNonShippingPackagesDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ManifestBuildData Include="VerticalName=$(VerticalName)" Condition="'$(VerticalName)' != ''" />
+  </ItemGroup>
+
+  <!--
+    Don't binplace any artifacts with vertical visibility. These are only used for building other repos within this vertical
+    and shouldn't be pushed to build storage.
+  -->
+  <ItemGroup>
+    <ArtifactVisibilityToPublish Include="Internal;External" />
+  </ItemGroup>
+
+  <!-- Build task assembly paths -->
+  <PropertyGroup>
+    <MicrosoftDotNetUnifiedBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.UnifiedBuild.Tasks', '$(Configuration)', 'Microsoft.DotNet.UnifiedBuild.Tasks.dll'))</MicrosoftDotNetUnifiedBuildTasksAssembly>
+  </PropertyGroup>
+
+  <UsingTask TaskName="Microsoft.DotNet.UnifiedBuild.Tasks.GetKnownArtifactsFromAssetManifests" AssemblyFile="$(MicrosoftDotNetUnifiedBuildTasksAssembly)" TaskFactory="TaskHostFactory" />
+
+  <Target Name="DiscoverArtifacts">
+    <ItemGroup>
+      <!-- Repo manifests from individual repos -->
+      <RepoManifests Include="$(AssetManifestsIntermediateDir)/**/*.xml" />
+    </ItemGroup>
+    <!-- Get produced packages and assets from the manifests -->
+    <GetKnownArtifactsFromAssetManifests AssetManifests="@(RepoManifests)">
+      <Output TaskParameter="KnownPackages" ItemName="ProducedPackage" />
+      <Output TaskParameter="KnownBlobs" ItemName="ProducedAsset" />
+    </GetKnownArtifactsFromAssetManifests>
+    <ItemGroup>
+      <ProducedPackage>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' != 'true'">true</IsShipping>
+        <IsShipping Condition="'%(ProducedPackage.NonShipping)' == 'true'">false</IsShipping>
+        <Kind>Package</Kind>
+        <PackageId>%(Identity)</PackageId>
+      </ProducedPackage>
+      <ProducedPackage>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' != 'true'">Shipping</ShippingFolder>
+        <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' == 'true'">NonShipping</ShippingFolder>
+      </ProducedPackage>
+
+      <ReferencePackage Include="@(ProducedPackage->'$(ReferencePackagesDir)%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' == 'source-build-reference-packages'" />
+      <PackageToPublish Include="@(ProducedPackage->'$(ArtifactsPackagesDir)%(ShippingFolder)/%(RepoOrigin)/%(Identity).%(Version).nupkg')" Condition="'%(RepoOrigin)' != 'source-build-reference-packages'" />
+    </ItemGroup>
+
+    <!-- Create Artifact items for produced packages and assets -->
+    <ItemGroup>
+      <Artifact Include="@(PackageToPublish);@(ReferencePackage)" />
+      <Artifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')">
+        <Kind>Blob</Kind>
+        <RelativeBlobPath>%(ProducedAsset.Identity)</RelativeBlobPath>
+      </Artifact>
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+      <!-- Copy SDK archive to assets root as source-only build partners expect the file to be there. -->
+      <SdkTarball Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')" Condition="$([System.String]::new('%(ProducedAsset.Filename)').StartsWith('dotnet-sdk-'))">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+      </SdkTarball>
+      <!-- Add the symbols archives to the publishing output. -->
+      <SourceBuildArtifact Include="$(ArtifactsAssetsDir)dotnet-symbols-*$(ArchiveExtension)">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+      </SourceBuildArtifact>
+      <!-- Include the prebuilts tarball in the publishing output as well. -->
+      <SourceBuildArtifact Include="$(ArtifactsAssetsDir)$(SourceBuiltPrebuiltsTarballName).*$(ArchiveExtension)">
+        <Kind>Blob</Kind>
+        <IsShipping>true</IsShipping>
+      </SourceBuildArtifact>
+      <Artifact Include="@(SdkTarball);@(SourceBuildArtifact)">
+        <IsShipping>true</IsShipping>
+        <Kind>Blob</Kind>
+        <RelativeBlobPath>%(Filename)%(Extension)</RelativeBlobPath>
+      </Artifact>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="AddVerticalNameToPdbArtifacts"
+          BeforeTargets="PublishToAzureDevOpsArtifacts"
+          AfterTargets="GenerateChecksumsFromArtifacts"
+          Condition="'$(VerticalName)' != ''">
+    <ItemGroup>
+      <Artifact Condition="'%(Artifact.Kind)' == 'PDB'"
+                RelativePDBPath="$(VerticalName)/%(Artifact.RelativeBlobPath)" />
+    </ItemGroup>
+  </Target>
+
+  <Import Project="$(RepositoryEngineeringDir)PublishSourceBuild.props" Condition="'$(DotNetBuildSourceOnly)' == 'true'" />
+</Project>

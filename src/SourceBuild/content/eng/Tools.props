@@ -1,0 +1,9 @@
+<Project>
+  <Import Project="$(RepositoryEngineeringDir)VmrLayout.props" />
+
+  <!-- Override RestoreSources in Source-Build builds so the Arcade SDK restores its packages from offline sources. -->
+
+  <PropertyGroup>
+    <RestoreSources Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(IsTestRun)' != 'true'">$(PrebuiltPackagesPath);$(PreviouslySourceBuiltPackagesPath)</RestoreSources>
+  </PropertyGroup>
+</Project>
