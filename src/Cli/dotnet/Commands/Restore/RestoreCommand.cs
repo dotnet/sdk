@@ -3,39 +3,52 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
-public class RestoreCommand : MSBuildForwardingApp
+public static class RestoreCommand
 {
-    public RestoreCommand(IEnumerable<string> msbuildArgs, string msbuildPath = null)
-        : base(msbuildArgs, msbuildPath)
-    {
-        NuGetSignatureVerificationEnabler.ConditionallyEnable(this);
-    }
-
-    public static RestoreCommand FromArgs(string[] args, string msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;
         var result = parser.ParseFrom("dotnet restore", args);
         return FromParseResult(result, msbuildPath);
     }
 
-    public static RestoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult result, string msbuildPath = null)
     {
         result.HandleDebugSwitch();
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        List<string> msbuildArgs = ["-target:Restore"];
+        string[] fileArgument = result.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument) ?? [];
 
-        msbuildArgs.AddRange(result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()));
+        string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
 
-        msbuildArgs.AddRange(result.GetValue(RestoreCommandParser.SlnOrProjectArgument) ?? []);
+        if (fileArgument is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        {
+            return new VirtualProjectBuildingCommand(
+                    entryPointFileFullPath: Path.GetFullPath(arg),
+                    msbuildArgs: forwardedOptions,
+                    verbosity: result.GetValue(CommonOptions.VerbosityOption),
+                    interactive: result.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
+            {
+                NoCache = true,
+                NoBuild = true,
+            };
+        }
 
-        return new RestoreCommand(msbuildArgs, msbuildPath);
+        return CreateForwarding(["-target:Restore", .. forwardedOptions, .. fileArgument], msbuildPath);
+    }
+
+    public static MSBuildForwardingApp CreateForwarding(IEnumerable<string> msbuildArgs, string? msbuildPath = null)
+    {
+        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
+        NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
+        return forwardingApp;
     }
 
     public static int Run(string[] args)
