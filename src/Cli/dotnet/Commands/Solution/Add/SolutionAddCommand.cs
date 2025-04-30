@@ -106,7 +106,7 @@ internal class SolutionAddCommand : CommandBase
             {
                 Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
             }
-            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName)
+            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(relativePath) is not null)
             {
                 Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, relativePath);
             }
