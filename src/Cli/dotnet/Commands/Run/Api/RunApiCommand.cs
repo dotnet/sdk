@@ -82,6 +82,13 @@ internal abstract class RunApiOutput
 {
     private RunApiOutput() { }
 
+    /// <summary>
+    /// When the API shape or behavior changes, this should be incremented so the callers (IDEs) can act accordingly
+    /// (e.g., show an error message when an incompatible SDK version is being used).
+    /// </summary>
+    [JsonPropertyOrder(-1)]
+    public int Version { get; } = 1;
+
     public sealed class Error : RunApiOutput
     {
         public required string Message { get; init; }

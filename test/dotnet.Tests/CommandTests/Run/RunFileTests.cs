@@ -1057,7 +1057,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Content":{{ToJson($"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1150,7 +1150,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Content":{{ToJson($"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1236,7 +1236,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Content":{{ToJson($"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
