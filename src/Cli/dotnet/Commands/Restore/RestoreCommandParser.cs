@@ -10,9 +10,9 @@ internal static class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -62,7 +62,7 @@ internal static class RestoreCommandParser
     {
         var command = new DocumentedCommand("restore", DocsLink, CliCommandStrings.RestoreAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
         foreach (var option in FullRestoreOptions())
