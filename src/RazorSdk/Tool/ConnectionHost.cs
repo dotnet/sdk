@@ -107,6 +107,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                     try
                     {
                         ServerLogger.Log($"Before poking pipe {Identifier}.");
+                        // Stream.ReadExactlyAsync with a zero-length buffer will not update the state of the pipe.
+                        // We need to trigger a state update without actually reading the data.
                         _ = await Stream.ReadAsync(Array.Empty<byte>(), 0, 0, cancellationToken);
                         ServerLogger.Log($"After poking pipe {Identifier}.");
                     }
