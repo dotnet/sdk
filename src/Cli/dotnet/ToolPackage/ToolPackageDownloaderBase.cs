@@ -89,6 +89,18 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion,
         string packagesRootPath);
 
+    protected abstract void CreateAssetFile(
+        PackageId packageId,
+        NuGetVersion version,
+        DirectoryPath packagesRootPath,
+        string assetFilePath,
+        string runtimeJsonGraph,
+        string? targetFramework = null);
+
+    protected abstract ToolConfiguration GetToolConfiguration(PackageId id,
+        DirectoryPath packageDirectory,
+        DirectoryPath assetsJsonParentDirectory);
+
     public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
         VerbosityOptions verbosity = VerbosityOptions.normal,
         VersionRange? versionRange = null,
@@ -187,6 +199,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
                 rollbackDirectory = toolStoreTargetDirectory.Value;
 
+                //  TODO: How to mock ToolPackageInstance?
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: toolStoreTargetDirectory,
@@ -237,6 +250,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     assetFileDirectory: _localToolAssetDir,
                     targetFramework);
 
+                //  TODO: How to mock ToolPackageInstance?
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: _localToolDownloadDir,
@@ -265,8 +279,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), _runtimeJsonPath, targetFramework);
 
         //  Also download RID-specific package if needed
-        //  TODO: Pass IFileSsytem to ToolPackageInstance?
-        var toolConfiguration = ToolPackageInstance.GetToolConfiguration(packageId, packageDownloadDir, assetFileDirectory);
+        var toolConfiguration = GetToolConfiguration(packageId, packageDownloadDir, assetFileDirectory);
         if (toolConfiguration.RidSpecificPackages?.Any() == true)
         {
             var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(_runtimeJsonPath);
@@ -288,20 +301,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    // The following methods are copied from the LockFileUtils class in Nuget.Client
-    protected static void AddToolsAssets(
-        ManagedCodeConventions managedCodeConventions,
-        LockFileTargetLibrary lockFileLib,
-        ContentItemCollection contentItems,
-        IReadOnlyList<SelectionCriteria> orderedCriteria)
-    {
-        var toolsGroup = GetLockFileItems(
-            orderedCriteria,
-            contentItems,
-            managedCodeConventions.Patterns.ToolsAssemblies);
-
-        lockFileLib.ToolsAssemblies.AddRange(toolsGroup);
-    }
+ 
 
     protected void UpdateRuntimeConfig(
         ToolPackageInstance toolPackageInstance
@@ -322,122 +322,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 _fileSystem.File.WriteAllText(runtimeConfigFilePath, updateJson);
             }
         }
-    }
-
-    protected static IEnumerable<LockFileItem> GetLockFileItems(
-        IReadOnlyList<SelectionCriteria> criteria,
-        ContentItemCollection items,
-        params PatternSet[] patterns)
-    {
-        return GetLockFileItems(criteria, items, additionalAction: null, patterns);
-    }
-
-    protected static IEnumerable<LockFileItem> GetLockFileItems(
-       IReadOnlyList<SelectionCriteria> criteria,
-       ContentItemCollection items,
-       Action<LockFileItem>? additionalAction,
-       params PatternSet[] patterns)
-    {
-        // Loop through each criteria taking the first one that matches one or more items.
-        foreach (var managedCriteria in criteria)
-        {
-            var group = items.FindBestItemGroup(
-                managedCriteria,
-                patterns);
-
-            if (group != null)
-            {
-                foreach (var item in group.Items)
-                {
-                    var newItem = new LockFileItem(item.Path);
-                    if (item.Properties.TryGetValue("locale", out var locale))
-                    {
-                        newItem.Properties["locale"] = (string)locale;
-                    }
-
-                    if (item.Properties.TryGetValue("related", out var related))
-                    {
-                        newItem.Properties["related"] = (string)related;
-                    }
-                    additionalAction?.Invoke(newItem);
-                    yield return newItem;
-                }
-                // Take only the first group that has items
-                break;
-            }
-        }
-
-        yield break;
-    }
-
-    protected static void CreateAssetFile(
-        PackageId packageId,
-        NuGetVersion version,
-        DirectoryPath packagesRootPath,
-        string assetFilePath,
-        string runtimeJsonGraph,
-        string? targetFramework = null
-        )
-    {
-        // To get runtimeGraph:
-        var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(runtimeJsonGraph);
-
-        // Create ManagedCodeConventions:
-        var conventions = new ManagedCodeConventions(runtimeGraph);
-
-        //  Create LockFileTargetLibrary
-        var lockFileLib = new LockFileTargetLibrary()
-        {
-            Name = packageId.ToString(),
-            Version = version,
-            Type = LibraryType.Package,
-            //  TODO: What about DotnetToolRidPackage type?
-            PackageType = [PackageType.DotnetTool]
-        };
-
-        //  Create NuGetv3LocalRepository
-        //  TODO How to mock this?
-        NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
-        var package = localRepository.FindPackage(packageId.ToString(), version);
-
-        var collection = new ContentItemCollection();
-        collection.Load(package.Files);
-
-        //  Create criteria
-        var managedCriteria = new List<SelectionCriteria>(1);
-        // Use major.minor version of currently running version of .NET
-        NuGetFramework currentTargetFramework;
-        if (targetFramework != null)
-        {
-            currentTargetFramework = NuGetFramework.Parse(targetFramework);
-        }
-        else
-        {
-            currentTargetFramework = new NuGetFramework(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, new Version(Environment.Version.Major, Environment.Version.Minor));
-        }
-
-        var standardCriteria = conventions.Criteria.ForFrameworkAndRuntime(
-            currentTargetFramework,
-            RuntimeInformation.RuntimeIdentifier);
-        managedCriteria.Add(standardCriteria);
-
-        //  Create asset file
-        //  TODO: What about DotnetToolRidPackage type?
-        if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
-        {
-            AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
-        }
-
-        var lockFile = new LockFile();
-        var lockFileTarget = new LockFileTarget()
-        {
-            TargetFramework = currentTargetFramework,
-            RuntimeIdentifier = RuntimeInformation.RuntimeIdentifier
-        };
-        lockFileTarget.Libraries.Add(lockFileLib);
-        lockFile.Targets.Add(lockFileTarget);
-        //  TODO: Use IFileSystem
-        new LockFileFormat().Write(assetFilePath, lockFile);
     }
 
     public virtual NuGetVersion GetNuGetVersion(
