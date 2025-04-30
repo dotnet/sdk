@@ -19,7 +19,7 @@ internal class WorkloadRestoreCommand(
 {
     private readonly ParseResult _result = result;
     private readonly IEnumerable<string> _slnOrProjectArgument =
-            result.GetValue(RestoreCommandParser.SlnOrProjectArgument);
+            result.GetValue(WorkloadRestoreCommandParser.SlnOrProjectArgument);
 
     public override int Execute()
     {

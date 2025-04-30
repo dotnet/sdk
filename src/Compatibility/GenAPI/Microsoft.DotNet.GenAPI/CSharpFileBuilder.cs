@@ -8,6 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI
 {
@@ -45,15 +46,31 @@ namespace Microsoft.DotNet.GenAPI
         {
             _textWriter = textWriter;
             _header = header;
-            _docGenerator = new CSharpAssemblyDocumentGenerator(log, loader, symbolFilter, attributeDataSymbolFilter, exceptionMessage, includeAssemblyAttributes, metadataReferences, addPartialModifier: addPartialModifier);
+
+            CSharpAssemblyDocumentGeneratorOptions options = new(loader, symbolFilter, attributeDataSymbolFilter)
+            {
+                HideImplicitDefaultConstructors = true,
+                ShouldFormat = true,
+                ShouldReduce = true,
+                IncludeAssemblyAttributes = includeAssemblyAttributes,
+                MetadataReferences = metadataReferences,
+                SyntaxRewriters = [
+                    new TypeDeclarationCSharpSyntaxRewriter(addPartialModifier),
+                    new BodyBlockCSharpSyntaxRewriter(exceptionMessage),
+                    SingleLineStatementCSharpSyntaxRewriter.Singleton
+                ]
+            };
+
+            _docGenerator = new CSharpAssemblyDocumentGenerator(log, options);
         }
 
         /// <inheritdoc />
         public void WriteAssembly(IAssemblySymbol assemblySymbol)
         {
             _textWriter.Write(GetFormattedHeader(_header));
-            Document document = _docGenerator.GetDocumentForAssembly(assemblySymbol);
-            _docGenerator.GetFormattedRootNodeForDocument(document).WriteTo(_textWriter);
+            Document document = _docGenerator.GetDocumentForAssemblyAsync(assemblySymbol).Result;
+            SyntaxNode root = document.GetSyntaxRootAsync().Result ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            root.WriteTo(_textWriter);
         }
 
         private static string GetFormattedHeader(string? customHeader)
