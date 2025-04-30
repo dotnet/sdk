@@ -409,7 +409,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
+        [Fact]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testProjectDirectory = testInstance.Path;
             var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
-            var cmd = new DotnetCommand(Log, "run")
+            var cmd = new DotnetCommand(Log, "run", "--verbosity", "quiet")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 

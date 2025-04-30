@@ -114,10 +114,7 @@ public class RunCommand
         {
             if (EntryPointFileFullPath is not null)
             {
-                projectFactory = new VirtualProjectBuildingCommand
-                {
-                    EntryPointFileFullPath = EntryPointFileFullPath,
-                }.PrepareProjectInstance().CreateProjectInstance;
+                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
             }
 
             if (NoCache)
@@ -256,19 +253,9 @@ public class RunCommand
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
-            var command = new VirtualProjectBuildingCommand
-            {
-                EntryPointFileFullPath = EntryPointFileFullPath,
-            };
-
-            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
-
+            var command = CreateVirtualCommand();
             projectFactory = command.CreateProjectInstance;
-            buildResult = command.Execute(
-                binaryLoggerArgs: RestoreArgs,
-                consoleLogger: MakeTerminalLogger(Verbosity ?? GetDefaultVerbosity()),
-                noRestore: NoRestore,
-                noCache: NoCache);
+            buildResult = command.Execute();
         }
         else
         {
@@ -289,13 +276,28 @@ public class RunCommand
         }
     }
 
+    private VirtualProjectBuildingCommand CreateVirtualCommand()
+    {
+        Debug.Assert(EntryPointFileFullPath != null);
+
+        return new(
+            entryPointFileFullPath: EntryPointFileFullPath,
+            msbuildArgs: RestoreArgs,
+            verbosity: Verbosity,
+            interactive: Interactive)
+        {
+            NoRestore = NoRestore,
+            NoCache = NoCache,
+        };
+    }
+
     private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
     {
         List<string> args = ["-nologo"];
 
         if (Verbosity is null)
         {
-            args.Add($"-verbosity:{GetDefaultVerbosity()}");
+            args.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
         }
 
         args.AddRange(cliRestoreArgs);
@@ -303,11 +305,11 @@ public class RunCommand
         return [.. args];
     }
 
-    private VerbosityOptions GetDefaultVerbosity()
+    internal static VerbosityOptions GetDefaultVerbosity(bool interactive)
     {
         // --interactive need to output guide for auth. It cannot be
         // completely "quiet"
-        return Interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
+        return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
     private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
@@ -394,8 +396,7 @@ public class RunCommand
         }
     }
 
-
-    static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 
