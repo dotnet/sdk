@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -30,15 +31,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(dotnetProjectConvert)
-            .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+        new DirectoryInfo(dotnetProjectConvert).Should().HaveSubtree("""
+            Program.cs
+            Program.csproj
+            """);
 
-        new DirectoryInfo(Path.Join(dotnetProjectConvert, "Program"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
-
-        var dotnetProjectConvertProject = Path.Join(dotnetProjectConvert, "Program", "Program.csproj");
+        var dotnetProjectConvertProject = Path.Join(dotnetProjectConvert, "Program.csproj");
 
         Path.GetFileName(dotnetProjectConvertProject).Should().Be("Program.csproj");
 
@@ -59,25 +57,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
-    public void DirectoryAlreadyExists()
-    {
-        var testInstance = _testAssetsManager.CreateTestDirectory();
-        var directoryPath = Path.Join(testInstance.Path, "MyApp");
-        Directory.CreateDirectory(directoryPath);
-        File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
-
-        new DotnetCommand(Log, "project", "convert", "MyApp.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, directoryPath));
-
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["MyApp", "MyApp.cs"]);
-    }
-
-    [Fact]
     public void OutputOption()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
@@ -89,16 +68,32 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateDirectories().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["MyApp", "MyApp1"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            MyApp1/
+            MyApp1/MyApp.cs
+            MyApp1/MyApp.csproj
+            MyApp1/MyApp/
+            """);
+    }
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "MyApp"))
-            .EnumerateFileSystemInfos().Should().BeEmpty();
+    [Fact]
+    public void OutputOption_SharedConflictDoesNotMatter()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Shared.cs"), "Console.WriteLine();");
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "MyApp1"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["MyApp.csproj", "MyApp.cs"]);
+        new DotnetCommand(Log, "project", "convert", "Shared.cs", "-o", "MyApp1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            MyApp1/
+            MyApp1/MyApp/
+            MyApp1/Shared.cs
+            MyApp1/Shared.csproj
+            """);
     }
 
     [Fact]
@@ -115,30 +110,51 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, directoryPath));
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["MyApp.cs", "SomeOutput"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            MyApp.cs
+            SomeOutput/
+            """);
     }
 
     [Fact]
-    public void MultipleEntryPointFiles()
+    public void OutputOption_SameAsSource()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.WriteLine(1);");
-        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.WriteLine(2);");
+        File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "Program1.cs")
+        new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", ".")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass();
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, testInstance.Path));
+    }
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(d => d.Name).Order()
-            .Should().BeEquivalentTo(["Program1", "Program2.cs"]);
+    [Fact]
+    public void OutputOption_SameAsNestedSource()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "app"));
+        File.WriteAllText(Path.Join(testInstance.Path, "app", "MyApp.cs"), "Console.WriteLine();");
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "Program1"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program1.csproj", "Program1.cs"]);
+        new DotnetCommand(Log, "project", "convert", "app/MyApp.cs", "-o", "app")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.Join(testInstance.Path, "app")));
+    }
+
+    [Fact]
+    public void OutputOption_SameAsParentCurrent()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "app"));
+        File.WriteAllText(Path.Join(testInstance.Path, "app", "MyApp.cs"), "Console.WriteLine();");
+
+        new DotnetCommand(Log, "project", "convert", "app/MyApp.cs", "-o", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryAlreadyExists, testInstance.Path));
     }
 
     [Fact]
@@ -152,8 +168,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Fail()
             .And.HaveStdErrContaining("convert"); // Required argument missing for command 'convert'
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Should().BeEmpty();
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree(string.Empty);
     }
 
     [Fact]
@@ -165,10 +180,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, Path.Join(testInstance.Path, "NotHere.cs")));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFileOrDirectoryPath, Path.Join(testInstance.Path, "NotHere.cs")));
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Should().BeEmpty();
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree(string.Empty);
     }
 
     [Fact]
@@ -182,11 +196,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, filePath));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFileOrDirectoryPath, filePath));
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.vb"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.vb
+            """);
     }
 
     [Fact]
@@ -200,13 +214,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
-
-        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.CS"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.CS
+            Program.csproj
+            """);
     }
 
     [Theory]
@@ -220,17 +231,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass();
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Program.cs")));
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.cs
+            """);
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
-
-        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.cs"))
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
             .Should().Be(content);
     }
 
@@ -247,13 +255,55 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "app"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            app/
+            app/Program.cs
+            app/Program.csproj
+            """);
+    }
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "app", "Program"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    [Fact]
+    public void NestedEntryPoint_Single()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "app"));
+        File.WriteAllText(Path.Join(testInstance.Path, "app", "Program.cs"), "Console.WriteLine();");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.EntryPointInNestedFolder, Path.Join(testInstance.Path, "app", "Program.cs")));
+    }
+
+    [Theory]
+    [InlineData("Program.cs")]
+    [InlineData(".")]
+    public void NestedEntryPoint_Another(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), "Console.Write(1);");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "app"));
+        File.WriteAllText(Path.Join(testInstance.Path, "app", "Program.cs"), "Console.Write(2);");
+
+        new DotnetCommand(Log, "project", "convert", arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.EntryPointInNestedFolder, Path.Join(testInstance.Path, "app", "Program.cs")));
+    }
+
+    [Fact]
+    public void NoEntryPoints()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class C;");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoEntryPoints, testInstance.Path));
     }
 
     /// <summary>
@@ -265,7 +315,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var filePath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(filePath, "#:invalid");
+        File.WriteAllText(filePath, """
+            #:invalid
+            Console.WriteLine();
+            """);
 
         new DotnetCommand(Log, "project", "convert", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -273,8 +326,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.UnrecognizedDirective, "invalid", $"{filePath}:1"));
 
-        new DirectoryInfo(Path.Join(testInstance.Path))
-            .EnumerateDirectories().Should().BeEmpty();
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.cs
+            """);
     }
 
     /// <summary>
@@ -294,18 +348,15 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(testInstance.Path)
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.cs
+            Program.csproj
+            """);
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
-            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
-
-        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.cs"))
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
             .Should().Be("Console.WriteLine();");
 
-        File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.csproj"))
             .Should().Be($"""
                 <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
 
@@ -319,6 +370,421 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 </Project>
 
                 """);
+    }
+
+    [Fact]
+    public void MultipleFiles_SingleEntryPoint()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        string programContent = "Console.WriteLine(Util.GetMessage());";
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:sdk Aspire.Hosting.Sdk/9.1.0
+            #:property Prop1 ValueProgram
+            {programContent}
+            """);
+        string utilContent = """
+            static class Util
+            {
+                public static string GetMessage()
+                {
+                    return "String from Util";
+                }
+            }
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), $"""
+            #:property Prop1 ValueUtil
+            {utilContent}
+            """);
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program.cs
+            Program.csproj
+            Util.cs
+            """);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.cs"))
+            .Should().Be(programContent);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Util.cs"))
+            .Should().Be(utilContent);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program.csproj"))
+            .Should().Be($"""
+                <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop1>ValueUtil</Prop1>
+                    <Prop1>ValueProgram</Prop1>
+                  </PropertyGroup>
+
+                </Project>
+
+                """);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        string program1Content = """Console.WriteLine("1 " + Util.GetMessage());""";
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), $"""
+            #:property Prop1 ValueProgram1
+            {program1Content}
+            """);
+        string program2Content = """Console.WriteLine("2 " + Util.GetMessage());""";
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), $"""
+            #:property Prop1 ValueProgram2
+            {program2Content}
+            """);
+        string utilContent = """
+            static class Util
+            {
+                public static string GetMessage()
+                {
+                    return "String from Util";
+                }
+            }
+            """;
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), $"""
+            #:property Prop1 ValueUtil
+            {utilContent}
+            """);
+
+        // Run the file-based programs.
+        string expectedOutput1 = "1 String from Util";
+        string expectedOutput2 = "2 String from Util";
+        new DotnetCommand(Log, "run", "Program1.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput1);
+        new DotnetCommand(Log, "run", "Program2.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput2);
+
+        // Cannot convert a single entry point, must convert the whole directory.
+        new DotnetCommand(Log, "project", "convert", "Program1.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.DirectoryMustBeSpecified, Path.Join(testInstance.Path, "Program1.cs")));
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            Shared/
+            Shared/Util.cs
+            """);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program1", "Program1.cs"))
+            .Should().Be(program1Content);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program1", "Program1.csproj"))
+            .Should().Be($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop1>ValueUtil</Prop1>
+                    <Prop1>ValueProgram1</Prop1>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Compile Include="..\Shared\**\*.cs" />
+                  </ItemGroup>
+
+                </Project>
+
+                """);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program2", "Program2.cs"))
+            .Should().Be(program2Content);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program2", "Program2.csproj"))
+            .Should().Be($"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Prop1>ValueUtil</Prop1>
+                    <Prop1>ValueProgram2</Prop1>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Compile Include="..\Shared\**\*.cs" />
+                  </ItemGroup>
+
+                </Project>
+
+                """);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Shared", "Util.cs"))
+            .Should().Be(utilContent);
+
+        // Run the converted programs.
+        new DotnetCommand(Log, "run", "--project", "Program1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput1);
+        new DotnetCommand(Log, "run", "--project", "Program2")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput2);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_NestedFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.Write(2);");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Dir"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Dir", "Util.cs"), """
+            #:sdk Test
+            class C;
+            """);
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            Shared/
+            Shared/Dir/
+            Shared/Dir/Util.cs
+            """);
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Shared", "Dir", "Util.cs"))
+            .Should().Be("class C;");
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_SharedConflict()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Shared.cs"), "Console.Write(2);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class C;");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.SharedDirectoryNameConflicts, "Shared"));
+
+        new DotnetCommand(Log, "project", "convert", ".", "--shared-directory-name", "program1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.SharedDirectoryNameConflicts, "program1"));
+
+        new DotnetCommand(Log, "project", "convert", ".", "--shared-directory-name", "Shared1")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Shared/
+            Shared/Shared.cs
+            Shared/Shared.csproj
+            Shared1/
+            Shared1/Util.cs
+            """);
+
+        string expectedCsproj = $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+
+              <PropertyGroup>
+                <OutputType>Exe</OutputType>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                <ImplicitUsings>enable</ImplicitUsings>
+                <Nullable>enable</Nullable>
+              </PropertyGroup>
+
+              <ItemGroup>
+                <Compile Include="..\Shared1\**\*.cs" />
+              </ItemGroup>
+
+            </Project>
+
+            """;
+
+        File.ReadAllText(Path.Join(testInstance.Path, "Program1", "Program1.csproj")).Should().Be(expectedCsproj);
+        File.ReadAllText(Path.Join(testInstance.Path, "Shared", "Shared.csproj")).Should().Be(expectedCsproj);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_SharedNamedUtil()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.Write(2);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "class C;");
+
+        new DotnetCommand(Log, "project", "convert", ".", "--shared-directory-name", "Util")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            Util/
+            Util/Util.cs
+            """);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_SharedNamedLikeExistingFolder()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.Write(2);");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Shared"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Shared", "Util.cs"), "class C;");
+
+        new DotnetCommand(Log, "project", "convert", ".", "--shared-directory-name", "Shared")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            Shared/
+            Shared/Shared/
+            Shared/Shared/Util.cs
+            """);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_NoSharedNeeded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.Write(2);");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            """);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_NoSharedNeeded_ConflictDoesNotMatter()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Shared.cs"), "Console.Write(2);");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Shared/
+            Shared/Shared.cs
+            Shared/Shared.csproj
+            """);
+    }
+
+    [Fact]
+    public void MultipleFiles_MultipleEntryPoints_NonCSharpFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.Write(1);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.Write(2);");
+        File.WriteAllText(Path.Join(testInstance.Path, "Strings.resx"), "<strings />");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Folder1"));
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "Folder2"));
+        File.WriteAllText(Path.Join(testInstance.Path, "Folder2/Strings.resx"), "<strings />");
+
+        new DotnetCommand(Log, "project", "convert", ".")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Should().HaveSubtree("""
+            Program1/
+            Program1/Program1.cs
+            Program1/Program1.csproj
+            Program2/
+            Program2/Program2.cs
+            Program2/Program2.csproj
+            Shared/
+            Shared/Folder1/
+            Shared/Folder2/
+            Shared/Folder2/Strings.resx
+            Shared/Strings.resx
+            """);
     }
 
     [Fact]
@@ -354,6 +820,96 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   <ItemGroup>
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
                   </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    [Fact]
+    public void Directives_Virtual()
+    {
+        VerifyConversion(
+            inputCSharp: """
+                #!/program
+                #:sdk Microsoft.NET.Sdk
+                #:sdk Aspire.Hosting.Sdk 9.1.0
+                #:property TargetFramework net11.0
+                #:package System.CommandLine 2.0.0-beta4.22272.1
+                #:property LangVersion preview
+                Console.WriteLine();
+                """,
+            isVirtualProject: true,
+            excludeCompileItems: ["/test1", "/test2"],
+            expectedProject: $"""
+                <Project>
+
+                  <PropertyGroup>
+                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                    <ArtifactsPath>/artifacts</ArtifactsPath>
+                  </PropertyGroup>
+
+                  <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+                  <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <TargetFramework>net11.0</TargetFramework>
+                    <LangVersion>preview</LangVersion>
+                  </PropertyGroup>
+
+                  <PropertyGroup>
+                    <Features>$(Features);FileBasedProgram</Features>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+                  </ItemGroup>
+
+                  <ItemGroup>
+                    <Compile Remove="/test1" />
+                    <Compile Remove="/test2" />
+                  </ItemGroup>
+
+                  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                  <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                  <!--
+                    Override targets which don't work with project files that are not present on disk.
+                    See https://github.com/NuGet/Home/issues/14148.
+                  -->
+
+                  <Target Name="_FilterRestoreGraphProjectInputItems"
+                          DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                          Returns="@(FilteredRestoreGraphProjectInputItems)">
+                    <ItemGroup>
+                      <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                    </ItemGroup>
+                  </Target>
+
+                  <Target Name="_GetAllRestoreProjectPathItems"
+                          DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                          Returns="@(_RestoreProjectPathItems)">
+                    <ItemGroup>
+                      <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                    </ItemGroup>
+                  </Target>
+
+                  <Target Name="_GenerateRestoreGraph"
+                          DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                          Returns="@(_RestoreGraphEntry)">
+                    <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                  </Target>
 
                 </Project>
 
@@ -723,12 +1279,34 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 """);
     }
 
-    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
+    private static void Convert(
+        string inputCSharp,
+        out string actualProject,
+        out string? actualCSharp,
+        bool force,
+        bool isVirtualProject,
+        ImmutableArray<string> excludeCompileItems)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: force);
+
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportErrors: !isVirtualProject && !force);
+
         var projectWriter = new StringWriter();
-        VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives);
+
+        VirtualProjectBuildingCommand.WriteProjectFile(
+            projectWriter,
+            directives,
+            options: isVirtualProject
+                ? new ProjectWritingOptions.Virtual
+                {
+                    ArtifactsPath = "/artifacts",
+                    ExcludeCompileItems = excludeCompileItems,
+                }
+                : new ProjectWritingOptions.Converted
+                {
+                    SharedDirectoryName = null,
+                });
+
         actualProject = projectWriter.ToString();
         actualCSharp = VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text)?.ToString();
     }
@@ -736,16 +1314,34 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <param name="expectedCSharp">
     /// <see langword="null"/> means the conversion should not touch the C# content.
     /// </param>
-    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false)
+    private static void VerifyConversion(
+        string inputCSharp,
+        string expectedProject,
+        string? expectedCSharp,
+        bool force = false,
+        bool isVirtualProject = false,
+        ImmutableArray<string> excludeCompileItems = default)
     {
-        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force);
+        Convert(
+            inputCSharp,
+            out var actualProject,
+            out var actualCSharp,
+            force: force,
+            isVirtualProject: isVirtualProject,
+            excludeCompileItems: excludeCompileItems);
         actualProject.Should().Be(expectedProject);
         actualCSharp.Should().Be(expectedCSharp);
     }
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        var convert = () => Convert(inputCSharp, out _, out _, force: false);
+        var convert = () => Convert(
+            inputCSharp,
+            out _,
+            out _,
+            force: false,
+            isVirtualProject: false,
+            excludeCompileItems: default);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 }
