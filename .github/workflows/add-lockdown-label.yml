@@ -57,6 +57,8 @@ jobs:
             echo "PRs JSON: $prs"
 
             echo "Filtering PRs targeting release/8* and release/9*"
+            # when the next feature band branch gets created, we'll want to add a filter here for a few months while the feature band previews are ongoing
+            # | select(.baseRefName | test("^release/10.0.2xx") | not)
             prs_targeting_branches=$(echo "$prs" | jq '[.[] | select(.baseRefName | test("^release/[89].*"))]')
             echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
 
