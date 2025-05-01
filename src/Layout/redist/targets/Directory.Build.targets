@@ -10,6 +10,7 @@
 
   <ImportGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
     <Import Project="BundledSdks.targets" />
+    <Import Project="PublishDotnetWatch.targets" />
     <Import Project="BundledDotnetTools.targets" />
     <Import Project="GenerateBundledVersions.targets" />
     <Import Project="GeneratePackagePruneData.targets" />
