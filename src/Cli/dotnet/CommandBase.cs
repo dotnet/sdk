@@ -18,6 +18,8 @@ public abstract class CommandBase
         ShowHelpOrErrorIfAppropriate(parseResult);
     }
 
+    protected CommandBase() { }
+
     protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
     {
         parseResult.ShowHelpOrErrorIfAppropriate();

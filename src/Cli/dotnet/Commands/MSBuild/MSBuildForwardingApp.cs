@@ -10,7 +10,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
-public class MSBuildForwardingApp
+public class MSBuildForwardingApp : CommandBase
 {
     internal const string TelemetrySessionIdEnvironmentVariableName = "DOTNET_CLI_TELEMETRY_SESSIONID";
 
@@ -76,7 +76,7 @@ public class MSBuildForwardingApp
 
     internal string[] GetArgumentTokensToMSBuild() => _forwardingAppWithoutLogging.GetAllArguments();
 
-    public virtual int Execute()
+    public override int Execute()
     {
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit

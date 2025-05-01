@@ -62,6 +62,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
+    <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>
