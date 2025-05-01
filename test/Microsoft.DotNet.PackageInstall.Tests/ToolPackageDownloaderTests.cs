@@ -1013,7 +1013,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
                 var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
-                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, root.Value);
                 uninstaller = new ToolPackageUninstaller(store);
             }
 
