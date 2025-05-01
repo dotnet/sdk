@@ -57,7 +57,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             currentWorkingDirectory: _currentWorkingDirectory);
     }
 
-    protected override async Task<NuGetVersion> DownloadAndExtractPackage(
+    protected override NuGetVersion DownloadAndExtractPackage(
         PackageId packageId,
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
@@ -69,11 +69,10 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
         string folderToDeleteOnFailure = null;
-
-        try
+        return TransactionalAction.Run<NuGetVersion>(() =>
         {
-            var packagePath = await nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
-                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false);
+            var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
+                        includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
 
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
@@ -94,20 +93,17 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
             // Extract the package
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
-            await nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir));
+            nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
 
             return version;
-        }
-        catch
+        }, rollback: () =>
         {
             //  If something fails, don't leave a folder with partial contents (such as a .nupkg but no hash or extracted contents)
             if (folderToDeleteOnFailure != null && Directory.Exists(folderToDeleteOnFailure))
             {
                 Directory.Delete(folderToDeleteOnFailure, true);
             }
-
-            throw;
-        }
+        });
     }
 
     protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
