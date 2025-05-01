@@ -14,3 +14,4 @@ content/LanguageServer/neutral/runtimes/linux-musl-x64/native/libe_sqlite3.so
 content/LanguageServer/neutral/runtimes/alpine-arm64/native/libe_sqlite3.so
 content/LanguageServer/neutral/runtimes/alpine-arm/native/libe_sqlite3.so
 content/LanguageServer/neutral/runtimes/alpine-x64/native/libe_sqlite3.so
+tools/emscripten/helloworld
