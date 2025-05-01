@@ -75,7 +75,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         VerbosityOptions verbosity,
         RestoreActionConfig? restoreActionConfig);
 
-    protected abstract Task<NuGetVersion> DownloadAndExtractPackage(
+    protected abstract NuGetVersion DownloadAndExtractPackage(
         PackageId packageId,
         INuGetPackageDownloader nugetPackageDownloader,
         string packagesRootPath,
@@ -273,7 +273,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
         {
-            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion).GetAwaiter().GetResult();
+            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion);
         }
 
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, "project.assets.json"), _runtimeJsonPath, targetFramework);
@@ -294,7 +294,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
             if (!IsPackageInstalled(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir.Value))
             {
-                DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, resolvedPackage.Version, packageSourceLocation, includeUnlisted: true).GetAwaiter().GetResult();
+                DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, resolvedPackage.Version, packageSourceLocation, includeUnlisted: true);
             }
 
             CreateAssetFile(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
