@@ -110,12 +110,12 @@ public class Program
         }
     }
 
-    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
+    public static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
     {
         return ProcessArgs(args, new TimeSpan(0), telemetryClient);
     }
 
-    internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
+    public static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
     {
         Dictionary<string, double> performanceData = [];
 

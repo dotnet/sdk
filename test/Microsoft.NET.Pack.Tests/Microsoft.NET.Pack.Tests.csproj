@@ -30,7 +30,7 @@
 
     <!-- Use string resources from tasks in order to validate test output. -->
     <EmbeddedResource Include="..\..\src\Tasks\Common\Resources\Strings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.NET.Build.Tasks" />
-    <EmbeddedResource Include="..\..\src\Cli\dotnet\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="..\..\src\Cli\dotnet-shared\CliStrings.resx" LinkBase="Resources" GenerateSource="True" Namespace="Microsoft.DotNet.Cli" />
   </ItemGroup>
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

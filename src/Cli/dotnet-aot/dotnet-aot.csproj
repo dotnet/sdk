@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <PublishAot>true</PublishAot>
+    <SelfContained>true</SelfContained>
+    <!-- Use lib prefix on non-Windows -->
+    <TargetName>dotnet_aot</TargetName>
+    <TargetName Condition="'$(OS)' != 'Windows_NT'">lib$(TargetName)</TargetName>
+    <UseCurrentRuntimeIdentifier>true</UseCurrentRuntimeIdentifier>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../dotnet-shared/dotnet-shared.csproj" />
+  </ItemGroup>
+
+</Project>

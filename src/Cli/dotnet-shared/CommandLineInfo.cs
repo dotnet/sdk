@@ -15,6 +15,11 @@ public class CommandLineInfo
         Reporter.Output.WriteLine(Product.Version);
     }
 
+    public static void PrintVersion(string dotnetDllPath)
+    {
+        Reporter.Output.WriteLine(Product.GetProductVersion(dotnetDllPath));
+    }
+
     public static void PrintInfo()
     {
         DotnetVersionFile versionFile = DotnetFiles.VersionFileObject;
