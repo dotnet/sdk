@@ -15,7 +15,6 @@ internal static class CliConstants
     public const string VSTest = "VSTest";
     public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
 
-    public static readonly string[] ProjectExtensions = [".proj", ".csproj", ".vbproj", ".fsproj"];
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";

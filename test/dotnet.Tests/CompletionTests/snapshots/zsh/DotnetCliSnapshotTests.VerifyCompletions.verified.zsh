@@ -64,7 +64,7 @@ _testhost() {
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
+                        '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
                         && ret=0
                         case $state in
                             (dotnet_dynamic_complete)
@@ -596,7 +596,7 @@ _testhost() {
                                             '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':PACKAGE_NAME -- The package reference to add. This can be in the form of just the package identifier, for example '\''Newtonsoft.Json'\'', or a package identifier and version separated by '\''@'\'', for example '\''Newtonsoft.Json@13.0.3'\'':->dotnet_dynamic_complete' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -813,7 +813,7 @@ _testhost() {
                         '-a=[The target architecture.]:ARCH: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
-                        '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \
+                        '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
                         && ret=0
                         case $state in
                             (dotnet_dynamic_complete)
@@ -1048,8 +1048,18 @@ _testhost() {
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
                                         ;;
                                     (uninstall)
                                         _arguments "${_arguments_options[@]}" : \
@@ -1086,8 +1096,18 @@ _testhost() {
                                             '--all[Update all tools.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
+                                            '::packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
                                             && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
                                         ;;
                                     (list)
                                         _arguments "${_arguments_options[@]}" : \

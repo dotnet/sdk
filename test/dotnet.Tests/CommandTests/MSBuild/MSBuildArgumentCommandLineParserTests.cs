@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
-                BuildCommand.FromArgs(arguments) :
+                ((RestoringCommand)BuildCommand.FromArgs(arguments)) :
                 PublishCommand.FromArgs(arguments);
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;

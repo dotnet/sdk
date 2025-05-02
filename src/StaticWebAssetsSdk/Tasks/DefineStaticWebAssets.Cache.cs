@@ -171,7 +171,13 @@ public partial class DefineStaticWebAssets : Task
 
         private void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
         {
-            var newHashes = new HashSet<string>(inputHashes.Keys);
+            var newHashes = new HashSet<string>(inputHashes.Count);
+            foreach (var kvp in inputHashes)
+            {
+                var hash = kvp.Key;
+                newHashes.Add(hash);
+            }
+
             var oldHashes = InputHashes;
 
             if (newHashes.SetEquals(oldHashes))

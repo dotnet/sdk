@@ -5,6 +5,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TestProgressState(long id, string assembly, string? targetFramework, string? architecture, IStopwatch stopwatch)
 {
+    private readonly Dictionary<string, (int Passed, int Skipped, int Failed, string LastInstanceId)> _testUidToResults = new();
+
     public string Assembly { get; } = assembly;
 
     public string AssemblyName { get; } = Path.GetFileName(assembly)!;
@@ -15,19 +17,15 @@ internal sealed class TestProgressState(long id, string assembly, string? target
 
     public IStopwatch Stopwatch { get; } = stopwatch;
 
-    public List<string> Attachments { get; } = [];
+    public int FailedTests { get; private set; }
 
-    public List<IProgressMessage> Messages { get; } = [];
+    public int PassedTests { get; private set; }
 
-    public int FailedTests { get; internal set; }
+    public int SkippedTests { get; private set; }
 
-    public int PassedTests { get; internal set; }
+    public int TotalTests => PassedTests + SkippedTests + FailedTests;
 
-    public int SkippedTests { get; internal set; }
-
-    public int TotalTests { get; internal set; }
-
-    public int RetriedFailedTests { get; internal set; }
+    public int RetriedFailedTests { get; private set; }
 
     public TestNodeResultsState? TestNodeResultsState { get; internal set; }
 
@@ -38,20 +36,99 @@ internal sealed class TestProgressState(long id, string assembly, string? target
     public long Version { get; internal set; }
 
     public List<(string? DisplayName, string? UID)> DiscoveredTests { get; internal set; } = [];
+
     public int? ExitCode { get; internal set; }
+
     public bool Success { get; internal set; }
 
-    public List<string> Tries { get; } = [];
+    public int TryCount { get; internal set; }
+
     public HashSet<string> FlakyTests { get; } = [];
 
-    internal void AddError(string text)
-        => Messages.Add(new ErrorMessage(text));
-
-    internal void AddWarning(string text)
-        => Messages.Add(new WarningMessage(text));
-
-    internal void ClearAllMessages()
+    public void ReportPassingTest(string testNodeUid, string instanceId)
     {
-        Messages.Clear();
+        if (_testUidToResults.TryGetValue(testNodeUid, out var value))
+        {
+            if (value.LastInstanceId == instanceId)
+            {
+                // We are getting a test result for the same instance id.
+                value.Passed++;
+                _testUidToResults[testNodeUid] = value;
+            }
+            else
+            {
+                // We are getting a test result for a different instance id.
+                // This means that the test was retried.
+                // We discard the results from the previous instance id
+                RetriedFailedTests++;
+                PassedTests -= value.Passed;
+                SkippedTests -= value.Skipped;
+                FailedTests -= value.Failed;
+                _testUidToResults[testNodeUid] = (Passed: 1, Skipped: 0, Failed: 0, LastInstanceId: instanceId);
+            }
+        }
+        else
+        {
+            // This is the first time we see this test node.
+            _testUidToResults.Add(testNodeUid, (Passed: 1, Skipped: 0, Failed: 0, LastInstanceId: instanceId));
+        }
+
+        PassedTests++;
+    }
+
+    public void ReportSkippedTest(string testNodeUid, string instanceId)
+    {
+        if (_testUidToResults.TryGetValue(testNodeUid, out var value))
+        {
+            if (value.LastInstanceId == instanceId)
+            {
+                value.Skipped++;
+                _testUidToResults[testNodeUid] = value;
+            }
+            else
+            {
+                PassedTests -= value.Passed;
+                SkippedTests -= value.Skipped;
+                FailedTests -= value.Failed;
+                _testUidToResults[testNodeUid] = (Passed: 0, Skipped: 1, Failed: 0, LastInstanceId: instanceId);
+            }
+        }
+        else
+        {
+            _testUidToResults.Add(testNodeUid, (Passed: 0, Skipped: 1, Failed: 0, LastInstanceId: instanceId));
+        }
+
+        SkippedTests++;
+    }
+
+    public void ReportFailedTest(string testNodeUid, string instanceId)
+    {
+        if (_testUidToResults.TryGetValue(testNodeUid, out var value))
+        {
+            if (value.LastInstanceId == instanceId)
+            {
+                value.Failed++;
+                _testUidToResults[testNodeUid] = value;
+            }
+            else
+            {
+                PassedTests -= value.Passed;
+                SkippedTests -= value.Skipped;
+                FailedTests -= value.Failed;
+                _testUidToResults[testNodeUid] = (Passed: 0, Skipped: 0, Failed: 1, LastInstanceId: instanceId);
+            }
+        }
+        else
+        {
+            _testUidToResults.Add(testNodeUid, (Passed: 0, Skipped: 0, Failed: 1, LastInstanceId: instanceId));
+        }
+
+        FailedTests++;
+    }
+
+    public void DiscoverTest(string displayName, string uid)
+    {
+        PassedTests++;
+        DiscoveredTests.Add(new(displayName, uid));
     }
 }
