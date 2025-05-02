@@ -37,4 +37,20 @@ internal sealed class DigestUtils
 
         return Convert.ToHexStringLower(hash);
     }
+
+    internal static bool IsValidDigest(string digest)
+    {
+        if (string.IsNullOrEmpty(digest))
+        {
+            return false;
+        }
+
+        if (!digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        string sha = GetShaFromDigest(digest);
+        return sha.Length == SHA256.HashSizeInBytes * 2;
+    }
 }

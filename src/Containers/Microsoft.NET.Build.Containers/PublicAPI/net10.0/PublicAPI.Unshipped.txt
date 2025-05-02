@@ -186,6 +186,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFramewor
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.set -> void
 override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AdditionalLayers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AdditionalLayers.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
