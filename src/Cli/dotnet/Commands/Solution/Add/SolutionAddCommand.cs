@@ -61,6 +61,7 @@ internal class SolutionAddCommand : CommandBase
             return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
         });
 
+        // Add projects to the solution
         AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
         return 0;
     }
@@ -120,7 +121,6 @@ internal class SolutionAddCommand : CommandBase
             SlnFileFactory.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
         }
 
-
         foreach (var projectPath in projectPaths)
         {
             // TODO: Remove this when we have a better way to handle this
@@ -150,11 +150,11 @@ internal class SolutionAddCommand : CommandBase
         }
 
         ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
-        SolutionProjectModel project;
 
-        // Handle guid
         string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
             ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
+
+        SolutionProjectModel project;
 
         try
         {
@@ -196,17 +196,7 @@ internal class SolutionAddCommand : CommandBase
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
 
-        // Get referencedprojects from the project instance
-        //var referencedProjectsFullPaths = projectInstance.EvaluatedItemElements
-        //    .Where(item => item.ItemType == "ProjectReference")
-        //    .Select(item => item.Include)
-        //    .Select(item => Path.GetFullPath(item, Path.GetDirectoryName(fullProjectPath)))
-        //    .ToList();
 
-        //foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
-        //{
-        //    var referencedProjectRelativePath = Path.GetRelativePath(_solutionFileFullPath, referencedProjectFullPath);
-        //}
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
     }

@@ -69,13 +69,10 @@ public static class SlnFileFactory
         }
         try
         {
-            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
-                CliStrings.CouldNotFindSolutionOrDirectory,
-                solutionPath);
-
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath)!;
             return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
         }
-        catch (SolutionException ex)
+        catch (Exception ex)
         {
             throw new GracefulException(
                 CliStrings.InvalidSolutionFormatString,
