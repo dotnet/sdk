@@ -1,6 +1,6 @@
 ﻿Class Library (C#)
 Author: Microsoft
-Description: Share code and logic across different .NET apps with a reusable library. 
+Description: Share code and logic across different .NET apps with a reusable library.
 
 Usage:
   dotnet new classlib [options] [template options]
