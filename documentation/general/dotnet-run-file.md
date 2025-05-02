@@ -77,9 +77,6 @@ because that could require multiple builds (first determine entry points and the
 To avoid parsing all C# files twice (in CLI and in the compiler), the CLI could use the compiler server for parsing so the trees are reused
 (unless the parse options change via the directives), and also [cache](#optimizations) the results to avoid parsing on subsequent runs.
 
-Similarly, during [grow up](#grow-up), we ask Roslyn via MSBuild to give us the set of entry-point files
-(we can also use this to ask user during the conversion whether they want to continue despite compilation errors if there are any).
-
 ## Multiple C# files
 
 Because of the [implicit project file](#implicit-project-file),
