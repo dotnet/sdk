@@ -60,7 +60,7 @@
     Kind: Value,
     SortText: mstest,
     InsertText: mstest,
-    Documentation: A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.
+    Documentation: Use MSTest to run automated browser tests cross-platfor.
   },
   {
     Label: mstest-class,
@@ -74,7 +74,7 @@
     Kind: Value,
     SortText: mstest-playwright,
     InsertText: mstest-playwright,
-    Documentation: A project that contains Playwright tests using MSTest test framework, that can run on .NET on Windows, Linux and MacOS.
+    Documentation: Use Playwright and MSTest to run automated browser tests cross-platform.
   },
   {
     Label: nugetconfig,
@@ -88,14 +88,14 @@
     Kind: Value,
     SortText: nunit,
     InsertText: nunit,
-    Documentation: A project that contains NUnit tests that can run on .NET on Windows, Linux and macOS
+    Documentation: Start testing your .NET code with NUnit, cross-platform
   },
   {
     Label: nunit-playwright,
     Kind: Value,
     SortText: nunit-playwright,
     InsertText: nunit-playwright,
-    Documentation: A project that contains Playwright tests using NUnit test framework, that can run on .NET on Windows, Linux and MacOS.
+    Documentation: Start testing your .NET code with NUnit and Playwright, cross-platform.
   },
   {
     Label: nunit-test,

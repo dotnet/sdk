@@ -5,7 +5,7 @@
   "name": "NUnit 3 Test Project",
   "defaultName": "TestProject1",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project that contains NUnit tests that can run on .NET on Windows, Linux and macOS",
+  "description": "Start testing your .NET code with NUnit, cross-platform",
   "groupIdentity": "NUnit3.DotNetNew.Template",
   "precedence": "12000",
   "identity": "NUnit3.DotNetNew.Template.VisualBasic.10.0",

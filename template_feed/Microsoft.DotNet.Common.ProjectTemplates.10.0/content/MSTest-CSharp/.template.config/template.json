@@ -4,7 +4,7 @@
   "classifications": ["Test", "MSTest", "Desktop", "Web"],
   "name": "MSTest Test Project",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "A project that contains MSTest tests that can run on .NET on Windows, Linux and MacOS.",
+  "description": "Use MSTest to run automated browser tests cross-platfor.",
   "groupIdentity": "Microsoft.Test.MSTest",
   "precedence": "12000",
   "identity": "Microsoft.Test.MSTest.CSharp.10.0",
