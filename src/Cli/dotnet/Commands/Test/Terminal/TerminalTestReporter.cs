@@ -159,30 +159,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         _terminalWithProgress.StartShowingProgress(workerCount);
     }
 
-    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId, string? instanceId)
+    public void AssemblyRunStarted(string assembly, string? targetFramework, string? architecture, string? executionId)
     {
         var assemblyRun = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        assemblyRun.Tries.Add(instanceId);
+        assemblyRun.TryCount++;
 
         // If we fail to parse out the parameter correctly this will enable retry on re-run of the assembly within the same execution.
         // Not good enough for general use, because we want to show (try 1) even on the first try, but this will at
         // least show (try 2) etc. So user is still aware there is retry going on, and counts of tests won't break.
-        _isRetry |= assemblyRun.Tries.Count > 1;
-
-        if (_isRetry)
-        {
-            // When we are retrying the new assembly run should ignore all previously failed tests and
-            // clear all errors. We restarted the run and will retry all failed tests.
-            //
-            // In case of folded dynamic data tests we do not know how many tests we will get in each run,
-            // if more or less, or the same amount as before,and we also will rerun tests that passed previously
-            // because we are unable to run just a single test from that dynamic data source.
-            // This will cause the total number of tests to differ between runs, and there is nothing we can do about it.
-            assemblyRun.TotalTests -= assemblyRun.FailedTests;
-            assemblyRun.RetriedFailedTests += assemblyRun.FailedTests;
-            assemblyRun.FailedTests = 0;
-            assemblyRun.ClearAllMessages();
-        }
+        _isRetry |= assemblyRun.TryCount > 1;
 
         if (_options.ShowAssembly && _options.ShowAssemblyStartAndComplete)
         {
@@ -191,7 +176,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
                 if (_isRetry)
                 {
                     terminal.SetColor(TerminalColor.DarkGray);
-                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.Tries.Count)}) ");
+                    terminal.Append($"({string.Format(CliCommandStrings.Try, assemblyRun.TryCount)}) ");
                     terminal.ResetColor();
                 }
 
@@ -480,7 +465,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         string? errorOutput)
     {
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
-        var attempt = asm.Tries.Count;
+        var attempt = asm.TryCount;
 
         if (_options.ShowActiveTests)
         {
@@ -493,20 +478,17 @@ internal sealed partial class TerminalTestReporter : IDisposable
             case TestOutcome.Timeout:
             case TestOutcome.Canceled:
             case TestOutcome.Fail:
-                asm.FailedTests++;
-                asm.TotalTests++;
+                asm.ReportFailedTest(testNodeUid, instanceId);
                 break;
             case TestOutcome.Passed:
-                asm.PassedTests++;
-                asm.TotalTests++;
+                asm.ReportPassingTest(testNodeUid, instanceId);
                 break;
             case TestOutcome.Skipped:
-                asm.SkippedTests++;
-                asm.TotalTests++;
+                asm.ReportSkippedTest(testNodeUid, instanceId);
                 break;
         }
 
-        if (_isRetry && asm.Tries.Count > 1 && outcome == TestOutcome.Passed)
+        if (_isRetry && asm.TryCount > 1 && outcome == TestOutcome.Passed)
         {
             // This is a retry of a test, and the test succeeded, so these tests are potentially flaky.
             // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
@@ -904,50 +886,6 @@ internal sealed partial class TerminalTestReporter : IDisposable
         });
     }
 
-    internal void WriteErrorMessage(string assembly, string? targetFramework, string? architecture, string? executionId, string text, int? padding)
-    {
-        TestProgressState asm = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        asm.AddError(text);
-
-        _terminalWithProgress.WriteToTerminal(terminal =>
-        {
-            terminal.SetColor(TerminalColor.Red);
-            if (padding == null)
-            {
-                terminal.AppendLine(text);
-            }
-            else
-            {
-                AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-            }
-
-            terminal.ResetColor();
-        });
-    }
-
-    internal void WriteWarningMessage(string assembly, string? targetFramework, string? architecture, string? executionId, string text, int? padding)
-    {
-        TestProgressState asm = GetOrAddAssemblyRun(assembly, targetFramework, architecture, executionId);
-        asm.AddWarning(text);
-        _terminalWithProgress.WriteToTerminal(terminal =>
-        {
-            terminal.SetColor(TerminalColor.Yellow);
-            if (padding == null)
-            {
-                terminal.AppendLine(text);
-            }
-            else
-            {
-                AppendIndentedLine(terminal, text, new string(' ', padding.Value));
-            }
-
-            terminal.ResetColor();
-        });
-    }
-
-    internal void WriteErrorMessage(string assembly, string? targetFramework, string? architecture, string? executionId, Exception exception)
-        => WriteErrorMessage(assembly, targetFramework, architecture, executionId, exception.ToString(), padding: null);
-
     public void WriteMessage(string text, SystemConsoleColor? color = null, int? padding = null)
     {
         if (color != null)
@@ -994,9 +932,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         TestProgressState asm = _assemblies[$"{assembly}|{targetFramework}|{architecture}|{executionId}"];
 
         // TODO: add mode for discovered tests to the progress bar - jajares
-        asm.PassedTests++;
-        asm.TotalTests++;
-        asm.DiscoveredTests.Add(new(displayName, uid));
+        asm.DiscoverTest(displayName, uid);
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
     }
 
