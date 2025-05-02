@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"❌ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
@@ -138,7 +138,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
 
             App.AssertOutputContains("⌚ Restart is needed to apply the changes");
-            App.AssertOutputContains($"⚠ [auto-restart] {programPath}(16,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(16,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.AssertOutputContains("<Updated>");

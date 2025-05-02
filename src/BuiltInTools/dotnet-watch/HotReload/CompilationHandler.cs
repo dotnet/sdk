@@ -407,7 +407,7 @@ namespace Microsoft.DotNet.Watch
                         continue;
                     }
 
-                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic));
+                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
                 }
             }
 
@@ -418,21 +418,20 @@ namespace Microsoft.DotNet.Watch
                 var projectsRestartedDueToRudeEdits = updates.ProjectsToRestart
                     .Where(e => runningProjectInfos.TryGetValue(e.Key, out var info) && info.RestartWhenChangesHaveNoEffect)
                     .SelectMany(e => e.Value)
-                    .ToImmutableHashSet();
+                    .ToHashSet();
+
+                var projectsRebuiltDueToRudeEdits = updates.ProjectsToRebuild.ToHashSet();
 
                 foreach (var (projectId, diagnostics) in updates.RudeEdits)
                 {
                     foreach (var diagnostic in diagnostics)
                     {
-                        var descriptor = GetMessageDescriptor(diagnostic);
-                        var prefix = "";
+                        var prefix =
+                            projectsRestartedDueToRudeEdits.Contains(projectId) ? "[auto-restart] " :
+                            projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
+                            "";
 
-                        if (projectsRestartedDueToRudeEdits.Contains(projectId))
-                        {
-                            descriptor = descriptor with { Severity = MessageSeverity.Verbose };
-                            prefix = "[auto-restart] ";
-                        }
-
+                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
                         ReportDiagnostic(diagnostic, descriptor, prefix);
                     }
                 }
@@ -451,13 +450,26 @@ namespace Microsoft.DotNet.Watch
 
             // Use the default severity of the diagnostic as it conveys impact on Hot Reload
             // (ignore warnings as errors and other severity configuration).
-            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic)
-                => diagnostic.DefaultSeverity switch
+            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
+            {
+                if (verbose)
+                {
+                    return MessageDescriptor.ApplyUpdate_Verbose;
+                }
+
+                if (diagnostic.Id == "ENC0118")
+                {
+                    // Changing '<entry-point>' might not have any effect until the application is restarted.
+                    return MessageDescriptor.ApplyUpdate_ChangingEntryPoint;
+                }
+
+                return diagnostic.DefaultSeverity switch
                 {
                     DiagnosticSeverity.Error => MessageDescriptor.ApplyUpdate_Error,
                     DiagnosticSeverity.Warning => MessageDescriptor.ApplyUpdate_Warning,
                     _ => MessageDescriptor.ApplyUpdate_Verbose,
                 };
+            }
         }
 
         public async ValueTask<bool> HandleStaticAssetChangesAsync(IReadOnlyList<ChangedFile> files, ProjectNodeMap projectMap, CancellationToken cancellationToken)
