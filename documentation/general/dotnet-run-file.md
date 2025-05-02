@@ -93,7 +93,7 @@ and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` ru
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
 We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
 
-Internally, the SDK CLI detects entry points by parsing all C# files with default parsing options (in particular, no `<DefineConstants>`)
+Internally, the SDK CLI detects entry points by parsing all `.cs` files in the directory tree of the entry point file with default parsing options (in particular, no `<DefineConstants>`)
 and checking which ones contain top-level statements (`Main` methods are not supported for now as that would require full semantic analysis, not just parsing).
 Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [app directive collection](#directives-for-project-metadata).
 This means the CLI might consider a file to be an entry point which later the compiler doesn't
@@ -195,6 +195,7 @@ Apart from keeping the source directory clean, such artifact isolation also avoi
 
 Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
 removes current user's `dotnet run` build outputs that haven't been used in some time.
+They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
 We could also consider [integrating with `dotnet clean`](#other-commands) for an explicit cleanup gesture.
 
 ## Directives for project metadata
@@ -233,12 +234,11 @@ We do not limit these directives to appear only in entry point files because it 
 - which also makes it possible to share it independently or symlink it to multiple script folders,
 - and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We could consider deduplicating `#:` directives
-(e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
-so for example separate "self-contained" utilities could reference overlapping sets of packages
+We disallow duplicate `#:` directives to allow us design some deduplication mechanism in the future.
+Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
+Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
 even if they end up in the same compilation.
-But for starters we can translate each directive into the corresponding project element
-and let the existing MSBuild/NuGet logic deal with duplicates.
+For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
 
 It is valid to have a `#:package` directive without a version.
 That's useful when central package management (CPM) is used.
