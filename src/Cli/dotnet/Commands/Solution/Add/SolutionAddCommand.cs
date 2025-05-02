@@ -52,67 +52,17 @@ internal class SolutionAddCommand : CommandBase
             throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToAdd);
         }
 
-        try
+        // Get project paths from the command line arguments
+        PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
+
+        IEnumerable<string> fullProjectPaths = _projects.Select(project =>
         {
-            PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
-            IEnumerable<string> fullProjectPaths = _projects.Select(project =>
-            {
-                var fullPath = Path.GetFullPath(project);
-                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-            });
-            AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
-            return 0;
-        }
-        catch (Exception ex) when (ex is not GracefulException)
-        {
-            {
-                if (ex is SolutionException || ex.InnerException is SolutionException)
-                {
-                    throw new GracefulException(CliStrings.InvalidSolutionFormatString, _solutionFileFullPath, ex.Message);
-                }
-                throw new GracefulException(ex.Message, ex);
-            }
-        }
-    }
+            var fullPath = Path.GetFullPath(project);
+            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+        });
 
-    private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
-    {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
-        ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
-
-        // set UTF8 BOM encoding for .sln
-        if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
-        {
-            solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
-            {
-                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
-            });
-
-            // Set default configurations and platforms for sln file
-            SlnFileFactory.DefaultPlatforms.ToList().ForEach(solution.AddPlatform);
-            SlnFileFactory.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
-        }
-
-
-        foreach (var projectPath in projectPaths)
-        {
-            string relativePath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), projectPath);
-
-            try
-            {
-                AddProject(solution, relativePath, projectPath, serializer);
-            }
-            catch (InvalidProjectFileException ex)
-            {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
-            }
-            catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(relativePath) is not null)
-            {
-                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, relativePath);
-            }
-        }
-
-        await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
+        AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        return 0;
     }
 
     private SolutionFolderModel? GenerateIntermediateSolutionFoldersForProjectPath(SolutionModel solution, string relativeProjectPath)
@@ -152,30 +102,73 @@ internal class SolutionAddCommand : CommandBase
             : solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath));
     }
 
-    private void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullProjectPath, ISolutionSerializer serializer = null)
+    private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
+        ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
+
+        // set UTF8 BOM encoding for .sln
+        if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
+        {
+            solution.SerializerExtension = v12Serializer.CreateModelExtension(new()
+            {
+                Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
+            });
+
+            // Set default configurations and platforms for sln file
+            SlnFileFactory.DefaultPlatforms.ToList().ForEach(solution.AddPlatform);
+            SlnFileFactory.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
+        }
+
+
+        foreach (var projectPath in projectPaths)
+        {
+            // TODO: Remove this when we have a better way to handle this
+            string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), projectPath);
+            // Generate the solution folder path based on the project path
+            SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
+            AddProject(solution, projectPath, solutionFolder, serializer);
+        }
+
+        await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
+    }
+
+    private void AddProject(SolutionModel solution, string fullProjectPath, SolutionFolderModel solutionFolder, ISolutionSerializer serializer = null)
+    {
+        string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
+
         // Open project instance to see if it is a valid project
-        ProjectRootElement projectRootElement = ProjectRootElement.Open(fullProjectPath);
+        ProjectRootElement projectRootElement;
+        try
+        {
+            projectRootElement = ProjectRootElement.Open(fullProjectPath);
+        }
+        catch (InvalidProjectFileException ex)
+        {
+            Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, fullProjectPath, ex.Message));
+            return;
+        }
+
         ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
         SolutionProjectModel project;
 
-        // Generate the solution folder path based on the project path
-        SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
+        // Handle guid
+        string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
+            ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
 
         try
         {
-            project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
+            project = solution.AddProject(solutionRelativeProjectPath, projectTypeGuid, solutionFolder);
         }
         catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.InvalidProjectTypeReference)
         {
-            // If guid is not identified by vs-solutionpersistence, check in project element itself
-            var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
-            if (string.IsNullOrEmpty(guid))
-            {
-                Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullProjectPath);
-                return;
-            }
-            project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
+            Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullProjectPath);
+            return;
+        }
+        catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
+        {
+            Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            return;
         }
 
         // Add settings based on existing project instance
@@ -202,6 +195,18 @@ internal class SolutionAddCommand : CommandBase
                 buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
+
+        // Get referencedprojects from the project instance
+        //var referencedProjectsFullPaths = projectInstance.EvaluatedItemElements
+        //    .Where(item => item.ItemType == "ProjectReference")
+        //    .Select(item => item.Include)
+        //    .Select(item => Path.GetFullPath(item, Path.GetDirectoryName(fullProjectPath)))
+        //    .ToList();
+
+        //foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
+        //{
+        //    var referencedProjectRelativePath = Path.GetRelativePath(_solutionFileFullPath, referencedProjectFullPath);
+        //}
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
     }

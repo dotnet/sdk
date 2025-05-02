@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence;
@@ -66,11 +67,20 @@ public static class SlnFileFactory
         {
             return CreateFromFilteredSolutionFile(solutionPath);
         }
-        ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
+        try
+        {
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(solutionPath) ?? throw new GracefulException(
                 CliStrings.CouldNotFindSolutionOrDirectory,
                 solutionPath);
 
-        return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
+            return serializer.OpenAsync(solutionPath, CancellationToken.None).Result;
+        }
+        catch (SolutionException ex)
+        {
+            throw new GracefulException(
+                CliStrings.InvalidSolutionFormatString,
+                solutionPath, ex.Message);
+        }
     }
 
     public static SolutionModel CreateFromFilteredSolutionFile(string filteredSolutionPath)
