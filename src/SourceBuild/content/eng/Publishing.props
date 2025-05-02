@@ -60,6 +60,7 @@
         <IsShipping Condition="'%(ProducedPackage.NonShipping)' == 'true'">false</IsShipping>
         <Kind>Package</Kind>
         <PackageId>%(Identity)</PackageId>
+        <ManifestArtifactData Condition="'%(ProducedPackage.DotNetReleaseShipping)' != ''">DotNetReleaseShipping=%(ProducedPackage.DotNetReleaseShipping)</ManifestArtifactData>
       </ProducedPackage>
       <ProducedPackage>
         <ShippingFolder Condition="'%(ProducedPackage.NonShipping)' != 'true'">Shipping</ShippingFolder>
@@ -76,6 +77,7 @@
       <Artifact Include="@(ProducedAsset->'$(ArtifactsAssetsDir)%(Identity)')">
         <Kind>Blob</Kind>
         <RelativeBlobPath>%(ProducedAsset.Identity)</RelativeBlobPath>
+        <ManifestArtifactData Condition="'%(ProducedAsset.DotNetReleaseShipping)' != ''">DotNetReleaseShipping=%(ProducedAsset.DotNetReleaseShipping)</ManifestArtifactData>
       </Artifact>
     </ItemGroup>
 
