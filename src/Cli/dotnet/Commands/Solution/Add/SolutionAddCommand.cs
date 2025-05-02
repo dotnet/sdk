@@ -123,17 +123,13 @@ internal class SolutionAddCommand : CommandBase
 
         foreach (var projectPath in projectPaths)
         {
-            // TODO: Remove this when we have a better way to handle this
-            string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), projectPath);
-            // Generate the solution folder path based on the project path
-            SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
-            AddProject(solution, projectPath, solutionFolder, serializer);
+            AddProject(solution, projectPath, serializer);
         }
 
         await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string fullProjectPath, SolutionFolderModel solutionFolder, ISolutionSerializer serializer = null)
+    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null)
     {
         string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
 
@@ -153,6 +149,9 @@ internal class SolutionAddCommand : CommandBase
 
         string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
             ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
+
+        // Generate the solution folder path based on the project path
+        SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
 
         SolutionProjectModel project;
 
@@ -195,8 +194,6 @@ internal class SolutionAddCommand : CommandBase
                 buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
-
-
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
     }
