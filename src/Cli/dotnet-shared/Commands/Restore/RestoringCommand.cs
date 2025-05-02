@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public class RestoringCommand : MSBuildForwardingApp
 {
-    public RestoreCommand SeparateRestoreCommand { get; }
+    public MSBuildForwardingApp SeparateRestoreCommand { get; }
 
     private readonly bool AdvertiseWorkloadUpdates;
 
@@ -49,7 +49,7 @@ public class RestoringCommand : MSBuildForwardingApp
         return Prepend("-restore", arguments);
     }
 
-    private static RestoreCommand GetSeparateRestoreCommand(
+    private static MSBuildForwardingApp GetSeparateRestoreCommand(
         IEnumerable<string> arguments,
         bool noRestore,
         string msbuildPath)
@@ -63,7 +63,7 @@ public class RestoringCommand : MSBuildForwardingApp
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
         restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
 
-        return new RestoreCommand(restoreArguments, msbuildPath);
+        return RestoreCommand.CreateForwarding(restoreArguments, msbuildPath);
     }
 
     private static IEnumerable<string> Prepend(string argument, IEnumerable<string> arguments)
