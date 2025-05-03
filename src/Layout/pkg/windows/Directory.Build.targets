@@ -1,0 +1,14 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <SdkPlatformBrandName>$(SdkBrandName) ($(InstallerPlatform))</SdkPlatformBrandName>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <!-- Example: Microsoft .NET SDK 10.0.100 -->
+    <DefineConstants>$(DefineConstants);SdkBrandName=$(SdkBrandName)</DefineConstants>
+    <!-- Example: Microsoft .NET SDK 10.0.100-->
+    <DefineConstants>$(DefineConstants);SdkPlatformBrandName=$(SdkPlatformBrandName)</DefineConstants>
+  </PropertyGroup>
+</Project>

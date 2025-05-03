@@ -1,0 +1,22 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
+
+  <PropertyGroup>
+    <!-- Currently, WiX only supports 'full' for the -pdbType option and affects both bundle and package projects. -->
+    <DebugType>full</DebugType>
+    <Platform>$(TargetArchitecture)</Platform>
+    <PlatformName>$(TargetArchitecture)</PlatformName>
+    <InstallerPlatform>$(TargetArchitecture)</InstallerPlatform>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);SdkFeatureBandVersion=$(CliProductBandVersion)00</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductLanguage=1033</DefineConstants>
+    <DefineConstants>$(DefineConstants);Manufacturer="Microsoft Corporation"</DefineConstants>
+
+    <!-- Technically we don't support .NET on any version of Windows that where the version of Windows Installer is less than 5.0 -->
+    <DefineConstants Condition="'$(InstallerPlatform)' != 'arm64'">$(DefineConstants);InstallerVersion=200</DefineConstants>
+    <DefineConstants Condition="'$(InstallerPlatform)' == 'arm64'">$(DefineConstants);InstallerVersion=500</DefineConstants>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,8 @@
+<Project>
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
+  <Import Project="$(ArtifactsDir)Directory.Wix.targets"/>
+
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+  </PropertyGroup>
+</Project>
