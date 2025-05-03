@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.Cli
 
         public static readonly CliOption<bool> AllowPackageDowngradeOption = ToolInstallCommandParser.AllowPackageDowngradeOption;
 
+        public static readonly CliOption<bool> UpdateSkipPreReleaseOption = ToolAppliedOption.UpdateSkipPreReleaseOption;
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -37,6 +39,7 @@ namespace Microsoft.DotNet.Cli
             ToolInstallCommandParser.AddCommandOptions(command);
             command.Options.Add(AllowPackageDowngradeOption);
             command.Options.Add(UpdateAllOption);
+            command.Options.Add(UpdateSkipPreReleaseOption);
 
             command.SetAction((parseResult) => new ToolUpdateCommand(parseResult).Execute());
 

@@ -19,6 +19,11 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription
         };
 
+        public static CliOption<bool> UpdateSkipPreReleaseOption = new("--prerelease-skip")
+        {
+            Description = "TODO: Update description"
+        };
+
         public static readonly CliOption<string> VersionOption
             = ToolInstallCommandParser.VersionOption
               ?? new("--version"); // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
@@ -33,6 +38,15 @@ namespace Microsoft.DotNet.Tools.Tool.Common
             HelpName = Install.LocalizableStrings.ManifestPathOptionName,
             Arity = ArgumentArity.ZeroOrOne
         };
+
+        internal static void EnsureUpdateSkipPreReleaseOptionSetWithUpdateAllOption(ParseResult parseResult, string message)
+        {
+            if (parseResult.GetResult(UpdateSkipPreReleaseOption) is not null &&
+                parseResult.GetResult(UpdateAllOption) is null)
+            {
+                throw new GracefulException(message);
+            }
+        }
 
         internal static void EnsureNoConflictGlobalLocalToolPathOption(
             ParseResult parseResult,
