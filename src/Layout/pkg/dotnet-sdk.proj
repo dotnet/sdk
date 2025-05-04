@@ -26,15 +26,13 @@
     -->
     <InstallerRuntimeIdentifiers>linux-$(TargetArchitecture)</InstallerRuntimeIdentifiers>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- The PublishToDisk target which depends on ResolveProjectReferences is invoked with OutputPath as an global property
+         which would flow to redist.csproj or sdk-tasks.csproj. -->
+    <_GlobalPropertiesToRemoveFromProjectReferences>$(_GlobalPropertiesToRemoveFromProjectReferences);OutputPath</_GlobalPropertiesToRemoveFromProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- The PublishToDisk target which depends on ResolveProjectReferences is invoked with OutputPath as an global property
-         which would flow to redist.csproj. -->
-    <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" GlobalPropertiesToRemove="OutputPath" />
-  </ItemGroup>
-
-  <ItemGroup>
+    <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
