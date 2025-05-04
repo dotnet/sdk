@@ -117,8 +117,15 @@ internal class SolutionAddCommand : CommandBase
             });
 
             // Set default configurations and platforms for sln file
-            SlnFileFactory.DefaultPlatforms.ToList().ForEach(solution.AddPlatform);
-            SlnFileFactory.DefaultBuildTypes.ToList().ForEach(solution.AddBuildType);
+            foreach (var platform in SlnFileFactory.DefaultPlatforms)
+            {
+                solution.AddConfiguration(platform);
+            }
+            
+            foreach (var buildType in SlnFileFactory.DefaultBuildTypes)
+            {
+                solution.AddConfiguration(buildType);
+            }
         }
 
         foreach (var projectPath in projectPaths)
