@@ -30,4 +30,4 @@ while (true)
     await Task.Delay(1000);
 }
 
-class C { }
+class C { /* member placeholder */ }
