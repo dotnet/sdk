@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 
@@ -808,10 +807,14 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Changed");
     }
 
-    [Fact, SkipOnPlatform(TestPlatforms.Windows, reason: "Linux permissions not available on Windows")]
-    [UnsupportedOSPlatform("windows")]
+    [Fact]
     public void ArtifactsDirectory_Permissions()
     {
+        if (OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
