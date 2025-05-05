@@ -364,7 +364,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     private void MarkBuildStart()
     {
         string directory = GetArtifactsPath();
-        Directory.CreateDirectory(directory);
+
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(directory);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            const UnixFileMode mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
+            Directory.CreateDirectory(directory, mode);
+
+            // The directory might have been created by someone else, set its permissions again to be sure.
+            new DirectoryInfo(directory).UnixFileMode = mode;
+        }
+
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
