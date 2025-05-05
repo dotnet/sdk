@@ -20,7 +20,7 @@ internal class SolutionAddCommand : CommandBase
     private readonly IReadOnlyCollection<string> _projects;
     private readonly string? _solutionFolderPath;
     private string _solutionFileFullPath = string.Empty;
-    private bool _addReferencedProjects;
+    private bool _includeReferences;
 
     private static string GetSolutionFolderPathWithForwardSlashes(string path)
     {
@@ -42,7 +42,7 @@ internal class SolutionAddCommand : CommandBase
         _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
-        _addReferencedProjects = parseResult.GetValue(SolutionAddCommandParser.AddReferencedProjectsOption);
+        _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
@@ -213,7 +213,7 @@ internal class SolutionAddCommand : CommandBase
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
 
-        if (_addReferencedProjects)
+        if (_includeReferences)
         {
             foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
             {

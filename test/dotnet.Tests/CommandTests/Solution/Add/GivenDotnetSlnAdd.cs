@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.SolutionPersistence.Serializer;
 using Microsoft.VisualStudio.SolutionPersistence;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using Microsoft.DotNet.Cli.Commands;
+using System.Threading.Tasks;
 
 namespace Microsoft.DotNet.Cli.Sln.Add.Tests
 {
@@ -1154,6 +1155,28 @@ Options:
             solution.SolutionFolders.Count.Should().Be(0);
         }
 
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
+        public async Task WhenSolutionIsPassedAProjectWithReferenceItAddsOtherProject(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("SlnFileWithReferencedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
+                .WithSource()
+                .Path;
+            var projectToAdd = Path.Combine("A", "A.csproj");
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(Path.Join(projectDirectory))
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
+            cmd.Should().Pass();
+            // Should have two projects
+            ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, $"App{solutionExtension}"));
+            SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
+            solution.SolutionProjects.Count.Should().Be(2);
+        }
+
         private string GetExpectedSlnContents(
             string slnPath,
             string slnTemplateName,
@@ -1237,6 +1260,8 @@ Options:
         {
             VerifySuggestionAndUsage(solutionCommand, "--solution-folder", solutionExtension);
         }
+
+
         private void VerifySuggestionAndUsage(string solutionCommand, string arguments, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager

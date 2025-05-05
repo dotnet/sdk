@@ -25,7 +25,7 @@ public static class SolutionAddCommandParser
         Description = CliCommandStrings.AddProjectSolutionFolderArgumentDescription
     };
 
-    public static readonly Option<bool> AddReferencedProjectsOption = new("--include-references")
+    public static readonly Option<bool> IncludeReferencesOption = new("--include-references")
     {
         Description = CliCommandStrings.SolutionAddReferencedProjectsOptionDescription,
         DefaultValueFactory = (_) => true,
@@ -45,7 +45,7 @@ public static class SolutionAddCommandParser
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(InRootOption);
         command.Options.Add(SolutionFolderOption);
-        command.Options.Add(AddReferencedProjectsOption);
+        command.Options.Add(IncludeReferencesOption);
 
         command.SetAction((parseResult) => new SolutionAddCommand(parseResult).Execute());
 
