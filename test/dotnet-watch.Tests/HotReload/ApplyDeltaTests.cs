@@ -120,8 +120,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                         project.Root.Descendants()
                             .First(e => e.Name.LocalName == "PropertyGroup")
                             .Add(XElement.Parse("""
-                            <HotReloadAutoRestart>true</HotReloadAutoRestart>
-                            """));
+                                <HotReloadAutoRestart>true</HotReloadAutoRestart>
+                                """));
                     });
             }
 
