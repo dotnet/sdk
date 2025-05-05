@@ -1156,10 +1156,10 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln", ".sln", "")]
-        [InlineData("solution", ".sln", "")]
-        [InlineData("sln", ".slnx", "")]
-        [InlineData("solution", ".slnx", "")]
+        [InlineData("sln", ".sln", "--include-references=true")]
+        [InlineData("solution", ".sln", "--include-references=true")]
+        [InlineData("sln", ".slnx", "--include-references=true")]
+        [InlineData("solution", ".slnx", "--include-references=true")]
         [InlineData("sln", ".sln", "--include-references=false")]
         [InlineData("solution", ".sln", "--include-references=false")]
         [InlineData("sln", ".slnx", "--include-references=false")]
