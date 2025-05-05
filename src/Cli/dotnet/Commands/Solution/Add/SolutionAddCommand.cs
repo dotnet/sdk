@@ -119,12 +119,12 @@ internal class SolutionAddCommand : CommandBase
             // Set default configurations and platforms for sln file
             foreach (var platform in SlnFileFactory.DefaultPlatforms)
             {
-                solution.AddConfiguration(platform);
+                solution.AddPlatform(platform);
             }
-            
+
             foreach (var buildType in SlnFileFactory.DefaultBuildTypes)
             {
-                solution.AddConfiguration(buildType);
+                solution.AddBuildType(buildType);
             }
         }
 
