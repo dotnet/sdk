@@ -1156,11 +1156,15 @@ Options:
         }
 
         [Theory]
-        [InlineData("sln", ".sln")]
-        [InlineData("solution", ".sln")]
-        [InlineData("sln", ".slnx")]
-        [InlineData("solution", ".slnx")]
-        public async Task WhenSolutionIsPassedAProjectWithReferenceItAddsOtherProject(string solutionCommand, string solutionExtension)
+        [InlineData("sln", ".sln", "")]
+        [InlineData("solution", ".sln", "")]
+        [InlineData("sln", ".slnx", "")]
+        [InlineData("solution", ".slnx", "")]
+        [InlineData("sln", ".sln", "--include-references=false")]
+        [InlineData("solution", ".sln", "--include-references=false")]
+        [InlineData("sln", ".slnx", "--include-references=false")]
+        [InlineData("solution", ".slnx", "--include-references=false")]
+        public async Task WhenSolutionIsPassedAProjectWithReferenceItAddsOtherProjectUnlessSpecified(string solutionCommand, string solutionExtension, string option)
         {
             var projectDirectory = _testAssetsManager
                 .CopyTestAsset("SlnFileWithReferencedProjects", identifier: $"GivenDotnetSlnAdd-{solutionCommand}")
@@ -1169,12 +1173,20 @@ Options:
             var projectToAdd = Path.Combine("A", "A.csproj");
             var cmd = new DotnetCommand(Log)
                 .WithWorkingDirectory(Path.Join(projectDirectory))
-                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd);
+                .Execute(solutionCommand, $"App{solutionExtension}", "add", projectToAdd, option);
             cmd.Should().Pass();
             // Should have two projects
             ISolutionSerializer serializer = SolutionSerializers.GetSerializerByMoniker(Path.Join(projectDirectory, $"App{solutionExtension}"));
             SolutionModel solution = await serializer.OpenAsync(Path.Join(projectDirectory, $"App{solutionExtension}"), CancellationToken.None);
-            solution.SolutionProjects.Count.Should().Be(2);
+
+            if (option.Equals("--include-references=false")) // Option is true by default
+            {
+                solution.SolutionProjects.Count.Should().Be(1);
+            }
+            else
+            {
+                solution.SolutionProjects.Count.Should().Be(2);
+            }
         }
 
         private string GetExpectedSlnContents(
