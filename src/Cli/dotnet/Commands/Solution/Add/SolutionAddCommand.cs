@@ -204,14 +204,12 @@ internal class SolutionAddCommand : CommandBase
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
 
+        Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
+
         // Get referencedprojects from the project instance
         var referencedProjectsFullPaths = projectInstance.EvaluatedItemElements
-            .Where(item => item.ItemType == "ProjectReference")
-            .Select(item => item.Include)
-            .Select(item => Path.GetFullPath(item, Path.GetDirectoryName(fullProjectPath)))
-            .ToList();
-
-        Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
+            .Where(item => item.ItemType.Equals("ProjectReference"))
+            .Select(item => Path.GetFullPath(item.Include, Path.GetDirectoryName(fullProjectPath)));
 
         if (_includeReferences)
         {
