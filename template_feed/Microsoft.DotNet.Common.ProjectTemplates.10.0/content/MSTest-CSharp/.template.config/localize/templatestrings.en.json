@@ -1,7 +1,7 @@
 {
   "author": "Microsoft",
   "name": "MSTest Test Project",
-  "description": "Use MSTest to run automated browser tests cross-platfor.",
+  "description": "Use MSTest to run automated tests cross-platform",
   "symbols/TargetFrameworkOverride/description": "Overrides the target framework",
   "symbols/TargetFrameworkOverride/displayName": "Target framework override",
   "symbols/Framework/description": "The target framework for the project.",

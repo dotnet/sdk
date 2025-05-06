@@ -18,7 +18,7 @@
     Kind: Value,
     SortText: classlib,
     InsertText: classlib,
-    Documentation: Share code and logic across different .NET apps with a reusable library.
+    Documentation: Share code and logic across different .NET apps with a reusable library
   },
   {
     Label: console,
@@ -60,7 +60,7 @@
     Kind: Value,
     SortText: mstest,
     InsertText: mstest,
-    Documentation: Use MSTest to run automated browser tests cross-platfor.
+    Documentation: Use MSTest to run automated tests cross-platform
   },
   {
     Label: mstest-class,

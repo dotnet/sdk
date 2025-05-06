@@ -7,7 +7,7 @@
   ],
   "name": "Class Library",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "Share code and logic across different .NET apps with a reusable library. ",
+  "description": "Share code and logic across different .NET apps with a reusable library",
   "groupIdentity": "Microsoft.Common.Library",
   "precedence": "12000",
   "identity": "Microsoft.Common.Library.CSharp.10.0",

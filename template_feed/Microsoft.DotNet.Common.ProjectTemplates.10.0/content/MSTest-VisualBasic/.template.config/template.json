@@ -4,7 +4,7 @@
   "classifications": ["Test", "MSTest", "Desktop", "Web"],
   "name": "MSTest Test Project",
   "generatorVersions": "[1.0.0.0-*)",
-  "description": "Use MSTest to run automated browser tests cross-platfor.",
+  "description": "Use MSTest to run automated tests cross-platform",
   "groupIdentity": "Microsoft.Test.MSTest",
   "precedence": "12000",
   "identity": "Microsoft.Test.MSTest.VisualBasic.10.0",
