@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#pragma warning disable CS0618 // TODO: https://github.com/dotnet/sdk/pull/48752
-#pragma warning disable CS0612 // TODO: https://github.com/dotnet/sdk/pull/48752
-
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Graph;
@@ -18,7 +15,7 @@ namespace Microsoft.DotNet.Watch
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
         public readonly EnvironmentOptions EnvironmentOptions;
-
+        private readonly GlobalOptions _options;
         private readonly IReporter _reporter;
         private readonly WatchHotReloadService _hotReloadService;
 
@@ -44,10 +41,11 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, EnvironmentOptions environmentOptions, CancellationToken shutdownCancellationToken)
+        public CompilationHandler(IReporter reporter, EnvironmentOptions environmentOptions, GlobalOptions options, CancellationToken shutdownCancellationToken)
         {
             _reporter = reporter;
             EnvironmentOptions = environmentOptions;
+            _options = options;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
             _shutdownCancellationToken = shutdownCancellationToken;
@@ -259,40 +257,24 @@ namespace Microsoft.DotNet.Watch
             var currentSolution = Workspace.CurrentSolution;
             var runningProjects = _runningProjects;
 
-            var runningProjectIds = currentSolution.Projects
-                .Where(project => project.FilePath != null && runningProjects.ContainsKey(project.FilePath))
-                .Select(project => project.Id)
-                .ToImmutableHashSet();
+            var runningProjectInfos =
+               (from project in currentSolution.Projects
+                let runningProject = GetCorrespondingRunningProject(project, runningProjects)
+                where runningProject != null
+                let autoRestart = _options.NonInteractive || runningProject.ProjectNode.IsAutoRestartEnabled()
+                select (project.Id, info: new WatchHotReloadService.RunningProjectInfo() { RestartWhenChangesHaveNoEffect = autoRestart }))
+                .ToImmutableDictionary(e => e.Id, e => e.info);
 
-            var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectIds, cancellationToken);
-            var anyProcessNeedsRestart = !updates.ProjectIdsToRestart.IsEmpty;
+            var updates = await _hotReloadService.GetUpdatesAsync(currentSolution, runningProjectInfos, cancellationToken);
 
-            await DisplayResultsAsync(updates, cancellationToken);
+            await DisplayResultsAsync(updates, runningProjectInfos, cancellationToken);
 
-            if (updates.Status is ModuleUpdateStatus.None or ModuleUpdateStatus.Blocked)
+            if (updates.Status is WatchHotReloadService.Status.NoChangesToApply or WatchHotReloadService.Status.Blocked)
             {
                 // If Hot Reload is blocked (due to compilation error) we ignore the current
                 // changes and await the next file change.
                 return (ImmutableDictionary<ProjectId, string>.Empty, []);
             }
-
-            if (updates.Status == ModuleUpdateStatus.RestartRequired)
-            {
-                if (!anyProcessNeedsRestart)
-                {
-                    return (ImmutableDictionary<ProjectId, string>.Empty, []);
-                }
-
-                await restartPrompt.Invoke(updates.ProjectIdsToRestart.Select(id => currentSolution.GetProject(id)!.Name), cancellationToken);
-
-                // Terminate all tracked processes that need to be restarted,
-                // except for the root process, which will terminate later on.
-                var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectIdsToRestart.Select(id => currentSolution.GetProject(id)!.FilePath!), cancellationToken);
-
-                return (updates.ProjectIdsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!), terminatedProjects);
-            }
-
-            Debug.Assert(updates.Status == ModuleUpdateStatus.Ready);
 
             ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate;
             lock (_runningProjectsAndUpdatesGuard)
@@ -329,35 +311,61 @@ namespace Microsoft.DotNet.Watch
                 }
             }, cancellationToken);
 
-            return (ImmutableDictionary<ProjectId, string>.Empty, []);
+
+            if (updates.ProjectsToRestart.IsEmpty)
+            {
+                return (ImmutableDictionary<ProjectId, string>.Empty, []);
+            }
+
+            // Terminate projects that need restarting.
+
+            var projectsToPromptForRestart =
+                (from projectId in updates.ProjectsToRestart.Keys
+                 where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivallent to auto-restart
+                 select currentSolution.GetProject(projectId)!.Name).ToList();
+
+            if (projectsToPromptForRestart is not [])
+            {
+                await restartPrompt.Invoke(projectsToPromptForRestart, cancellationToken);
+            }
+
+            // Terminate all tracked processes that need to be restarted,
+            // except for the root process, which will terminate later on.
+            var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken);
+            var projectsToRebuild = updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!);
+
+            return (projectsToRebuild, terminatedProjects);
         }
 
-        private async ValueTask DisplayResultsAsync(WatchHotReloadService.Updates updates, CancellationToken cancellationToken)
+        private static RunningProject? GetCorrespondingRunningProject(Project project, ImmutableDictionary<string, ImmutableArray<RunningProject>> runningProjects)
         {
-            var anyProcessNeedsRestart = !updates.ProjectIdsToRestart.IsEmpty;
+            if (project.FilePath == null || !runningProjects.TryGetValue(project.FilePath, out var projectsWithPath))
+            {
+                return null;
+            }
 
+            // msbuild workspace doesn't set TFM if the project is not multi-targeted
+            var tfm = WatchHotReloadService.GetTargetFramework(project);
+            if (tfm == null)
+            {
+                return projectsWithPath[0];
+            }
+
+            return projectsWithPath.SingleOrDefault(p => string.Equals(p.ProjectNode.GetTargetFramework(), tfm, StringComparison.OrdinalIgnoreCase));
+        }
+
+        private async ValueTask DisplayResultsAsync(WatchHotReloadService.Updates2 updates, ImmutableDictionary<ProjectId, WatchHotReloadService.RunningProjectInfo> runningProjectInfos, CancellationToken cancellationToken)
+        {
             switch (updates.Status)
             {
-                case ModuleUpdateStatus.None:
+                case WatchHotReloadService.Status.ReadyToApply:
+                    break;
+
+                case WatchHotReloadService.Status.NoChangesToApply:
                     _reporter.Report(MessageDescriptor.NoCSharpChangesToApply);
                     break;
 
-                case ModuleUpdateStatus.Ready:
-                    break;
-
-                case ModuleUpdateStatus.RestartRequired:
-                    if (anyProcessNeedsRestart)
-                    {
-                        _reporter.Output("Unable to apply hot reload, restart is needed to apply the changes.");
-                    }
-                    else
-                    {
-                        _reporter.Verbose("Rude edits detected but do not affect any running process");
-                    }
-
-                    break;
-
-                case ModuleUpdateStatus.Blocked:
+                case WatchHotReloadService.Status.Blocked:
                     _reporter.Output("Unable to apply hot reload due to compilation errors.");
                     break;
 
@@ -365,79 +373,103 @@ namespace Microsoft.DotNet.Watch
                     throw new InvalidOperationException();
             }
 
-            // Diagnostics include syntactic errors, semantic warnings/errors and rude edit warnigns/errors for members being updated.
+            if (!updates.ProjectsToRestart.IsEmpty)
+            {
+                _reporter.Output("Restart is needed to apply the changes.");
+            }
 
-            var diagnosticsToDisplay = new List<string>();
+            var diagnosticsToDisplayInApp = new List<string>();
 
             // Display errors first, then warnings:
-            Display(MessageSeverity.Error);
-            Display(MessageSeverity.Warning);
+            ReportCompilationDiagnostics(DiagnosticSeverity.Error);
+            ReportCompilationDiagnostics(DiagnosticSeverity.Warning);
+            ReportRudeEdits();
 
-            void Display(MessageSeverity severity)
+            // report or clear diagnostics in the browser UI
+            await ForEachProjectAsync(
+                _runningProjects,
+                (project, cancellationToken) => project.BrowserRefreshServer?.ReportCompilationErrorsInBrowserAsync([.. diagnosticsToDisplayInApp], cancellationToken).AsTask() ?? Task.CompletedTask,
+                cancellationToken);
+
+            void ReportCompilationDiagnostics(DiagnosticSeverity severity)
             {
-                foreach (var diagnostic in updates.Diagnostics)
+                foreach (var diagnostic in updates.CompilationDiagnostics)
                 {
-                    MessageDescriptor descriptor;
-
-                    if (diagnostic.Id == "ENC0118")
-                    {
-                        // Changing '<entry-point>' might not have any effect until the application is restarted.
-                        descriptor = MessageDescriptor.ApplyUpdate_ChangingEntryPoint;
-                    }
-                    else if (diagnostic.Id == "ENC1005")
-                    {
-                        // TODO: This warning is overreported in cases when the solution contains projects that are not rebuilt (up-to-date)
-                        // and a document is updated that is linked to such a project and another "active" project.
-                        // E.g. multi-tfm projects where only one TFM is currently built/running.
-
-                        // Warning: The current content of source file 'D:\Temp\App\Program.cs' does not match the built source.
-                        // Any changes made to this file while debugging won't be applied until its content matches the built source.
-                        descriptor = MessageDescriptor.ApplyUpdate_FileContentDoesNotMatchBuiltSource;
-                    }
-                    else if (diagnostic.Id == "CS8002")
+                    if (diagnostic.Id == "CS8002")
                     {
                         // TODO: This is not a useful warning. Compiler shouldn't be reporting this on .NET/
                         // Referenced assembly '...' does not have a strong name"
                         continue;
                     }
-                    else
-                    {
-                        // Use the default severity of the diagnostic as it conveys impact on Hot Reload
-                        // (ignore warnings as errors and other severity configuration).
-                        descriptor = diagnostic.DefaultSeverity switch
-                        {
-                            DiagnosticSeverity.Error => MessageDescriptor.ApplyUpdate_Error,
-                            DiagnosticSeverity.Warning => MessageDescriptor.ApplyUpdate_Warning,
-                            _ => MessageDescriptor.ApplyUpdate_Verbose,
-                        };
-                    }
 
-                    if (descriptor.Severity != severity)
+                    if (diagnostic.DefaultSeverity != severity)
                     {
                         continue;
                     }
 
-                    // Do not report rude edits as errors/warnings if no running process is affected.
-                    if (!anyProcessNeedsRestart && diagnostic.Id is ['E', 'N', 'C', >= '0' and <= '9', ..])
-                    {
-                        descriptor = descriptor with { Severity = MessageSeverity.Verbose };
-                    }
+                    ReportDiagnostic(diagnostic, GetMessageDescriptor(diagnostic, verbose: false));
+                }
+            }
 
-                    var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
-                    _reporter.Report(descriptor, display);
+            void ReportRudeEdits()
+            {
+                // Rude edits in projects that caused restart of a project that can be restarted automatically
+                // will be reported only as verbose output.
+                var projectsRestartedDueToRudeEdits = updates.ProjectsToRestart
+                    .Where(e => runningProjectInfos.TryGetValue(e.Key, out var info) && info.RestartWhenChangesHaveNoEffect)
+                    .SelectMany(e => e.Value)
+                    .ToHashSet();
 
-                    if (descriptor.TryGetMessage(prefix: null, [display], out var message))
+                var projectsRebuiltDueToRudeEdits = updates.ProjectsToRebuild.ToHashSet();
+
+                foreach (var (projectId, diagnostics) in updates.RudeEdits)
+                {
+                    foreach (var diagnostic in diagnostics)
                     {
-                        diagnosticsToDisplay.Add(message);
+                        var prefix =
+                            projectsRestartedDueToRudeEdits.Contains(projectId) ? "[auto-restart] " :
+                            projectsRebuiltDueToRudeEdits.Contains(projectId) ? "[auto-rebuild] " :
+                            "";
+
+                        var descriptor = GetMessageDescriptor(diagnostic, verbose: prefix != "");
+                        ReportDiagnostic(diagnostic, descriptor, prefix);
                     }
                 }
             }
 
-            // report or clear diagnostics in the browser UI
-            await ForEachProjectAsync(
-                _runningProjects,
-                (project, cancellationToken) => project.BrowserRefreshServer?.ReportCompilationErrorsInBrowserAsync(diagnosticsToDisplay.ToImmutableArray(), cancellationToken).AsTask() ?? Task.CompletedTask,
-                cancellationToken);
+            void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
+            {
+                var display = CSharpDiagnosticFormatter.Instance.Format(diagnostic);
+                _reporter.Report(descriptor, prefix, [display]);
+
+                if (descriptor.TryGetMessage(prefix, [display], out var message))
+                {
+                    diagnosticsToDisplayInApp.Add(message);
+                }
+            }
+
+            // Use the default severity of the diagnostic as it conveys impact on Hot Reload
+            // (ignore warnings as errors and other severity configuration).
+            static MessageDescriptor GetMessageDescriptor(Diagnostic diagnostic, bool verbose)
+            {
+                if (verbose)
+                {
+                    return MessageDescriptor.ApplyUpdate_Verbose;
+                }
+
+                if (diagnostic.Id == "ENC0118")
+                {
+                    // Changing '<entry-point>' might not have any effect until the application is restarted.
+                    return MessageDescriptor.ApplyUpdate_ChangingEntryPoint;
+                }
+
+                return diagnostic.DefaultSeverity switch
+                {
+                    DiagnosticSeverity.Error => MessageDescriptor.ApplyUpdate_Error,
+                    DiagnosticSeverity.Warning => MessageDescriptor.ApplyUpdate_Warning,
+                    _ => MessageDescriptor.ApplyUpdate_Verbose,
+                };
+            }
         }
 
         public async ValueTask<bool> HandleStaticAssetChangesAsync(IReadOnlyList<ChangedFile> files, ProjectNodeMap projectMap, CancellationToken cancellationToken)
