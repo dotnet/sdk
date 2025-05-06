@@ -17,6 +17,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         var testDir = _testAssetsManager.CreateTestDirectory().Path;
         var cliHome = Path.Combine(testDir, ".home");
+        var metadataDir = Path.Combine(testDir, ".metadata");
 
         var projectPath =
             _testAssetsManager
@@ -27,6 +28,8 @@ public class GivenDotnetWorkloadRestore : SdkTest
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
         .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
+        .WithEnvironmentVariable("DOTNET_WORKLOAD_METADATA_DIR", metadataDir)
+        .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_VERIFICATION", "true")
         .Execute()
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
@@ -38,6 +41,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         var testDir = _testAssetsManager.CreateTestDirectory().Path;
         var cliHome = Path.Combine(testDir, ".home");
+        var metadataDir = Path.Combine(testDir, ".metadata");
 
         var projectPath =
             _testAssetsManager
@@ -48,6 +52,8 @@ public class GivenDotnetWorkloadRestore : SdkTest
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
         .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
+        .WithEnvironmentVariable("DOTNET_WORKLOAD_METADATA_DIR", metadataDir)
+        .WithEnvironmentVariable("DOTNET_SKIP_WORKLOAD_VERIFICATION", "true")
         .Execute()
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
