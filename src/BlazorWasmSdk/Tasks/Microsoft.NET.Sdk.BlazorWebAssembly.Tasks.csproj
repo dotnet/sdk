@@ -61,8 +61,8 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" IncludeAssets="Compile" />
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 

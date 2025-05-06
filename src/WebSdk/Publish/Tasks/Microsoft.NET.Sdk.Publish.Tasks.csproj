@@ -18,9 +18,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" IncludeAssets="Compile" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
     <PackageReference Include="Microsoft.Web.Xdt" />
   </ItemGroup>
