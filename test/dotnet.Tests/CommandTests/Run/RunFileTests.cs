@@ -834,17 +834,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Re-create directory with incorrect permissions.
         Directory.Delete(artifactsDir, recursive: true);
         Directory.CreateDirectory(artifactsDir, UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute);
-        new DirectoryInfo(artifactsDir).UnixFileMode
-            .Should().NotBe(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir);
+        var actualMode = new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().NotBe(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir).And.Subject;
 
-        // Build changes the permissions.
         new DotnetCommand(Log, "build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass();
+            .Should().Fail()
+            .And.HaveStdErrContaining("build-start.cache"); // Unhandled exception: Access to the path '.../build-start.cache' is denied.
 
+        // Build shouldn't have changed the permissions.
         new DirectoryInfo(artifactsDir).UnixFileMode
-            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir);
+            .Should().Be(actualMode, artifactsDir);
     }
 
     [Fact]

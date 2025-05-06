@@ -372,11 +372,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         else
         {
             // Ensure only the current user has access to the directory to avoid leaking the program to other users.
-            const UnixFileMode mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute;
-            Directory.CreateDirectory(directory, mode);
-
-            // The directory might have been created by someone else, set its permissions again to be sure.
-            new DirectoryInfo(directory).UnixFileMode = mode;
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
         }
 
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
