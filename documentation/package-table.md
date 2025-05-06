@@ -161,21 +161,6 @@ Reference notes:
 [linux-arm64-targz-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-linux-arm64.tar.gz
 [linux-arm64-targz-checksum-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-linux-arm64.tar.gz.sha512
 
-[rhel-6-badge-main]: https://aka.ms/dotnet/10.0.1xx/daily/rhel.6_x64_Release_version_badge.svg?no-cache
-[rhel-6-version-main]: https://aka.ms/dotnet/10.0.1xx/daily/productCommit-rhel.6-x64.txt
-[rhel-6-targz-main]: https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-rhel.6-x64.tar.gz
-[rhel-6-targz-checksum-main]: https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-rhel.6-x64.tar.gz.sha512
-
-[rhel-6-badge-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/rhel.6_x64_Release_version_badge.svg?no-cache
-[rhel-6-version-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/productCommit-rhel.6-x64.txt
-[rhel-6-targz-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/dotnet-sdk-rhel.6-x64.tar.gz
-[rhel-6-targz-checksum-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/dotnet-sdk-rhel.6-x64.tar.gz.sha512
-
-[rhel-6-badge-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/rhel.6_x64_Release_version_badge.svg?no-cache
-[rhel-6-version-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/productCommit-rhel.6-x64.txt
-[rhel-6-targz-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-rhel.6-x64.tar.gz
-[rhel-6-targz-checksum-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-rhel.6-x64.tar.gz.sha512
-
 [linux-musl-x64-badge-main]: https://aka.ms/dotnet/10.0.1xx/daily/linux_musl_x64_Release_version_badge.svg?no-cache
 [linux-musl-x64-version-main]: https://aka.ms/dotnet/10.0.1xx/daily/productCommit-linux-musl-x64.txt
 [linux-musl-x64-targz-main]: https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-linux-musl-x64.tar.gz
@@ -220,21 +205,6 @@ Reference notes:
 [linux-musl-arm64-version-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/productCommit-linux-musl-arm64.txt
 [linux-musl-arm64-targz-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-linux-musl-arm64.tar.gz
 [linux-musl-arm64-targz-checksum-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-linux-musl-arm64.tar.gz.sha512
-
-[win-arm-badge-main]: https://aka.ms/dotnet/10.0.1xx/daily/win_arm_Release_version_badge.svg?no-cache
-[win-arm-version-main]: https://aka.ms/dotnet/10.0.1xx/daily/productCommit-win-arm.txt
-[win-arm-zip-main]: https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-win-arm.zip
-[win-arm-zip-checksum-main]: https://aka.ms/dotnet/10.0.1xx/daily/dotnet-sdk-win-arm.zip.sha512
-
-[win-arm-badge-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/win_arm_Release_version_badge.svg?no-cache
-[win-arm-version-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/productCommit-win-arm.txt
-[win-arm-zip-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/dotnet-sdk-win-arm.zip
-[win-arm-zip-checksum-10.0.1XX-preview4]: https://aka.ms/dotnet/10.0.1xx-preview4/daily/dotnet-sdk-win-arm.zip.sha512
-
-[win-arm-badge-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/win_arm_Release_version_badge.svg?no-cache
-[win-arm-version-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/productCommit-win-arm.txt
-[win-arm-zip-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-win-arm.zip
-[win-arm-zip-checksum-9.0.3XX]: https://aka.ms/dotnet/9.0.3xx/daily/dotnet-sdk-win-arm.zip.sha512
 
 [win-arm64-badge-main]: https://aka.ms/dotnet/10.0.1xx/daily/win_arm64_Release_version_badge.svg?no-cache
 [win-arm64-version-main]: https://aka.ms/dotnet/10.0.1xx/daily/productCommit-win-arm64.txt
