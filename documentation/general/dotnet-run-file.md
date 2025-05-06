@@ -87,6 +87,8 @@ File-based programs are processed by `dotnet run` equivalently to project-based 
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator).
 
+`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` exists and has `.cs` file extension.
+
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -233,27 +235,23 @@ Along with `#:`, the language also ignores `#!` which could be then used for [sh
 Console.WriteLine("Hello");
 ```
 
-It might be beneficial to also ship `dotnet-run` binary
-(or `dotnet-run-file` that would only work with file-based programs, not project-based ones, perhaps simply named `cs`)
-because some shells do not support multiple command-line arguments in the shebang
+Some shells do not support multiple command-line arguments in the shebang
 which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executable
-(although `-S` argument can be sometimes used to enable multiple argument support):
+(although `-S` argument can be sometimes used to enable multiple argument support),
+so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
 #!/usr/bin/env dotnet run
 // ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
 ```
 ```cs
-#!/usr/bin/env dotnet-run
+#!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
 ```cs
 #!/usr/bin/env -S dotnet run
-// ^ Workaround in some shells.
+// ^ Works in some shells.
 ```
-
-We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
-but that would require changes to the native dotnet host.
 
 ## Other commands
 
