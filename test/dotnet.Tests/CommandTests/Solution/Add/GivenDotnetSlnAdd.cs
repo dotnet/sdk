@@ -37,6 +37,7 @@ Arguments:
 Options:
   --in-root                                  Place project in root of the solution, rather than creating a solution folder.
   -s, --solution-folder <solution-folder>    The destination solution folder path to add the projects to.
+  --include-references                       Recursively add projects' ReferencedProjects to solution [default: True]
   -?, -h, --help                             Show command line help";
 
         public GivenDotnetSlnAdd(ITestOutputHelper log) : base(log)
