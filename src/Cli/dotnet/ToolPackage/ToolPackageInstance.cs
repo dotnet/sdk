@@ -35,6 +35,8 @@ internal class ToolPackageInstance : IToolPackage
 
     public IEnumerable<NuGetFramework> Frameworks { get; private set; }
 
+    private IFileSystem _fileSystem;
+
     private const string AssetsFileName = "project.assets.json";
     public const string RidSpecificPackageAssetsFileName = "project.assets.ridpackage.json";
     private const string ToolSettingsFileName = "DotnetToolSettings.xml";
@@ -42,13 +44,15 @@ internal class ToolPackageInstance : IToolPackage
     public ToolPackageInstance(PackageId id,
         NuGetVersion version,
         DirectoryPath packageDirectory,
-        DirectoryPath assetsJsonParentDirectory)
+        DirectoryPath assetsJsonParentDirectory,
+        IFileSystem fileSystem = null)
     {
         Id = id;
         Version = version ?? throw new ArgumentNullException(nameof(version));
         PackageDirectory = packageDirectory;
+        _fileSystem = fileSystem ?? new FileSystemWrapper();
 
-        bool usingRidSpecificPackage = File.Exists(assetsJsonParentDirectory.WithFile(RidSpecificPackageAssetsFileName).Value);
+        bool usingRidSpecificPackage = _fileSystem.File.Exists(assetsJsonParentDirectory.WithFile(RidSpecificPackageAssetsFileName).Value);
 
         string resolvedAssetsFileNameFullPath;
         if (usingRidSpecificPackage)
@@ -64,7 +68,10 @@ internal class ToolPackageInstance : IToolPackage
 
         try
         {
-            lockFile = new LockFileFormat().Read(resolvedAssetsFileNameFullPath);
+            using (var stream = _fileSystem.File.OpenRead(resolvedAssetsFileNameFullPath))
+            {
+                lockFile = new LockFileFormat().Read(stream, resolvedAssetsFileNameFullPath);
+            }
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
         {
@@ -99,7 +106,7 @@ internal class ToolPackageInstance : IToolPackage
             ResolvedPackageVersion = Version;
         }
 
-        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory);
+        var toolConfiguration = DeserializeToolConfiguration(library, packageDirectory, _fileSystem);
         Warnings = toolConfiguration.Warnings;
 
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
@@ -163,15 +170,15 @@ internal class ToolPackageInstance : IToolPackage
 
     public static ToolConfiguration GetToolConfiguration(PackageId id,
         DirectoryPath packageDirectory,
-        DirectoryPath assetsJsonParentDirectory)
+        DirectoryPath assetsJsonParentDirectory, IFileSystem fileSystem)
     {
         var lockFile = new LockFileFormat().Read(assetsJsonParentDirectory.WithFile(AssetsFileName).Value);
         var lockFileTargetLibrary = FindLibraryInLockFile(lockFile);
-        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory);
+        return DeserializeToolConfiguration(lockFileTargetLibrary, packageDirectory, fileSystem);
 
     }
 
-    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory)
+    private static ToolConfiguration DeserializeToolConfiguration(LockFileTargetLibrary library, DirectoryPath packageDirectory, IFileSystem fileSystem)
     {
         try
         {
@@ -189,7 +196,7 @@ internal class ToolPackageInstance : IToolPackage
                         library.Version.ToNormalizedString().ToLowerInvariant())
                     .WithFile(dotnetToolSettings.Path);
 
-            var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value);
+            var configuration = ToolConfigurationDeserializer.Deserialize(toolConfigurationPath.Value, fileSystem);
             return configuration;
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)

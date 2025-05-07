@@ -6,6 +6,7 @@
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.DotNet.Cli.ToolPackage.ToolConfigurationDeserialization;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
@@ -16,17 +17,19 @@ internal static class ToolConfigurationDeserializer
     // This should match the schema version in the GenerateToolsSettingsFile task from the SDK.
     private const int SupportedVersion = 2;
 
-    public static ToolConfiguration Deserialize(string pathToXml)
+    public static ToolConfiguration Deserialize(string pathToXml, IFileSystem fileSystem = null)
     {
+        fileSystem ??= new FileSystemWrapper();
+
         var serializer = new XmlSerializer(typeof(DotNetCliTool));
 
         DotNetCliTool dotNetCliTool;
 
         try
         {
-            using (var fs = File.OpenRead(pathToXml))
+            using (var stream = fileSystem.File.OpenRead(pathToXml))
             {
-                var reader = XmlReader.Create(fs);
+                var reader = XmlReader.Create(stream);
                 dotNetCliTool = (DotNetCliTool)serializer.Deserialize(reader);
             }
         }

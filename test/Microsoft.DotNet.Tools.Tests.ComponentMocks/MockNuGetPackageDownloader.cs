@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                 Directory.CreateDirectory(_downloadPath);
             }
 
-            _packageVersions = packageVersions;
+            _packageVersions = packageVersions ?? [new NuGetVersion("1.0.42")];
         }
 
         public Task<string> DownloadPackageAsync(PackageId packageId,
@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
                     // Do not write this file twice in parallel
                 }
             }
-            _lastPackageVersion = packageVersion ?? new NuGetVersion("1.0.42");
+            _lastPackageVersion = packageVersion ?? _packageVersions.Max();
             return Task.FromResult(path);
         }
 
@@ -95,12 +95,12 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
         {
-            return Task.FromResult(new NuGetVersion("10.0.0"));
+            return Task.FromResult(_packageVersions.Max());
         }
 
         public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
         {
-            return Task.FromResult(new NuGetVersion("10.0.0"));
+            return Task.FromResult(_packageVersions.Max());
         }
 
 

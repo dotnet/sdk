@@ -117,7 +117,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
     protected override ToolConfiguration GetToolConfiguration(PackageId id, DirectoryPath packageDirectory, DirectoryPath assetsJsonParentDirectory)
     {
-        return ToolPackageInstance.GetToolConfiguration(id, packageDirectory, assetsJsonParentDirectory);
+        return ToolPackageInstance.GetToolConfiguration(id, packageDirectory, assetsJsonParentDirectory, _fileSystem);
     }
 
     protected override void CreateAssetFile(
