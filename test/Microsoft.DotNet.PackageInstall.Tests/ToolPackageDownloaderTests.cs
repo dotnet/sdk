@@ -551,6 +551,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     t.Complete();
                 }
             };
+
+            a();
         }
 
         [Theory]
@@ -995,14 +997,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStoreMock = new ToolPackageStoreMock(root, fileSystem, frameworksMap);
                 store = toolPackageStoreMock;
                 storeQuery = toolPackageStoreMock;
-                downloader = new ToolPackageDownloaderMock(
-                    store: toolPackageStoreMock,
-                    fileSystem: fileSystem,
-                    reporter: reporter,
-                    feeds: feeds == null
-                            ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
-                            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList(),
-                    frameworksMap: frameworksMap);
+                downloader = new ToolPackageDownloaderMock2(toolPackageStoreMock,
+                    runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                    currentWorkingDirectory: root.Value,
+                    fileSystem);
+                //downloader = new ToolPackageDownloaderMock(
+                //    store: toolPackageStoreMock,
+                //    fileSystem: fileSystem,
+                //    reporter: reporter,
+                //    feeds: feeds == null
+                //            ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
+                //            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList(),
+                //    frameworksMap: frameworksMap);
                 uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
             }
             else
