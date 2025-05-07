@@ -4,6 +4,7 @@
 using System.Xml;
 using System.Xml.Serialization;
 using Microsoft.DotNet.Cli.ToolPackage.ToolConfigurationDeserialization;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
@@ -11,7 +12,7 @@ internal static class ToolConfigurationDeserializer
 {
     // The supported tool configuration schema version.
     // This should match the schema version in the GenerateToolsSettingsFile task from the SDK.
-    private const int SupportedVersion = 1;
+    private const int SupportedVersion = 2;
 
     public static ToolConfiguration Deserialize(string pathToXml)
     {
@@ -51,7 +52,9 @@ internal static class ToolConfigurationDeserializer
             throw new ToolConfigurationException(CliStrings.ToolSettingsMoreThanOneCommand);
         }
 
-        if (dotNetCliTool.Commands[0].Runner != "dotnet")
+        //  TODO: Should be an error if runner is empty and there aren't any RID-specific packages
+        var runner = dotNetCliTool.Commands[0].Runner;
+        if (!string.IsNullOrEmpty(runner) && runner != "dotnet" && runner != "executable")
         {
             throw new ToolConfigurationException(
                 string.Format(
@@ -60,10 +63,15 @@ internal static class ToolConfigurationDeserializer
                     dotNetCliTool.Commands[0].Runner));
         }
 
+        var ridSpecificPackages = dotNetCliTool.RuntimeIdentifierPackages?.ToDictionary(p => p.RuntimeIdentifier, p => new PackageIdentity(p.Id, new NuGet.Versioning.NuGetVersion(p.Version)))
+            .AsReadOnly();
+
         return new ToolConfiguration(
             dotNetCliTool.Commands[0].Name,
             dotNetCliTool.Commands[0].EntryPoint,
-            warnings);
+            dotNetCliTool.Commands[0].Runner,
+            ridSpecificPackages: ridSpecificPackages,
+            warnings: warnings);
     }
 
     private static List<string> GenerateWarningAccordingToVersionAttribute(DotNetCliTool dotNetCliTool)
