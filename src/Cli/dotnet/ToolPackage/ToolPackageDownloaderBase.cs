@@ -203,7 +203,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: toolStoreTargetDirectory,
-                    assetsJsonParentDirectory: toolStoreTargetDirectory);
+                    assetsJsonParentDirectory: toolStoreTargetDirectory,
+                    fileSystem: _fileSystem);
 
                 if (isGlobalToolRollForward)
                 {
@@ -254,7 +255,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: _localToolDownloadDir,
-                    assetsJsonParentDirectory: _localToolAssetDir);
+                    assetsJsonParentDirectory: _localToolAssetDir,
+                    fileSystem: _fileSystem);
 
                 return toolPackageInstance;
             });
