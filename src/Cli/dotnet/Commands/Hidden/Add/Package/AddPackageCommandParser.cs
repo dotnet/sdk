@@ -41,7 +41,7 @@ internal static class AddPackageCommandParser
             }
             else
             {
-                return new PackageAddCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
+                return new PackageAddCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument) ?? Directory.GetCurrentDirectory()).Execute();
             }
         });
 
