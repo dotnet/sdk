@@ -1,5 +1,6 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+
+#nullable disable warnings
 
 using System.Collections.Concurrent;
 using System.CommandLine.Help;
@@ -494,7 +495,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             // Tests that come from dynamic data sources and previously succeeded will also run on the second attempt,
             // and most likely will succeed as well, so we will get them here, even though they are probably not flaky.
             asm.FlakyTests.Add(testNodeUid);
-            
+
         }
         _terminalWithProgress.UpdateWorker(asm.SlotIndex);
         if (outcome != TestOutcome.Passed || GetShowPassedTests())
