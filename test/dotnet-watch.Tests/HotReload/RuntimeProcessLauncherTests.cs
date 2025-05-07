@@ -503,6 +503,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
 
         // let the host process start:
         Log("Waiting for changes...");
@@ -516,6 +517,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         // Terminate the process:
+        Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
         await w.Service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
 
         // rude edit in A (changing assembly level attribute):
@@ -526,8 +528,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for change handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
-        w.Reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
-        w.Reporter.ProcessOutput.Contains($"verbose ❌ {serviceSourceA2}(1,12): error ENC0003: Updating 'attribute' requires restarting the application.");
+        Log("Waiting for verbose rude edit reported ...");
+        await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
     }
 
     public enum DirectoryKind

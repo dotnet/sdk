@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, Context.Options, shutdownCancellationToken);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
