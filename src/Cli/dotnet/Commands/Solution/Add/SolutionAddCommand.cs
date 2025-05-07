@@ -138,7 +138,7 @@ internal class SolutionAddCommand : CommandBase
         await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null)
+    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null, bool showMessageOnDuplicate = true)
     {
         string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
 
@@ -173,7 +173,7 @@ internal class SolutionAddCommand : CommandBase
             Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullProjectPath);
             return;
         }
-        catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
+        catch (SolutionArgumentException ex) when (showMessageOnDuplicate && ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
         {
             Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
             return;
@@ -207,15 +207,14 @@ internal class SolutionAddCommand : CommandBase
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
 
         // Get referencedprojects from the project instance
-        var referencedProjectsFullPaths = projectInstance.EvaluatedItemElements
-            .Where(item => item.ItemType.Equals("ProjectReference"))
-            .Select(item => Path.GetFullPath(item.Include, Path.GetDirectoryName(fullProjectPath)));
+        var referencedProjectsFullPaths = projectInstance.GetItems("ProjectReference")
+            .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)));
 
         if (_includeReferences)
         {
             foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
             {
-                AddProject(solution, referencedProjectFullPath, serializer);
+                AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
             }
         }
     }
