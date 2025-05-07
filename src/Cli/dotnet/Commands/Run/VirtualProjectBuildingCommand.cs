@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// <summary>
 /// Used to build a virtual project file in memory to support <c>dotnet run file.cs</c>.
 /// </summary>
-internal sealed class VirtualProjectBuildingCommand
+internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
     /// <summary>
     /// A file put into the artifacts directory when build starts.
@@ -62,37 +62,64 @@ internal sealed class VirtualProjectBuildingCommand
 
     private ImmutableArray<CSharpDirective> _directives;
 
-    public Dictionary<string, string> GlobalProperties { get; } = new(StringComparer.OrdinalIgnoreCase);
-    public required string EntryPointFileFullPath { get; init; }
-
-    public int Execute(string[] binaryLoggerArgs, ILogger consoleLogger, bool noRestore, bool noCache)
+    public VirtualProjectBuildingCommand(
+        string entryPointFileFullPath,
+        string[] msbuildArgs,
+        VerbosityOptions? verbosity,
+        bool interactive)
     {
-        var binaryLogger = GetBinaryLogger(binaryLoggerArgs);
+        Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
-        RunFileBuildCacheEntry cacheEntry;
+        EntryPointFileFullPath = entryPointFileFullPath;
+        GlobalProperties = new(StringComparer.OrdinalIgnoreCase);
+        CommonRunHelpers.AddUserPassedProperties(GlobalProperties, msbuildArgs);
+        BinaryLoggerArgs = msbuildArgs;
+        Verbosity = verbosity ?? RunCommand.GetDefaultVerbosity(interactive: interactive);
+    }
 
-        if (noCache)
+    public string EntryPointFileFullPath { get; }
+    public Dictionary<string, string> GlobalProperties { get; }
+    public string[] BinaryLoggerArgs { get; }
+    public VerbosityOptions Verbosity { get; }
+    public bool NoRestore { get; init; }
+    public bool NoCache { get; init; }
+    public bool NoBuild { get; init; }
+    public bool NoIncremental { get; init; }
+
+    public override int Execute()
+    {
+        Debug.Assert(!(NoRestore && NoBuild));
+
+        var consoleLogger = RunCommand.MakeTerminalLogger(Verbosity);
+        var binaryLogger = GetBinaryLogger(BinaryLoggerArgs);
+
+        RunFileBuildCacheEntry? cacheEntry = null;
+
+        if (!NoBuild)
         {
-            if (noRestore)
+            if (NoCache)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
+                if (NoRestore)
+                {
+                    throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
+                }
+
+                cacheEntry = ComputeCacheEntry(out _);
+            }
+            else if (!NeedsToBuild(out cacheEntry))
+            {
+                if (binaryLogger is not null)
+                {
+                    Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                }
+
+                PrepareProjectInstance();
+
+                return 0;
             }
 
-            cacheEntry = ComputeCacheEntry(out _);
+            MarkBuildStart();
         }
-        else if (!NeedsToBuild(out cacheEntry))
-        {
-            if (binaryLogger is not null)
-            {
-                Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
-            }
-
-            PrepareProjectInstance();
-
-            return 0;
-        }
-
-        MarkBuildStart();
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
         try
@@ -122,7 +149,7 @@ internal sealed class VirtualProjectBuildingCommand
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
             // and https://github.com/dotnet/msbuild/issues/11519.
-            if (!noRestore)
+            if (!NoRestore)
             {
                 var restoreRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
@@ -141,18 +168,22 @@ internal sealed class VirtualProjectBuildingCommand
             }
 
             // Then do a build.
-            var buildRequest = new BuildRequestData(
-                CreateProjectInstance(projectCollection),
-                targetsToBuild: ["Build"]);
-            var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
-            if (buildResult.OverallResult != BuildResultCode.Success)
+            if (!NoBuild)
             {
-                return 1;
+                var buildRequest = new BuildRequestData(
+                    CreateProjectInstance(projectCollection),
+                    targetsToBuild: [NoIncremental ? "Rebuild" : "Build"]);
+                var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
+                if (buildResult.OverallResult != BuildResultCode.Success)
+                {
+                    return 1;
+                }
+
+                Debug.Assert(cacheEntry != null);
+                MarkBuildSuccess(cacheEntry);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
-
-            MarkBuildSuccess(cacheEntry);
 
             return 0;
         }
@@ -402,8 +433,10 @@ internal sealed class VirtualProjectBuildingCommand
         }
     }
 
+    private string GetArtifactsPath() => GetArtifactsPath(EntryPointFileFullPath);
+
     // internal for testing
-    internal string GetArtifactsPath()
+    internal static string GetArtifactsPath(string entryPointFileFullPath)
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -411,8 +444,8 @@ internal sealed class VirtualProjectBuildingCommand
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
         // Include entry point file name so the directory name is not completely opaque.
-        string fileName = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
-        string hash = Sha256Hasher.HashWithNormalizedCasing(EntryPointFileFullPath);
+        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
+        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
         string directoryName = $"{fileName}-{hash}";
 
         return Path.Join(directory, "dotnet", "runfile", directoryName);

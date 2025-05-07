@@ -226,7 +226,7 @@
   </Target>
 
   <Target Name="GeneratePkgs"
-          AfterTargets="Build"
+          AfterTargets="AfterBuild"
           DependsOnTargets="GenerateSdkPkg;GenerateSdkProductArchive" />
 
 </Project>
