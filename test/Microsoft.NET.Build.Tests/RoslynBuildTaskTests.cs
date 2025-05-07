@@ -163,7 +163,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
             var call = reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
             Path.GetFileName(call.CompilerFilePath).Should().Be(compilerFileName);
 
-            const string toolsetPackageName = "Microsoft.Net.Compilers.Toolset";
+            const string toolsetPackageName = "microsoft.net.compilers.toolset";
             if (toolsetPackage)
             {
                 call.CompilerFilePath.Should().Contain(toolsetPackageName);
