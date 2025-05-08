@@ -7,6 +7,7 @@ namespace Microsoft.DotNet.NativeWrapper
     {
         public const string HostFxr = "hostfxr";
         public const string DotNet = "dotnet";
+        public const string DotNetExe = "dotnet.exe";
         public const string PATH = "PATH";
         public const string DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR = "DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR";
 
