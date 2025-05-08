@@ -96,4 +96,9 @@
 
   <Import Project="build/GenerateResxSource.targets" />
 
+  <!-- Import any local dev properties if they exist. -->
+  <PropertyGroup>
+    <LocalDevPropsPath>$(MSBuildThisFileDirectory)LocalDev.Build.props</LocalDevPropsPath>
+  </PropertyGroup>
+  <Import Project="$(LocalDevPropsPath)" Condition="Exists('$(LocalDevPropsPath)') AND '$(SkipLocalDevSettings)' != 'true'" />
 </Project>
