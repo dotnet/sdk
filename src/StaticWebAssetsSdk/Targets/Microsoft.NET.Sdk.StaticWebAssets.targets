@@ -676,7 +676,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <DefineStaticWebAssets
-      CandidateAssets="@(Content)"
+      CandidateAssets="@(Content->Distinct())"
       FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
       FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
       RelativePathPattern="wwwroot/**"
@@ -718,9 +718,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     </UpdatePackageStaticWebAssets>
 
     <ItemGroup>
+      <_AssetsWithoutEndpoints Include="@(_UpdatedPackageAssets)" Exclude="@(StaticWebAssetEndpoint->'%(AssetFile)')" />
+    </ItemGroup>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_AssetsWithoutEndpoints)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
+    >
+      <Output TaskParameter="Endpoints" ItemName="_UpdatedPackageAssetsEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <ItemGroup>
       <StaticWebAsset Remove="@(_OriginalPackageAssets)"/>
       <StaticWebAsset Include="@(_UpdatedPackageAssets)" />
+      <StaticWebAssetEndpoint Include="@(_UpdatedPackageAssetsEndpoint)" />
     </ItemGroup>
+
   </Target>
 
   <Import Project="Microsoft.NET.Sdk.StaticWebAssets.Publish.targets" />
