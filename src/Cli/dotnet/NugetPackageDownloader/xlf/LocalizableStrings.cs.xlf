@@ -42,6 +42,31 @@
         <target state="translated">Přeskakuje se ověření podpisu balíčku NuGet.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackageVersionDescriptionDefault">
+        <source>A version of {0} of package {1}</source>
+        <target state="translated">Verze {0} balíčku {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForExactVersionMatch">
+        <source>Version {0} of package {1}</source>
+        <target state="translated">Verze {0} balíčku {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerAndUpperBounds">
+        <source>A version between {0} and {1} of package {2}</source>
+        <target state="translated">Verze mezi {0} a {1} balíčku {2}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithLowerBound">
+        <source>A version higher than {0} of package {1}</source>
+        <target state="translated">Verze vyšší než {0} balíčku {1}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackageVersionDescriptionForVersionWithUpperBound">
+        <source>A version less than {0} of package {1}</source>
+        <target state="translated">Verze menší než {0} balíčku {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SkipNuGetpackageSigningValidationmacOSLinux">
         <source>Skip NuGet package signing validation. NuGet signing validation is not available on Linux or macOS https://aka.ms/workloadskippackagevalidation .</source>
         <target state="translated">Přeskočit ověřování podepisování balíčku NuGet. Ověřování podepisování balíčku NuGet není k dispozici na Linuxu nebo v macOS https://aka.ms/workloadskippackagevalidation.</target>
