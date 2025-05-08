@@ -154,15 +154,15 @@ namespace Microsoft.DotNet.Watch
                 {
                     if (exitCode == 0)
                     {
-                        reporter.Output("Exited");
+                        reporter.Report(MessageDescriptor.Exited);
                     }
                     else if (exitCode == null)
                     {
-                        reporter.Error("Exited with unknown error code");
+                        reporter.Report(MessageDescriptor.ExitedWithUnknownErrorCode);
                     }
                     else
                     {
-                        reporter.Error($"Exited with error code {exitCode}");
+                        reporter.Report(MessageDescriptor.ExitedWithErrorCode, exitCode);
                     }
                 }
 

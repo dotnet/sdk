@@ -62,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- The CSharp.props used to hard-code WarningLevel to 4, so to maintain parity with .NET Framework projects we do that here. -->
     <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETFramework' ">4</WarningLevel>
     <!-- .NET projects, however, can float up to their TFM's major version -->
-    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$(_TargetFrameworkVersionWithoutV.Substring(0, 1))</WarningLevel>
+    <WarningLevel Condition="'$(Language)' == 'C#' And '$(WarningLevel)' == '' And '$(TargetFrameworkIdentifier)' == '.NETCoreApp' ">$(_TargetFrameworkVersionWithoutV.Split('.')[0])</WarningLevel>
   </PropertyGroup>
 
   <!-- Enable Analyzers based on EffectiveAnalysisLevel -->

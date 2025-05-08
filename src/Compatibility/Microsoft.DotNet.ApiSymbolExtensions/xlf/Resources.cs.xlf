@@ -2,9 +2,39 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="cs" original="../Resources.resx">
     <body>
+      <trans-unit id="AssemblyLoaded">
+        <source>Assembly '{0}' loaded.</source>
+        <target state="new">Assembly '{0}' loaded.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="AssemblyReferenceLoaded">
+        <source>Assembly '{0}' referenced by '{1}' loaded.</source>
+        <target state="new">Assembly '{0}' referenced by '{1}' loaded.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CouldNotResolveReference">
-        <source>Could not resolve reference '{0}' in any of the provided search directories.</source>
-        <target state="translated">V žádném z uvedených adresářů vyhledávání se nepovedlo přeložit odkaz {0}.</target>
+        <source>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</source>
+        <target state="new">Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoadingAssemblies">
+        <source>Loading assemblies '{0}'.</source>
+        <target state="new">Loading assemblies '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoadingAssembliesFromArchive">
+        <source>Loading assemblies '{0}' ({1}).</source>
+        <target state="new">Loading assemblies '{0}' ({1}).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoadingAssembly">
+        <source>Loading assembly '{0}'.</source>
+        <target state="new">Loading assembly '{0}'.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="LoadingAssemblyFromStream">
+        <source>Loading assembly '{0}' from stream.</source>
+        <target state="new">Loading assembly '{0}' from stream.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -20,6 +50,16 @@
       <trans-unit id="ProvidedStreamDoesNotHaveMetadata">
         <source>Provided stream for assembly '{0}' doesn't have any metadata to read. from.</source>
         <target state="translated">Poskytnutý datový proud pro sestavení {0} nemá žádná metadata pro čtení.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RootAssemblyDisplayString">
+        <source>'{0}'</source>
+        <target state="new">'{0}'</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="RootAssemblyFromPackageDisplayString">
+        <source>'{0}' ({1})</source>
+        <target state="new">'{0}' ({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">
