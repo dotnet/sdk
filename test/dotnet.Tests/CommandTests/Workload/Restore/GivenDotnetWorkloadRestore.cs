@@ -17,7 +17,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(cliHome);
-        File.Create(Path.Combine(cliHome, "userlocal")).Dispose();
+        CreateUserLocalFileForCurrentSdk(cliHome);
 
         var projectPath =
             _testAssetsManager
@@ -39,7 +39,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
         Directory.CreateDirectory(cliHome);
-        File.Create(Path.Combine(cliHome, "userlocal")).Dispose();
+        CreateUserLocalFileForCurrentSdk(cliHome);
 
         var projectPath =
             _testAssetsManager
@@ -54,5 +54,21 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
         .Pass();
+    }
+
+    private void CreateUserLocalFileForCurrentSdk(string cliHome)
+    {
+        var result = new DotnetCommand(Log, "--version").Execute();
+        if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.StdOut))
+        {
+            throw new Exception("Failed to get dotnet version");
+        }
+        var sdkVersion = result.StdOut.Trim();
+        var version = Version.Parse(sdkVersion.Split('-')[0]);
+        var featureBand = $"{version.Major}.{version.Minor}.{(version.Build / 100) * 100}";
+
+        var userlocalPath = Path.Combine(cliHome, ".dotnet", "metadata", "workloads", featureBand);
+        Directory.CreateDirectory(userlocalPath);
+        File.Create(Path.Combine(userlocalPath, "userlocal")).Dispose();
     }
 }
