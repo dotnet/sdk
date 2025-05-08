@@ -6,7 +6,7 @@
     <VersionMajor>9</VersionMajor>
     <VersionMinor>0</VersionMinor>
     <VersionSDKMinor>3</VersionSDKMinor>
-    <VersionFeature>00</VersionFeature>
+    <VersionFeature>01</VersionFeature>
     <!-- This property powers the SdkAnalysisLevel property in end-user MSBuild code.
          It should always be the hundreds-value of the current SDK version, never any
          preview version components or anything else. E.g. 8.0.100, 9.0.300, etc. -->
@@ -182,8 +182,8 @@
          At usage sites, either we use MicrosoftBuildMinimumVersion, or MicrosoftBuildVersion in source-only modes.
 
          Additionally, set the MinimumVSVersion for the installer UI that's required for targeting NetCurrent -->
-    <MicrosoftBuildVersion>17.14.4</MicrosoftBuildVersion>
-    <MicrosoftBuildLocalizationVersion>17.14.4-preview-25207-08</MicrosoftBuildLocalizationVersion>
+    <MicrosoftBuildVersion>17.14.7</MicrosoftBuildVersion>
+    <MicrosoftBuildLocalizationVersion>17.14.7-preview-25230-05</MicrosoftBuildLocalizationVersion>
     <MicrosoftBuildMinimumVersion Condition="'$(DotNetBuildSourceOnly)' != 'true'">17.11.4</MicrosoftBuildMinimumVersion>
     <MinimumVSVersion>17.12</MinimumVSVersion>
   </PropertyGroup>
