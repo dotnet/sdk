@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
+
 using System.CommandLine;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
@@ -15,18 +17,24 @@ namespace Microsoft.DotNet.Cli.Commands.Solution.Add;
 
 internal class SolutionAddCommand : CommandBase
 {
-    private static readonly string[] _defaultPlatforms = ["Any CPU", "x64", "x86"];
-    private static readonly string[] _defaultBuildTypes = ["Debug", "Release"];
     private readonly string _fileOrDirectory;
     private readonly bool _inRoot;
     private readonly IReadOnlyCollection<string> _projects;
     private readonly string? _solutionFolderPath;
+    private string _solutionFileFullPath = string.Empty;
 
     private static string GetSolutionFolderPathWithForwardSlashes(string path)
     {
         // SolutionModel::AddFolder expects paths to have leading, trailing and inner forward slashes
         // https://github.com/microsoft/vs-solutionpersistence/blob/87ee8ea069662d55c336a9bd68fe4851d0384fa5/src/Microsoft.VisualStudio.SolutionPersistence/Model/SolutionModel.cs#L171C1-L172C1
         return "/" + string.Join("/", PathUtility.GetPathWithDirectorySeparator(path).Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries)) + "/";
+    }
+
+    private static bool IsSolutionFolderPathInDirectoryScope(string relativePath)
+    {
+        return !string.IsNullOrWhiteSpace(relativePath)
+            && !Path.IsPathRooted(relativePath) // This means path is in a different volume
+            && !relativePath.StartsWith(".."); // This means path is outside the solution directory
     }
 
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
@@ -36,6 +44,7 @@ internal class SolutionAddCommand : CommandBase
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
+        _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
 
     public override int Execute()
@@ -44,35 +53,63 @@ internal class SolutionAddCommand : CommandBase
         {
             throw new GracefulException(CliStrings.SpecifyAtLeastOneProjectToAdd);
         }
-        string solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
 
-        try
+        // Get project paths from the command line arguments
+        PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
+
+        IEnumerable<string> fullProjectPaths = _projects.Select(project =>
         {
-            PathUtility.EnsureAllPathsExist(_projects, CliStrings.CouldNotFindProjectOrDirectory, true);
-            IEnumerable<string> fullProjectPaths = _projects.Select(project =>
-            {
-                var fullPath = Path.GetFullPath(project);
-                return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
-            });
-            AddProjectsToSolutionAsync(solutionFileFullPath, fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
-            return 0;
-        }
-        catch (Exception ex) when (ex is not GracefulException)
-        {
-            {
-                if (ex is SolutionException || ex.InnerException is SolutionException)
-                {
-                    throw new GracefulException(CliStrings.InvalidSolutionFormatString, solutionFileFullPath, ex.Message);
-                }
-                throw new GracefulException(ex.Message, ex);
-            }
-        }
+            var fullPath = Path.GetFullPath(project);
+            return Directory.Exists(fullPath) ? MsbuildProject.GetProjectFileFromDirectory(fullPath).FullName : fullPath;
+        });
+
+        // Add projects to the solution
+        AddProjectsToSolutionAsync(fullProjectPaths, CancellationToken.None).GetAwaiter().GetResult();
+        return 0;
     }
 
-    private async Task AddProjectsToSolutionAsync(string solutionFileFullPath, IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    private SolutionFolderModel? GenerateIntermediateSolutionFoldersForProjectPath(SolutionModel solution, string relativeProjectPath)
     {
-        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(solutionFileFullPath);
+        if (_inRoot)
+        {
+            return null;
+        }
+
+        string relativeSolutionFolderPath = string.Empty;
+
+        if (string.IsNullOrEmpty(_solutionFolderPath))
+        {
+            // Generate the solution folder path based on the project path
+            relativeSolutionFolderPath = Path.GetDirectoryName(relativeProjectPath);
+
+            // If the project is in a folder with the same name as the project, we need to go up one level
+            if (relativeSolutionFolderPath.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativeProjectPath))
+            {
+                relativeSolutionFolderPath = Path.Combine([.. relativeSolutionFolderPath.Split(Path.DirectorySeparatorChar).SkipLast(1)]);
+            }
+
+            // If the generated path is outside the solution directory, we need to set it to empty
+            if (!IsSolutionFolderPathInDirectoryScope(relativeSolutionFolderPath))
+            {
+                relativeSolutionFolderPath = string.Empty;
+            }
+        }
+        else
+        {
+            // Use the provided solution folder path
+            relativeSolutionFolderPath = _solutionFolderPath;
+        }
+
+        return string.IsNullOrEmpty(relativeSolutionFolderPath)
+            ? null
+            : solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolderPath));
+    }
+
+    private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
+    {
+        SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
+
         // set UTF8 BOM encoding for .sln
         if (serializer is ISolutionSerializer<SlnV12SerializerSettings> v12Serializer)
         {
@@ -80,79 +117,71 @@ internal class SolutionAddCommand : CommandBase
             {
                 Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true)
             });
+
             // Set default configurations and platforms for sln file
-            foreach (var platform in _defaultPlatforms)
+            foreach (var platform in SlnFileFactory.DefaultPlatforms)
             {
                 solution.AddPlatform(platform);
             }
-            foreach (var buildType in _defaultBuildTypes)
+
+            foreach (var buildType in SlnFileFactory.DefaultBuildTypes)
             {
                 solution.AddBuildType(buildType);
             }
         }
 
-        SolutionFolderModel? solutionFolder = !_inRoot && !string.IsNullOrEmpty(_solutionFolderPath)
-            ? solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(_solutionFolderPath))
-            : null;
-
         foreach (var projectPath in projectPaths)
         {
-            string relativePath = Path.GetRelativePath(Path.GetDirectoryName(solutionFileFullPath), projectPath);
-            // Add fallback solution folder if relative path does not contain `..`.
-            string relativeSolutionFolder =  relativePath.Split(Path.DirectorySeparatorChar).Any(p => p == "..")
-                ? string.Empty : Path.GetDirectoryName(relativePath);
-
-            if (!_inRoot && solutionFolder is null && !string.IsNullOrEmpty(relativeSolutionFolder))
-            {
-                if (relativeSolutionFolder.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativePath))
-                {
-                    relativeSolutionFolder = Path.Combine([.. relativeSolutionFolder.Split(Path.DirectorySeparatorChar).SkipLast(1)]);
-                }
-                if (!string.IsNullOrEmpty(relativeSolutionFolder))
-                {
-                    solutionFolder = solution.AddFolder(GetSolutionFolderPathWithForwardSlashes(relativeSolutionFolder));
-                }
-            }
-
-            try
-            {
-                AddProject(solution, relativePath, projectPath, solutionFolder, serializer);
-            }
-            catch (InvalidProjectFileException ex)
-            {
-                Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, projectPath, ex.Message));
-            }
-            catch (SolutionArgumentException ex) when (solution.FindProject(relativePath) != null || ex.Type == SolutionErrorType.DuplicateProjectName)
-            {
-                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, solutionFileFullPath, relativePath);
-            }
+            AddProject(solution, projectPath, serializer);
         }
-        await serializer.SaveAsync(solutionFileFullPath, solution, cancellationToken);
+
+        await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private static void AddProject(SolutionModel solution, string solutionRelativeProjectPath, string fullPath, SolutionFolderModel? solutionFolder, ISolutionSerializer serializer = null)
+    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null)
     {
+        string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
+
         // Open project instance to see if it is a valid project
-        ProjectRootElement projectRootElement = ProjectRootElement.Open(fullPath);
-        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
-        SolutionProjectModel project;
+        ProjectRootElement projectRootElement;
         try
         {
-            project = solution.AddProject(solutionRelativeProjectPath, null, solutionFolder);
+            projectRootElement = ProjectRootElement.Open(fullProjectPath);
         }
-        catch (SolutionArgumentException ex) when (ex.ParamName == "projectTypeName")
+        catch (InvalidProjectFileException ex)
         {
-            // If guid is not identified by vs-solutionpersistence, check in project element itself
-            var guid = projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
-            if (string.IsNullOrEmpty(guid))
-            {
-                Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullPath);
-                return;
-            }
-            project = solution.AddProject(solutionRelativeProjectPath, guid, solutionFolder);
+            Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, fullProjectPath, ex.Message));
+            return;
         }
+
+        ProjectInstance projectInstance = new ProjectInstance(projectRootElement);
+
+        string projectTypeGuid = solution.ProjectTypes.FirstOrDefault(t => t.Extension == Path.GetExtension(fullProjectPath))?.ProjectTypeId.ToString()
+            ?? projectRootElement.GetProjectTypeGuid() ?? projectInstance.GetDefaultProjectTypeGuid();
+
+        // Generate the solution folder path based on the project path
+        SolutionFolderModel? solutionFolder = GenerateIntermediateSolutionFoldersForProjectPath(solution, solutionRelativeProjectPath);
+
+        SolutionProjectModel project;
+
+        try
+        {
+            project = solution.AddProject(solutionRelativeProjectPath, projectTypeGuid, solutionFolder);
+        }
+        catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.InvalidProjectTypeReference)
+        {
+            Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullProjectPath);
+            return;
+        }
+        catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
+        {
+            Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            return;
+        }
+
         // Add settings based on existing project instance
         string projectInstanceId = projectInstance.GetProjectId();
+
         if (!string.IsNullOrEmpty(projectInstanceId) && serializer is ISolutionSerializer<SlnV12SerializerSettings>)
         {
             project.Id = new Guid(projectInstanceId);
@@ -164,7 +193,7 @@ internal class SolutionAddCommand : CommandBase
         foreach (var solutionPlatform in solution.Platforms)
         {
             var projectPlatform = projectInstancePlatforms.FirstOrDefault(
-                platform => platform.Replace(" ", string.Empty) ==  solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault());
+                platform => platform.Replace(" ", string.Empty) == solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault());
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, projectPlatform));
         }
 
@@ -174,6 +203,7 @@ internal class SolutionAddCommand : CommandBase
                 buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
+
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
     }
 }

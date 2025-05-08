@@ -4,8 +4,6 @@
 
   <PropertyGroup>
     <TargetFramework>net472</TargetFramework>
-    <Nullable>enable</Nullable>
-
     <IsShipping>false</IsShipping>
     <ExcludeFromSourceBuild>true</ExcludeFromSourceBuild>
 

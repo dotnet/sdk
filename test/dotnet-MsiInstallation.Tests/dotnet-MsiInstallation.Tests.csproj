@@ -15,7 +15,6 @@
   <PropertyGroup>
     <CanRunTestAsTool>false</CanRunTestAsTool>
     <RootNamespace>Microsoft.DotNet.MsiInstallerTests</RootNamespace>
-    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
