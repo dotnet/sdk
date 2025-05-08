@@ -1,0 +1,20 @@
+# Contains the list of files to be excluded from artifact size tests.
+#
+# Format
+#   Exclude the path entirely: 
+#     <path> [# comment]
+#   Exclude a path from a specific artifact:
+#     <path>|{sdk} [# comment]
+#   sdk        = source-built SDK
+#
+# '*' in exclusions match zero or more characters.
+# '*' will match files and directory names but it will not match separator characters.
+# '/' will be evaluated as '/**' if it is the last character.
+#
+# Examples
+# 'folder/*' matches all files and directories in 'folder/'. It will not match 'folder/abc/def'
+# 'folder/' is equivalent to 'folder/**. It matches 'folder/', 'folder/abc', and 'folder/abc/def/'
+
+metadata/workloads/x.y.z/userlocal|sdk
+packs/runtime.banana-rid.Microsoft.DotNet.ILCompiler/x.y.z/sdk/nonportable.txt|sdk
+sdk/x.y.z/Microsoft/Microsoft.NET.Build.Extensions/net471/_._|sdk

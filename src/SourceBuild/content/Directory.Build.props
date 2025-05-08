@@ -1,0 +1,201 @@
+<Project>
+
+  <PropertyGroup>
+    <Configuration Condition="$(Configuration) == ''">Release</Configuration>
+    <DotNetBuildOrchestrator>true</DotNetBuildOrchestrator>
+    <RootRepo>dotnet</RootRepo>
+  </PropertyGroup>
+
+  <PropertyGroup Label="CalculateTargetOS">
+    <BuildOS>linux</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('NETBSD'))">netbsd</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('HAIKU'))">haiku</BuildOS>
+    <BuildOS Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">windows</BuildOS>
+    <TargetOS Condition="'$(TargetOS)' == ''">$(BuildOS)</TargetOS>
+    <HostOS Condition="'$(HostOS)' == ''">$(TargetOS)</HostOS>
+  </PropertyGroup>
+
+  <!-- This is a list of cases where we aren't producing a whole SDK, just a runtime. This list should be kept in sync with https://github.com/dotnet/runtime/blob/main/eng/SourceBuild.props#L26 -->
+  <PropertyGroup Label="ShortStacks">
+    <ShortStack Condition="'$(TargetOS)' == 'wasi'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'browser'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'ios'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'iossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvos'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'tvossimulator'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'maccatalyst'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'android'">true</ShortStack>
+    <ShortStack Condition="'$(TargetOS)' == 'linux-bionic'">true</ShortStack>
+    <!-- NativeAOT Mac builds are short -->
+    <ShortStack Condition="'$(TargetOS)' == 'osx' and '$(DotNetBuildRuntimeNativeAOTRuntimePack)' == 'true'">true</ShortStack>
+    <!-- Mono LLVM builds are short -->
+    <ShortStack Condition="'$(MonoEnableLLVM)' == 'true' or '$(MonoAOTEnableLLVM)' == 'true'">true</ShortStack>
+    <!-- Short stack builds stop at runtime, not the whole SDK -->
+    <RootRepo Condition="'$(ShortStack)' == 'true'">runtime</RootRepo>
+  </PropertyGroup>
+
+  <!-- See https://github.com/dotnet/arcade/blob/main/Documentation/UnifiedBuild/Unified-Build-Controls.md#output-controls for
+       control set definition. -->
+  <PropertyGroup Label="CalculateArch">
+    <!-- Build architecture is what we are building on. -->
+    <BuildArchitecture>$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant)</BuildArchitecture>
+    <!-- The target architecture is the what the customer is targeting their outputs to run on. -->
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">$(BuildArchitecture)</TargetArchitecture>
+    <!-- The host architecture is the what the customer will build on. Much of the time, Host==Target. -->
+    <HostArchitecture Condition="'$(HostArchitecture)' == ''">$(TargetArchitecture)</HostArchitecture>
+
+    <Platform Condition="'$(Platform)' == ''">AnyCPU</Platform>
+  </PropertyGroup>
+
+  <PropertyGroup Label="CalculateRID">
+    <!-- Use current machine distro RID if set. Otherwise, fall back to RuntimeInformation.RuntimeIdentifier -->
+    <BuildRid>$(__DistroRid)</BuildRid>
+    <BuildRid Condition="'$(BuildRid)' == '' and '$(MSBuildRuntimeType)' == 'core'">$([System.Runtime.InteropServices.RuntimeInformation]::RuntimeIdentifier)</BuildRid>
+    <BuildRid Condition="'$(BuildRid)' == '' and '$(MSBuildRuntimeType)' != 'core'">win-$([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant)</BuildRid>
+
+    <TargetRid Condition="'$(TargetRid)' == ''">$(BuildRid.Substring(0, $(BuildRid.LastIndexOf('-'))))-$(TargetArchitecture)</TargetRid>
+    <HostRid Condition="'$(HostRid)' == ''">$(TargetRid)</HostRid>
+
+    <!-- Source-only builds are non portable, except for cross-builds.
+         Source-only cross-builds default to the portable configuration so the resulting SDK works on a wider range of distros. -->
+    <PortableBuild Condition="'$(PortableBuild)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(BuildArchitecture)' == '$(TargetArchitecture)'">false</PortableBuild>
+    <PortableBuild Condition="'$(PortableBuild)' == ''">true</PortableBuild>
+
+    <PortableRid Condition="'$(__PortableTargetOS)' != ''">$(__PortableTargetOS)-$(TargetArchitecture)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'freebsd'">freebsd-$(TargetArchitecture)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'osx'">osx-$(TargetArchitecture)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'linux'">linux-$(TargetArchitecture)</PortableRid>
+    <PortableRid Condition="$(TargetRid.StartsWith('linux-musl')) or $(TargetRid.StartsWith('alpine'))">linux-musl-$(TargetArchitecture)</PortableRid>
+    <PortableRid Condition="'$(PortableRid)' == '' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</PortableRid>
+
+    <TargetRid Condition="'$(PortableBuild)' == 'true' and '$(PortableRid)' != ''">$(PortableRid)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' != 'windows'">$(TargetOS)-$(TargetArchitecture)</TargetRid>
+    <TargetRid Condition="'$(ShortStack)' == 'true' and '$(TargetOS)' == 'windows'">win-$(TargetArchitecture)</TargetRid>
+  </PropertyGroup>
+
+  <!-- Set NuGetPackageRoot before Arcade SDK sets it. -->
+  <PropertyGroup>
+    <!-- Set RestorePackagesPath so that we don't accidentally pull some packages from the global location. -->
+    <RestorePackagesPath Condition="'$(RestorePackagesPath)' == ''">$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '.packages'))</RestorePackagesPath>
+    <NuGetPackageRoot Condition="'$(NuGetPackageRoot)' == ''">$(RestorePackagesPath)</NuGetPackageRoot>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.DotNet.Arcade.Sdk" Condition="'$(SkipArcadeSdkImport)' != 'true'" />
+
+  <!-- Init basic Arcade props, if the project importing this file doesn't use Arcade.
+       Keep in sync with props/targets in the Arcade.Sdk. -->
+  <PropertyGroup Condition="'$(SkipArcadeSdkImport)' == 'true'">
+    <!-- RepoLayout.props -->
+    <RepoRoot Condition="'$(RepoRoot)' == ''">$([MSBuild]::NormalizeDirectory('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), 'global.json'))'))</RepoRoot>
+
+    <ArtifactsDir Condition="'$(ArtifactsDir)' == ''">$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'artifacts'))</ArtifactsDir>
+    <ArtifactsObjDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'obj'))</ArtifactsObjDir>
+    <ArtifactsBinDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'bin'))</ArtifactsBinDir>
+    <RepositoryEngineeringDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'eng'))</RepositoryEngineeringDir>
+
+    <!-- ProjectLayout.props -->
+    <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
+    <OutDirName Condition="'$(OutDirName)' == ''">$(MSBuildProjectName)</OutDirName>
+
+    <BaseOutputPath Condition="'$(BaseOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(ArtifactsBinDir)$(OutDirName)\'))</BaseOutputPath>
+    <OutputPath Condition="'$(PlatformName)' == 'AnyCPU'">$(BaseOutputPath)$(Configuration)\</OutputPath>
+    <OutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(BaseOutputPath)$(PlatformName)\$(Configuration)\</OutputPath>
+
+    <BaseIntermediateOutputPath Condition="'$(BaseIntermediateOutputPath)' == ''">$([System.IO.Path]::GetFullPath('$(ArtifactsObjDir)$(OutDirName)\'))</BaseIntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' == 'AnyCPU'">$(BaseIntermediateOutputPath)$(Configuration)\</IntermediateOutputPath>
+    <IntermediateOutputPath Condition="'$(PlatformName)' != 'AnyCPU'">$(BaseIntermediateOutputPath)$(PlatformName)\$(Configuration)\</IntermediateOutputPath>
+
+    <!-- TargetFrameworkDefaults.props -->
+    <NetCurrent>net9.0</NetCurrent>
+  </PropertyGroup>
+
+  <!-- Manually import the Versions.props file when the Arcade SDK isn't used. -->
+  <Import Project="$(RepositoryEngineeringDir)Versions.props" Condition="'$(SkipArcadeSdkImport)' == 'true'" />
+
+  <PropertyGroup>
+    <!-- We have no projects targeting multiple frameworks, so don't include in output path. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- This repo's projects are entirely infrastructure and do not ship. -->
+    <IsShipping>false</IsShipping>
+    <!-- It's not unusual to build with a preview SDK -->
+    <SuppressNETCoreSdkPreviewMessage>true</SuppressNETCoreSdkPreviewMessage>
+    <!-- By default, the VMR builds with online sources when not building source-only. -->
+    <DotNetBuildWithOnlineFeeds Condition="'$(DotNetBuildWithOnlineFeeds)' == '' and '$(DotNetBuildSourceOnly)' != 'true'">true</DotNetBuildWithOnlineFeeds>
+    <!-- Don't use Arcade's ExcludeFrom* build infra in the VMR orchestrator. -->
+    <DisableArcadeExcludeFromBuildSupport>true</DisableArcadeExcludeFromBuildSupport>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <LogVerbosity Condition="'$(LogVerbosity)'==''">minimal</LogVerbosity>
+
+    <ShellExtension Condition="'$(BuildOS)' == 'windows'">.cmd</ShellExtension>
+    <ShellExtension Condition="'$(BuildOS)' != 'windows'">.sh</ShellExtension>
+
+    <!-- While the tarball infrastructure currently only supports non Windows, these properties
+         are already defined for more flexibility in the future. -->
+    <ArchiveExtension Condition="'$(BuildOS)' == 'windows'">.zip</ArchiveExtension>
+    <ArchiveExtension Condition="'$(BuildOS)' != 'windows'">.tar.gz</ArchiveExtension>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SrcDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'src'))</SrcDir>
+    <ToolsDir>$([MSBuild]::NormalizeDirectory('$(RepositoryEngineeringDir)', 'tools'))</ToolsDir>
+    <TasksDir>$([MSBuild]::NormalizeDirectory('$(ToolsDir)', 'tasks'))</TasksDir>
+    <RepoProjectsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'repo-projects'))</RepoProjectsDir>
+
+    <PrereqsDir>$([MSBuild]::NormalizeDirectory('$(RepoRoot)', 'prereqs'))</PrereqsDir>
+    <KeysDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'keys'))</KeysDir>
+    <PrereqsPackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'packages'))</PrereqsPackagesDir>
+
+    <!-- When SB mode, the initial toolsets are unzipped to the "BootstrapPackages" dir.
+         When running in non-source-build, the bootstrap package is the one restored at the beginning of the build. -->
+    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' == 'true'">$([MSBuild]::NormalizeDirectory('$(NuGetPackageRoot)', 'BootstrapPackages'))</BootstrapPackagesDir>
+    <BootstrapPackagesDir Condition="'$(DotNetBuildSourceOnly)' != 'true'">$(NuGetPackageRoot)</BootstrapPackagesDir>
+
+    <VSMSBuildSdkResolversDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'toolset', 'VSSdkResolvers'))</VSMSBuildSdkResolversDir>
+    <IntermediateSymbolsRootDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'Symbols'))</IntermediateSymbolsRootDir>
+    <AssetManifestsIntermediateDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'AssetManifests'))</AssetManifestsIntermediateDir>
+    <ArtifactsAssetsDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'assets', '$(Configuration)'))</ArtifactsAssetsDir>
+    <DotNetSdkExtractDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'extracted-dotnet-sdk'))</DotNetSdkExtractDir>
+
+    <PrebuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'prebuilt'))</PrebuiltPackagesPath>
+    <PreviouslyRestoredPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previouslyRestored'))</PreviouslyRestoredPackagesPath>
+    <PrebuiltSourceBuiltPackagesPath>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'previously-source-built'))</PrebuiltSourceBuiltPackagesPath>
+    <PrebuiltSourceBuiltPackagesPath Condition="'$(CustomPrebuiltSourceBuiltPackagesPath)' != ''">$([MSBuild]::EnsureTrailingSlash('$(CustomPrebuiltSourceBuiltPackagesPath)'))</PrebuiltSourceBuiltPackagesPath>
+
+    <GitInfoDir>$([MSBuild]::NormalizeDirectory('$(PrereqsDir)', 'git-info'))</GitInfoDir>
+
+    <PackageReportDir>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'prebuilt-report'))</PackageReportDir>
+    <ResultingPrebuiltPackagesDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', 'prebuilt-packages'))</ResultingPrebuiltPackagesDir>
+    <DotNetBuildPrebuiltReportDir>$([MSBuild]::NormalizeDirectory('$(PackageReportDir)', '$(MSBuildProjectName)'))</DotNetBuildPrebuiltReportDir>
+    
+    <SbrpRepoSrcDir>$([MSBuild]::NormalizeDirectory('$(SrcDir)', 'source-build-reference-packages', 'src'))</SbrpRepoSrcDir>
+    <ReferencePackagesDir>$([MSBuild]::NormalizeDirectory('$(PrereqsPackagesDir)', 'reference'))</ReferencePackagesDir>
+    <SourceBuiltArtifactsTarballName>Private.SourceBuilt.Artifacts</SourceBuiltArtifactsTarballName>
+    <SourceBuiltPrebuiltsTarballName>Private.SourceBuilt.Prebuilts</SourceBuiltPrebuiltsTarballName>
+
+    <BaselineDataFile>$(ToolsDir)prebuilt-baseline.xml</BaselineDataFile>
+  </PropertyGroup>
+
+  <!-- Build task assembly paths -->
+  <PropertyGroup>
+    <MicrosoftDotNetUnifiedBuildTasksAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.UnifiedBuild.Tasks', '$(Configuration)', 'Microsoft.DotNet.UnifiedBuild.Tasks.dll'))</MicrosoftDotNetUnifiedBuildTasksAssembly>
+    <MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly>$([MSBuild]::NormalizePath('$(ArtifactsBinDir)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection', '$(Configuration)', 'Microsoft.DotNet.SourceBuild.Tasks.LeakDetection.dll'))</MicrosoftDotNetSourceBuildTasksLeakDetectionAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(EnablePoison)' == 'true'">
+    <PoisonMarkerFile>.prebuilt.xml</PoisonMarkerFile>
+    <PoisonReportDataFile>$(PackageReportDir)poison-catalog.xml</PoisonReportDataFile>
+    <PoisonedReportFile>$(PackageReportDir)poisoned.txt</PoisonedReportFile>
+    <PoisonUsageReportFile>$(PackageReportDir)poison-usage.xml</PoisonUsageReportFile>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <MergedAssetManifestOutputPath>$(ArtifactsDir)VerticalManifest.xml</MergedAssetManifestOutputPath>
+  </PropertyGroup>
+
+</Project>

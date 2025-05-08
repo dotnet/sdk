@@ -1,0 +1,97 @@
+﻿<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <LogVerbosityOptOut>true</LogVerbosityOptOut>
+
+    <BuildArgs Condition="'$(TargetOS)' == 'windows'">$(BuildArgs) -nativeToolsOnMachine</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PackageProjectUrl=https://github.com/dotnet/sdk</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PortableRid=$(PortableRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:TargetRid=$(TargetRid)</BuildArgs>
+
+    <BuildArgs>$(BuildArgs) $(FlagParameterPrefix)v $(LogVerbosity)</BuildArgs>
+
+    <!--
+      Setting NETCoreAppMaximumVersion to a high version so that the sdk doesn't complain if we're restoring/publishing for a higher version than the sdk.
+      See https://github.com/dotnet/sdk/issues/1512#issuecomment-377082883
+    -->
+    <BuildArgs>$(BuildArgs) /p:NETCoreAppMaximumVersion=99.9</BuildArgs>
+
+    <!-- We need to extract the non-portable OS name from the non-portable RID and pass that to installer build script.
+         This should not happen except when building non-portable. installer generally extracts the OSName from the host OS,
+         or from the Rid if supplied. -->
+    <BuildArgs Condition="$(PortableBuild) != 'true'">$(BuildArgs) /p:OSName=$(TargetRid.Substring(0, $(TargetRid.IndexOf("-"))))</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:PortableOSName=$(__PortableTargetOS)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:Rid=$(TargetRid)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:Architecture=$(TargetArchitecture)</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:DOTNET_INSTALL_DIR=$(DotNetRoot)</BuildArgs>
+
+    <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:AspNetCoreInstallerRid=$(TargetRid)</BuildArgs>
+    <!-- sdk always wants to build portable on FreeBSD -->
+    <BuildArgs Condition="'$(TargetOS)' == 'freebsd' and '$(DotNetBuildSourceOnly)' == 'true'">$(BuildArgs) /p:PortableBuild=true</BuildArgs>
+    <BuildArgs Condition="'$(TargetOS)' != 'windows'">$(BuildArgs) /p:NetRuntimeRid=$(TargetRid)</BuildArgs>
+    <!-- https://github.com/dotnet/source-build/issues/4138 -->
+    <BuildArgs Condition="'$(TargetOS)' != 'windows' and '$(TargetOS)' != 'osx'">$(BuildArgs) /p:SkipBuildingInstallers=true</BuildArgs>
+
+    <BuildArgs>$(BuildArgs) /p:PublicBaseURL=file:%2F%2F$(ArtifactsAssetsDir)</BuildArgs>
+    <!-- In non-source-only scenarios, currently consume aspnetcore from the normal public base url -->
+    <BuildArgs>$(BuildArgs) /p:FallbackPublicBaseURL=https://dotnetbuilds.blob.core.windows.net/public/</BuildArgs>
+    <BuildArgs>$(BuildArgs) /p:UsePortableLinuxSharedFramework=false</BuildArgs>
+
+    <BuildArgs Condition="'$(PgoInstrument)' == 'true'">$(BuildArgs) /p:PgoInstrument=true</BuildArgs>
+    <BuildArgs Condition="'$(EnablePoison)' == 'true'">$(BuildArgs) /p:DISABLE_CROSSGEN=true</BuildArgs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <RepositoryReference Include="arcade" />
+    <RepositoryReference Include="aspire" />
+    <RepositoryReference Include="aspnetcore" />
+    <RepositoryReference Include="command-line-api" />
+    <RepositoryReference Include="deployment-tools" />
+    <RepositoryReference Include="emsdk" />
+    <RepositoryReference Include="fsharp" />
+    <RepositoryReference Include="msbuild" />
+    <RepositoryReference Include="nuget-client" />
+    <RepositoryReference Include="razor" />
+    <RepositoryReference Include="roslyn-analyzers" />
+    <RepositoryReference Include="roslyn" />
+    <RepositoryReference Include="runtime" />
+    <RepositoryReference Include="sourcelink" />
+    <RepositoryReference Include="symreader" />
+    <RepositoryReference Include="templating" />
+    <RepositoryReference Include="test-templates" />
+    <RepositoryReference Include="vstest" />
+    <RepositoryReference Include="windowsdesktop" Condition="'$(TargetOS)' == 'windows'" />
+    <RepositoryReference Include="xdt" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RepositoryReference Include="source-build-externals" />
+    <RepositoryReference Include="source-build-reference-packages" />
+  </ItemGroup>
+
+  <!--
+    If we have authentication, keep the templating internal feed (if one exists) to acquire the
+    text-only prebuilt. The source-build repo as a whole should depend on the same internal feed as
+    this repo does, so authentication should already be set up in the global endpoints json.
+  -->
+  <ItemGroup Condition="'$(VSS_NUGET_EXTERNAL_FEED_ENDPOINTS)' != ''">
+    <KeepFeedPrefixes Include="darc-int-dotnet-aspnetcore-" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EnvironmentVariables Include="CLIBUILD_SKIP_TESTS=true" />
+    <!-- https://github.com/dotnet/source-build/issues/4115. -->
+    <EnvironmentVariables Include="PublishWindowsPdb=false" />
+  </ItemGroup>
+
+  <!-- Copy SDK archive to assets root. -->
+  <Target Name="CopySdkArchive"
+          AfterTargets="Build"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion">
+    <Copy SourceFiles="$(SdkTarballPath)"
+          DestinationFolder="$(ArtifactsAssetsDir)"
+          SkipUnchangedFiles="true"
+          UseHardlinksIfPossible="true" />
+  </Target>
+
+</Project>
