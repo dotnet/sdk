@@ -173,7 +173,7 @@ internal class SolutionAddCommand : CommandBase
             Reporter.Error.WriteLine(CliStrings.UnsupportedProjectType, fullProjectPath);
             return;
         }
-        catch (SolutionArgumentException ex) when (showMessageOnDuplicate && ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
+        catch (SolutionArgumentException ex) when (showMessageOnDuplicate && (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null))
         {
             Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
             return;
