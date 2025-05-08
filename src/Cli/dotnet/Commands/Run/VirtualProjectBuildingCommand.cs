@@ -493,7 +493,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             });
 
         projectFileText = csprojWriter.ToString();
-        if (cache != null) cache.CurrentEntry.ProjectFileText = projectFileText;
+        cache?.CurrentEntry.ProjectFileText = projectFileText;
         _projectFileText = projectFileText;
 
         return this;
