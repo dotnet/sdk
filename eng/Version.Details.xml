@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.204">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.205">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8cc88f99af0e2eb16d8a2a04bac25593f6ac4d97</Sha>
+      <Sha>5bbd6cc4111e6234fc1daeb771d494f691555c1a</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.204-servicing.25217.4">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.205-servicing.25257.3">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>8cc88f99af0e2eb16d8a2a04bac25593f6ac4d97</Sha>
+      <Sha>5bbd6cc4111e6234fc1daeb771d494f691555c1a</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.204-servicing.25209.4">
