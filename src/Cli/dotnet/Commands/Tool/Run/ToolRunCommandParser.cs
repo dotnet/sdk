@@ -4,6 +4,9 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -39,6 +42,7 @@ internal static class ToolRunCommandParser
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
+
         command.Options.Add(RollForwardOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());
