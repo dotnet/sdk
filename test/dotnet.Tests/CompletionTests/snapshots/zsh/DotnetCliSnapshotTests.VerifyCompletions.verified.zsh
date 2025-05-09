@@ -888,6 +888,7 @@ _testhost() {
                                             '--in-root=[Place project in root of the solution, rather than creating a solution folder.]: :((False\:"False" True\:"True" ))' \
                                             '--solution-folder=[The destination solution folder path to add the projects to.]: : ' \
                                             '-s=[The destination solution folder path to add the projects to.]: : ' \
+                                            '--include-references=[Recursively add projects'\'' ReferencedProjects to solution]: :((False\:"False" True\:"True" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT_PATH -- The paths to the projects to add to the solution.: ' \
