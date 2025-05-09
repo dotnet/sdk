@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new MacOsEnvironmentPath(
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -50,12 +50,12 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new MacOsEnvironmentPath(
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
                 new FileSystemMockBuilder()
-                    .AddFile(MacOsEnvironmentPath.DotnetCliToolsPathsDPath, "")
+                    .AddFile(MacOSEnvironmentPath.DotnetCliToolsPathsDPath, "")
                     .Build()
                     .File);
 
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsDirectoryOnPath);
 
-            var environmentPath = new MacOsEnvironmentPath(
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue + ":" + toolsPath.Path);
 
-            var environmentPath = new MacOsEnvironmentPath(
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -113,7 +113,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
             reporter.Lines.Should().BeEmpty();
 
             fileSystem
-                .Exists(MacOsEnvironmentPath.DotnetCliToolsPathsDPath)
+                .Exists(MacOSEnvironmentPath.DotnetCliToolsPathsDPath)
                 .Should()
                 .Be(false);
         }
@@ -132,7 +132,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
-            var environmentPath = new MacOsEnvironmentPath(
+            var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
                 provider.Object,
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             fileSystem
                 .File
-                .ReadAllText(MacOsEnvironmentPath.DotnetCliToolsPathsDPath)
+                .ReadAllText(MacOSEnvironmentPath.DotnetCliToolsPathsDPath)
                 .Should()
                 .Be(toolsPath.Path);
         }

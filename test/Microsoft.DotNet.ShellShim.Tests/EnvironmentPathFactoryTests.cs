@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             IEnvironmentPathInstruction result =
                 EnvironmentPathFactory.CreateEnvironmentPathInstruction(provider.Object);
-            (result is MacOsEnvironmentPath).Should().BeTrue();
+            (result is MacOSEnvironmentPath).Should().BeTrue();
         }
 
         [WindowsOnlyFact]
