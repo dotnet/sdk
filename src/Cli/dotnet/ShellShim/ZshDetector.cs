@@ -14,17 +14,8 @@ namespace Microsoft.DotNet.ShellShim
         public static bool IsZshTheUsersShell(IEnvironmentProvider environmentProvider)
         {
             string environmentVariable = environmentProvider.GetEnvironmentVariable("SHELL");
-            if (string.IsNullOrWhiteSpace(environmentVariable))
-            {
-                return false;
-            }
 
-            if (Path.GetFileName(environmentVariable).Equals(ZshFileName, StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
+            return Path.GetFileName(environmentVariable)?.Equals(ZshFileName, StringComparison.OrdinalIgnoreCase) ?? false;
         }
     }
 }
