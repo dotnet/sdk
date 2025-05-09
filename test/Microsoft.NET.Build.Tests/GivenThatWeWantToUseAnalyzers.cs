@@ -139,7 +139,7 @@ namespace Microsoft.NET.Build.Tests
                 Log,
                 asset.Path,
                 ToolsetInfo.CurrentTargetFramework,
-                "InterceptorsNamespaces",
+                "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
 
             command
