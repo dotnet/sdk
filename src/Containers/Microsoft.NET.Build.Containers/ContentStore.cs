@@ -37,7 +37,7 @@ internal static class ContentStore
     {
         string digest = descriptor.Digest;
 
-        Debug.Assert(digest.StartsWith("sha256:", StringComparison.Ordinal));
+        Debug.Assert(digest.StartsWith("sha256:", StringComparison.Ordinal), $"digest {digest} does not start with sha256:");
 
         string contentHash = digest.Substring("sha256:".Length);
 
