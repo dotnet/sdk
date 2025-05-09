@@ -65,9 +65,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <!-- Set the namespaces emitted by the RequestDelegateGenerator for interception when applicable. -->
-    <InterceptorsPreviewNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsPreviewNamespaces>
+    <InterceptorsNamespaces Condition="'$(EnableRequestDelegateGenerator)' == 'true'">$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Generated</InterceptorsNamespaces>
     <!-- Set the namespaces emitted by the ConfigurationBindingGenerator for interception when applicable. -->
-    <InterceptorsPreviewNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsPreviewNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsPreviewNamespaces>
+    <InterceptorsNamespaces Condition="'$(EnableConfigurationBindingGenerator)' == 'true'">$(InterceptorsNamespaces);Microsoft.Extensions.Configuration.Binder.SourceGeneration</InterceptorsNamespaces>
+    <!-- Set the namespaces emitted by the ValidationsGenerator for interception when applicable (.NET 10 and above). -->
+    <InterceptorsNamespaces Condition="'$(_TargetFrameworkVersionWithoutV)' != '' and '$(_TargetFrameworkVersionWithoutV)' >= '10.0'">$(InterceptorsNamespaces);Microsoft.AspNetCore.Http.Validation.Generated</InterceptorsNamespaces>
   </PropertyGroup>
 
   <!--
