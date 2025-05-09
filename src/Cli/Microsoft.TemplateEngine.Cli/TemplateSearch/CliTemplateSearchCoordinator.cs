@@ -95,13 +95,13 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                  Example
                      .For<NewCommand>(commandArgs.ParseResult)
                      .WithSubcommand<InstallCommand>()
-                     .WithArgument(BaseInstallCommand.NameArgument));
+                     .WithArgument(BaseInstallCommand.PackageIdentifierArgument));
                 Reporter.Output.WriteLine(LocalizableStrings.Generic_ExampleHeader);
                 Reporter.Output.WriteCommand(
                    Example
                        .For<NewCommand>(commandArgs.ParseResult)
                        .WithSubcommand<InstallCommand>()
-                       .WithArgument(BaseInstallCommand.NameArgument, packageIdToShow));
+                       .WithArgument(BaseInstallCommand.PackageIdentifierArgument, packageIdToShow));
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;

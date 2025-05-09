@@ -27,10 +27,10 @@
         <note />
       </trans-unit>
       <trans-unit id="Command_Install_Argument_Package">
-        <source>NuGet package ID or path to folder or NuGet package to install. 
-To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+        <source>NuGet package ID or path to folder or NuGet package to install.
+To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
-        <target state="translated">Yüklenecek NuGet paket kimliği veya klasör yolu ya da NuGet paketi. 
+        <target state="needs-review-translation">Yüklenecek NuGet paket kimliği veya klasör yolu ya da NuGet paketi. 
 Belirli bir sürümün NuGet paketini yüklemek için &lt;package ID&gt;::&lt;version&gt; kullanın.
 </target>
         <note />
@@ -86,9 +86,9 @@ Belirli bir sürümün NuGet paketini yüklemek için &lt;package ID&gt;::&lt;ve
         <note />
       </trans-unit>
       <trans-unit id="Command_Uninstall_Argument_Package">
-        <source>NuGet package ID (without version) or path to folder to uninstall. 
+        <source>NuGet package ID (without version) or path to folder to uninstall.
 If command is specified without the argument, it lists all the template packages installed.</source>
-        <target state="translated">NuGet paket kimliği (sürüm olmadan) veya kaldırılacak klasörün yolu. 
+        <target state="needs-review-translation">NuGet paket kimliği (sürüm olmadan) veya kaldırılacak klasörün yolu. 
 Eğer komut bağımsız değişken olmadan belirtilirse yüklü tüm şablon paketlerini listeler.</target>
         <note />
       </trans-unit>
