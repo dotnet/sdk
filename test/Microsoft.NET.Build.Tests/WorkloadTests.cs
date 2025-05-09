@@ -63,6 +63,7 @@ namespace Microsoft.NET.Build.Tests
 
             var getValuesCommand = new GetValuesCommand(testAsset, "SuggestedWorkload", GetValuesCommand.ValueType.Item)
             {
+                ShouldEscapeItems = true,
                 DependsOnTargets = "GetSuggestedWorkloads"
             };
             getValuesCommand.MetadataNames.Add("VisualStudioComponentId");
@@ -75,11 +76,11 @@ namespace Microsoft.NET.Build.Tests
 
             getValuesCommand.GetValuesWithMetadata().Select(valueAndMetadata => (valueAndMetadata.value, valueAndMetadata.metadata["VisualStudioComponentId"]))
                 .Should()
-                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
+                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "Microsoft.NET.Component.sdk.missingtestworkload") });
 
             getValuesCommand.GetValuesWithMetadata().Select(valueAndMetadata => (valueAndMetadata.value, valueAndMetadata.metadata["VisualStudioComponentIds"]))
                 .Should()
-                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload") });
+                .BeEquivalentTo(new[] { ("microsoft-net-sdk-missingtestworkload", "microsoft.net.sdk.missingtestworkload;Microsoft.NET.Component.sdk.missingtestworkload") });
         }
 
         [Fact]
