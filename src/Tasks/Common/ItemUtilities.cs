@@ -41,9 +41,9 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        public static string GetReferenceFileName(ITaskItem item)
+        public static string? GetReferenceFileName(ITaskItem? item)
         {
-            var aliases = item.GetMetadata(MetadataNames.Aliases);
+            var aliases = item?.GetMetadata(MetadataNames.Aliases);
 
             if (!string.IsNullOrEmpty(aliases))
             {
@@ -79,13 +79,13 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        public static string GetReferenceTargetPath(ITaskItem item)
+        public static string? GetReferenceTargetPath(ITaskItem? item)
         {
             // Determine if the reference will be copied local.  
             // We're only dealing with primary file references.  For these RAR will 
             // copy local if Private is true or unset.
 
-            var isPrivate = MSBuildUtilities.ConvertStringToBool(item.GetMetadata(MetadataNames.Private), defaultValue: true);
+            var isPrivate = MSBuildUtilities.ConvertStringToBool(item?.GetMetadata(MetadataNames.Private), defaultValue: true);
 
             if (!isPrivate)
             {
@@ -96,42 +96,42 @@ namespace Microsoft.NET.Build.Tasks
             return GetTargetPath(item);
         }
 
-        public static string GetReferenceTargetFileName(ITaskItem item)
+        public static string? GetReferenceTargetFileName(ITaskItem? item)
         {
             var targetPath = GetReferenceTargetPath(item);
 
             return targetPath != null ? Path.GetFileName(targetPath) : null;
         }
 
-        public static string GetSourcePath(ITaskItem item)
+        public static string? GetSourcePath(ITaskItem? item)
         {
-            var sourcePath = item.GetMetadata(MetadataNames.HintPath)?.Trim();
+            var sourcePath = item?.GetMetadata(MetadataNames.HintPath)?.Trim();
 
             if (string.IsNullOrWhiteSpace(sourcePath))
             {
                 // assume item-spec points to the file.
                 // this won't work if it comes from a targeting pack or SDK, but
                 // in that case the file won't exist and we'll skip it.
-                sourcePath = item.ItemSpec;
+                sourcePath = item?.ItemSpec;
             }
 
             return sourcePath;
         }
 
         static readonly string[] s_targetPathMetadata = new[] { MetadataNames.TargetPath, MetadataNames.DestinationSubPath };
-        public static string GetTargetPath(ITaskItem item)
+        public static string? GetTargetPath(ITaskItem? item)
         {
             // first use TargetPath, then DestinationSubPath, then fallback to filename+extension alone
             // Can't use Path, as this is the path of the file in the package, which is usually not the target path
             // (for example the target path for lib/netcoreapp2.0/lib.dll is just lib.dll)
             foreach (var metadata in s_targetPathMetadata)
             {
-                var value = item.GetMetadata(metadata)?.Trim();
+                var value = item?.GetMetadata(metadata)?.Trim();
 
                 if (!string.IsNullOrWhiteSpace(value))
                 {
                     // normalize path
-                    return value.Replace('\\', '/');
+                    return value?.Replace('\\', '/');
                 }
             }
 
@@ -140,9 +140,9 @@ namespace Microsoft.NET.Build.Tasks
             var fileName = Path.GetFileName(sourcePath);
 
             //  Get subdirectory for satellite assemblies / runtime targets
-            var destinationSubDirectory = item.GetMetadata("DestinationSubDirectory");
+            var destinationSubDirectory = item?.GetMetadata("DestinationSubDirectory");
 
-            if (!string.IsNullOrWhiteSpace(destinationSubDirectory))
+            if (!string.IsNullOrWhiteSpace(destinationSubDirectory) && fileName is not null)
             {
                 return Path.Combine(destinationSubDirectory, fileName);
             }

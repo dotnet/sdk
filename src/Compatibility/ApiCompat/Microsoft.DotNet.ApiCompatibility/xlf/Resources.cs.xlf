@@ -122,9 +122,9 @@
         <target state="translated">U parametru typu {1} z(e) {2} nelze odebrat omezení {0}.</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">Nelze odebrat virtuální klíčové slovo ze člena {0}.</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">Index {0} by měl být v rozsahu nula až {1} včetně.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">V žádném z hledaných adresářů se nepovedlo najít odpovídající sestavení: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

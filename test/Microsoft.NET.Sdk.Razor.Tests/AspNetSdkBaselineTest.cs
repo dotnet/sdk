@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -20,10 +22,10 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 #if GENERATE_SWA_BASELINES
         public static bool GenerateBaselines = true;
 #else
-        public static bool GenerateBaselines = true || bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
+        public static bool GenerateBaselines = bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
 #endif
 
-        private bool _generateBaselines = true || GenerateBaselines;
+        private bool _generateBaselines = GenerateBaselines;
 
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
@@ -63,7 +65,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
 
         protected virtual StaticWebAssetsBaselineComparer CreateBaselineComparer() => StaticWebAssetsBaselineComparer.Instance;
 
-        private StaticWebAssetsBaselineFactory CreateBaselineFactory() => StaticWebAssetsBaselineFactory.Instance;
+        private static StaticWebAssetsBaselineFactory CreateBaselineFactory() => StaticWebAssetsBaselineFactory.Instance;
 
         protected virtual string ComputeBaselineFolder() =>
             Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "test", "Microsoft.NET.Sdk.Razor.Tests", "StaticWebAssetsBaselines");
@@ -162,7 +164,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             }
         }
 
-        private void AssertFilesCore(IEnumerable<string> existingFiles, IEnumerable<string> expected)
+        private static void AssertFilesCore(IEnumerable<string> existingFiles, IEnumerable<string> expected)
         {
             var existingSet = new HashSet<string>(existingFiles);
             var expectedSet = new HashSet<string>(expected);

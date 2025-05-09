@@ -1,0 +1,55 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <GenerateNuspecDependsOn>_GenerateWorkloadManifestFiles;$(GenerateNuspecDependsOn)</GenerateNuspecDependsOn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <WorkloadManifestPath>$(IntermediateOutputPath)WorkloadManifest.json</WorkloadManifestPath>
+    <WorkloadManifestTargetsPath>$(IntermediateOutputPath)WorkloadManifest.targets</WorkloadManifestTargetsPath>
+    <WorkloadManifestWasiTargetsPath>$(IntermediateOutputPath)WorkloadManifest.Wasi.targets</WorkloadManifestWasiTargetsPath>
+    <WorkloadManifestWasmFeaturesPath>$(MSBuildThisFileDirectory)WasmFeatures.props</WorkloadManifestWasmFeaturesPath>
+    <WorkloadManifestTelemetryTargetsPath>$(MSBuildThisFileDirectory)WorkloadTelemetry.targets</WorkloadManifestTelemetryTargetsPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(WorkloadManifestPath)" Pack="true" PackagePath="data" />
+    <None Include="$(WorkloadManifestTargetsPath)" Pack="true" PackagePath="data" />
+    <None Include="$(WorkloadManifestWasiTargetsPath)" Pack="true" PackagePath="data" />
+    <None Include="$(WorkloadManifestWasmFeaturesPath)" Pack="true" PackagePath="data" />
+    <None Include="$(WorkloadManifestTelemetryTargetsPath)" Pack="true" PackagePath="data" />
+    <None Include="localize\**\*" Pack="true" PackagePath="data\localize" />
+  </ItemGroup>
+
+  <Target Name="_GenerateWorkloadManifestFiles">
+    <ItemGroup>
+      <!-- When changing 'NetVersion', also change in the dotnet/runtime repo the value of 'PackageId' in Microsoft.NET.Runtime.WebAssembly.Templates.csproj -->
+      <_WorkloadManifestValues Include="NetVersion" Value="net10" /> <!-- NetCurrent -->
+      <_WorkloadManifestValues Include="WorkloadVersion" Value="$(PackageVersion)" />
+      <_WorkloadManifestValues Include="RuntimeVersion" Value="$(MicrosoftNETCoreAppRuntimePackageVersion)" />
+      <_WorkloadManifestValues Include="RuntimeVersionNet9" Value="9.0.$(VersionFeature90ForWorkloads)" />
+      <_WorkloadManifestValues Include="RuntimeVersionNet8" Value="8.0.$(VersionFeature80ForWorkloads)" />
+      <_WorkloadManifestValues Include="RuntimeVersionNet7" Value="7.0.$(VersionFeature70)" />
+      <_WorkloadManifestValues Include="RuntimeVersionNet6" Value="6.0.$(VersionFeature60)" />
+    </ItemGroup>
+
+    <Error Condition="'%(_WorkloadManifestValues.Value)' == ''"
+           Text="No value specified for template variable '%(_WorkloadManifestValues.Identity)'" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="WorkloadManifest.json.in"
+      Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
+      OutputPath="$(WorkloadManifestPath)" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="WorkloadManifest.targets.in"
+      Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
+      OutputPath="$(WorkloadManifestTargetsPath)" />
+
+    <GenerateFileFromTemplate
+      TemplateFile="WorkloadManifest.Wasi.targets.in"
+      Properties="@(_WorkloadManifestValues->'%(Identity)=%(Value)')"
+      OutputPath="$(WorkloadManifestWasiTargetsPath)" />
+  </Target>
+
+</Project>
