@@ -53,7 +53,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
             .WithWorkingDirectory(projectPath)
-            .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
+            .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
             .Execute()
             .Should()
             // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
