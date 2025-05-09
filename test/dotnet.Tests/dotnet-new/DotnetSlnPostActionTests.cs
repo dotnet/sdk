@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         [InlineData("MySln.slnx")]
         public void AddProjectToSolutionPostActionFindSolutionFileAtOutputPath(string solutionFileName)
         {
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string solutionFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
         [Fact(DisplayName = nameof(AddProjectToSolutionPostActionFindsOneProjectToAdd))]
         public void AddProjectToSolutionPostActionFindsOneProjectToAdd()
         {
-            string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string outputBasePath = GetVirtualizedRootPath();
             IPostAction postAction = new MockPostAction(default, default, default, default, default!)
             {
                 ActionId = DotnetSlnPostActionProcessor.ActionProcessorId,
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var callback = new MockAddProjectToSolutionCallback();
             var actionProcessor = new DotnetSlnPostActionProcessor(callback.AddProjectToSolution);
 
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string slnFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
 
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var callback = new MockAddProjectToSolutionCallback();
             var actionProcessor = new DotnetSlnPostActionProcessor(callback.AddProjectToSolution);
 
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string slnFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
 
@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var callback = new MockAddProjectToSolutionCallback();
             var actionProcessor = new DotnetSlnPostActionProcessor(callback.AddProjectToSolution);
 
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string slnFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
 
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var callback = new MockAddProjectToSolutionCallback();
             var actionProcessor = new DotnetSlnPostActionProcessor(callback.AddProjectToSolution);
 
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string slnFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
 
@@ -300,7 +300,7 @@ namespace Microsoft.DotNet.Cli.New.Tests
             var callback = new MockAddProjectToSolutionCallback();
             var actionProcessor = new DotnetSlnPostActionProcessor(callback.AddProjectToSolution);
 
-            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            string targetBasePath = GetVirtualizedRootPath();
             string slnFileFullPath = Path.Combine(targetBasePath, solutionFileName);
             string projFileFullPath = Path.Combine(targetBasePath, "MyApp.csproj");
 
@@ -324,6 +324,21 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 targetBasePath);
 
             Assert.False(result);
+        }
+
+        /// <summary>
+        /// Creates a virtualized path at the root.
+        /// This is used to test the behavior of finding *.slnx files after failing to find *.sln files.
+        ///
+        /// If the root is not virtualized, tests will fail because the "FindFilesAtOrAbovePath" method
+        /// will run into a non-virtualized directory and fail due to it not existing within the "virtual cone".
+        /// </summary>
+        /// <returns>The root path virtualized</returns>
+        private string GetVirtualizedRootPath()
+        {
+            var root = Path.GetPathRoot(Directory.GetCurrentDirectory())!;
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(root);
+            return Path.Combine(Directory.GetCurrentDirectory(), "sandbox", Guid.NewGuid().ToString()) + Path.DirectorySeparatorChar;
         }
 
         private class MockAddProjectToSolutionCallback
