@@ -52,7 +52,7 @@ SDK commands:
   restore           Restore dependencies specified in a .NET project.
   run               Build and run a .NET project output.
   sdk               Manage .NET SDK installation.
-  sln               Modify Visual Studio solution files.
+  solution          Modify Visual Studio solution files.
   store             Store the specified assemblies in the runtime package store.
   test              Run unit tests using the test runner specified in a .NET project.
   tool              Install or manage tools that extend the .NET experience.

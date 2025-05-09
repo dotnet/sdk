@@ -50,6 +50,10 @@
 /src/Cli/dotnet/commands/dotnet-vstest @dotnet/dotnet-testing-admin
 /test/dotnet-test.Tests @dotnet/dotnet-testing-admin
 /test/dotnet-vstest.Tests @dotnet/dotnet-testing-admin
+/test/dotnet-new.Tests @dotnet/dotnet-testing-admin
+/template_feed/Microsoft.DotNet.Common.*/content/MSTest* @dotnet/dotnet-testing-admin
+/template_feed/Microsoft.DotNet.Common.*/content/NUnit* @dotnet/dotnet-testing-admin
+/template_feed/Microsoft.DotNet.Common.*/content/XUnit* @dotnet/dotnet-testing-admin
 
 # Area-Templates
 /src/Cli/dotnet/commands/dotnet-new @dotnet/templating-engine-maintainers
