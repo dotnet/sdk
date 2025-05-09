@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .File
                 .ReadAllText(OsxBashEnvironmentPath.DotnetCliToolsPathsDPath)
                 .Should()
-                .Be(toolsPath.PathWithTilde);
+                .Be(toolsPath.Path);
         }
     }
 }
