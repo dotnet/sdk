@@ -17,6 +17,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public string? WorkingDirectory { get; set; }
 
+        public bool RedirectStandardInput { get; set; }
+
         private string EscapeArgs()
         {
             //  Note: this doesn't handle invoking .cmd files via "cmd /c" on Windows, which probably won't be necessary here
@@ -40,7 +42,8 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 FileName = FileName,
                 Arguments = doNotEscapeArguments ? string.Join(" ", Arguments) : EscapeArgs(),
-                UseShellExecute = false
+                UseShellExecute = false,
+                RedirectStandardInput = RedirectStandardInput,
             };
             foreach (var kvp in Environment)
             {

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 
@@ -1095,5 +1097,300 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
+    }
+
+    private static string ToJson(string s) => JsonSerializer.Serialize(s);
+
+    /// <summary>
+    /// Simplifies using interpolated raw strings with nested JSON,
+    /// e.g, in <c>$$"""{x:{y:1}}"""</c>, the <c>}}</c> would result in an error.
+    /// </summary>
+    private const string nop = "";
+
+    [Fact]
+    public void Api()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/program
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.Hosting.Sdk 9.1.0
+            #:property TargetFramework net11.0
+            #:package System.CommandLine 2.0.0-beta4.22272.1
+            #:property LangVersion preview
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <TargetFramework>net11.0</TargetFramework>
+                        <LangVersion>preview</LangVersion>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+                      </ItemGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":[]}
+                """);
+    }
+
+    [Fact]
+    public void Api_Diagnostic_01()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            #:property LangVersion preview
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.CannotConvertDirective, $"{programPath}:2"))}}}]}
+                """.ReplaceLineEndings(""));
+    }
+
+    [Fact]
+    public void Api_Diagnostic_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:unknown directive
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"))}}}]}
+                """.ReplaceLineEndings(""));
+    }
+
+    [Fact]
+    public void Api_Error()
+    {
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput("""
+                {"$type":"Unknown1"}
+                {"$type":"Unknown2"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                {"$type":"Error","Version":1,"Message":
+                """)
+            .And.HaveStdOutContaining("Unknown1")
+            .And.HaveStdOutContaining("Unknown2");
     }
 }

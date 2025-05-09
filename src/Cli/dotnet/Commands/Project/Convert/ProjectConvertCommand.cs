@@ -30,7 +30,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
-        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: _force);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !_force, errors: null);
 
         Directory.CreateDirectory(targetDirectory);
 
@@ -50,7 +50,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
         using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
         using var writer = new StreamWriter(stream, Encoding.UTF8);
-        VirtualProjectBuildingCommand.WriteProjectFile(writer, directives);
+        VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
 
         return 0;
     }
