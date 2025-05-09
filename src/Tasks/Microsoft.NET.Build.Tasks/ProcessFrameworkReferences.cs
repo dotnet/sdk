@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
+#nullable disable
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -787,7 +787,7 @@ namespace Microsoft.NET.Build.Tasks
                 packVersion = RuntimeFrameworkVersion;
             }
 
-            TaskItem? runtimePackToDownload = null;
+            TaskItem runtimePackToDownload = null;
 
             // Crossgen and ILCompiler have RID-specific bits.
             if (toolPackType is ToolPackType.Crossgen2 or ToolPackType.ILCompiler)

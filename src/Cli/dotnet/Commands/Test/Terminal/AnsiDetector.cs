@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable disable warnings
-
 // Portions of the code in this file were ported from the spectre.console by Patrik Svensson, Phil Scott, Nils Andresen
 // https://github.com/spectreconsole/spectre.console/blob/main/src/Spectre.Console/Internal/Backends/Ansi/AnsiDetector.cs
 // and from the supports-ansi project by Qingrong Ke

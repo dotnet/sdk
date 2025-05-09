@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 
@@ -13,7 +11,7 @@ internal static class CommonRunHelpers
     /// <param name="globalProperties">
     /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
     /// </param>
-    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[]? args)
+    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[] args)
     {
         Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
 
@@ -36,7 +34,7 @@ internal static class CommonRunHelpers
         }
     }
 
-    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[]? args)
+    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[] args)
     {
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

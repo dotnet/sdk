@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
+#nullable disable
 
 using System.Diagnostics;
 using System.Security.Cryptography;
@@ -956,10 +956,10 @@ namespace Microsoft.NET.Build.Tasks
             private class AnalyzerResolver
             {
                 private readonly CacheWriter _cacheWriter;
-                private readonly string? _compilerNameSearchString;
-                private readonly Version? _compilerVersion;
-                private Dictionary<(string, NuGetVersion), LockFileTargetLibrary>? _targetLibraries;
-                private List<(string, LockFileLibrary, Version)>? _potentialAnalyzers;
+                private readonly string _compilerNameSearchString;
+                private readonly Version _compilerVersion;
+                private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> _targetLibraries;
+                private List<(string, LockFileLibrary, Version)> _potentialAnalyzers;
                 private Version _maxApplicableVersion;
 
                 private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> TargetLibraries =>

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -55,7 +53,7 @@ internal class WorkloadConfigCommand : WorkloadCommandBase
         //  It seems that the parser doesn't give us a good way to do that, however
         if (_hasUpdateMode)
         {
-            string globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
+            string? globalJsonPath = SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory);
             var globalJsonVersion = SdkDirectoryWorkloadManifestProvider.GlobalJsonReader.GetWorkloadVersionFromGlobalJson(globalJsonPath, out bool? shouldUseWorkloadSets);
             shouldUseWorkloadSets ??= string.IsNullOrWhiteSpace(globalJsonVersion) ? null : true;
             if (WorkloadConfigCommandParser.UpdateMode_WorkloadSet.Equals(_updateMode, StringComparison.InvariantCultureIgnoreCase))

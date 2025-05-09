@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory)
+internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
 {
     internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs, bool fallbackToTargetPath)
     {

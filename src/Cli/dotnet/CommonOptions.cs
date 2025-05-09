@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -69,14 +67,14 @@ internal static class CommonOptions
         new DynamicForwardedOption<string>("--runtime", "-r")
         {
             HelpName = RuntimeArgName
-        }.ForwardAsMany(RuntimeArgFunc)
+        }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<string> LongFormRuntimeOption =
         new DynamicForwardedOption<string>("--runtime")
         {
             HelpName = RuntimeArgName
-        }.ForwardAsMany(RuntimeArgFunc)
+        }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<bool> CurrentRuntimeOption(string description) =>
@@ -162,7 +160,7 @@ internal static class CommonOptions
             HelpName = CliStrings.ArchArgumentName
         }.SetForwardingFunction(ResolveArchOptionToRuntimeIdentifier);
 
-    internal static string ArchOptionValue(ParseResult parseResult) =>
+    internal static string? ArchOptionValue(ParseResult parseResult) =>
         string.IsNullOrEmpty(parseResult.GetValue(ArchitectureOption)) ?
             parseResult.GetValue(LongFormArchitectureOption) :
             parseResult.GetValue(ArchitectureOption);
@@ -254,7 +252,7 @@ internal static class CommonOptions
         }
     }
 
-    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
+    internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
         if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
         {
@@ -270,7 +268,7 @@ internal static class CommonOptions
         return ResolveRidShorthandOptions(null, arg);
     }
 
-    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string arg, ParseResult parseResult)
+    internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
         if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
         {
@@ -281,10 +279,10 @@ internal static class CommonOptions
         return ResolveRidShorthandOptions(arg, arch);
     }
 
-    private static IEnumerable<string> ResolveRidShorthandOptions(string os, string arch) =>
+    private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
         [$"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
 
-    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string os, string arch)
+    internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
     {
         var currentRid = GetCurrentRuntimeId();
         arch = arch == "amd64" ? "x64" : arch;
@@ -296,15 +294,17 @@ internal static class CommonOptions
     public static string GetCurrentRuntimeId()
     {
         // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
+        string? dotnetRootPath = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(key =>
             key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                 ? null
                 : Environment.GetEnvironmentVariable(key));
         var ridFileName = "NETCoreSdkRuntimeIdentifierChain.txt";
+        var sdkPath = dotnetRootPath is not null ? Path.Combine(dotnetRootPath, "sdk") : "sdk";
+
         // When running under test the Product.Version might be empty or point to version not installed in dotnetRootPath.
-        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(dotnetRootPath, "sdk", Product.Version)) ?
-            Path.Combine(Directory.GetDirectories(Path.Combine(dotnetRootPath, "sdk"))[0], ridFileName) :
-            Path.Combine(dotnetRootPath, "sdk", Product.Version, ridFileName);
+        string runtimeIdentifierChainPath = string.IsNullOrEmpty(Product.Version) || !Directory.Exists(Path.Combine(sdkPath, Product.Version)) ?
+            Path.Combine(Directory.GetDirectories(sdkPath)[0], ridFileName) :
+            Path.Combine(sdkPath, Product.Version, ridFileName);
         string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ? [.. File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l))] : [];
         if (currentRuntimeIdentifiers == null || !currentRuntimeIdentifiers.Any() || !currentRuntimeIdentifiers[0].Contains("-"))
         {

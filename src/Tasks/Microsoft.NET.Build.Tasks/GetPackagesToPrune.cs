@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
+#nullable disable
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -44,7 +44,7 @@ namespace Microsoft.NET.Build.Tasks
             public string TargetFrameworkVersion { get; set; }
             public HashSet<string> FrameworkReferences { get; set; }
 
-            public override bool Equals(object? obj) => obj is CacheKey key &&
+            public override bool Equals(object obj) => obj is CacheKey key &&
                 TargetFrameworkIdentifier == key.TargetFrameworkIdentifier &&
                 TargetFrameworkVersion == key.TargetFrameworkVersion &&
                 FrameworkReferences.SetEquals(key.FrameworkReferences);

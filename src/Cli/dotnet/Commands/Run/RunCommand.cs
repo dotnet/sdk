@@ -321,7 +321,7 @@ public class RunCommand
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? restoreArgs, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
@@ -170,7 +168,7 @@ internal static class NewCommandParser
             { "prefs:language", preferredLang },
             { "dotnet-cli-version", Product.Version },
             { "RuntimeFrameworkVersion", new Muxer().SharedFxVersion },
-            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() },
+            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() ?? "" },
         };
         return new CliTemplateEngineHost(
             HostIdentifier,

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
@@ -197,7 +195,7 @@ internal class MSBuildEvaluator : IIdentifiedComponent
                 targetFrameworksString = Sha256Hasher.HashWithNormalizedCasing(targetFramework);
             }
 
-            Dictionary<string, string> properties = new()
+            Dictionary<string, string?> properties = new()
             {
                 { "ProjectPath",  Sha256Hasher.HashWithNormalizedCasing(projectPath)},
                 { "SdkStyleProject", IsSdkStyleProject.ToString() },

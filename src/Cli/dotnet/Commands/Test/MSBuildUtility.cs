@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Collections.Concurrent;
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
@@ -31,7 +29,7 @@ internal static class MSBuildUtility
         }
 
         string rootDirectory = solutionFilePath.HasExtension(".slnf") ?
-                Path.GetDirectoryName(solutionModel.Description) :
+                Path.GetDirectoryName(solutionModel.Description)! :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
