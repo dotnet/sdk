@@ -8,7 +8,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
-    internal class OsxBashEnvironmentPath : IEnvironmentPath
+    internal class MacOsEnvironmentPath : IEnvironmentPath
     {
         private const string PathName = "PATH";
         private readonly BashPathUnderHomeDirectory _packageExecutablePath;
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ShellShim
             = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH")
               ?? @"/etc/paths.d/dotnet-cli-tools";
 
-        public OsxBashEnvironmentPath(
+        public MacOsEnvironmentPath(
             BashPathUnderHomeDirectory executablePath,
             IReporter reporter,
             IEnvironmentProvider environmentProvider,
@@ -55,7 +55,9 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.Path);
+                .Any(p => p.Equals(_packageExecutablePath.Path, StringComparison.OrdinalIgnoreCase)
+                    || p.Equals(_packageExecutablePath.PathWithDollar, StringComparison.OrdinalIgnoreCase)
+                    || p.Equals(_packageExecutablePath.PathWithTilde, StringComparison.OrdinalIgnoreCase));
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
