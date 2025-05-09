@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.ShellShim
                 return;
             }
 
-            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.PathWithTilde);
+            _fileSystem.WriteAllText(DotnetCliToolsPathsDPath, _packageExecutablePath.Path);
         }
 
         private bool PackageExecutablePathExists()
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.PathWithTilde);
+                .Any(p => p == _packageExecutablePath.Path || p == _packageExecutablePath.Path);
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
