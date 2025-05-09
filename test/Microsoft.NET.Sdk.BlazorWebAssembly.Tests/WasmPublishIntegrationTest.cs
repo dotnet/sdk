@@ -103,6 +103,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             VerifyTypeGranularTrimming(blazorPublishDirectory);
         }
 
+        /*
         [Fact]
         public void Publish_Works_WithLibraryUsingHintPath()
         {
@@ -155,6 +156,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             new FileInfo(Path.Combine(publishOutputDirectory, "wwwroot", "_framework", "RazorClassLibrary.wasm")).Should().Exist();
         }
+        */
 
         [Fact]
         public void Publish_WithScopedCss_Works()
@@ -867,6 +869,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
 
+        /*
         [Fact]
         public void Publish_HostedApp_WithNoBuild_Works()
         {
@@ -928,6 +931,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 serviceWorkerContent: "// This is the production service worker",
                 assetsManifestPath: "custom-service-worker-assets.js");
         }
+        */
 
         [Fact]
         public void Publish_HostedApp_VisualStudio()

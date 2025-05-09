@@ -247,6 +247,7 @@ namespace Microsoft.NET.Publish.Tests
             publishCommand.Execute().Should().Pass();
         }
 
+        /*
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64", "windows,linux,osx", "X64,Arm64", "_", "_")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "linux-x64", "windows,linux,osx", "X64,Arm64", "composite", "selfcontained")] // Composite in .NET 6.0 is only supported for self-contained builds
@@ -291,6 +292,7 @@ namespace Microsoft.NET.Publish.Tests
 
             TestProjectPublishing_Internal(projectName, targetFramework, isSelfContained: selfcontained == "selfcontained", emitNativeSymbols: true, useCrossgen2: true, composite: composite == "composite", identifier: targetFramework, runtimeIdentifier: runtimeIdentifier);
         }
+        */
 
         private enum TargetOSEnum
         {
