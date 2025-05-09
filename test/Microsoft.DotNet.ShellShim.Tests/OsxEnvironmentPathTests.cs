@@ -24,6 +24,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 .Setup(p => p.GetEnvironmentVariable("PATH"))
                 .Returns(pathValue);
 
+            provider
+                .Setup(p => p.GetEnvironmentVariable("SHELL"))
+                .Returns("/bin/bash"); // TODO: Make UnixOnlyTheory
+
             var environmentPath = new MacOSEnvironmentPath(
                 toolsPath,
                 reporter,
