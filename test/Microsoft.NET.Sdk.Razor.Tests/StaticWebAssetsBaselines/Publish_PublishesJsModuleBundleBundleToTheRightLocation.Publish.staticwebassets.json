@@ -2,8 +2,8 @@
   "Version": 1,
   "Hash": "__hash__",
   "Source": "ComponentApp",
-  "BasePath": "_content/ComponentApp",
-  "Mode": "Default",
+  "BasePath": "/",
+  "Mode": "Root",
   "ManifestType": "Publish",
   "ReferencedProjectsConfiguration": [],
   "DiscoveryPatterns": [
@@ -11,17 +11,17 @@
       "Name": "ComponentApp\\wwwroot",
       "Source": "ComponentApp",
       "ContentRoot": "${ProjectPath}\\wwwroot\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "Pattern": "**"
     }
   ],
   "Assets": [
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "AssetKind": "All",
       "AssetMode": "Reference",
@@ -35,14 +35,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -56,14 +58,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz"
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
@@ -77,14 +81,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "AssetKind": "All",
       "AssetMode": "Reference",
@@ -98,14 +104,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -119,14 +127,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br"
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
@@ -140,14 +150,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.br",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.br",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp.modules.json.br",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -161,14 +173,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\_content\\ComponentApp\\ComponentApp.modules.json.br"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\ComponentApp.modules.json.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp.modules.json.gz",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -182,14 +196,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\_content\\ComponentApp\\ComponentApp.modules.json.gz"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\ComponentApp.modules.json.gz",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.publish.manifest.json",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\jsmodules\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp.modules.json",
       "AssetKind": "Publish",
       "AssetMode": "CurrentProject",
@@ -203,14 +219,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.publish.manifest.json"
+      "OriginalItemSpec": "obj\\Debug\\${Tfm}\\jsmodules\\jsmodules.publish.manifest.json",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint}]?.styles.css",
       "AssetKind": "All",
       "AssetMode": "CurrentProject",
@@ -224,14 +242,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\bundle\\ComponentApp.styles.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint}]!.bundle.scp.css",
       "AssetKind": "All",
       "AssetMode": "Reference",
@@ -245,14 +265,16 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css"
+      "OriginalItemSpec": "${ProjectPath}\\obj\\Debug\\${Tfm}\\scopedcss\\projectbundle\\ComponentApp.bundle.scp.css",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
       "Identity": "${ProjectPath}\\wwwroot\\ComponentApp.lib.module.js",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\wwwroot\\",
-      "BasePath": "_content/ComponentApp",
+      "BasePath": "/",
       "RelativePath": "ComponentApp#[.{fingerprint}]!.lib.module.js",
       "AssetKind": "All",
       "AssetMode": "All",
@@ -266,13 +288,15 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\ComponentApp.lib.module.js"
+      "OriginalItemSpec": "wwwroot\\ComponentApp.lib.module.js",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
     }
   ],
   "Endpoints": [
     {
       "Route": "ComponentApp.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -317,7 +341,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -370,7 +394,7 @@
     },
     {
       "Route": "ComponentApp.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -425,7 +449,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -488,7 +512,7 @@
     },
     {
       "Route": "ComponentApp.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -533,7 +557,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.lib.module.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -586,7 +610,7 @@
     },
     {
       "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -649,7 +673,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -720,7 +744,7 @@
     },
     {
       "Route": "ComponentApp.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -765,7 +789,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -818,7 +842,7 @@
     },
     {
       "Route": "ComponentApp.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -873,7 +897,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -936,7 +960,7 @@
     },
     {
       "Route": "ComponentApp.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -981,7 +1005,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1034,7 +1058,7 @@
     },
     {
       "Route": "ComponentApp.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1089,7 +1113,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.bundle.scp.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1152,7 +1176,7 @@
     },
     {
       "Route": "ComponentApp.lib.module.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1197,7 +1221,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.lib.module.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1250,7 +1274,7 @@
     },
     {
       "Route": "ComponentApp.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1313,7 +1337,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.lib.module.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.lib.module.js.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1384,7 +1408,7 @@
     },
     {
       "Route": "ComponentApp.styles.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1429,7 +1453,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1482,7 +1506,7 @@
     },
     {
       "Route": "ComponentApp.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1537,7 +1561,7 @@
     },
     {
       "Route": "ComponentApp.__fingerprint__.styles.css",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]?.styles.css.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1600,7 +1624,7 @@
     },
     {
       "Route": "ComponentApp.modules.json.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1645,7 +1669,7 @@
     },
     {
       "Route": "ComponentApp.modules.json",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -1700,7 +1724,7 @@
     },
     {
       "Route": "ComponentApp.modules.json.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -1745,7 +1769,7 @@
     },
     {
       "Route": "ComponentApp.modules.json",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_content\\ComponentApp\\ComponentApp.modules.json.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp.modules.json.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
