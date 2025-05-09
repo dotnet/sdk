@@ -15,7 +15,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
-        var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".dotnet");
         Directory.CreateDirectory(cliHome);
         CreateUserLocalFileForCurrentSdk(cliHome);
 
@@ -28,6 +28,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
         .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
+        .WithEnvironmentVariable("HOME", cliHome)
+        .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
+        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
+        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
+        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
         .Execute()
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
@@ -41,10 +46,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
         Directory.CreateDirectory(cliHome);
         CreateUserLocalFileForCurrentSdk(cliHome);
 
-        Log.WriteLine($"[DEBUG] DOTNET_CLI_HOME = {Environment.GetEnvironmentVariable("DOTNET_CLI_HOME")}");
-        Log.WriteLine($"[DEBUG] HOME = {Environment.GetEnvironmentVariable("HOME")}");
-        Log.WriteLine($"[DEBUG] DOTNET_ROOT = {Environment.GetEnvironmentVariable("DOTNET_ROOT")}");
-
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
@@ -54,6 +55,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
         new DotnetWorkloadCommand(Log, "restore")
             .WithWorkingDirectory(projectPath)
             .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
+            .WithEnvironmentVariable("HOME", cliHome)
+            .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
+            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
+            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
+            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
             .Execute()
             .Should()
             // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
@@ -71,29 +77,14 @@ public class GivenDotnetWorkloadRestore : SdkTest
         var version = Version.Parse(sdkVersion.Split('-')[0]);
         var featureBand = $"{version.Major}.{version.Minor}.{(version.Build / 100) * 100}";
 
+        Directory.CreateDirectory(Path.Combine(cliHome, "sdk-manifests"));
+        Directory.CreateDirectory(Path.Combine(cliHome, "packs"));
+
+        File.Create(Path.Combine(cliHome, "userlocal")).Dispose();
+
         var userlocalPath = Path.Combine(cliHome, "metadata", "workloads", featureBand);
         Directory.CreateDirectory(userlocalPath);
-
         var userlocalFile = Path.Combine(userlocalPath, "userlocal");
         File.Create(userlocalFile).Dispose();
-
-        Log.WriteLine($"[DEBUG] Directory exists({userlocalPath}): {Directory.Exists(userlocalPath)}");
-        Log.WriteLine($"[DEBUG] File exists({userlocalFile}): {File.Exists(userlocalFile)}");
-        Log.WriteLine($"[DEBUG] userlocal path writable: {IsDirectoryWritable(userlocalPath)}");
-    }
-
-    private bool IsDirectoryWritable(string path)
-    {
-        try
-        {
-            var testFile = Path.Combine(path, Path.GetRandomFileName());
-            File.WriteAllText(testFile, "test");
-            File.Delete(testFile);
-            return true;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }
