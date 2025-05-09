@@ -32,6 +32,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.*proj</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.sln</DefaultItemExcludes>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**/*.slnx</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.vssscc</DefaultItemExcludes>
     <DefaultItemExcludes>$(DefaultItemExcludes);**/.DS_Store</DefaultItemExcludes>
 
