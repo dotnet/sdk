@@ -55,9 +55,7 @@ namespace Microsoft.DotNet.ShellShim
 
             return value
                 .Split(':')
-                .Any(p => p.Equals(_packageExecutablePath.Path, StringComparison.OrdinalIgnoreCase)
-                    || p.Equals(_packageExecutablePath.PathWithDollar, StringComparison.OrdinalIgnoreCase)
-                    || p.Equals(_packageExecutablePath.PathWithTilde, StringComparison.OrdinalIgnoreCase));
+                .Any(p => p.Equals(_packageExecutablePath.Path, StringComparison.OrdinalIgnoreCase));
         }
 
         public void PrintAddPathInstructionIfPathDoesNotExist()
