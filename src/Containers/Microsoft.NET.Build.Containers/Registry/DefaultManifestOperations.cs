@@ -33,7 +33,7 @@ internal class DefaultManifestOperations : IManifestOperations
         {
             HttpStatusCode.OK => response,
             HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
             _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
         };
     }
