@@ -8,7 +8,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.ShellShim
 {
-    internal class MacOsEnvironmentPath : IEnvironmentPath
+    internal class MacOSEnvironmentPath : IEnvironmentPath
     {
         private const string PathName = "PATH";
         private readonly BashPathUnderHomeDirectory _packageExecutablePath;
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.ShellShim
             = Environment.GetEnvironmentVariable("DOTNET_CLI_TEST_OSX_PATHSD_PATH")
               ?? @"/etc/paths.d/dotnet-cli-tools";
 
-        public MacOsEnvironmentPath(
+        public MacOSEnvironmentPath(
             BashPathUnderHomeDirectory executablePath,
             IReporter reporter,
             IEnvironmentProvider environmentProvider,

@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.ShellShim
             }
             else if (OperatingSystem.IsMacOS() && isDotnetBeingInvokedFromNativeInstaller)
             {
-                environmentPath = new MacOsEnvironmentPath(
+                environmentPath = new MacOSEnvironmentPath(
                     executablePath: CliFolderPathCalculator.ToolsShimPathInUnix,
                     reporter: Reporter.Output,
                     environmentProvider: environmentProvider,
