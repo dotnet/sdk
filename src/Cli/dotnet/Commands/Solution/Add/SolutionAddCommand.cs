@@ -214,7 +214,7 @@ internal class SolutionAddCommand : CommandBase
 
         // Get referencedprojects from the project instance
         var referencedProjectsFullPaths = projectInstance.GetItems("ProjectReference")
-            .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)));
+            .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)!));
 
         if (_includeReferences)
         {
