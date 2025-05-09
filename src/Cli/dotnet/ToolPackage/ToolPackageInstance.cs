@@ -111,8 +111,8 @@ internal class ToolPackageInstance : IToolPackage
 
         var installPath = new VersionFolderPathResolver(PackageDirectory.Value).GetInstallPath(ResolvedPackageId.ToString(), ResolvedPackageVersion);
         var toolsPackagePath = Path.Combine(installPath, "tools");
-        Frameworks = Directory.GetDirectories(toolsPackagePath)
-            .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path)));
+        Frameworks = _fileSystem.Directory.EnumerateDirectories(toolsPackagePath)
+            .Select(path => NuGetFramework.ParseFolder(Path.GetFileName(path))).ToList();
 
         LockFileItem entryPointFromLockFile = FindItemInTargetLibrary(library, toolConfiguration.ToolAssemblyEntryPoint);
         if (entryPointFromLockFile == null)
