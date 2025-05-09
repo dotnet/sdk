@@ -27,10 +27,10 @@
         <note />
       </trans-unit>
       <trans-unit id="Command_Install_Argument_Package">
-        <source>NuGet package ID or path to folder or NuGet package to install. 
-To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+        <source>NuGet package ID or path to folder or NuGet package to install.
+To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
-        <target state="translated">설치할 NuGet 패키지 ID 또는 폴더 또는 NuGet 패키지의 경로입니다. 
+        <target state="needs-review-translation">설치할 NuGet 패키지 ID 또는 폴더 또는 NuGet 패키지의 경로입니다. 
 특정 버전의 NuGet 패키지를 설치하려면 &lt;package ID&gt;::&lt;version&gt;을 사용하세요.
 </target>
         <note />
@@ -86,9 +86,9 @@ To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;ver
         <note />
       </trans-unit>
       <trans-unit id="Command_Uninstall_Argument_Package">
-        <source>NuGet package ID (without version) or path to folder to uninstall. 
+        <source>NuGet package ID (without version) or path to folder to uninstall.
 If command is specified without the argument, it lists all the template packages installed.</source>
-        <target state="translated">NuGet 패키지 ID(버전 없음) 또는 제거할 폴더 경로입니다. 
+        <target state="needs-review-translation">NuGet 패키지 ID(버전 없음) 또는 제거할 폴더 경로입니다. 
 인수 없이 명령을 지정하면 설치된 모든 템플릿 패키지가 나열됩니다.</target>
         <note />
       </trans-unit>

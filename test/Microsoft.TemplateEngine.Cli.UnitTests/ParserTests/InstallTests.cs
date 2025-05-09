@@ -24,7 +24,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.Single(args.AdditionalSources);
             Assert.Contains("my-custom-source", args.AdditionalSources);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Fact]
@@ -84,14 +84,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.True(args.Interactive);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
 
             parseResult = myCommand.Parse($"new install source");
             args = new InstallCommandArgs((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.False(args.Interactive);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Fact]
@@ -105,14 +105,14 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.True(args.Force);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
 
             parseResult = myCommand.Parse($"new install source");
             args = new InstallCommandArgs((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.False(args.Force);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Fact]
@@ -125,8 +125,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstallCommandArgs args = new((InstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.Equal(2, args.TemplatePackages.Count);
-            Assert.Contains("source1", args.TemplatePackages);
-            Assert.Contains("source2", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Theory]
@@ -145,7 +145,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.Single(args.AdditionalSources);
             Assert.Contains("my-custom-source", args.AdditionalSources);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Theory]
@@ -161,7 +161,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 
             Assert.True(args.Interactive);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Theory]
@@ -176,8 +176,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             InstallCommandArgs args = new((LegacyInstallCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.Equal(2, args.TemplatePackages.Count);
-            Assert.Contains("source1", args.TemplatePackages);
-            Assert.Contains("source2", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Theory]
@@ -196,7 +196,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.Contains("my-custom-source1", args.AdditionalSources);
             Assert.Contains("my-custom-source2", args.AdditionalSources);
             Assert.Single(args.TemplatePackages);
-            Assert.Contains("source", args.TemplatePackages);
+            Assert.Contains(new PackageIdentifier(new("source", null)), args.TemplatePackages);
         }
 
         [Theory]
@@ -235,7 +235,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             };
 
             ParseResult parseResult = rootCommand.Parse("dotnet new install source");
-            Assert.Equal("dotnet new install my-source", Example.For<NewCommand>(parseResult).WithSubcommand<InstallCommand>().WithArgument(BaseInstallCommand.NameArgument, "my-source"));
+            Assert.Equal("dotnet new install my-source", Example.For<NewCommand>(parseResult).WithSubcommand<InstallCommand>().WithArgument(BaseInstallCommand.PackageIdentifierArgument, "my-source"));
         }
 
     }

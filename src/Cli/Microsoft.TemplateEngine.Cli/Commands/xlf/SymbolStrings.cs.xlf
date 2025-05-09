@@ -27,10 +27,10 @@
         <note />
       </trans-unit>
       <trans-unit id="Command_Install_Argument_Package">
-        <source>NuGet package ID or path to folder or NuGet package to install. 
-To install the NuGet package of certain version, use &lt;package ID&gt;::&lt;version&gt;.
+        <source>NuGet package ID or path to folder or NuGet package to install.
+To install the NuGet package of certain version, use &lt;package ID&gt;@&lt;version&gt;.
 </source>
-        <target state="translated">ID balíčku NuGet nebo cesta ke složce nebo balíčku NuGet, který se má nainstalovat. 
+        <target state="needs-review-translation">ID balíčku NuGet nebo cesta ke složce nebo balíčku NuGet, který se má nainstalovat. 
 Pokud chcete nainstalovat balíček NuGet určité verze, použijte &lt;package ID&gt;::&lt;version&gt;.
 </target>
         <note />
@@ -86,9 +86,9 @@ Pokud chcete nainstalovat balíček NuGet určité verze, použijte &lt;package 
         <note />
       </trans-unit>
       <trans-unit id="Command_Uninstall_Argument_Package">
-        <source>NuGet package ID (without version) or path to folder to uninstall. 
+        <source>NuGet package ID (without version) or path to folder to uninstall.
 If command is specified without the argument, it lists all the template packages installed.</source>
-        <target state="translated">ID balíčku NuGet (bez verze) nebo cesta ke složce, která se má odinstalovat. 
+        <target state="needs-review-translation">ID balíčku NuGet (bez verze) nebo cesta ke složce, která se má odinstalovat. 
 Pokud je příkaz zadán bez argumentu, zobrazí seznam všech nainstalovaných balíčků šablon.</target>
         <note />
       </trans-unit>

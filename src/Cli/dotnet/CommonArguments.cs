@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Cli
                 Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string packageIdentity, char versionSeparator = '@')
+        internal static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
             {
