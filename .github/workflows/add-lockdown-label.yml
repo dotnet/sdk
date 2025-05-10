@@ -47,9 +47,9 @@ jobs:
               if: github.event_name == 'pull_request_target'
               run: |
                 # Set chron expression to check if the current date is between the third Tuesday of the month and the first Tuesday of the month
-                CRON_START = "0 0 15-21 * 2"
-                CRON_END = "0 0 1-7 * 2"
-                CURRENT_DATE = $(date +%Y-%m-%d)
+                CRON_START="0 0 15-21 * 2"
+                CRON_END="0 0 1-7 * 2"
+                CURRENT_DATE=$(date +%Y-%m-%d)
                 # If the current date is between CRON_START and CRON_END, set the output to true
                 if [[ $(date -d "$CURRENT_DATE" +%s) -ge $(date -d "$CRON_START" +%s) && $(date -d "$CURRENT_DATE" +%s) -le $(date -d "$CRON_END" +%s) ]]; then
                     echo "Within the date range. Setting output to true."
