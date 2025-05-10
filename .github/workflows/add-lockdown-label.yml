@@ -4,8 +4,12 @@ on:
     schedule:
         # Runs on the third Tuesday of every month at 00:00 UTC
         - cron: "0 0 15-21 * 2"
-    pull_request:
+    pull_request_target:
         types: [opened, reopened, synchronize, edited]
+
+permissions:
+    contents: read
+    pull-requests: write
 
 jobs:
     add-lockdown-label:
@@ -40,7 +44,7 @@ jobs:
 
             - name: (PR) Check if date is within range
               id: check_date_pr
-              if: github.event_name == 'pull_request'
+              if: github.event_name == 'pull_request_target'
               run: |
                 # Set chron expression to check if the current date is between the third Tuesday of the month and the first Tuesday of the month
                 CRON_START = "0 0 15-21 * 2"
@@ -57,16 +61,20 @@ jobs:
 
             - name: (PR) Add Branch Lockdown label to PRs
               id: add_label_pr
-              if: github.event_name == 'pull_request' && steps.check_date_pr.outputs.within_range == 'true'
+              if: github.event_name == 'pull_request_target' && steps.check_date_pr.outputs.within_range == 'true'
               uses: actions/github-script@v6
               with:
                     script: |
                         const pr = context.payload.pull_request;
+
+                        if (pr.base.ref.startsWith('release/8') || pr.base.ref.startsWith('release/9')) {
+                            // Add the Branch Lockdown label to the PR
                         
-                        await github.pulls.addLabels({
-                            owner: context.repo.owner,
-                            repo: context.repo.repo,
-                            pull_number: pr.number,
-                            labels: ['Branch Lockdown'],
-                        });
-                        
+                            await github.pulls.addLabels({
+                                owner: context.repo.owner,
+                                repo: context.repo.repo,
+                                pull_number: pr.number,
+                                labels: ['Branch Lockdown'],
+                            });
+                        } 
+                            
