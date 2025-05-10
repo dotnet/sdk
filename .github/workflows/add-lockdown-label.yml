@@ -1,77 +1,72 @@
-name: Add Branch Lockdown Label to PRs
+name: Monthly Lockdown Label
 
 on:
-  pull_request_target:
-  workflow_dispatch: # Allows manual triggering of the workflow
-
-permissions:
-  actions: write # For managing the operation state cache
-  issues: write
+    schedule:
+        # Runs on the third Tuesday of every month at 00:00 UTC
+        - cron: "0 0 15-21 * 2"
+    pull_request:
+        types: [opened, reopened, synchronize, edited]
 
 jobs:
-  add-label:
-    runs-on: ubuntu-latest
+    add-lockdown-label:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v2
 
-    permissions:
-      contents: read
-      pull-requests: write
+            - name: (scheduled) Add Branch Lockdown label to PRs
+              id: add_label_scheduled
+              if: github.event_name == 'schedule'
+              uses: actions/github-script@v6
+              with:
+                    script: |
+                        const { data: prs } = await github.pulls.list({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            state: 'open',
+                            per_page: 300,
+                        });
+                        
+                        const filtered_prs = prs.filter(pr => pr.base.ref.startsWith('release/8') || pr.base.ref.startsWith('release/9'));
 
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+                        for (const pr of filtered_prs) {
+                            await github.pulls.addLabels({
+                                owner: context.repo.owner,
+                                repo: context.repo.repo,
+                                pull_number: pr.number,
+                                labels: ['Branch Lockdown'],
+                            });
+                        }
 
-      - name: Install jq
-        run: sudo apt-get install -y jq
+            - name: (PR) Check if date is within range
+              id: check_date_pr
+              if: github.event_name == 'pull_request'
+              run: |
+                # Set chron expression to check if the current date is between the third Tuesday of the month and the first Tuesday of the month
+                CRON_START = "0 0 15-21 * 2"
+                CRON_END = "0 0 1-7 * 2"
+                CURRENT_DATE = $(date +%Y-%m-%d)
+                # If the current date is between CRON_START and CRON_END, set the output to true
+                if [[ $(date -d "$CURRENT_DATE" +%s) -ge $(date -d "$CRON_START" +%s) && $(date -d "$CURRENT_DATE" +%s) -le $(date -d "$CRON_END" +%s) ]]; then
+                    echo "Within the date range. Setting output to true."
+                    echo "::set-output name=within_range::true"
+                else
+                    echo "Outside the date range. Setting output to false."
+                    echo "::set-output name=within_range::false"
+                fi
 
-      - name: Add label to PRs
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          # Determine the third Tuesday of the current month
-          third_tuesday=$(date -d "$(date +%Y-%m-01) +14 days" +%Y-%m-%d)
-          while [ $(date -d "$third_tuesday" +%u) -ne 2 ]; do
-            third_tuesday=$(date -d "$third_tuesday + 1 day" +%Y-%m-%d)
-          done
-          
-          # Determine the first Tuesday of the current month
-          first_tuesday=$(date -d "$(date +%Y-%m-01)" +%Y-%m-%d)
-          while [ $(date -d "$first_tuesday" +%u) -ne 2 ]; do
-            first_tuesday=$(date -d "$first_tuesday + 1 day" +%Y-%m-%d)
-          done
-
-          # Get current date
-          current_date=$(date +%Y-%m-%d)
-
-          echo "Current Date: $current_date"
-          echo "Third Tuesday of the month: $third_tuesday"
-          echo "First Tuesday of the month: $first_tuesday"
-
-          # Check if the current date is after the third Tuesday of this month or before the first Tuesday of this month
-          if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
-            echo "Within the label period. Checking if the branch matches..."
-
-            # Get all open PRs targeting branches release/8* and release/9*
-            echo "Running gh pr list query..."
-            prs=$(gh pr list --state open --limit 200 --json number,baseRefName,author,labels)
-            echo "Total PRs Count: $(echo "$prs" | jq length)"
-            echo "PRs JSON: $prs"
-
-            echo "Filtering PRs targeting release/8* and release/9*"
-            # when the next feature band branch gets created, we'll want to add a filter here for a few months while the feature band previews are ongoing
-            # | select(.baseRefName | test("^release/10.0.2xx") | not)
-            prs_targeting_branches=$(echo "$prs" | jq '[.[] | select(.baseRefName | test("^release/[89].*"))]')
-            echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
-
-            echo "Filtering PRs without Branch Lockdown label..."
-            filtered_prs=$(echo "$prs_targeting_branches" | jq '[.[] | select(.labels | map(.name) | index("Branch Lockdown") | not) | .number]')
-            echo "Filtered PRs without Branch Lockdown label JSON: $filtered_prs"
-            echo "Count of Filtered PRs without Branch Lockdown label: $(echo "$filtered_prs" | jq length)"
-
-            # Loop through filtered PRs and add label
-            for pr in $(echo "$filtered_prs" | jq -r '.[]'); do
-              echo "Adding label to PR #$pr"
-              gh pr edit $pr --add-label "Branch Lockdown"
-            done
-          else
-            echo "Outside the label period. No labels added."
-          fi
+            - name: (PR) Add Branch Lockdown label to PRs
+              id: add_label_pr
+              if: github.event_name == 'pull_request' && steps.check_date_pr.outputs.within_range == 'true'
+              uses: actions/github-script@v6
+              with:
+                    script: |
+                        const pr = context.payload.pull_request;
+                        
+                        await github.pulls.addLabels({
+                            owner: context.repo.owner,
+                            repo: context.repo.repo,
+                            pull_number: pr.number,
+                            labels: ['Branch Lockdown'],
+                        });
+                        
