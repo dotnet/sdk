@@ -22,6 +22,7 @@ internal class SolutionAddCommand : CommandBase
     private readonly IReadOnlyCollection<string> _projects;
     private readonly string? _solutionFolderPath;
     private string _solutionFileFullPath = string.Empty;
+    private bool _includeReferences;
 
     private static string GetSolutionFolderPathWithForwardSlashes(string path)
     {
@@ -43,6 +44,7 @@ internal class SolutionAddCommand : CommandBase
         _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
+        _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
@@ -138,7 +140,7 @@ internal class SolutionAddCommand : CommandBase
         await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null)
+    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null, bool showMessageOnDuplicate = true)
     {
         string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
 
@@ -175,7 +177,10 @@ internal class SolutionAddCommand : CommandBase
         }
         catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
         {
-            Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            if (showMessageOnDuplicate)
+            {
+                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            }
             return;
         }
 
@@ -205,5 +210,17 @@ internal class SolutionAddCommand : CommandBase
         }
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
+
+        // Get referencedprojects from the project instance
+        var referencedProjectsFullPaths = projectInstance.GetItems("ProjectReference")
+            .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)));
+
+        if (_includeReferences)
+        {
+            foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
+            {
+                AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
+            }
+        }
     }
 }
