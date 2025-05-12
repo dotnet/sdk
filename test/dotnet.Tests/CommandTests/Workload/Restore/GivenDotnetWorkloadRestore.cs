@@ -47,6 +47,9 @@ public class GivenDotnetWorkloadRestore : SdkTest
         Directory.CreateDirectory(cliHome);
         CreateUserLocalFileForCurrentSdk(cliHome);
 
+        Log.WriteLine($"[Debug] IsRunningInContainer = {Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")}");
+        Log.WriteLine($"[Debug] OSDescription = {RuntimeInformation.OSDescription}");
+
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
@@ -70,10 +73,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
     private void CreateUserLocalFileForCurrentSdk(string cliHome)
     {
-        
-        log.WriteLine($"[Debug] IsRunningInContainer = {Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")}");
-        log.WriteLine($"[Debug] OSDescription = {RuntimeInformation.OSDescription}");
-
         var result = new DotnetCommand(Log, "--version").Execute();
         if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.StdOut))
         {
