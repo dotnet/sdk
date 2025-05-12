@@ -128,12 +128,32 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenCreateManifestIfNeededWithoutArgumentTheDefaultIsTrueForLegacyBehavior()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+            ParseResult parseResult =
+            Parser.Instance.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
+
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
+        }
+
+        [Fact]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
             ParseResult parseResult =
             Parser.Instance.Parse(
-               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed=false");
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed false");
 
             var toolInstallLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
