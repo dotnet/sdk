@@ -5,7 +5,9 @@ set NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
 set NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 
 set MicrosoftNETBuildExtensionsTargets=%HELIX_CORRELATION_PAYLOAD%\ex\msbuildExtensions\Microsoft\Microsoft.NET.Build.Extensions\Microsoft.NET.Build.Extensions.targets
-set DOTNET_ROOT=%HELIX_CORRELATION_PAYLOAD%\d
+set DOTNET_ROOT=%TestExecutionDirectory%\dotnet
+mkdir %DOTNET_ROOT%
+xcopy /E /I /Y "%HELIX_CORRELATION_PAYLOAD%\d\*" "%DOTNET_ROOT%\"
 set PATH=%DOTNET_ROOT%;%PATH%
 set DOTNET_MULTILEVEL_LOOKUP=0
 set TestFullMSBuild=%1
@@ -20,8 +22,6 @@ FOR /F "tokens=*" %%g IN ('PowerShell -ExecutionPolicy ByPass [System.IO.Path]::
 set TestExecutionDirectory=%TEMP%\dotnetSdkTests\%RandomDirectoryName%
 set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
-set DOTNETSDK_WORKLOAD_METADATA_ROOT=%TestExecutionDirectory%\metadata
-mkdir %DOTNETSDK_WORKLOAD_METADATA_ROOT%
 REM https://stackoverflow.com/a/7487697/294804
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
 

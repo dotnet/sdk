@@ -6,7 +6,9 @@ export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
 export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
 
 export MicrosoftNETBuildExtensionsTargets=$HELIX_CORRELATION_PAYLOAD/ex/msbuildExtensions/Microsoft/Microsoft.NET.Build.Extensions/Microsoft.NET.Build.Extensions.targets
-export DOTNET_ROOT=$HELIX_CORRELATION_PAYLOAD/d
+export DOTNET_ROOT=$TestExecutionDirectory/dotnet
+mkdir -p $DOTNET_ROOT
+cp -a $HELIX_CORRELATION_PAYLOAD/d/* $DOTNET_ROOT/
 export PATH=$DOTNET_ROOT:$PATH
 
 export TestExecutionDirectory=$(realpath "$(mktemp -d "${TMPDIR:-/tmp}"/dotnetSdkTests.XXXXXXXX)")
@@ -16,9 +18,6 @@ cp -a $HELIX_CORRELATION_PAYLOAD/t/TestExecutionDirectoryFiles/. $TestExecutionD
 export DOTNET_SDK_TEST_EXECUTION_DIRECTORY=$TestExecutionDirectory
 export DOTNET_SDK_TEST_MSBUILDSDKRESOLVER_FOLDER=$HELIX_CORRELATION_PAYLOAD/r
 export DOTNET_SDK_TEST_ASSETS_DIRECTORY=$TestExecutionDirectory/TestAssets
-export DOTNETSDK_WORKLOAD_METADATA_ROOT=$TestExecutionDirectory/metadata
-mkdir -p "$DOTNETSDK_WORKLOAD_METADATA_ROOT"
-
 
 # call dotnet new so the first run message doesn't interfere with the first test
 dotnet new --debug:ephemeral-hive

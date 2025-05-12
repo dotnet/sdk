@@ -15,10 +15,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
-        var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".dotnet");
-        Directory.CreateDirectory(cliHome);
-        CreateUserLocalFileForCurrentSdk(cliHome);
-
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(DcProjAssetName)
@@ -27,13 +23,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
-        .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
-        .WithEnvironmentVariable("HOME", cliHome)
-        .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
-        .WithEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0")
-        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
-        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
-        .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
         .Execute("--verbosity", "diag")
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
@@ -43,13 +32,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
-        var cliHome = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
-        Directory.CreateDirectory(cliHome);
-        CreateUserLocalFileForCurrentSdk(cliHome);
-
-        Log.WriteLine($"[Debug] IsRunningInContainer = {Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")}");
-        Log.WriteLine($"[Debug] OSDescription = {RuntimeInformation.OSDescription}");
-
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
@@ -58,38 +40,9 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
             .WithWorkingDirectory(projectPath)
-            .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
-            .WithEnvironmentVariable("HOME", cliHome)
-            .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
-            .WithEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0")
-            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
-            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
-            .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
             .Execute("--verbosity", "diag")
             .Should()
             // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
             .Pass();
-    }
-
-    private void CreateUserLocalFileForCurrentSdk(string cliHome)
-    {
-        var result = new DotnetCommand(Log, "--version").Execute();
-        if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.StdOut))
-        {
-            throw new Exception("Failed to get dotnet version");
-        }
-        var sdkVersion = result.StdOut.Trim();
-        var version = Version.Parse(sdkVersion.Split('-')[0]);
-        var featureBand = $"{version.Major}.{version.Minor}.{(version.Build / 100) * 100}";
-
-        Directory.CreateDirectory(Path.Combine(cliHome, "sdk-manifests"));
-        Directory.CreateDirectory(Path.Combine(cliHome, "packs"));
-
-        File.Create(Path.Combine(cliHome, "userlocal")).Dispose();
-
-        var userlocalPath = Path.Combine(cliHome, "metadata", "workloads", featureBand);
-        Directory.CreateDirectory(userlocalPath);
-        var userlocalFile = Path.Combine(userlocalPath, "userlocal");
-        File.Create(userlocalFile).Dispose();
     }
 }
