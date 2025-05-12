@@ -726,9 +726,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
     {
         var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
-        var directives = VirtualProjectBuildingCommand.FindDirectivesForConversion(sourceFile, force: force);
+        var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
         var projectWriter = new StringWriter();
-        VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives);
+        VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
         actualProject = projectWriter.ToString();
         actualCSharp = VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text)?.ToString();
     }
