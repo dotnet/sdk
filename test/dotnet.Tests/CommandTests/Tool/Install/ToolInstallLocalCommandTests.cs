@@ -418,7 +418,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _toolPackageInstallerMock,
+                _packageIdA,
+                _toolPackageDownloaderMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
