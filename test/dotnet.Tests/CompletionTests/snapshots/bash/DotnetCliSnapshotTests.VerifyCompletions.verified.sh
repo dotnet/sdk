@@ -1647,6 +1647,10 @@ _testhost_tool_install() {
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
             return
         ;;
+        --create-manifest-if-needed)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
