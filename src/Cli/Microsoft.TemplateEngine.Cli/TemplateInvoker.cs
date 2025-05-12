@@ -254,7 +254,7 @@ namespace Microsoft.TemplateEngine.Cli
                         Reporter.Output.WriteCommand(Example.For<UninstallCommand>(templateArgs.ParseResult).WithArgument(BaseUninstallCommand.NameArgument, templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                         Reporter.Output.WriteLine(LocalizableStrings.TemplateCreator_Hint_Install);
-                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArgument(BaseInstallCommand.NameArgument, templatePackage.DisplayName));
+                        Reporter.Output.WriteCommand(Example.For<InstallCommand>(templateArgs.ParseResult).WithArgument(BaseInstallCommand.PackageIdentifierArgument, templatePackage.DisplayName));
                         Reporter.Output.WriteLine();
                     }
                     return NewCommandStatus.NotFound;
