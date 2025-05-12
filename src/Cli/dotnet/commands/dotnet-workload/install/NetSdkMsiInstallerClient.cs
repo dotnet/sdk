@@ -354,7 +354,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
         {
             SdkFeatureBand workloadSetFeatureBand;
-            string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+            string msiPackageVersion = WorkloadSetVersion.ToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
             string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
@@ -1183,5 +1183,10 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
             Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
         }
+
+        // This method should never be called for this kind of installer. It is challenging to get this information from an MSI
+        // and totally unnecessary as the information is identical from a file-based installer. It was added to IInstaller only
+        // to facilitate testing. As a consequence, it does not need to be implemented.
+        public WorkloadSet GetWorkloadSetContents(string workloadVersion) => throw new NotImplementedException();
     }
 }
