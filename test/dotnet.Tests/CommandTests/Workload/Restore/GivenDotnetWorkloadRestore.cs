@@ -30,10 +30,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
         .WithEnvironmentVariable("HOME", cliHome)
         .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
+        .WithEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0")
         .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
         .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
         .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
-        .Execute()
+        .Execute("--verbosity", "diag")
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
         .Pass();
@@ -57,10 +58,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
             .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
             .WithEnvironmentVariable("HOME", cliHome)
             .WithEnvironmentVariable("DOTNET_ROOT", cliHome)
+            .WithEnvironmentVariable("DOTNET_MULTILEVEL_LOOKUP", "0")
             .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_MANIFEST_ROOTS", Path.Combine(cliHome, "sdk-manifests"))
             .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_PACK_ROOTS", Path.Combine(cliHome, "packs"))
             .WithEnvironmentVariable("DOTNETSDK_WORKLOAD_METADATA_ROOT", Path.Combine(cliHome, "metadata"))
-            .Execute()
+            .Execute("--verbosity", "diag")
             .Should()
             // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
             .Pass();
@@ -68,6 +70,10 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
     private void CreateUserLocalFileForCurrentSdk(string cliHome)
     {
+        
+        log.WriteLine($"[Debug] IsRunningInContainer = {Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER")}");
+        log.WriteLine($"[Debug] OSDescription = {RuntimeInformation.OSDescription}");
+
         var result = new DotnetCommand(Log, "--version").Execute();
         if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.StdOut))
         {
