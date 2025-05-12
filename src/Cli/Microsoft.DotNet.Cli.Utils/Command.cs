@@ -12,7 +12,7 @@ public class Command(Process? process, bool trimTrailingNewlines = false, IDicti
     private readonly Process _process = process ?? throw new ArgumentNullException(nameof(process));
 
     private readonly Dictionary<string, string?>? _customEnvironmentVariables =
-        // copy the dictionray to avoid mutating the original
+        // copy the dictionary to avoid mutating the original
         customEnvironmentVariables == null ? null : new(customEnvironmentVariables);
 
     private StreamForwarder? _stdOut;
