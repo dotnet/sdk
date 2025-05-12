@@ -409,6 +409,29 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
+        public void GivenNoManifestFileItUsesCreateManifestIfNeededByDefault()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
+
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+        }
+
+        [Fact]
         public void GivenNoManifestFileAndCreateManifestIfNeededFlagItShouldCreateManifestInSln()
         {
             _fileSystem.Directory.CreateDirectory(Path.Combine(_temporaryDirectory, "test1.sln"));
