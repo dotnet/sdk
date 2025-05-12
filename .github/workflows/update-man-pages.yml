@@ -24,16 +24,17 @@ jobs:
           ./documentation/manpages/tool/run_docker.sh
 
           if [[ -n $(git status -s) ]]; then
-            git config user.name 'TODO'
-            git config user.email 'TODO@example.com'
+            git config user.name 'github-actions'
+            git config user.email 'github-actions@github.com'
             date=$(date +%F)
             git add .
-            title="Update man pages"
+            title="[automated] Update man pages"
+            body="This action is executed twice a month to automatically update the manpages based on the latest changes to the dotnet/docs repo"
             branch=update-man-page-$date
             git checkout -b $branch
             git commit -a -m "$title"
             git push -u origin $branch --force
-            gh pr create --base main --head $branch --title "$title" --body "Auto-generated"
+            gh pr create --base main --head $branch --title "$title" --body "$body"
           fi
         env:
           GH_TOKEN: ${{ github.token }}
