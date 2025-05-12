@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
@@ -22,7 +20,7 @@ namespace Microsoft.DotNet.Cli
                 Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string packageIdentity, char versionSeparator = '@')
+        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
             {
