@@ -16,7 +16,7 @@ internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parse
 {
     public override int Execute()
     {
-        for (string line; (line = Console.ReadLine()) != null;)
+        for (string? line; (line = Console.ReadLine()) != null;)
         {
             if (string.IsNullOrWhiteSpace(line))
             {
@@ -25,7 +25,7 @@ internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parse
 
             try
             {
-                RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput);
+                RunApiInput input = JsonSerializer.Deserialize(line, RunFileApiJsonSerializerContext.Default.RunApiInput)!;
                 RunApiOutput output = input.Execute();
                 Respond(output);
             }
