@@ -1393,4 +1393,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("Unknown1")
             .And.HaveStdOutContaining("Unknown2");
     }
+
+    [Fact]
+    public void Api_RunCommand()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+
+        string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
+        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            // DOTNET_ROOT environment variable is platform dependent so we don't verify it fully for simplicity
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(executablePath)}},"CommandLineArguments":"","WorkingDirectory":"","EnvironmentVariables":{"DOTNET_ROOT
+                """);
+    }
 }
