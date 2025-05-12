@@ -20,6 +20,8 @@ FOR /F "tokens=*" %%g IN ('PowerShell -ExecutionPolicy ByPass [System.IO.Path]::
 set TestExecutionDirectory=%TEMP%\dotnetSdkTests\%RandomDirectoryName%
 set DOTNET_CLI_HOME=%TestExecutionDirectory%\.dotnet
 mkdir %TestExecutionDirectory%
+set DOTNETSDK_WORKLOAD_METADATA_ROOT=%TestExecutionDirectory%\metadata
+mkdir %DOTNETSDK_WORKLOAD_METADATA_ROOT%
 REM https://stackoverflow.com/a/7487697/294804
 robocopy %HELIX_CORRELATION_PAYLOAD%\t\TestExecutionDirectoryFiles %TestExecutionDirectory% /s /nfl /ndl /njh /njs /np
 
