@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
@@ -87,10 +85,10 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        Option<VerbosityOptions> verbosityOptions = null,
+        Option<VerbosityOptions>? verbosityOptions = null,
         IReporter? reporter = null,
-        string tempDirPath = null,
-        INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
+        string? tempDirPath = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null) : base(parseResult)
     {
         VerifySignatures = ShouldVerifySignatures(parseResult);
 
@@ -107,20 +105,29 @@ internal abstract class WorkloadCommandBase : CommandBase
         TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
             ? tempDirPath
             : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
+                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)!
                 : PathUtilities.CreateTempSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
-        IsPackageDownloaderProvided = nugetPackageDownloader != null;
-        PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader.NuGetPackageDownloader(TempPackagesDirectory,
-            filePermissionSetter: null,
-            new FirstPartyNuGetPackageSigningVerifier(),
-            nugetLogger,
-            Reporter,
-            restoreActionConfig: RestoreActionConfiguration,
-            verifySignatures: VerifySignatures,
-            shouldUsePackageSourceMapping: true);
+        if (nugetPackageDownloader is not null)
+        {
+            IsPackageDownloaderProvided = true;
+            PackageDownloader = nugetPackageDownloader;
+        }
+        else
+        {
+            IsPackageDownloaderProvided = false;
+            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                TempPackagesDirectory,
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
+                nugetLogger,
+                Reporter,
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
+        }
     }
 
     /// <summary>
