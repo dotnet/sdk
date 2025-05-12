@@ -128,22 +128,21 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void GivenNoManifestFileItShouldThrow()
-        {
-            _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
-
-            Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-        }
-
-        [Fact]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            ParseResult parseResult =
+            Parser.Instance.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed=false");
+
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
 
             Action a = () => toolInstallLocalCommand.Execute();
             a.Should().Throw<GracefulException>()
@@ -417,11 +416,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 Parser.Instance.Parse(
                     $"dotnet tool install {_packageIdA.ToString()}");
 
-
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
-                _packageIdA,
-                _toolPackageDownloaderMock,
+                _toolPackageInstallerMock,
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
