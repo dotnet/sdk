@@ -546,6 +546,6 @@
                             RetargetTools;
                             RemoveResourcesFromDotnetDeps;
                             ChmodPublishDir"
-          AfterTargets="Build" />
+          AfterTargets="AfterBuild" />
 
 </Project>

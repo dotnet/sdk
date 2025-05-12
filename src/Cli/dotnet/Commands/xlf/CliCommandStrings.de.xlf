@@ -2721,6 +2721,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="new">.slnx file {0} generated.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
+        <source>Recursively add projects' ReferencedProjects to solution</source>
+        <target state="new">Recursively add projects' ReferencedProjects to solution</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SolutionAppFullName">
         <source>.NET modify solution file command</source>
         <target state="new">.NET modify solution file command</target>

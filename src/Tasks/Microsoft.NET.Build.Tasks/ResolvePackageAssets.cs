@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
+
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.Build.Evaluation;
@@ -943,12 +945,12 @@ namespace Microsoft.NET.Build.Tasks
             /// "analyzers/dotnet/roslyn3.8/analyzer.dll"
             /// "analyzers/dotnet/roslyn4.0/analyzer.dll"
             ///
-            /// When the <paramref name="compilerApiVersion"/> is 'roslyn3.9', only the assets 
+            /// When the <paramref name="compilerApiVersion"/> is 'roslyn3.9', only the assets
             /// in the folder with the highest applicable compiler version are picked.
             /// In this case,
-            /// 
+            ///
             /// "analyzers/dotnet/roslyn3.8/analyzer.dll"
-            /// 
+            ///
             /// will be picked, and the other analyzer assets will be excluded.
             /// </remarks>
             private class AnalyzerResolver
@@ -974,7 +976,7 @@ namespace Microsoft.NET.Build.Tasks
                         _compilerNameSearchString = string.Concat("/".AsSpan(), compilerName.Span);
 #else
                         _compilerNameSearchString = "/" + compilerName;
-#endif                   
+#endif
                         _compilerVersion = compilerVersion;
                     }
                 }

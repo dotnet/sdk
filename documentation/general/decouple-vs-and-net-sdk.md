@@ -123,7 +123,7 @@ The compiler will offer a property that allows SDK projects to use the MSBuild v
 > These values are recognized for property `RoslynCompilerType`:
 > - `Core`: use the compiler that comes with the .NET SDK
 > - `Framework`: use the compiler that comes with .NET Framework MSBuild
-> - `FrameworkPackage`: download package with .NET Framework compiler corresponding to the .NET SDK version
+> - `FrameworkPackage`: download the Microsoft.Net.Sdk.Compilers.Toolset package which contains the .NET Framework compiler corresponding to the .NET SDK version
 
 ### .NET Framework based analyzers
 

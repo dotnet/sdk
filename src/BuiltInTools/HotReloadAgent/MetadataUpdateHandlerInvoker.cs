@@ -327,7 +327,7 @@ internal sealed class MetadataUpdateHandlerInvoker(AgentReporter reporter)
 
         static void Visit(Assembly[] assemblies, Assembly assembly, List<Assembly> sortedAssemblies, HashSet<string> visited)
         {
-            string assemblyIdentifier;
+            string? assemblyIdentifier;
 
             try
             {
