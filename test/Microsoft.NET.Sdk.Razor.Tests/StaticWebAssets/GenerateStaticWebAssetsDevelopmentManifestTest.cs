@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;
@@ -540,8 +542,8 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 CreateIntermediateNode(
                     ("_other", CreateIntermediateNode(
                         ("_project", CreateIntermediateNode().AddPatterns(
-                            (0, "*.js", 2),
-                            (1, "*.css", 2)))))),
+                            (0, "*.css", 2),
+                            (1, "*.js", 2)))))),
                 Path.GetFullPath("wwwroot"),
                 Path.GetFullPath("styles"));
 
@@ -715,7 +717,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
             Asset = new StaticWebAssetMatch { ContentRootIndex = index, SubPath = subpath }
         };
 
-        private StaticWebAsset CreateAsset(
+        private static StaticWebAsset CreateAsset(
             string identity,
             string relativePath,
             string assetKind = default,

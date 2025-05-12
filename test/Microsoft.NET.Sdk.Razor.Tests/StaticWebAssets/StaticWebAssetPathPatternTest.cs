@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
+using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.Razor.Tests.StaticWebAssets;
@@ -15,7 +18,7 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site.css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "css/site.css".AsMemory(), IsLiteral = true }] }
             ]
         };
         Assert.Equal(expected, pattern);
@@ -29,9 +32,9 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -46,8 +49,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -62,8 +65,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] }
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
                 ]
         };
 
@@ -78,7 +81,7 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] }
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
                 ]
         };
 
@@ -93,11 +96,11 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = "-", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = "-".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -112,10 +115,10 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -130,8 +133,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -146,9 +149,9 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
         };
 
@@ -163,8 +166,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] }
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
             ]
         };
 
@@ -179,7 +182,7 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }] }
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] }
             ]
         };
 
@@ -194,7 +197,7 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "fingerprint", Value = "value", IsLiteral = false }] }
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), Value = "value".AsMemory(), IsLiteral = false }] }
                 ]
         };
 
@@ -209,14 +212,14 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
                 new (){ Parts = [
-                    new() { Name = ".", IsLiteral = true },
-                    new() { Name = "fingerprint", IsLiteral = false },
-                    new() { Name = "-", IsLiteral = true },
-                    new() { Name = "version", IsLiteral = false }
+                    new() { Name = ".".AsMemory(), IsLiteral = true },
+                    new() { Name = "fingerprint".AsMemory(), IsLiteral = false },
+                    new() { Name = "-".AsMemory(), IsLiteral = true },
+                    new() { Name = "version".AsMemory(), IsLiteral = false }
                 ] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
             ]
         };
 
@@ -231,13 +234,13 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "css/site", IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "css/site".AsMemory(), IsLiteral = true }] },
                 new (){ Parts = [
-                    new() { Name = ".", IsLiteral = true },
-                    new() { Name = "fingerprint", IsLiteral = false },
-                    new() { Name = "version", IsLiteral = false }
+                    new() { Name = ".".AsMemory(), IsLiteral = true },
+                    new() { Name = "fingerprint".AsMemory(), IsLiteral = false },
+                    new() { Name = "version".AsMemory(), IsLiteral = false }
                 ] },
-                new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
             ]
         };
 
@@ -252,8 +255,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "fingerprint", IsLiteral = false }, new() { Name = ".", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = "css", IsLiteral = true }] }
+                new (){ Parts = [ new() { Name = "fingerprint".AsMemory(), IsLiteral = false }, new() { Name = ".".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = "css".AsMemory(), IsLiteral = true }] }
             ]
         };
 
@@ -268,8 +271,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true }
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -284,8 +287,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true, IsPreferred = true }
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true, IsPreferred = true }
             ]
         };
 
@@ -300,8 +303,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }]
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }]
             }]
         };
 
@@ -316,9 +319,9 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }]
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }]
                            }]
         };
 
@@ -333,7 +336,7 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true }
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -348,9 +351,9 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Name = "site", IsLiteral = true }], IsOptional = false },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }], IsOptional = true }
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }], IsOptional = false },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -365,8 +368,8 @@ public class StaticWebAssetPathPatternTest
         {
             Segments =
             [
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }], IsOptional = true },
-                new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }], IsOptional = true }
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }], IsOptional = true },
+                new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }], IsOptional = true }
             ]
         };
 
@@ -650,17 +653,17 @@ public class StaticWebAssetPathPatternTest
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             }
         };
@@ -680,36 +683,36 @@ public class StaticWebAssetPathPatternTest
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{version}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             },
             new StaticWebAssetPathPattern("site#[.{fingerprint}]#[.{version}].css")
             {
                 Segments =
                 [
-                    new (){ Parts = [ new() { Name = "site", IsLiteral = true }] },
-                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "fingerprint", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Name = ".", IsLiteral = true }, new() { Name = "version", IsLiteral = false }] },
-                    new (){ Parts = [ new() { Name = ".css", IsLiteral = true }] }
+                    new (){ Parts = [ new() { Name = "site".AsMemory(), IsLiteral = true }] },
+                    new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "fingerprint".AsMemory(), IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".".AsMemory(), IsLiteral = true }, new() { Name = "version".AsMemory(), IsLiteral = false }] },
+                    new (){ Parts = [ new() { Name = ".css".AsMemory(), IsLiteral = true }] }
                 ]
             }
         };
@@ -717,5 +720,5 @@ public class StaticWebAssetPathPatternTest
         Assert.Equal(expected, routePatterns);
     }
 
-    private StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
+    private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
 }

@@ -15,7 +15,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
 
         private int indentLevel = 0;
         private readonly string indentStringPiece = "  ";
-        private string indentString = null;
+        private string? indentString = null;
 
         private bool stackTrace;
         #endregion
@@ -31,7 +31,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
             this.stackTrace = stackTrace;
         }
 
-        private string IndentString
+        private string? IndentString
         {
             get
             {
@@ -156,7 +156,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Xdt
                 // that accepts line numbers. So instead, we have to construct
                 // the error message from the exception and use LogError.
                 StringBuilder sb = new();
-                Exception exIterator = ex;
+                Exception? exIterator = ex;
                 while (exIterator != null)
                 {
                     sb.AppendFormat("{0} : {1}", exIterator.GetType().Name, exIterator.Message);
