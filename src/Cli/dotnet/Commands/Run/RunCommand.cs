@@ -53,7 +53,7 @@ public class RunCommand
 
     private bool ShouldBuild => !NoBuild;
 
-    public string LaunchProfile { get; }
+    public string? LaunchProfile { get; }
     public bool NoLaunchProfile { get; }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class RunCommand
     public RunCommand(
         bool noBuild,
         string? projectFileOrDirectory,
-        string launchProfile,
+        string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
