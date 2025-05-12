@@ -314,21 +314,11 @@ namespace Microsoft.NET.Build.Tasks
              *      libraryCandidatesForRemoval if it isn't already there
              * Repeat 3 until libraryCandidatesForRemoval is empty
              */
-            var libraries = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
-            foreach (var reference in runtimeLibraries)
-            {
-                foreach (var dependency in reference.Library.Dependencies)
-                {
-                    if (libraries.TryGetValue(dependency.Name, out var dep))
-                    {
-                        dep.Dependents.Add(reference.Library.Name);
-                    }
-                }
-            }
 
             // Rather than adding the main project's dependencies, we added references to them, i.e., Foo.Reference.dll
             // instead of Foo.dll. This adds Foo.dll as a reference directly so another reference can be removed if it
             // isn't necessary because of a direct reference from the main project.
+            var referenceNameToRealName = new Dictionary<string, string>();
             if (_includeMainProjectInDepsFile)
             {
                 var mainProjectReferences = _directReferences;
@@ -348,10 +338,20 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     foreach (var directReference in mainProjectReferences)
                     {
-                        if (libraries.TryGetValue(directReference.Name, out var dep))
-                        {
-                            dep.Dependents.Add(_mainProjectInfo.Name);
-                        }
+                        referenceNameToRealName[GetReferenceLibraryName(directReference)] = directReference.Name;
+                    }
+                }
+            }
+
+            var libraries = runtimeLibraries.ToDictionary(lib => lib.Library.Name, lib => lib);
+            foreach (var reference in runtimeLibraries)
+            {
+                foreach (var dependency in reference.Library.Dependencies)
+                {
+                    var name = referenceNameToRealName.TryGetValue(dependency.Name, out var realName) ? realName : dependency.Name;
+                    if (libraries.TryGetValue(name, out var dep))
+                    {
+                        dep.Dependents.Add(reference.Library.Name);
                     }
                 }
             }
@@ -370,7 +370,7 @@ namespace Microsoft.NET.Build.Tasks
                         libraries.Remove(lib.Library.Name);
                         foreach (var dependency in lib.Library.Dependencies)
                         {
-                            if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary? value))
+                            if (libraries.TryGetValue(dependency.Name, out ModifiableRuntimeLibrary value))
                             {
                                 value.Dependents.Remove(lib.Library.Name);
                             }
@@ -479,6 +479,8 @@ namespace Microsoft.NET.Build.Tasks
                         .Where(expansion => expansion.Contains(_runtimeIdentifier))
                         .Select(expansion => new RuntimeFallbacks(expansion.First(), expansion.Skip(1))); // ExpandRuntime return runtime itself as first item.
 
+            var libraryNames = runtimeLibraries.Select(lib => lib.Library.Name).Concat(compilationLibraries.Select(lib => lib.Name)).ToHashSet();
+
             return new DependencyContext(
             targetInfo,
             _compilationOptions ?? CompilationOptions.Default,
@@ -491,9 +493,7 @@ namespace Microsoft.NET.Build.Tasks
                 library.Library.RuntimeAssemblyGroups,
                 library.Library.NativeLibraryGroups,
                 library.Library.ResourceAssemblies,
-                library.Library.Dependencies.Where(
-                    dependency => runtimeLibraries.Any(lib => lib.Library.Name.Equals(dependency.Name)) ||
-                    compilationLibraries.Any(lib => lib.Name.Equals(dependency.Name))).ToList(),
+                library.Library.Dependencies.Where(dependency => libraryNames.Contains(dependency.Name)).ToList(),
                 library.Library.Serviceable,
                 library.Library.Path,
                 library.Library.HashPath,

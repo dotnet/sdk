@@ -149,7 +149,7 @@ public class NETFramework
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
 
-            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory("net9.0").FullName, "PackageWithoutAssets_ShouldNotShowUpInDepsJson.deps.json")))
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, "PackageWithoutAssets_ShouldNotShowUpInDepsJson.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
                 dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
