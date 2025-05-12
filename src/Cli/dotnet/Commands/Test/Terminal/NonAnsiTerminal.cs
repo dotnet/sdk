@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
+#nullable disable warnings
+
 using System.Globalization;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -202,6 +204,7 @@ internal sealed class NonAnsiTerminal : ITerminal
 
             if (retried > 0)
             {
+                Append('/');
                 SetColor(TerminalColor.Gray);
                 Append('r');
                 Append(retried.ToString(CultureInfo.CurrentCulture));

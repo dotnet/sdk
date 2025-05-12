@@ -45,6 +45,9 @@ internal static class ProjectGraphNodeExtensions
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems("ProjectCapability").Select(item => item.EvaluatedInclude);
 
+    public static bool IsAutoRestartEnabled(this ProjectGraphNode projectNode)
+        => bool.TryParse(projectNode.ProjectInstance.GetPropertyValue("HotReloadAutoRestart"), out var result) && result;
+
     public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
     {
         var visited = new HashSet<ProjectGraphNode>();

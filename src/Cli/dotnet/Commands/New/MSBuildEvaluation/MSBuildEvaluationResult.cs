@@ -1,12 +1,14 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
+
 using MSBuildProject = Microsoft.Build.Evaluation.Project;
 
 namespace Microsoft.DotNet.Cli.Commands.New.MSBuildEvaluation;
 
 /// <summary>
-/// Represents MSBuild evaluation result. 
+/// Represents MSBuild evaluation result.
 /// For success results, <see cref="SDKStyleEvaluationResult"/>, <see cref="NonSDKStyleEvaluationResult"/>, <see cref="MultiTargetEvaluationResult"/> are used depending on the evaluated project.
 /// </summary>
 internal class MSBuildEvaluationResult

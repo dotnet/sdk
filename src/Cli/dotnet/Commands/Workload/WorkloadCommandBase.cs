@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable warnings
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
@@ -122,7 +124,7 @@ internal abstract class WorkloadCommandBase : CommandBase
     }
 
     /// <summary>
-    /// Determines whether workload packs and installer signatures should be verified based on whether 
+    /// Determines whether workload packs and installer signatures should be verified based on whether
     /// dotnet is signed, the skip option was specified, and whether a global policy enforcing verification
     /// was set.
     /// </summary>

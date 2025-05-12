@@ -24,9 +24,9 @@ public class DefineStaticWebAssetEndpoints : Task
     public override bool Execute()
     {
         var existingEndpointsByAssetFile = CreateEndpointsByAssetFile();
-        var contentTypeMappings = ContentTypeMappings.Select(ContentTypeMapping.FromTaskItem).OrderByDescending(m => m.Priority).ToArray();
+        var contentTypeMappings = CreateAdditionalContentTypeMappings();
         var contentTypeProvider = new ContentTypeProvider(contentTypeMappings);
-        var endpoints = new List<StaticWebAssetEndpoint>();
+        var endpoints = new List<StaticWebAssetEndpoint>(CandidateAssets.Length);
 
         Parallel.For(
             0,
@@ -44,6 +44,22 @@ public class DefineStaticWebAssetEndpoints : Task
         Endpoints = StaticWebAssetEndpoint.ToTaskItems(endpoints);
 
         return !Log.HasLoggedErrors;
+    }
+
+    private ContentTypeMapping[] CreateAdditionalContentTypeMappings()
+    {
+        if (ContentTypeMappings == null || ContentTypeMappings.Length == 0)
+        {
+            return [];
+        }
+        var result = new ContentTypeMapping[ContentTypeMappings.Length];
+        for (var i = 0; i < ContentTypeMappings.Length; i++)
+        {
+            var contentTypeMapping = ContentTypeMappings[i];
+            result[i] = ContentTypeMapping.FromTaskItem(contentTypeMapping);
+        }
+        Array.Sort(result, (x, y) => x.Priority.CompareTo(y.Priority));
+        return result;
     }
 
     private Dictionary<string, HashSet<string>> CreateEndpointsByAssetFile()
@@ -173,7 +189,7 @@ public class DefineStaticWebAssetEndpoints : Task
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
                 properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
 
-                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+                    var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
                 var endpoint = new StaticWebAssetEndpoint()
                 {

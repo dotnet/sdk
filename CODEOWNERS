@@ -84,9 +84,14 @@
 
 # Compatibility tools owned by runtime team
 /src/Compatibility/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiCompat
 /test/Microsoft.DotNet.ApiCompatibility*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.ApiCompat*/ @dotnet/area-infrastructure-libraries
 /test/Microsoft.DotNet.PackageValidation*/ @dotnet/area-infrastructure-libraries
+
+# Area-ApiDiff
+/test/Microsoft.DotNet.ApiDiff.Tests/ @dotnet/area-infrastructure-libraries
 
 # Area-GenAPI
 /src/Compatibility/GenAPI/ @dotnet/area-infrastructure-libraries
@@ -105,9 +110,4 @@
 /test/dotnet-format.UnitTests @dotnet/roslyn-ide
 
 # Area: VMR & SourceBuild
-/.devcontainer/ @dotnet/source-build @dotnet/product-construction
-/eng/pipelines/ @dotnet/source-build @dotnet/product-construction
 /eng/DotNetBuild.props @dotnet/source-build @dotnet/product-construction
-/eng/SourceBuild* @dotnet/source-build
-/src/SourceBuild/ @dotnet/source-build @dotnet/product-construction
-/src/VirtualMonoRepo/ @dotnet/product-construction

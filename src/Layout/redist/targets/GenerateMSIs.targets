@@ -335,7 +335,7 @@
   </Target>
 
   <Target Name="GenerateMsis"
-          AfterTargets="Build"
+          AfterTargets="AfterBuild"
           DependsOnTargets="$(GenerateMsisDependsOn)" />
 
 </Project>
