@@ -71,6 +71,42 @@ public class GivenDotnetWorkloadRestore : SdkTest
             .Pass();
     }
 
+    [Fact]
+    public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild1()
+    {
+        
+        var cliHome = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
+        if (string.IsNullOrEmpty(cliHome))
+        {
+            throw new InvalidOperationException("DOTNET_CLI_HOME is not set in the environment.");
+        }
+        var result = new DotnetCommand(Log, "--version").Execute();
+        if (result.ExitCode != 0 || string.IsNullOrWhiteSpace(result.StdOut))
+        {
+            throw new Exception("Failed to get dotnet version");
+        }
+        var sdkVersion = result.StdOut.Trim();
+        var version = Version.Parse(sdkVersion.Split('-')[0]);
+        var featureBand = $"{version.Major}.{version.Minor}.{(version.Build / 100) * 100}";
+
+        var userlocalPath = Path.Combine(cliHome, "metadata", "workloads", featureBand);
+        Directory.CreateDirectory(userlocalPath);
+        File.Create(Path.Combine(userlocalPath, "userlocal")).Dispose();
+
+        var projectPath =
+            _testAssetsManager
+                .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
+                .WithSource()
+                .Path;
+
+        new DotnetWorkloadCommand(Log, "restore")
+            .WithWorkingDirectory(projectPath)
+            .Execute("--verbosity", "diag")
+            .Should()
+            // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
+            .Pass();
+    }
+
     private void CreateUserLocalFileForCurrentSdk(string cliHome)
     {
         var result = new DotnetCommand(Log, "--version").Execute();
