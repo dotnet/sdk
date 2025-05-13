@@ -22,7 +22,7 @@ internal class CapabilityExpressionEvaluator
     /// The set of disallowed characters in terms.
     /// </summary>
     /// <remarks>
-    /// We restrict many symbols, especially mathematical symbols, because we may eventually want to 
+    /// We restrict many symbols, especially mathematical symbols, because we may eventually want to
     /// support arithmetic expressions.
     /// </remarks>
     internal static readonly char[] DisallowedCharacters = "\"'`:;,+-*/\\!~|&%$@^()={}[]<>? \t\b\n\r".ToCharArray();
@@ -42,7 +42,7 @@ internal class CapabilityExpressionEvaluator
     /// Evaluates the given expression against the given set of true terms. Missing terms are assumed to be false.
     /// </summary>
     /// <param name="expression">
-    /// The expression, such as "(VisualC | CSharp) + (MSTest | NUnit)".  
+    /// The expression, such as "(VisualC | CSharp) + (MSTest | NUnit)".
     /// The '|' is the OR operator.
     /// The '&' and '+' characters are both AND operators.
     /// The '!' character is the NOT operator.
