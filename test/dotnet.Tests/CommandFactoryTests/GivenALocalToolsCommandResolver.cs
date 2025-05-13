@@ -44,7 +44,7 @@ namespace Microsoft.DotNet.Tests
 
             result.Should().NotBeNull();
 
-            var commandPath = result.Args.Trim('"');
+            var commandPath = result.Args?.Trim('"') ?? "";
             _fileSystem.File.Exists(commandPath).Should().BeTrue("the following path exists: " + commandPath);
             commandPath.Should().Be(fakeExecutable.Value);
         }
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Tests
 
             result.Should().NotBeNull();
 
-            var commandPath = result.Args.Trim('"');
+            var commandPath = result.Args?.Trim('"') ?? "";
             _fileSystem.File.Exists(commandPath).Should().BeTrue("the following path exists: " + commandPath);
             commandPath.Should().Be(fakeExecutable.Value);
         }
@@ -217,12 +217,12 @@ namespace Microsoft.DotNet.Tests
             localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-a",
-            }).Args.Trim('"').Should().Be(fakeExecutableA.Value);
+            }).Args!.Trim('"').Should().Be(fakeExecutableA.Value);
 
             localToolsCommandResolver.Resolve(new CommandResolverArguments()
             {
                 CommandName = "dotnet-dotnet-a",
-            }).Args.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
+            }).Args!.Trim('"').Should().Be(fakeExecutableDotnetA.Value);
         }
 
         private string _jsonContent =

@@ -840,6 +840,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--in-root', '--in-root', [CompletionResultType]::ParameterName, "Place project in root of the solution, rather than creating a solution folder.")
                 [CompletionResult]::new('--solution-folder', '--solution-folder', [CompletionResultType]::ParameterName, "The destination solution folder path to add the projects to.")
                 [CompletionResult]::new('--solution-folder', '-s', [CompletionResultType]::ParameterName, "The destination solution folder path to add the projects to.")
+                [CompletionResult]::new('--include-references', '--include-references', [CompletionResultType]::ParameterName, "Recursively add projects`' ReferencedProjects to solution")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

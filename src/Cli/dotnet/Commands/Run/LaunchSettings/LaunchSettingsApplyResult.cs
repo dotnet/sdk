@@ -3,11 +3,11 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
-public class LaunchSettingsApplyResult(bool success, string? failureReason, ProjectLaunchSettingsModel launchSettings = null)
+public class LaunchSettingsApplyResult(bool success, string? failureReason, ProjectLaunchSettingsModel? launchSettings = null)
 {
     public bool Success { get; } = success;
 
-    public string FailureReason { get; } = failureReason;
+    public string? FailureReason { get; } = failureReason;
 
-    public ProjectLaunchSettingsModel LaunchSettings { get; } = launchSettings;
+    public ProjectLaunchSettingsModel? LaunchSettings { get; } = launchSettings;
 }

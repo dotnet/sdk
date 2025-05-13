@@ -142,7 +142,8 @@ internal static class SolutionAndProjectUtility
 
     public static string GetRootDirectory(string solutionOrProjectFilePath)
     {
-        string fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+        string? fileDirectory = Path.GetDirectoryName(solutionOrProjectFilePath);
+        Debug.Assert(fileDirectory is not null);
         return string.IsNullOrEmpty(fileDirectory) ? Directory.GetCurrentDirectory() : fileDirectory;
     }
 
@@ -232,7 +233,7 @@ internal static class SolutionAndProjectUtility
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
 
         return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings);
 

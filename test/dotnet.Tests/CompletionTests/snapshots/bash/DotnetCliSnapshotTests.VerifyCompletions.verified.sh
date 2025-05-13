@@ -1421,7 +1421,7 @@ _testhost_solution_add() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--in-root --solution-folder --help" 
+    opts="--in-root --solution-folder --include-references --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1430,6 +1430,10 @@ _testhost_solution_add() {
     
     case $prev in
         --in-root)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+            return
+        ;;
+        --include-references)
             COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;

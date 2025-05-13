@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Help;
@@ -30,6 +32,7 @@ using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Store;
@@ -78,6 +81,7 @@ public static class Parser
         RemoveCommandParser.GetCommand(),
         RestoreCommandParser.GetCommand(),
         RunCommandParser.GetCommand(),
+        RunApiCommandParser.GetCommand(),
         SolutionCommandParser.GetCommand(),
         StoreCommandParser.GetCommand(),
         TestCommandParser.GetCommand(),
