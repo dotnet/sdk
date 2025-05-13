@@ -50,9 +50,9 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build" ExcludeAssets="Runtime" IncludeAssets="Compile" />
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" IncludeAssets="Compile" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Framework" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="Compile" />
     <PackageReference Include="Microsoft.Extensions.DependencyModel" />
     <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="NuGet.ProjectModel" />

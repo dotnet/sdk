@@ -34,8 +34,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" IncludeAssets="Compile" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Framework" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="Compile" />
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Packaging" PrivateAssets="All" Publish="true" />
     <!-- The ApiCompatibility/PackageValidation stuff depends on CodeAnalysis.CSharp at the version that is

@@ -39,8 +39,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" IncludeAssets="Compile" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Framework" IncludeAssets="Compile" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" IncludeAssets="Compile" />
     <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
   </ItemGroup>
 
