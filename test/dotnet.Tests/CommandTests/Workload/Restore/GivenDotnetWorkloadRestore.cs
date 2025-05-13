@@ -15,8 +15,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
-        var testDir = _testAssetsManager.CreateTestDirectory().Path;
-        var cliHome = Path.Combine(testDir, ".home");
+        if(IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
 
         var projectPath =
             _testAssetsManager
@@ -26,7 +29,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
-        .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
         .Execute()
         .Should()
         // if we did try to restore the dcproj in this TestAsset we would fail, so passing means we didn't!
@@ -36,8 +38,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
-        var testDir = _testAssetsManager.CreateTestDirectory().Path;
-        var cliHome = Path.Combine(testDir, ".home");
+        if(IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
 
         var projectPath =
             _testAssetsManager
@@ -47,10 +52,14 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
         .WithWorkingDirectory(projectPath)
-        .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
         .Execute()
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
         .Pass();
+    }
+
+    private bool IsRunningInContainer()
+    {
+        return File.Exists("/.dockerenv") && RuntimeInformation.OSDescription.Contains("Ubuntu");
     }
 }
