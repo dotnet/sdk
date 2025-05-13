@@ -7,7 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <SignAssembly>true</SignAssembly>
-    <PublicSign Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">true</PublicSign>
+    <PublicSign Condition="'$(BuildOS)' != 'windows'">true</PublicSign>
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
   </PropertyGroup>

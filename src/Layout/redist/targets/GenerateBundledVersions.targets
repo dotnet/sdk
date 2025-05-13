@@ -261,19 +261,19 @@
       -->
       <NetCoreAppHostRids
         Condition="'$(DotNetBuildSourceOnly)' == 'true'"
-        Include="$(ProductMonikerRid)" />
+        Include="$(TargetRid)" />
 
       <NetCoreRuntimePackRids
         Condition="'$(BundleRuntimePacks)' == 'true'"
-        Include="$(ProductMonikerRid)" />
+        Include="$(TargetRid)" />
 
       <AspNetCoreRuntimePackRids
         Condition="'$(BundleRuntimePacks)' == 'true'"
-        Include="$(ProductMonikerRid)" />
+        Include="$(TargetRid)" />
 
       <ILCompilerSupportedRids
         Condition="'$(BundleNativeAotCompiler)' == 'true'"
-        Include="$(ProductMonikerRid)" />
+        Include="$(TargetRid)" />
 
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
@@ -458,8 +458,8 @@
 
       <_KnownRuntimeIdentiferPlatforms Include="any;aot;freebsd;illumos;solaris;unix" />
       <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0;tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.4.0.0-'))" />
-      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(ProductMonikerRid.StartsWith('tizen.5.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.4.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(TargetRid.StartsWith('tizen.4.0.0-'))" />
+      <_ExcludedKnownRuntimeIdentiferPlatforms Include="tizen.5.0.0" Condition="'$(DotNetBuildSourceOnly)' == 'true' and !$(TargetRid.StartsWith('tizen.5.0.0-'))" />
     </ItemGroup>
 
     <!--
@@ -545,8 +545,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <BundledRuntimeIdentifierGraphFile>%24(MSBuildThisFileDirectory)RuntimeIdentifierGraph.json</BundledRuntimeIdentifierGraphFile>
     <NETCoreSdkVersion>$(Version)</NETCoreSdkVersion>
     <SdkAnalysisLevel>$(SdkFeatureBand)</SdkAnalysisLevel>
-    <NETCoreSdkRuntimeIdentifier>$(ProductMonikerRid)</NETCoreSdkRuntimeIdentifier>
-    <NETCoreSdkPortableRuntimeIdentifier>$(PortableProductMonikerRid)</NETCoreSdkPortableRuntimeIdentifier>
+    <NETCoreSdkRuntimeIdentifier>$(TargetRid)</NETCoreSdkRuntimeIdentifier>
+    <NETCoreSdkPortableRuntimeIdentifier>$(PortableRid)</NETCoreSdkPortableRuntimeIdentifier>
     <_NETCoreSdkIsPreview>$(_NETCoreSdkBeingBuiltIsPreview)</_NETCoreSdkIsPreview>
   </PropertyGroup>
   <ItemGroup>

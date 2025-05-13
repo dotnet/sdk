@@ -7,8 +7,8 @@
                                     '$(TargetArchitecture)' != 'ppc64le' and
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
-    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-
+    <!-- TODO: What's the right control RID property here instead? -->
+    <Crossgen2Rid>$(HostOS)-$(BuildArchitecture)</Crossgen2Rid>
     <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
 
@@ -194,8 +194,8 @@
     <Move SourceFiles="@(PdbsToMove)"
           DestinationFiles="@(PdbsToMove->'$(ArtifactsSymStoreDirectory)/sdk/$(Version)/%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(OSName)' != 'win'" />
-    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(OSName)' != 'win'" />
+    <Exec Command="find $(InstallerOutputDirectory) -type d -exec chmod 755 {} \;" Condition="'$(BuildOS)' != 'windows'" />
+    <Exec Command="find $(InstallerOutputDirectory) -type f -exec chmod 644 {} \;" Condition="'$(BuildOS)' != 'windows'" />
   </Target>
 
 </Project>
