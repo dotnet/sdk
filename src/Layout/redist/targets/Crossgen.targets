@@ -7,8 +7,7 @@
                                     '$(TargetArchitecture)' != 'ppc64le' and
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
-    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-    <Crossgen2Rid Condition="$(TargetRid.StartsWith('linux-musl-')) or $(TargetRid.StartsWith('alpine'))">linux-musl</Crossgen2Rid>
+    <Crossgen2Rid>$(NETCoreSdkRuntimeIdentifier)</Crossgen2Rid>
 
     <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
