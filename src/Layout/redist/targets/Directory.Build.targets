@@ -24,7 +24,7 @@
   </ImportGroup>
 
   <!-- Installers -->
-  <Import Project="GenerateMSIs.targets" Condition="'$(OS)' == 'Windows_NT' and '$(SkipBuildingInstallers)' != 'true'" />
-  <Import Project="GeneratePKG.targets" Condition="'$(OSName)' == 'osx' and '$(SkipBuildingInstallers)' != 'true'" />
+  <Import Project="GenerateMSIs.targets" Condition="'$(TargetOS)' == 'windows' and '$(SkipBuildingInstallers)' != 'true'" />
+  <Import Project="GeneratePKG.targets" Condition="'$(TargetOS)' == 'osx' and '$(SkipBuildingInstallers)' != 'true'" />
 
 </Project>

@@ -31,7 +31,7 @@
     <CalculateTemplateVersions
       BundledTemplates="@(BundledTemplates)"
       FullNugetVersion="$(FullNugetVersion)"
-      ProductMonikerRid="$(ProductMonikerRid)"
+      ProductMonikerRid="$(TargetRid)"
       InstallerExtension="$(InstallerExtension)"
       CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
       <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
@@ -40,7 +40,7 @@
 
     <ItemGroup>
       <TemplatesComponents>
-        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
+        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(TargetRid)$(InstallerExtension)</MSIInstallerFile>
       </TemplatesComponents>
     </ItemGroup>
   </Target>
@@ -56,7 +56,7 @@
   </Target>
 
   <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
-    <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
+    <ItemGroup Condition="!$(TargetRid.StartsWith('win'))">
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
       <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
     </ItemGroup>
@@ -74,7 +74,7 @@
           DestinationFiles="$(RedistInstallerLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
   </Target>
 
-  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win'))">
+  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(TargetRid.StartsWith('win'))">
     <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
           DestinationFolder="$(IntermediateOutputPath)templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
 

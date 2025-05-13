@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <!-- Only the runtime OSX .pkgs have a `-internal` suffix -->
-    <InstallerStartSuffix Condition="$([MSBuild]::IsOSPlatform('OSX'))">-internal</InstallerStartSuffix>
+    <InstallerStartSuffix Condition="'$(BuildOS)' == 'osx'">-internal</InstallerStartSuffix>
     <!-- Use the "x64" Rid when downloading Linux shared framework 'DEB' installer files. -->
     <InstallerTargetArchitecture>$(TargetArchitecture)</InstallerTargetArchitecture>
     <InstallerTargetArchitecture Condition="'$(IsRPMBasedDistro)' == 'true' and '$(TargetArchitecture)' == 'Arm64'">aarch64</InstallerTargetArchitecture>
@@ -37,7 +37,7 @@
     <DownloadedNetStandardTargetingPackInstallerFileName Condition="'$(SharedFrameworkInstallerFileRid)' == 'osx-arm64'">netstandard-targeting-pack-$(NETStandardLibraryRefPackageVersion)-osx-x64$(InstallerExtension)</DownloadedNetStandardTargetingPackInstallerFileName>
 
     <SdkMSIInstallerFileName>$(ArtifactNameWithVersionSdk)$(InstallerExtension)</SdkMSIInstallerFileName>
-    <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
+    <SdkTemplatesMSIInstallerFileName>dotnet-$(VersionMajor)$(VersionMinor)templates-$(FullNugetVersion)-$(TargetRid)$(InstallerExtension)</SdkTemplatesMSIInstallerFileName>
 
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' != 'true'">dotnet-runtime-$(MicrosoftNETCoreAppRuntimePackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
     <CombinedFrameworkHostArchiveFileName Condition="'$(PgoInstrument)' == 'true'">dotnet-runtime$(PgoTerm)-$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)-$(SharedFrameworkRid)$(ArchiveExtension)</CombinedFrameworkHostArchiveFileName>
@@ -48,7 +48,7 @@
     <AspNetCoreInstallerRid Condition="('$(InstallerExtension)' == '.deb' OR '$(InstallerExtension)' == '.rpm') AND '$(TargetArchitecture)' != 'arm64'">x64</AspNetCoreInstallerRid>
     <AspNetCoreInstallerRid Condition="'$(InstallerExtension)' == '.rpm' AND '$(TargetArchitecture)' == 'arm64'">aarch64</AspNetCoreInstallerRid>
 
-    <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' != '' AND !$([MSBuild]::IsOSPlatform('OSX'))">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
+    <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' != '' and '$(BuildOS)' != 'osx'">aspnetcore-runtime-$(MicrosoftAspNetCoreAppRuntimePackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetCoreSharedFxInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-runtime-$(VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetCoreSharedFxInstallerFileName>
     <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' != ''">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>
     <DownloadedAspNetTargetingPackInstallerFileName Condition="'$(InstallerExtension)' == '.msi'">aspnetcore-targeting-pack-$(MicrosoftAspNetCoreAppRefInternalPackageVersion)-$(AspNetCoreInstallerRid)$(InstallerExtension)</DownloadedAspNetTargetingPackInstallerFileName>

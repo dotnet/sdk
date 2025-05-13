@@ -193,28 +193,25 @@ extends:
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
             ### PORTABLE ###
             - categoryName: Portable
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
               targetArchitecture: arm64
@@ -222,14 +219,14 @@ extends:
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: /p:BuildSdkDeb=true
               runTests: false
             - categoryName: Portable
               container: centosStream9
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: /p:IsRPMBasedDistro=true
               runTests: false
             - categoryName: Portable
               container: centosStream9
@@ -238,7 +235,7 @@ extends:
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: /p:IsRPMBasedDistro=true
               runTests: false
             ### MUSL ###
             - categoryName: Musl
@@ -246,8 +243,6 @@ extends:
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              # Use HostOSName when running on alpine.
-              osProperties: /p:HostOSName=linux-musl
               # SBOM generation is not supported for alpine.
               enableSbom: false
               runTests: false
@@ -257,21 +252,18 @@ extends:
               runtimeIdentifier: linux-musl-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: /p:OSName=linux-musl
               runTests: false
             - categoryName: Musl
               targetArchitecture: arm64
               runtimeIdentifier: linux-musl-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: /p:OSName=linux-musl
               runTests: false
             ### PGO ###
             - categoryName: PGO
               pgoInstrument: true
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
             - categoryName: PGO
               pgoInstrument: true
@@ -279,7 +271,6 @@ extends:
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
 
       ############### MACOS ###############

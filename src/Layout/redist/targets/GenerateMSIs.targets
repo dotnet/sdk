@@ -52,7 +52,7 @@
 
     <!-- Warning: Changing the value "SdkBundleInstallerOutputGuidString" can only occur on a product-band boundary [CliProductBandVersion],
                   Changing "SdkBundleInstallerOutputGuidString" mid-product-band will break the upgradability of the SDK bundle installer. -->
-    <SdkBundleInstallerOutputGuidString>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</SdkBundleInstallerOutputGuidString>
+    <SdkBundleInstallerOutputGuidString>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(TargetRid)</SdkBundleInstallerOutputGuidString>
   </PropertyGroup>
 
   <Target Name="MsiTargetsSetupInputOutputs" DependsOnTargets="GetAssemblyVersion">
