@@ -126,7 +126,7 @@ internal sealed class TestProgressState(long id, string assembly, string? target
         FailedTests++;
     }
 
-    public void DiscoverTest(string displayName, string uid)
+    public void DiscoverTest(string? displayName, string? uid)
     {
         PassedTests++;
         DiscoveredTests.Add(new(displayName, uid));

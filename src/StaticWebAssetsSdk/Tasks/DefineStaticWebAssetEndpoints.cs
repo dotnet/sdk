@@ -189,7 +189,7 @@ public class DefineStaticWebAssetEndpoints : Task
                 // If in the future we change it to sha384 or sha512, the runtime will not need to be updated.
                 properties[i++] = new StaticWebAssetEndpointProperty { Name = "integrity", Value = $"sha256-{asset.Integrity}" };
 
-                var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
+                    var finalRoute = asset.IsProject() || asset.IsPackage() ? StaticWebAsset.Normalize(Path.Combine(asset.BasePath, route)) : route;
 
                 var endpoint = new StaticWebAssetEndpoint()
                 {

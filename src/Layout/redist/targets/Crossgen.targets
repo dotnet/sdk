@@ -8,7 +8,6 @@
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
     <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-    <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
 
     <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
