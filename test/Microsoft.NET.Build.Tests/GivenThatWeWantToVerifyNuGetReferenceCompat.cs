@@ -11,7 +11,6 @@ namespace Microsoft.NET.Build.Tests
         {
         }
 
-        // Reduced set of test cases that still verify the compatibility matrix
         [Theory]
         [InlineData("net45", "Full", "netstandard1.0 netstandard1.1 net45", true, true)]
         [InlineData("net462", "Full", "netstandard1.0 netstandard1.1 netstandard1.2 netstandard1.3 netstandard1.4 netstandard1.5 netstandard1.6 netstandard2.0 net45 net451 net46 net461 net462", true, true)]
@@ -59,7 +58,7 @@ namespace Microsoft.NET.Build.Tests
                     if (!dependencyPackageReference.NuGetPackageExists() &&
                         (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || dependencyProject.BuildsOnNonWindows))
                     {
-                        if (!dependencyPackageReference.NuGetPackageExists()) // Double-check after lock
+                        if (!dependencyPackageReference.NuGetPackageExists())
                         {
                             var dependencyTestAsset = _testAssetsManager.CreateTestProject(
                                 dependencyProject,
