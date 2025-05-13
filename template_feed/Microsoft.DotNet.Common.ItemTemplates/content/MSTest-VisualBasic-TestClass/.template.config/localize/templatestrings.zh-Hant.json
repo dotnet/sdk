@@ -1,0 +1,16 @@
+﻿{
+  "author": "Microsoft",
+  "name": "MSTest 測試類別",
+  "description": "建立新的 MSTest 測試類別",
+  "symbols/Fixture/description": "選取要併入專案中的固件類型。",
+  "symbols/Fixture/displayName": "固件",
+  "symbols/Fixture/choices/None/description": "沒有固件方法",
+  "symbols/Fixture/choices/None/displayName": "無",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "AssemblyInitialize 固件方法",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "AssemblyCleanup 固件方法",
+  "symbols/Fixture/choices/ClassInitialize/description": "ClassInitialize 固件方法",
+  "symbols/Fixture/choices/ClassCleanup/description": "ClassCleanup 固件方法",
+  "symbols/Fixture/choices/TestInitialize/description": "TestInitialize 固件方法",
+  "symbols/Fixture/choices/TestCleanup/description": "TestCleanup 固件方法",
+  "postActions/openInEditor/description": "在編輯器中開啟 Test1.vb。"
+}
