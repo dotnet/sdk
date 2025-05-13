@@ -16,7 +16,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
         var Home = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
-        if (string.IsNullOrEmpty(cliHome))
+        if (string.IsNullOrEmpty(Home))
         {
             throw new InvalidOperationException("DOTNET_CLI_HOME is not set in the environment.");
         }
@@ -43,7 +43,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
         var Home = Environment.GetEnvironmentVariable("DOTNET_CLI_HOME");
-        if (string.IsNullOrEmpty(cliHome))
+        if (string.IsNullOrEmpty(Home))
         {
             throw new InvalidOperationException("DOTNET_CLI_HOME is not set in the environment.");
         }
