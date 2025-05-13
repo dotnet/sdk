@@ -12,7 +12,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace System.CommandLine.StaticCompletions.Tests;
 
-public class ShellDiscoveryTests()
+public class ShellDiscoveryTests
 {
     [Fact]
     public void StaticCompletionsCanParseWithoutAShell()
