@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -20,6 +21,7 @@ internal class SolutionAddCommand : CommandBase
     private readonly IReadOnlyCollection<string> _projects;
     private readonly string? _solutionFolderPath;
     private string _solutionFileFullPath = string.Empty;
+    private bool _includeReferences;
 
     private static string GetSolutionFolderPathWithForwardSlashes(string path)
     {
@@ -37,10 +39,11 @@ internal class SolutionAddCommand : CommandBase
 
     public SolutionAddCommand(ParseResult parseResult) : base(parseResult)
     {
-        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument);
+        _fileOrDirectory = parseResult.GetValue(SolutionCommandParser.SlnArgument)!;
         _projects = (IReadOnlyCollection<string>)(parseResult.GetValue(SolutionAddCommandParser.ProjectPathArgument) ?? []);
         _inRoot = parseResult.GetValue(SolutionAddCommandParser.InRootOption);
         _solutionFolderPath = parseResult.GetValue(SolutionAddCommandParser.SolutionFolderOption);
+        _includeReferences = parseResult.GetValue(SolutionAddCommandParser.IncludeReferencesOption);
         SolutionArgumentValidator.ParseAndValidateArguments(_fileOrDirectory, _projects, SolutionArgumentValidator.CommandType.Add, _inRoot, _solutionFolderPath);
         _solutionFileFullPath = SlnFileFactory.GetSolutionFileFullPath(_fileOrDirectory);
     }
@@ -73,12 +76,13 @@ internal class SolutionAddCommand : CommandBase
             return null;
         }
 
-        string relativeSolutionFolderPath = string.Empty;
+        string? relativeSolutionFolderPath = string.Empty;
 
         if (string.IsNullOrEmpty(_solutionFolderPath))
         {
             // Generate the solution folder path based on the project path
             relativeSolutionFolderPath = Path.GetDirectoryName(relativeProjectPath);
+            Debug.Assert(relativeSolutionFolderPath is not null);
 
             // If the project is in a folder with the same name as the project, we need to go up one level
             if (relativeSolutionFolderPath.Split(Path.DirectorySeparatorChar).LastOrDefault() == Path.GetFileNameWithoutExtension(relativeProjectPath))
@@ -106,6 +110,7 @@ internal class SolutionAddCommand : CommandBase
     private async Task AddProjectsToSolutionAsync(IEnumerable<string> projectPaths, CancellationToken cancellationToken)
     {
         SolutionModel solution = SlnFileFactory.CreateFromFileOrDirectory(_solutionFileFullPath);
+        Debug.Assert(solution.SerializerExtension is not null);
         ISolutionSerializer serializer = solution.SerializerExtension.Serializer;
 
         // set UTF8 BOM encoding for .sln
@@ -136,9 +141,9 @@ internal class SolutionAddCommand : CommandBase
         await serializer.SaveAsync(_solutionFileFullPath, solution, cancellationToken);
     }
 
-    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer serializer = null)
+    private void AddProject(SolutionModel solution, string fullProjectPath, ISolutionSerializer? serializer = null, bool showMessageOnDuplicate = true)
     {
-        string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath), fullProjectPath);
+        string solutionRelativeProjectPath = Path.GetRelativePath(Path.GetDirectoryName(_solutionFileFullPath)!, fullProjectPath);
 
         // Open project instance to see if it is a valid project
         ProjectRootElement projectRootElement;
@@ -173,7 +178,10 @@ internal class SolutionAddCommand : CommandBase
         }
         catch (SolutionArgumentException ex) when (ex.Type == SolutionErrorType.DuplicateProjectName || solution.FindProject(solutionRelativeProjectPath) is not null)
         {
-            Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            if (showMessageOnDuplicate)
+            {
+                Reporter.Output.WriteLine(CliStrings.SolutionAlreadyContainsProject, _solutionFileFullPath, solutionRelativeProjectPath);
+            }
             return;
         }
 
@@ -191,17 +199,29 @@ internal class SolutionAddCommand : CommandBase
         foreach (var solutionPlatform in solution.Platforms)
         {
             var projectPlatform = projectInstancePlatforms.FirstOrDefault(
-                platform => platform.Replace(" ", string.Empty) == solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault());
+                platform => platform.Replace(" ", string.Empty) == solutionPlatform.Replace(" ", string.Empty), projectInstancePlatforms.FirstOrDefault()!);
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.Platform, "*", solutionPlatform, projectPlatform));
         }
 
         foreach (var solutionBuildType in solution.BuildTypes)
         {
             var projectBuildType = projectInstanceBuildTypes.FirstOrDefault(
-                buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault());
+                buildType => buildType.Replace(" ", string.Empty) == solutionBuildType.Replace(" ", string.Empty), projectInstanceBuildTypes.FirstOrDefault()!);
             project.AddProjectConfigurationRule(new ConfigurationRule(BuildDimension.BuildType, solutionBuildType, "*", projectBuildType));
         }
 
         Reporter.Output.WriteLine(CliStrings.ProjectAddedToTheSolution, solutionRelativeProjectPath);
+
+        // Get referencedprojects from the project instance
+        var referencedProjectsFullPaths = projectInstance.GetItems("ProjectReference")
+            .Select(item => Path.GetFullPath(item.EvaluatedInclude, Path.GetDirectoryName(fullProjectPath)!));
+
+        if (_includeReferences)
+        {
+            foreach (var referencedProjectFullPath in referencedProjectsFullPaths)
+            {
+                AddProject(solution, referencedProjectFullPath, serializer, showMessageOnDuplicate: false);
+            }
+        }
     }
 }

@@ -11,14 +11,14 @@ namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public static class RestoreCommand
 {
-    public static CommandBase FromArgs(string[] args, string msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parser = Parser.Instance;
         var result = parser.ParseFrom("dotnet restore", args);
         return FromParseResult(result, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult result, string msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
         result.HandleDebugSwitch();
 

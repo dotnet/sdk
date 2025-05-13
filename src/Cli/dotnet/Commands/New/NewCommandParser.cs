@@ -93,7 +93,7 @@ internal static class NewCommandParser
             else if (verbosityOptionResult != null
                 && !verbosityOptionResult.Implicit
                 // if verbosityOptionResult contains an error, ArgumentConverter.GetValueOrDefault throws an exception
-                // and callstack is pushed to process output 
+                // and callstack is pushed to process output
                 && !parseResult.Errors.Any(error => error.SymbolResult == verbosityOptionResult))
             {
                 VerbosityOptions userSetVerbosity = verbosityOptionResult.GetValueOrDefault<VerbosityOptions>();
@@ -168,7 +168,7 @@ internal static class NewCommandParser
             { "prefs:language", preferredLang },
             { "dotnet-cli-version", Product.Version },
             { "RuntimeFrameworkVersion", new Muxer().SharedFxVersion },
-            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() },
+            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() ?? "" },
         };
         return new CliTemplateEngineHost(
             HostIdentifier,

@@ -4,7 +4,6 @@
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>annotations</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
