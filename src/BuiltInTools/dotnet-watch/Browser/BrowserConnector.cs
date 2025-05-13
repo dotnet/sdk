@@ -287,7 +287,8 @@ namespace Microsoft.DotNet.Watch
                 return false;
             }
 
-            if (!IsWebApp(projectNode))
+            // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
+            if (!projectNode.IsWebApp())
             {
                 context.Reporter.Verbose("Skipping configuring browser-refresh middleware since this is not a webapp.");
                 return false;
@@ -296,10 +297,6 @@ namespace Microsoft.DotNet.Watch
             context.Reporter.Report(MessageDescriptor.ConfiguredToUseBrowserRefresh);
             return true;
         }
-
-        // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
-        private static bool IsWebApp(ProjectGraphNode projectNode)
-            => projectNode.GetCapabilities().Any(value => value is "AspNetCore" or "WebAssembly");
 
         private LaunchSettingsProfile GetLaunchProfile(ProjectOptions projectOptions)
         {

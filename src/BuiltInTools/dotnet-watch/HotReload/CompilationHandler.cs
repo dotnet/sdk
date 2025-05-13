@@ -105,8 +105,8 @@ namespace Microsoft.DotNet.Watch
         private static DeltaApplier CreateDeltaApplier(HotReloadProfile profile, ProjectGraphNode project, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
             => profile switch
             {
-                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, project),
-                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, project),
+                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer ?? throw new InvalidOperationException(), project),
+                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer ?? throw new InvalidOperationException(), project),
                 _ => new DefaultDeltaApplier(processReporter),
             };
 
