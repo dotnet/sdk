@@ -14,10 +14,10 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 {
     internal class ToolExecuteCommand(ParseResult result) : CommandBase(result)
     {
-        private readonly PackageIdentity _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
-        private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument);
+        private readonly PackageIdentity? _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
+        private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? [];
         private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
-        private readonly string _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
+        private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
         private readonly string[] _sources = result.GetValue(ToolExecuteCommandParser.SourceOption) ?? [];
         private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
         private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
