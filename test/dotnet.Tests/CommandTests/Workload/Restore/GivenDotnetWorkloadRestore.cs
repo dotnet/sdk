@@ -47,8 +47,8 @@ public class GivenDotnetWorkloadRestore : SdkTest
         {
             throw new InvalidOperationException("DOTNET_CLI_HOME is not set in the environment.");
         }
-        Directory.CreateDirectory(cliHome);
-        CreateUserLocalFileForCurrentSdk(cliHome);
+        Directory.CreateDirectory(Home);
+        CreateUserLocalFileForCurrentSdk(Home);
 
         IsRunningInContainer();
         Log.WriteLine($"[Debug] OSDescription = {RuntimeInformation.OSDescription}");
@@ -61,7 +61,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
         new DotnetWorkloadCommand(Log, "restore")
             .WithWorkingDirectory(projectPath)
-            .WithEnvironmentVariable("DOTNET_CLI_HOME", cliHome)
+            .WithEnvironmentVariable("DOTNET_CLI_HOME", Home)
             .Execute("--verbosity", "diag")
             .Should()
             // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
