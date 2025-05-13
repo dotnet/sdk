@@ -10,10 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Sources files pulled from Arcade shared across all .NET installers. -->
-    <!-- TODO: Replace with the Arcade copy once it has been updated to support v5. -->
-    <!--<Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />-->
-    <Compile Include="..\dotnethome_x64.wxs" />
+    <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />
     <Compile Include="..\provider.wxs" />
     <Compile Include="..\directories.wxs" />
   </ItemGroup>
