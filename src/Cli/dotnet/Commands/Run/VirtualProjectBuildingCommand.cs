@@ -478,6 +478,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             cache,
             parseDirectivesFromOtherEntryPoints: false,
             reportAllDirectiveErrors: false,
+            directiveErrors: null,
             otherEntryPoints: out var otherEntryPoints,
             parsedFiles: out var parsedFiles);
 
@@ -515,6 +516,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         DirectoryInfo? entryDirectory,
         bool parseDirectivesFromOtherEntryPoints,
         bool reportAllDirectiveErrors,
+        ImmutableArray<SimpleDiagnostic>.Builder? directiveErrors,
         out ImmutableArray<string> otherEntryPoints,
         out IReadOnlyDictionary<string, ParsedSourceFile> parsedFiles)
     {
@@ -524,6 +526,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             cache: null,
             parseDirectivesFromOtherEntryPoints: parseDirectivesFromOtherEntryPoints,
             reportAllDirectiveErrors: reportAllDirectiveErrors,
+            directiveErrors: directiveErrors,
             otherEntryPoints: out otherEntryPoints,
             parsedFiles: out parsedFiles);
     }
@@ -534,6 +537,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         CacheInfo? cache,
         bool parseDirectivesFromOtherEntryPoints,
         bool reportAllDirectiveErrors,
+        ImmutableArray<SimpleDiagnostic>.Builder? directiveErrors,
         out ImmutableArray<string> otherEntryPoints,
         out IReadOnlyDictionary<string, ParsedSourceFile> parsedFiles)
     {
@@ -549,7 +553,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             // Parse directives in the entry-point file.
-            var directives = FindDirectives(entryPointFileValue, reportAllErrors: reportAllDirectiveErrors, errors: null);
+            var directives = FindDirectives(entryPointFileValue, reportAllErrors: reportAllDirectiveErrors, errors: directiveErrors);
             parsedFilesBuilder.Add(entryPointFileValue.Path, (entryPointFileValue, IsEntryPoint: true, directives));
         }
 
@@ -573,13 +577,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 otherEntryPointsBuilder.Add(file.Path);
                 if (parseDirectivesFromOtherEntryPoints)
                 {
-                    var directives = FindDirectives(file, reportAllErrors: reportAllDirectiveErrors, errors: null);
+                    var directives = FindDirectives(file, reportAllErrors: reportAllDirectiveErrors, errors: directiveErrors);
                     parsedFilesBuilder.Add(file.Path, (file, IsEntryPoint: true, directives));
                 }
             }
             else
             {
-                var directives = FindDirectives(file, reportAllErrors: reportAllDirectiveErrors, errors: null);
+                var directives = FindDirectives(file, reportAllErrors: reportAllDirectiveErrors, errors: directiveErrors);
                 parsedFilesBuilder.Add(file.Path, (file, IsEntryPoint: false, directives));
             }
         }

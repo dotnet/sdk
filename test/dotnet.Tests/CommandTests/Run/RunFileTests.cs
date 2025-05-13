@@ -1251,7 +1251,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1271,10 +1271,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                       </PropertyGroup>
@@ -1285,10 +1281,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <ItemGroup>
                         <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-                      </ItemGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -1344,7 +1336,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1363,16 +1355,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
-                      </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -1430,7 +1414,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1449,16 +1433,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
-                      </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -1510,7 +1486,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOutContaining("""
-                {"$type":"Error","Version":1,"Message":
+                {"$type":"Error","Version":2,"Message":
                 """)
             .And.HaveStdOutContaining("Unknown1")
             .And.HaveStdOutContaining("Unknown2");

@@ -61,15 +61,26 @@ internal abstract class RunApiInput
         {
             var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(EntryPointFileFullPath);
             var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
-            var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors);
-            string artifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath);
+
+            // Discover other C# files.
+            VirtualProjectBuildingCommand.DiscoverOtherFiles(
+                entryPointFile: sourceFile,
+                entryDirectory: null,
+                parseDirectivesFromOtherEntryPoints: false,
+                reportAllDirectiveErrors: true,
+                directiveErrors: errors,
+                otherEntryPoints: out var otherEntryPoints,
+                parsedFiles: out var parsedFiles);
 
             var csprojWriter = new StringWriter();
-            VirtualProjectBuildingCommand.WriteProjectFile(csprojWriter, directives, options: new ProjectWritingOptions.Virtual
-            {
-                ArtifactsPath = artifactsPath,
-                ExcludeCompileItems = ImmutableArray<string>.Empty,
-            });
+            VirtualProjectBuildingCommand.WriteProjectFile(
+                csprojWriter,
+                parsedFiles[EntryPointFileFullPath].SortedDirectives,
+                options: new ProjectWritingOptions.Virtual
+                {
+                    ArtifactsPath = ArtifactsPath ?? VirtualProjectBuildingCommand.GetArtifactsPath(EntryPointFileFullPath),
+                    ExcludeCompileItems = otherEntryPoints,
+                });
 
             return new RunApiOutput.Project
             {
@@ -90,8 +101,11 @@ internal abstract class RunApiOutput
     /// When the API shape or behavior changes, this should be incremented so the callers (IDEs) can act accordingly
     /// (e.g., show an error message when an incompatible SDK version is being used).
     /// </summary>
+    /// <remarks>
+    /// <para>Version 2: Multi-file instead of single-file support.</para>
+    /// </remarks>
     [JsonPropertyOrder(-1)]
-    public int Version { get; } = 1;
+    public int Version { get; } = 2;
 
     public sealed class Error : RunApiOutput
     {

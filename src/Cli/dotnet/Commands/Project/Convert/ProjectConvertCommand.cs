@@ -39,6 +39,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             entryDirectory: isFile ? null : new DirectoryInfo(fileOrDirectory),
             parseDirectivesFromOtherEntryPoints: true,
             reportAllDirectiveErrors: !_force,
+            directiveErrors: null,
             otherEntryPoints: out var otherEntryPoints,
             parsedFiles: out var parsedFiles);
 
