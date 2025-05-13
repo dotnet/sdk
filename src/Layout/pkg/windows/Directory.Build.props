@@ -10,7 +10,7 @@
     <InstallerPlatform>$(TargetArchitecture)</InstallerPlatform>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <DefineConstants>$(DefineConstants);SdkFeatureBandVersion=$(CliProductBandVersion)00</DefineConstants>
     <DefineConstants>$(DefineConstants);ProductLanguage=1033</DefineConstants>
     <DefineConstants>$(DefineConstants);Manufacturer="Microsoft Corporation"</DefineConstants>

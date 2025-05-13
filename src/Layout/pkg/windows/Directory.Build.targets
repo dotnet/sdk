@@ -1,11 +1,12 @@
+<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
     <SdkPlatformBrandName>$(SdkBrandName) ($(InstallerPlatform))</SdkPlatformBrandName>
   </PropertyGroup>
-  
-  <PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <!-- Example: Microsoft .NET SDK 10.0.100 -->
     <DefineConstants>$(DefineConstants);SdkBrandName=$(SdkBrandName)</DefineConstants>
     <!-- Example: Microsoft .NET SDK 10.0.100-->
