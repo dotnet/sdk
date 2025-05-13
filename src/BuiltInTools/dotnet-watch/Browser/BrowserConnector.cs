@@ -63,6 +63,7 @@ namespace Microsoft.DotNet.Watch
             ProcessSpec processSpec,
             EnvironmentVariablesBuilder environmentBuilder,
             ProjectOptions projectOptions,
+            HotReloadProfile profile,
             CancellationToken cancellationToken)
         {
             BrowserRefreshServer? server;
@@ -75,7 +76,7 @@ namespace Microsoft.DotNet.Watch
                 hasExistingServer = _servers.TryGetValue(key, out server);
                 if (!hasExistingServer)
                 {
-                    server = IsServerSupported(projectNode) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
+                    server = IsServerSupported(projectNode, profile) ? new BrowserRefreshServer(context.EnvironmentOptions, context.Reporter) : null;
                     _servers.Add(key, server);
                 }
             }
@@ -271,26 +272,24 @@ namespace Microsoft.DotNet.Watch
             return true;
         }
 
-        public bool IsServerSupported(ProjectGraphNode projectNode)
+        public bool IsServerSupported(ProjectGraphNode projectNode, HotReloadProfile profile)
         {
             if (context.EnvironmentOptions.SuppressBrowserRefresh)
             {
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable.ToErrorWhen(profile.RequiresBrowserRefresh), EnvironmentVariables.SuppressBrowserRefresh);
                 return false;
             }
 
             if (!projectNode.IsNetCoreApp(minVersion: s_minimumSupportedVersion))
             {
-                context.Reporter.Warn(
-                    "Skipping configuring browser-refresh middleware since the target framework version is not supported." +
-                    " For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.");
-
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported.ToErrorWhen(profile.RequiresBrowserRefresh));
                 return false;
             }
 
             // We only want to enable browser refresh if this is a WebApp (ASP.NET Core / Blazor app).
             if (!projectNode.IsWebApp())
             {
-                context.Reporter.Verbose("Skipping configuring browser-refresh middleware since this is not a webapp.");
+                context.Reporter.Report(MessageDescriptor.SkippingConfiguringBrowserRefresh_NotWebApp.ToErrorWhen(profile.RequiresBrowserRefresh));
                 return false;
             }
 
