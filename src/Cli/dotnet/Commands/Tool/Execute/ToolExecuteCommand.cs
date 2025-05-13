@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 {
     internal class ToolExecuteCommand(ParseResult result) : CommandBase(result)
     {
-        private readonly PackageIdentity? _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
+        private readonly PackageIdentity _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
         private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument);
         private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
         private readonly string _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
