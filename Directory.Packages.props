@@ -133,7 +133,7 @@
 
        Note: This is not abstracted in Versions.props because source-only
        modes will import a version override file after Versions.props. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472' or '$(IsTestProject)' == 'true'">
     <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
          that is what will be packaged with the .NET SDK. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
