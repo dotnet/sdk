@@ -1902,11 +1902,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             if (childAttributes.TryGetValue(platform, out var childAttribute))
                             {
                                 // only later versions could narrow, other versions ignored
-                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst) &&
-                                    (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst))
+                                if (childAttribute.SupportedFirst.IsGreaterThanOrEqualTo(attributes.SupportedFirst))
                                 {
-                                    attributes.SupportedSecond = childAttribute.SupportedFirst;
                                     supportFound = true;
+                                    if (attributes.SupportedSecond == null || attributes.SupportedSecond < childAttribute.SupportedFirst)
+                                    {
+                                        attributes.SupportedSecond = childAttribute.SupportedFirst;
+
+                                    }
                                 }
 
                                 if (childAttribute.UnsupportedFirst != null)
@@ -1934,13 +1937,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                                         attributes.UnsupportedFirst = childAttribute.UnsupportedSecond;
                                         attributes.UnsupportedMessage = childAttribute.UnsupportedMessage;
                                     }
-                                }
-                                else if (relatedPlatforms.TryGetValue(platform, out var relation) && !relation.isSubset && !childAttribute.IsSet())
-                                // if it was related platform like MacCatalyst and child attributes are empty then the supported attribute(s) must have
-                                // suppressed with UnsupportedOSPlatform attribute, we need to apply the same to the parent attribute list
-                                {
-                                    attributes.SupportedFirst = null;
-                                    attributes.SupportedSecond = null;
                                 }
                             }
                             else
@@ -2018,7 +2014,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             allowList = true;
                         }
-                        else if (DenyList(attributes))
+                        else if (DenyList(attributes) || !attributes.IsSet())
                         {
                             unsupportedList.Add(platform);
                         }
