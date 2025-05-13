@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
@@ -26,7 +27,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(["--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath);
                 var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
 
                 command.GetArgumentTokensToMSBuild()
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
                 var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                     RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath);
                 command.GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-arch"]);
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(["--arch", "arch", "--os", "os", "--self-contained"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os", "--self-contained"], msbuildPath);
                 string[] expectedArgs = [
                     .. ExpectedPrefix,
                     .. DefaultArgs,
@@ -152,7 +153,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath);
                 command.GetArgumentTokensToMSBuild()
                     .Should()
                     .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-x64"]);
@@ -169,7 +170,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = BuildCommand.FromArgs(["--os", "os"], msbuildPath);
+                    var command = (RestoringCommand)BuildCommand.FromArgs(["--os", "os"], msbuildPath);
                     var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
                     command.GetArgumentTokensToMSBuild()
                         .Should()
@@ -189,7 +190,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
                 {
                     var msbuildPath = "<msbuildpath>";
-                    var command = BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
+                    var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch"], msbuildPath);
                     var expectedOs = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "win" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "linux" :
                         RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? "osx" :

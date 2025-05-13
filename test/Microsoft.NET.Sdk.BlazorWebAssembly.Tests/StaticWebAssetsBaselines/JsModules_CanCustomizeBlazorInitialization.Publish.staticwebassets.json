@@ -18955,6 +18955,30 @@
       ],
       "EndpointProperties": [
         {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
+        {
           "Name": "integrity",
           "Value": "__integrity__"
         }
@@ -19054,6 +19078,30 @@
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"
@@ -20499,6 +20547,30 @@
         }
       ],
       "EndpointProperties": [
+        {
+          "Name": "PreloadAs",
+          "Value": "script"
+        },
+        {
+          "Name": "PreloadCrossorigin",
+          "Value": "anonymous"
+        },
+        {
+          "Name": "PreloadGroup",
+          "Value": "webassembly"
+        },
+        {
+          "Name": "PreloadOrder",
+          "Value": "1"
+        },
+        {
+          "Name": "PreloadPriority",
+          "Value": "high"
+        },
+        {
+          "Name": "PreloadRel",
+          "Value": "preload"
+        },
         {
           "Name": "integrity",
           "Value": "__integrity__"

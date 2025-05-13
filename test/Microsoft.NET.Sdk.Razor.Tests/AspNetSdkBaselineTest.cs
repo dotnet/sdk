@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         public static bool GenerateBaselines = bool.TryParse(Environment.GetEnvironmentVariable("ASPNETCORE_TEST_BASELINES"), out var result) && result;
 #endif
 
-        private readonly bool _generateBaselines = GenerateBaselines;
+        private bool _generateBaselines = GenerateBaselines;
 
         public AspNetSdkBaselineTest(ITestOutputHelper log) : base(log)
         {
