@@ -6,8 +6,6 @@ using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
 using Microsoft.DotNet.Cli.Commands.Test;
 
-#nullable enable
-
 namespace Microsoft.DotNet.Cli.Extensions;
 
 public static class OptionForwardingExtensions
