@@ -50,7 +50,7 @@ sdk-options:
   restore           {LocalizableStrings.RestoreDefinition}
   run               {LocalizableStrings.RunDefinition}
   sdk               {LocalizableStrings.SdkDefinition}
-  sln               {LocalizableStrings.SlnDefinition}
+  solution          {LocalizableStrings.SlnDefinition}
   store             {LocalizableStrings.StoreDefinition}
   test              {LocalizableStrings.TestDefinition}
   tool              {LocalizableStrings.ToolDefinition}
