@@ -27,7 +27,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var filesToIgnore = new[]
             {
                 Path.Combine(buildOutputDirectory, "RazorClassLibrary.staticwebassets.endpoints.json"),
-                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json")
+                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json"),
+                Path.Combine(buildOutputDirectory, "blazorwasm.runtimeconfig.json")
             };
 
             // Act
