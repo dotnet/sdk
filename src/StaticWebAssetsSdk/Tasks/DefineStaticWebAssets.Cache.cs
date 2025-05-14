@@ -165,6 +165,8 @@ public partial class DefineStaticWebAssets : Task
             GlobalPropertiesHash = propertiesHash;
             FingerprintPatternsHash = fingerprintPatternsHash;
             PropertyOverridesHash = propertyOverridesHash;
+            CachedAssets.Clear();
+            CachedCopyCandidates.Clear();
             InputHashes = [.. inputsByHash.Keys];
             _inputByHash = inputsByHash;
         }
