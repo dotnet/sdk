@@ -22,9 +22,6 @@ variables:
 - name: isSourceOnlyBuildLite
   value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
 
-- name: isScheduleTrigger
-  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
-
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
 
@@ -40,11 +37,7 @@ stages:
     isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
     ${{ if eq(variables.isScheduleTrigger, 'true') }}:
       scope: full
-    ${{ elseif eq(variables.isSourceOnlyBuildLite, 'true') }}:
-      scope: lite
-    ${{ elseif and(eq(variables.isPRTrigger, 'true'), eq(variables.isSourceOnlyBuild, 'true')) }}:
-      scope: ultralite
-    ${{ elseif and(eq(variables.isPRTrigger, 'true'), ne(variables.isSourceOnlyBuild, 'true')) }}:
+    ${{ elseif eq(variables.isPRTrigger, 'true') }}:
       scope: lite
     ${{ else }}:
       scope: full
