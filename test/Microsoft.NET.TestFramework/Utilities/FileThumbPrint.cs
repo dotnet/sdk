@@ -61,7 +61,14 @@ namespace Microsoft.NET.TestFramework.Utilities
                 string.Equals(Hash, other.Hash, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => LastWriteTimeUtc.GetHashCode();
+        public override int GetHashCode()
+        {
+#if NET
+            return HashCode.Combine(Path, LastWriteTimeUtc, Hash);
+#else
+            return Path.GetHashCode() ^ LastWriteTimeUtc.GetHashCode() ^ Hash.GetHashCode();
+#endif
+        }
 
         private string GetDebuggerDisplay()
         {

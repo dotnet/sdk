@@ -27,8 +27,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var filesToIgnore = new[]
             {
                 Path.Combine(buildOutputDirectory, "RazorClassLibrary.staticwebassets.endpoints.json"),
-                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json"),
-                Path.Combine(buildOutputDirectory, "blazorwasm.runtimeconfig.json")
+                Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json")
             };
 
             // Act
@@ -44,7 +43,11 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 newThumbPrint.Count.Should().Be(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
-                    thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue();
+                    var first = thumbPrint[j];
+                    var actual = newThumbPrint[j];
+                    actual.Path.Equals(first.Path).Should().BeTrue($"because {actual.Path} should match {first.Path}");
+                    actual.Hash.Equals(first.Hash).Should().BeTrue($"because {actual.Hash} should match {first.Hash} for {first.Path}");
+                    actual.LastWriteTimeUtc.Equals(first.LastWriteTimeUtc).Should().BeTrue($"because {actual.LastWriteTimeUtc} should match {first.LastWriteTimeUtc} for {first.Path}");
                 }
             }
         }
