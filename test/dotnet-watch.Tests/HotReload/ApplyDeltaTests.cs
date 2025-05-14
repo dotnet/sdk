@@ -760,7 +760,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
             App.AssertOutputContains("dotnet watch ⌚ Restart is needed to apply the changes.");
-            App.AssertOutputContains("error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(36,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
             App.Process.ClearOutput();

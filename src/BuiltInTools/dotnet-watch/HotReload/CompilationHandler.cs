@@ -416,11 +416,13 @@ namespace Microsoft.DotNet.Watch
                 // Rude edits in projects that caused restart of a project that can be restarted automatically
                 // will be reported only as verbose output.
                 var projectsRestartedDueToRudeEdits = updates.ProjectsToRestart
-                    .Where(e => runningProjectInfos.TryGetValue(e.Key, out var info) && info.RestartWhenChangesHaveNoEffect)
+                    .Where(e => IsAutoRestartEnabled(e.Key))
                     .SelectMany(e => e.Value)
                     .ToHashSet();
 
-                var projectsRebuiltDueToRudeEdits = updates.ProjectsToRebuild.ToHashSet();
+                var projectsRebuiltDueToRudeEdits = updates.ProjectsToRebuild
+                    .Where(IsAutoRestartEnabled)
+                    .ToHashSet();
 
                 foreach (var (projectId, diagnostics) in updates.RudeEdits)
                 {
@@ -436,6 +438,9 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
             }
+
+            bool IsAutoRestartEnabled(ProjectId id)
+                => runningProjectInfos.TryGetValue(id, out var info) && info.RestartWhenChangesHaveNoEffect;
 
             void ReportDiagnostic(Diagnostic diagnostic, MessageDescriptor descriptor, string prefix = "")
             {
