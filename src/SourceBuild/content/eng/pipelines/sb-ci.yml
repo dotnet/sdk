@@ -8,9 +8,8 @@ trigger:
   batch: true
   branches:
     include:
-      - main
-      - release/*
-      - internal/release/*
+    - release/9.0.1xx
+    - internal/release/9.0.1xx
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
