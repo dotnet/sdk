@@ -113,6 +113,7 @@
 
     <ItemGroup>
       <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.dll" />
+      <DotnetFormatDllFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.exe" />
       <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.json" />
       <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
     </ItemGroup>
