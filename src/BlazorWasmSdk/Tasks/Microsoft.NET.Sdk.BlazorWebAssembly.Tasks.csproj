@@ -4,6 +4,7 @@
     <BlazorWasmSdkRoot>$(RepoRoot)\src\BlazorWasmSdk\</BlazorWasmSdkRoot>
     <PackageId>Microsoft.NET.Sdk.BlazorWebAssembly</PackageId>
     <OutDirName>$(Configuration)\Sdks\$(PackageId)\tools</OutDirName>
+    <DefineConstants>$(DefineConstants);WASM_TASKS</DefineConstants>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -26,6 +27,9 @@
     <IsPackable>true</IsPackable>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
     <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <!-- Avoid https://github.com/dotnet/arcade/issues/9305 -->
+    <AutoGenerateBindingRedirects>false</AutoGenerateBindingRedirects>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -63,6 +67,12 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAsset.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetPathPattern.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetPathSegment.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetSegmentPart.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Data\**\StaticwebAssetTokenResolver.cs" />
+    <Compile LinkBase="StaticWebAssets" Include="..\..\StaticWebAssetsSdk\Tasks\Utils\FileHasher.cs" />
   </ItemGroup>
 
   <Target Name="PrepareAdditionalFilesToLayout" BeforeTargets="AssignTargetPaths">

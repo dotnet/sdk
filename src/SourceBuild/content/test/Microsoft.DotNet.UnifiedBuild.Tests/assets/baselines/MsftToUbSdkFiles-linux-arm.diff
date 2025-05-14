@@ -1,0 +1,20 @@
+diff --git a/msftSdkFiles.txt b/ubSdkFiles.txt
+index ------------
+--- a/msftSdkFiles.txt
++++ b/ubSdkFiles.txt
+@@ ------------ @@
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
++./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+ ./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/System.CodeDom.dll
+@@ ------------ @@
+ ./sdk/x.y.z/Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.dll
+ ./sdk/x.y.z/Microsoft.NET.StringTools.dll
+ ./sdk/x.y.z/Microsoft.NETCoreSdk.BundledCliTools.props
+-./sdk/x.y.z/Microsoft.NETCoreSdk.BundledMSBuildInformation.props
+ ./sdk/x.y.z/Microsoft.NETCoreSdk.BundledVersions.props
+ ./sdk/x.y.z/Microsoft.NETFramework.CurrentVersion.props
+ ./sdk/x.y.z/Microsoft.NETFramework.CurrentVersion.targets
