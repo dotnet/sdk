@@ -7,10 +7,7 @@
                                     '$(TargetArchitecture)' != 'ppc64le' and
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
-    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-    <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
-
-    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
+    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(NETCoreSdkRuntimeIdentifier)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
 
   <!-- Download the runtime package with the crossgen executable in it -->

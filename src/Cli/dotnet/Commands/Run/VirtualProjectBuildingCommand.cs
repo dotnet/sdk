@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
@@ -395,7 +393,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
 
         var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile, reportErrors: false);
+        _directives = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
 
         return this;
     }
@@ -463,17 +461,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return Path.Join(directory, "dotnet", "runfile", directoryName);
     }
 
-    public static void WriteProjectFile(TextWriter writer, ImmutableArray<CSharpDirective> directives)
-    {
-        WriteProjectFile(writer, directives, isVirtualProject: false, targetFilePath: null, artifactsPath: null);
-    }
-
-    private static void WriteProjectFile(
+    public static void WriteProjectFile(
         TextWriter writer,
         ImmutableArray<CSharpDirective> directives,
         bool isVirtualProject,
-        string? targetFilePath,
-        string? artifactsPath)
+        string? targetFilePath = null,
+        string? artifactsPath = null)
     {
         int processedDirectives = 0;
 
@@ -537,7 +530,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             processedDirectives++;
         }
 
-        if (processedDirectives > 1)
+        if (isVirtualProject || processedDirectives > 1)
         {
             writer.WriteLine();
         }
@@ -688,14 +681,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         static string EscapeValue(string value) => SecurityElement.Escape(value);
     }
 
-    public static ImmutableArray<CSharpDirective> FindDirectivesForConversion(SourceFile sourceFile, bool force)
+    /// <param name="reportAllErrors">
+    /// If <see langword="true"/>, the whole <paramref name="sourceFile"/> is parsed to find diagnostics about every app directive.
+    /// Otherwise, only directives up to the first C# token is checked.
+    /// The former is useful for <c>dotnet project convert</c> where we want to report all errors because it would be difficult to fix them up after the conversion.
+    /// The latter is useful for <c>dotnet run file.cs</c> where if there are app directives after the first token,
+    /// compiler reports <see cref="ErrorCode.ERR_PPIgnoredFollowsToken"/> anyway, so we speed up success scenarios by not parsing the whole file up front in the SDK CLI.
+    /// </param>
+    /// <param name="errors">
+    /// If <see langword="null"/>, the first error is thrown as <see cref="GracefulException"/>.
+    /// Otherwise, all errors are put into the list.
+    /// Does not have any effect when <paramref name="reportAllErrors"/> is <see langword="false"/>.
+    /// </param>
+    public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ImmutableArray<SimpleDiagnostic>.Builder? errors)
     {
-        return FindDirectives(sourceFile, reportErrors: !force);
-    }
-
 #pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
-    private static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportErrors)
-    {
+
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
             CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
@@ -734,7 +735,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var name = parts.MoveNext() ? message[parts.Current] : default;
                 var value = parts.MoveNext() ? message[parts.Current] : default;
                 Debug.Assert(!parts.MoveNext());
-                builder.Add(CSharpDirective.Parse(sourceFile, span, name.ToString(), value.ToString()));
+
+                if (CSharpDirective.Parse(errors, sourceFile, span, name.ToString(), value.ToString()) is { } directive)
+                {
+                    builder.Add(directive);
+                }
             }
 
             previousWhiteSpaceSpan = default;
@@ -742,7 +747,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
-        if (reportErrors)
+        if (reportAllErrors)
         {
             tokenizer.ResetTo(result);
 
@@ -752,12 +757,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 foreach (var trivia in result.Token.LeadingTrivia)
                 {
-                    reportErrorFor(sourceFile, trivia);
+                    reportErrorFor(trivia);
                 }
 
                 foreach (var trivia in result.Token.TrailingTrivia)
                 {
-                    reportErrorFor(sourceFile, trivia);
+                    reportErrorFor(trivia);
                 }
             }
             while (!result.Token.IsKind(SyntaxKind.EndOfFileToken));
@@ -772,15 +777,27 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return previousWhiteSpaceSpan.IsEmpty ? trivia.FullSpan : TextSpan.FromBounds(previousWhiteSpaceSpan.Start, trivia.FullSpan.End);
         }
 
-        static void reportErrorFor(SourceFile sourceFile, SyntaxTrivia trivia)
+        void reportErrorFor(SyntaxTrivia trivia)
         {
             if (trivia.ContainsDiagnostics && trivia.IsKind(SyntaxKind.IgnoredDirectiveTrivia))
             {
-                throw new GracefulException(CliCommandStrings.CannotConvertDirective, sourceFile.GetLocationString(trivia.Span));
+                string location = sourceFile.GetLocationString(trivia.Span);
+                if (errors != null)
+                {
+                    errors.Add(new SimpleDiagnostic
+                    {
+                        Location = sourceFile.GetFileLinePositionSpan(trivia.Span),
+                        Message = string.Format(CliCommandStrings.CannotConvertDirective, location),
+                    });
+                }
+                else
+                {
+                    throw new GracefulException(CliCommandStrings.CannotConvertDirective, location);
+                }
             }
         }
-    }
 #pragma warning restore RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
+    }
 
     public static SourceFile LoadSourceFile(string filePath)
     {
@@ -824,9 +841,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
 internal readonly record struct SourceFile(string Path, SourceText Text)
 {
+    public FileLinePositionSpan GetFileLinePositionSpan(TextSpan span)
+    {
+        return new FileLinePositionSpan(Path, Text.Lines.GetLinePositionSpan(span));
+    }
+
     public string GetLocationString(TextSpan span)
     {
-        var positionSpan = new FileLinePositionSpan(Path, Text.Lines.GetLinePositionSpan(span));
+        var positionSpan = GetFileLinePositionSpan(span);
         return $"{positionSpan.Path}:{positionSpan.StartLinePosition.Line + 1}";
     }
 }
@@ -849,23 +871,42 @@ internal abstract class CSharpDirective
     /// </summary>
     public required TextSpan Span { get; init; }
 
-    public static CSharpDirective Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+    public static CSharpDirective? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
     {
         return directiveKind switch
         {
-            "sdk" => Sdk.Parse(sourceFile, span, directiveKind, directiveText),
-            "property" => Property.Parse(sourceFile, span, directiveKind, directiveText),
-            "package" => Package.Parse(sourceFile, span, directiveKind, directiveText),
-            _ => throw new GracefulException(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span)),
+            "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
+            "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
+            "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
+            _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
 
-    private static (string, string?) ParseOptionalTwoParts(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
+    private static T? ReportError<T>(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string message, Exception? inner = null)
+    {
+        if (errors != null)
+        {
+            errors.Add(new SimpleDiagnostic { Location = sourceFile.GetFileLinePositionSpan(span), Message = message });
+            return default;
+        }
+        else
+        {
+            throw new GracefulException(message, inner);
+        }
+    }
+
+    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
     {
         var i = separators != null
             ? directiveText.AsSpan().IndexOfAny(separators)
             : directiveText.IndexOf(' ', StringComparison.Ordinal);
-        var firstPart = checkFirstPart(i < 0 ? directiveText : directiveText[..i]);
+        var firstPart = i < 0 ? directiveText : directiveText[..i];
+
+        if (string.IsNullOrWhiteSpace(firstPart))
+        {
+            return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+        }
+
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
         {
@@ -873,16 +914,6 @@ internal abstract class CSharpDirective
         }
 
         return (firstPart, secondPart.ToString());
-
-        string checkFirstPart(string firstPart)
-        {
-            if (string.IsNullOrWhiteSpace(firstPart))
-            {
-                throw new GracefulException(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span));
-            }
-
-            return firstPart;
-        }
     }
 
     /// <summary>
@@ -900,9 +931,12 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public string? Version { get; init; }
 
-        public static new Sdk Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+        public static new Sdk? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (sdkName, sdkVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (sdkName, sdkVersion))
+            {
+                return null;
+            }
 
             return new Sdk
             {
@@ -928,13 +962,16 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public required string Value { get; init; }
 
-        public static new Property Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+        public static new Property? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (propertyName, propertyValue) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText);
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (propertyName, propertyValue))
+            {
+                return null;
+            }
 
             if (propertyValue is null)
             {
-                throw new GracefulException(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span));
+                return ReportError<Property?>(errors, sourceFile, span, string.Format(CliCommandStrings.PropertyDirectiveMissingParts, sourceFile.GetLocationString(span)));
             }
 
             try
@@ -943,7 +980,7 @@ internal abstract class CSharpDirective
             }
             catch (XmlException ex)
             {
-                throw new GracefulException(string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
+                return ReportError<Property?>(errors, sourceFile, span, string.Format(CliCommandStrings.PropertyDirectiveInvalidName, sourceFile.GetLocationString(span), ex.Message), ex);
             }
 
             return new Property
@@ -967,9 +1004,12 @@ internal abstract class CSharpDirective
         public required string Name { get; init; }
         public string? Version { get; init; }
 
-        public static new Package Parse(SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+        public static new Package? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            var (packageName, packageVersion) = ParseOptionalTwoParts(sourceFile, span, directiveKind, directiveText, s_separators);
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, s_separators) is not var (packageName, packageVersion))
+            {
+                return null;
+            }
 
             return new Package
             {
@@ -978,6 +1018,27 @@ internal abstract class CSharpDirective
                 Version = packageVersion,
             };
         }
+    }
+}
+
+internal sealed class SimpleDiagnostic
+{
+    public required Position Location { get; init; }
+    public required string Message { get; init; }
+
+    /// <summary>
+    /// An adapter of <see cref="FileLinePositionSpan"/> that ensures we JSON-serialize only the necessary fields.
+    /// </summary>
+    public readonly struct Position
+    {
+        public string Path { get; init; }
+        public LinePositionSpan Span { get; init; }
+
+        public static implicit operator Position(FileLinePositionSpan fileLinePositionSpan) => new()
+        {
+            Path = fileLinePositionSpan.Path,
+            Span = fileLinePositionSpan.Span,
+        };
     }
 }
 

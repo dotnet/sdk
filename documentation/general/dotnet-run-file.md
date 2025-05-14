@@ -7,15 +7,6 @@ We call these *file-based programs* (as opposed to *project-based programs*).
 dotnet run file.cs
 ```
 
-> [!NOTE]
-> This document describes the ideal final state, but the feature will be implemented in [stages](#stages).
-
-> [!CAUTION]
-> The current implementation has been limited to single file support for the initial preview
-> (as if the implicit project file had `<EnableDefaultItems>false</EnableDefaultItems>` and an explicit `<Compile Include="file.cs" />`),
-> but this proposal describes a situation where all files in the target directory are included.
-> Once a final decision is made, the proposal will be updated.
-
 ## Motivation
 
 File-based programs
@@ -29,11 +20,11 @@ Previous file-based approaches like scripting are a variant of C# and as such ha
 
 ## Implicit project file
 
-The [guiding principle](#guiding-principle) implies that we can think of file-based programs as having an implicit project file.
+The [guiding principle](#guiding-principle) implies that we can think of file-based programs as having an implicit project file
+(also known as a virtual project file because it exists only in memory unless the file-based program is converted to a project-based program).
 
 The implicit project file is the default project that would be created by running `dotnet new console`.
 This means that the behavior of `dotnet run file.cs` can change between SDK versions if the `dotnet new console` template changes.
-In the future we can consider supporting more SDKs like the Web SDK.
 
 ## Grow up
 
@@ -43,20 +34,19 @@ In fact, this command simply materializes the [implicit project file](#implicit-
 This action should not change the behavior of the target program.
 
 ```ps1
-dotnet project convert
+dotnet project convert file.cs
 ```
+
+The command takes a path which can be either
+- path to the entry-point file in case of single entry-point programs, or
+- path to the target directory (then all entry points are converted;
+  it is not possible to convert just a single entry point in multi-entry-point program).
 
 ## Target path
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
-If it is a file, it is called *the target file*.
-*The target directory* is the directory of the target file, or the target path if it is not a file.
-
-We can consider adding an option like `dotnet run --from-stdin` which would read the C# file from the standard input.
-In this case, the current working directory would not be used to search for project or other C# files,
-the compilation would consist solely of the single file read from the standard input.
-Similarly, it could be possible to specify the whole C# source text in a command-like argument
-like `dotnet run --code 'Console.WriteLine("Hi")'`.
+The target path must be a file which has the `.cs` file extension.
+*The target directory* is the directory of the target file.
 
 ## Integration into the existing `dotnet run` command
 
@@ -65,49 +55,34 @@ specifically `file.cs` is passed as the first command-line argument to the targe
 We preserve this behavior to avoid a breaking change.
 The file-based build and run kicks in only when:
 - a project file cannot be found (in the current directory or via the `--project` option), and
-- if the target path is a file, it has the `.cs` file extension, and
-- the target path (file or directory) exists.
-
-> [!NOTE]
-> This means that `dotnet run path` stops working when a file-based program [grows up](#grow-up) into a project-based program.
->
-> Users could avoid that by using `cd path; dotnet run` instead. For that to work always (before and after grow up),
-> `dotnet run` without a `--project` argument and without a project file in the current directory
-> would need to search for a file-based program in the current directory instead of failing.
->
-> We can also consider adding some universal option that would work with both project-based and file-based programs,
-> like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
-> Although users might expect there to be a `--file` option, as well. Both could be unified as `--path`.
->
-> If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
-> we might need an option like `dotnet run --entry ./dir/name`
-> which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
+- if the target file exists and has the `.cs` file extension.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
-(except for the arguments recognized by `dotnet run` unless they are after the `--` separator).
+(except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
+and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
 We want to report an error for non-entry-point files to avoid the confusion of being able to `dotnet run util.cs`.
 
-We modify Roslyn to accept the entry-point path and then it is its responsibility
-to check whether the file contains an entry point (top-level statements or a valid Main method) and report an error otherwise.
-(We cannot simply use Roslyn APIs to detect entry points ourselves because parsing depends on conditional symbols like those from `<DefineConstants>`
-and we can reliably know the set of those only after invoking MSBuild, and doing that up front would be an unnecessary performance hit just to detect entry points.)
+Internally, the SDK CLI detects entry points by parsing all `.cs` files in the directory tree of the entry point file with default parsing options (in particular, no `<DefineConstants>`)
+and checking which ones contain top-level statements (`Main` methods are not supported for now as that would require full semantic analysis, not just parsing).
+Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [app directive collection](#directives-for-project-metadata).
+This means the CLI might consider a file to be an entry point which later the compiler doesn't
+(for example because its top-level statements are under `#if SYMBOL` and the build has `DefineConstants=SYMBOL`).
+However such inconsistencies should be rare and hence that is a better trade off than letting the compiler decide which files are entry points
+because that could require multiple builds (first determine entry points and then re-build with app directives except those from other entry points).
+To avoid parsing all C# files twice (in CLI and in the compiler), the CLI could use the compiler server for parsing so the trees are reused
+(unless the parse options change via the directives), and also [cache](#optimizations) the results to avoid parsing on subsequent runs.
+
+## Multiple C# files
 
 Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
 For example, other `.cs` files but also `.resx` (embedded resources).
 Similarly, implicit build files like `Directory.Build.props` or `Directory.Packages.props` are used during the build.
-
-> [!NOTE]
-> Performance issues might arise if there are many [nested files](#nested-files) (possibly unintentionally),
-> and also it might not be clear to users that `dotnet run file.cs` will include other `.cs` files in the compilation.
-> Therefore we could consider some switch (a command-line option and/or a `#` language directive) to enable/disable this behavior.
-> When disabled, [grow up](#grow-up) would generate projects in subdirectories similarly to [multi-entry-point scenarios](#multiple-entry-points)
-> to preserve the behavior.
 
 ### Nested files
 
@@ -118,16 +93,8 @@ App/Nested/Nested.csproj
 App/Nested/File.cs
 ```
 executing `dotnet run app/file.cs` includes the nested `.cs` file in the compilation.
-That might be unexpected, hence we could consider reporting an error in such situation.
-However, the same problem exists for normal builds with explicit project files
+That is consistent with normal builds with explicit project files
 and usually the build fails because there are multiple entry points or other clashes.
-
-Similarly, we could report an error if there are many nested directories and files,
-so for example if someone puts a C# file into `C:/sources`
-and executes `dotnet run C:/sources/file.cs` or opens that in the IDE, we do not walk all user's sources.
-Again, this problem exists with project-based programs as well.
-Note that having a project-based or file-based program in the drive root would result in
-[error MSB5029](https://learn.microsoft.com/visualstudio/msbuild/errors/msb5029).
 
 For `.csproj` files inside the target directory and its parent directories, we do not report any errors/warnings.
 That's because it might be perfectly reasonable to have file-based programs nested in another project-based program
@@ -135,9 +102,9 @@ That's because it might be perfectly reasonable to have file-based programs nest
 
 ### Multiple entry points
 
-If there are multiple entry-point files in the target directory, the target path must be a file
-(an error is reported if it points to a directory instead).
-Then the build ignores other entry-point files.
+If there are multiple entry-point files in the target directory, the build ignores other entry-point files.
+It is an error to have an entry-point file in a subdirectory of the target directory
+(because it is unclear how such program should be converted to a project-based one).
 
 Thanks to this, it is possible to have a structure like
 ```
@@ -147,7 +114,7 @@ App/Program2.cs
 ```
 where either `Program1.cs` or `Program2.cs` can be run and both of them have access to `Util.cs`.
 
-In this case, there are multiple implicit projects
+Behind the scenes, there are multiple implicit projects
 (and during [grow up](#grow-up), multiple project files are materialized
 and the original C# files are moved to the corresponding project subdirectories):
 ```
@@ -161,26 +128,26 @@ App/Program2/Program2.csproj
 The generated folders might need to be named differently to avoid clashes with existing folders.
 
 The entry-point projects (`Program1` and `Program2` in our example)
-have the shared `.cs` files source-included via `<Content Include="../Shared/**/*.cs" />`.
-We could consider having the projects directly in the top-level folder instead
-but that might result in clashes of build outputs that are not project-scoped, like `project.assets.json`.
-If we did that though, it would be enough to exclude the other entry points rather than including all the shared `.cs` files.
+have the shared `.cs` files source-included via `<Compile Include="../Shared/**/*.cs" />`.
 
-Unless the [artifacts output layout][artifacts-output] is used (which is recommended),
-those implicit projects mean that build artifacts are placed under those implicit directories
-even though they don't exist on disk prior to build:
-```
-App/Program1/bin/
-App/Program1/obj/
-App/Program2/bin/
-App/Program2/obj/
-```
+## Build outputs
+
+Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
+The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
+Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
+Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
+
+Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
+removes current user's `dotnet run` build outputs that haven't been used in some time.
+They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
 
 ## Directives for project metadata
 
-It is possible to specify some project metadata via [ignored C# directives][ignored-directives].
+It is possible to specify some project metadata via *app directives*
+which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
 Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
-Other directives result in a warning, reserving them for future use.
+Other directives result in an error, reserving them for future use.
 
 ```cs
 #:sdk Microsoft.NET.Sdk.Web
@@ -189,7 +156,8 @@ Other directives result in a warning, reserving them for future use.
 #:package System.CommandLine@2.0.0-*
 ```
 
-The value must be separated from the name of the directive by white space and any leading and trailing white space is not considered part of the value.
+The value must be separated from the name of the directive by white space (`@` is additionally allowed separator for the package directive)
+and any leading and trailing white space is not considered part of the value.
 Any value can optionally have two parts separated by a space (more whitespace characters could be allowed in the future).
 The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
 and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
@@ -203,17 +171,18 @@ Because these directives are limited by the C# language to only appear before th
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
 and can do that efficiently by stopping the search when it sees the first "C# token".
 
-We do not limit these directives to appear only in entry point files.
-Indeed, it might be beneficial to let a non-entry-point file like `Util.cs` be self-contained and have all the `#:package`s it needs specified in it,
-which also makes it possible to share it independently or symlink it to multiple script folders.
-This is also similar to `global using`s which users usually put into a single file but don't have to.
+For a given `dotnet run file.cs`, we include directives from the current entry point file (`file.cs`) and all other non-entry-point files.
+The order in which other files are processed is currently unspecified (can change across SDK versions) but deterministic (stable in a given SDK version).
+We do not limit these directives to appear only in entry point files because it allows:
+- a non-entry-point file like `Util.cs` to be self-contained and have all the `#:package`s it needs specified in it,
+- which also makes it possible to share it independently or symlink it to multiple script folders,
+- and it's similar to `global using`s which users usually put into a single file but don't have to.
 
-We could consider deduplicating `#:` directives
-(e.g., properties could be concatenated via `;`, more specific package versions could override less specific ones),
-so for example separate "self-contained" utilities could reference overlapping sets of packages
+We disallow duplicate `#:` directives to allow us design some deduplication mechanism in the future.
+Specifically, directives are considered duplicate if their type and name (case insensitive) are equal.
+Later with deduplication, separate "self-contained" utilities could reference overlapping sets of packages
 even if they end up in the same compilation.
-But for starters we can translate each directive into the corresponding project element
-and let the existing MSBuild/NuGet logic deal with duplicates.
+For example, properties could be concatenated via `;`, more specific package versions could override less specific ones.
 
 It is valid to have a `#:package` directive without a version.
 That's useful when central package management (CPM) is used.
@@ -232,6 +201,82 @@ Along with `#:`, the language also ignores `#!` which could be then used for [sh
 #!/usr/bin/dotnet run
 Console.WriteLine("Hello");
 ```
+
+## Implementation
+
+The build is performed using MSBuild APIs on in-memory project files.
+
+### Optimizations
+
+MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
+We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
+from `.cs` files, the only relevant MSBuild inputs are the `#:` directives,
+hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#:` directives.
+If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
+re-using command-line arguments that the last MSBuild invocation passed to the compiler.
+If no inputs change, it is enough to start the target executable without invoking the build at all.
+
+## Alternatives and future work
+
+This section outlines potential future enhancements and alternatives considered.
+
+### Target path extensions
+
+We could allow folders as the target path in the future (e.g., `dotnet run ./my-app/`).
+
+An option like `dotnet run --cs-from-stdin` could read the C# file from standard input.
+In this case, the current working directory would not be used to search for project or other C# files;
+the compilation would consist solely of the single file read from standard input.
+
+Similarly, it could be possible to specify the whole C# source text in a command-line argument
+like `dotnet run --cs-code 'Console.WriteLine("Hi")'`.
+
+### Enhancing integration into the existing `dotnet run` command
+
+`dotnet run path` stops working when a file-based program [grows up](#grow-up) into a project-based program.
+Users could avoid that by using `cd path; dotnet run` instead.
+For that to work always (before and after grow up),
+`dotnet run` without a `--project` argument and without a project file in the current directory
+would need to search for a file-based program in the current directory instead of failing.
+
+We could add a universal option that works with both project-based and file-based programs,
+like `dotnet run --directory ./dir/`. For inspiration, `dotnet test` also has a `--directory` option.
+Furthermore, users might expect there to be a `--file` option, as well. Both could be unified as `--path`.
+
+If we want to also support [multi-entry-point scenarios](#multiple-entry-points),
+we might need an option like `dotnet run --entry ./dir/name` which would work for both `./dir/name.cs` and `./dir/name/name.csproj`.
+
+### Nested files errors
+
+Performance issues might arise if there are many [nested files](#nested-files) (possibly unintentionally),
+and it might not be clear to users that `dotnet run file.cs` will include other `.cs` files in the compilation.
+Therefore, we could consider some switch (a command-line option and/or a `#` language directive) to enable/disable this behavior.
+When disabled, [grow up](#grow-up) would generate projects in subdirectories
+similarly to [multi-entry-point scenarios](#multiple-entry-points) to preserve the program's behavior.
+
+Including `.cs` files from nested folders which contain `.csproj`s might be unexpected,
+hence we could consider reporting an error in such situations.
+
+Similarly, we could report an error if there are many nested directories and files,
+so for example, if someone puts a C# file into `C:/sources` and executes `dotnet run C:/sources/file.cs` or opens that in the IDE,
+we do not walk all user's sources. Again, this problem exists with project-based programs as well.
+Note that having a project-based or file-based program in the drive root would result in
+[error MSB5029](https://learn.microsoft.com/visualstudio/msbuild/errors/msb5029).
+
+### Multiple entry points implementation
+
+We could consider using `InternalsVisibleTo` attribute but that might result in slight differences between single- and multi-entry-point programs
+(if not now then perhaps in the future if [some "more internal" accessibility](https://github.com/dotnet/csharplang/issues/6794) is added to C# which doesn't respect `InternalsVisibleTo`)
+which would be undesirable when users start with a single entry point and later add another.
+Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or via a complex-looking `AssemblyAttribute` item group into the `.csproj` like:
+
+```xml
+<ItemGroup>
+  <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute" _Parameter1="App.Shared" />
+</ItemGroup>
+```
+
+### Shebang support
 
 It might be beneficial to also ship `dotnet-run` binary
 (or `dotnet-run-file` that would only work with file-based programs, not project-based ones, perhaps simply named `cs`)
@@ -255,7 +300,7 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
 but that would require changes to the native dotnet host.
 
-## Other commands
+### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
 We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
@@ -268,37 +313,13 @@ or as the first argument if it makes sense for them.
 We could also add `dotnet compile` command that would be the equivalent of `dotnet build` but for file-based programs
 (because "compiling" might make more sense for file-based programs than "building").
 
-### `dotnet package add`
+`dotnet clean` could be extended to support cleaning [the output directory](#build-outputs),
+e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
+or `dotnet clean --all-file-based-programs`.
+
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
 i.e., the command would add a `#:package` directive to the top of a `.cs` file.
-
-## Implementation
-
-The build is performed using MSBuild APIs on in-memory project files.
-
-### Optimizations
-
-MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
-We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
-from `.cs` files, the only relevant MSBuild inputs are the `#:` directives,
-hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#:` directives.
-If only `.cs` files change, it is enough to invoke `csc.exe` (directly or via a build server)
-re-using command-line arguments that the last MSBuild invocation passed to the compiler.
-If no inputs change, it is enough to start the target executable without invoking the build at all.
-
-### Stages
-
-The plan is to implement the feature in stages (the order might be different):
-
-- Bare bones `dotnet run file.cs` support: only files, not folders; a single entry-point; no optimizations.
-- Optimizations (caching / up-to-date check).
-- Multiple entry points.
-- Grow up command.
-- Folder support: `dotnet run ./dir/`.
-- Project metadata via `#:` directives.
-
-## Alternatives
 
 ### Explicit importing
 
@@ -315,3 +336,4 @@ Instead of implicitly including files from the target directory, the importing c
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
+[temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md
