@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.Collections;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.LaunchSettings;
 
@@ -42,6 +41,7 @@ internal sealed class ParallelizableTestModuleGroupWithSequentialInnerModules : 
             return Modules.Where(module => !module.IsTestingPlatformApplication).ToArray();
         }
 
+        Debug.Assert(Module is not null);
         if (!Module.IsTestingPlatformApplication)
         {
             return [Module];
@@ -86,6 +86,7 @@ internal sealed class ParallelizableTestModuleGroupWithSequentialInnerModules : 
                     throw new InvalidOperationException();
                 }
 
+                Debug.Assert(_group.Module is not null);
                 return _group.Module;
             }
         }
@@ -114,7 +115,7 @@ internal sealed record TestModule(RunProperties RunProperties, string? ProjectFu
 
 internal sealed record Handshake(Dictionary<byte, string>? Properties);
 
-internal sealed record CommandLineOption(string? Name, string? Description, bool? IsHidden, bool? IsBuiltIn);
+internal sealed record CommandLineOption(string Name, string Description, bool? IsHidden, bool? IsBuiltIn);
 
 internal sealed record DiscoveredTest(string? Uid, string? DisplayName);
 

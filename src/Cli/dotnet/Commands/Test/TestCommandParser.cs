@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.Extensions.Configuration;
 
@@ -29,13 +28,13 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.CmdTestCaseFilterDescription,
         HelpName = CliCommandStrings.CmdTestCaseFilterExpression
-    }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={SurroundWithDoubleQuotes(o)}");
+    }.ForwardAsSingle(o => $"-property:VSTestTestCaseFilter={SurroundWithDoubleQuotes(o!)}");
 
     public static readonly Option<IEnumerable<string>> AdapterOption = new ForwardedOption<IEnumerable<string>>("--test-adapter-path")
     {
         Description = CliCommandStrings.CmdTestAdapterPathDescription,
         HelpName = CliCommandStrings.CmdTestAdapterPath
-    }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={SurroundWithDoubleQuotes(string.Join(";", o.Select(CommandDirectoryContext.GetFullPath)))}")
+    }.ForwardAsSingle(o => $"-property:VSTestTestAdapterPath={SurroundWithDoubleQuotes(string.Join(";", o!.Select(CommandDirectoryContext.GetFullPath)))}")
     .AllowSingleArgPerToken();
 
     public static readonly Option<IEnumerable<string>> LoggerOption = new ForwardedOption<IEnumerable<string>>("--logger", "-l")
@@ -44,7 +43,7 @@ internal static class TestCommandParser
         HelpName = CliCommandStrings.CmdLoggerOption
     }.ForwardAsSingle(o =>
     {
-        var loggersString = string.Join(";", GetSemiColonEscapedArgs(o));
+        var loggersString = string.Join(";", GetSemiColonEscapedArgs(o!));
 
         return $"-property:VSTestLogger={SurroundWithDoubleQuotes(loggersString)}";
     })
@@ -80,7 +79,7 @@ internal static class TestCommandParser
     {
         Description = CliCommandStrings.cmdCollectDescription,
         HelpName = CliCommandStrings.cmdCollectFriendlyName
-    }.ForwardAsSingle(o => $"-property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o))}\"")
+    }.ForwardAsSingle(o => $"-property:VSTestCollect=\"{string.Join(";", GetSemiColonEscapedArgs(o!))}\"")
     .AllowSingleArgPerToken();
 
     public static readonly Option<bool> BlameOption = new ForwardedOption<bool>("--blame")
@@ -164,8 +163,7 @@ internal static class TestCommandParser
     {
         var builder = new ConfigurationBuilder();
 
-        string dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
-
+        string? dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
         if (!File.Exists(dotnetConfigPath))
         {
             return CliConstants.VSTest;
@@ -181,7 +179,7 @@ internal static class TestCommandParser
             return CliConstants.VSTest;
         }
 
-        string runnerNameSection = testSection["name"];
+        string? runnerNameSection = testSection["name"];
 
         if (string.IsNullOrEmpty(runnerNameSection))
         {
