@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor Exited = new("Exited", WatchEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor ExitedWithUnknownErrorCode = new("Exited with unknown error code", ErrorEmoji, MessageSeverity.Error, s_id++);
         public static readonly MessageDescriptor ExitedWithErrorCode = new("Exited with error code {0}", ErrorEmoji, MessageSeverity.Error, s_id++);
-        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = new("kipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", WatchEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_SuppressedViaEnvironmentVariable = new("Skipping configuring browser-refresh middleware since its refresh server suppressed via environment variable {0}.", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_TargetFrameworkNotSupported = new("Skipping configuring browser-refresh middleware since the target framework version is not supported. For more information see 'https://aka.ms/dotnet/watch/unsupported-tfm'.", WatchEmoji, MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor SkippingConfiguringBrowserRefresh_NotWebApp = new("Skipping configuring browser-refresh middleware since this is not a webapp.", WatchEmoji, MessageSeverity.Verbose, s_id++);
     }
