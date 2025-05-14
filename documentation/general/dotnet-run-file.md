@@ -7,6 +7,8 @@ We call these *file-based programs* (as opposed to *project-based programs*).
 dotnet run file.cs
 ```
 
+See also [IDE spec](https://github.com/dotnet/roslyn/blob/main/docs/features/file-based-programs-vscode.md).
+
 ## Motivation
 
 File-based programs
