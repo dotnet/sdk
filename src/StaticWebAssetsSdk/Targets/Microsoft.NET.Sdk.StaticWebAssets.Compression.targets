@@ -244,6 +244,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_CompressionBuildStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_CompressionBuildStaticWebAssetEndpoint)" />
       <_CompressionCurrentProjectBuildAssets Include="@(StaticWebAsset)" />
+      <FileWrites Include="@(_ResolveBuildCompressedStaticWebAssetsCachePath)" />
     </ItemGroup>
 
     <ApplyCompressionNegotiation
