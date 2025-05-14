@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.409">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.410">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>731d4697ceb43ca5ab88a4994b5a226e0cbf16c4</Sha>
+      <Sha>e3bb940a424c2ec7d25f32a6fa872776f78b711c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.409-servicing.25209.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.410-servicing.25257.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>731d4697ceb43ca5ab88a4994b5a226e0cbf16c4</Sha>
+      <Sha>e3bb940a424c2ec7d25f32a6fa872776f78b711c</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.409-servicing.25209.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.410-servicing.25257.11">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>731d4697ceb43ca5ab88a4994b5a226e0cbf16c4</Sha>
+      <Sha>e3bb940a424c2ec7d25f32a6fa872776f78b711c</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.15">
@@ -491,22 +491,22 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.25230.1">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="8.0.0-beta.25263.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4246a31e5de9de87f760218c4f588cebf4661f45</Sha>
+      <Sha>abb15166a8da9284d6ed177924cfd9b6f74c9f08</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.25230.1">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="8.0.0-beta.25263.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4246a31e5de9de87f760218c4f588cebf4661f45</Sha>
+      <Sha>abb15166a8da9284d6ed177924cfd9b6f74c9f08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.25230.1">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="8.0.0-beta.25263.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4246a31e5de9de87f760218c4f588cebf4661f45</Sha>
+      <Sha>abb15166a8da9284d6ed177924cfd9b6f74c9f08</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.25230.1">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="8.0.0-beta.25263.1">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>4246a31e5de9de87f760218c4f588cebf4661f45</Sha>
+      <Sha>abb15166a8da9284d6ed177924cfd9b6f74c9f08</Sha>
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="8.0.1">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
