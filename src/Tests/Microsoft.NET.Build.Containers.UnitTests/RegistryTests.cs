@@ -546,7 +546,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor("application/octet-stream", "sha256:testdigest", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -565,6 +565,9 @@ public class RegistryTests : IDisposable
         Assert.NotNull(result);
         Assert.True(File.Exists(result)); // Ensure the file was successfully downloaded
         mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(3)); // Verify retries
+
+        //Cleanup
+        File.Delete(result);
     }
 
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
