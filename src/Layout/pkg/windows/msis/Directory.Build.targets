@@ -2,7 +2,33 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
   <Import Project="$(ArtifactsDir)Directory.Wix.targets"/>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
   </PropertyGroup>
+
+  <!-- MSI upgrade codes are generated based on the name of the installer, which typically includes the version and platform information. -->
+  <Target Name="GenerateUpgradeCode" BeforeTargets="CoreCompile">
+    <Error Condition="'$(InstallerPath)' == ''" Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
+    
+    <!-- Only use the file name when generating the GUID. Full paths may be inconsistent across different build environments. -->
+    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))">
+      <Output TaskParameter="GeneratedGuid" PropertyName="UpgradeCode" />
+    </GenerateGuidFromName>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);UpgradeCode=$(UpgradeCode)</DefineConstants>
+    </PropertyGroup>
+  </Target>
+
+  <!-- The WiX SDK sets TargetPath based on the OutputName or defaults to the project name. If the compiler detects any .wxl files, the specified culture
+       values are included as a subdirectory (e.g. en-us) in the final output. When the output depends on computed properties that set during the build, the
+       output files have to be renamed after the build completes. -->
+  <Target Name="RenameOutput" AfterTargets="Build">
+    <ItemGroup>
+      <TargetOutputsToRename Include="$(TargetPath)" RenamedTargetPath="$(InstallerPath)" />
+      <TargetOutputsToRename Include="$(TargetPdbPath)" RenamedTargetPath="$(InstallerPath.Replace('.msi', '.wixpdb'))" />
+    </ItemGroup>
+
+    <Move SourceFiles="@(TargetOutputsToRename)" DestinationFiles="%(RenamedTargetPath)" />
+  </Target>
 </Project>

@@ -1,4 +1,4 @@
-<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
+﻿<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project Sdk="Microsoft.WixToolset.Sdk">
   <PropertyGroup>
     <OutputName>$(SdkPlaceholderMsiOutputName)</OutputName>
@@ -21,4 +21,11 @@
     <PackageReference Include="Microsoft.WixToolset.Dependency.wixext" />
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true"/>
   </ItemGroup>
+
+  <Target Name="SetInstallerInfo" BeforeTargets="GenerateUpgradeCode">
+    <PropertyGroup>
+      <InstallerPath>$(SdkPlaceholderMSIInstallerFile)</InstallerPath>
+      <DefineConstants>$(DefineConstants);ProductName=$(SdkPlatformBrandName) from Visual Studio</DefineConstants>
+    </PropertyGroup>
+  </Target>
 </Project>
