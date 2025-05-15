@@ -191,7 +191,6 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 b.RegisterExtensions();
 
                 b.Features.Add(new StaticTagHelperFeature() { TagHelpers = tagHelpers, });
-                b.Features.Add(new DefaultTypeNameFeature());
 
                 b.ConfigureCodeGenerationOptions(b =>
                 {
