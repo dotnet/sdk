@@ -78,7 +78,7 @@
       <Sha>13c590f8d138d6a30b899a5172cc6ec494db930b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build.Localization" Version="17.12.35-preview-25210-18">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
+      <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>13c590f8d138d6a30b899a5172cc6ec494db930b</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
