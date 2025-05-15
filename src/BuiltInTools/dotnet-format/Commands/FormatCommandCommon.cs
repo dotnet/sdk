@@ -17,7 +17,7 @@ namespace Microsoft.CodeAnalysis.Tools
         internal const int UnableToLocateMSBuildExitCode = 3;
 
         private static string[] VerbosityLevels => new[] { "q", "quiet", "m", "minimal", "n", "normal", "d", "detailed", "diag", "diagnostic" };
-        private static string[] SeverityLevels => new[] { "info", "warn", "error" };
+        private static string[] SeverityLevels => new[] { "info", "warn", "error", "hidden" };
 
         public static readonly Argument<string> SlnOrProjectArgument = new Argument<string>(Resources.SolutionOrProjectArgumentName)
         {
@@ -290,6 +290,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 FixSeverity.Error => DiagnosticSeverity.Error,
                 FixSeverity.Warn => DiagnosticSeverity.Warning,
                 FixSeverity.Info => DiagnosticSeverity.Info,
+                FixSeverity.Hidden => DiagnosticSeverity.Hidden,
                 _ => throw new ArgumentOutOfRangeException(nameof(severity)),
             };
         }
