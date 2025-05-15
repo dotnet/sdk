@@ -707,6 +707,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       </StaticWebAssetDiscoveryPattern>
 
       <Content Remove="@(StaticWebAsset)" />
+
+      <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
     </ItemGroup>
 
   </Target>
