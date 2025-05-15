@@ -376,7 +376,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 IEnumerable<IPackageSearchMetadata> packageMetadata = await resource.GetMetadataAsync(
                     packageIdentifier,
                     includePrerelease: includePrerelease,
-                    includeUnlisted: true,
+                    includeUnlisted: false,
                     _cacheSettings,
                     _nugetLogger,
                     cancellationToken).ConfigureAwait(false);
