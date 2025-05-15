@@ -313,7 +313,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             try
             {
-                using var stream = File.Open(cacheFile.FullName, FileMode.Open, FileAccess.Read, FileShare.Read);
+                using var stream = cacheFile.OpenRead();
                 return JsonSerializer.Deserialize(stream, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
             }
             catch (Exception e)
