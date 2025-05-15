@@ -556,7 +556,7 @@ public class RegistryTests : IDisposable
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
             .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
 
-        Registry registry = new(repoName, logger, mockRegistryAPI.Object);
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
 
         // Act
         var result = await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
