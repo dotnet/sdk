@@ -146,13 +146,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var exception = await Assert.ThrowsAsync<VulnerablePackageException>(() => packageManager.DownloadPackageAsync(
                 installPath,
-                "log4net",
-                "2.0.3",
+                "System.Text.Json",
+                "8.0.4",
                 // add the source for getting vulnerability info
                 additionalSources: _additionalSources));
 
-            exception.PackageIdentifier.Should().Be("log4net");
-            exception.PackageVersion.Should().Be("2.0.3");
+            exception.PackageIdentifier.Should().Be("System.Text.Json");
+            exception.PackageVersion.Should().Be("8.0.4");
             exception.Vulnerabilities.Should().NotBeNullOrEmpty();
         }
 
@@ -167,15 +167,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var result = await packageManager.DownloadPackageAsync(
                 installPath,
-                "log4net",
-                "2.0.3",
+                "System.Text.Json",
+                "8.0.4",
                 // add the source for getting vulnerability info
                 additionalSources: _additionalSources,
                 force: true);
 
-            result.PackageIdentifier.Should().Be("log4net");
-            result.Author.Should().Be("Apache Software Foundation");
-            result.PackageVersion.Should().Be("2.0.3");
+            result.PackageIdentifier.Should().Be("System.Text.Json");
+            result.Author.Should().Be("Microsoft");
+            result.PackageVersion.Should().Be("8.0.4");
             Assert.True(File.Exists(result.FullPath));
             result.PackageVulnerabilities.Should().NotBeNullOrEmpty();
             result.NuGetSource.Should().Be(_additionalSources[0]);
