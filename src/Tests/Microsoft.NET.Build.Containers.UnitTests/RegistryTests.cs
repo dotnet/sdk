@@ -539,6 +539,34 @@ public class RegistryTests : IDisposable
         Assert.Equal(expectedInsecure, registrySettings.IsInsecure);
     }
 
+    [Fact]
+    public async Task DownloadBlobAsync_RetriesOnFailure()
+    {
+        // Arrange
+        var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
+
+        var repoName = "testRepo";
+        var descriptor = new Descriptor("application/octet-stream", "sha256:testdigest", 1234);
+        var cancellationToken = CancellationToken.None;
+
+        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        mockRegistryAPI
+            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
+            .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
+            .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
+            .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
+
+        Registry registry = new(repoName, logger, mockRegistryAPI.Object);
+
+        // Act
+        var result = await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.True(File.Exists(result)); // Ensure the file was successfully downloaded
+        mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(3)); // Verify retries
+    }
+
     private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
     {
         return new(uploadUrl);
