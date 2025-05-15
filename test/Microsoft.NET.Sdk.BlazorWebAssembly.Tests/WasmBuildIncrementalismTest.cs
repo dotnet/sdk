@@ -45,9 +45,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     var first = thumbPrint[j];
                     var actual = newThumbPrint[j];
-                    actual.Path.Equals(first.Path).Should().BeTrue($"because {actual.Path} should match {first.Path}");
-                    actual.Hash.Equals(first.Hash).Should().BeTrue($"because {actual.Hash} should match {first.Hash} for {first.Path}");
-                    actual.LastWriteTimeUtc.Equals(first.LastWriteTimeUtc).Should().BeTrue($"because {actual.LastWriteTimeUtc} should match {first.LastWriteTimeUtc} for {first.Path}");
+                    actual.Path.Equals(first.Path).Should().BeTrue($"because {actual.Path} should match {first.Path} on build {i}");
+                    actual.Hash.Equals(first.Hash).Should().BeTrue($"because {actual.Hash} should match {first.Hash} for {first.Path} on build {i}");
+                    actual.LastWriteTimeUtc.Equals(first.LastWriteTimeUtc).Should().BeTrue($"because {actual.LastWriteTimeUtc} should match {first.LastWriteTimeUtc} for {first.Path} on build {i}");
                 }
             }
         }
