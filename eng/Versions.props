@@ -102,8 +102,6 @@
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/runtime -->
     <MicrosoftNETCoreAppRefPackageVersion>10.0.0-preview.5.25265.101</MicrosoftNETCoreAppRefPackageVersion>
-    <VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>10.0.0-preview.5.25265.101</VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion>
-    <MicrosoftNETCoreAppRuntimewinx64PackageVersion>10.0.0-preview.5.25265.101</MicrosoftNETCoreAppRuntimewinx64PackageVersion>
     <MicrosoftExtensionsDependencyModelPackageVersion>10.0.0-preview.5.25265.101</MicrosoftExtensionsDependencyModelPackageVersion>
     <MicrosoftNETHostModelVersion>10.0.0-preview.5.25265.101</MicrosoftNETHostModelVersion>
     <MicrosoftExtensionsFileSystemGlobbingPackageVersion>10.0.0-preview.5.25265.101</MicrosoftExtensionsFileSystemGlobbingPackageVersion>
@@ -115,9 +113,6 @@
     <SystemServiceProcessServiceControllerVersion>10.0.0-preview.5.25265.101</SystemServiceProcessServiceControllerVersion>
     <MicrosoftNETCoreDotNetHostResolverPackageVersion>8.0.0-rc.1.23414.4</MicrosoftNETCoreDotNetHostResolverPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>10.0.0-preview.5.25265.101</MicrosoftNETCorePlatformsPackageVersion>
-    <VSRedistCommonWindowsDesktopTargetingPackx64100Version>10.0.0-preview.5.25265.101</VSRedistCommonWindowsDesktopTargetingPackx64100Version>
-    <VSRedistCommonNetCoreTargetingPackx64100PackageVersion>10.0.0-preview.5.25265.101</VSRedistCommonNetCoreTargetingPackx64100PackageVersion>
-    <MicrosoftNETCoreAppHostwinx64PackageVersion>10.0.0-preview.5.25265.101</MicrosoftNETCoreAppHostwinx64PackageVersion>
     <MicrosoftBclAsyncInterfacesPackageVersion>10.0.0-preview.5.25265.101</MicrosoftBclAsyncInterfacesPackageVersion>
     <MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>10.0.0-preview.5.25265.101</MicrosoftExtensionsFileProvidersAbstractionsPackageVersion>
     <MicrosoftWin32SystemEventsPackageVersion>10.0.0-preview.5.25265.101</MicrosoftWin32SystemEventsPackageVersion>
@@ -155,8 +150,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/dotnet/windowsdesktop -->
-    <VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>10.0.0-preview.5.25265.101</VSRedistCommonWindowsDesktopSharedFrameworkx64100PackageVersion>
-    <MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>10.0.0-preview.5.25265.101</MicrosoftWindowsDesktopAppRuntimewinx64PackageVersion>
+    <MicrosoftWindowsDesktopAppInternalPackageVersion>10.0.0-preview.5.25265.101</MicrosoftWindowsDesktopAppInternalPackageVersion>
     <MicrosoftWindowsDesktopAppRefPackageVersion>10.0.0-preview.5.25265.101</MicrosoftWindowsDesktopAppRefPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
