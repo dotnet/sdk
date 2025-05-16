@@ -19,8 +19,8 @@ variables:
 - name: isSourceOnlyBuild
   value: ${{ contains(variables['Build.DefinitionName'], '-source-build') }}
 
-- name: isSourceOnlyBuildLite
-  value: ${{ contains(variables['Build.DefinitionName'], '-source-build-lite') }}
+- name: isScheduleTrigger
+  value: ${{ eq(variables['Build.Reason'], 'Schedule') }}
 
 - name: isPRTrigger
   value: ${{ eq(variables['Build.Reason'], 'PullRequest') }}
