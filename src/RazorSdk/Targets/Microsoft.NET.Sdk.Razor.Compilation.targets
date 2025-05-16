@@ -129,7 +129,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          ChecksumAlgorithm="$(ChecksumAlgorithm)"
          CodeAnalysisRuleSet="$(ResolvedCodeAnalysisRuleSet)"
          CodePage="$(CodePage)"
-         CompilerType="$(RoslynCompilerType)"
          DebugType="$(DebugType)"
          DefineConstants="$(DefineConstants)"
          DelaySign="$(DelaySign)"
