@@ -149,6 +149,10 @@ internal static class ImagePublisher
                 cancellationToken).ConfigureAwait(false);
             Log.LogMessage(MessageImportance.High, successMessage, destinationImageReference, destinationImageReference.RemoteRegistry!.RegistryName);
         }
+        catch (UnableToAccessRepositoryException)
+        {
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
+        }
         catch (ContainerHttpException e)
         {
             Log.LogErrorFromException(e, true);
