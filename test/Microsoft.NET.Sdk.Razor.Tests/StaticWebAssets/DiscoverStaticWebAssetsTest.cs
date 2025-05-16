@@ -601,6 +601,8 @@ for path 'candidate.js'");
 
             Assert.False(cache.IsUpToDate());
             Assert.Same(inputHashes, cache.OutOfDateInputs());
+            Assert.Empty(cache.CachedAssets);
+            Assert.Empty(cache.CachedCopyCandidates);
         }
 
         [Fact]
