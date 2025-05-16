@@ -7,6 +7,11 @@
         <target state="translated">仅更新广告清单。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">不能同时使用 {0} 和 {1} 选项。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">更新所有已安装的工作负载。</target>
@@ -70,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">工作负载更新失败: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">找不到工作负载版本 {0}。</target>
         <note />
       </trans-unit>
     </body>
