@@ -5,12 +5,12 @@
       <trans-unit id="Error_MultipleProjectsFound">
         <source>Multiple MSBuild project files found in '{0}'. Specify which to use with the --project option.</source>
         <target state="translated">W elemencie „{0}” znaleziono wiele plików projektów MSBuild. Określ projekt do użycia za pomocą opcji --project.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_NoProjectsFound">
         <source>Could not find a MSBuild project file in '{0}'. Specify which project to use with the --project option.</source>
         <target state="translated">Nie można znaleźć pliku projektu MSBuild w elemencie „{0}”. Określ projekt do użycia za pomocą opcji --project.</target>
-        <note />
+        <note>{Locked="--project"}</note>
       </trans-unit>
       <trans-unit id="Error_ProjectPath_NotFound">
         <source>The project file '{0}' does not exist.</source>
@@ -20,12 +20,132 @@
       <trans-unit id="Error_QuietAndVerboseSpecified">
         <source>Cannot specify both '--quiet' and '--verbose' options.</source>
         <target state="translated">Nie można jednocześnie określić opcji „--quiet” i „--verbose”.</target>
+        <note>{Locked="--quiet"}{Locked="--verbose"}</note>
+      </trans-unit>
+      <trans-unit id="Help">
+        <source>
+
+Environment variables:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  When set to '1' or 'true', dotnet-watch will poll the file system for
+  changes. This is required for some file systems, such as network shares,
+  Docker mounted volumes, and other virtual file systems.
+
+  DOTNET_WATCH
+  dotnet-watch sets this variable to '1' on all child processes launched.
+
+  DOTNET_WATCH_ITERATION
+  dotnet-watch sets this variable to '1' and increments by one each time
+  a file is changed and the command is restarted.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  When set to '1' or 'true', dotnet-watch will not show emojis in the 
+  console output.
+
+Remarks:
+  The special option '--' is used to delimit the end of the options and
+  the beginning of arguments that will be passed to the child dotnet process.
+
+  For example: dotnet watch -- --verbose run
+
+  Even though '--verbose' is an option dotnet-watch supports, the use of '--'
+  indicates that '--verbose' should be treated instead as an argument for
+  dotnet-run.
+
+Examples:
+  dotnet watch run
+  dotnet watch test
+
+    </source>
+        <target state="translated">
+
+Zmienne środowiskowe:
+
+  DOTNET_USE_POLLING_FILE_WATCHER
+  Po ustawieniu wartości „1” lub „true” program dotnet-watch sonduje system plików pod kątem
+  zmian. Jest to wymagane w przypadku niektórych systemów plików, takich jak udziały sieciowe,
+  woluminy zainstalowane na platformie Docker i inne wirtualne systemy plików.
+
+  DOTNET_WATCH
+  Program dotnet-watch ustawia tę zmienną na wartość „1” we wszystkich uruchomionych procesach podrzędnych.
+
+  DOTNET_WATCH_ITERATION
+  Program dotnet-watch ustawia tę zmienną na wartość „1” i zwiększa się o jeden za każdym razem, gdy
+  plik zostanie zmieniony i polecenie zostanie uruchomione ponownie.
+
+  DOTNET_WATCH_SUPPRESS_EMOJIS
+  Po ustawieniu wartości „1” lub „true” program dotnet-watch nie będzie wyświetlać ikon emoji w 
+  danych wyjściowych konsoli.
+
+Uwagi:
+  Specjalna opcja „--” służy do rozdzielania końca opcji i
+  początku argumentów, które zostaną przekazane do podrzędnego procesu dotnet.
+
+  Na przykład: dotnet watch -- --verbose run
+
+  Mimo że polecenie „--verbose” jest opcją obsługiwaną przez program dotnet-watch, użycie polecenia „--”
+  wskazuje, że polecenie „--verbose” powinno być traktowane jako argument dla
+  dotnet-run.
+
+Przykłady:
+  przebieg programu dotnet-watch
+  test programu dotnet-watch
+
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_List">
+        <source>
+      Lists all discovered files without starting the watcher.
+    </source>
+        <target state="translated">
+      Wyświetla listę wszystkich odnalezionych plików bez uruchamiania obserwatora.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NoHotReload">
+        <source>
+      Suppress hot reload for supported apps.
+    </source>
+        <target state="translated">
+      Pomiń przeładowywanie na gorąco dla obsługiwanych aplikacji.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_NonInteractive">
+        <source>
+      Runs dotnet-watch in non-interactive mode. This option is only supported when running with Hot Reload enabled.
+      Use this option to prevent console input from being captured.
+    </source>
+        <target state="translated">
+      Uruchamia program dotnet-watch w trybie nieinterakcyjnym. Ta opcja jest obsługiwana tylko w przypadku uruchamiania z włączoną funkcją przeładowywania na gorąco.
+      Użyj tej opcji, aby uniemożliwić przechwytywanie danych wejściowych konsoli.
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Quiet">
+        <source>
+      Suppresses all output except warnings and errors
+    </source>
+        <target state="translated">
+      Pomija wszystkie dane wyjściowe z wyjątkiem ostrzeżeń i błędów
+    </target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Help_Verbose">
+        <source>
+      Show verbose output
+    </source>
+        <target state="translated">
+      Pokaż pełne dane wyjściowe
+    </target>
         <note />
       </trans-unit>
       <trans-unit id="Warning_ProjectAbbreviationDeprecated">
         <source>Warning NETSDK1174: The abbreviation of -p for --project is deprecated. Please use --project.</source>
         <target state="translated">Ostrzeżenie NETSDK1174: Skrót -p dla polecenia --project jest przestarzały. Użyj polecenia --project.</target>
-        <note />
+        <note>{Locked="-p"}{Locked="--project"}</note>
       </trans-unit>
     </body>
   </file>

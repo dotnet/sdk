@@ -20,7 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
          the resulting compilation constant will be a valid C# conditional compilation symbol.  As the set
          of characters that aren't allowed is essentially open-ended, there's probably not a good way to
          fully sanitize the Configuration in MSBuild evaluation.  If the resulting string still isn't a
-         valid conditional combilation symbol, then the compiler will generate the following error and
+         valid conditional compilation symbol, then the compiler will generate the following error and
          the define will be ignored:
             warning MSB3052: The parameter to the compiler is invalid, '/define:0BAD_DEFINE' will be ignored.
          -->
