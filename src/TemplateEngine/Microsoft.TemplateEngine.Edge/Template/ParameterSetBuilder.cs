@@ -1,9 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
@@ -252,7 +249,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             // Get the transitive closure of parameters that need to be recalculated, based on the knowledge of params that
             IReadOnlyList<EvalData> disabledParameters = parameters.Where(p => p.IsEnabledConditionResult.HasValue && !p.IsEnabledConditionResult.Value).ToList();
             DirectedGraph<EvalData> parametersToRecalculate =
-                parametersDependenciesGraph.GetSubGraphDependandOnVertices(disabledParameters, includeSeedVertices: false);
+                parametersDependenciesGraph.GetSubGraphDependentOnVertices(disabledParameters, includeSeedVertices: false);
 
             // Second traversal - for transitive dependencies of parameters that need to be disabled
             if (parametersToRecalculate.TryGetTopologicalSort(out IReadOnlyList<EvalData> orderedParameters))
@@ -349,9 +346,6 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
         private class EvalData
         {
-            private object? _value;
-            private DataSource _dataSource = DataSource.NoSource;
-
             public EvalData(ITemplateParameter parameterDefinition)
             {
                 ParameterDefinition = parameterDefinition;
@@ -360,7 +354,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
             public EvalData(EvaluatedInputParameterData other)
                 : this(other.ParameterDefinition, other.Value, other.IsEnabledConditionResult, other.IsRequiredConditionResult)
             {
-                this._dataSource = DataSource.NoSource;
+                this.DataSource = DataSource.NoSource;
             }
 
             private EvalData(
@@ -370,7 +364,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 bool? isRequiredConditionResult)
             {
                 ParameterDefinition = parameterDefinition;
-                _value = value;
+                Value = value;
                 IsEnabledConditionResult = isEnabledConditionResult;
                 IsRequiredConditionResult = isRequiredConditionResult;
             }
@@ -383,14 +377,14 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             public bool? IsRequiredConditionResult { get; set; }
 
-            public DataSource DataSource => _dataSource;
+            public DataSource DataSource { get; private set; } = DataSource.NoSource;
 
-            public object? Value => _value;
+            public object? Value { get; private set; }
 
             public void SetValue(object? value, DataSource source)
             {
-                _value = value;
-                _dataSource = source;
+                Value = value;
+                DataSource = source;
                 InputDataState = InputDataStateUtil.GetInputDataState(value);
             }
 
@@ -401,7 +395,7 @@ namespace Microsoft.TemplateEngine.Edge.Template
                 return new EvaluatedInputParameterData(
                     this.ParameterDefinition,
                     this.Value,
-                    _dataSource,
+                    DataSource,
                     this.IsEnabledConditionResult,
                     this.IsRequiredConditionResult,
                     InputDataState);
@@ -409,10 +403,10 @@ namespace Microsoft.TemplateEngine.Edge.Template
 
             public EvalData Clone()
             {
-                var ds = _dataSource;
+                var ds = DataSource;
                 return new EvalData(ParameterDefinition, Value, IsEnabledConditionResult, IsRequiredConditionResult)
                 {
-                    _dataSource = ds
+                    DataSource = ds
                 };
             }
 

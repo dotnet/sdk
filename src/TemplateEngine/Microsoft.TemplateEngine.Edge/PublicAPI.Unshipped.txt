@@ -5,6 +5,6 @@ Microsoft.TemplateEngine.Edge.Settings.ScanResult.Templates.get -> System.Collec
 Microsoft.TemplateEngine.Edge.Settings.ITemplateInfoHostJsonCache.HostData.get -> string?
 Microsoft.TemplateEngine.Edge.Settings.TemplatePackageManager.GetManagedTemplatePackageAsync(string! packageIdentifier, string? packageVersion = null, System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken)) -> System.Threading.Tasks.Task<(Microsoft.TemplateEngine.Abstractions.TemplatePackage.IManagedTemplatePackage? Package, System.Collections.Generic.IEnumerable<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>? Templates)>!
 Microsoft.TemplateEngine.Edge.VirtualEnvironment
-Microsoft.TemplateEngine.Edge.VirtualEnvironment.VirtualEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? virtualEnvironemnt, bool includeRealEnvironment) -> void
+Microsoft.TemplateEngine.Edge.VirtualEnvironment.VirtualEnvironment(System.Collections.Generic.IReadOnlyDictionary<string!, string!>? virtualEnvironment, bool includeRealEnvironment) -> void
 static Microsoft.TemplateEngine.Edge.DefaultEnvironment.FetchEnvironmentVariables() -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
 Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.PreferDefaultName.get -> bool

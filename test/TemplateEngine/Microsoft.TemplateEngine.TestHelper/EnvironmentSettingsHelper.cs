@@ -1,13 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Runtime.CompilerServices;
-using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge;
@@ -83,10 +78,12 @@ namespace Microsoft.TemplateEngine.TestHelper
                     {
                         Directory.Delete(f, true);
                     }
-                    catch
+                    catch (Exception e) when (e is UnauthorizedAccessException or IOException)
                     {
-                        Thread.Sleep(2000);
-                        Directory.Delete(f, true);
+                        // Failed to delete the temporary test folders.
+                        // There may be some access being released prior to this dispose or the machine holding a handle to inner files/folders.
+                        // No need to worry that deletion failed since these folders are in the Temp directory anyway.
+                        // See: https://stackoverflow.com/questions/329355/cannot-delete-directory-with-directory-deletepath-true
                     }
                 }
             });

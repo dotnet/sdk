@@ -90,9 +90,9 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 
             public bool Reserved => false;
 
-            public string? Description => "description";
+            public string Description => "description";
 
-            public string? IconUrl => "https://icon";
+            public string IconUrl => "https://icon";
         }
     }
 }

@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.IO;
 using System.Text;
 
 namespace Microsoft.TemplateEngine.Core.Contracts
@@ -45,7 +44,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         /// <param name="match">The token to find.</param>
         /// <param name="bufferLength">The length of the buffer after the token is found.</param>
         /// <param name="currentBufferPosition">The position in the buffer after the token is found.</param>
-        /// <param name="consumeToken">True if token should be seeked through.</param>
+        /// <param name="consumeToken">True if token should be sought through.</param>
         void SeekSourceForwardUntil(ITokenTrie match, ref int bufferLength, ref int currentBufferPosition, bool consumeToken = false);
 
         /// <summary>
@@ -57,7 +56,7 @@ namespace Microsoft.TemplateEngine.Core.Contracts
         /// Seeks target stream backwards until <paramref name="match"/> is found.
         /// </summary>
         /// <param name="match">The token to find.</param>
-        /// <param name="consumeToken">True if token should be seeked through.</param>
+        /// <param name="consumeToken">True if token should be sought through.</param>
         void SeekTargetBackUntil(ITokenTrie match, bool consumeToken = false);
 
         /// <summary>

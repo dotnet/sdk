@@ -92,7 +92,7 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             TestLoggerFactory loggerFactory = new();
             addLoggerProviders?.ToList().ForEach(loggerFactory.AddProvider);
 
-            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, Array.Empty<string>(), loggerFactory);
+            return new DefaultTemplateEngineHost(HostIdentifier + Guid.NewGuid().ToString(), HostVersion, preferences, builtIns, [], loggerFactory);
         }
     }
 }
