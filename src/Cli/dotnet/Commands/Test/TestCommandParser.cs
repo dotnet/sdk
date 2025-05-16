@@ -164,8 +164,6 @@ internal static class TestCommandParser
         var builder = new ConfigurationBuilder();
 
         string? dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
-        Debug.Assert(dotnetConfigPath is not null);
-
         if (!File.Exists(dotnetConfigPath))
         {
             return CliConstants.VSTest;

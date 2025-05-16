@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
@@ -807,6 +808,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
+
+    [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
+    public void ArtifactsDirectory_Permissions()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir);
+
+        // Re-create directory with incorrect permissions.
+        Directory.Delete(artifactsDir, recursive: true);
+        Directory.CreateDirectory(artifactsDir, UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute);
+        var actualMode = new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().NotBe(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir).And.Subject;
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("build-start.cache"); // Unhandled exception: Access to the path '.../build-start.cache' is denied.
+
+        // Build shouldn't have changed the permissions.
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(actualMode, artifactsDir);
     }
 
     [Fact]
