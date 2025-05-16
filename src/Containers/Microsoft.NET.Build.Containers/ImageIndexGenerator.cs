@@ -4,6 +4,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Unicode;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -125,11 +126,13 @@ internal static class ImageIndexGenerator
     {
         var nullIgnoreOptions = new JsonSerializerOptions
         {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            Encoder = JavaScriptEncoder.Create(UnicodeRanges.BasicLatin)
         };
         // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
         var escapeOptions = new JsonSerializerOptions
         {
+            // This encoder already permits more characters to not be escaped, including '+'
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
