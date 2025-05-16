@@ -215,6 +215,11 @@ internal static class ContainerBuilder
             await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, containerRegistry);
         }
+        catch (UnableToDownloadFromRepositoryException)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
+            return 1;
+        }
         catch (Exception ex)
         {
             logger.LogError(Resource.FormatString(nameof(Strings.RegistryOutputPushFailed), ex.Message));
@@ -236,11 +241,6 @@ internal static class ContainerBuilder
                 destinationImageReference,
                 cancellationToken)).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, destinationImageReference.RemoteRegistry.RegistryName);
-        }
-        catch (UnableToDownloadFromRepositoryException)
-        {
-            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
-            return 1;
         }
         catch (UnableToAccessRepositoryException)
         {
