@@ -117,11 +117,6 @@
         <target state="translated">NETSDK1205: 不应直接设置 Microsoft.Net.Compilers.Toolset.Framework 包。如果需要，请将属性 "BuildWithNetFrameworkHostedCompiler" 设置为 "true"。</target>
         <note>{StrBegin="NETSDK1205: "}{Locked="Microsoft.Net.Compilers.Toolset.Framework"}{Locked="BuildWithNetFrameworkHostedCompiler"}</note>
       </trans-unit>
-      <trans-unit id="CannotEmbedClsidMapIntoComhost">
-        <source>NETSDK1092: The CLSIDMap cannot be embedded on the COM host because adding resources requires that the build be performed on Windows (excluding Nano Server).</source>
-        <target state="translated">NETSDK1092: CLSIDMap 无法嵌入 COM 主机，因为添加资源要求在 Windows (不包括 Nano 服务器)上执行生成。</target>
-        <note>{StrBegin="NETSDK1092: "}</note>
-      </trans-unit>
       <trans-unit id="CannotFindApphostForRid">
         <source>NETSDK1065: Cannot find app host for {0}. {0} could be an invalid runtime identifier (RID). For more information about RID, see https://aka.ms/rid-catalog.</source>
         <target state="translated">NETSDK1065: 无法找到 {0} 的应用主机。{0} 可能是无效的运行时标识符(RID)。有关 RID 的详细信息，请参阅 https://aka.ms/rid-catalog。</target>
@@ -482,8 +477,8 @@
         <note>{StrBegin="NETSDK1141: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkFailed">
-        <source>NETSDK1144: Optimizing assemblies for size failed. Optimization can be disabled by setting the PublishTrimmed property to false.</source>
-        <target state="translated">NETSDK1144: 优化程序集的大小失败。通过将 PublishTrimmed 属性设置为 false 可禁用优化。</target>
+        <source>NETSDK1144: Optimizing assemblies for size failed.</source>
+        <target state="translated">NETSDK1144: 优化程序集大小失败。</target>
         <note>{StrBegin="NETSDK1144: "}</note>
       </trans-unit>
       <trans-unit id="ILLinkNoValidRuntimePackageError">
@@ -525,6 +520,11 @@
         <source>NETSDK1163: Input assembly '{0}' not found.</source>
         <target state="translated">NETSDK1163: 找不到输入程序集“{0}”。</target>
         <note>{StrBegin="NETSDK1163: "}</note>
+      </trans-unit>
+      <trans-unit id="InvalidAppHostDotNetSearch">
+        <source>NETSDK1217: Invalid value in AppHostDotNetSearch: '{0}'.</source>
+        <target state="translated">NETSDK1217: AppHostDotNetSearch 中的值无效: "{0}"。</target>
+        <note>{StrBegin="NETSDK1217: "}</note>
       </trans-unit>
       <trans-unit id="InvalidFrameworkName">
         <source>NETSDK1003: Invalid framework name: '{0}'.</source>
@@ -588,6 +588,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1157: 找不到 JIT 库“{0}”。</target>
         <note>{StrBegin="NETSDK1157: "}</note>
       </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetNotFound">
+        <source>NETSDK1216: Package Microsoft.Net.Sdk.Compilers.Toolset is not downloaded but it is needed because your MSBuild and SDK versions are mismatched. Ensure version {0} of the package is available in your NuGet source feeds and then run NuGet package restore from Visual Studio or MSBuild.</source>
+        <target state="translated">NETSDK1216: 包 Microsoft.Net.Sdk.Compilers.Toolset 不可下载，但由于你的 MSBuild 和 SDK 版本不匹配，因此需要此包。确保包的版本 {0} 在你的 NuGet 源中可用，然后从 Visual Studio 或 MSBuild 运行 NuGet 包还原。</target>
+        <note>{StrBegin="NETSDK1216: "}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"} {0} is a NuGet package version and should not be translated.</note>
+      </trans-unit>
+      <trans-unit id="MicrosoftNetSdkCompilersToolsetRootEmpty">
+        <source>NETSDK1221: NuGetPackageRoot property is empty so package Microsoft.Net.Sdk.Compilers.Toolset cannot be used but it is recommended because your MSBuild and SDK versions are mismatched. Ensure you are building with '/restore /t:Build' and not '/t:Restore;Build'.</source>
+        <target state="translated">NETSDK1221: NuGetPackageRoot 属性为空，因此无法使用包 Microsoft.Net.Sdk.Compilers.Toolset，但建议使用它，因为你的 MSBuild 和 SDK 版本不匹配。确保使用 '/restore /t:Build' 而不是 '/t:Restore;Build' 进行生成。</target>
+        <note>{StrBegin="NETSDK1221: "}{Locked="NuGetPackageRoot"}{Locked="Microsoft.Net.Sdk.Compilers.Toolset"}{Locked="'/restore /t:Build'"}{Locked="'/t:Restore;Build'"}</note>
+      </trans-unit>
       <trans-unit id="MismatchedPlatformPackageVersion">
         <source>NETSDK1061: The project was restored using {0} version {1}, but with current settings, version {2} would be used instead. To resolve this issue, make sure the same settings are used for restore and for subsequent operations such as build or publish. Typically this issue can occur if the RuntimeIdentifier property is set during build or publish but not during restore. For more information, see https://aka.ms/dotnet-runtime-patch-selection.</source>
         <target state="translated">NETSDK1061: 项目是使用 {0} 版本 {1} 还原的, 但使用当前设置, 将改用版本 {2}。要解决此问题, 请确保将相同的设置用于还原和后续操作 (如生成或发布)。通常, 如果 RuntimeIdentifier 属性是在生成或发布过程中设置的, 而不是在还原过程中进行的, 则会发生此问题。有关详细信息, 请参阅 https://aka.ms/dotnet-runtime-patch-selection。</target>
@@ -631,10 +641,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1115: 未使用 .NET SDK 默认设置的情况下，当前 .NET SDK 不支持 .NET Framework。很可能是因为 C++/CLI 项目的 CLRSupport 属性和 TargetFramework 之间存在不匹配情况。</target>
         <note>{StrBegin="NETSDK1115: "}</note>
       </trans-unit>
-      <trans-unit id="Net8NotCompatibleWithDev177">
-        <source>NETSDK1213: Targeting .NET 8.0 or higher in Visual Studio 2022 17.7 is not supported.</source>
-        <target state="translated">NETSDK1213: 不支持在 Visual Studio 2022 17.7 中以 .NET 8.0 或更高版本为目标。</target>
-        <note>{StrBegin="NETSDK1213: "}</note>
+      <trans-unit id="Net9NotCompatibleWithDev1711">
+        <source>NETSDK1223: Targeting .NET 9.0 or higher in Visual Studio 2022 17.11 is not supported.</source>
+        <target state="translated">NETSDK1223: 不支持在 Visual Studio 2022 17.11 中以 .NET 9.0 或更高版本为目标。</target>
+        <note>{StrBegin="NETSDK1223: "}</note>
       </trans-unit>
       <trans-unit id="NoAppHostAvailable">
         <source>NETSDK1084: There is no application host available for the specified RuntimeIdentifier '{0}'.</source>
@@ -750,6 +760,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1189: Prefer32Bit is not supported and has no effect for netcoreapp target.</source>
         <target state="translated">NETSDK1189: Prefer32Bit 不受支持，对 netcoreapp 目标无效。</target>
         <note>{StrBegin="NETSDK1189: "}</note>
+      </trans-unit>
+      <trans-unit id="PreferNativeArm64IgnoredForNetCoreApp">
+        <source>NETSDK1222: PreferNativeArm64 applies only to .NET Framework targets. It is not supported and has no effect for when targeting .NET Core.</source>
+        <target state="translated">NETSDK1222: PreferNativeArm64 仅适用于 .NET Framework 目标。它不受支持，并且在以 .NET Core 为目标时不起作用。</target>
+        <note>{StrBegin="NETSDK1222: "}</note>
       </trans-unit>
       <trans-unit id="ProjectAssetsConsumedWithoutMSBuildProjectPath">
         <source>NETSDK1011: Assets are consumed from project '{0}', but no corresponding MSBuild project path was  found in '{1}'.</source>
@@ -878,6 +893,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1138: 目标框架“{0}”不受支持，将来不会收到安全更新。有关支持策略的详细信息，请参阅 {1}。</target>
         <note>{StrBegin="NETSDK1138: "}</note>
       </trans-unit>
+      <trans-unit id="TargetFrameworkIsNotRecommended">
+        <source>NETSDK1215: Targeting .NET Standard prior to 2.0 is no longer recommended. See {0} for more details.</source>
+        <target state="translated">NETSDK1215: 不再建议将 2.0 之前的 .NET Standard 作为目标。有关更多详细信息，请参阅 {0}。</target>
+        <note>{StrBegin="NETSDK1215: "}</note>
+      </trans-unit>
       <trans-unit id="TargetFrameworkWithSemicolon">
         <source>NETSDK1046: The TargetFramework value '{0}' is not valid. To multi-target, use the 'TargetFrameworks' property instead.</source>
         <target state="translated">NETSDK1046: TargetFramework 值“{0}”无效。若要设置多个目标，请改用 "TargetFrameworks" 属性。</target>
@@ -1003,10 +1023,10 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1057: 你正在使用 .NET 的预览版。请参阅 https://aka.ms/dotnet-support-policy</target>
         <note>{StrBegin="NETSDK1057: "}</note>
       </trans-unit>
-      <trans-unit id="UsingUnsupportedUseUwpFeature">
-        <source>NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</source>
-        <target state="new">NETSDK1214: UseUwp and all associated functionality require the .NET 9 SDK and are not supported by older .NET SDKs.</target>
-        <note>{StrBegin="NETSDK1214: "}</note>
+      <trans-unit id="UsingPreviewUseUwpFeature">
+        <source>NETSDK1219: UseUwp and all associated functionality are currently experimental and not officially supported.</source>
+        <target state="translated">NETSDK1219: UseUwp 和所有关联的功能目前都是试验性的，并且不受官方支持。</target>
+        <note>{StrBegin="NETSDK1219: "}</note>
       </trans-unit>
       <trans-unit id="WinMDObjNotSupportedOnTargetFramework">
         <source>NETSDK1131: Producing a managed Windows Metadata component with WinMDExp is not supported when targeting {0}.</source>
@@ -1048,6 +1068,16 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1148: 使用更新版本的 Microsoft.Windows.SDK.NET.dll 编译了引用的程序集。请更新为更新的 .NET SDK 以引用此程序集。</target>
         <note>{StrBegin="NETSDK1148: "}</note>
       </trans-unit>
+      <trans-unit id="WindowsSDKXamlInvalidTfm">
+        <source>NETSDK1220: UseUwp and all associated functionality require using a TFM of 'net8.0-windows' or greater.</source>
+        <target state="translated">NETSDK1220: UseUwp 和所有关联的功能都需要使用 "net8.0-windows" 或更高版本的 TFM。</target>
+        <note>{StrBegin="NETSDK1220: "}</note>
+      </trans-unit>
+      <trans-unit id="WindowsSDKXamlMissingUseUwpProperty">
+        <source>NETSDK1218: This project has a transitive dependency on the full Windows SDK projections (including Windows.UI.Xaml.* types), but does not specify the UseUwp property. That must be enabled to ensure that .NET types are projected and marshalled correctly for interop scenarios with these XAML types.</source>
+        <target state="translated">NETSDK1218: 此项目对完整的 Windows SDK 投影(包括 Windows.UI.Xaml.* 类型)具有传递依赖项，但不指定 UseUwp 属性。必须启用此功能，以确保为具有这些 XAML 类型的互操作方案正确投影和封送 .NET 类型。</target>
+        <note>{StrBegin="NETSDK1218: "}</note>
+      </trans-unit>
       <trans-unit id="WorkloadIsEol">
         <source>NETSDK1202: The workload '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
         <target state="translated">NETSDK1202: 工作负载“{0}”已失去支持，并且将来不会收到安全更新。有关支持政策的详细信息，请参阅 {1}。</target>
@@ -1065,7 +1095,7 @@ You may need to build the project on another operating system or architecture, o
 To install these workloads, run the following command: dotnet workload restore</source>
         <target state="translated">NETSDK1147: 要构建此项目，必须安装以下工作负载: {0}
 要安装这些工作负载，请运行以下命令: dotnet workload restore</target>
-        <note>{StrBegin="NETSDK1147: "} LOCALIZATION: Do not localize "dotnet workload restore"</note>
+        <note>{StrBegin="NETSDK1147: "}{Locked="dotnet workload restore"}</note>
       </trans-unit>
     </body>
   </file>

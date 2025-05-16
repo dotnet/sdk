@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Paths to tools, tasks, and extensions are calculated relative to the RazorSdkDirectoryRoot. This can be modified to test a local build. -->
     <RazorSdkDirectoryRoot Condition="'$(RazorSdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</RazorSdkDirectoryRoot>
     <RazorSdkBuildTasksDirectoryRoot Condition="'$(RazorSdkBuildTasksDirectoryRoot)'==''">$(RazorSdkDirectoryRoot)tasks\</RazorSdkBuildTasksDirectoryRoot>
-    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net8.0</_RazorSdkTasksTFM>
+    <_RazorSdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_RazorSdkTasksTFM>
     <_RazorSdkTasksTFM Condition=" '$(_RazorSdkTasksTFM)' == ''">net472</_RazorSdkTasksTFM>
     <RazorSdkBuildTasksAssembly>$(RazorSdkBuildTasksDirectoryRoot)$(_RazorSdkTasksTFM)\Microsoft.NET.Sdk.Razor.Tasks.dll</RazorSdkBuildTasksAssembly>
     <_RazorSdkToolAssembly>$(RazorSdkDirectoryRoot)tools\rzc.dll</_RazorSdkToolAssembly>
@@ -44,18 +44,30 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
-      <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0')) ">
-        <PropertyGroup>
-          <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
-          <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
-          <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
-          <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
-          <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
-          <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
-          <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">8.0</RazorLangVersion>
-        </PropertyGroup>
-      </When>
-      <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '7.0')) ">
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '9.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
+        <_TargetingNET90OrLater>true</_TargetingNET90OrLater>
+        <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">9.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0')) ">
+      <PropertyGroup>
+        <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
+        <_TargetingNET50OrLater>true</_TargetingNET50OrLater>
+        <_TargetingNET60OrLater>true</_TargetingNET60OrLater>
+        <_TargetingNET70OrLater>true</_TargetingNET70OrLater>
+        <_TargetingNET80OrLater>true</_TargetingNET80OrLater>
+        <UseRazorSourceGenerator Condition="'$(Language)' == 'C#' AND '$(UseRazorSourceGenerator)' == '' ">true</UseRazorSourceGenerator>
+        <RazorLangVersion Condition="'$(RazorLangVersion)' == '' ">8.0</RazorLangVersion>
+      </PropertyGroup>
+    </When>
+    <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '7.0')) ">
       <PropertyGroup>
         <_TargetingNETCoreApp30OrLater>true</_TargetingNETCoreApp30OrLater>
         <_TargetingNET50OrLater>true</_TargetingNET50OrLater>

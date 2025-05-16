@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-tool-list" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-tool-list" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet tool list
 .PP
@@ -60,7 +60,8 @@ To list a specific tool, use the optional \f[V]PACKAGE_ID\f[R] argument.
 Lists the tool that has the supplied package ID if the tool is installed.
 Can be used in conjunction with options.
 Provides a way to check if a specific tool was installed.
-The command returns 1 if no tool with the specified package ID is found; returns 0 otherwise.
+If no tool with the specified package ID is found, the command lists headings with no detail rows.
+The command always returns 0.
 .RE
 .SH OPTIONS
 .IP \[bu] 2

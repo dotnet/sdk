@@ -76,7 +76,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         private static bool NuGetVerify(FilePath nupkgToVerify, out string commandOutput)
         {
-            var args = new[] {"verify", "--all", nupkgToVerify.Value};
+            var args = new[] { "verify", "--all", nupkgToVerify.Value };
             var command = new DotNetCommandFactory(alwaysRunOutOfProc: true)
                 .Create("nuget", args);
 
