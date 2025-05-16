@@ -55,8 +55,6 @@ stages:
       isSourceOnlyBuild: ${{ variables.isSourceOnlyBuild }}
       ${{ if contains(variables['Build.DefinitionName'], '-full') }}:
         scope: full
-      ${{ elseif eq(variables.isSourceOnlyBuild, 'true') }}:
-        scope: ultralite
       ${{ else }}:
         scope: lite
 
