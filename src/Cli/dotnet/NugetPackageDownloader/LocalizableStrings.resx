@@ -144,4 +144,19 @@
   <data name="FailedToMapSourceUnderPackageSourceMapping" xml:space="preserve">
     <value>Package Source Mapping is enabled, but no source mapped under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</value>
   </data>
+  <data name="PackageVersionDescriptionDefault" xml:space="preserve">
+    <value>A version of {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForExactVersionMatch" xml:space="preserve">
+    <value>Version {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerAndUpperBounds" xml:space="preserve">
+    <value>A version between {0} and {1} of package {2}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithLowerBound" xml:space="preserve">
+    <value>A version higher than {0} of package {1}</value>
+  </data>
+  <data name="PackageVersionDescriptionForVersionWithUpperBound" xml:space="preserve">
+    <value>A version less than {0} of package {1}</value>
+  </data>
 </root>
