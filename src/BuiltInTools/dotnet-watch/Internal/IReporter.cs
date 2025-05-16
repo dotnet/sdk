@@ -52,6 +52,8 @@ namespace Microsoft.DotNet.Watch
         public const string ErrorEmoji = "❌";
         public const string HotReloadEmoji = "🔥";
         public const string WatchEmoji = "⌚";
+        public const string StopEmoji = "🛑";
+        public const string RestartEmoji = "🔄";
 
         public MessageDescriptor ToErrorWhen(bool condition)
             => condition ? this with { Severity = MessageSeverity.Error, Emoji = ErrorEmoji } : this;
@@ -69,9 +71,9 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor UpdatesApplied = new("Updates applied: {0} out of {1}.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor WaitingForFileChangeBeforeRestarting = new("Waiting for a file to change before restarting ...", "⏳", MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor WatchingWithHotReload = new("Watching with Hot Reload.", WatchEmoji, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor RestartInProgress = new("Restart in progress.", "🔄", MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor RestartRequested = new("Restart requested.", "🔄", MessageSeverity.Output, s_id++);
-        public static readonly MessageDescriptor ShutdownRequested = new("Shutdown requested. Press Ctrl+C again to force exit.", "🛑", MessageSeverity.Output, s_id++);
+        public static readonly MessageDescriptor RestartInProgress = new("Restart in progress.", RestartEmoji, MessageSeverity.Output, s_id++);
+        public static readonly MessageDescriptor RestartRequested = new("Restart requested.", RestartEmoji, MessageSeverity.Output, s_id++);
+        public static readonly MessageDescriptor ShutdownRequested = new("Shutdown requested. Press Ctrl+C again to force exit.", StopEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor ApplyUpdate_Error = new("{0}", ErrorEmoji, MessageSeverity.Error, s_id++);
         public static readonly MessageDescriptor ApplyUpdate_Warning = new("{0}", WarningEmoji, MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor ApplyUpdate_Verbose = new("{0}", WatchEmoji, MessageSeverity.Verbose, s_id++);
