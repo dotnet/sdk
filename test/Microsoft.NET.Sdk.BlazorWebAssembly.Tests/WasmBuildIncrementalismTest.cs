@@ -24,8 +24,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             var buildOutputDirectory = build.GetOutputDirectory(DefaultTfm).ToString();
 
+            // ActiveIssue https://github.com/dotnet/runtime/issues/115646
             var filesToIgnore = new[]
             {
+                Path.Combine(buildOutputDirectory, "blazorwasm.runtimeconfig.json"),
                 Path.Combine(buildOutputDirectory, "RazorClassLibrary.staticwebassets.endpoints.json"),
                 Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json")
             };
