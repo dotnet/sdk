@@ -40,12 +40,10 @@ namespace Microsoft.TemplateEngine.Core.Operations
         private class Implementation : IOperation
         {
             private readonly byte[] _replacement;
-            private readonly IToken _token;
 
             public Implementation(IToken token, byte[] replaceWith, string? id, bool initialState)
             {
                 _replacement = replaceWith;
-                _token = token;
                 Id = id;
                 Tokens = new[] { token };
                 IsInitialStateOn = string.IsNullOrEmpty(id) || initialState;

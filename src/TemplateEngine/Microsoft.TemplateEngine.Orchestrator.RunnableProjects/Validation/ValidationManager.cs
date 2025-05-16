@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Utils;
 
@@ -12,7 +11,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation
         private SpinLock _spinLock;
         private IEngineEnvironmentSettings? _cachedSettings;
         private Dictionary<Guid, ITemplateValidator>? _cachedValidators;
-        private ILogger? _logger;
 
         private ValidationManager() { }
 
@@ -44,7 +42,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Validation
                 if (_cachedSettings == null || _cachedSettings != settings || _cachedValidators == null)
                 {
                     _cachedSettings = settings;
-                    _logger = _cachedSettings.Host.LoggerFactory.CreateLogger(nameof(ValidationManager));
 
                     IEnumerable<ITemplateValidatorFactory> factories = settings.Components.OfType<ITemplateValidatorFactory>();
                     IEnumerable<Task<ITemplateValidator>> tasks = factories

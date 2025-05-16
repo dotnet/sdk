@@ -113,19 +113,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         public string? Reserved
         {
             get => Details.TryGetValue(ReservedKey, out string reserved) ? reserved : false.ToString();
-            set => UpdateOrRemoveValue(Details, ReservedKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            set => UpdateOrRemoveValue(Details, ReservedKey, value, (entry) => !string.IsNullOrEmpty(entry));
         }
 
         public string? Author
         {
             get => Details.TryGetValue(AuthorKey, out string author) ? author : null;
-            set => UpdateOrRemoveValue(Details, AuthorKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            set => UpdateOrRemoveValue(Details, AuthorKey, value, (entry) => !string.IsNullOrEmpty(entry));
         }
 
         public string? Owners
         {
             get => Details.TryGetValue(OwnersKey, out string owners) ? owners : null;
-            set => UpdateOrRemoveValue(Details, OwnersKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            set => UpdateOrRemoveValue(Details, OwnersKey, value, (entry) => !string.IsNullOrEmpty(entry));
         }
 
         public bool IsLocalPackage
@@ -138,19 +138,19 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
                 }
                 return false;
             }
-            set => UpdateOrRemoveValue(Details, LocalPackageKey, value.ToString(), (string value) => value == true.ToString());
+            set => UpdateOrRemoveValue(Details, LocalPackageKey, value.ToString(), (value) => value == true.ToString());
         }
 
         public string? NuGetSource
         {
             get => Details.TryGetValue(NuGetSourceKey, out string nugetSource) ? nugetSource : null;
-            set => UpdateOrRemoveValue(Details, NuGetSourceKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            set => UpdateOrRemoveValue(Details, NuGetSourceKey, value, (entry) => !string.IsNullOrEmpty(entry));
         }
 
         public string? Version
         {
             get => Details.TryGetValue(PackageVersionKey, out string version) ? version : null;
-            set => UpdateOrRemoveValue(Details, PackageVersionKey, value, (string entry) => !string.IsNullOrEmpty(entry));
+            set => UpdateOrRemoveValue(Details, PackageVersionKey, value, (entry) => !string.IsNullOrEmpty(entry));
         }
 
         internal Dictionary<string, string> Details { get; }
@@ -169,10 +169,10 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         {
             var details = new Dictionary<string, string>();
 
-            details.TryAdd(AuthorKey, Author ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
-            details.TryAdd(OwnersKey, Owners ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
-            details.TryAdd(ReservedKey, Reserved ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
-            details.TryAdd(NuGetSourceKey, NuGetSource ?? string.Empty, (string entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(AuthorKey, Author ?? string.Empty, (entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(OwnersKey, Owners ?? string.Empty, (entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(ReservedKey, Reserved ?? string.Empty, (entry) => !string.IsNullOrEmpty(entry));
+            details.TryAdd(NuGetSourceKey, NuGetSource ?? string.Empty, (entry) => !string.IsNullOrEmpty(entry));
 
             return details;
         }

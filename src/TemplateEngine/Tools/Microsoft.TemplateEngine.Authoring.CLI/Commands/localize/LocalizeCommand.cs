@@ -5,7 +5,7 @@ using System.CommandLine;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
 {
-    internal class LocalizeCommand : CliCommand
+    internal class LocalizeCommand : Command
     {
         internal LocalizeCommand()
             : base("localize")

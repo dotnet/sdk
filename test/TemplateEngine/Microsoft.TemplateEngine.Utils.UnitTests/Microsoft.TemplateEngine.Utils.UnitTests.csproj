@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="xunit.abstractions" />
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="AwesomeAssertions" />
   </ItemGroup>
 
 </Project>

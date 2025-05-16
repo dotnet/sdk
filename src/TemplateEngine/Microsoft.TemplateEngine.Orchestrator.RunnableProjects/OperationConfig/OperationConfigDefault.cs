@@ -110,6 +110,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.OperationConfig
                         new OperationConfigDefault("**/*.xaml", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.axaml", "<!--", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.sln", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
+                        new OperationConfigDefault("**/*.slnx", "#-", EvaluatorType.CPP, ConditionalType.Xml),
                         new OperationConfigDefault("**/*.yaml", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/*.yml", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
                         new OperationConfigDefault("**/Dockerfile", "#-", EvaluatorType.CPP, ConditionalType.HashSignLineComment),
