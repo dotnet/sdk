@@ -15,7 +15,6 @@
     <UseAppHost>false</UseAppHost>
     <IsPackable>true</IsPackable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Nullable>annotations</Nullable>
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
   </PropertyGroup>

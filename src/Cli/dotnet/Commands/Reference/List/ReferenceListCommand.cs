@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
@@ -20,7 +22,8 @@ internal class ReferenceListCommand : CommandBase
 
         _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ??
+            Directory.GetCurrentDirectory();
     }
 
     public override int Execute()
