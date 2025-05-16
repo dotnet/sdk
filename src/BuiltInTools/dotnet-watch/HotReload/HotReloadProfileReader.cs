@@ -11,44 +11,48 @@ namespace Microsoft.DotNet.Watch
     {
         public static HotReloadProfile InferHotReloadProfile(ProjectGraphNode projectNode, IReporter reporter)
         {
-            var queue = new Queue<ProjectGraphNode>();
-            queue.Enqueue(projectNode);
-
-            ProjectInstance? aspnetCoreProject = null;
-
-            var visited = new HashSet<ProjectGraphNode>();
-
-            while (queue.Count > 0)
+            if (projectNode.IsWebApp())
             {
-                var currentNode = queue.Dequeue();
-                var projectCapability = currentNode.ProjectInstance.GetItems("ProjectCapability");
+                var queue = new Queue<ProjectGraphNode>();
+                queue.Enqueue(projectNode);
 
-                foreach (var item in projectCapability)
+                ProjectInstance? aspnetCoreProject = null;
+
+                var visited = new HashSet<ProjectGraphNode>();
+
+                while (queue.Count > 0)
                 {
-                    if (item.EvaluatedInclude == "AspNetCore")
+                    var currentNode = queue.Dequeue();
+                    var projectCapability = currentNode.ProjectInstance.GetItems("ProjectCapability");
+
+                    foreach (var item in projectCapability)
                     {
-                        aspnetCoreProject = currentNode.ProjectInstance;
-                        break;
-                    }
-                    else if (item.EvaluatedInclude == "WebAssembly")
-                    {
-                        // We saw a previous project that was AspNetCore. This must he a blazor hosted app.
-                        if (aspnetCoreProject is not null && aspnetCoreProject != currentNode.ProjectInstance)
+                        if (item.EvaluatedInclude == "AspNetCore")
                         {
-                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", emoji: "🔥");
-                            return HotReloadProfile.BlazorHosted;
+                            aspnetCoreProject = currentNode.ProjectInstance;
+                            break;
                         }
 
-                        reporter.Verbose("HotReloadProfile: BlazorWebAssembly.", emoji: "🔥");
-                        return HotReloadProfile.BlazorWebAssembly;
-                    }
-                }
+                        if (item.EvaluatedInclude == "WebAssembly")
+                        {
+                            // We saw a previous project that was AspNetCore. This must he a blazor hosted app.
+                            if (aspnetCoreProject is not null && aspnetCoreProject != currentNode.ProjectInstance)
+                            {
+                                reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", emoji: "🔥");
+                                return HotReloadProfile.BlazorHosted;
+                            }
 
-                foreach (var project in currentNode.ProjectReferences)
-                {
-                    if (visited.Add(project))
+                            reporter.Verbose("HotReloadProfile: BlazorWebAssembly.", emoji: "🔥");
+                            return HotReloadProfile.BlazorWebAssembly;
+                        }
+                    }
+
+                    foreach (var project in currentNode.ProjectReferences)
                     {
-                        queue.Enqueue(project);
+                        if (visited.Add(project))
+                        {
+                            queue.Enqueue(project);
+                        }
                     }
                 }
             }
