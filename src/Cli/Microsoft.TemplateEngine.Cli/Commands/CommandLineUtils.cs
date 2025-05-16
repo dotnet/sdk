@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     {
         // This code is from System.CommandLine, HelpBuilder class.
         // Ideally those methods are exposed, we may switch to use them.
-        internal static string FormatArgumentUsage(IReadOnlyList<CliArgument> arguments)
+        internal static string FormatArgumentUsage(IReadOnlyList<Argument> arguments)
         {
             var sb = new StringBuilder();
             var end = default(Stack<char>);
@@ -56,20 +56,20 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             return sb.ToString();
-            bool IsMultiParented(CliArgument argument) =>
+            bool IsMultiParented(Argument argument) =>
                 argument.Parents.Count() > 1;
 
-            bool IsOptional(CliArgument argument) =>
+            bool IsOptional(Argument argument) =>
                 IsMultiParented(argument) ||
                 argument.Arity.MinimumNumberOfValues == 0;
         }
 
-        internal static string FormatArgumentUsage(CliArgument argument) => FormatArgumentUsage(new[] { argument });
+        internal static string FormatArgumentUsage(Argument argument) => FormatArgumentUsage(new[] { argument });
 
-        internal static string FormatArgumentUsage(CliOption option) => FormatArgumentUsage(new[] { option });
+        internal static string FormatArgumentUsage(Option option) => FormatArgumentUsage(new[] { option });
 
         // separate instance as Option.Argument is internal.
-        internal static string FormatArgumentUsage(IReadOnlyList<CliOption> options)
+        internal static string FormatArgumentUsage(IReadOnlyList<Option> options)
         {
             var sb = new StringBuilder();
             var end = default(Stack<char>);
@@ -116,10 +116,10 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             }
 
             return sb.ToString();
-            bool IsMultiParented(CliOption option) =>
+            bool IsMultiParented(Option option) =>
                 option.Parents.Count() > 1;
 
-            bool IsOptional(CliOption option) =>
+            bool IsOptional(Option option) =>
                 IsMultiParented(option) ||
                 option.Arity.MinimumNumberOfValues == 0;
         }

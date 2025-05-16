@@ -4,7 +4,7 @@
 namespace Microsoft.NET.Build.Tasks
 {
     /// <summary>
-    /// Internal utilties copied from microsoft/MSBuild repo.
+    /// Internal utilities copied from microsoft/MSBuild repo.
     /// </summary>
     class MSBuildUtilities
     {
@@ -15,7 +15,7 @@ namespace Microsoft.NET.Build.Tasks
         /// </summary>
         /// <param name="parameterValue">The string to convert.</param>
         /// <returns>Boolean true or false, corresponding to the string.</returns>
-        internal static bool ConvertStringToBool(string parameterValue, bool defaultValue = false)
+        internal static bool ConvertStringToBool(string? parameterValue, bool defaultValue = false)
         {
             if (string.IsNullOrEmpty(parameterValue))
             {
@@ -40,7 +40,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Returns true if the string represents a valid MSBuild boolean true value,
         /// such as "on", "!false", "yes"
         /// </summary>
-        private static bool ValidBooleanTrue(string parameterValue)
+        private static bool ValidBooleanTrue(string? parameterValue)
         {
             return ((string.Compare(parameterValue, "true", StringComparison.OrdinalIgnoreCase) == 0) ||
                     (string.Compare(parameterValue, "on", StringComparison.OrdinalIgnoreCase) == 0) ||
@@ -54,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
         /// Returns true if the string represents a valid MSBuild boolean false value,
         /// such as "!on" "off" "no" "!true"
         /// </summary>
-        private static bool ValidBooleanFalse(string parameterValue)
+        private static bool ValidBooleanFalse(string? parameterValue)
         {
             return ((string.Compare(parameterValue, "false", StringComparison.OrdinalIgnoreCase) == 0) ||
                     (string.Compare(parameterValue, "off", StringComparison.OrdinalIgnoreCase) == 0) ||

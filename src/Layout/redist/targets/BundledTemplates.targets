@@ -1,0 +1,90 @@
+<Project>
+
+  <ItemGroup Label=".NET 10.0 templates">
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates100PackageVersion)" />
+    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates100PackageVersion)" UseVersionForTemplateInstallPath="true" />
+    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotNetWinFormsProjectTemplatesPackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotNetWpfProjectTemplatesPackageVersion)" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <CurrentVersionBundledTemplates Include="@(Bundled100Templates)" TemplateFrameworkVersion="$(MajorMinorVersion)" />
+    <BundledTemplates Include="@(CurrentVersionBundledTemplates)" />
+    <BundledTemplates Update="@(BundledTemplates)">
+      <NupkgPathRelativeToPackageRoot>%(Identity)/%(PackageVersion)/%(Identity).%(PackageVersion).nupkg</NupkgPathRelativeToPackageRoot>
+      <RestoredNupkgPath>$(NuGetPackageRoot)$([MSBuild]::ValueOrDefault('%(NupkgPathRelativeToPackageRoot)', '').ToLowerInvariant())</RestoredNupkgPath>
+    </BundledTemplates>
+  </ItemGroup>
+
+  <!-- Restore bundled templates -->
+  <ItemGroup>
+    <PackageDownload Include="@(BundledTemplates)" Version="[%(PackageVersion)]" />
+  </ItemGroup>
+
+  <Target Name="CalculateTemplatesVersions" DependsOnTargets="GetAssemblyVersion">
+    <PropertyGroup>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
+           Fallback to 0 when patch number is not set. This happens only during CI. -->
+      <_ArcadePatchNumber>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</_ArcadePatchNumber>
+    </PropertyGroup>
+
+    <CalculateTemplateVersions
+      BundledTemplates="@(BundledTemplates)"
+      FullNugetVersion="$(FullNugetVersion)"
+      ProductMonikerRid="$(ProductMonikerRid)"
+      InstallerExtension="$(InstallerExtension)"
+      CombinedBuildNumberAndRevision="$(_ArcadePatchNumber)">
+      <Output TaskParameter="BundledTemplatesWithInstallPaths" ItemName="BundledTemplatesWithInstallPaths" />
+      <Output TaskParameter="TemplatesComponents" ItemName="TemplatesComponents" />
+    </CalculateTemplateVersions>
+
+    <ItemGroup>
+      <TemplatesComponents>
+        <MSIInstallerFile>$(ArtifactsNonShippingPackagesDir)%(TemplatesComponents.TemplateBaseFilename)-$(FullNugetVersion)-$(ProductMonikerRid)$(InstallerExtension)</MSIInstallerFile>
+      </TemplatesComponents>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="LayoutTemplates"
+        DependsOnTargets="LayoutTemplatesForSDK;LayoutTemplatesForMSI" />
+
+  <Target Name="GetRepoTemplates" DependsOnTargets="ResolveProjectReferences">
+    <ItemGroup>
+      <RepoTemplate Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ItemTemplates.*.symbols.nupkg" />
+      <RepoTemplate Include="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.nupkg" Exclude="$(ArtifactsShippingPackagesDir)Microsoft.DotNet.Common.ProjectTemplates.*.symbols.nupkg" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="LayoutTemplatesForSDK" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates">
+    <ItemGroup Condition="!$(ProductMonikerRid.StartsWith('win'))">
+      <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.Wpf.ProjectTemplates" />
+      <BundledTemplatesWithInstallPaths Remove="Microsoft.Dotnet.WinForms.ProjectTemplates" />
+    </ItemGroup>
+
+    <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
+          DestinationFolder="$(RedistInstallerLayoutPath)templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)"
+          Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'" />
+
+    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+    <PropertyGroup>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+    </PropertyGroup>
+
+    <Copy SourceFiles="@(RepoTemplate)"
+          DestinationFiles="$(RedistInstallerLayoutPath)templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+  </Target>
+
+  <Target Name="LayoutTemplatesForMSI" DependsOnTargets="CalculateTemplatesVersions;GetRepoTemplates" Condition="$(ProductMonikerRid.StartsWith('win'))">
+    <Copy SourceFiles="%(BundledTemplatesWithInstallPaths.RestoredNupkgPath)"
+          DestinationFolder="$(IntermediateOutputPath)templates-%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)\templates\%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)" />
+
+    <!-- Copy the current Microsoft.DotNet.Common.ItemTemplates and Microsoft.DotNet.Common.ProjectTemplates packages to the layout location. -->
+    <PropertyGroup>
+      <CurrentTemplateInstallPath Condition="'%(BundledTemplatesWithInstallPaths.TemplateFrameworkVersion)' == '10.0'">%(BundledTemplatesWithInstallPaths.BundledTemplateInstallPath)</CurrentTemplateInstallPath>
+      <CurrentTemplateFrameworkVersion>%(CurrentVersionBundledTemplates.TemplateFrameworkVersion)</CurrentTemplateFrameworkVersion>
+    </PropertyGroup>
+    <Copy SourceFiles="@(RepoTemplate)"
+          DestinationFiles="$(IntermediateOutputPath)templates-$(CurrentTemplateFrameworkVersion)\templates\$(CurrentTemplateInstallPath)\$([System.String]::Copy('%(Filename)%(Extension)').ToLowerInvariant())" />
+  </Target>
+
+</Project>

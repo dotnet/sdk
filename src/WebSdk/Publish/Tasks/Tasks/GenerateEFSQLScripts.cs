@@ -12,17 +12,17 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
     public class GenerateEFSQLScripts : Task
     {
         [Required]
-        public string ProjectDirectory { get; set; }
+        public string? ProjectDirectory { get; set; }
         [Required]
-        public string EFPublishDirectory { get; set; }
+        public string? EFPublishDirectory { get; set; }
         [Required]
-        public ITaskItem[] EFMigrations { get; set; }
+        public ITaskItem[]? EFMigrations { get; set; }
         [Required]
-        public string Configuration { get; set; }
-        public string EFSQLScriptsFolderName { get; set; }
-        public string EFMigrationsAdditionalArgs { get; set; }
+        public string? Configuration { get; set; }
+        public string? EFSQLScriptsFolderName { get; set; }
+        public string? EFMigrationsAdditionalArgs { get; set; }
         [Output]
-        public ITaskItem[] EFSQLScripts { get; set; }
+        public ITaskItem[]? EFSQLScripts { get; set; }
 
         public override bool Execute()
         {
@@ -40,6 +40,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         public bool GenerateEFSQLScriptsInternal(bool isLoggingEnabled = true)
         {
             InitializeProperties();
+            if (EFMigrations is null || EFPublishDirectory is null || EFSQLScriptsFolderName is null)
+            {
+                return false;
+            }
             EFSQLScripts = new ITaskItem[EFMigrations.Length];
             int index = 0;
             foreach (ITaskItem dbContext in EFMigrations)
@@ -72,14 +76,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
         }
 
         private object _sync = new();
-        private Process _runningProcess;
+        private Process? _runningProcess;
         private int _processExitCode;
         private StringBuilder _standardOut = new();
         private StringBuilder _standardError = new();
         private const string AspNetCoreEnvironment = "ASPNETCORE_ENVIRONMENT";
         private bool GenerateSQLScript(string sqlFileFullPath, string dbContextName, bool isLoggingEnabled = true)
         {
-            string previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
+            string? previousAspNetCoreEnvironment = Environment.GetEnvironmentVariable(AspNetCoreEnvironment);
             Environment.SetEnvironmentVariable(AspNetCoreEnvironment, "Development");
             ProcessStartInfo psi = new("dotnet", $@"ef migrations script --no-build --idempotent --configuration {Configuration} --output ""{sqlFileFullPath}"" --context {dbContextName} {EFMigrationsAdditionalArgs}")
             {
@@ -90,7 +94,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 UseShellExecute = false
             };
 
-            Process proc = null;
+            Process? proc = null;
 
             try
             {
@@ -141,7 +145,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             return true;
         }
 
-        private void Proc_Exited(object sender, EventArgs e)
+        private void Proc_Exited(object? sender, EventArgs e)
         {
             if (_runningProcess != null)
             {
@@ -161,7 +165,6 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                     _runningProcess = null;
                 }
             }
-
         }
 
         private void Proc_ErrorDataReceived(object sender, DataReceivedEventArgs e)

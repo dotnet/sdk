@@ -100,6 +100,38 @@ namespace Microsoft.NET.Sdk.Razor.Tests
         }
 
         [Fact]
+        public void CanEnable_CompressionOnAllAssets()
+        {
+            var expectedManifest = LoadBuildManifest();
+            var testAsset = "RazorAppWithP2PReference";
+            ProjectDirectory = CreateAspNetSdkTestAsset(testAsset)
+                .WithProjectChanges((project, xml) =>
+                {
+                    if (project.Contains("ClassLibrary"))
+                    {
+                        xml.Descendants("PropertyGroup")
+                            .First().Add(new XElement("StaticWebAssetBuildCompressAllAssets", "true"));
+                    }
+                });
+
+            var build = CreateBuildCommand(ProjectDirectory, "AppWithP2PReference");
+            ExecuteCommand(build).Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+            var outputPath = build.GetOutputDirectory(DefaultTfm, "Debug").ToString();
+
+            // GenerateStaticWebAssetsManifest should generate the manifest file.
+            var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(path).Should().Exist();
+            var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+            AssertManifest(manifest, expectedManifest);
+
+            // GenerateStaticWebAssetsManifest should copy the file to the output folder.
+            var finalPath = Path.Combine(outputPath, "AppWithP2PReference.staticwebassets.runtime.json");
+            new FileInfo(finalPath).Should().Exist();
+        }
+
+        [Fact]
         public void PublishWorks_With_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();
