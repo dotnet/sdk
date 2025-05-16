@@ -319,7 +319,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Util.cs")));
     }
 
     /// <summary>
@@ -342,20 +342,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Other files in the folder are not part of the compilation.
+    /// Other non-entry-point files in the folder are part of the compilation.
     /// </summary>
     [Fact]
     public void MultipleFiles_RunEntryPoint()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), s_program);
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
 
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdOutContaining("error CS0103"); // The name 'Util' does not exist in the current context
+            .Should().Pass()
+            .And.HaveStdOut("Hello, String from Util");
+
+        new DotnetCommand(Log, "run", "Program2.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program2");
     }
 
     /// <summary>
@@ -372,7 +379,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Util.cs")));
     }
 
     /// <summary>
@@ -402,6 +409,21 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Hello from Program");
     }
 
+    [Fact]
+    public void NestedEntryPoint()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "nested"));
+        File.WriteAllText(Path.Join(testInstance.Path, "nested", "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.EntryPointInNestedFolder, Path.Join(testInstance.Path, "nested", "Program.cs")));
+    }
+
     /// <summary>
     /// <c>dotnet run folder/app.csproj</c> -> the argument is not recognized as an entry-point file
     /// (it does not have <c>.cs</c> file extension), so this fallbacks to normal <c>dotnet run</c> behavior.
@@ -428,7 +450,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Main method is supported just like top-level statements.
+    /// Main method is currently not supported as an entry point.
     /// </summary>
     [Fact]
     public void MainMethod()
@@ -439,8 +461,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello World!");
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Program.cs")));
     }
 
     /// <summary>
@@ -456,7 +478,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            .And.HaveStdOutContaining("error CS5001:"); // Program does not contain a static 'Main' method suitable for an entry point
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Program.cs")));
     }
 
     /// <summary>
@@ -662,7 +684,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects do not include anything apart from the entry-point file.
+    /// Default items are included.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
@@ -693,7 +715,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("""
-                Resource not found
+                [MyString, TestValue]
                 """);
     }
 
@@ -898,8 +920,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DotnetCommand(Log, "run", "Program.cs", "-p:DefineConstants=MY_DEFINE")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Test output");
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.NoTopLevelStatements, Path.Join(testInstance.Path, "Program.cs")));
     }
 
     [Fact]
@@ -974,28 +996,77 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void InvalidDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:invalid
+            Console.WriteLine("Hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.UnrecognizedDirective, "invalid", $"{Path.Join(testInstance.Path, "Program.cs")}:1"));
+    }
+
+    [Fact]
+    public void Directives_MultipleFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), """
+            #:property DefineConstants $(DefineConstants);TEST1
+            Console.Write("Hello ");
+            #if TEST1
+            Console.Write("TEST1 ");
+            #endif
+            #if TEST2
+            Console.Write("TEST2 ");
+            #endif
+            #if TEST3
+            Console.Write("TEST3 ");
+            #endif
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            #:property DefineConstants $(DefineConstants);TEST2
+            class C { }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), """
+            #:property DefineConstants $(DefineConstants);TEST3
+            Console.Write("Hello2");
+            """);
+
+        new DotnetCommand(Log, "run", "Program1.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello TEST1 TEST2 ");
+    }
+
+    [Fact]
     public void UpToDate()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
 
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
         // Change the source file (a rebuild is necessary).
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + " ");
 
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
         // Change an unrelated source file (no rebuild necessary).
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "test");
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
         // Add an implicit build file (a rebuild is necessary).
         string buildPropsFile = Path.Join(testInstance.Path, "Directory.Build.props");
@@ -1007,12 +1078,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        Build(expectedUpToDate: false, expectedOutput: """
+        Build(testInstance, expectedUpToDate: false, expectedOutput: """
             Hello from Program
             Custom define
             """);
 
-        Build(expectedUpToDate: true, expectedOutput: """
+        Build(testInstance, expectedUpToDate: true, expectedOutput: """
             Hello from Program
             Custom define
             """);
@@ -1029,7 +1100,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
 
         // Change the imported build file (this is not recognized).
         File.WriteAllText(importedFile, """
@@ -1040,43 +1111,43 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             </Project>
             """);
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
         // Force rebuild.
-        Build(expectedUpToDate: false, args: ["--no-cache"], expectedOutput: """
+        Build(testInstance, expectedUpToDate: false, args: ["--no-cache"], expectedOutput: """
             Hello from Program
             Custom define
             """);
 
         // Remove an implicit build file (a rebuild is necessary).
         File.Delete(buildPropsFile);
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
 
         // Force rebuild.
-        Build(expectedUpToDate: false, args: ["--no-cache"]);
+        Build(testInstance, expectedUpToDate: false, args: ["--no-cache"]);
 
-        Build(expectedUpToDate: true);
+        Build(testInstance, expectedUpToDate: true);
 
         // Pass argument (no rebuild necessary).
-        Build(expectedUpToDate: true, args: ["--", "test-arg"], expectedOutput: """
+        Build(testInstance, expectedUpToDate: true, args: ["--", "test-arg"], expectedOutput: """
             echo args:test-arg
             Hello from Program
             """);
 
         // Change config (a rebuild is necessary).
-        Build(expectedUpToDate: false, args: ["-c", "Release"], expectedOutput: """
+        Build(testInstance, expectedUpToDate: false, args: ["-c", "Release"], expectedOutput: """
             Hello from Program
             Release config
             """);
 
         // Keep changed config (no rebuild necessary).
-        Build(expectedUpToDate: true, args: ["-c", "Release"], expectedOutput: """
+        Build(testInstance, expectedUpToDate: true, args: ["-c", "Release"], expectedOutput: """
             Hello from Program
             Release config
             """);
 
         // Change config back (a rebuild is necessary).
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
 
         // Build with a failure.
         new DotnetCommand(Log, ["run", "Program.cs", "-p:LangVersion=Invalid"])
@@ -1086,34 +1157,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOutContaining("error CS1617"); // Invalid option 'Invalid' for /langversion.
 
         // A rebuild is necessary since the last build failed.
-        Build(expectedUpToDate: false);
+        Build(testInstance, expectedUpToDate: false);
+    }
 
-        void Build(bool expectedUpToDate, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program")
-        {
-            new DotnetCommand(Log, ["run", "Program.cs", "-bl", .. args])
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOut(expectedUpToDate
-                    ? $"""
+    private void Build(TestDirectory testInstance, bool expectedUpToDate, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program")
+    {
+        new DotnetCommand(Log, ["run", "Program.cs", "-bl", .. args])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedUpToDate
+                ? $"""
                         {CliCommandStrings.NoBinaryLogBecauseUpToDate}
                         {expectedOutput}
                         """
-                    : expectedOutput);
+                : expectedOutput);
 
-            var binlogs = new DirectoryInfo(testInstance.Path)
-                .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
+        var binlogs = new DirectoryInfo(testInstance.Path)
+            .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
 
-            binlogs.Select(f => f.Name)
-                .Should().BeEquivalentTo(
-                    expectedUpToDate
-                        ? ["msbuild-dotnet-run.binlog"]
-                        : ["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
+        binlogs.Select(f => f.Name)
+            .Should().BeEquivalentTo(
+                expectedUpToDate
+                    ? ["msbuild-dotnet-run.binlog"]
+                    : ["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
 
-            foreach (var binlog in binlogs)
-            {
-                binlog.Delete();
-            }
+        foreach (var binlog in binlogs)
+        {
+            binlog.Delete();
         }
     }
 
@@ -1134,6 +1205,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
+    }
+
+    [Fact]
+    public void UpToDate_MultipleFiles()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_programDependingOnUtil);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), s_util);
+
+        Build(testInstance, expectedUpToDate: false, expectedOutput: "Hello, String from Util");
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util");
+
+        // Change Util.cs.
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            static class Util
+            {
+                public static string GetMessage()
+                {
+                    return "String from Util v2";
+                }
+            }
+            """);
+
+        Build(testInstance, expectedUpToDate: false, expectedOutput: "Hello, String from Util v2");
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util v2");
+
+        // Create new file.
+        File.WriteAllText(Path.Join(testInstance.Path, "Util2.cs"), "class Util2;");
+
+        Build(testInstance, expectedUpToDate: false, expectedOutput: "Hello, String from Util v2");
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util v2");
+
+        // Remove a file.
+        File.Delete(Path.Join(testInstance.Path, "Util2.cs"));
+
+        Build(testInstance, expectedUpToDate: false, expectedOutput: "Hello, String from Util v2");
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util v2");
+
+        // Create unrelated entry point file (shouldn't affect our up-to-date status).
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), s_program);
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util v2");
+
+        // Delete unrelated entry point file (shouldn't affect our up-to-date status).
+        File.Delete(Path.Join(testInstance.Path, "Program2.cs"));
+
+        Build(testInstance, expectedUpToDate: true, expectedOutput: "Hello, String from Util v2");
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
@@ -1166,7 +1288,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1186,10 +1308,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <TargetFramework>net11.0</TargetFramework>
                         <LangVersion>preview</LangVersion>
                       </PropertyGroup>
@@ -1200,10 +1318,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <ItemGroup>
                         <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-                      </ItemGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -1259,7 +1373,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1278,16 +1392,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
-                      </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -1345,7 +1451,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($$"""
-                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                {"$type":"Project","Version":2,"Content":{{ToJson($"""
                     <Project>
 
                       <PropertyGroup>
@@ -1364,16 +1470,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </PropertyGroup>
 
                       <PropertyGroup>
-                        <EnableDefaultItems>false</EnableDefaultItems>
-                      </PropertyGroup>
-
-                      <PropertyGroup>
                         <Features>$(Features);FileBasedProgram</Features>
                       </PropertyGroup>
-
-                      <ItemGroup>
-                        <Compile Include="{programPath}" />
-                      </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
@@ -1425,7 +1523,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOutContaining("""
-                {"$type":"Error","Version":1,"Message":
+                {"$type":"Error","Version":2,"Message":
                 """)
             .And.HaveStdOutContaining("Unknown1")
             .And.HaveStdOutContaining("Unknown2");
