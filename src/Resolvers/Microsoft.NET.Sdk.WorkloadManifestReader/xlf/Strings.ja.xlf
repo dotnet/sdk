@@ -77,6 +77,11 @@
         <target state="translated">ワークロード マニフェストの依存関係 '{0}' のバージョン '{1}' は、マニフェスト '{3}' [{4}] で必要とされるバージョン '{2}' 以前のものです</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestDoesNotExist">
+        <source>No manifest with ID {0} exists.</source>
+        <target state="translated">ID を持つ {0} マニフェストが存在しません。</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
         <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
         <target state="translated">{1} で指定されたワークロード マニフェスト {0} が見つかりませんでした。"dotnet workload repair" を実行すると、これを解決できる場合があります。</target>
