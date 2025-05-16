@@ -20,7 +20,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!-- General Properties -->
   <PropertyGroup>
-    <ProjectAssetsFile Condition="'$(ProjectAssetsFile)' == ''">$(MSBuildProjectExtensionsPath)/project.assets.json</ProjectAssetsFile>
+    <ProjectAssetsFile Condition="'$(ProjectAssetsFile)' == ''">$(MSBuildProjectExtensionsPath)project.assets.json</ProjectAssetsFile>
     <ProjectAssetsFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(ProjectAssetsFile)))</ProjectAssetsFile>
 
     <!-- Note that the assets.cache file has contents that are unique to the current TFM and configuration and therefore cannot
