@@ -484,6 +484,22 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
+        public async Task BlazorWasmHosted()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
+                .WithSource();
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains("dotnet watch 🔥 HotReloadProfile: BlazorHosted");
+        }
+
+        [Fact]
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
