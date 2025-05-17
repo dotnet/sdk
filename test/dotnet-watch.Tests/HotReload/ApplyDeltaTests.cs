@@ -105,6 +105,47 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
+        [Fact]
+        public async Task AutoRestartOnRudeEditAfterRestartPrompt()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertWaitingForChanges();
+            App.Process.ClearOutput();
+
+            // rude edit: adding virtual method
+            UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
+
+            await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes.");
+            App.AssertOutputContains($"❌ {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.Process.ClearOutput();
+
+            App.SendKey('a');
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            App.Process.ClearOutput();
+
+            // rude edit: deleting virtual method
+            UpdateSourceFile(programPath, src => src.Replace("public virtual void F() {}", ""));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+        }
+
         [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
@@ -760,7 +801,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
             App.AssertOutputContains("dotnet watch ⌚ Restart is needed to apply the changes.");
-            App.AssertOutputContains("error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(36,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
             App.Process.ClearOutput();
