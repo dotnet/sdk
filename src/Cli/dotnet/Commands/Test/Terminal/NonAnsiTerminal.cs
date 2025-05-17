@@ -1,135 +1,52 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-using System.Globalization;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
+namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 /// <summary>
 /// Non-ANSI terminal that writes text using the standard Console.Foreground color capabilities to stay compatible with
 /// standard Windows command line, and other command lines that are not capable of ANSI, or when output is redirected.
 /// </summary>
-internal sealed class NonAnsiTerminal : ITerminal
+internal sealed class NonAnsiTerminal : SimpleTerminal
 {
-    private readonly IConsole _console;
     private readonly ConsoleColor _defaultForegroundColor;
-    private readonly StringBuilder _stringBuilder = new();
-    private bool _isBatching;
+    private bool? _colorNotSupported;
 
     public NonAnsiTerminal(IConsole console)
+        : base(console)
+        => _defaultForegroundColor = IsForegroundColorNotSupported() ? ConsoleColor.Black : console.GetForegroundColor();
+
+    public override void SetColor(TerminalColor color)
     {
-        _console = console;
-        _defaultForegroundColor = _console.GetForegroundColor();
+        if (IsForegroundColorNotSupported())
+        {
+            return;
+        }
+
+        Console.SetForegroundColor(ToConsoleColor(color));
     }
 
-    public int Width => _console.IsOutputRedirected ? int.MaxValue : _console.BufferWidth;
-
-    public int Height => _console.IsOutputRedirected ? int.MaxValue : _console.BufferHeight;
-
-    public void Append(char value)
+    public override void ResetColor()
     {
-        if (_isBatching)
+        if (IsForegroundColorNotSupported())
         {
-            _stringBuilder.Append(value);
+            return;
         }
-        else
-        {
-            _console.Write(value);
-        }
+
+        Console.SetForegroundColor(_defaultForegroundColor);
     }
 
-    public void Append(string value)
+    private bool IsForegroundColorNotSupported()
     {
-        if (_isBatching)
-        {
-            _stringBuilder.Append(value);
-        }
-        else
-        {
-            _console.Write(value);
-        }
-    }
+        _colorNotSupported ??= RuntimeInformation.IsOSPlatform(OSPlatform.Create("ANDROID")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("IOS")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("TVOS")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("WASI")) ||
+            RuntimeInformation.IsOSPlatform(OSPlatform.Create("BROWSER"));
 
-    public void AppendLine()
-    {
-        if (_isBatching)
-        {
-            _stringBuilder.AppendLine();
-        }
-        else
-        {
-            _console.WriteLine();
-        }
-    }
-
-    public void AppendLine(string value)
-    {
-        if (_isBatching)
-        {
-            _stringBuilder.AppendLine(value);
-        }
-        else
-        {
-            _console.WriteLine(value);
-        }
-    }
-
-    public void AppendLink(string path, int? lineNumber)
-    {
-        Append(path);
-        if (lineNumber.HasValue)
-        {
-            Append($":{lineNumber}");
-        }
-    }
-
-    public void SetColor(TerminalColor color)
-    {
-        if (_isBatching)
-        {
-            _console.Write(_stringBuilder.ToString());
-            _stringBuilder.Clear();
-        }
-
-        _console.SetForegroundColor(ToConsoleColor(color));
-    }
-
-    public void ResetColor()
-    {
-        if (_isBatching)
-        {
-            _console.Write(_stringBuilder.ToString());
-            _stringBuilder.Clear();
-        }
-
-        _console.SetForegroundColor(_defaultForegroundColor);
-    }
-
-    public void ShowCursor()
-    {
-        // nop
-    }
-
-    public void HideCursor()
-    {
-        // nop
-    }
-
-    public void StartUpdate()
-    {
-        if (_isBatching)
-        {
-            throw new InvalidOperationException(CliCommandStrings.ConsoleIsAlreadyInBatchingMode);
-        }
-
-        _stringBuilder.Clear();
-        _isBatching = true;
-    }
-
-    public void StopUpdate()
-    {
-        _console.Write(_stringBuilder.ToString());
-        _isBatching = false;
+        return _colorNotSupported.Value;
     }
 
     private ConsoleColor ToConsoleColor(TerminalColor color) => color switch
@@ -153,111 +70,4 @@ internal sealed class NonAnsiTerminal : ITerminal
         TerminalColor.White => ConsoleColor.White,
         _ => _defaultForegroundColor,
     };
-
-    public void EraseProgress()
-    {
-        // nop
-    }
-
-    public void RenderProgress(TestProgressState?[] progress)
-    {
-        int count = 0;
-        foreach (TestProgressState? p in progress)
-        {
-            if (p == null)
-            {
-                continue;
-            }
-
-            count++;
-
-            string durationString = HumanReadableDurationFormatter.Render(p.Stopwatch.Elapsed);
-
-            int passed = p.PassedTests;
-            int failed = p.FailedTests;
-            int skipped = p.SkippedTests;
-            int retried = p.RetriedFailedTests;
-
-            // Use just ascii here, so we don't put too many restrictions on fonts needing to
-            // properly show unicode, or logs being saved in particular encoding.
-            Append('[');
-            SetColor(TerminalColor.DarkGreen);
-            Append('+');
-            Append(passed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-
-            Append('/');
-
-            SetColor(TerminalColor.DarkRed);
-            Append('x');
-            Append(failed.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-
-            Append('/');
-
-            SetColor(TerminalColor.DarkYellow);
-            Append('?');
-            Append(skipped.ToString(CultureInfo.CurrentCulture));
-            ResetColor();
-
-            if (retried > 0)
-            {
-                Append('/');
-                SetColor(TerminalColor.Gray);
-                Append('r');
-                Append(retried.ToString(CultureInfo.CurrentCulture));
-                ResetColor();
-            }
-
-            Append(']');
-
-            Append(' ');
-            Append(p.AssemblyName);
-
-            if (p.TargetFramework != null || p.Architecture != null)
-            {
-                Append(" (");
-                if (p.TargetFramework != null)
-                {
-                    Append(p.TargetFramework);
-                    Append('|');
-                }
-
-                if (p.Architecture != null)
-                {
-                    Append(p.Architecture);
-                }
-
-                Append(')');
-            }
-
-            TestDetailState? activeTest = p.TestNodeResultsState?.GetRunningTasks(1).FirstOrDefault();
-            if (!string.IsNullOrWhiteSpace(activeTest?.Text))
-            {
-                Append(" - ");
-                Append(activeTest.Text);
-                Append(' ');
-            }
-
-            Append(durationString);
-
-            AppendLine();
-        }
-
-        // Do not render empty lines when there is nothing to show.
-        if (count > 0)
-        {
-            AppendLine();
-        }
-    }
-
-    public void StartBusyIndicator()
-    {
-        // nop
-    }
-
-    public void StopBusyIndicator()
-    {
-        // nop
-    }
 }
