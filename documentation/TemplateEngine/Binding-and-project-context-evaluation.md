@@ -84,7 +84,7 @@ Example - binds `DefaultNamespace` symbol to `RootNamespace` of the project:
 
 Visual Studio supports binding to host parameters, environment variables and MSBuild properties.
 In addition to that, there is additional `context` source supporting:
-- `context:cratesolutiondirectory` - indicates whether a solution directory is to be created as a result of project creation (Place solution and project in same directory is UNCHECKED in NPD).
+- `context:createsolutiondirectory` - indicates whether a solution directory is to be created as a result of project creation (Place solution and project in same directory is UNCHECKED in NPD).
 - `context:isexclusive` - indicates whether the template instantiation is a result of a new project being created (true) vs result of adding to an existing solution (false).
 - `context:solutionname` - the name of the solution, which may be different from the project name.
 

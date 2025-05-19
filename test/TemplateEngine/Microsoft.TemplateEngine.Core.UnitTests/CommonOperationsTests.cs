@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.TrimWhitespace(true, false, ref length, ref position);
                     return 0;
@@ -50,7 +50,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.TrimWhitespace(false, true, ref length, ref position);
                     return 0;
@@ -75,7 +75,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.TrimWhitespace(true, true, ref length, ref position);
                     return 0;
@@ -100,7 +100,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.TrimWhitespace(false, false, ref length, ref position);
                     return 0;
@@ -125,7 +125,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.ConsumeWholeLine(ref length, ref position);
                     return 0;
@@ -158,7 +158,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, true, trim, trimForward, trimBackward);
                     return 0;
@@ -187,7 +187,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, true, trimForward, trimBackward);
                     return 0;
@@ -213,7 +213,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, false);
                     return 0;
@@ -238,7 +238,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, false, true);
                     return 0;
@@ -263,7 +263,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         {
             MockOperation o = new MockOperation(
                 null,
-                (IProcessorState state, int length, ref int position, int token) =>
+                (state, length, ref position, token) =>
                 {
                     state.WhitespaceHandler(ref length, ref position, false, false, true, true);
                     return 0;

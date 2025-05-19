@@ -11,25 +11,25 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.Commands
     {
         private const string CommandName = "export";
 
-        private readonly CliArgument<IEnumerable<string>> _templatePathArgument = new("template-path")
+        private readonly Argument<IEnumerable<string>> _templatePathArgument = new("template-path")
         {
             Arity = ArgumentArity.OneOrMore,
             Description = LocalizableStrings.command_export_help_templatePath_description,
         };
 
-        private readonly CliOption<IEnumerable<string>> _languageOption = new("--language", "-l")
+        private readonly Option<IEnumerable<string>> _languageOption = new("--language", "-l")
         {
             Description = LocalizableStrings.command_export_help_language_description,
             Arity = ArgumentArity.OneOrMore,
             AllowMultipleArgumentsPerToken = true,
         };
 
-        private readonly CliOption<bool> _recursiveOption = new("recursive", new[] { "--recursive", "-r" })
+        private readonly Option<bool> _recursiveOption = new("recursive", new[] { "--recursive", "-r" })
         {
             Description = LocalizableStrings.command_export_help_recursive_description,
         };
 
-        private readonly CliOption<bool> _dryRunOption = new("--dry-run", "-d")
+        private readonly Option<bool> _dryRunOption = new("--dry-run", "-d")
         {
             Description = LocalizableStrings.command_export_help_dryrun_description,
         };
