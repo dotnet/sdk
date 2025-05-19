@@ -50,13 +50,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData
                     file = mountPoint.FileInfo(templateInfo.HostConfigPlace);
                     if (file != null && file.Exists)
                     {
-                        JObject jsonData;
-                        using (Stream stream = file.OpenRead())
-                        using (TextReader textReader = new StreamReader(stream, true))
-                        using (JsonReader jsonReader = new JsonTextReader(textReader))
-                        {
-                            jsonData = JObject.Load(jsonReader);
-                        }
+                        using Stream stream = file.OpenRead();
+                        using TextReader textReader = new StreamReader(stream, true);
+                        using JsonReader jsonReader = new JsonTextReader(textReader);
+                        var jsonData = JObject.Load(jsonReader);
 
                         return new CliHostTemplateData(jsonData);
                     }

@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TemplateEngine.Abstractions;
@@ -13,12 +11,10 @@ namespace Microsoft.TemplateEngine.Utils
     [Obsolete("Use Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost instead.")]
     public class DefaultTemplateEngineHost : ITemplateEngineHost
     {
-        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = Array.Empty<(Type Type, IIdentifiedComponent Instance)>();
+        private static readonly IReadOnlyList<(Type Type, IIdentifiedComponent Instance)> NoComponents = [];
         private readonly IReadOnlyDictionary<string, string> _hostDefaults;
         private readonly IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> _hostBuiltInComponents;
         private readonly Dictionary<string, Action<string, string[]>> _diagnosticLoggers;
-        private readonly ILoggerFactory _loggerFactory;
-        private readonly ILogger _logger;
 
         public DefaultTemplateEngineHost(string hostIdentifier, string version)
                     : this(hostIdentifier, version, null)
@@ -49,8 +45,8 @@ namespace Microsoft.TemplateEngine.Utils
             _hostBuiltInComponents = builtIns ?? NoComponents;
             FallbackHostTemplateConfigNames = fallbackHostTemplateConfigNames ?? new List<string>();
             _diagnosticLoggers = new Dictionary<string, Action<string, string[]>>();
-            _loggerFactory = NullLoggerFactory.Instance;
-            _logger = _loggerFactory.CreateLogger("Template Engine") ?? NullLogger.Instance;
+            LoggerFactory = NullLoggerFactory.Instance;
+            Logger = LoggerFactory.CreateLogger("Template Engine");
         }
 
         public IPhysicalFileSystem FileSystem { get; private set; }
@@ -65,9 +61,9 @@ namespace Microsoft.TemplateEngine.Utils
 
         public virtual IReadOnlyList<(Type InterfaceType, IIdentifiedComponent Instance)> BuiltInComponents => _hostBuiltInComponents;
 
-        public ILogger Logger => _logger;
+        public ILogger Logger { get; }
 
-        public ILoggerFactory LoggerFactory => _loggerFactory;
+        public ILoggerFactory LoggerFactory { get; }
 
         public virtual void LogMessage(string message)
         {
@@ -144,7 +140,7 @@ namespace Microsoft.TemplateEngine.Utils
 
         public void Dispose()
         {
-            _loggerFactory?.Dispose();
+            LoggerFactory?.Dispose();
         }
     }
 }

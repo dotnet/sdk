@@ -18,7 +18,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         }
 
         [Fact]
-        public async void VerificationEngineFullDevLoop()
+        public async Task VerificationEngineFullDevLoop()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -94,7 +94,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         }
 
         [Fact]
-        public async void VerificationEngineCustomVerifier()
+        public async Task VerificationEngineCustomVerifier()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string templateDir = "path with spaces";
@@ -146,7 +146,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         }
 
         [Fact]
-        public async void VerificationEngine_DotFile_EditorConfigTests()
+        public async Task VerificationEngine_DotFile_EditorConfigTests()
         {
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
             {
@@ -160,7 +160,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests
         }
 
         [Fact]
-        public async void VerificationEngine_InstallsToCustomLocation_WithSettingsDirectorySpecified()
+        public async Task VerificationEngine_InstallsToCustomLocation_WithSettingsDirectorySpecified()
         {
             var settingsPath = TestUtils.CreateTemporaryFolder();
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")

@@ -77,7 +77,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
         [InlineData("", "string")]
         [InlineData("string", "string")]
         [InlineData("date", "date")]
-        public void EvaluateNowOverrideDatatypeInConfig(string type, string expectedType)
+        public void EvaluateNowOverrideDatatypeInConfig(string? type, string expectedType)
         {
             string variableName = "nowString";
             string format = string.Empty;

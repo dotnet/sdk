@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Abstractions;
 
@@ -17,7 +16,6 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Macros
 
         public override void Evaluate(IEngineEnvironmentSettings environmentSettings, IVariableCollection vars, ProcessValueFormMacroConfig config)
         {
-            string? value = string.Empty;
             if (!vars.TryGetValue(config.SourceVariable, out object working))
             {
                 environmentSettings.Host.Logger.LogDebug("[{macro}]: Source variable '{sourceVar}' was not found, skipping processing for macro '{var}'.", nameof(ProcessValueFormMacro), config.SourceVariable, config.VariableName);

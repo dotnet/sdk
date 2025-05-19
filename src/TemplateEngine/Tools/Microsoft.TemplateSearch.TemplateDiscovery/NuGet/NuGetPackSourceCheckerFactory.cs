@@ -71,12 +71,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
             }
             Verbose.WriteLine($"Opening {fileLocation.FullName}");
 
-            using (var fileStream = fileLocation.OpenRead())
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return new JsonSerializer().Deserialize<IEnumerable<FilteredPackageInfo>>(jsonReader);
-            }
+            using var fileStream = fileLocation.OpenRead();
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return new JsonSerializer().Deserialize<IEnumerable<FilteredPackageInfo>>(jsonReader);
         }
 
         private static async Task<TemplateSearchCache?> LoadExistingCacheAsync(CommandArgs config, CancellationToken cancellationToken)
@@ -92,12 +90,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                 cacheFileLocation = new FileInfo("currentSearchCache.json");
             }
             Verbose.WriteLine($"Opening {cacheFileLocation.FullName}");
-            using (var fileStream = cacheFileLocation.OpenRead())
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
-            }
+            using var fileStream = cacheFileLocation.OpenRead();
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
         }
 
         private static async Task DownloadUriToFileAsync(string uri, string filePath, CancellationToken cancellationToken)
@@ -109,17 +105,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
                     CheckCertificateRevocationList = true,
                     AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
                 };
-                using (HttpClient client = new HttpClient(handler))
-                {
-                    using (HttpResponseMessage response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false))
-                    {
-                        response.EnsureSuccessStatusCode();
-                        string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-                        File.WriteAllText(filePath, resultText);
-                        Verbose.WriteLine($"{uri} was successfully downloaded to {filePath}.");
-                        return;
-                    }
-                }
+                using HttpClient client = new HttpClient(handler);
+                using HttpResponseMessage response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                File.WriteAllText(filePath, resultText);
+                Verbose.WriteLine($"{uri} was successfully downloaded to {filePath}.");
+                return;
             }
             catch (TaskCanceledException)
             {

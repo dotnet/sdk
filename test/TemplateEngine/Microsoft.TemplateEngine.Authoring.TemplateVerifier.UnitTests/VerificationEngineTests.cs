@@ -11,7 +11,6 @@ using Xunit.Abstractions;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
 {
-    [UsesVerify]
     public class VerificationEngineTests
     {
         private readonly ILogger _log;
@@ -22,7 +21,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [Fact]
-        public async void CreateVerificationTaskWithCustomScrubbersAndVerifier()
+        public async Task CreateVerificationTaskWithCustomScrubbersAndVerifier()
         {
             string verifyLocation = "foo\\bar\\baz";
 
@@ -82,7 +81,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [Fact]
-        public async void ExecuteFailsOnInstantiationFailure()
+        public async Task ExecuteFailsOnInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string snapshotsDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -110,7 +109,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [Fact]
-        public async void ExecuteSucceedsOnExpectedInstantiationFailure()
+        public async Task ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string snapshotsDir = "Snapshots";
@@ -134,7 +133,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
         }
 
         [Fact]
-        public async void ExecuteSucceedsOnExpectedInstantiationSuccess()
+        public async Task ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
             string snapshotsDir = "Snapshots";

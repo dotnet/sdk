@@ -14,7 +14,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [InlineData("test1||test2", "test1", MatchKind.Exact)]
         [InlineData("test1||test2", "test", MatchKind.Mismatch)]
         [InlineData("test1||test2", null, null)]
-        public void TagFilterTests_TemplateWithTags(string templateTags, string testTag, MatchKind? kind)
+        public void TagFilterTests_TemplateWithTags(string templateTags, string? testTag, MatchKind? kind)
         {
             const string separator = "||";
             var templateTagsArray = templateTags.Split(new[] { separator }, System.StringSplitOptions.None);
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
         [Theory]
         [InlineData("test", MatchKind.Mismatch)]
         [InlineData(null, null)]
-        public void TagFilterTests_TemplateWithoutTags(string testTag, MatchKind? kind)
+        public void TagFilterTests_TemplateWithoutTags(string? testTag, MatchKind? kind)
         {
             MockTemplateInfo template = new MockTemplateInfo("console", name: "Long name for Console App", identity: "Console.App.T1", groupIdentity: "Console.App.Test")
                     .WithTag("language", "L1")

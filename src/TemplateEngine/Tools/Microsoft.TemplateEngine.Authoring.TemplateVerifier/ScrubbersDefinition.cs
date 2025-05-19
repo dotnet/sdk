@@ -18,11 +18,11 @@ public class ScrubbersDefinition
 
     public delegate void ScrubFileByPath(string relativeFilePath, StringBuilder content);
 
-    internal Dictionary<string, Action<StringBuilder>> ScrubersByExtension { get; private set; } = new Dictionary<string, Action<StringBuilder>>();
+    internal Dictionary<string, Action<StringBuilder>> ScrubbersByExtension { get; } = new Dictionary<string, Action<StringBuilder>>();
 
     internal Action<StringBuilder>? GeneralScrubber { get; private set; }
 
-    internal List<ScrubFileByPath> ByPathScrubbers { get; private set; } = new List<ScrubFileByPath>();
+    internal List<ScrubFileByPath> ByPathScrubbers { get; } = new List<ScrubFileByPath>();
 
     public ScrubbersDefinition AddScrubber(Action<StringBuilder> scrubber, string? extension = null)
     {
@@ -44,12 +44,12 @@ public class ScrubbersDefinition
                 throw new TemplateVerificationException(LocalizableStrings.VerificationEngine_Error_ScrubberExtension, TemplateVerificationErrorCode.InvalidOption);
             }
 
-            if (ScrubersByExtension.TryGetValue(extension, out var origScrubber))
+            if (ScrubbersByExtension.TryGetValue(extension, out var origScrubber))
             {
                 scrubber = origScrubber + scrubber;
             }
 
-            ScrubersByExtension[extension] = scrubber;
+            ScrubbersByExtension[extension] = scrubber;
         }
 
         return this;

@@ -25,7 +25,7 @@
         <target state="translated">参数条件包含循环依赖项: [{0}]。对于参数的当前值，可以确定性地计算参数，因此可以继续操作。但是，应该审阅该模板，因为具有不同参数的实例化可能会导致错误。</target>
         <note>{0} is the dependency chain</note>
       </trans-unit>
-      <trans-unit id="Constaint_Error_ArgumentHasEmptyString">
+      <trans-unit id="Constraint_Error_ArgumentHasEmptyString">
         <source>'{0}' should not contain empty items</source>
         <target state="translated">“{0}”不应包含空项</target>
         <note>{0} is JSON configuration for constraint</note>
@@ -232,61 +232,61 @@
         <target state="translated">文件 {0} 已存在。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_DownloadFailed">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_DownloadFailed">
         <source>Failed to download {0} from {1}.</source>
         <target state="translated">未能从 {1} 下载 {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InstallGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InstallGeneric">
         <source>Failed to install the package {0}.
 Details: {1}.</source>
         <target state="translated">未能安装包 {0}。
 详细信息: {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InstallRequestNotSupported">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InstallRequestNotSupported">
         <source>The install request {0} cannot be processed by installer {1}.</source>
         <target state="translated">安装程序 {1} 无法处理安装请求 {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidPackage">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidPackage">
         <source>The NuGet package {0} is invalid.</source>
         <target state="translated">NuGet 包 {0} 无效。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources">
         <source>The configured NuGet sources are invalid: {0}.</source>
         <target state="translated">配置的 NuGet 源无效: {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_InvalidSources_None">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_InvalidSources_None">
         <source>No NuGet sources are configured.</source>
         <target state="translated">未配置 NuGet 源。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_OperationCancelled">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_OperationCancelled">
         <source>The operation was cancelled.</source>
         <target state="translated">操作被取消。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotFound">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotFound">
         <source>{0} was not found in NuGet feeds {1}.</source>
         <target state="translated">在 NuGet 源 {1} 中未找到 {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_PackageNotSupported">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_PackageNotSupported">
         <source>The package {0} is not supported by installer {1}.</source>
         <target state="translated">安装程序 {1} 不支持包 {0}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_UninstallGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_UninstallGeneric">
         <source>Failed to uninstall the package {0}.
 Details: {1}.</source>
         <target state="translated">未能卸载包 {0}。
 详细信息: {1}。</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetInstaller_InstallResut_Error_UpdateCheckGeneric">
+      <trans-unit id="NuGetInstaller_InstallResult_Error_UpdateCheckGeneric">
         <source>Failed to check the update for the package {0}.
 Details: {1}.</source>
         <target state="translated">无法检查包 {0} 的更新。

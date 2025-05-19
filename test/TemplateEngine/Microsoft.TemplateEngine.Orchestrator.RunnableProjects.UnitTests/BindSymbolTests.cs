@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_UseBindValuesWithReplace()
+        public async Task CreateAsyncTest_UseBindValuesWithReplace()
         {
             //
             // Template content preparation
@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_UseBindValuesWithFileRename()
+        public async Task CreateAsyncTest_UseBindValuesWithFileRename()
         {
             //
             // Template content preparation
@@ -194,7 +194,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_UseBindValuesInMacros()
+        public async Task CreateAsyncTest_UseBindValuesInMacros()
         {
             //
             // Template content preparation
@@ -292,7 +292,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_BindingConflict()
+        public async Task CreateAsyncTest_BindingConflict()
         {
             //
             // Template content preparation
@@ -365,7 +365,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_ForcedPrefixBinding()
+        public async Task CreateAsyncTest_ForcedPrefixBinding()
         {
             //
             // Template content preparation
@@ -438,7 +438,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_CanUseDefaultValue()
+        public async Task CreateAsyncTest_CanUseDefaultValue()
         {
             //
             // Template content preparation
@@ -530,7 +530,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_CanConvertValueToDataType()
+        public async Task CreateAsyncTest_CanConvertValueToDataType()
         {
             //
             // Template content preparation
@@ -609,7 +609,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
         }
 
         [Fact]
-        public async void CreateAsyncTest_NoWarningOnUnknownBindingWithDefaultValue()
+        public async Task CreateAsyncTest_NoWarningOnUnknownBindingWithDefaultValue()
         {
             //
             // Template content preparation
@@ -707,7 +707,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             public int Priority => 0;
 
-            public Guid Id { get; private set; }
+            public Guid Id { get; }
 
             public bool RequiresPrefixMatch { get; }
 

@@ -267,3 +267,4 @@ static Microsoft.TemplateEngine.Edge.Template.InputDataStateUtil.GetInputDataSta
 static Microsoft.TemplateEngine.Edge.Template.TemplateEqualityComparer.Default.get -> System.Collections.Generic.IEqualityComparer<Microsoft.TemplateEngine.Abstractions.ITemplateInfo!>!
 static Microsoft.TemplateEngine.Edge.Template.TemplateMatchInfoEqualityComparer.Default.get -> System.Collections.Generic.IEqualityComparer<Microsoft.TemplateEngine.Edge.Template.ITemplateMatchInfo!>!
 ~Microsoft.TemplateEngine.Edge.FilterableTemplateInfo.ParameterDefinitions.get -> Microsoft.TemplateEngine.Abstractions.Parameters.IParameterDefinitionSet
+Microsoft.TemplateEngine.Edge.DefaultTemplateEngineHost.WorkingDirectory.get -> string!

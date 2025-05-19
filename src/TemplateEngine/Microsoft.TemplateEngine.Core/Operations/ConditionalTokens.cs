@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
 using Microsoft.TemplateEngine.Core.Contracts;
 
 namespace Microsoft.TemplateEngine.Core.Operations
@@ -11,14 +9,14 @@ namespace Microsoft.TemplateEngine.Core.Operations
     {
         public ConditionalTokens()
         {
-            IfTokens = Array.Empty<ITokenConfig>();
-            ElseTokens = Array.Empty<ITokenConfig>();
-            ElseIfTokens = Array.Empty<ITokenConfig>();
-            EndIfTokens = Array.Empty<ITokenConfig>();
-            ActionableIfTokens = Array.Empty<ITokenConfig>();
-            ActionableElseTokens = Array.Empty<ITokenConfig>();
-            ActionableElseIfTokens = Array.Empty<ITokenConfig>();
-            ActionableOperations = Array.Empty<string>();
+            IfTokens = [];
+            ElseTokens = [];
+            ElseIfTokens = [];
+            EndIfTokens = [];
+            ActionableIfTokens = [];
+            ActionableElseTokens = [];
+            ActionableElseIfTokens = [];
+            ActionableOperations = [];
         }
 
         public IReadOnlyList<ITokenConfig> IfTokens { get; set; }

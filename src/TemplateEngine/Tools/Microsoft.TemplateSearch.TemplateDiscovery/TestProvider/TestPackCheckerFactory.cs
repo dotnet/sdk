@@ -48,12 +48,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
             FileInfo? fileLocation = config.DiffOverrideKnownPackagesLocation;
             Verbose.WriteLine($"Opening {fileLocation.FullName}");
 
-            using (var fileStream = fileLocation.OpenRead())
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return new JsonSerializer().Deserialize<IEnumerable<FilteredPackageInfo>>(jsonReader);
-            }
+            using var fileStream = fileLocation.OpenRead();
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return new JsonSerializer().Deserialize<IEnumerable<FilteredPackageInfo>>(jsonReader);
         }
 
         private static TemplateSearchCache? LoadExistingCache(CommandArgs config)
@@ -65,12 +63,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.Test
 
             FileInfo? cacheFileLocation = config.DiffOverrideSearchCacheLocation;
             Verbose.WriteLine($"Opening {cacheFileLocation.FullName}");
-            using (var fileStream = cacheFileLocation.OpenRead())
-            using (var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true))
-            using (var jsonReader = new JsonTextReader(textReader))
-            {
-                return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
-            }
+            using var fileStream = cacheFileLocation.OpenRead();
+            using var textReader = new StreamReader(fileStream, System.Text.Encoding.UTF8, true);
+            using var jsonReader = new JsonTextReader(textReader);
+            return TemplateSearchCache.FromJObject(JObject.Load(jsonReader), NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
         }
     }
 }

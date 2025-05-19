@@ -10,7 +10,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
     {
         internal int TotalHits { get; private set; }
 
-        internal List<NuGetPackageSourceInfo> Data { get; private set; } = new List<NuGetPackageSourceInfo>();
+        internal List<NuGetPackageSourceInfo> Data { get; } = new List<NuGetPackageSourceInfo>();
 
         //property names are explained here: https://docs.microsoft.com/en-us/nuget/api/search-query-service-resource
         internal static NuGetPackageSearchResult FromJObject(JObject entry)

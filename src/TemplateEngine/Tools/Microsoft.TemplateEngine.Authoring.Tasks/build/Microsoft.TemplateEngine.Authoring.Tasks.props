@@ -1,6 +1,7 @@
-﻿<Project>
-  <PropertyGroup>
+﻿<!-- Licensed to the .NET Foundation under one or more agreements. The .NET Foundation licenses this file to you under the MIT license. -->
+<Project>
 
+  <PropertyGroup>
     <ValidateTemplates Condition="'$(ValidateTemplates)' == ''">true</ValidateTemplates>
 
     <!-- 
@@ -30,6 +31,6 @@
       Below line was added as a reference.
     -->
     <TemplateLanguages Condition="'$(TemplateLanguages)' == ''"></TemplateLanguages>
-
   </PropertyGroup>
+
 </Project>
