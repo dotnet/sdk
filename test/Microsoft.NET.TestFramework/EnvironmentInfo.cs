@@ -139,6 +139,16 @@ namespace Microsoft.NET.TestFramework
                             }
                         }
                     }
+                    else if (osId.Equals("debian", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (osVersion.Major >= 11)
+                        {
+                            if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                            {
+                                return false;
+                            }
+                        }
+                    }
                     else if (osId.Equals("rhel", StringComparison.OrdinalIgnoreCase))
                     {
                         if (osVersion.Major == 6)
