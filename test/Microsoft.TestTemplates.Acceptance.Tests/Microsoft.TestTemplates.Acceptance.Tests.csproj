@@ -1,0 +1,34 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+  </PropertyGroup>
+
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
+    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
+  </ItemGroup>
+
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+  <ItemGroup>
+    <ItemsToCopy Include="..\..\template_feed\**\*.*" />
+  </ItemGroup>
+
+  <Target Name="CopyTarget" AfterTargets="Build">
+    <Copy SourceFiles="@(ItemsToCopy)" DestinationFolder="$(OutputPath)\template_feed\%(RecursiveDir)" />
+  </Target>
+</Project>
