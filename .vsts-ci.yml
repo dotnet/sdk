@@ -69,9 +69,9 @@ extends:
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-      fedora39:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
+      fedora40:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-40
       mariner20CrossArm:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:cbl-mariner-2.0-cross-arm
     sdl:

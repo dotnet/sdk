@@ -29,28 +29,28 @@ parameters:
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
   - categoryName: ContainerBased
-    container: ubuntu2204
+    container: ubuntu2204DebPkg
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     runTests: true
   - categoryName: ContainerBased
-    container: fedora42
-    helixTargetContainer: $(helixTargetContainerPrefix)fedora-42-helix-amd64
+    container: fedora40
+    helixTargetContainer: $(helixTargetContainerPrefix)fedora-41-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     runTests: true
   - categoryName: ContainerBased
-    container: centosStream10
-    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream-10-helix-amd64
+    container: centosStream9
+    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream-9-helix-amd64
     osProperties: /p:OSName=linux
     runTests: true
   - categoryName: ContainerBased
-    container: debian13
-    helixTargetContainer: $(helixTargetContainerPrefix)debian-13-helix-amd64
+    container: debian12Amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
     runTests: true
   - categoryName: ContainerBased
-    container: alpine321
-    helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.21-helix-amd64
+    container: alpine319WithNode
+    helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.18-helix-amd64
     runtimeIdentifier: linux-musl-x64
     # Use HostOSName when running on alpine.
     osProperties: /p:HostOSName=linux-musl
