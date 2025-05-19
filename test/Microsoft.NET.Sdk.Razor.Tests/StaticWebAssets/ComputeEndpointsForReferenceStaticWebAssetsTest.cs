@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
+using Microsoft.Build.Utilities;
 using Moq;
 
 namespace Microsoft.NET.Sdk.Razor.Tests;
@@ -36,6 +38,35 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
     }
 
     [Fact]
+    public void UpdatesLabelAsNecessary_ForChosenEndpoints()
+    {
+        var errorMessages = new List<string>();
+        var buildEngine = new Mock<IBuildEngine>();
+        buildEngine.Setup(e => e.LogErrorEvent(It.IsAny<BuildErrorEventArgs>()))
+            .Callback<BuildErrorEventArgs>(args => errorMessages.Add(args.Message));
+
+        var task = new ComputeEndpointsForReferenceStaticWebAssets
+        {
+            BuildEngine = buildEngine.Object,
+            Assets = [CreateCandidate(Path.Combine("wwwroot", "candidate.js"), "MyPackage", "Discovered", "candidate.js", "All", "All")],
+            CandidateEndpoints = [CreateCandidateEndpoint("candidate.js", Path.Combine("wwwroot", "candidate.js"), addLabel: true)]
+        };
+
+        // Act
+        var result = task.Execute();
+
+        // Assert
+        result.Should().Be(true);
+        task.Endpoints.Should().ContainSingle();
+        task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
+        task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
+        var properties = StaticWebAssetEndpointProperty.FromMetadataValue(task.Endpoints[0].GetMetadata("EndpointProperties"));
+        properties.Should().ContainSingle();
+        properties[0].Name.Should().Be("label");
+        properties[0].Value.Should().Be("base/label-value");
+    }
+
+    [Fact]
     public void FiltersOutEndpointsForAssetsNotFound()
     {
         var errorMessages = new List<string>();
@@ -58,12 +89,12 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
 
         // Assert
         result.Should().Be(true);
-        task.Endpoints.Should().ContainSingle();
+        task.Endpoints.Where(e => e != null).Should().ContainSingle();
         task.Endpoints[0].ItemSpec.Should().Be("base/candidate.js");
         task.Endpoints[0].GetMetadata("AssetFile").Should().Be(Path.GetFullPath(Path.Combine("wwwroot", "candidate.js")));
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -101,12 +132,15 @@ public class ComputeEndpointsForReferenceStaticWebAssetsTest
         return result.ToTaskItem();
     }
 
-    private ITaskItem CreateCandidateEndpoint(string route, string assetFile)
+    private static ITaskItem CreateCandidateEndpoint(string route, string assetFile, bool addLabel = false)
     {
         return new StaticWebAssetEndpoint
         {
             Route = route,
             AssetFile = Path.GetFullPath(assetFile),
+            EndpointProperties = addLabel
+                ? [new StaticWebAssetEndpointProperty { Name = "label", Value = "label-value" }]
+                : [],
         }.ToTaskItem();
     }
 }
