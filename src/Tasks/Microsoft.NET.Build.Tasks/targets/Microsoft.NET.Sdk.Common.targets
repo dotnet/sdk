@@ -77,6 +77,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition="'$(RoslynCompilerType)' == 'FrameworkPackage' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <RoslynTasksAssembly>$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
     <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>
