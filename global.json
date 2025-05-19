@@ -3,7 +3,7 @@
     "dotnet": "10.0.100-preview.3.25201.16",
     "runtimes": {
       "dotnet": [
-        "$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)"
+        "$(MicrosoftNETCorePlatformsPackageVersion)"
       ],
       "aspnetcore": [
         "$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)"
@@ -14,8 +14,8 @@
     }
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25260.104",
-    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25260.104",
+    "Microsoft.DotNet.Arcade.Sdk": "10.0.0-beta.25265.101",
+    "Microsoft.DotNet.Helix.Sdk": "10.0.0-beta.25265.101",
     "Microsoft.Build.NoTargets": "3.7.0",
     "Microsoft.Build.Traversal": "3.4.0"
   }

@@ -108,6 +108,3 @@
 # dotnet-format
 /src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
 /test/dotnet-format.UnitTests @dotnet/roslyn-ide
-
-# Area: VMR & SourceBuild
-/eng/DotNetBuild.props @dotnet/source-build @dotnet/product-construction

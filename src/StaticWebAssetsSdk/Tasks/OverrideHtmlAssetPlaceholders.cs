@@ -98,7 +98,9 @@ public partial class OverrideHtmlAssetPlaceholders : Task
                         fileWrites.Add(outputPath);
                     }
 
-                    htmlCandidates.Add(new TaskItem(outputPath, item.CloneCustomMetadata()));
+                    var newItem = new TaskItem(outputPath, item.CloneCustomMetadata());
+                    newItem.RemoveMetadata("OriginalItemSpec");
+                    htmlCandidates.Add(newItem);
                 }
             }
         }

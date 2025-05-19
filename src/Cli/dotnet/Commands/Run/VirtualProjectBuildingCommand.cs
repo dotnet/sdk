@@ -362,7 +362,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     private void MarkBuildStart()
     {
         string directory = GetArtifactsPath();
-        Directory.CreateDirectory(directory);
+
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(directory);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
