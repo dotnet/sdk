@@ -51,7 +51,8 @@
                                         $(RoslynPackagePath)runtimes\**\System.*.dll"
                                Exclude="$(RoslynPackagePath)runtimes\**\System.IO.Pipes.AccessControl.dll"/>
       <!-- binfx folder contains full framework dlls that are needed only on Windows -->
-      <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/>
+      <RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" />
+      <!--<RoslynFrameworkAssembly Include="$(RoslynPackagePath)binfx\**\*" Condition="'$(OS)' != 'Windows_NT'"/> -->
       <RoslynFile Include="$(RoslynPackagePath)**\*" Exclude="@(RoslynFrameworkAssembly)" />
     </ItemGroup>
 
