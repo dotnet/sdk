@@ -1,0 +1,16 @@
+﻿{
+  "author": "Майкрософт",
+  "name": "Тестовый класс MSTest",
+  "description": "Создает новый тестовый класс MSTest",
+  "symbols/Fixture/description": "Выберите типы средств, которые необходимо включить в проект.",
+  "symbols/Fixture/displayName": "Средство",
+  "symbols/Fixture/choices/None/description": "Нет методов работы со средствами",
+  "symbols/Fixture/choices/None/displayName": "Отсутствует",
+  "symbols/Fixture/choices/AssemblyInitialize/description": "Метод работы со средствами AssemblyInitialize",
+  "symbols/Fixture/choices/AssemblyCleanup/description": "Метод работы со средствами AssemblyCleanup",
+  "symbols/Fixture/choices/ClassInitialize/description": "Метод работы со средствами ClassInitialize",
+  "symbols/Fixture/choices/ClassCleanup/description": "Метод работы со средствами ClassCleanup",
+  "symbols/Fixture/choices/TestInitialize/description": "Метод работы со средствами TestInitialize",
+  "symbols/Fixture/choices/TestCleanup/description": "Метод работы со средствами TestCleanup",
+  "postActions/openInEditor/description": "Открывает Test1.vb в редакторе."
+}
