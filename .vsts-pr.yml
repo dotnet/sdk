@@ -27,16 +27,16 @@ variables:
 
 resources:
   containers:
-  - container: alpine319WithNode
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
-  - container: centosStream9
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
-  - container: debian12Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
-  - container: fedora39
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
-  - container: ubuntu2204DebPkg
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-debpkg
+  - container: alpine321
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.21-helix-amd64
+  - container: centosStream10
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream-10-helix-amd64
+  - container: debian13
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-13-helix-amd64
+  - container: fedora42
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-42-helix-amd64
+  - container: ubuntu2204
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:ubuntu-22.04-helix-amd64
 
 stages:
 ############### BUILD STAGE ###############
