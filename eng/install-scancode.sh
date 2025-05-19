@@ -24,4 +24,3 @@ deactivate
 EOF
 
 chmod +x /usr/local/bin/scancode
- 
