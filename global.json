@@ -3,7 +3,7 @@
     "dotnet": "10.0.100-preview.3.25201.16",
     "runtimes": {
       "dotnet": [
-        "$(VSRedistCommonNetCoreSharedFrameworkx64100PackageVersion)"
+        "$(MicrosoftNETCorePlatformsPackageVersion)"
       ],
       "aspnetcore": [
         "$(MicrosoftAspNetCoreComponentsSdkAnalyzersPackageVersion)"

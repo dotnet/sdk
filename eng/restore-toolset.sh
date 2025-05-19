@@ -6,7 +6,7 @@ function InitializeCustomSDKToolset {
   fi
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in source build.
+  # Do not attempt to install them in product build.
   if [[ $product_build == true ]]; then
     return
   fi

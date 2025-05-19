@@ -113,7 +113,7 @@ public partial class DefineStaticWebAssets : Task
 
         internal void WriteCacheManifest()
         {
-            if (_manifestPath != null)
+            if (_manifestPath != null && !_cacheUpToDate && InputHashes.Count > 0)
             {
                 using var manifestFile = File.OpenWrite(_manifestPath);
                 manifestFile.SetLength(0);
