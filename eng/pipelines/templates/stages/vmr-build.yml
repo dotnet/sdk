@@ -11,7 +11,7 @@ parameters:
 - name: scope
   type: string
   values:
-  # run several legs e.g. win/linux/mac for basic testing
+  # run 1 leg for smoke tests
   - lite
   # run everything
   - full
