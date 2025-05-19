@@ -77,4 +77,41 @@ namespace Microsoft.DotNet.MsiInstallerTests.Framework
             return tree;
         }
     }
+
+    internal class VMState
+    {
+        public string DefaultRootState { get; set; }
+
+        public Dictionary<string, VMStateTree> VMStates { get; set; } = new Dictionary<string, VMStateTree>();
+
+        public SerializableVMState ToSerializable()
+        {
+            return new SerializableVMState()
+            {
+                DefaultRootState = DefaultRootState,
+                VMStates = VMStates.Values.Select(v => v.ToSerializeable()).ToList()
+            };
+        }
+
+        public VMStateTree GetRootState()
+        {
+            return VMStates[DefaultRootState];
+        }
+    }
+
+    internal class SerializableVMState
+    {
+        public string DefaultRootState { get; set; }
+
+        public List<SerializableVMStateTree> VMStates { get; set; } = new();
+
+        public VMState ToVMState()
+        {
+            return new VMState()
+            {
+                DefaultRootState = DefaultRootState,
+                VMStates = VMStates.Select(s => s.ToVMStateTree()).ToDictionary(s => s.SnapshotName)
+            };
+        }
+    }
 }
