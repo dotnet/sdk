@@ -40,7 +40,7 @@ parameters:
     runTests: true
   - categoryName: ContainerBased
     container: centosStream9
-    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream-9-helix
+    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream9-helix
     osProperties: /p:OSName=linux
     runTests: true
   - categoryName: ContainerBased
