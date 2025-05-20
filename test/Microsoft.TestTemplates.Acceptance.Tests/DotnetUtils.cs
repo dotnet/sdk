@@ -47,6 +47,34 @@ public static partial class DotnetUtils
     }
 
     /// <summary>
+    /// Invokes <c>dotnet new</c> with the specified template, name, target framework, language, output directory,
+    /// and any additional custom arguments.
+    /// </summary>
+    /// <param name="templateName">Name of the project or item template.</param>
+    /// <param name="nameAs">The name for the output being created.</param>
+    /// <param name="targetFramework">The target framework for the project (optional).</param>
+    /// <param name="language">The language for the template (optional).</param>
+    /// <param name="outputDirectory">The directory to place the generated output (optional).</param>
+    /// <param name="assertExecution">Whether to assert that the command exits with code 0.</param>
+    /// <param name="extraArgs">Additional arguments to pass to <c>dotnet new</c> (e.g., <c>--coverage-tool</c>, <c>--test-runner</c>).</param>
+    /// <returns>The result of the dotnet command execution.</returns>
+    public static ExecutionResult InvokeDotnetNew(
+        string templateName,
+        string nameAs,
+        string? targetFramework,
+        string? language,
+        string? outputDirectory,
+        bool assertExecution,
+        params string[] extraArgs)
+    {
+        var targetArgs = string.IsNullOrEmpty(targetFramework) ? "" : $" -f {targetFramework}";
+        var languageArgs = string.IsNullOrEmpty(language) ? "" : $" -lang {language}";
+        var outputArgs = string.IsNullOrEmpty(outputDirectory) ? "" : $" -o {outputDirectory}";
+        var extra = (extraArgs != null && extraArgs.Length > 0) ? " " + string.Join(" ", extraArgs) : "";
+        return InvokeDotnet($"new {templateName} -n {nameAs}{targetArgs}{languageArgs}{outputArgs}{extra}", assertExecution);
+    }
+
+    /// <summary>
     /// Invokes <c>dotnet</c> with specified arguments.
     /// </summary>
     /// <param name="arguments">Arguments provided to <c>dotnet</c>.exe</param>

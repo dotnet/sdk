@@ -20,7 +20,6 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
 
     private static readonly (string ProjectTemplateName, string[] Languages, bool RunDotnetTest, bool SupportsTestingPlatform)[] AvailableProjectTemplates =
     [
-        ("mstest", Languages.All, true, true),
         ("nunit", Languages.All, true, false),
         ("xunit", Languages.All, true, false),
         ("mstest-playwright", new[] { Languages.CSharp }, false, false),
@@ -116,6 +115,38 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         Directory.Delete(outputDirectory, true);
     }
 
+    [Theory]
+    [MemberData(nameof(GetMSTestCoverageAndRunnerCombinations))]
+    public void MSTestProjectTemplate_WithCoverageToolAndTestRunner_CanBeInstalledAndTestsArePassing(
+    string targetFramework,
+    string language,
+    string coverageTool,
+    string testRunner)
+    {
+        var testProjectName = GenerateTestProjectName();
+        string outputDirectory = Path.Combine(Constants.ArtifactsTempDirectory, testProjectName);
+
+        // Create new MSTest project with extra args for coverage tool and test runner
+        var dotnetNewResult = DotnetUtils.InvokeDotnetNew(
+            "mstest",
+            testProjectName,
+            targetFramework,
+            language,
+            outputDirectory,
+            true,
+            "--coverage-tool", coverageTool,
+            "--test-runner", testRunner
+        );
+        Assert.Equal(0, dotnetNewResult.ExitCode);
+
+        // Run tests: dotnet test <path>
+        var result = DotnetUtils.InvokeDotnetTest(outputDirectory);
+
+        result.ValidateSummaryStatus(testRunner.Equals("Microsoft.Testing.Platform", StringComparison.OrdinalIgnoreCase), 1);
+
+        Directory.Delete(outputDirectory, true);
+    }
+
     public static IEnumerable<object[]> GetTemplateItemsToTest()
     {
         foreach (var targetFramework in SupportedTargetFrameworks)
@@ -139,6 +170,25 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
                 foreach (var language in languages)
                 {
                     yield return new object[] { targetFramework, projectTemplate, language, runDotnetTest, supportsTestingPlatform };
+                }
+            }
+        }
+    }
+
+    public static IEnumerable<object[]> GetMSTestCoverageAndRunnerCombinations()
+    {
+        var coverageTools = new[] { "Microsoft.CodeCoverage", "coverlet" };
+        var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
+        foreach (var targetFramework in SupportedTargetFrameworks)
+        {
+            foreach (var language in Languages.All)
+            {
+                foreach (var coverageTool in coverageTools)
+                {
+                    foreach (var testRunner in testRunners)
+                    {
+                        yield return new object[] { targetFramework, language, coverageTool, testRunner };
+                    }
                 }
             }
         }

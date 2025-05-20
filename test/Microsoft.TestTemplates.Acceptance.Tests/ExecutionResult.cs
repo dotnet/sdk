@@ -41,7 +41,7 @@ public static class ExecutionResultExtensions
     private static void ValidateTestingPlatformSummaryStatus(this ExecutionResult executionResult)
     {
         Assert.Contains(
-            "Test Run Successful",
+            "Tests succeeded",
             executionResult.StandardOutput ?? string.Empty
         );
     }
