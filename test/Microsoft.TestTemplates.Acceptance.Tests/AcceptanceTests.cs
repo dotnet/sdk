@@ -15,14 +15,13 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
     private static readonly (string ProjectTemplateName, string ItemTemplateName, string[] Languages, bool SupportsTestingPlatform)[] AvailableItemTemplates =
     [
         ("nunit", "nunit-test", Languages.All, false),
-        ("mstest", "mstest-class", Languages.All, true),
+        ("mstest", "mstest-class", Languages.All, false),
     ];
 
     private static readonly (string ProjectTemplateName, string[] Languages, bool RunDotnetTest, bool SupportsTestingPlatform)[] AvailableProjectTemplates =
     [
         ("nunit", Languages.All, true, false),
         ("xunit", Languages.All, true, false),
-        ("mstest-playwright", new[] { Languages.CSharp }, false, false),
         ("nunit-playwright", new[] { Languages.CSharp }, false, false),
     ];
 
@@ -116,19 +115,21 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
     }
 
     [Theory]
-    [MemberData(nameof(GetMSTestCoverageAndRunnerCombinations))]
-    public void MSTestProjectTemplate_WithCoverageToolAndTestRunner_CanBeInstalledAndTestsArePassing(
-    string targetFramework,
-    string language,
-    string coverageTool,
-    string testRunner)
+    [MemberData(nameof(GetMSTestAndPlaywrightCoverageAndRunnerCombinations))]
+    public void MSTestAndPlaywrightProjectTemplate_WithCoverageToolAndTestRunner_CanBeInstalledAndTestsArePassing(
+        string projectTemplate,
+        string targetFramework,
+        string language,
+        string coverageTool,
+        string testRunner,
+        bool runDotnetTest)
     {
         var testProjectName = GenerateTestProjectName();
         string outputDirectory = Path.Combine(Constants.ArtifactsTempDirectory, testProjectName);
 
-        // Create new MSTest project with extra args for coverage tool and test runner
+        // Create new project with extra args for coverage tool and test runner
         var dotnetNewResult = DotnetUtils.InvokeDotnetNew(
-            "mstest",
+            projectTemplate,
             testProjectName,
             targetFramework,
             language,
@@ -139,10 +140,14 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         );
         Assert.Equal(0, dotnetNewResult.ExitCode);
 
-        // Run tests: dotnet test <path>
-        var result = DotnetUtils.InvokeDotnetTest(outputDirectory);
+        if (runDotnetTest)
+        {
+            // Run tests: dotnet test <path>
+            var result = DotnetUtils.InvokeDotnetTest(outputDirectory);
 
-        result.ValidateSummaryStatus(testRunner.Equals("Microsoft.Testing.Platform", StringComparison.OrdinalIgnoreCase), 1);
+            // Validate the tests run as expected (isTestingPlatform: testRunner == "Microsoft.Testing.Platform")
+            result.ValidateSummaryStatus(testRunner.Equals("Microsoft.Testing.Platform", StringComparison.OrdinalIgnoreCase), 1);
+        }
 
         Directory.Delete(outputDirectory, true);
     }
@@ -175,20 +180,29 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         }
     }
 
-    public static IEnumerable<object[]> GetMSTestCoverageAndRunnerCombinations()
+    public static IEnumerable<object[]> GetMSTestAndPlaywrightCoverageAndRunnerCombinations()
     {
         var coverageTools = new[] { "Microsoft.CodeCoverage", "coverlet" };
         var testRunners = new[] { "VSTest", "Microsoft.Testing.Platform" };
         foreach (var targetFramework in SupportedTargetFrameworks)
         {
+            // mstest: all languages, runDotnetTest = true
             foreach (var language in Languages.All)
             {
                 foreach (var coverageTool in coverageTools)
                 {
                     foreach (var testRunner in testRunners)
                     {
-                        yield return new object[] { targetFramework, language, coverageTool, testRunner };
+                        yield return new object[] { "mstest", targetFramework, language, coverageTool, testRunner, true };
                     }
+                }
+            }
+            // mstest-playwright: only c#, runDotnetTest = false
+            foreach (var coverageTool in coverageTools)
+            {
+                foreach (var testRunner in testRunners)
+                {
+                    yield return new object[] { "mstest-playwright", targetFramework, Languages.CSharp, coverageTool, testRunner, false };
                 }
             }
         }

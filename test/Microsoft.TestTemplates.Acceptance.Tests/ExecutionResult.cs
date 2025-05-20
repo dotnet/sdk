@@ -19,6 +19,7 @@ public static class ExecutionResultExtensions
     /// <param name="skippedTestsCount">Skipped test count</param>
     public static void ValidateSummaryStatus(this ExecutionResult executionResult, bool isTestingPlatform, int passedTestsCount)
     {
+        Console.WriteLine($"ExecutionResult.ValidateSummaryStatus: {executionResult.StandardOutput}");
         if (isTestingPlatform)
         {
             ValidateTestingPlatformSummaryStatus(executionResult);
