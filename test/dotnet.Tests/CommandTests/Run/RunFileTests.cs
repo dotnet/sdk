@@ -973,6 +973,25 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
     }
 
+    [Fact] // https://github.com/dotnet/sdk/issues/48990
+    public void SdkReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.AppHost.Sdk 9.2.1
+            #:package Aspire.Hosting.AppHost@9.2.1
+
+            var builder = DistributedApplication.CreateBuilder(args);
+            builder.Build().Run();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
     [Fact]
     public void UpToDate()
     {
@@ -1176,7 +1195,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
@@ -1207,7 +1226,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <!--
                         Override targets which don't work with project files that are not present on disk.
