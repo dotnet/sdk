@@ -15,8 +15,6 @@ public static class ExecutionResultExtensions
     /// Validate if the overall test count and results are matching.
     /// </summary>
     /// <param name="passedTestsCount">Passed test count</param>
-    /// <param name="failedTestsCount">Failed test count</param>
-    /// <param name="skippedTestsCount">Skipped test count</param>
     public static void ValidateSummaryStatus(this ExecutionResult executionResult, bool isTestingPlatform, int passedTestsCount)
     {
         if (isTestingPlatform)

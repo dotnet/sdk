@@ -94,7 +94,7 @@ public static partial class DotnetUtils
     private static void Execute(string args, out string stdOut, out string stdError, out int exitCode)
     {
         using Process dotnet = new();
-        Console.WriteLine("AcceptanceTestBase.Execute: Starting dotnet.exe");
+        Console.WriteLine("DotnetUtils.Execute: Starting dotnet.exe");
         dotnet.StartInfo.FileName = GetDotnetExePath();
         dotnet.StartInfo.Arguments = args;
         dotnet.StartInfo.UseShellExecute = false;
@@ -107,8 +107,8 @@ public static partial class DotnetUtils
         dotnet.OutputDataReceived += (sender, eventArgs) => stdoutBuffer.Append(eventArgs.Data).Append(Environment.NewLine);
         dotnet.ErrorDataReceived += (sender, eventArgs) => stderrBuffer.Append(eventArgs.Data).Append(Environment.NewLine);
 
-        Console.WriteLine("AcceptanceTestBase.Execute: Path = {0}", dotnet.StartInfo.FileName);
-        Console.WriteLine("AcceptanceTestBase.Execute: Arguments = {0}", dotnet.StartInfo.Arguments);
+        Console.WriteLine("DotnetUtils.Execute: Path = {0}", dotnet.StartInfo.FileName);
+        Console.WriteLine("DotnetUtils.Execute: Arguments = {0}", dotnet.StartInfo.Arguments);
 
         Stopwatch stopwatch = new();
         stopwatch.Start();
@@ -118,7 +118,7 @@ public static partial class DotnetUtils
         dotnet.BeginErrorReadLine();
         if (!dotnet.WaitForExit(80 * 1000))
         {
-            Console.WriteLine("AcceptanceTestBase.Execute: Timed out waiting for dotnet.exe. Terminating the process.");
+            Console.WriteLine("DotnetUtils.Execute: Timed out waiting for dotnet.exe. Terminating the process.");
             dotnet.Kill();
         }
         else
@@ -129,25 +129,26 @@ public static partial class DotnetUtils
 
         stopwatch.Stop();
 
-        Console.WriteLine($"AcceptanceTestBase.Execute: Total execution time: {stopwatch.Elapsed.Duration()}");
+        Console.WriteLine($"DotnetUtils.Execute: Total execution time: {stopwatch.Elapsed.Duration()}");
 
         var whiteSpaceRegex = GetMultipleWhitespacesRegex();
         stdError = whiteSpaceRegex.Replace(stderrBuffer.ToString(), " ");
         stdOut = whiteSpaceRegex.Replace(stdoutBuffer.ToString(), " ");
         exitCode = dotnet.ExitCode;
 
-        Console.WriteLine("AcceptanceTestBase.Execute: stdError = {0}", stdError);
-        Console.WriteLine("AcceptanceTestBase.Execute: stdOut = {0}", stdOut);
-        Console.WriteLine("AcceptanceTestBase.Execute: Stopped dotnet.exe. Exit code = {0}", exitCode);
+        Console.WriteLine("DotnetUtils.Execute: stdError = {0}", stdError);
+        Console.WriteLine("DotnetUtils.Execute: stdOut = {0}", stdOut);
+        Console.WriteLine("DotnetUtils.Execute: Stopped dotnet.exe. Exit code = {0}", exitCode);
     }
 
     private static string GetDotnetExePath()
     {
         var currentDllPath = Path.GetDirectoryName(Assembly.GetAssembly(typeof(AcceptanceTests))!.Location)!;
-        string[] paths = currentDllPath.Split("\\artifacts");
-        if (paths.Length == 2)
+        var artifactsIndex = currentDllPath.IndexOf($"{Path.DirectorySeparatorChar}artifacts", StringComparison.Ordinal);
+        if (artifactsIndex != -1)
         {
-            var dotnetPath = Path.Combine(paths[0], ".dotnet", "dotnet.exe");
+            var basePath = currentDllPath.Substring(0, artifactsIndex);
+            var dotnetPath = Path.Combine(basePath, ".dotnet", "dotnet.exe");
             if (File.Exists(dotnetPath))
                 return dotnetPath;
         }
