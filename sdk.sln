@@ -547,7 +547,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.ApiDiff.Te
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.ApiDiff", "src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff\Microsoft.DotNet.ApiDiff.csproj", "{4F23A9C8-945A-A4F4-51E9-FCA215943C0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TestTemplates.Acceptance.Tests", "..\dotnet-sdk\test\Microsoft.TestTemplates.Acceptance.Tests\Microsoft.TestTemplates.Acceptance.Tests.csproj", "{3F105590-504F-E61A-BDFE-EDCE0AC39ACF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.TestTemplates.Acceptance.Tests", "..\sdk\test\Microsoft.TestTemplates.Acceptance.Tests\Microsoft.TestTemplates.Acceptance.Tests.csproj", "{3F105590-504F-E61A-BDFE-EDCE0AC39ACF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
