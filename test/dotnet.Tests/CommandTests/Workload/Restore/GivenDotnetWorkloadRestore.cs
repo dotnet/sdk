@@ -60,6 +60,6 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
     private bool IsRunningInContainer()
     {
-        return File.Exists("/.dockerenv") && RuntimeInformation.OSDescription.Contains("Ubuntu");
+        return File.Exists("/.dockerenv") && (RuntimeInformation.OSDescription.Contains("Ubuntu") || RuntimeInformation.OSDescription.Contains("Debian"));
     }
 }
