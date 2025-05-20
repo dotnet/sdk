@@ -34,13 +34,13 @@ parameters:
     osProperties: $(linuxOsPortableProperties)
     runTests: true
   - categoryName: ContainerBased
-    container: fedora41
+    container: fedora39
     helixTargetContainer: $(helixTargetContainerPrefix)fedora-41-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     runTests: true
   - categoryName: ContainerBased
     container: centosStream9
-    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream-9-helix-amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)centos-stream-9-helix
     osProperties: /p:OSName=linux
     runTests: true
   - categoryName: ContainerBased
