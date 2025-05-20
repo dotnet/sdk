@@ -103,6 +103,9 @@ namespace Microsoft.NET.TestFramework
                 }
                 else if (Version.TryParse(versionString, out Version? osVersion))
                 {
+                    Console.WriteLine($"[DEBUG] osId: {osId}");
+                    Console.WriteLine($"[DEBUG] osVersion: {osVersion}");
+                    Console.WriteLine($"[DEBUG] osVersion.Major: {osVersion.Major}");
                     if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
                     {
                         if (osVersion.Major <= 27)
@@ -140,7 +143,7 @@ namespace Microsoft.NET.TestFramework
                         }
                     }
                     else if (osId.Equals("debian", StringComparison.OrdinalIgnoreCase))
-                    {
+                    {           
                         if (osVersion.Major >= 11)
                         {
                             if (nugetFramework.Version < new Version(2, 0, 0, 0))
