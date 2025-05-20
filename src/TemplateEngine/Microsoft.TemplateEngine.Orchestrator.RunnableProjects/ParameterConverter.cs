@@ -188,6 +188,7 @@ namespace Microsoft.TemplateEngine.Utils
             }
 
             string? partialMatch = null;
+            bool multiplePartialMatches = false;
 
             foreach (string choiceValue in param.Choices.Keys)
             {
@@ -205,11 +206,17 @@ namespace Microsoft.TemplateEngine.Utils
                     }
                     else
                     {
-                        // multiple partial matches, can't take one.
-                        match = null;
-                        return false;
+                        // Multiple partial matches, keep searching for exact match, fail if we don't find one
+                        // because we don't know which partial match we should select.
+                        multiplePartialMatches = true;
                     }
                 }
+            }
+
+            if (multiplePartialMatches)
+            {
+                match = null;
+                return false;
             }
 
             match = partialMatch;
