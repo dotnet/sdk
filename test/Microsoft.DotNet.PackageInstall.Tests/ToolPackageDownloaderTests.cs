@@ -1004,22 +1004,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var frameworksMap = new Dictionary<PackageId, IEnumerable<NuGetFramework>>()
                         { {TestPackageId, TestFrameworks } };
                 WriteNugetConfigFileToPointToTheFeed(fileSystem, writeLocalFeedToNugetConfig);
-                var toolPackageStoreMock = new ToolPackageStoreMock(root, fileSystem, frameworksMap);
-                store = toolPackageStoreMock;
-                storeQuery = toolPackageStoreMock;
-                downloader = new ToolPackageDownloaderMock2(toolPackageStoreMock,
+                var storeAndQuery = new ToolPackageStoreAndQuery(root, fileSystem);
+                store = storeAndQuery;
+                storeQuery = storeAndQuery;
+                downloader = new ToolPackageDownloaderMock2(storeAndQuery,
                     runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
                     currentWorkingDirectory: root.Value,
                     fileSystem);
-                //downloader = new ToolPackageDownloaderMock(
-                //    store: toolPackageStoreMock,
-                //    fileSystem: fileSystem,
-                //    reporter: reporter,
-                //    feeds: feeds == null
-                //            ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
-                //            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList(),
-                //    frameworksMap: frameworksMap);
-                uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
+
+                uninstaller = new ToolPackageUninstallerMock(fileSystem, storeAndQuery);
             }
             else
             {

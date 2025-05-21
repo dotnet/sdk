@@ -88,7 +88,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 """);
             }, rollback: () =>
             {
-                _fileSystem.Directory.Delete(nupkgDir, true);
+                if (_fileSystem.Directory.Exists(nupkgDir))
+                {
+                    _fileSystem.Directory.Delete(nupkgDir, true);
+                }
             });
 
             return resolvedVersion;
