@@ -97,6 +97,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_DefaultUserProfileRuntimeStorePath Condition="$([MSBuild]::IsOSPlatform(`Windows`))">$(USERPROFILE)</_DefaultUserProfileRuntimeStorePath>
     <_DefaultUserProfileRuntimeStorePath>$([System.IO.Path]::Combine($(_DefaultUserProfileRuntimeStorePath), '.dotnet', 'store'))</_DefaultUserProfileRuntimeStorePath>
     <UserProfileRuntimeStorePath Condition="'$(UserProfileRuntimeStorePath)' == ''">$(_DefaultUserProfileRuntimeStorePath)</UserProfileRuntimeStorePath>
+    <_IsVSTestOnlyTestProject Condition="'$(IsTestProject)' == 'true' AND '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestOnlyTestProject>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion), '6.0'))">
@@ -114,7 +115,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Set the IsRidAgnostic property if this project should NOT accept global RuntimeIdentifier and SelfContained
        property values from referencing projects. -->
   <PropertyGroup Condition="'$(IsRidAgnostic)' == ''">
-    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And '$(IsTestProject)' != 'true') Or
+    <IsRidAgnostic Condition="('$(_IsExecutable)' == 'true' And '$(_IsVSTestOnlyTestProject)' != 'true') Or
                               '$(RuntimeIdentifier)' != '' Or
                               '$(RuntimeIdentifiers)' != ''">false</IsRidAgnostic>
     <IsRidAgnostic Condition="'$(IsRidAgnostic)' == ''">true</IsRidAgnostic>
@@ -1355,14 +1356,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">
+  <PropertyGroup Condition="'$(_IsVSTestOnlyTestProject)' == 'true' And '$(ValidateExecutableReferencesMatchSelfContained)' == ''">
     <!-- Don't generate an error if a test project references a self-contained Exe.  Test projects
          use an OutputType of Exe but will usually call APIs in a referenced Exe rather than try
          to run it. -->
     <ValidateExecutableReferencesMatchSelfContained>false</ValidateExecutableReferencesMatchSelfContained>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
+  <PropertyGroup Condition="'$(_IsVSTestOnlyTestProject)' == 'true'">
     <!-- Don't generate an error if an Exe project references a test project. -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
   </PropertyGroup>
