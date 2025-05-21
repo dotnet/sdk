@@ -76,17 +76,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 // Currently only "dotnet" commands are supported
                 var executablePath = _fileSystem.File.ReadAllText(Path.Combine(PackageDirectory.Value, "project.assets.json"));
 
-                var fakeSettingFile = _fileSystem.File.ReadAllText(Path.Combine(PackageDirectory.Value, ProjectRestorerMock.FakeCommandSettingsFileName));
+                var settingsFilePath = Path.Combine(PackageDirectory.Value, @"global.tool.console.demo\1.0.4\tools\net6.0\any", "DotnetToolSettings.xml");
 
-                string name;
-                using (JsonDocument doc = JsonDocument.Parse(fakeSettingFile))
-                {
-                    JsonElement root = doc.RootElement;
-                    name = root.GetProperty("Name").GetString();
-                }
+                var configuration = ToolConfigurationDeserializer.Deserialize(settingsFilePath, _fileSystem);
 
                 return new ToolCommand(
-                        new ToolCommandName(name),
+                        new ToolCommandName(configuration.CommandName),
                         "dotnet",
                         PackageDirectory.WithFile(executablePath));
             }

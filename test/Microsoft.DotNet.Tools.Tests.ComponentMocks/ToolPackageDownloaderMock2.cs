@@ -21,7 +21,6 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public const string DefaultPackageVersion = "1.0.4";
         public const string DefaultTargetFramework = "net6.0";
 
-
         public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
         {
         }
@@ -75,16 +74,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             var fakeExecutablePath = Path.Combine(fakeExecutableSubDirectory, FakeEntrypointName);
 
-            _fileSystem.Directory.CreateDirectory(fakeExecutableSubDirectory);
-            _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
-            _fileSystem.File.WriteAllText(Path.Combine(fakeExecutableSubDirectory, "DotnetToolSettings.xml"),
-                $"""
+            TransactionalAction.Run(() =>
+            {
+                _fileSystem.Directory.CreateDirectory(fakeExecutableSubDirectory);
+                _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
+                _fileSystem.File.WriteAllText(Path.Combine(fakeExecutableSubDirectory, "DotnetToolSettings.xml"),
+                    $"""
                 <DotNetCliTool Version="1">
                   <Commands>
                     <Command Name="{DefaultToolCommandName}" EntryPoint="{FakeEntrypointName}" Runner="dotnet" />
                   </Commands>
                 </DotNetCliTool>
                 """);
+            }, rollback: () =>
+            {
+                _fileSystem.Directory.Delete(nupkgDir, true);
+            });
 
             return resolvedVersion;
         }
@@ -95,7 +100,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
         protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
         {
-            return false;
+            var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
+            var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), packageVersion);
+
+            return _fileSystem.Directory.Exists(nupkgDir);
         }
     }
 }
