@@ -156,7 +156,7 @@
       <WebSdkProjectFile Include="$(RepoRoot)src\WebSdk\**\*.csproj" />
     </ItemGroup>
 
-    <MSBuild Projects="@(WebSdkProjectFile)" />
+    <MSBuild Projects="@(WebSdkProjectFile)" GlobalPropertiesToRemove="PublishDir" />
 
     <PropertyGroup>
       <NETSdkSourceRoot>$(ArtifactsBinDir)$(Configuration)\Sdks\Microsoft.NET.Sdk</NETSdkSourceRoot>
@@ -227,7 +227,8 @@
     <MSBuild
       Targets="Publish"
       Projects="$(MSBuildProjectDirectory)\tools\tool_fsc.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp" />
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/FSharp"
+      GlobalPropertiesToRemove="PublishDir" />
   </Target>
 
   <Target Name="PublishContainersSdk">
@@ -242,15 +243,18 @@
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/net472;TargetFramework=net472"
+      GlobalPropertiesToRemove="PublishDir"
       Condition="'$(OSName)' == 'win'" />
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
-      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/$(SdkTargetFramework);TargetFramework=$(SdkTargetFramework)" />
+      Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/tasks/$(SdkTargetFramework);TargetFramework=$(SdkTargetFramework)"
+      GlobalPropertiesToRemove="PublishDir" />
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/Containers/containerize/containerize.csproj"
       Properties="Configuration=$(Configuration);PublishDir=$(OutputPath)/Containers/containerize"
+      GlobalPropertiesToRemove="PublishDir"
       Condition="'$(OSName)' == 'win'" />
   </Target>
 
@@ -331,7 +335,8 @@
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/BlazorWasmSdk/Tool/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj"
-      Properties="Configuration=$(Configuration)" />
+      Properties="Configuration=$(Configuration)"
+      GlobalPropertiesToRemove="PublishDir" />
 
     <ItemGroup>
       <_WebAssemblyToolsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.BlazorWebAssembly.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
@@ -351,7 +356,8 @@
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/StaticWebAssetsSdk/Tool/Microsoft.NET.Sdk.StaticWebAssets.Tool.csproj"
-      Properties="Configuration=$(Configuration)" />
+      Properties="Configuration=$(Configuration)"
+      GlobalPropertiesToRemove="PublishDir" />
 
     <ItemGroup>
       <_StaticWebAssetsToolsOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.StaticWebAssets.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
@@ -371,7 +377,8 @@
     <MSBuild
       Targets="Publish"
       Projects="$(RepoRoot)/src/RazorSdk/Tool/Microsoft.NET.Sdk.Razor.Tool.csproj"
-      Properties="Configuration=$(Configuration)" />
+      Properties="Configuration=$(Configuration)"
+      GlobalPropertiesToRemove="PublishDir" />
 
     <ItemGroup>
       <_RazorToolOutput Include="$(ArtifactsBinDir)Microsoft.NET.Sdk.Razor.Tool\$(Configuration)\$(SdkTargetFramework)\publish\*.*" />
