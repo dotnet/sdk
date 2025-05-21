@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Security.Cryptography;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
 
@@ -154,6 +155,24 @@ public class NETFramework
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
                 dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
             }
+        }
+
+        [Fact]
+        public void ProjectNameCanMatchPackageReferenceName()
+        {
+            var testProject = new TestProject()
+            {
+                Name = "Newtonsoft.Json",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+            };
+
+            testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
+            testProject.AdditionalProperties["PackageId"] = "Newtonsoft.Json*";
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
         }
 
         [WindowsOnlyFact]
