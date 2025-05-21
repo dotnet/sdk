@@ -230,7 +230,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             ? targetFramework.Substring(3)
             : targetFramework;
 
-        var repoRoot = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\..");
+        var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\.."));
         Console.WriteLine($"repoRoot: {repoRoot}");
 
         // Combine the repo root with the rest of the path
