@@ -258,7 +258,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         }
 
         //var repoRoot = GetAndVerifyRepoRoot();
-        var assemblyDir1 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", ".."));
+        var assemblyDir1 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", ".."));
 
         Console.WriteLine($"Listing contents of assembly.location with changes: {assemblyDir1}");
 
@@ -339,6 +339,20 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             Console.WriteLine(" assemblyDir42 " + Path.Join(assemblyDir42, "template_feed"));
         }
 
+        var assemblyDir5 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", "..", "..", "..");
+
+        if (Directory.Exists(Path.Join(assemblyDir5, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir5 " + Path.Join(assemblyDir5, "template_feed"));
+        }
+
+        var assemblyDir6 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", "..", "..", "..", "..");
+
+        if (Directory.Exists(Path.Join(assemblyDir6, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir6 " + Path.Join(assemblyDir6, "template_feed"));
+        }
+
         ////Console.WriteLine($"repoRoot: {repoRoot}");
 
         //var path = Path.Combine(assemblyDir, "template_feed");
@@ -349,7 +363,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         //var assemblyDir = Path.GetFullPath(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty);
         //var baseDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
         return Path.Combine(
-            assemblyDir2,
+            assemblyDir5,
             "template_feed",
             "Microsoft.DotNet.Common.ProjectTemplates." + version,
             "content"
