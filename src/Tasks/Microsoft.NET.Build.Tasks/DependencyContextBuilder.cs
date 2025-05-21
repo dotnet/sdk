@@ -518,7 +518,7 @@ namespace Microsoft.NET.Build.Tasks
 
             return new ModifiableRuntimeLibrary(new RuntimeLibrary(
                 type: "project",
-                name: _mainProjectInfo.Name,
+                name: GetUniqueLibraryName(_mainProjectInfo.Name, "Project"),
                 version: _mainProjectInfo.Version,
                 hash: string.Empty,
                 runtimeAssemblyGroups: runtimeAssemblyGroups,
@@ -918,7 +918,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // Reference names can conflict with PackageReference names, so
                 // ensure that the Reference names are unique when creating libraries
-                name = GetUniqueReferenceName(reference.Name);
+                name = GetUniqueLibraryName(reference.Name);
 
                 ReferenceLibraryNames.Add(reference, name);
                 _usedLibraryNames.Add(name);
@@ -927,11 +927,11 @@ namespace Microsoft.NET.Build.Tasks
             return name;
         }
 
-        private string GetUniqueReferenceName(string name)
+        private string GetUniqueLibraryName(string name, string qualifier = "Reference")
         {
             if (_usedLibraryNames.Contains(name))
             {
-                string startingName = $"{name}.Reference";
+                string startingName = $"{name}.{qualifier}";
                 name = startingName;
 
                 int suffix = 1;
