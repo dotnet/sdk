@@ -258,7 +258,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         }
 
         //var repoRoot = GetAndVerifyRepoRoot();
-        var assemblyDir1 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\"));
+        var assemblyDir1 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", ".."));
 
         Console.WriteLine($"Listing contents of assembly.location with changes: {assemblyDir1}");
 
@@ -284,6 +284,60 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             Console.WriteLine("Directory does not exist: " + assemblyDir1);
         }
 
+        if (Directory.Exists(Path.Join(assemblyDir1, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir1 " + Path.Join(assemblyDir1, "template_feed"));
+        }
+
+        var assemblyDir2 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", ".."));
+
+        if (Directory.Exists(Path.Join(assemblyDir2, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir2 " + Path.Join(assemblyDir2, "template_feed"));
+        }
+
+        var assemblyDir3 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, ".."));
+
+        if (Directory.Exists(Path.Join(assemblyDir3, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir3 " + Path.Join(assemblyDir3, "template_feed"));
+        }
+
+        var assemblyDir4 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", "..", ".."));
+
+        if (Directory.Exists(Path.Join(assemblyDir4, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir4 " + Path.Join(assemblyDir4, "template_feed"));
+        }
+
+        var assemblyDir12 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..");
+
+
+        if (Directory.Exists(Path.Join(assemblyDir12, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir12 " + Path.Join(assemblyDir12, "template_feed"));
+        }
+
+        var assemblyDir22 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", "..");
+
+        if (Directory.Exists(Path.Join(assemblyDir22, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir22 " + Path.Join(assemblyDir22, "template_feed"));
+        }
+
+        var assemblyDir32 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..");
+
+        if (Directory.Exists(Path.Join(assemblyDir32, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir32 " + Path.Join(assemblyDir32, "template_feed"));
+        }
+
+        var assemblyDir42 = Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, "..", "..", "..", "..");
+
+        if (Directory.Exists(Path.Join(assemblyDir42, "template_feed")))
+        {
+            Console.WriteLine(" assemblyDir42 " + Path.Join(assemblyDir42, "template_feed"));
+        }
 
         ////Console.WriteLine($"repoRoot: {repoRoot}");
 
@@ -295,7 +349,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         //var assemblyDir = Path.GetFullPath(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty);
         //var baseDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
         return Path.Combine(
-            assemblyDir,
+            assemblyDir2,
             "template_feed",
             "Microsoft.DotNet.Common.ProjectTemplates." + version,
             "content"
