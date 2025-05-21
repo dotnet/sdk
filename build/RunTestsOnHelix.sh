@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+echo "📦 Installing dependencies for CentOS..."
+yum install -y zlib-devel libunwind || {
+    echo "❌ Failed to install required packages. Please check your permissions or network."
+    exit 1
+}
+
 # make NuGet network operations more robust
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
 export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
