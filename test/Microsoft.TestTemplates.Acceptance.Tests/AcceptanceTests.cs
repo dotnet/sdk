@@ -241,13 +241,13 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             Console.WriteLine("Directories:");
             foreach (var dir in directories)
             {
-                Console.WriteLine("  " + dir);
+                Console.WriteLine("directory: " + dir);
             }
 
             Console.WriteLine("Files:");
             foreach (var file in files)
             {
-                Console.WriteLine("  " + file);
+                Console.WriteLine("file: " + file);
             }
         }
         else
@@ -255,32 +255,25 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             Console.WriteLine("Directory does not exist: " + assemblyDir);
         }
 
-        var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\.."));
+        var repoRoot = GetAndVerifyRepoRoot();
+        //var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\.."));
         Console.WriteLine($"repoRoot: {repoRoot}");
 
         // Combine the repo root with the rest of the path
-        return Path.Combine(CalculateRepositoryRoot(), "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+        return Path.Combine(repoRoot, "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
     }
 
-    private static string CalculateRepositoryRoot()
+    private static string GetAndVerifyRepoRoot()
     {
-        string[] dirs = Directory.GetCurrentDirectory().Split(Path.DirectorySeparatorChar);
-        string repoRoot = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? dirs[0] : "/";
-#if NETFRAMEWORK
-        // In net framework, Path.Combine does not add \ when combining drive root with a  directory.
-        // e.g. C: + \Windows => C:Windows
-        // So we need to add it manually.
-        repoRoot += Path.DirectorySeparatorChar;
-#endif
-
-        foreach (string dir in dirs.Skip(1))
+        string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
+        if (!Directory.Exists(repoRoot))
         {
-            if (File.Exists(Path.Combine(repoRoot, "sdk.sln")))
-                break;
-
-            repoRoot = Path.Combine(repoRoot, dir);
+            Assert.Fail($"The repo root cannot be evaluated.");
         }
-
+        if (!File.Exists(Path.Combine(repoRoot, "sdk.sln")))
+        {
+            Assert.Fail($"The repo root doesn't contain 'sdk.sln'.");
+        }
         return repoRoot;
     }
 }
