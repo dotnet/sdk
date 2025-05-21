@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             _fileSystem.File.WriteAllText(assetFilePath, assetFileContents);
         }
-        protected override INuGetPackageDownloader CreateNuGetPackageDownloader(bool verifySignatures, VerbosityOptions verbosity, RestoreActionConfig restoreActionConfig)
+        protected override INuGetPackageDownloader CreateNuGetPackageDownloader(bool verifySignatures, VerbosityOptions verbosity, RestoreActionConfig? restoreActionConfig)
         {
             return new MockNuGetPackageDownloader(packageVersions: [new NuGetVersion(DefaultPackageVersion)]);
         }
