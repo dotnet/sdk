@@ -1,59 +1,40 @@
 #!/usr/bin/env bash
 
 install_dependencies() {
-  echo "📦 Installing dependencies..."
+  echo "Installing dependencies..."
 
   if [ -f /etc/os-release ]; then
-    echo "🔍 Detected /etc/os-release"
     . /etc/os-release
-    echo "🧾 OS Info: ID=$ID, VERSION_ID=$VERSION_ID, PRETTY_NAME=$PRETTY_NAME"
+    echo "Detected OS: $ID $VERSION_ID"
 
     case "$ID" in
-      ubuntu|debian)
-        echo "📦 Using apt-get to install dependencies..."
-        sudo apt-get update
-        sudo apt-get install -y zlib1g-dev libunwind8 clang lld || {
-          echo "❌ Failed to install dependencies with apt-get"
-          exit 1
-        }
-        ;;
       centos|rhel)
-        echo "📦 Using yum to install dependencies..."
-        sudo yum install -y zlib-devel libunwind clang lld || {
-          echo "❌ Failed to install dependencies with yum"
-          exit 1
-        }
+        sudo dnf install -y epel-release
+        sudo dnf config-manager --set-enabled crb
+        sudo dnf install -y zlib-devel clang lld libicu libunwind || exit 1
         ;;
       fedora)
-        echo "📦 Using dnf to install dependencies..."
-        sudo dnf install -y zlib-devel libunwind clang lld || {
-          echo "❌ Failed to install dependencies with dnf"
-          exit 1
-        }
+        sudo dnf install -y zlib-devel libunwind clang lld libicu || exit 1
         ;;
       alpine)
-        echo "📦 Using apk to install dependencies..."
-        sudo apk add --no-cache zlib-dev libunwind clang lld || {
-          echo "❌ Failed to install dependencies with apk"
-          exit 1
-        }
+        sudo apk add --no-cache zlib-dev libunwind libunwind-devel clang lld icu-libs || exit 1
         ;;
       *)
-        echo "⚠️ Unsupported OS: $ID. Please install dependencies manually."
+        echo "Unsupported OS: $ID. Please install dependencies manually."
         ;;
     esac
   else
-    echo "⚠️ /etc/os-release not found. Cannot determine OS."
+    echo "/etc/os-release not found. Cannot determine OS."
   fi
 
-  echo "✅ Dependency installation complete."
-  echo "🔍 Verifying installed tools..."
-  command -v clang && clang --version || echo "❌ clang not found"
-  command -v gcc && gcc --version || echo "❌ gcc not found"
-  command -v lld || echo "❌ lld not found"
+  echo "Verifying installed tools..."
+  command -v clang && clang --version || echo "clang not found"
+  command -v gcc && gcc --version || echo "gcc not found"
+  command -v lld || echo "lld not found"
 }
 
 install_dependencies
+
 
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
 export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
