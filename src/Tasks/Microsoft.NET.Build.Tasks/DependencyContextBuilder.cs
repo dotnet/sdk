@@ -262,6 +262,11 @@ namespace Microsoft.NET.Build.Tasks
 
             List<ModifiableRuntimeLibrary> runtimeLibraries = new();
 
+            if (_includeMainProjectInDepsFile)
+            {
+                runtimeLibraries.Add(GetProjectRuntimeLibrary());
+            }
+
             runtimeLibraries.AddRange(GetRuntimePackLibraries());
 
             foreach (var library in _dependencyLibraries.Values
@@ -297,11 +302,6 @@ namespace Microsoft.NET.Build.Tasks
                     serviceable: false));
 
                 runtimeLibraries.Add(runtimeLibrary);
-            }
-
-            if (_includeMainProjectInDepsFile)
-            {
-                runtimeLibraries.Add(GetProjectRuntimeLibrary());
             }
 
             /*
