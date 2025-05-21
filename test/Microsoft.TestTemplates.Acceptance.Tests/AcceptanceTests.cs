@@ -230,10 +230,57 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             ? targetFramework.Substring(3)
             : targetFramework;
 
+        var assemblyDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
+        Console.WriteLine($"Listing contents of: {assemblyDir}");
+
+        if (Directory.Exists(assemblyDir))
+        {
+            var directories = Directory.GetDirectories(assemblyDir);
+            var files = Directory.GetFiles(assemblyDir);
+
+            Console.WriteLine("Directories:");
+            foreach (var dir in directories)
+            {
+                Console.WriteLine("  " + dir);
+            }
+
+            Console.WriteLine("Files:");
+            foreach (var file in files)
+            {
+                Console.WriteLine("  " + file);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Directory does not exist: " + assemblyDir);
+        }
+
         var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\.."));
         Console.WriteLine($"repoRoot: {repoRoot}");
 
         // Combine the repo root with the rest of the path
-        return Path.Combine(repoRoot, "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+        return Path.Combine(CalculateRepositoryRoot(), "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+    }
+
+    private static string CalculateRepositoryRoot()
+    {
+        string[] dirs = Directory.GetCurrentDirectory().Split(Path.DirectorySeparatorChar);
+        string repoRoot = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? dirs[0] : "/";
+#if NETFRAMEWORK
+        // In net framework, Path.Combine does not add \ when combining drive root with a  directory.
+        // e.g. C: + \Windows => C:Windows
+        // So we need to add it manually.
+        repoRoot += Path.DirectorySeparatorChar;
+#endif
+
+        foreach (string dir in dirs.Skip(1))
+        {
+            if (File.Exists(Path.Combine(repoRoot, "sdk.sln")))
+                break;
+
+            repoRoot = Path.Combine(repoRoot, dir);
+        }
+
+        return repoRoot;
     }
 }
