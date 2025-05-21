@@ -231,56 +231,58 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             : targetFramework;
 
         //var assemblyDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
-        //Console.WriteLine($"Listing contents of: {assemblyDir}");
+        var assemblyDir = Path.GetFullPath(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty);
 
-        //if (Directory.Exists(assemblyDir))
-        //{
-        //    var directories = Directory.GetDirectories(assemblyDir);
-        //    var files = Directory.GetFiles(assemblyDir);
+        Console.WriteLine($"Listing contents of assembly.location: {assemblyDir}");
 
-        //    Console.WriteLine("Directories:");
-        //    foreach (var dir in directories)
-        //    {
-        //        Console.WriteLine("directory: " + dir);
-        //    }
+        if (Directory.Exists(assemblyDir))
+        {
+            var directories = Directory.GetDirectories(assemblyDir);
+            var files = Directory.GetFiles(assemblyDir);
 
-        //    Console.WriteLine("Files:");
-        //    foreach (var file in files)
-        //    {
-        //        Console.WriteLine("file: " + file);
-        //    }
-        //}
-        //else
-        //{
-        //    Console.WriteLine("Directory does not exist: " + assemblyDir);
-        //}
+            Console.WriteLine("Directories:");
+            foreach (var dir in directories)
+            {
+                Console.WriteLine("directory1: " + dir);
+            }
+
+            Console.WriteLine("Files:");
+            foreach (var file in files)
+            {
+                Console.WriteLine("file1: " + file);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Directory does not exist: " + assemblyDir);
+        }
 
         //var repoRoot = GetAndVerifyRepoRoot();
-        //var assemblyDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\"));
+        var assemblyDir1 = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\"));
 
-        //Console.WriteLine($"Listing contents of: {assemblyDir}");
+        Console.WriteLine($"Listing contents of assembly.location with changes: {assemblyDir1}");
 
-        //if (Directory.Exists(assemblyDir))
-        //{
-        //    var directories = Directory.GetDirectories(assemblyDir);
-        //    var files = Directory.GetFiles(assemblyDir);
+        if (Directory.Exists(assemblyDir1))
+        {
+            var directories = Directory.GetDirectories(assemblyDir1);
+            var files = Directory.GetFiles(assemblyDir1);
 
-        //    Console.WriteLine("Directories:");
-        //    foreach (var dir in directories)
-        //    {
-        //        Console.WriteLine("directory: " + dir);
-        //    }
+            Console.WriteLine("Directories:");
+            foreach (var dir in directories)
+            {
+                Console.WriteLine("directory2: " + dir);
+            }
 
-        //    Console.WriteLine("Files:");
-        //    foreach (var file in files)
-        //    {
-        //        Console.WriteLine("file: " + file);
-        //    }
-        //}
-        //else
-        //{
-        //    Console.WriteLine("Directory does not exist: " + assemblyDir);
-        //}
+            Console.WriteLine("Files:");
+            foreach (var file in files)
+            {
+                Console.WriteLine("file2: " + file);
+            }
+        }
+        else
+        {
+            Console.WriteLine("Directory does not exist: " + assemblyDir1);
+        }
 
 
         ////Console.WriteLine($"repoRoot: {repoRoot}");
@@ -290,7 +292,14 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         //Console.WriteLine($"templateFeedPath: {assemblyDir}");
 
         //var baseDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
-        return Path.Combine("template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+        //var assemblyDir = Path.GetFullPath(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty);
+        //var baseDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
+        return Path.Combine(
+            assemblyDir,
+            "template_feed",
+            "Microsoft.DotNet.Common.ProjectTemplates." + version,
+            "content"
+        );
     }
 
     private static string GetAndVerifyRepoRoot()
