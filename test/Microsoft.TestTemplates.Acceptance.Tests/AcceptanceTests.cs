@@ -229,6 +229,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         string version = targetFramework.StartsWith("net", StringComparison.OrdinalIgnoreCase)
             ? targetFramework.Substring(3)
             : targetFramework;
-        return Path.Combine("template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+        // Combine the repo root with the rest of the path
+        return Path.Combine(TestContext.GetRepoRoot() ?? AppContext.BaseDirectory, "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
     }
 }
