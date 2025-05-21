@@ -30,7 +30,8 @@
 
         <ProjectReference Include="../../Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj"
                           SetTargetFramework="TargetFramework=$(ResolverTargetFramework)"
-                          OutputItemType="DotNetCliUtilsLibraryOutput"/>
+                          OutputItemType="DotNetCliUtilsLibraryOutput"
+                          GlobalPropertiesToRemove="PublishDir"/>
 
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
                           SetTargetFramework="TargetFramework=$(VSCompatTargetFramework)"
