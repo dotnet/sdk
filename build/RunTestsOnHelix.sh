@@ -1,12 +1,33 @@
 #!/usr/bin/env bash
 
-echo "📦 Installing dependencies for CentOS..."
-yum install -y zlib-devel libunwind || {
-    echo "❌ Failed to install required packages. Please check your permissions or network."
-    exit 1
+install_dependencies() {
+  echo "📦 Installing dependencies..."
+  if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    case "$ID" in
+      ubuntu|debian)
+        apt-get update && apt-get install -y zlib1g-dev libunwind8
+        ;;
+      centos|rhel)
+        yum install -y zlib-devel libunwind
+        ;;
+      fedora)
+        dnf install -y zlib-devel libunwind
+        ;;
+      alpine)
+        apk add --no-cache zlib-dev libunwind
+        ;;
+      *)
+        echo "⚠️ Unsupported OS: $ID. Please install dependencies manually."
+        ;;
+    esac
+  else
+    echo "⚠️ /etc/os-release not found. Cannot determine OS."
+  fi
 }
 
-# make NuGet network operations more robust
+install_dependencies
+
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
 export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
 export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
