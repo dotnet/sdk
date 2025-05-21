@@ -230,7 +230,34 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             ? targetFramework.Substring(3)
             : targetFramework;
 
-        var assemblyDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
+        //var assemblyDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
+        //Console.WriteLine($"Listing contents of: {assemblyDir}");
+
+        //if (Directory.Exists(assemblyDir))
+        //{
+        //    var directories = Directory.GetDirectories(assemblyDir);
+        //    var files = Directory.GetFiles(assemblyDir);
+
+        //    Console.WriteLine("Directories:");
+        //    foreach (var dir in directories)
+        //    {
+        //        Console.WriteLine("directory: " + dir);
+        //    }
+
+        //    Console.WriteLine("Files:");
+        //    foreach (var file in files)
+        //    {
+        //        Console.WriteLine("file: " + file);
+        //    }
+        //}
+        //else
+        //{
+        //    Console.WriteLine("Directory does not exist: " + assemblyDir);
+        //}
+
+        //var repoRoot = GetAndVerifyRepoRoot();
+        var assemblyDir = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\"));
+
         Console.WriteLine($"Listing contents of: {assemblyDir}");
 
         if (Directory.Exists(assemblyDir))
@@ -255,12 +282,14 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
             Console.WriteLine("Directory does not exist: " + assemblyDir);
         }
 
-        var repoRoot = GetAndVerifyRepoRoot();
-        //var repoRoot = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty, @"..\..\..\..\.."));
-        Console.WriteLine($"repoRoot: {repoRoot}");
 
+        //Console.WriteLine($"repoRoot: {repoRoot}");
+
+        var path = Path.Combine(assemblyDir, "template_feed");
         // Combine the repo root with the rest of the path
-        return Path.Combine(repoRoot, "template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
+        Console.WriteLine($"templateFeedPath: {assemblyDir}");
+
+        return Path.Combine(path, "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
     }
 
     private static string GetAndVerifyRepoRoot()
