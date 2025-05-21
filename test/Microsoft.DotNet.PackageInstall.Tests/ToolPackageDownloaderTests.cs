@@ -475,6 +475,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             static void FailedStepAfterSuccessDownload() => throw new GracefulException("simulated error");
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
+            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+
+            if (fileSystem.Directory.Exists(localToolVersionDir))
+            {
+                fileSystem.Directory.Delete(localToolVersionDir, true);
+            }
 
             Action a = () =>
             {
@@ -489,9 +495,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         targetFramework: _testTargetframework,
                         verifySignatures: false);
 
-                    fileSystem
-                    .Directory
+                    fileSystem.Directory
                         .Exists(localToolDownloadDir)
+                        .Should()
+                        .BeTrue();
+
+                    fileSystem.Directory
+                        .Exists(localToolVersionDir)
                         .Should()
                         .BeTrue();
 
@@ -508,7 +518,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .BeTrue();
 
-            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+            
             fileSystem
                 .Directory
                 .Exists(localToolVersionDir)
