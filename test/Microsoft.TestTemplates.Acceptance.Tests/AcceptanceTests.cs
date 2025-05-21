@@ -289,6 +289,7 @@ public sealed partial class AcceptanceTests : IClassFixture<AcceptanceTests.Temp
         //// Combine the repo root with the rest of the path
         //Console.WriteLine($"templateFeedPath: {assemblyDir}");
 
+        //var baseDir = Path.GetDirectoryName(typeof(AcceptanceTests).Assembly.Location) ?? string.Empty;
         return Path.Combine("template_feed", "Microsoft.DotNet.Common.ProjectTemplates." + version, "content");
     }
 

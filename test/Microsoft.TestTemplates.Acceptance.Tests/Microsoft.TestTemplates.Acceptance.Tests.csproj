@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
-    <TestTemplateTestsDirectory>$(ArtifactsBinDir)\$(OutDirName)</TestTemplateTestsDirectory>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
@@ -25,7 +24,7 @@
     <TemplateFeedFolder Include="..\..\template_feed\**\*.*" />
   </ItemGroup>
 
-  <Target Name="CopyTarget">
-    <Copy SourceFiles="@(TemplateFeedFolder)" DestinationFiles="@(TemplateFeedFolder->'$(TestTemplateTestsDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+  <Target Name="CopyTarget" AfterTargets="Build">
+    <Copy SourceFiles="@(TemplateFeedFolder)" DestinationFiles="@(TemplateFeedFolder->'$(ArtifactsBinDir)/Tests/$(MSBuildProjectName)/$(Configuration)/template_feed/%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 </Project>
