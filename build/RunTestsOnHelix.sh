@@ -2,20 +2,41 @@
 
 install_dependencies() {
   echo "📦 Installing dependencies..."
+
   if [ -f /etc/os-release ]; then
+    echo "🔍 Detected /etc/os-release"
     . /etc/os-release
+    echo "🧾 OS Info: ID=$ID, VERSION_ID=$VERSION_ID, PRETTY_NAME=$PRETTY_NAME"
+
     case "$ID" in
       ubuntu|debian)
-        apt-get update && apt-get install -y zlib1g-dev libunwind8
+        echo "📦 Using apt-get to install dependencies..."
+        sudo apt-get update
+        sudo apt-get install -y zlib1g-dev libunwind8 clang lld || {
+          echo "❌ Failed to install dependencies with apt-get"
+          exit 1
+        }
         ;;
       centos|rhel)
-        yum install -y zlib-devel libunwind
+        echo "📦 Using yum to install dependencies..."
+        sudo yum install -y zlib-devel libunwind clang lld || {
+          echo "❌ Failed to install dependencies with yum"
+          exit 1
+        }
         ;;
       fedora)
-        dnf install -y zlib-devel libunwind
+        echo "📦 Using dnf to install dependencies..."
+        sudo dnf install -y zlib-devel libunwind clang lld || {
+          echo "❌ Failed to install dependencies with dnf"
+          exit 1
+        }
         ;;
       alpine)
-        apk add --no-cache zlib-dev libunwind
+        echo "📦 Using apk to install dependencies..."
+        sudo apk add --no-cache zlib-dev libunwind clang lld || {
+          echo "❌ Failed to install dependencies with apk"
+          exit 1
+        }
         ;;
       *)
         echo "⚠️ Unsupported OS: $ID. Please install dependencies manually."
@@ -24,6 +45,12 @@ install_dependencies() {
   else
     echo "⚠️ /etc/os-release not found. Cannot determine OS."
   fi
+
+  echo "✅ Dependency installation complete."
+  echo "🔍 Verifying installed tools..."
+  command -v clang && clang --version || echo "❌ clang not found"
+  command -v gcc && gcc --version || echo "❌ gcc not found"
+  command -v lld || echo "❌ lld not found"
 }
 
 install_dependencies
