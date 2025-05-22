@@ -1,14 +1,5 @@
 ﻿<!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Project Sdk="Microsoft.WixToolset.Sdk">
-  <PropertyGroup>
-    <OutputName>$(SdkPlaceholderMsiOutputName)</OutputName>
-  </PropertyGroup>
-
-  <!-- MSI specific -->
-  <PropertyGroup>
-    <DefineConstants>$(DefineConstants);DependencyKeyName=NetCore_SdkPlaceholder</DefineConstants>    
-  </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="$(PkgMicrosoft_DotNet_Build_Tasks_Installers)\build\wix5\product\dotnethome_x64.wxs" />
     <Compile Include="..\provider.wxs" />
@@ -22,10 +13,10 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" GeneratePathProperty="true"/>
   </ItemGroup>
 
-  <Target Name="SetInstallerInfo" BeforeTargets="GenerateUpgradeCode">
+  <Target Name="SetInstallerInfo" BeforeTargets="CoreCompile">
     <PropertyGroup>
-      <InstallerPath>$(SdkPlaceholderMSIInstallerFile)</InstallerPath>
       <DefineConstants>$(DefineConstants);ProductName=$(SdkPlatformBrandName) from Visual Studio</DefineConstants>
+      <DefineConstants>$(DefineConstants);DependencyKeyName=NetCore_SdkPlaceholder</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

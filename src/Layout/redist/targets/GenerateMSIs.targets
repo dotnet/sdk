@@ -4,6 +4,7 @@
     <GenerateMsisDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">
       GenerateSdkMsi;
       GenerateTemplatesMsis;
+      GenerateSdkPlaceholderMsi
     </GenerateMsisDependsOn>
     <GenerateMsisDependsOn>$(GenerateMsisDependsOn);GenerateSdkBundle</GenerateMsisDependsOn>
 
@@ -29,7 +30,6 @@
   <PropertyGroup>
     <SdkPkgSourcesWindowsDirectory>$(SdkPkgSourcesRootDirectory)windows</SdkPkgSourcesWindowsDirectory>
     <SdkGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatemsi.ps1</SdkGenerateMsiPowershellScript>
-    <SdkStableFileIdForApphostTransform>$(SdkPkgSourcesWindowsDirectory)\stablefileidforapphosttransform.xslt</SdkStableFileIdForApphostTransform>
     <SdkGenerateBundlePowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatebundle.ps1</SdkGenerateBundlePowershellScript>
 
     <FinalizerExe>$(ArtifactsBinDir)finalizer\win-$(TargetArchitecture)\$(Configuration)\bin\finalizer.exe</FinalizerExe>
@@ -52,21 +52,24 @@
     <SdkBundleInstallerOutputGuidString>Dotnet SDK Bundle Installer $(CliProductBandVersion) $(ProductMonikerRid)</SdkBundleInstallerOutputGuidString>
   </PropertyGroup>
 
+  <!-- This target relies on tasks from the Microsoft.DotNet.Build.Tasks.Installers package. -->
   <Target Name="MsiTargetsSetupInputOutputs" DependsOnTargets="GetAssemblyVersion">
     <PropertyGroup>
       <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day)
            Fallback to 0 when patch number is not set. This happens only during CI. -->
       <CombinedBuildNumberAndRevision>$([MSBuild]::ValueOrDefault('$(_PatchNumber)', '000000'))</CombinedBuildNumberAndRevision>
 
-      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day) -->
-      <SDKBundleVersion>$(FileVersion)</SDKBundleVersion>
+      <!-- This number comes from arcade and combines the date based build number id and the revision (incremental number per day). This number is
+           a 4-part version. -->
+      <BundleVersion>$(FileVersion)</BundleVersion>
     </PropertyGroup>
 
+    <!-- MSI versions are 32-bit integers. See https://docs.microsoft.com/en-us/windows/win32/msi/productversion for more detail. -->
     <GenerateMsiVersion BuildNumber="$(CombinedBuildNumberAndRevision)"
                         Major="$(VersionMajor)"
                         Minor="$(VersionMinor)"
                         Patch="$(VersionFeature)">
-      <Output TaskParameter="MsiVersion" PropertyName="MsiVersion" />
+      <Output TaskParameter="MsiVersion" PropertyName="ProductVersion" />
     </GenerateMsiVersion>
   </Target>
 
@@ -93,104 +96,45 @@
   </Target>
 
   <Target Name="GenerateSdkMsi"
-          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;PrepareIntermediateSdkInstallerOutput"
-          Inputs="$(IntermediateSdkInstallerOutputPath)**/*;
-                  $(SdkGenerateMsiPowershellScript)"
+          DependsOnTargets="GenerateInstallerLayout;MsiTargetsSetupInputOutputs;PrepareIntermediateSdkInstallerOutput"
+          Inputs="$(IntermediateSdkInstallerOutputPath)**/*"
           Outputs="$(SdkMSIInstallerFile)">
-    <GenerateGuidFromName Name="$(SdkMSIInstallerFile)">
-      <Output TaskParameter="GeneratedGuid" PropertyName="SdkInstallerUpgradeCode" />
-    </GenerateGuidFromName>
 
-    <Exec Command="powershell -NoProfile -NoLogo $(SdkGenerateMsiPowershellScript) ^
-                      '$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))' ^
-                      '$(SdkMSIInstallerFile)' ^
-                      '$(WixRoot)' ^
-                      '$(ToolsetBrandName)' ^
-                      '$(CliProductBandVersion)00' ^
-                      '$(MsiVersion)' ^
-                      '$(SDKBundleVersion)' ^
-                      '$(Version)' ^
-                      '$(VersionMajor)' ^
-                      '$(VersionMinor)' ^
-                      '$(SdkInstallerUpgradeCode)' ^
-                      '$(SdkDependencyKeyName)' ^
-                      '$(TargetArchitecture)' ^
-                      '$(SdkStableFileIdForApphostTransform)' ^
-                      -InformationAction Continue" />
+    <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\msis\toolset\toolset.wixproj"
+             Properties="InstallerPath=$(SdkMSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion);
+                         Version=$(Version);
+                         SdkLayoutDirectoryToHarvest=$(IntermediateSdkInstallerOutputPath.TrimEnd('\'));
+                         DotnetSrc=$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))"/>
+  </Target>
 
-    <ItemGroup>
-        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnet.wixobj" />
-        <SdkMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
-        <SdkMsiWixSrcFiles Include="$(WixRoot)\registrykeys.wixobj" />
-        <SdkMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
-        <SdkMsiWixSrcFiles Include="$(WixRoot)\install-files.wixobj" />
-    </ItemGroup>
+  <Target Name="GenerateSdkPlaceholderMsi"
+          DependsOnTargets="MsiTargetsSetupInputOutputs"
+          Inputs="$(RepoRoot)src\Layout\pkg\windows\msis\placeholder\placeholder.wixproj"
+          Outputs="$(SdkPlaceholderMSIInstallerFile)">
 
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(LightCommandObjDir)"
-      OutputFolder="$(LightCommandPackagesDir)"
-      AdditionalBasePaths="$(SdkPkgSourcesWindowsDirectory)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="$(SdkMSIInstallerFile)"
-      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
-      WixSrcFiles="@(SdkMsiWixSrcFiles)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
+    <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\msis\placeholder\placeholder.wixproj"
+             Properties="InstallerPath=$(SdkPlaceholderMSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion)"/>
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
-          DependsOnTargets="GenerateInstallerLayout;AcquireWix;MsiTargetsSetupInputOutputs;SetupTemplatesMsis"
-          Inputs="@(TemplatesMsiComponent);$(TemplatesGenerateMsiPowershellScript)"
-          Outputs="%(TemplatesMsiComponent.MSIInstallerFile)">
-    <Exec Command="powershell -NoProfile -NoLogo $(TemplatesGenerateMsiPowershellScript) ^
-                      '%(TemplatesMsiComponent.LayoutPath)' ^
-                      '%(TemplatesMsiComponent.MSIInstallerFile)' ^
-                      '$(WixRoot)' ^
-                      '%(TemplatesMsiComponent.BrandName)' ^
-                      '%(TemplatesMsiComponent.MsiVersion)' ^
-                      '%(TemplatesMsiComponent.MsiVersion)' ^
-                      '$(FullNugetVersion)' ^
-                      '$(VersionMajor)' ^
-                      '$(VersionMinor)' ^
-                      '%(TemplatesMsiComponent.UpgradeCode)' ^
-                      '%(TemplatesMsiComponent.DependencyKeyName)' ^
-                      '$(TargetArchitecture)' ^
-                      -InformationAction Continue" />
+          DependsOnTargets="GenerateInstallerLayout;MsiTargetsSetupInputOutputs;CalculateTemplatesVersions"
+          Inputs="@(TemplatesComponents);C:\git\forks\sdk\src\Layout\pkg\windows\msis\**\*"
+          Outputs="%(TemplatesComponents.MSIInstallerFile)">
 
     <ItemGroup>
-        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\provider.wixobj" />
-        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\templates.wixobj" />
-        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\dotnethome_x64.wixobj" />
-        <TemplatesMsiWixSrcFiles Include="$(WixRoot)\template-install-files.wixobj" />
-    </ItemGroup>
-
-    <CreateLightCommandPackageDrop
-      LightCommandWorkingDir="$(LightCommandObjDir)"
-      OutputFolder="$(LightCommandPackagesDir)"
-      NoLogo="true"
-      Cultures="en-us"
-      InstallerFile="%(TemplatesMsiComponent.MSIInstallerFile)"
-      WixExtensions="WixUIExtension;WixDependencyExtension;WixUtilExtension"
-      WixSrcFiles="@(TemplatesMsiWixSrcFiles)">
-      <Output TaskParameter="OutputFile" PropertyName="_LightCommandPackageNameOutput" />
-    </CreateLightCommandPackageDrop>
-  </Target>
-
-  <Target Name="SetupTemplatesMsis" DependsOnTargets="CalculateTemplatesVersions">
-    <PropertyGroup>
-      <TemplatesGenerateMsiPowershellScript>$(SdkPkgSourcesWindowsDirectory)\generatetemplatesmsi.ps1</TemplatesGenerateMsiPowershellScript>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <TemplatesMsiComponent Include="@(TemplatesComponents)">
+      <TemplatesMsi Include="@(TemplatesComponents)">
         <LayoutPath>$(IntermediateOutputPath)templates-%(TemplatesComponents.TemplatesMajorMinorVersion)</LayoutPath>
         <BrandName>%(TemplatesComponents.BrandNameWithoutVersion) $(Version)</BrandName>
-        <MsiVersion>%(TemplatesComponents.MSIVersion)</MsiVersion>
-        <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>
         <DependencyKeyName>NetCore_Templates_%(TemplatesComponents.TemplatesMajorMinorVersion)</DependencyKeyName>
-      </TemplatesMsiComponent>
+        <UpgradeCode>%(TemplatesComponents.InstallerUpgradeCode)</UpgradeCode>
+        <Project>$(RepoRoot)src\Layout\pkg\windows\msis\templates\templates.wixproj</Project>
+      </TemplatesMsi>
     </ItemGroup>
+
+    <MSBuild Projects="%(TemplatesMsi.Project)" Targets="Clean;Build"
+             Properties="InstallerPath=%(MSIInstallerFile);ProductVersion=$(ProductVersion);DependencyKeyName=%(DependencyKeyName);TemplateLayoutDirectoryToHarvest=%(LayoutPath);
+                         BrandName=%(BrandName);UpgradeCode=%(UpgradeCode); 
+                         DotnetSrc=%(LayoutPath)"/>
   </Target>
 
   <Target Name="UnzipBuiltinWorkloadManifestMsiNuPkg">
@@ -336,6 +280,7 @@
 
   <Target Name="GenerateMsis"
           AfterTargets="AfterBuild"
-          DependsOnTargets="$(GenerateMsisDependsOn)" />
+          DependsOnTargets="$(GenerateMsisDependsOn)">
+  </Target>
 
 </Project>

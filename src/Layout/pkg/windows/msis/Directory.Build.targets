@@ -1,17 +1,22 @@
 <Project>
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
-  <Import Project="$(ArtifactsDir)Directory.Wix.targets"/>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <DefineConstants>$(DefineConstants);ProductVersion=$(ProductVersion)</DefineConstants>
+    <DefineConstants>$(DefineConstants);BundleVersion=$(BundleVersion)</DefineConstants>
+
+    <!-- This will only be passed through if project require harvesting files -->
+    <DefineConstants Condition="'$(DotnetSrc)' != ''">$(DefineConstants);DotnetSrc=$(DotnetSrc)</DefineConstants>
   </PropertyGroup>
 
   <!-- MSI upgrade codes are generated based on the name of the installer, which typically includes the version and platform information. -->
   <Target Name="GenerateUpgradeCode" BeforeTargets="CoreCompile">
-    <Error Condition="'$(InstallerPath)' == ''" Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
+    <Error Condition="'$(InstallerPath)' == '' AND '$(UpgradeCode)' == ''"
+           Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
     
     <!-- Only use the file name when generating the GUID. Full paths may be inconsistent across different build environments. -->
-    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))">
+    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))" Condition="'$(UpgradeCode)' == ''">
       <Output TaskParameter="GeneratedGuid" PropertyName="UpgradeCode" />
     </GenerateGuidFromName>
 

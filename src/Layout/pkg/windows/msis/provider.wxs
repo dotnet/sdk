@@ -17,7 +17,7 @@
              SDK Placeholder: NetCore_SdkPlaceholder_6.1.21.45832_x64
                  SDK Toolset: Dotnet_CLI_9.3.25.17705_x64
                    Templates: NetCore_Templates_8.0_32.7.63663_x64 -->
-        <Provides Key="$(DependencyKeyName)_$(SDKBundleVersion)_$(InstallerPlatform)" dep:Check="yes" />
+        <Provides Key="$(DependencyKeyName)_$(BundleVersion)_$(InstallerPlatform)" dep:Check="yes" />
       </Component>
     </Feature>
   </Fragment>
