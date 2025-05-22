@@ -37,7 +37,7 @@ variables:
 - template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
 
 # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
-- group: DotNet-Source-Build-Bot-Secrets-MVP
+- group: Dotnet-SourceBuild-Secrets
 
 jobs:
 - template: templates/jobs/sdk-diff-tests.yml
