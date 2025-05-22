@@ -603,16 +603,5 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .And.HaveStdOutContaining($"Success: {invalidTemplatePath} installed the following templates:")
                 .And.HaveStdOutContaining("TestAssets.Invalid.InvalidHostData");
         }
-
-        [Fact]
-        public void CanShowWarning_WhenHostDataIsIncorrect1()
-        {
-            string templatePackagePath = Path.Combine(RepoTemplatePackages, "Microsoft.DotNet.Common.ProjectTemplates.10.0", "content");
-            new DotnetNewCommand(_log, "install", templatePackagePath)
-                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
-                .WithWorkingDirectory(CreateTemporaryFolder())
-                .Execute()
-                .Should().ExitWith(0);
-        }
     }
 }
