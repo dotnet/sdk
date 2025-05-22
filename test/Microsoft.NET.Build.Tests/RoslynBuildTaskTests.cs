@@ -9,65 +9,86 @@ namespace Microsoft.NET.Build.Tests;
 
 public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
 {
-    private const string CoreCompilerFileName = "csc.dll";
-    private const string FxCompilerFileName = "csc.exe";
+    private static string CompilerFileNameWithoutExtension(Language language) => language switch
+    {
+        Language.CSharp => "csc",
+        Language.VisualBasic => "vbc",
+        _ => throw new ArgumentOutOfRangeException(paramName: nameof(language)),
+    };
+
+    private static string CoreCompilerFileName(Language language) => CompilerFileNameWithoutExtension(language) + ".dll";
+
+    private static string FxCompilerFileName(Language language) => CompilerFileNameWithoutExtension(language) + ".exe";
 
     [FullMSBuildOnlyTheory, CombinatorialData]
-    public void FullMSBuild_SdkStyle(bool useSharedCompilation)
+    public void FullMSBuild_SdkStyle(bool useSharedCompilation, Language language)
     {
-        var testAsset = CreateProject(useSharedCompilation);
+        var testAsset = CreateProject(useSharedCompilation, language);
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, CoreCompilerFileName, useSharedCompilation);
+        VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
-    public void FullMSBuild_SdkStyle_OptOut(bool useSharedCompilation)
+    public void FullMSBuild_SdkStyle_OptOut(bool useSharedCompilation, Language language)
     {
-        var testAsset = CreateProject(useSharedCompilation).WithProjectChanges(static doc =>
+        var testAsset = CreateProject(useSharedCompilation, language).WithProjectChanges(static doc =>
         {
             doc.Root!.Element("PropertyGroup")!.Add(new XElement("RoslynCompilerType", "Framework"));
         });
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, FxCompilerFileName, useSharedCompilation);
+        VerifyCompiler(buildCommand, FxCompilerFileName(language), useSharedCompilation);
     }
 
     [FullMSBuildOnlyTheory, CombinatorialData]
-    public void FullMSBuild_NonSdkStyle(bool useSharedCompilation)
+    public void FullMSBuild_NonSdkStyle(bool useSharedCompilation, Language language)
     {
-        var testAsset = CreateProject(useSharedCompilation, static project =>
+        var testAsset = CreateProject(useSharedCompilation, language, static project =>
         {
             project.IsSdkProject = false;
             project.TargetFrameworkVersion = "v4.7.2";
         });
         var buildCommand = BuildAndRunUsingMSBuild(testAsset);
-        VerifyCompiler(buildCommand, FxCompilerFileName, useSharedCompilation);
+        VerifyCompiler(buildCommand, FxCompilerFileName(language), useSharedCompilation);
     }
 
     [Theory, CombinatorialData]
-    public void DotNet(bool useSharedCompilation)
+    public void DotNet(bool useSharedCompilation, Language language)
     {
-        var testAsset = CreateProject(useSharedCompilation);
+        var testAsset = CreateProject(useSharedCompilation, language);
         var buildCommand = BuildAndRunUsingDotNet(testAsset);
-        VerifyCompiler(buildCommand, CoreCompilerFileName, useSharedCompilation);
+        VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
     }
 
-    private TestAsset CreateProject(bool useSharedCompilation, Action<TestProject>? configure = null, [CallerMemberName] string callingMethod = "")
+    private TestAsset CreateProject(bool useSharedCompilation, Language language, Action<TestProject>? configure = null, [CallerMemberName] string callingMethod = "")
     {
+        var (projExtension, sourceName, sourceText) = language switch
+        {
+            Language.CSharp => (".csproj", "Program.cs", """
+                class Program
+                {
+                    static void Main()
+                    {
+                        System.Console.WriteLine(40 + 2);
+                    }
+                }
+                """),
+            Language.VisualBasic => (".vbproj", "Program.vb", """
+                Module Program
+                    Sub Main()
+                        System.Console.WriteLine(40 + 2)
+                    End Sub
+                End Module
+                """),
+            _ => throw new ArgumentOutOfRangeException(paramName: nameof(language)),
+        };
+
         var project = new TestProject
         {
             Name = "App1",
             IsExe = true,
             SourceFiles =
             {
-                ["Program.cs"] = """
-                    class Program
-                    {
-                        static void Main()
-                        {
-                            System.Console.WriteLine(40 + 2);
-                        }
-                    }
-                    """,
+                [sourceName] = sourceText,
             },
         };
 
@@ -78,7 +99,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
+        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, targetExtension: projExtension);
     }
 
     private TestCommand BuildAndRunUsingMSBuild(TestAsset testAsset)
@@ -124,5 +145,11 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         compilerServerMesssages.Should().ContainSingle().Which.Text.Should().StartWith(usedCompilerServer
             ? "CompilerServer: server - server processed compilation - "
             : "CompilerServer: tool - using command line tool by design");
+    }
+
+    public enum Language
+    {
+        CSharp,
+        VisualBasic,
     }
 }

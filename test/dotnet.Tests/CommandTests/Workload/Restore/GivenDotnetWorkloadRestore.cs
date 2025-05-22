@@ -17,7 +17,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         if(IsRunningInContainer())
         {
-            // Skipping test in containerized: DOTNET_ROOT is read-only, causing workload restore to fail due to inability to write metadata.
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
         }
 
@@ -40,7 +40,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
     {
         if(IsRunningInContainer())
         {
-            // Skipping test in containerized: DOTNET_ROOT is read-only, causing workload restore to fail due to inability to write metadata.
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
             return;
         }
 
@@ -51,11 +51,11 @@ public class GivenDotnetWorkloadRestore : SdkTest
                 .Path;
 
         new DotnetWorkloadCommand(Log, "restore")
-            .WithWorkingDirectory(projectPath)
-            .Execute()
-            .Should()
-            // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
-            .Pass();
+        .WithWorkingDirectory(projectPath)
+        .Execute()
+        .Should()
+        // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
+        .Pass();
     }
 
     private bool IsRunningInContainer()
