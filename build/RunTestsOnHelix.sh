@@ -1,40 +1,9 @@
 #!/usr/bin/env bash
 
-install_dependencies() {
-  echo "Installing dependencies..."
+# This script prepares required dependencies for running .NET SDK tests on Helix.
+source "$(dirname "$0")/install_dependencies.sh"
 
-  if [ -f /etc/os-release ]; then
-    . /etc/os-release
-    echo "Detected OS: $ID $VERSION_ID"
-
-    case "$ID" in
-      centos|rhel)
-        sudo dnf install -y epel-release || { echo "Failed to install epel-release"; exit 1; }
-        sudo dnf config-manager --set-enabled crb || { echo "Failed to enable CRB repository"; exit 1; }
-        sudo dnf install -y zlib-devel libunwind || { echo "Failed to install dependencies"; exit 1; }
-        ;;
-      fedora)
-        sudo dnf install -y clang || { echo "Failed to install clang"; exit 1; }
-        ;;
-      alpine)
-        sudo apk add --no-cache clang || { echo "Failed to install clang"; exit 1; }
-        ;;
-      *)
-        echo "Unsupported OS: $ID. Please install dependencies manually."
-        exit 1
-        ;;
-    esac
-  else
-    echo "/etc/os-release not found. Cannot determine OS."
-    exit 1
-  fi
-
-  echo "Dependencies installation complete."
-}
-
-install_dependencies
-
-
+# make NuGet network operations more robust
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
 export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
 export NUGET_EXPERIMENTAL_NETWORK_RETRY_DELAY_MILLISECONDS=1000
