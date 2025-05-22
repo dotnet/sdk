@@ -98,22 +98,28 @@ public static class Parser
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> InfoOption = new("--info")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> ListSdksOption = new("--list-sdks")
     {
-        Arity = ArgumentArity.Zero,
+        Arity = ArgumentArity.Zero
     };
 
     public static readonly Option<bool> ListRuntimesOption = new("--list-runtimes")
     {
+        Arity = ArgumentArity.Zero
+    };
+
+    public static readonly Option<bool> CliSchemaOption = new("--cli-schema")
+    {
         Arity = ArgumentArity.Zero,
+        Recursive = true
     };
 
     // Argument
@@ -152,6 +158,7 @@ public static class Parser
         rootCommand.Options.Add(InfoOption);
         rootCommand.Options.Add(ListSdksOption);
         rootCommand.Options.Add(ListRuntimesOption);
+        rootCommand.Options.Add(CliSchemaOption);
 
         // Add argument
         rootCommand.Arguments.Add(DotnetSubCommand);
@@ -175,11 +182,8 @@ public static class Parser
         return rootCommand;
     }
 
-    public static Command GetBuiltInCommand(string commandName)
-    {
-        return Subcommands
-            .FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
-    }
+    public static Command GetBuiltInCommand(string commandName) =>
+        Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling

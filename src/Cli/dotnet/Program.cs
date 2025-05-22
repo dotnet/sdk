@@ -134,17 +134,18 @@ public class Program
         }
         PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
-        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
-            new FirstTimeUseNoticeSentinel())
+        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel())
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = disposableFirstTimeUseNoticeSentinel;
             IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-            IFileSentinel toolPathSentinel = new FileSentinel(
-                new FilePath(
-                    Path.Combine(
-                        CliFolderPathCalculator.DotnetUserProfileFolderPath,
-                        ToolPathSentinelFileName)));
-            if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
+            IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath,ToolPathSentinelFileName)));
+
+            if (parseResult.GetValue(Parser.CliSchemaOption))
+            {
+                CommandLineInfo.PrintCliSchema(parseResult.CommandResult.Command);
+                return 0;
+            }
+            else if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
             {
                 // We found --diagnostic or -d, but we still need to determine whether the option should
                 // be attached to the dotnet command or the subcommand.
