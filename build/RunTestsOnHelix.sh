@@ -9,28 +9,27 @@ install_dependencies() {
 
     case "$ID" in
       centos|rhel)
-        sudo dnf install -y epel-release
-        sudo dnf config-manager --set-enabled crb
-        sudo dnf install -y zlib-devel clang lld libicu libunwind || exit 1
+        sudo dnf install -y epel-release || { echo "Failed to install epel-release"; exit 1; }
+        sudo dnf config-manager --set-enabled crb || { echo "Failed to enable CRB repository"; exit 1; }
+        sudo dnf install -y zlib-devel libunwind || { echo "Failed to install dependencies"; exit 1; }
         ;;
       fedora)
-        sudo dnf install -y zlib-devel libunwind clang lld libicu || exit 1
+        sudo dnf install -y clang || { echo "Failed to install clang"; exit 1; }
         ;;
       alpine)
-        sudo apk add --no-cache zlib-dev libunwind libunwind-devel clang lld icu-libs || exit 1
+        sudo apk add --no-cache clang || { echo "Failed to install clang"; exit 1; }
         ;;
       *)
         echo "Unsupported OS: $ID. Please install dependencies manually."
+        exit 1
         ;;
     esac
   else
     echo "/etc/os-release not found. Cannot determine OS."
+    exit 1
   fi
 
-  echo "Verifying installed tools..."
-  command -v clang && clang --version || echo "clang not found"
-  command -v gcc && gcc --version || echo "gcc not found"
-  command -v lld || echo "lld not found"
+  echo "Dependencies installation complete."
 }
 
 install_dependencies
