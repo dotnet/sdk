@@ -13,7 +13,26 @@
     <DefineConstants>$(DefineConstants);NativeMachine_x86=332</DefineConstants>
     <DefineConstants>$(DefineConstants);NativeMachine_x64=34404</DefineConstants>
     <DefineConstants>$(DefineConstants);NativeMachine_arm64=43620</DefineConstants>
+
+    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <DefineConstants Condition="'$(ProductVersion)' != ''">$(DefineConstants);ProductVersion=$(ProductVersion)</DefineConstants>
+    <DefineConstants Condition="'$(BundleVersion)' != ''">$(DefineConstants);BundleVersion=$(BundleVersion)</DefineConstants>
   </PropertyGroup>
+
+  <!-- MSI upgrade codes are generated based on the name of the installer, which typically includes the version and platform information. -->
+  <Target Name="GenerateUpgradeCode" BeforeTargets="CoreCompile">
+    <Error Condition="'$(InstallerPath)' == '' AND '$(UpgradeCode)' == ''"
+           Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
+
+    <!-- Only use the file name when generating the GUID. Full paths may be inconsistent across different build environments. -->
+    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))" Condition="'$(UpgradeCode)' == ''">
+      <Output TaskParameter="GeneratedGuid" PropertyName="UpgradeCode" />
+    </GenerateGuidFromName>
+
+    <PropertyGroup>
+      <DefineConstants>$(DefineConstants);UpgradeCode=$(UpgradeCode)</DefineConstants>
+    </PropertyGroup>
+  </Target>
 
   <!-- This target does nothing. It's intended to allow ProjectReference items to specify a target that has
        no build impact, but allow projects to participate in restore operations.  -->

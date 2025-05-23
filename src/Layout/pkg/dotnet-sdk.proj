@@ -44,6 +44,8 @@
                       Targets="Idle"/>
     <ProjectReference Include="windows\msis\toolset\toolset.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
                       Targets="Idle"/>
+    <ProjectReference Include="windows\bundles\sdk\bundle.wixproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true"
+                      Targets="Idle"/>
   </ItemGroup>
 
   <ItemGroup>

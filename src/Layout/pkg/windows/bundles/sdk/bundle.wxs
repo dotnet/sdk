@@ -30,10 +30,9 @@
     <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles6432Folder]dotnet" />
 
     <!-- Search references for upgrade policy keys -->
-    <!--<util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
+    <util:RegistrySearchRef Id="RemovePreviousVersionRegistryKeySearch"/>
     <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeyExistsSearch"/>
-    <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>-->
-
+    <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
 
     <!-- MSI installers always write search keys to the 32-bit hive. -->
     <util:RegistrySearch Bitness="always32"
@@ -150,13 +149,13 @@
     <Variable Name="DOTNETHOME_ARM64" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="formatted" Value="[DOTNETHOME_$(PlatformToken)]" bal:Overridable="no" />
     <Variable Name="BUNDLEMONIKER" Type="string" Value="$(ProductMoniker)" bal:Overridable="no" />
-    <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(NugetVersion)" bal:Overridable="no" />
+    <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(Version)" bal:Overridable="no" />
     <Variable Name="DOTNETRUNTIMEVERSION" Type="string" Value="$(DotNetRuntimeVersion)" bal:Overridable="no" />
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(AspNetCoreVersion)" bal:Overridable="no" />
     <Variable Name="WINFORMSANDWPFVERSION" Type="string" Value="$(WinFormsAndWpfVersion)" bal:Overridable="no" />
     <Variable Name="DOTNETHOMESIMILARITYCHECKOVERRIDE" Type="string" Value="" bal:Overridable="yes" />
-    <Variable Name="VERSIONMAJOR" Type="string" Value="$(VersionMajor)" bal:Overridable="no" />
-    <Variable Name="VERSIONMINOR" Type="string" Value="$(VersionMinor)" bal:Overridable="no" />
+    <Variable Name="VERSIONMAJOR" Type="string" Value="$(MajorVersion)" bal:Overridable="no" />
+    <Variable Name="VERSIONMINOR" Type="string" Value="$(MinorVersion)" bal:Overridable="no" />
     <Variable Name="MINIMUMVSVERSION" Type="string" Value="$(MinimumVSVersion)" bal:Overridable="no" />
 
     <Chain DisableSystemRestore="yes" ParallelCache="yes">
@@ -180,63 +179,30 @@
         detect that there are no matching feature bands and then clean up workloads associated with
         the feature band.
       -->
-      <ExePackage SourceFile="$(FinalizerExeSourcePath)"
+      <ExePackage SourceFile="$(FinalizerExeSourceFile)"
                   Bundle="no"
                   Cache="keep"
                   DetectCondition="WixBundleInstalled"
                   Id="Finalizer"
                   InstallCondition="WixBundleAction >= 4"
-                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(NugetVersion) $(Platform)"
+                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(Platform)"
                   Vital="no" />
 
-      <MsiPackage SourceFile="$(SharedFXMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(ASPNETRuntimeMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(HostFXRMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(SharedHostMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(NetCoreAppTargetingPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(NetCoreAppHostPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <!--<?if $(Platform)=x86 or $(Platform)=x64?>
-      <MsiPackage SourceFile="$(AlternateNetCoreAppHostPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(Arm64NetCoreAppHostPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(NetStandardTargetingPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <?endif?>-->
-      <MsiPackage SourceFile="$(WinFormsAndWpfMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(WindowsDesktopTargetingPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(AspNetTargetingPackMsiSourcePath)">
-        <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
-      </MsiPackage>
-      <MsiPackage SourceFile="$(TemplatesMsiSourcePath)">
+      <!-- .NET Runtime has to be installed before the CLI because of a custom action that depends on dotnet.exe. -->
+      <PackageGroupRef Id="PG_DotNet"/>
+      
+      <MsiPackage SourceFile="$(TemplatesMsiSourceFile)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
-      <!--<PackageGroupRef Id="PG_WorkloadManifests" />-->
-      <MsiPackage SourceFile="$(CLISDKMsiSourcePath)">
+      
+      <MsiPackage SourceFile="$(SdkMsiSourceFile)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
+
+      <!--<PackageGroupRef Id="PG_WorkloadManifests" />-->
     </Chain>
   </Bundle>
 </Wix>

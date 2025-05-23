@@ -2,28 +2,9 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
-    <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
-    <DefineConstants>$(DefineConstants);ProductVersion=$(ProductVersion)</DefineConstants>
-    <DefineConstants>$(DefineConstants);BundleVersion=$(BundleVersion)</DefineConstants>
-
     <!-- This will only be passed through if project require harvesting files -->
     <DefineConstants Condition="'$(DotnetSrc)' != ''">$(DefineConstants);DotnetSrc=$(DotnetSrc)</DefineConstants>
-  </PropertyGroup>
-
-  <!-- MSI upgrade codes are generated based on the name of the installer, which typically includes the version and platform information. -->
-  <Target Name="GenerateUpgradeCode" BeforeTargets="CoreCompile">
-    <Error Condition="'$(InstallerPath)' == '' AND '$(UpgradeCode)' == ''"
-           Text="Unable to compute UpgradeCode. The InstallerPath property is not set." />
-    
-    <!-- Only use the file name when generating the GUID. Full paths may be inconsistent across different build environments. -->
-    <GenerateGuidFromName Name="$([System.IO.Path]::GetFileName($(InstallerPath)))" Condition="'$(UpgradeCode)' == ''">
-      <Output TaskParameter="GeneratedGuid" PropertyName="UpgradeCode" />
-    </GenerateGuidFromName>
-
-    <PropertyGroup>
-      <DefineConstants>$(DefineConstants);UpgradeCode=$(UpgradeCode)</DefineConstants>
-    </PropertyGroup>
-  </Target>
+  </PropertyGroup>  
 
   <!-- The WiX SDK sets TargetPath based on the OutputName or defaults to the project name. If the compiler detects any .wxl files, the specified culture
        values are included as a subdirectory (e.g. en-us) in the final output. When the output depends on computed properties that set during the build, the
