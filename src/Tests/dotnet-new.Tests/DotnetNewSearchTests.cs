@@ -220,7 +220,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.True(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/49123")]
         [InlineData("--search --columns author --author micro")]
         [InlineData("search --columns author --author micro")]
         public void CanFilterAuthor_WithoutName(string testCase)
