@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # This script prepares required dependencies for running .NET SDK tests on Helix.
-source "$(dirname "$0")/install_dependencies.sh"
+source ./install_dependencies.sh
 
 # make NuGet network operations more robust
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
