@@ -139,6 +139,10 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             {
                 sourceProject = Path.Combine(sourceProjectBase, "SdkProject", "SdkProject.csproj");
             }
+            else if (targetExtension == ".vbproj")
+            {
+                sourceProject = Path.Combine(sourceProjectBase, "NetFrameworkProjectVB", "NetFrameworkProject.vbproj");
+            }
             else
             {
                 sourceProject = Path.Combine(sourceProjectBase, "NetFrameworkProject", "NetFrameworkProject.csproj");

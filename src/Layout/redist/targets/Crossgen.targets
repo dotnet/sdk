@@ -7,10 +7,7 @@
                                     '$(TargetArchitecture)' != 'ppc64le' and
                                     '$(DotNetBuildUseMonoRuntime)' != 'true'">true</IsCrossgenSupported>
 
-    <Crossgen2Rid>$(HostOSName)-$(BuildArchitecture)</Crossgen2Rid>
-    <Crossgen2Rid Condition="'$(DotNetBuildSourceOnly)' == 'true'">$(SharedFrameworkRid)</Crossgen2Rid>
-
-    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(Crossgen2Rid)</RuntimeNETCrossgenPackageName>
+    <RuntimeNETCrossgenPackageName>microsoft.netcore.app.crossgen2.$(NETCoreSdkRuntimeIdentifier)</RuntimeNETCrossgenPackageName>
   </PropertyGroup>
 
   <!-- Download the runtime package with the crossgen executable in it -->
@@ -25,7 +22,7 @@
       <!-- When ingesting stable pgo instrumented binaries, the shared framework will be a non-stable version,
            as will the archive file names themselves. -->
       <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' != 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkNameVersionPath>
-      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(VSRedistCommonNetCoreTargetingPackx64100PackageVersion)</SharedFrameworkNameVersionPath>
+      <SharedFrameworkNameVersionPath Condition=" '$(PgoInstrument)' == 'true' ">$(RedistInstallerLayoutPath)shared/$(SharedFrameworkName)/$(MicrosoftNETCorePlatformsPackageVersion)</SharedFrameworkNameVersionPath>
     </PropertyGroup>
 
     <!-- This PropertyGroup contains the paths to the various SDK tooling that should be
