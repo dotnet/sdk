@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: false
+  default: true
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -290,15 +290,16 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
-        dependsOn: build
+        dependsOn: []
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
+            isAssetlessBuild: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
