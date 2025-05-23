@@ -54,7 +54,7 @@
           Condition="'$(RunTestsAsTool)' == 'true' And '$(CanRunTestAsTool)' == 'true'"/>
 
   <!-- Update KnownFrameworkReferences to target the right version of the runtime -->
-  <!-- We cannot use live shims when building tool packs in VMR - only package for current arch is available. -->
+  <!-- Don't use live shims when building tool packs in .NET product build mode as only packages for the current arch are available. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'
                           and $(MicrosoftNETCoreAppRefPackageVersion.StartsWith('$(_TargetFrameworkVersionWithoutV)'))
                           and '$(MSBuildProjectName)' != 'sdk-tasks'

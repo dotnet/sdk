@@ -62,7 +62,9 @@ namespace Microsoft.NET.TestFramework.Commands
                 using (var response = client.GetAsync(url).ConfigureAwait(false).GetAwaiter().GetResult())
                 using (var fs = new FileStream(nugetExePath, FileMode.CreateNew))
                 {
+#pragma warning disable CA2025 // we force synchronous so sourceCacheContext can't be disposed early
                     response.Content.CopyToAsync(fs).ConfigureAwait(false).GetAwaiter().GetResult();
+#pragma warning restore CA2025
                 }
             }
 

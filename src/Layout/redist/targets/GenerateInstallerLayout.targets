@@ -94,7 +94,7 @@
 
     <!-- Create "SDK Internal" layout. -->
     <ItemGroup>
-      <SdkOutputFile Include="$(OutputPath)**\*" />
+      <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(SdkOutputFile)"
