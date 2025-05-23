@@ -100,7 +100,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
 
     <PropertyGroup>
-      <_ResolveJsInitializerModuleStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rjimswa.dswa.cache.json</_ResolveJsInitializerModuleStaticWebAssetsCachePath>
+      <_ResolveJsInitializerModuleStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rjimswa.dswa.cache.json</_ResolveJsInitializerModuleStaticWebAssetsCachePath>
     </PropertyGroup>
 
     <DefineStaticWebAssets Condition="@(_JSModuleCandidates) != ''"
@@ -165,6 +165,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_JSModuleStaticWebAsset)" />
       <StaticWebAssetEndpoint Remove="@(_FilteredJSModuleStaticWebAssetEndpointWithProperty)" />
       <StaticWebAssetEndpoint Include="@(_FilteredJSModuleStaticWebAssetEndpointWithProperty)" />
+      <FileWrites Include="$(_ResolveJsInitializerModuleStaticWebAssetsCachePath)" />
     </ItemGroup>
 
   </Target>
@@ -416,10 +417,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <PropertyGroup>
-      <_ResolveJSModuleStaticWebAssetsRazorCachePath>$(_StaticWebAssetsManifestBase)rjsmrazor.dswa.cache.json</_ResolveJSModuleStaticWebAssetsRazorCachePath>
+      <_ResolveJSModuleStaticWebAssetsRazorCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rjsmrazor.dswa.cache.json</_ResolveJSModuleStaticWebAssetsRazorCachePath>
     </PropertyGroup>
     <PropertyGroup>
-      <_ResolveJSModuleStaticWebAssetsCshtmlCachePath>$(_StaticWebAssetsManifestBase)rjsmcshtml.dswa.cache.json</_ResolveJSModuleStaticWebAssetsCshtmlCachePath>
+      <_ResolveJSModuleStaticWebAssetsCshtmlCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rjsmcshtml.dswa.cache.json</_ResolveJSModuleStaticWebAssetsCshtmlCachePath>
     </PropertyGroup>
 
     <!-- Find JS module files -->
@@ -496,6 +497,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- Remove the items from their original groups since they've now become a StaticWebAsset -->
       <Content Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
       <None Remove="@(_JsFileModuleStaticWebAsset->'%(OriginalItemSpec)')" />
+
+      <FileWrites Include="$(_ResolveJSModuleStaticWebAssetsRazorCachePath)" />
+      <FileWrites Include="$(_ResolveJSModuleStaticWebAssetsCshtmlCachePath)" />
     </ItemGroup>
 
   </Target>

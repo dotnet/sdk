@@ -22,7 +22,8 @@ internal class ReferenceListCommand : CommandBase
 
         _fileOrDirectory = parseResult.HasOption(ReferenceCommandParser.ProjectOption) ?
             parseResult.GetValue(ReferenceCommandParser.ProjectOption) :
-            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument);
+            parseResult.GetValue(ListCommandParser.SlnOrProjectArgument) ??
+            Directory.GetCurrentDirectory();
     }
 
     public override int Execute()
