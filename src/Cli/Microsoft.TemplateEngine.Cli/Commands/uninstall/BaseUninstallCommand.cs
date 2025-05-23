@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arguments.Add(NameArgument);
         }
 
-        internal static CliArgument<string[]> NameArgument { get; } = new("package")
+        internal static Argument<string[]> NameArgument { get; } = new("package")
         {
             Description = SymbolStrings.Command_Uninstall_Argument_Package,
             Arity = new ArgumentArity(0, 99)

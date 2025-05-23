@@ -10,7 +10,7 @@
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.ApiCompatibility\\Microsoft.DotNet.ApiCompatibility.csproj",
       "src\\Compatibility\\ApiCompat\\Microsoft.DotNet.PackageValidation\\Microsoft.DotNet.PackageValidation.csproj",
       "src\\Compatibility\\Microsoft.DotNet.ApiSymbolExtensions\\Microsoft.DotNet.ApiSymbolExtensions.csproj",
-      "src\\Layout\\toolset-tasks\\toolset-tasks.csproj",
+      "src\\Tasks\\sdk-tasks\\sdk-tasks.csproj",
       "test\\Microsoft.DotNet.ApiCompat.IntegrationTests\\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj",
       "test\\Microsoft.DotNet.ApiCompat.Tests\\Microsoft.DotNet.ApiCompat.Tests.csproj",
       "test\\Microsoft.DotNet.ApiCompatibility.Tests\\Microsoft.DotNet.ApiCompatibility.Tests.csproj",
