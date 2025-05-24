@@ -81,6 +81,7 @@ internal sealed class Registry
     private readonly ILogger _logger;
     private readonly IRegistryAPI _registryAPI;
     private readonly RegistrySettings _settings;
+    private readonly ContentStore _store;
 
     /// <summary>
     /// The name of the registry, which is the host name, optionally followed by a colon and the port number.
@@ -90,7 +91,7 @@ internal sealed class Registry
     public string RegistryName { get; }
 
     internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider: retryDelayProvider)
     { }
 
     internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
@@ -99,14 +100,14 @@ internal sealed class Registry
 
 
     internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider: retryDelayProvider)
     { }
 
     internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
         this(baseUri, logger, new RegistryApiFactory(mode), settings)
     { }
 
-    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null)
+    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null, ContentStore? store = null)
     {
         RegistryName = DeriveRegistryName(baseUri);
 
@@ -122,6 +123,7 @@ internal sealed class Registry
         _registryAPI = factory.Create(RegistryName, BaseUri, logger, _settings.IsInsecure);
 
         _retryDelayProvider = retryDelayProvider ?? (() => TimeSpan.FromSeconds(1));
+        _store = store ?? new ContentStore(new(Path.GetTempPath()));
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -407,16 +409,16 @@ internal sealed class Registry
     public async Task<string> DownloadBlobAsync(string repository, Descriptor descriptor, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        string localPath = ContentStore.PathForDescriptor(descriptor);
-    
+        string localPath = _store.PathForDescriptor(descriptor);
+
         if (File.Exists(localPath))
         {
             // Assume file is up to date and just return it
             return localPath;
         }
     
-        string tempTarballPath = ContentStore.GetTempFile();
-    
+        string tempTarballPath = _store.GetTempFile();
+        
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
         {
@@ -599,7 +601,7 @@ internal sealed class Registry
                     // Ensure the blob is available locally
                     await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, cancellationToken).ConfigureAwait(false);
                     // Then push it to the destination registry
-                    await destinationRegistry.PushLayerAsync(Layer.FromDescriptor(descriptor), destination.Repository, cancellationToken).ConfigureAwait(false);
+                    await destinationRegistry.PushLayerAsync(Layer.FromDescriptor(descriptor, _store), destination.Repository, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation(Strings.Registry_LayerUploaded, digest, destinationRegistry.RegistryName);
                 }
                 else

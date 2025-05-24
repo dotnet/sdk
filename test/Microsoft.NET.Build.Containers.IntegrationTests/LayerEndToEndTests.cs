@@ -15,8 +15,7 @@ public sealed class LayerEndToEndTests : IDisposable
     {
         _testOutput = testOutput;
         testSpecificArtifactRoot = new();
-        priorArtifactRoot = ContentStore.ArtifactRoot;
-        ContentStore.ArtifactRoot = testSpecificArtifactRoot.Path;
+        _store = new ContentStore(new(testSpecificArtifactRoot.Path));
     }
 
     [Fact]
@@ -29,7 +28,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
 
         Console.WriteLine(l.Descriptor);
 
@@ -54,7 +53,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2, _store);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.True(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
@@ -88,7 +87,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
 
         VerifyDescriptorInfo(l);
 
@@ -143,17 +142,12 @@ public sealed class LayerEndToEndTests : IDisposable
     }
 
     TransientTestFolder? testSpecificArtifactRoot;
-    string? priorArtifactRoot;
+    private readonly ContentStore _store;
 
     public void Dispose()
     {
         testSpecificArtifactRoot?.Dispose();
-        if (priorArtifactRoot is not null)
-        {
-            ContentStore.ArtifactRoot = priorArtifactRoot;
-        }
     }
-
 
     private static Dictionary<string, TarEntry> LoadAllTarEntries(string file)
     {

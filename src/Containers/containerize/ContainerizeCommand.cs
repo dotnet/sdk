@@ -208,6 +208,12 @@ internal class ContainerizeCommand : RootCommand
         Description = "If set to OCI or Docker will force the generated image to be that format. If unset, the base images format will be used."
     };
 
+    internal Option<string> ContentStoreRootOption { get; } = new("--content-store-root")
+    {
+        Description = "The path to the content store root. This is used to compute RID compatibility for Image Manifest List entries.",
+        Required = true
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         PublishDirectoryArgument.AcceptLegalFilePathsOnly();
@@ -238,6 +244,7 @@ internal class ContainerizeCommand : RootCommand
         Options.Add(GenerateLabelsOption);
         Options.Add(GenerateDigestLabelOption);
         Options.Add(ImageFormatOption);
+        Options.Add(ContentStoreRootOption);
 
         SetAction(async (parseResult, cancellationToken) =>
         {
@@ -267,6 +274,7 @@ internal class ContainerizeCommand : RootCommand
             bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
             bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
             KnownImageFormats? _imageFormat = parseResult.GetValue(ImageFormatOption);
+            string _contentStoreRoot = parseResult.GetValue(ContentStoreRootOption)!;
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -300,6 +308,7 @@ internal class ContainerizeCommand : RootCommand
                 _generateLabels,
                 _generateDigestLabel,
                 _imageFormat,
+                _contentStoreRoot,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

@@ -19,11 +19,13 @@ public class EndToEndTests : IDisposable
 {
     private ITestOutputHelper _testOutput;
     private readonly TestLoggerFactory _loggerFactory;
+    private readonly ContentStore _store;
 
     public EndToEndTests(ITestOutputHelper testOutput)
     {
         _testOutput = testOutput;
         _loggerFactory = new TestLoggerFactory(testOutput);
+        _store = new ContentStore(new(Path.GetTempPath()));
     }
 
     public static string NewImageName([CallerMemberName] string callerMemberName = "")
@@ -74,7 +76,7 @@ public class EndToEndTests : IDisposable
 
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -120,7 +122,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -161,7 +163,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType);
+        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -1402,7 +1404,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType);
+        Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory(workingDir);
@@ -1454,7 +1456,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType);
+        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory("C:\\app");
