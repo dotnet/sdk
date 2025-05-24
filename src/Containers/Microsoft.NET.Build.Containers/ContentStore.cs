@@ -6,34 +6,42 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
-internal static class ContentStore
+/// <summary>
+/// Structured access to the content store for manifests and blobs at a given root path.
+/// </summary>
+/// <param name="root"></param>
+internal class ContentStore(DirectoryInfo root)
 {
-    public static string ArtifactRoot { get; set; } = Path.Combine(Path.GetTempPath(), "Containers");
-    public static string ContentRoot
+    public string ArtifactRoot
+    {
+        get
+        {
+            Directory.CreateDirectory(root.FullName);
+            return root.FullName;
+        }
+    }
+    
+    public string ContentRoot
     {
         get
         {
             string contentPath = Path.Join(ArtifactRoot, "Content");
-
             Directory.CreateDirectory(contentPath);
-
             return contentPath;
         }
     }
 
-    public static string TempPath
+    public string TempPath
     {
         get
         {
             string tempPath = Path.Join(ArtifactRoot, "Temp");
-
             Directory.CreateDirectory(tempPath);
-
             return tempPath;
         }
     }
 
-    public static string PathForDescriptor(Descriptor descriptor)
+    public string PathForDescriptor(Descriptor descriptor)
     {
         string digest = descriptor.Digest;
 
@@ -56,14 +64,12 @@ internal static class ContentStore
         return GetPathForHash(contentHash) + extension;
     }
 
+    /// <summary>
+    /// Returns the path to the content store for a given content hash (<c>algo</c>:<c>digest</c>) pair.
+    /// </summary>
+    /// <param name="contentHash"></param>
+    /// <returns></returns>
+    public string GetPathForHash(string contentHash) => Path.Combine(ContentRoot, contentHash);
 
-    public static string GetPathForHash(string contentHash)
-    {
-        return Path.Combine(ContentRoot, contentHash);
-    }
-
-    public static string GetTempFile()
-    {
-        return Path.Join(TempPath, Path.GetRandomFileName());
-    }
+    public string GetTempFile() => Path.Join(TempPath, Path.GetRandomFileName());
 }

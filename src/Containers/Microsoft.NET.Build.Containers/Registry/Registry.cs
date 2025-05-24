@@ -79,6 +79,7 @@ internal sealed class Registry
     private readonly ILogger _logger;
     private readonly IRegistryAPI _registryAPI;
     private readonly RegistrySettings _settings;
+    private readonly ContentStore _store;
 
     /// <summary>
     /// The name of the registry, which is the host name, optionally followed by a colon and the port number.
@@ -104,7 +105,7 @@ internal sealed class Registry
         this(baseUri, logger, new RegistryApiFactory(mode), settings)
     { }
 
-    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null)
+    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, ContentStore? store = null)
     {
         RegistryName = DeriveRegistryName(baseUri);
 
@@ -118,6 +119,7 @@ internal sealed class Registry
         _logger = logger;
         _settings = settings ?? new RegistrySettings(RegistryName);
         _registryAPI = factory.Create(RegistryName, BaseUri, logger, _settings.IsInsecure);
+        _store = store ?? new ContentStore(new(Path.GetTempPath()));
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -403,7 +405,7 @@ internal sealed class Registry
     public async Task<string> DownloadBlobAsync(string repository, Descriptor descriptor, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        string localPath = ContentStore.PathForDescriptor(descriptor);
+        string localPath = _store.PathForDescriptor(descriptor);
 
         if (File.Exists(localPath))
         {
@@ -411,7 +413,7 @@ internal sealed class Registry
             return localPath;
         }
 
-        string tempTarballPath = ContentStore.GetTempFile();
+        string tempTarballPath = _store.GetTempFile();
 
         try
         {
@@ -580,7 +582,7 @@ internal sealed class Registry
                     // Ensure the blob is available locally
                     await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, cancellationToken).ConfigureAwait(false);
                     // Then push it to the destination registry
-                    await destinationRegistry.PushLayerAsync(Layer.FromDescriptor(descriptor), destination.Repository, cancellationToken).ConfigureAwait(false);
+                    await destinationRegistry.PushLayerAsync(Layer.FromDescriptor(descriptor, _store), destination.Repository, cancellationToken).ConfigureAwait(false);
                     _logger.LogInformation(Strings.Registry_LayerUploaded, digest, destinationRegistry.RegistryName);
                 }
                 else

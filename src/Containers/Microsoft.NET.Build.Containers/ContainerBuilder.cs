@@ -41,6 +41,7 @@ internal static class ContainerBuilder
         bool generateLabels,
         bool generateDigestLabel,
         KnownImageFormats? imageFormat,
+        string contentStoreRoot,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -115,7 +116,14 @@ internal static class ContainerBuilder
             _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
         };
 
-        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        var storePath = new DirectoryInfo(contentStoreRoot);
+        if (!storePath.Exists)
+        {
+            throw new ArgumentException($"The content store path '{contentStoreRoot}' does not exist.");
+        }
+        var store = new ContentStore(storePath);
+
+        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 
