@@ -160,8 +160,16 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
             }
         }
+
+        var storePath = new DirectoryInfo(ContentStoreRoot);
+        if (!storePath.Exists)
+        {
+            throw new ArgumentException($"The content store path '{ContentStoreRoot}' does not exist.");
+        }
+        var store = new ContentStore(storePath);
+
         var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
+        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 

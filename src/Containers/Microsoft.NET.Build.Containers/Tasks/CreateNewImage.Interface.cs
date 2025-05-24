@@ -174,6 +174,8 @@ partial class CreateNewImage
     /// </summary>
     public bool SkipPublishing { get; set; }
 
+    public string ContentStoreRoot { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -223,6 +225,7 @@ partial class CreateNewImage
         RuntimeIdentifierGraphPath = "";
         LocalRegistry = "";
         ContainerUser = "";
+        ContentStoreRoot = "";
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";

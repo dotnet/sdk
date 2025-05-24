@@ -17,6 +17,7 @@
     <_ContainerIsSelfContained Condition="'$(SelfContained)' == 'true' or '$(PublishSelfContained)' == 'true'">true</_ContainerIsSelfContained>
 
     <EnableSdkContainerSupport Condition="'$(EnableSdkContainerSupport)' == '' and '$(OutputType)' != 'Library'" >true</EnableSdkContainerSupport>
+    <ContainerContentStoreRoot Condition="'$(ContainerContentStoreRoot)' == ''">$([System.IO.Path]::GetTempPath())</ContainerContentStoreRoot>
   </PropertyGroup>
 
   <ItemGroup>
@@ -287,7 +288,8 @@
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
-                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
+                    GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
+                    ContentStoreRoot="$(ContainerContentStoreRoot)">
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
