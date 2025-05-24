@@ -161,7 +161,14 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
         }
 
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        var storePath = new DirectoryInfo(ContentStoreRoot);
+        if (!storePath.Exists)
+        {
+            throw new ArgumentException($"The content store path '{ContentStoreRoot}' does not exist.");
+        }
+        var store = new ContentStore(storePath);
+
+        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 

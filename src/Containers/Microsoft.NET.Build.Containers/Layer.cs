@@ -45,12 +45,12 @@ internal class Layer
         Descriptor = descriptor;
     }
 
-    public static Layer FromDescriptor(Descriptor descriptor)
+    public static Layer FromDescriptor(Descriptor descriptor, ContentStore store)
     {
-        return new(ContentStore.PathForDescriptor(descriptor), descriptor);
+        return new(store.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType)
+    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -86,7 +86,7 @@ internal class Layer
             entryAttributes["MSWINDOWS.rawsd"] = BuiltinUsersSecurityDescriptor;
         }
 
-        string tempTarballPath = ContentStore.GetTempFile();
+        string tempTarballPath = store.GetTempFile();
         using (FileStream fs = File.Create(tempTarballPath))
         {
             using (HashDigestGZipStream gz = new(fs, leaveOpen: true))
@@ -204,9 +204,9 @@ internal class Layer
             UncompressedDigest = $"sha256:{uncompressedContentHash}",
         };
 
-        string storedContent = ContentStore.PathForDescriptor(descriptor);
+        string storedContent = store.PathForDescriptor(descriptor);
 
-        Directory.CreateDirectory(ContentStore.ContentRoot);
+        var _ = store.ContentRoot;
 
         File.Move(tempTarballPath, storedContent, overwrite: true);
 
