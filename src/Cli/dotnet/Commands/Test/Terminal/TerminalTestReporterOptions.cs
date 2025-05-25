@@ -48,6 +48,12 @@ internal sealed class TerminalTestReporterOptions
     public bool UseAnsi { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether we are running in compatible CI, and should use simplified ANSI renderer, which colors output, but does not move cursor.
+    /// Setting <see cref="UseAnsi"/> to false will disable this option.
+    /// </summary>
+    public bool UseCIAnsi { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether we should force ANSI escape codes. When true the ANSI is used without auto-detecting capabilities of the console. This is needed only for testing.
     /// </summary>
     internal /* for testing */ bool? ForceAnsi { get; init; }
