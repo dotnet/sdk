@@ -93,6 +93,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   Finally, library projects and non-executable projects have awkward interactions here so they are excluded.-->
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == ''">
+    <!-- This excludes MTP projects, as they are normal console apps -->
     <_IsVSTestOnlyTestProject Condition="'$(IsTestProject)' == 'true' AND '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestOnlyTestProject>
     <UseCurrentRuntimeIdentifier Condition="
                  '$(RuntimeIdentifier)' == '' and

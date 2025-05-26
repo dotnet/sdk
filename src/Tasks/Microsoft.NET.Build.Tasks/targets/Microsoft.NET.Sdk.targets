@@ -97,6 +97,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_DefaultUserProfileRuntimeStorePath Condition="$([MSBuild]::IsOSPlatform(`Windows`))">$(USERPROFILE)</_DefaultUserProfileRuntimeStorePath>
     <_DefaultUserProfileRuntimeStorePath>$([System.IO.Path]::Combine($(_DefaultUserProfileRuntimeStorePath), '.dotnet', 'store'))</_DefaultUserProfileRuntimeStorePath>
     <UserProfileRuntimeStorePath Condition="'$(UserProfileRuntimeStorePath)' == ''">$(_DefaultUserProfileRuntimeStorePath)</UserProfileRuntimeStorePath>
+    <!-- This excludes MTP projects, as they are normal console apps -->
     <_IsVSTestOnlyTestProject Condition="'$(IsTestProject)' == 'true' AND '$(IsTestingPlatformApplication)' != 'true'">true</_IsVSTestOnlyTestProject>
   </PropertyGroup>
 
