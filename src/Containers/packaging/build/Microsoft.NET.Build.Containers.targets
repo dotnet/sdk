@@ -185,7 +185,6 @@
       ComputeContainerConfig;
       _CheckContainersPackage;
       _EnsureManifestsAvailable;
-      _DownloadLayers;
     </PublishContainerDependsOn>
   </PropertyGroup>
 
@@ -283,16 +282,36 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_DownloadLayers" Inputs="@(_ContainerSingleArchImageManifest)" Outputs="@(_ContainerSingleArchImageManifestLayer)">
+  <Target Name="_ComputeRidSpecificArtifactsForImage" DependsOnTargets="_EnsureManifestsAvailable">
+    <!-- Given all the manifest artifacts above, drill down to the ones relevant for this RID -->
+    <!-- Precondition: Called When RuntimeIdentifier != '' -->
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifest)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_ContainerThisArchManifest" />
+    </SelectRuntimeIdentifierSpecificItems>
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifestConfig)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_ContainerThisArchConfig" />
+    </SelectRuntimeIdentifierSpecificItems>
+    <SelectRuntimeIdentifierSpecificItems Items="@(_ContainerSingleArchImageManifestLayer)"
+                                          TargetRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
+                                          RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)">
+      <Output TaskParameter="SelectedItems" ItemName="_ContainerThisArchLayer" />
+    </SelectRuntimeIdentifierSpecificItems>
+  </Target>
+
+  <Target Name="_DownloadLayers" DependsOnTargets="_ComputeRidSpecificArtifactsForImage" Inputs="@(_ContainerThisArchManifest)" Outputs="@(_ContainerThisArchLayer)">
     <DownloadLayers Registry="$(ContainerBaseRegistry)"
                     Repository="$(ContainerBaseName)"
                     ContentStore="$(ContainerContentStoreRoot)"
-                    Layers="@(_ContainerSingleArchImageManifestLayer)" />
+                    Layers="@(_ContainerThisArchLayer)" />
   </Target>
 
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
        in a few different ways we can't express that dependency directly here. -->
-  <Target Name="_PublishSingleContainer" Returns="@(GeneratedContainer)">
+  <Target Name="_PublishSingleContainer" DependsOnTargets="_DownloadLayers" Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -350,7 +369,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
+  <Target Name="_PublishMultiArchContainers" Returns="@(GeneratedContainer)" >
     <PropertyGroup>
       <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->

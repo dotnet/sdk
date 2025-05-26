@@ -20,4 +20,5 @@
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.DownloadContainerManifest" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.DownloadLayers" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.SelectRuntimeIdentifierSpecificItems" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
 </Project>
