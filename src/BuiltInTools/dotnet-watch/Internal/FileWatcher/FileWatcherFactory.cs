@@ -5,14 +5,14 @@ namespace Microsoft.DotNet.Watch
 {
     internal static class FileWatcherFactory
     {
-        public static IDirectoryWatcher CreateWatcher(string watchedDirectory)
-            => CreateWatcher(watchedDirectory, EnvironmentVariables.IsPollingEnabled);
+        public static IDirectoryWatcher CreateWatcher(string watchedDirectory, bool includeSubdirectories)
+            => CreateWatcher(watchedDirectory, EnvironmentVariables.IsPollingEnabled, includeSubdirectories);
 
-        public static IDirectoryWatcher CreateWatcher(string watchedDirectory, bool usePollingWatcher)
+        public static IDirectoryWatcher CreateWatcher(string watchedDirectory, bool usePollingWatcher, bool includeSubdirectories)
         {
             return usePollingWatcher ?
-                new PollingDirectoryWatcher(watchedDirectory) :
-                new EventBasedDirectoryWatcher(watchedDirectory);
+                new PollingDirectoryWatcher(watchedDirectory, includeSubdirectories) :
+                new EventBasedDirectoryWatcher(watchedDirectory, includeSubdirectories);
         }
     }
 }

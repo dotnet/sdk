@@ -11,10 +11,11 @@ namespace Microsoft.DotNet.Watch
         private static readonly TimeSpan _minRunInternal = TimeSpan.FromSeconds(.5);
 
         private readonly DirectoryInfo _watchedDirectory;
+        private readonly bool _includeSubdirectories;
 
-        private Dictionary<string, FileMeta> _knownEntities = [];
-        private Dictionary<string, FileMeta> _tempDictionary = [];
-        private readonly Dictionary<string, ChangeKind> _changes = [];
+        private Dictionary<string, FileMeta> _knownFiles = new(PathUtilities.OSSpecificPathComparer);
+        private Dictionary<string, FileMeta> _tempDictionary = new(PathUtilities.OSSpecificPathComparer);
+        private readonly Dictionary<string, ChangeKind> _changes = new(PathUtilities.OSSpecificPathComparer);
 
         private Thread _pollingThread;
         private bool _raiseEvents;
@@ -29,11 +30,10 @@ namespace Microsoft.DotNet.Watch
 
         public string WatchedDirectory { get; }
 
-        public PollingDirectoryWatcher(string watchedDirectory)
+        public PollingDirectoryWatcher(string watchedDirectory, bool includeSubdirectories)
         {
-            Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
-
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
+            _includeSubdirectories = includeSubdirectories;
             WatchedDirectory = _watchedDirectory.FullName;
 
             _pollingThread = new Thread(new ThreadStart(PollingLoop))
@@ -93,11 +93,11 @@ namespace Microsoft.DotNet.Watch
 
         private void CreateKnownFilesSnapshot()
         {
-            _knownEntities.Clear();
+            _knownFiles.Clear();
 
             ForeachEntityInDirectory(_watchedDirectory, fileInfo =>
             {
-                _knownEntities.Add(fileInfo.FullName, new FileMeta(fileInfo, foundAgain: false));
+                _knownFiles.Add(fileInfo.FullName, new FileMeta(fileInfo, foundAgain: false));
             });
         }
 
@@ -109,72 +109,49 @@ namespace Microsoft.DotNet.Watch
             {
                 var fullFilePath = fileInfo.FullName;
 
-                if (!_knownEntities.ContainsKey(fullFilePath))
+                if (_knownFiles.TryGetValue(fullFilePath, out var fileMeta))
                 {
-                    // New file or directory
-                    RecordChange(fileInfo, ChangeKind.Add);
-                }
-                else
-                {
-                    var fileMeta = _knownEntities[fullFilePath];
-
                     try
                     {
-                        if (!fileMeta.FileInfo.Attributes.HasFlag(FileAttributes.Directory) &&
-                            fileMeta.FileInfo.LastWriteTime != fileInfo.LastWriteTime)
+                        if (fileMeta.FileInfo.LastWriteTime != fileInfo.LastWriteTime)
                         {
                             // File changed
-                            RecordChange(fileInfo, ChangeKind.Update);
+                            _changes.TryAdd(fullFilePath, ChangeKind.Update);
                         }
 
-                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: true);
+                        _knownFiles[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: true);
                     }
                     catch (FileNotFoundException)
                     {
-                        _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: false);
+                        _knownFiles[fullFilePath] = new FileMeta(fileMeta.FileInfo, foundAgain: false);
                     }
+                }
+                else
+                {
+                    // File added
+                    _changes.TryAdd(fullFilePath, ChangeKind.Add);
                 }
 
                 _tempDictionary.Add(fileInfo.FullName, new FileMeta(fileInfo, foundAgain: false));
             });
 
-            foreach (var file in _knownEntities)
+            foreach (var (fullPath, fileMeta) in _knownFiles)
             {
-                if (!file.Value.FoundAgain)
+                if (!fileMeta.FoundAgain)
                 {
-                    // File or directory deleted
-                    RecordChange(file.Value.FileInfo, ChangeKind.Delete);
+                    // File deleted
+                    _changes.TryAdd(fullPath, ChangeKind.Delete);
                 }
             }
 
             NotifyChanges();
 
             // Swap the two dictionaries
-            (_tempDictionary, _knownEntities) = (_knownEntities, _tempDictionary);
+            (_tempDictionary, _knownFiles) = (_knownFiles, _tempDictionary);
             _tempDictionary.Clear();
         }
 
-        private void RecordChange(FileSystemInfo fileInfo, ChangeKind kind)
-        {
-            if (_changes.ContainsKey(fileInfo.FullName) ||
-                fileInfo.FullName.Equals(_watchedDirectory.FullName, StringComparison.Ordinal))
-            {
-                return;
-            }
-
-            _changes.Add(fileInfo.FullName, kind);
-
-            if (fileInfo is FileInfo { Directory: { } directory })
-            {
-                RecordChange(directory, ChangeKind.Update);
-            }
-            else if (fileInfo is DirectoryInfo { Parent: { } parent })
-            {
-                RecordChange(parent, ChangeKind.Update);
-            }
-        }
-
-        private static void ForeachEntityInDirectory(DirectoryInfo dirInfo, Action<FileSystemInfo> fileAction)
+        private void ForeachEntityInDirectory(DirectoryInfo dirInfo, Action<FileSystemInfo> fileAction)
         {
             if (!dirInfo.Exists)
             {
@@ -184,7 +161,7 @@ namespace Microsoft.DotNet.Watch
             IEnumerable<FileSystemInfo> entities;
             try
             {
-                entities = dirInfo.EnumerateFileSystemInfos("*.*");
+                entities = dirInfo.EnumerateFileSystemInfos("*.*", SearchOption.TopDirectoryOnly);
             }
             // If the directory is deleted after the exists check this will throw and could crash the process
             catch (DirectoryNotFoundException)
@@ -194,11 +171,16 @@ namespace Microsoft.DotNet.Watch
 
             foreach (var entity in entities)
             {
-                fileAction(entity);
-
                 if (entity is DirectoryInfo subdirInfo)
                 {
-                    ForeachEntityInDirectory(subdirInfo, fileAction);
+                    if (_includeSubdirectories)
+                    {
+                        ForeachEntityInDirectory(subdirInfo, fileAction);
+                    }
+                }
+                else
+                {
+                    fileAction(entity);
                 }
             }
         }
