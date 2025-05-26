@@ -21,13 +21,53 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public const string DefaultPackageVersion = "1.0.4";
         public const string DefaultTargetFramework = "net6.0";
 
+        List<MockFeedPackage>? _packages = null;
+
+        
         public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
         {
         }
 
+        public void AddMockPackage(MockFeedPackage package)
+        {
+            if (_packages == null)
+            {
+                _packages = new List<MockFeedPackage>();
+            };
+            _packages.Add(package);
+        }
+
+        MockFeedPackage? GetPackage(PackageId packageId, NuGetVersion version)
+        {
+            if (_packages == null)
+            {
+                return new MockFeedPackage()
+                {
+                    PackageId = packageId.ToString(),
+                    Version = version.ToString(),
+                    ToolCommandName = DefaultToolCommandName
+                };
+            }
+
+            var matchingPackages = _packages.Where(p => p.PackageId == packageId.ToString() && new NuGetVersion(p.Version) >= version);
+            if (!matchingPackages.Any())
+            {
+                return null;
+            }
+            return matchingPackages.MaxBy(p => new NuGetVersion(p.Version));
+        }
+
         protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, string? targetFramework = null)
         {
+            var mockPackage = GetPackage(packageId, version);
+            if (mockPackage == null)
+            {
+                throw new InvalidOperationException("Mock feed package not found");
+            }
+
             var entryPointSimple = Path.GetFileNameWithoutExtension(FakeEntrypointName);
+
+            var extraFiles = string.Join(Environment.NewLine, mockPackage.AdditionalFiles.Select(f => $"\"{f.Key}\":{{}},"));
 
             var assetFileContents = $$"""
                 {
@@ -37,6 +77,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                       "{{packageId}}/{{version}}": {
                         "type": "package",
                         "tools": {
+                          {{extraFiles}}
                           "tools/{{DefaultTargetFramework}}/any/DotnetToolSettings.xml": {},
                           "tools/{{DefaultTargetFramework}}/any/{{entryPointSimple}}.deps.json": {},
                           "tools/{{DefaultTargetFramework}}/any/{{entryPointSimple}}.dll": {},
@@ -55,12 +96,29 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
         protected override INuGetPackageDownloader CreateNuGetPackageDownloader(bool verifySignatures, VerbosityOptions verbosity, RestoreActionConfig? restoreActionConfig)
         {
-            return new MockNuGetPackageDownloader(packageVersions: [new NuGetVersion(DefaultPackageVersion)]);
+            List<NuGetVersion> packageVersions;
+            if (_packages == null)
+            {
+                packageVersions = [new NuGetVersion(DefaultPackageVersion)];
+            }
+            else
+            {
+                packageVersions = _packages.Select(p => new NuGetVersion(p.Version)).ToList();
+            }
+
+            return new MockNuGetPackageDownloader(packageVersions: packageVersions);
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
             NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, bool includeUnlisted = false)
         {
+
+            var package = GetPackage(packageId, packageVersion);
+            if (package == null)
+            {
+                throw new NuGetPackageNotFoundException($"{packageId} {packageVersion}");
+            }
+
             NuGetVersion resolvedVersion = new NuGetVersion(DefaultPackageVersion);
 
             var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
@@ -86,6 +144,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                   </Commands>
                 </DotNetCliTool>
                 """);
+
+                foreach (var additionalFile in package.AdditionalFiles)
+                {
+                    var resolvedPath = Path.Combine(nupkgDir, additionalFile.Key);
+                    if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(resolvedPath)!))
+                    {
+                        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(resolvedPath)!);
+                    }
+                    _fileSystem.File.WriteAllText(resolvedPath, additionalFile.Value);
+                }
+
             }, rollback: () =>
             {
                 if (_fileSystem.Directory.Exists(nupkgDir))
