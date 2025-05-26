@@ -15,7 +15,7 @@ internal enum KnownImageFormats
 internal static class ContainerBuilder
 {
     internal static async Task<int> ContainerizeAsync(
-        DirectoryInfo publishDirectory,
+        (string absolutePath, string relativePath)[] inputFiles,
         string workingDir,
         string baseRegistry,
         string baseImageName,
@@ -46,10 +46,6 @@ internal static class ContainerBuilder
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!publishDirectory.Exists)
-        {
-            throw new ArgumentException(string.Format(Resource.GetString(nameof(Strings.PublishDirectoryDoesntExist)), nameof(publishDirectory), publishDirectory.FullName));
-        }
         ILogger logger = loggerFactory.CreateLogger("Containerize");
         logger.LogTrace("Trace logging: enabled.");
 
@@ -124,7 +120,7 @@ internal static class ContainerBuilder
         var store = new ContentStore(storePath);
 
         var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
-        Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
+        Layer newLayer = Layer.FromFiles(inputFiles, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 

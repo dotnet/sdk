@@ -57,6 +57,17 @@ public class EndToEndTests : IDisposable
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
+    private static (string absolutefilePath, string relativePath)[] MakeItemsForPublishDir(string publishDir)
+    {
+        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
+        {
+            RecurseSubdirectories=true
+        });
+
+        return files.Select<string, (string, string)>(f => new(f, Path.GetRelativePath(publishDir, f))).ToArray();
+    }
+
+
     [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
@@ -76,7 +87,7 @@ public class EndToEndTests : IDisposable
 
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
+        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -122,7 +133,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
+        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -163,7 +174,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "/app", false, imageBuilder.ManifestMediaType, _store);
+        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
 
@@ -1404,7 +1415,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store);
+        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory(workingDir);
@@ -1456,7 +1467,7 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromDirectory(publishDirectory, "C:\\app", true, imageBuilder.ManifestMediaType, _store);
+        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "C:\\app", true, imageBuilder.ManifestMediaType, _store);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory("C:\\app");

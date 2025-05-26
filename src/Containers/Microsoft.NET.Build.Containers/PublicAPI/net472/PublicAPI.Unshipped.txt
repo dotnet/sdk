@@ -18,6 +18,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishFiles.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishFiles.set -> void
 ~override Microsoft.NET.Build.Containers.Port.ToString() -> string
 static Microsoft.NET.Build.Containers.Port.operator !=(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
 static Microsoft.NET.Build.Containers.Port.operator ==(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
@@ -80,8 +82,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.PublishDirectory.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.WorkingDirectory.get -> string!
