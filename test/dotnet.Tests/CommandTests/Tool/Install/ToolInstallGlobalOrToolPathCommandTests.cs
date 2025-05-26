@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _pathToPlaceShim = Path.Combine(_temporaryDirectory, "pathToPlace");
             _fileSystem.Directory.CreateDirectory(_pathToPlaceShim);
             _pathToPlacePackages = _pathToPlaceShim + "Packages";
-            var toolPackageStoreMock = new ToolPackageStoreMock(new DirectoryPath(_pathToPlacePackages), _fileSystem);
+            var toolPackageStoreMock = new ToolPackageStoreAndQuery(new DirectoryPath(_pathToPlacePackages), _fileSystem);
             _toolPackageStore = toolPackageStoreMock;
             _toolPackageStoreQuery = toolPackageStoreMock;
             _createShellShimRepository =
@@ -921,26 +921,27 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
-            var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
-            var prepackagedShimPath = Path.Combine(_temporaryDirectory, ToolCommandName + extension);
-            var tokenToIdentifyPackagedShim = "packagedShim";
-            _fileSystem.File.WriteAllText(prepackagedShimPath, tokenToIdentifyPackagedShim);
+            var tokenToIdentifyPackagedShim = "win64-tool";
 
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
 
-            var packagedShimsMap = new Dictionary<PackageId, IReadOnlyList<FilePath>>
+
+            var mockPackage = new MockFeedPackage()
             {
-                [new PackageId(PackageId)] = new[] { new FilePath(prepackagedShimPath) }
+                PackageId = PackageId,
+                Version = PackageVersion,
+                ToolCommandName = ToolCommandName
             };
+
+            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/win-x64/{ToolCommandName}.exe"] = tokenToIdentifyPackagedShim;
+
+            var downloaderMock = CreateToolPackageDownloader();
+            downloaderMock.AddMockPackage(mockPackage);
 
             var installCommand = new ToolInstallGlobalOrToolPathCommand(
                 result,
                 _packageId,
-                (location, forwardArguments, currentWorkingDirectory) => (_toolPackageStore, _toolPackageStoreQuery, new ToolPackageDownloaderMock(
-                    fileSystem: _fileSystem,
-                    store: _toolPackageStore,
-                    packagedShimsMap: packagedShimsMap,
-                    reporter: _reporter), _toolPackageUninstallerMock),
+                (location, forwardArguments, currentWorkingDirectory) => (_toolPackageStore, _toolPackageStoreQuery, downloaderMock, _toolPackageUninstallerMock),
                 _createShellShimRepository,
                 new EnvironmentPathInstructionMock(_reporter, _pathToPlaceShim),
                 _reporter);
@@ -987,15 +988,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             nugetPackageDownloader.DownloadCallParams.First().Item1.Should().Be(new PackageId("microsoft.netcore.app.host.win-arm64"));
         }
 
-        private IToolPackageDownloader CreateToolPackageDownloader(
+        private ToolPackageDownloaderMock2 CreateToolPackageDownloader(
+            //  TODO: Handle mock feeds and download callback
             List<MockFeed> feeds = null,
             Action downloadCallback = null)
         {
-            return new ToolPackageDownloaderMock(fileSystem: _fileSystem,
-                store: _toolPackageStore,
-                reporter: _reporter,
-                feeds: feeds,
-                downloadCallback: downloadCallback);
+            return new ToolPackageDownloaderMock2(_toolPackageStore,
+                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                currentWorkingDirectory: null,
+                fileSystem: _fileSystem);
         }
 
         private string ExpectedCommandPath()
