@@ -28,7 +28,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
+        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
 
         Console.WriteLine(l.Descriptor);
 
@@ -53,7 +53,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2, _store);
+        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2, _store);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.True(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
@@ -87,7 +87,7 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
+        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), ".well-known/wwwroot")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
 
         VerifyDescriptorInfo(l);
 

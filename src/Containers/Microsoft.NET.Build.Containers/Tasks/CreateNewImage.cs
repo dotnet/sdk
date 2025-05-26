@@ -52,12 +52,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
 
-        if (!Directory.Exists(PublishDirectory))
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
-            return !Log.HasLoggedErrors;
-        }
-
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
@@ -168,8 +162,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
         var store = new ContentStore(storePath);
 
+        (string absolutefilePath, string relativeContainerPath)[] filesWithRelativePaths =
+            PublishFiles
+            .Select(f => (f.ItemSpec, f.GetMetadata("TargetPath") is string tp && !string.IsNullOrEmpty(tp) ? tp : f.GetMetadata("RelativePath")))
+            .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
+            .ToArray();
         var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
+        Layer newLayer = Layer.FromFiles(filesWithRelativePaths, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 

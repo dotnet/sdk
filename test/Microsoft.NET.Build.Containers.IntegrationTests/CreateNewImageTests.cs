@@ -53,7 +53,8 @@ public class CreateNewImageTests
 
         task.OutputRegistry = "localhost:5010";
         task.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
-        task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-arm64", "publish");
+        var baseDir = Path.Combine(newProjectDir.FullName, "bin", "Release");
+        task.PublishFiles = MakeItemsForPublishDir(baseDir);
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
@@ -63,6 +64,19 @@ public class CreateNewImageTests
 
         Assert.True(task.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
+    }
+
+    private static ITaskItem[] MakeItemsForPublishDir(string publishDir)
+    {
+        var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
+        {
+            RecurseSubdirectories=true
+        });
+
+        return files.Select(f => new TaskItem(f, new Dictionary<string, string>
+        {
+            ["RelativePath"] = Path.GetRelativePath(publishDir, f)
+        })).ToArray();
     }
 
     private static ImageConfig GetImageConfigFromTask(CreateNewImage task)
@@ -119,7 +133,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
@@ -194,7 +208,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = pcp.NewContainerRegistry;
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64");
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", EndToEndTests._oldFramework, "linux-x64"));
         cni.WorkingDirectory = "/app";
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
@@ -277,7 +291,7 @@ public class CreateNewImageTests
         task.BaseImageTag = "latest";
 
         task.OutputRegistry = "localhost:5010";
-        task.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish");
+        task.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "Release", ToolsetInfo.CurrentTargetFramework, "linux-x64", "publish"));
         task.Repository = AppImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
@@ -349,7 +363,7 @@ public class CreateNewImageTests
         cni.BaseImageTag = pcp.ParsedContainerTag;
         cni.Repository = pcp.NewContainerRepository;
         cni.OutputRegistry = "localhost:5010";
-        cni.PublishDirectory = Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework);
+        cni.PublishFiles = MakeItemsForPublishDir(Path.Combine(newProjectDir.FullName, "bin", "release", ToolsetInfo.CurrentTargetFramework));
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;

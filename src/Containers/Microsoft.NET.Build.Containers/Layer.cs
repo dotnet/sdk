@@ -52,11 +52,12 @@ internal class Layer
         return new(store.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, int? userId = null)
+    public static Layer FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, int? userId = null)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
         Span<byte> uncompressedHash = stackalloc byte[SHA256.HashSizeInBytes];
+        int? resolvedUserId = isWindowsLayer ? null : userId;
 
         // Docker treats a COPY instruction that copies to a path like `/app` by
         // including `app/` as a directory, with no leading slash. Emulate that here.
@@ -102,31 +103,26 @@ internal class Layer
                         writer.WriteEntry(entry);
                     }
 
-                    // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                    // Write an entry for the container working directory.
+                    var workingDirectoryEntry = new PaxTarEntry(TarEntryType.Directory, containerPath, entryAttributes)
+                    {
+                        Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                                   UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                                   UnixFileMode.OtherRead | UnixFileMode.OtherExecute,
+                    };
+                    if (resolvedUserId is int uid)
+                    {
+                        workingDirectoryEntry.Uid = uid;
+                    }
+                    writer.WriteEntry(workingDirectoryEntry);
 
                     // Write entries for the application directory contents.
-                    var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
-                                directory: directory,
-                                transform: (ref FileSystemEntry entry) =>
-                                {
-                                    FileSystemInfo fsi = entry.ToFileSystemInfo();
-                                    string relativePath = Path.GetRelativePath(directory, fsi.FullName);
-                                    if (OperatingSystem.IsWindows())
-                                    {
-                                        // Use only '/' directory separators.
-                                        relativePath = relativePath.Replace('\\', '/');
-                                    }
-                                    return (fsi, $"{containerPath}/{relativePath}");
-                                },
-                                options: new EnumerationOptions()
-                                {
-                                    AttributesToSkip = FileAttributes.System, // Include hidden files
-                                    RecurseSubdirectories = true
-                                });
-                    foreach (var item in fileList)
+                    foreach ((string absolutePath, string containerRelativePath) in inputFiles)
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                        var file = new FileInfo(absolutePath);
+                        var adjustedRelativePath = OperatingSystem.IsWindows() ? containerRelativePath.Replace('\\', '/') : containerRelativePath;
+                        var finalRelativePath = $"{containerPath}/{adjustedRelativePath}";
+                        WriteTarEntryForFile(writer, file, finalRelativePath, entryAttributes, resolvedUserId);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside

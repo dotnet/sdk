@@ -254,7 +254,7 @@
   <!-- Uses the outputs of ComputeContainerConfig to create incrementality structures for _EnsureManifestsAreAvailable -->
   <Target Name="_ComputeManifestInputsAndOutputs" DependsOnTargets="ComputeContainerConfig">
     <PropertyGroup>
-      <_ContainerBaseImageManifestDataCacheFile>$(IntermediateOutputPath)ContainerManifestData</_ContainerBaseImageManifestDataCacheFile>
+      <_ContainerBaseImageManifestDataCacheFile>$(IntermediateOutputPath)$(MSBuildProjectName).ContainerManifestData</_ContainerBaseImageManifestDataCacheFile>
     </PropertyGroup>
     <WriteLinesToFile File="$(_ContainerBaseImageManifestDataCacheFile)" Overwrite="true"
       WriteOnlyWhenDifferent="true"
@@ -309,9 +309,39 @@
                     Layers="@(_ContainerThisArchLayer)" />
   </Target>
 
+  <Target Name="_GenerateContainerConfigTrackingFile">
+    <PropertyGroup>
+      <_ContainerGeneratedConfigTrackingFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedContainerConfig</_ContainerGeneratedConfigTrackingFile>
+    </PropertyGroup>
+    <WriteLinesToFile 
+      File="$(_ContainerGeneratedConfigTrackingFile)" Overwrite="true"
+      WriteOnlyWhenDifferent="true"
+      Lines="
+        $(ContainerRepository);
+        @(ContainerImageTags);
+        $(ContainerWorkingDirectory);
+        @(ContainerEntrypoint);
+        @(ContainerEntrypointArgs);
+        @(ContainerAppCommand);
+        @(ContainerAppCommandArgs);
+        @(ContainerappCommandInstruction);
+        @(ContainerDefaultArgs);
+        @(ContainerLabel->'%(Identity)=%(Value)');;
+        @(ContainerPort->'%(Identity):%(Type)');
+        @(ContainerEnvironmentVariables->'%(Identity)=%(Value)');" />	
+    <ItemGroup>
+      <FileWrites Include="@(_ContainerGeneratedConfigTrackingFile)" />	
+    </ItemGroup>
+  </Target>
+
+
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
        in a few different ways we can't express that dependency directly here. -->
-  <Target Name="_PublishSingleContainer" DependsOnTargets="_DownloadLayers" Returns="@(GeneratedContainer)">
+  <Target Name="_PublishSingleContainer" 
+    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile"
+    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_ContainerThisArchLayer);@(_ContainerThisArchConfig);@(_ContainerThisArchManifest);@(ResolvedFileToPublish);@(_PublishStaticWebAssetsTargetPath)" 
+    Outputs="$(IntermediateOutputPath)Container/Manifest;$(IntermediateOutputPath)Container/Configuration;$(IntermediateOutputPath)Container/layer.tar.gz"
+    Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
       <DotNetHostFileName>dotnet</DotNetHostFileName>
@@ -331,7 +361,7 @@
                     ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                     Repository="$(ContainerRepository)"
                     ImageTags="@(ContainerImageTags)"
-                    PublishDirectory="$(PublishDir)"
+                    PublishFiles="@(ResolvedFileToPublish);@(_PublishStaticWebAssetsTargetPath)"
                     WorkingDirectory="$(ContainerWorkingDirectory)"
                     Entrypoint="@(ContainerEntrypoint)"
                     EntrypointArgs="@(ContainerEntrypointArgs)"
