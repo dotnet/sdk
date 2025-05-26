@@ -333,7 +333,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     </Otherwise>
   </Choose>
 
-  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core'">
+  <!-- If Microsoft.Net.Compilers.Toolset package is referenced (which we can tell by RoslynTasksAssembly being non-empty),
+    don't overwrite target paths - the toolset package should always take precedence. -->
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'Core' and '$(RoslynTasksAssembly)' == ''">
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn</RoslynTargetsPath>
     <RoslynTargetsPath Condition="'$(MSBuildRuntimeType)' != 'Core'">$(MSBuildThisFileDirectory)..\..\..\Roslyn\binfx</RoslynTargetsPath>
     <CSharpCoreTargetsPath>$(MSBuildThisFileDirectory)..\..\..\Roslyn\Microsoft.CSharp.Core.targets</CSharpCoreTargetsPath>
