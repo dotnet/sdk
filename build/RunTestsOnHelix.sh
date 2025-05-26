@@ -5,21 +5,17 @@ install_dependencies() {
   if [ -f /etc/os-release ]; then
     . /etc/os-release
     echo "Detected OS: $ID $VERSION_ID"
-
     case "$ID" in
-      centos|rhel)
+      centos)
         sudo dnf install -y epel-release || echo "Warning: Failed to install epel-release"
         sudo dnf config-manager --set-enabled crb || echo "Warning: Failed to enable CRB repository"
         sudo dnf install -y zlib-devel libunwind || echo "Warning: Failed to install zlib-devel or libunwind"
         ;;
       fedora)
-        sudo dnf install -y clang || echo "Warning: Failed to install clang"
+        sudo dnf install -y zlib-devel clang || echo "Warning: Failed to install clang"
         ;;
       alpine)
-        sudo apk add --no-cache clang || echo "Warning: Failed to install clang"
-        ;;
-      *)
-        echo "Notice: Unsupported OS ($ID). Skipping dependency installation."
+        sudo apk add --no-cache zlib-dev musl-dev clang || echo "Warning: Failed to install clang"
         ;;
     esac
   else
