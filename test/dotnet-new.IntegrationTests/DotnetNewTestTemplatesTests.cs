@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                "Microsoft.DotNet.Common.ProjectTemplates." + ToolsetInfo.CurrentTargetFrameworkVersion,
+                $"Microsoft.DotNet.Common.ProjectTemplates.{ToolsetInfo.CurrentTargetFrameworkVersion}",
                 "content");
 
             var dummyLog = new NullTestOutputHelper();
