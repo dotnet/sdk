@@ -25,6 +25,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public HashSet<string> PackageIdsToNotFind { get; set; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
+        public string MockFeedWithNoPackages { get; set; }
+
         public MockNuGetPackageDownloader(string dotnetRoot = null, bool manifestDownload = false, IEnumerable<NuGetVersion> packageVersions = null)
         {
             _manifestDownload = manifestDownload;
@@ -37,6 +39,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             _packageVersions = packageVersions ?? [new NuGetVersion("1.0.42")];
         }
 
+        bool ShouldFindPackage(PackageId packageId, PackageSourceLocation packageSourceLocation)
+        {
+            if (PackageIdsToNotFind.Contains(packageId.ToString()) ||
+                (!string.IsNullOrEmpty(MockFeedWithNoPackages) && packageSourceLocation.SourceFeedOverrides.Length == 1 && packageSourceLocation.SourceFeedOverrides[0] == MockFeedWithNoPackages))
+            {
+                return false;
+            }
+            return true;
+        }
+
+
         public Task<string> DownloadPackageAsync(PackageId packageId,
             NuGetVersion packageVersion = null,
             PackageSourceLocation packageSourceLocation = null,
@@ -47,7 +60,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             DownloadCallParams.Add((packageId, packageVersion, downloadFolder, packageSourceLocation));
 
-            if (PackageIdsToNotFind.Contains(packageId.ToString()))
+            if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
                 return Task.FromException<string>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
             }
@@ -91,16 +104,40 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(new List<string>() as IEnumerable<string>);
         }
 
-        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
+        public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
+        {
+
+            if (!ShouldFindPackage(packageId, packageSourceLocation))
+            {
+                return Task.FromResult(Enumerable.Empty<NuGetVersion>());
+            }
+
+            return Task.FromResult(_packageVersions ?? Enumerable.Empty<NuGetVersion>());
+        }
 
         public Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId, PackageSourceLocation packageSourceLocation = null, bool includePreview = false)
         {
+            if (!ShouldFindPackage(packageId, packageSourceLocation))
+            {
+                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
+            }
+
             return Task.FromResult(_packageVersions.Max());
         }
 
         public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
         {
-            return Task.FromResult(_packageVersions.Max());
+            if (!ShouldFindPackage(packageId, packageSourceLocation))
+            {
+                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
+            }
+
+            var bestVersion = versionRange.FindBestMatch(_packageVersions);
+            if (bestVersion == null)
+            {
+                bestVersion = versionRange.MinVersion;
+            }
+            return Task.FromResult(bestVersion);
         }
 
 

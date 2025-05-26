@@ -21,8 +21,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public const string DefaultPackageVersion = "1.0.4";
         public const string DefaultTargetFramework = "net6.0";
 
-        List<MockFeedPackage>? _packages = null;
+        public Action? DownloadCallback { get; set; }
 
+        public string? MockFeedWithNoPackages { get; set; }
+
+        List<MockFeedPackage>? _packages = null;
         
         public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
         {
@@ -106,7 +109,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageVersions = _packages.Select(p => new NuGetVersion(p.Version)).ToList();
             }
 
-            return new MockNuGetPackageDownloader(packageVersions: packageVersions);
+            return new MockNuGetPackageDownloader(packageVersions: packageVersions)
+            {
+                MockFeedWithNoPackages = MockFeedWithNoPackages
+            };
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
@@ -116,10 +122,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             var package = GetPackage(packageId, packageVersion);
             if (package == null)
             {
-                throw new NuGetPackageNotFoundException($"{packageId} {packageVersion}");
+                throw new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, $"Version {packageVersion} of {packageId}", "{MockFeeds}"));
             }
 
-            NuGetVersion resolvedVersion = new NuGetVersion(DefaultPackageVersion);
+            NuGetVersion resolvedVersion = new NuGetVersion(packageVersion);
 
             var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), resolvedVersion);
@@ -138,7 +144,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
                 _fileSystem.File.WriteAllText(Path.Combine(fakeExecutableSubDirectory, "DotnetToolSettings.xml"),
                     $"""
-                <DotNetCliTool Version="1">
+                <DotNetCliTool Version="{package.ToolFormatVersion}">
                   <Commands>
                     <Command Name="{DefaultToolCommandName}" EntryPoint="{FakeEntrypointName}" Runner="dotnet" />
                   </Commands>
@@ -153,6 +159,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(resolvedPath)!);
                     }
                     _fileSystem.File.WriteAllText(resolvedPath, additionalFile.Value);
+                }
+
+                if (DownloadCallback != null)
+                {
+                    DownloadCallback();
                 }
 
             }, rollback: () =>
