@@ -15,6 +15,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 {
+    //  This class should be superceded by ToolPackageDownloaderMock2.  The Mock2 version derives from ToolPackageDownloaderBase, so a lot less
+    //  business logic needs to be duplicated.
+    //  The class here on the other hand has a lot of code/behavior copied from the product and they could get out of sync.
+    //  So ideally we should migrate existing tests that use this class to the Mock2 version, then delete this version and rename the Mock2 version
+    //  to ToolPackageDownlnoaderMock.
     internal class ToolPackageDownloaderMock : IToolPackageDownloader
     {
         private readonly IToolPackageStore _toolPackageStore;

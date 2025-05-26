@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 {
     internal class MockNuGetPackageDownloader : INuGetPackageDownloader
     {
+        public static readonly string MOCK_FEEDS_TEXT = "{MockFeeds}";
+
         private readonly string _downloadPath;
         private readonly bool _manifestDownload;
         private NuGetVersion _lastPackageVersion = new("1.0.0");
@@ -37,6 +39,8 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             }
 
             _packageVersions = packageVersions ?? [new NuGetVersion("1.0.42")];
+
+            PackageIdsToNotFind.Add("does.not.exist");
         }
 
         bool ShouldFindPackage(PackageId packageId, PackageSourceLocation packageSourceLocation)
@@ -62,7 +66,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
-                return Task.FromException<string>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
+                return Task.FromException<string>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
             }
 
             var path = Path.Combine(_downloadPath, "mock.nupkg");
@@ -119,7 +123,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
-                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
+                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
             }
 
             return Task.FromResult(_packageVersions.Max());
@@ -129,7 +133,7 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         {
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
-                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException("Package not found: " + packageId.ToString()));
+                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
             }
 
             var bestVersion = versionRange.FindBestMatch(_packageVersions);

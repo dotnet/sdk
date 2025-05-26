@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             var package = GetPackage(packageId, packageVersion);
             if (package == null)
             {
-                throw new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, $"Version {packageVersion} of {packageId}", "{MockFeeds}"));
+                throw new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, $"Version {packageVersion} of {packageId}", MockNuGetPackageDownloader.MOCK_FEEDS_TEXT));
             }
 
             NuGetVersion resolvedVersion = new NuGetVersion(packageVersion);
@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                     $"""
                 <DotNetCliTool Version="{package.ToolFormatVersion}">
                   <Commands>
-                    <Command Name="{DefaultToolCommandName}" EntryPoint="{FakeEntrypointName}" Runner="dotnet" />
+                    <Command Name="{package.ToolCommandName}" EntryPoint="{FakeEntrypointName}" Runner="dotnet" />
                   </Commands>
                 </DotNetCliTool>
                 """);
