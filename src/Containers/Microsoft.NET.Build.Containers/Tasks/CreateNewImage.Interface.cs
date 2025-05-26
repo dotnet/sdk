@@ -69,11 +69,11 @@ partial class CreateNewImage
     public string[] ImageTags { get; set; }
 
     /// <summary>
-    /// The directory for the build outputs to be published.
-    /// Constructed from "$(MSBuildProjectDirectory)\$(PublishDir)"
+    /// The files to be published to the container.
+    /// MUST have RelativePath metadata..
     /// </summary>
     [Required]
-    public string PublishDirectory { get; set; }
+    public ITaskItem[] PublishFiles { get; set; }
 
     /// <summary>
     /// The working directory of the container.
@@ -210,7 +210,7 @@ partial class CreateNewImage
         ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
-        PublishDirectory = "";
+        PublishFiles = [];
         WorkingDirectory = "";
         Entrypoint = Array.Empty<ITaskItem>();
         EntrypointArgs = Array.Empty<ITaskItem>();

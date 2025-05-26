@@ -50,7 +50,7 @@ internal class Layer
         return new(store.PathForDescriptor(descriptor), descriptor);
     }
 
-    public static Layer FromDirectory(string directory, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store)
+    public static Layer FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store)
     {
         long fileSize;
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
@@ -100,31 +100,22 @@ internal class Layer
                         writer.WriteEntry(entry);
                     }
 
-                    // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes);
+                    // Write an entry for the container working directory.
+                    writer.WriteEntry(
+                        new PaxTarEntry(TarEntryType.Directory, containerPath, entryAttributes)
+                        {
+                            Mode = UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                                   UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                                   UnixFileMode.OtherRead | UnixFileMode.OtherExecute
+                        });
 
                     // Write entries for the application directory contents.
-                    var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
-                                directory: directory,
-                                transform: (ref FileSystemEntry entry) =>
-                                {
-                                    FileSystemInfo fsi = entry.ToFileSystemInfo();
-                                    string relativePath = Path.GetRelativePath(directory, fsi.FullName);
-                                    if (OperatingSystem.IsWindows())
-                                    {
-                                        // Use only '/' directory separators.
-                                        relativePath = relativePath.Replace('\\', '/');
-                                    }
-                                    return (fsi, $"{containerPath}/{relativePath}");
-                                },
-                                options: new EnumerationOptions()
-                                {
-                                    AttributesToSkip = FileAttributes.System, // Include hidden files
-                                    RecurseSubdirectories = true
-                                });
-                    foreach (var item in fileList)
+                    foreach ((string absolutePath, string containerRelativePath) in inputFiles)
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes);
+                        var file = new FileInfo(absolutePath);
+                        var adjustedRelativePath = OperatingSystem.IsWindows() ? containerRelativePath.Replace('\\', '/') : containerRelativePath;
+                        var finalRelativePath = $"{containerPath}/{adjustedRelativePath}";
+                        WriteTarEntryForFile(writer, file, finalRelativePath, entryAttributes);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
