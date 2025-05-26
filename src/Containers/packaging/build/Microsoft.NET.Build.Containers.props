@@ -18,4 +18,6 @@
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.CreateImageIndex" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ParseContainerProperties" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
     <UsingTask TaskName="$(MSBuildThisFileName).Tasks.ComputeDotnetBaseImageAndTag" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.DownloadContainerManifest" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
+    <UsingTask TaskName="$(MSBuildThisFileName).Tasks.DownloadLayers" AssemblyFile="$(ContainerCustomTasksAssembly)"/>
 </Project>

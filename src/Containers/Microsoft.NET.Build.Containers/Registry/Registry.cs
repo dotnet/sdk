@@ -8,60 +8,11 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
+using System.Windows.Markup;
+using System.Text.RegularExpressions;
+using System.Text.Json;
 
 namespace Microsoft.NET.Build.Containers;
-
-internal interface IManifestPicker
-{
-    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
-    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier);
-}
-
-internal sealed class RidGraphManifestPicker : IManifestPicker
-{
-    private readonly RuntimeGraph _runtimeGraph;
-
-    public RidGraphManifestPicker(string runtimeIdentifierGraphPath)
-    {
-        _runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
-    }
-    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
-    {
-        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
-        if (bestManifestRid is null)
-        {
-            return null;
-        }
-        return ridManifestDict[bestManifestRid];
-    }
-
-    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> ridManifestDict, string runtimeIdentifier)
-    {
-        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
-        if (bestManifestRid is null)
-        {
-            return null;
-        }
-        return ridManifestDict[bestManifestRid];
-    }
-
-    private static string? GetBestMatchingRid(RuntimeGraph runtimeGraph, string runtimeIdentifier, IEnumerable<string> availableRuntimeIdentifiers)
-    {
-        HashSet<string> availableRids = new HashSet<string>(availableRuntimeIdentifiers, StringComparer.Ordinal);
-        foreach (var candidateRuntimeIdentifier in runtimeGraph.ExpandRuntime(runtimeIdentifier))
-        {
-            if (availableRids.Contains(candidateRuntimeIdentifier))
-            {
-                return candidateRuntimeIdentifier;
-            }
-        }
-
-        return null;
-    }
-
-    private static RuntimeGraph GetRuntimeGraphForDotNet(string ridGraphPath) => JsonRuntimeFormat.ReadRuntimeGraph(ridGraphPath);
-
-}
 
 internal enum RegistryMode
 {
@@ -90,21 +41,20 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider: retryDelayProvider)
+    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null, ContentStore? store = null) :
+        this(new Uri($"https://{registryName}"), logger, registryAPI, settings, retryDelayProvider: retryDelayProvider, store: store)
     { }
 
-    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
-        this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings)
+    internal Registry(string registryName, ILogger logger, RegistryMode mode, RegistrySettings? settings = null, ContentStore? store = null) :
+        this(new Uri($"https://{registryName}"), logger, new RegistryApiFactory(mode), settings, store: store)
     { }
 
-
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
-        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider: retryDelayProvider)
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null, ContentStore? store = null) :
+        this(baseUri, logger, new RegistryApiFactory(registryAPI), settings, retryDelayProvider: retryDelayProvider, store: store)
     { }
 
-    internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null) :
-        this(baseUri, logger, new RegistryApiFactory(mode), settings)
+    internal Registry(Uri baseUri, ILogger logger, RegistryMode mode, RegistrySettings? settings = null, ContentStore? store = null) :
+        this(baseUri, logger, new RegistryApiFactory(mode), settings, store: store)
     { }
 
     private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null, ContentStore? store = null)
@@ -189,30 +139,100 @@ internal sealed class Registry
     /// </summary>
     private bool SupportsParallelUploads => !IsAmazonECRRegistry && _settings.ParallelUploadEnabled;
 
+    /// <summary>
+    /// Fetches the data for a given manifest tag or digest from the local content store if present.
+    /// If not present, fetches it from the remote and caches it in the local content store.
+    /// </summary>
+    /// <param name="repositoryName"></param>
+    /// <param name="referenceOrDigest"></param>
+    /// <param name="cTok"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException"></exception>
+    public async Task<IManifest> GetManifestCore(string repositoryName, string referenceOrDigest, CancellationToken cTok, bool skipCache = true)
+    {
+        cTok.ThrowIfCancellationRequested();
+        // check if we have the reference in the ContentStore's reference area already.
+        // if so, read it from there.
+        var referencePath = _store.PathForManifestByReferenceOrDigest(RegistryName, repositoryName, referenceOrDigest);
+        if (!skipCache && File.Exists(referencePath))
+        {
+            var lines = await File.ReadAllLinesAsync(referencePath, cTok);
+            (var digest, var mediaType, var size) = (lines[0], lines[1], lines[2]);
+            using var contentStream = File.OpenRead(_store.PathForDescriptor(new(mediaType, digest, long.Parse(size))));
+            return await ParseManifest(mediaType, contentStream, digest);
+        }
+        // if not, make a remote call and add it to the ContentStore's reference area.
+        else
+        {
+            using var response = await _registryAPI.Manifest.GetAsync(repositoryName, referenceOrDigest, cTok).ConfigureAwait(false);
+            response.Headers.TryGetValues("Docker-Content-Digest", out var knownDigests);
+            var digest = knownDigests?.FirstOrDefault()!;
+            var mediaType = response.Content.Headers.ContentType?.MediaType!;
+            long size = response.Content.Headers.ContentLength ?? 0;
+            var descriptor = new Descriptor(mediaType, digest, size);
+            // write the manifest contents to the durable store
+            var storagePath = _store.PathForDescriptor(descriptor);
+            using var storageStream = File.OpenWrite(storagePath);
+            using var responseStream = await response.Content.ReadAsStreamAsync(cTok);
+            await responseStream.CopyToAsync(storageStream);
+            responseStream.Position = 0;
+            // write the marker file for the reference
+            // IMPORTANT: must stay in sync with the lines read in the if block above
+            var parentDir = Path.GetDirectoryName(referencePath)!;
+            // we're creating a multi-level directory structure, so ensure the parent directories exist before writing
+            Directory.CreateDirectory(parentDir);
+            await File.WriteAllLinesAsync(referencePath, [
+                digest,
+                mediaType,
+                size.ToString()
+            ], Encoding.UTF8, cTok);
+            // now that the data is all set for next time, return the manifest
+            return await ParseManifest(mediaType, responseStream, digest);
+        }
+
+        async Task<IManifest> ParseManifest(string? mediaType, Stream content, string? digest)
+        {
+            IManifest? manifest = mediaType switch
+            {
+                SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await JsonSerializer.DeserializeAsync<ManifestV2>(content, cancellationToken: cTok),
+                SchemaTypes.DockerManifestListV2 => await JsonSerializer.DeserializeAsync<ManifestListV2>(content, cancellationToken: cTok),
+                SchemaTypes.OciImageIndexV1 => await JsonSerializer.DeserializeAsync<ImageIndexV1>(content, cancellationToken: cTok),
+                null => throw new ArgumentException($"No media type found for manifest {RegistryName}/{repositoryName}@{referenceOrDigest}"),
+                _ => throw new ArgumentException($"Unknown manifest media type {mediaType}")
+            };
+            if (manifest is ManifestV2 v)
+            {
+                v.KnownDigest = digest;
+                return v;
+            }
+            else
+            {
+                return manifest!;
+            }
+        }
+    }
+
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, IManifestPicker manifestPicker, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
 
-        return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
+        var manifest = await GetManifestCore(repositoryName, reference, cancellationToken);
+
+        return manifest switch
         {
-            SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
-                repositoryName,
-                await ReadManifest().ConfigureAwait(false),
-                initialManifestResponse.Content.Headers.ContentType.MediaType,
-                cancellationToken).ConfigureAwait(false),
-            SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
+            ManifestV2 singleArchManifest => await ReadSingleImageAsync(repositoryName, singleArchManifest, cancellationToken),
+            ManifestListV2 multiArchDockerManifest => await PickBestImageFromManifestListAsync(
                 repositoryName,
                 reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                multiArchDockerManifest,
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
-            SchemaTypes.OciImageIndexV1 =>
+            ImageIndexV1 multiArchOciIndex =>
                 await PickBestImageFromImageIndexAsync(
                 repositoryName,
                 reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                multiArchOciIndex,
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -223,17 +243,6 @@ internal sealed class Registry
                 BaseUri,
                 unknownMediaType))
         };
-
-        async Task<ManifestV2> ReadManifest()
-        {
-            initialManifestResponse.Headers.TryGetValues("Docker-Content-Digest", out var knownDigest);
-            var manifest = (await initialManifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
-            if (knownDigest?.FirstOrDefault() is string knownDigestValue)
-            {
-                manifest.KnownDigest = knownDigestValue;
-            }
-            return manifest;
-        }
     }
 
     internal async Task<ManifestListV2?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
@@ -248,79 +257,39 @@ internal sealed class Registry
         };
     }
 
-    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
+    public async Task<JsonNode> GetJsonBlobCore(string repositoryName, string digest, string mediaType, CancellationToken cancellationToken)
+    {
+        // check if digest is available locally and serialize it, otherwise download from registry and store locally
+        cancellationToken.ThrowIfCancellationRequested();
+        var descriptor = new Descriptor(mediaType, digest, 0);
+        var storagePath = _store.PathForDescriptor(descriptor);
+        if (File.Exists(storagePath))
+        {
+            using var fs = File.OpenRead(storagePath);
+            return (await JsonNode.ParseAsync(fs, cancellationToken: cancellationToken))!;
+        }
+        else
+        {
+
+            using var jsonStream = await _registryAPI.Blob.GetStreamAsync(repositoryName, digest, cancellationToken);
+            using var fsStream = File.OpenWrite(storagePath);
+            await jsonStream.CopyToAsync(fsStream, cancellationToken);
+            jsonStream.Position = 0;
+            return (await JsonNode.ParseAsync(jsonStream, cancellationToken: cancellationToken))!;
+        }
+    }
+
+    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         ManifestConfig config = manifest.Config;
         string configSha = config.digest;
 
-        JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configSha, cancellationToken).ConfigureAwait(false);
+        JsonNode configDoc = await GetJsonBlobCore(repositoryName, configSha, manifest.Config.mediaType, cancellationToken);
 
         cancellationToken.ThrowIfCancellationRequested();
         // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
-        return new ImageBuilder(manifest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
-    }
-
-
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
-    {
-        var ridDict = new Dictionary<string, PlatformSpecificManifest>();
-        foreach (var manifest in manifestList)
-        {
-            if (CreateRidForPlatform(manifest.platform) is { } rid)
-            {
-                ridDict.TryAdd(rid, manifest);
-            }
-        }
-
-        return ridDict;
-    }
-
-    private static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
-    {
-        var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
-        foreach (var manifest in manifestList)
-        {
-            if (CreateRidForPlatform(manifest.platform) is { } rid)
-            {
-                ridDict.TryAdd(rid, manifest);
-            }
-        }
-
-        return ridDict;
-    }
-
-    private static string? CreateRidForPlatform(PlatformInformation platform)
-    {
-        // we only support linux and windows containers explicitly, so anything else we should skip past.
-        var osPart = platform.os switch
-        {
-            "linux" => "linux",
-            "windows" => "win",
-            _ => null
-        };
-        // TODO: this part needs a lot of work, the RID graph isn't super precise here and version numbers (especially on windows) are _whack_
-        // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
-        var versionPart = platform.version?.Split('.') switch
-        {
-        [var major, ..] => major,
-            _ => null
-        };
-        var platformPart = platform.architecture switch
-        {
-            "amd64" => "x64",
-            "x386" => "x86",
-            "arm" => $"arm{(platform.variant != "v7" ? platform.variant : "")}",
-            "arm64" => "arm64",
-            "ppc64le" => "ppc64le",
-            "s390x" => "s390x",
-            "riscv64" => "riscv64",
-            "loongarch64" => "loongarch64",
-            _ => null
-        };
-
-        if (osPart is null || platformPart is null) return null;
-        return $"{osPart}{versionPart ?? ""}-{platformPart}";
+        return new ImageBuilder(manifest, manifest.MediaType ?? SchemaTypes.DockerManifestV2, new ImageConfig(configDoc), _logger);
     }
 
 
@@ -333,14 +302,13 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(manifestList.manifests);
+        var ridManifestDict = RidMapping.GetManifestsByRid(manifestList.manifests);
         if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
         {
-            return await ReadImageFromManifest(
+            return await ReadSingleImageFromManifest(
                 repositoryName,
                 reference,
                 matchingManifest.digest,
-                matchingManifest.mediaType,
                 runtimeIdentifier,
                 ridManifestDict.Keys,
                 cancellationToken);
@@ -360,14 +328,13 @@ internal sealed class Registry
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(index.manifests);
+        var ridManifestDict = RidMapping.GetManifestsByRid(index.manifests);
         if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificOciManifest matchingManifest)
         {
-            return await ReadImageFromManifest(
+            return await ReadSingleImageFromManifest(
                 repositoryName,
                 reference,
                 matchingManifest.digest,
-                matchingManifest.mediaType,
                 runtimeIdentifier,
                 ridManifestDict.Keys,
                 cancellationToken);
@@ -378,25 +345,32 @@ internal sealed class Registry
         }
     }
 
-    private async Task<ImageBuilder> ReadImageFromManifest(
+    /// <summary>
+    /// Reads a manifest at the given digest, assuming it is a single-arch manifest
+    /// </summary>
+    /// <param name="repositoryName"></param>
+    /// <param name="reference"></param>
+    /// <param name="manifestDigest"></param>
+    /// <param name="manifestMediaType"></param>
+    /// <param name="runtimeIdentifier"></param>
+    /// <param name="rids"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="BaseImageNotFoundException"></exception>
+    private async Task<ImageBuilder> ReadSingleImageFromManifest(
         string repositoryName,
         string reference,
         string manifestDigest,
-        string mediaType,
         string runtimeIdentifier,
         IEnumerable<string> rids,
         CancellationToken cancellationToken)
     {
-        using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
-
-        cancellationToken.ThrowIfCancellationRequested();
-        var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var manifest = await GetManifestCore(repositoryName, manifestDigest, cancellationToken);
         if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
-        manifest.KnownDigest = manifestDigest;
+        if (manifest is not ManifestV2 singleArchManifest) throw new ArgumentException("Only supports single-arch manifests in this pathway");
         return await ReadSingleImageAsync(
             repositoryName,
-            manifest,
-            mediaType,
+            singleArchManifest,
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -419,6 +393,7 @@ internal sealed class Registry
     
         string tempTarballPath = _store.GetTempFile();
         
+        _logger.LogInformation($"Downloading layer {descriptor.Digest} from {repository} to content store.");
         int retryCount = 0;
         while (retryCount < MaxDownloadRetries)
         {

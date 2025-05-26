@@ -16,11 +16,16 @@ internal class ContentStore(DirectoryInfo root)
     {
         get
         {
-            Directory.CreateDirectory(root.FullName);
-            return root.FullName;
+            string artifactPath = Path.Join(root.FullName, "Containers");
+            Directory.CreateDirectory(artifactPath);
+            return artifactPath;
         }
     }
     
+    /// <summary>
+    /// Where all the blobs are stored in this ContentStore - these will be addressed purely by digest. The contents may be JSON blobs, 
+    /// layer tarballs, or other - you need to know the media type to interpret the contents. 
+    /// </summary>
     public string ContentRoot
     {
         get
@@ -28,6 +33,20 @@ internal class ContentStore(DirectoryInfo root)
             string contentPath = Path.Join(ArtifactRoot, "Content");
             Directory.CreateDirectory(contentPath);
             return contentPath;
+        }
+    }
+
+    /// <summary>
+    /// Where all the reference pointers are stored in this ContentStore. These will be addressed by logical reference - registry, repository, tag.
+    /// The contents will be a digest and media type, which can then be looked up in the <see cref="ContentRoot"/>. 
+    /// </summary>
+    public string ReferenceRoot
+    {
+        get
+        {
+            string referencePath = Path.Combine(ArtifactRoot, "Manifests");
+            Directory.CreateDirectory(referencePath);
+            return referencePath;
         }
     }
 
@@ -41,6 +60,12 @@ internal class ContentStore(DirectoryInfo root)
         }
     }
 
+    /// <summary>
+    /// A safety valve on top of <see cref="GetPathForHash"/> that also validates that we know/understand the media type of the Descriptor
+    /// </summary>
+    /// <param name="descriptor"></param>
+    /// <returns></returns>
+    /// <exception cref="ArgumentException">If the Descriptor isn't a layer mediatype</exception>
     public string PathForDescriptor(Descriptor descriptor)
     {
         string digest = descriptor.Digest;
@@ -58,11 +83,25 @@ internal class ContentStore(DirectoryInfo root)
             "application/vnd.docker.image.rootfs.diff.tar"
             or "application/vnd.oci.image.layer.v1.tar"
                 => ".tar",
+            SchemaTypes.DockerManifestListV2
+            or SchemaTypes.DockerManifestV2
+            or SchemaTypes.OciImageIndexV1 
+            or SchemaTypes.OciManifestV1
+            or SchemaTypes.DockerContainerV1 => string.Empty,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
         return GetPathForHash(contentHash) + extension;
     }
+
+    /// <summary>
+    /// Returns the path in the <see cref="ReferenceRoot"/> for the manifest reference for this registry/repository/tag.
+    /// </summary>
+    /// <param name="registry"></param>
+    /// <param name="repository"></param>
+    /// <param name="tag"></param>
+    /// <returns></returns>
+    public string PathForManifestByReferenceOrDigest(string registry, string repository, string tag) => Path.Combine(ReferenceRoot, registry, repository, tag);
 
     /// <summary>
     /// Returns the path to the content store for a given content hash (<c>algo</c>:<c>digest</c>) pair.
