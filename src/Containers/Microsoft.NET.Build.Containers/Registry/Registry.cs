@@ -381,7 +381,7 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = _store.PathForDescriptor(descriptor);
-
+    
         if (File.Exists(localPath))
         {
             // Assume file is up to date and just return it
