@@ -100,7 +100,7 @@ internal sealed class DockerCli
         }
 
         string commandPath = await FindFullCommandPath(cancellationToken);
-
+        _logger.LogInformation($"Streaming image to local {commandPath}...");
         // call `docker load` and get it ready to receive input
         ProcessStartInfo loadInfo = new(commandPath, $"load")
         {
@@ -121,6 +121,8 @@ internal sealed class DockerCli
         loadProcess.StandardInput.Close();
 
         await loadProcess.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
+
+        _logger.LogInformation($"Image streaming completed");
 
         cancellationToken.ThrowIfCancellationRequested();
 
