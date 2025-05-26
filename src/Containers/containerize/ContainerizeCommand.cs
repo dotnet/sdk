@@ -12,10 +12,42 @@ namespace containerize;
 
 internal class ContainerizeCommand : RootCommand
 {
-    internal Argument<DirectoryInfo> PublishDirectoryArgument { get; } = new Argument<DirectoryInfo>("PublishDirectory")
+    // internal Argument<DirectoryInfo> PublishDirectoryArgument { get; } = new Argument<DirectoryInfo>("PublishDirectory")
+    // {
+    //     Description = "The directory for the build outputs to be published."
+    // }.AcceptExistingOnly();
+
+    internal Option<(string absolutefilePath, string relativePath)[]> InputFilesOption { get; } = new("--input-file")
     {
-        Description = "The directory for the build outputs to be published."
-    }.AcceptExistingOnly();
+        Description = "Specify once per file in the container, in the format '<absolute path to file>=<relative path inside container working directory>'",
+        Required = true,
+        Arity = ArgumentArity.OneOrMore,
+        CustomParser = result =>
+        {
+            var maps = new List<(string absolutefilePath, string relativePath)>(result.Tokens.Count);
+            foreach (var token in result.Tokens)
+            {
+                var parts = token.Value.Split('=', StringSplitOptions.TrimEntries);
+                if (parts.Length != 2)
+                {
+                    result.AddError($"Invalid input file format: '{token.Value}'. Expected format is '<absolute path>=<relative path>'.");
+                    continue;
+                }
+                if (!Path.IsPathRooted(parts[0]))
+                {
+                    result.AddError($"The absolute path '{parts[0]}' is not rooted. Please provide a valid absolute path.");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    result.AddError("The relative path inside the container working directory cannot be empty.");
+                    continue;
+                }
+                maps.Add((absolutefilePath: parts[0], relativePath: parts[1]));
+            }
+            return maps.ToArray();
+        }
+    };
 
     internal Option<string> BaseRegistryOption { get; } = new("--baseregistry")
     {
@@ -216,8 +248,7 @@ internal class ContainerizeCommand : RootCommand
 
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
-        PublishDirectoryArgument.AcceptLegalFilePathsOnly();
-        Arguments.Add(PublishDirectoryArgument);
+        Options.Add(InputFilesOption);
         Options.Add(BaseRegistryOption);
         Options.Add(BaseImageNameOption);
         Options.Add(BaseImageTagOption);
@@ -248,7 +279,7 @@ internal class ContainerizeCommand : RootCommand
 
         SetAction(async (parseResult, cancellationToken) =>
         {
-            DirectoryInfo _publishDir = parseResult.GetValue(PublishDirectoryArgument)!;
+            var _inputFiles = parseResult.GetValue(InputFilesOption)!;
             string _baseReg = parseResult.GetValue(BaseRegistryOption)!;
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
@@ -282,7 +313,7 @@ internal class ContainerizeCommand : RootCommand
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled).SetMinimumLevel(verbosity));
 
             await ContainerBuilder.ContainerizeAsync(
-                _publishDir,
+                _inputFiles,
                 _workingDir,
                 _baseReg,
                 _baseName,
