@@ -16,6 +16,8 @@ Microsoft.NET.Build.Containers.Port.Type.set -> void
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.ContainerFamily.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.get -> string?
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.get -> string!
 ~override Microsoft.NET.Build.Containers.Port.ToString() -> string
 static Microsoft.NET.Build.Containers.Port.operator !=(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
 static Microsoft.NET.Build.Containers.Port.operator ==(Microsoft.NET.Build.Containers.Port left, Microsoft.NET.Build.Containers.Port right) -> bool
