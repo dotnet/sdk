@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static readonly ImmutableArray<string> SupportedTargetFrameworks =
         [
-            "net10.0",
+            ToolsetInfo.CurrentTargetFramework
         ];
 
         private static readonly (string ProjectTemplateName, string ItemTemplateName, string[] Languages, bool SupportsTestingPlatform)[] AvailableItemTemplates =
@@ -52,7 +52,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                "Microsoft.DotNet.Common.ProjectTemplates.10.0",
+                "Microsoft.DotNet.Common.ProjectTemplates." + ToolsetInfo.CurrentTargetFrameworkVersion,
                 "content");
 
             var dummyLog = new NullTestOutputHelper();
@@ -66,7 +66,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
-                .Should().ExitWith(0);
+                .Should().Pass();
         }
 
         [Theory]
@@ -83,16 +83,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
              .WithCustomHive(outputDirectory).WithRawArguments()
              .WithWorkingDirectory(workingDirectory)
              .Execute()
-             .Should().ExitWith(0);
+             .Should().Pass();
 
             var itemName = "test";
 
-            // Add test item to test project: dotnet new <itemTemplate> -n <test> -lang <language> -o <testProjectName>
+            // Add test item to test project: dotnet new <itemTemplate> -n <test> -lang <language> -o <outputDirectory>
             new DotnetNewCommand(_log, $"{itemTemplate} -n {itemName} -lang {language} -o {outputDirectory}")
                 .WithCustomHive(outputDirectory).WithRawArguments()
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
-                .Should().ExitWith(0);
+                .Should().Pass();
 
             if (language == Languages.FSharp)
             {
@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-            result.Should().ExitWith(0);
+            result.Should().Pass();
 
             result.StdOut.Should().Contain("Passed!");
             result.StdOut.Should().MatchRegex(@"Passed:\s*2");
@@ -129,7 +129,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
              .WithCustomHive(outputDirectory).WithRawArguments()
              .WithWorkingDirectory(workingDirectory)
              .Execute()
-             .Should().ExitWith(0);
+             .Should().Pass();
 
             if (runDotnetTest)
             {
@@ -137,7 +137,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-                result.Should().ExitWith(0);
+                result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
              .WithCustomHive(outputDirectory).WithRawArguments()
              .WithWorkingDirectory(workingDirectory)
              .Execute()
-             .Should().ExitWith(0);
+             .Should().Pass();
 
             if (runDotnetTest)
             {
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-                result.Should().ExitWith(0);
+                result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
