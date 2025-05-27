@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
@@ -33,8 +35,6 @@ internal static class ContainerBuilder
         Dictionary<string, string> labels,
         Port[]? exposedPorts,
         Dictionary<string, string> envVars,
-        string containerRuntimeIdentifier,
-        string ridGraphPath,
         string localRegistry,
         string? containerUser,
         string? archiveOutputPath,
@@ -42,6 +42,8 @@ internal static class ContainerBuilder
         bool generateDigestLabel,
         KnownImageFormats? imageFormat,
         string contentStoreRoot,
+        FileInfo baseImageManifestPath,
+        FileInfo baseImageConfigPath,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -67,13 +69,7 @@ internal static class ContainerBuilder
         {
             try
             {
-                var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
-                imageBuilder = await registry.GetImageManifestAsync(
-                    baseImageName,
-                    sourceImageReference.Reference,
-                    containerRuntimeIdentifier,
-                    ridGraphPicker,
-                    cancellationToken).ConfigureAwait(false);
+                imageBuilder = await LoadFromManifestAndConfig(baseImageManifestPath.FullName, imageFormat, baseImageConfigPath.FullName, logger);
             }
             catch (RepositoryNotFoundException)
             {
@@ -94,11 +90,6 @@ internal static class ContainerBuilder
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
-        }
-        if (imageBuilder is null)
-        {
-            Console.WriteLine(Resource.GetString(nameof(Strings.BaseImageNotFound)), sourceImageReference, containerRuntimeIdentifier);
-            return 1;
         }
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
@@ -278,5 +269,25 @@ internal static class ContainerBuilder
         }
 
         return 0;
+    }
+
+
+    public static async Task<ImageBuilder> LoadFromManifestAndConfig(string manifestPath, KnownImageFormats? desiredImageFormat, string configPath, ILogger logger)
+    {
+        var baseImageManifest = await JsonSerializer.DeserializeAsync<ManifestV2>(File.OpenRead(manifestPath));
+        var baseImageConfig = await JsonNode.ParseAsync(File.OpenRead(configPath));
+        if (baseImageConfig is null || baseImageManifest is null) throw new ArgumentException($"Expected to load manifest from {manifestPath} and config from {configPath}");
+        // forcibly change the media type if required from that of the base image
+        var mediaType = baseImageManifest.MediaType;
+        if (desiredImageFormat is not null)
+        {
+                mediaType = desiredImageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => mediaType // should be impossible unless we add to the enum
+                };
+        }
+        return new ImageBuilder(baseImageManifest, mediaType!, new ImageConfig(baseImageConfig), logger);
     }
 }

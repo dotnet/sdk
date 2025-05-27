@@ -217,10 +217,6 @@ internal class ContainerizeCommand : RootCommand
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal Option<string> RidOption { get; } = new("--rid") { Description = "Runtime Identifier of the generated container." };
-
-    internal Option<string> RidGraphPathOption { get; } = new("--ridgraphpath") { Description = "Path to the RID graph file." };
-
     internal Option<string> ContainerUserOption { get; } = new("--container-user") { Description = "User to run the container as." };
 
     internal Option<bool> GenerateLabelsOption { get; } = new("--generate-labels")
@@ -246,6 +242,20 @@ internal class ContainerizeCommand : RootCommand
         Required = true
     };
 
+    internal Option<FileInfo> BaseImageManifestFileOption { get; } = new("--base-image-manifest")
+    {
+        Description = "The path to the local manifest of the base image, selected earlier on in the build process",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> BaseImageConfigFileOption { get; } = new("--base-image-config")
+    {
+        Description = "The path to the local container configuration of the base image, selected earlier on in the build process",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         Options.Add(InputFilesOption);
@@ -267,8 +277,6 @@ internal class ContainerizeCommand : RootCommand
         Options.Add(LabelsOption);
         Options.Add(PortsOption);
         Options.Add(EnvVarsOption);
-        Options.Add(RidOption);
-        Options.Add(RidGraphPathOption);
         LocalRegistryOption.AcceptOnlyFromAmong(KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
         Options.Add(LocalRegistryOption);
         Options.Add(ContainerUserOption);
@@ -276,6 +284,8 @@ internal class ContainerizeCommand : RootCommand
         Options.Add(GenerateDigestLabelOption);
         Options.Add(ImageFormatOption);
         Options.Add(ContentStoreRootOption);
+        Options.Add(BaseImageManifestFileOption);
+        Options.Add(BaseImageConfigFileOption);
 
         SetAction(async (parseResult, cancellationToken) =>
         {
@@ -298,14 +308,14 @@ internal class ContainerizeCommand : RootCommand
             Dictionary<string, string> _labels = parseResult.GetValue(LabelsOption) ?? new Dictionary<string, string>();
             Port[]? _ports = parseResult.GetValue(PortsOption);
             Dictionary<string, string> _envVars = parseResult.GetValue(EnvVarsOption) ?? new Dictionary<string, string>();
-            string _rid = parseResult.GetValue(RidOption)!;
-            string _ridGraphPath = parseResult.GetValue(RidGraphPathOption)!;
             string _localContainerDaemon = parseResult.GetValue(LocalRegistryOption)!;
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
             bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
             bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
             KnownImageFormats? _imageFormat = parseResult.GetValue(ImageFormatOption);
             string _contentStoreRoot = parseResult.GetValue(ContentStoreRootOption)!;
+            FileInfo _baseImageManifestFile = parseResult.GetValue(BaseImageManifestFileOption)!;
+            FileInfo _baseImageConfigFile = parseResult.GetValue(BaseImageConfigFileOption)!;
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -331,8 +341,6 @@ internal class ContainerizeCommand : RootCommand
                 _labels,
                 _ports,
                 _envVars,
-                _rid,
-                _ridGraphPath,
                 _localContainerDaemon,
                 _containerUser,
                 _archiveOutputPath,
@@ -340,6 +348,8 @@ internal class ContainerizeCommand : RootCommand
                 _generateDigestLabel,
                 _imageFormat,
                 _contentStoreRoot,
+                _baseImageManifestFile,
+                _baseImageConfigFile,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

@@ -126,9 +126,7 @@ public class CreateImageIndexTests
         cni.Repository = repository;
         cni.ImageTags = tags.Select(t => $"{t}-{rid}").ToArray();
         cni.WorkingDirectory = "app/";
-        cni.ContainerRuntimeIdentifier = rid;
         cni.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
 
