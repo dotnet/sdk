@@ -62,6 +62,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
+        //  NuGet settings can't use mock file system
         ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
         _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
         _currentWorkingDirectory = currentWorkingDirectory;
