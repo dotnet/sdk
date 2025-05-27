@@ -7,12 +7,11 @@ install_dependencies() {
     echo "Detected OS: $ID $VERSION_ID"
     case "$ID" in
       centos)
-        sudo dnf install -y epel-release || echo "Warning: Failed to install epel-release"
         sudo dnf config-manager --set-enabled crb || echo "Warning: Failed to enable CRB repository"
         sudo dnf install -y zlib-devel libunwind || echo "Warning: Failed to install zlib-devel or libunwind"
         ;;
       fedora)
-        sudo dnf install -y zlib-devel clang || echo "Warning: Failed to install clang"
+        sudo dnf install -y zlib-devel clang libicu || echo "Warning: Failed to install clang"
         ;;
       alpine)
         sudo apk add --no-cache zlib-dev musl-dev clang || echo "Warning: Failed to install clang"
