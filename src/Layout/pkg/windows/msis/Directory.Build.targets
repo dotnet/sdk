@@ -9,7 +9,7 @@
   <!-- The WiX SDK sets TargetPath based on the OutputName or defaults to the project name. If the compiler detects any .wxl files, the specified culture
        values are included as a subdirectory (e.g. en-us) in the final output. When the output depends on computed properties that set during the build, the
        output files have to be renamed after the build completes. -->
-  <Target Name="RenameOutput" AfterTargets="Build">
+  <Target Name="RenameOutput">
     <ItemGroup>
       <TargetOutputsToRename Include="$(TargetPath)" RenamedTargetPath="$(InstallerPath)" />
       <TargetOutputsToRename Include="$(TargetPdbPath)" RenamedTargetPath="$(InstallerPath.Replace('.msi', '.wixpdb'))" />

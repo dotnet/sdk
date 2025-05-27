@@ -102,6 +102,8 @@
 
     <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\msis\toolset\toolset.wixproj"
              Properties="InstallerPath=$(SdkMSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion);
+                         OutputPath=$([System.IO.Path]::GetDirectoryName($(SdkMSIInstallerFile)));
+                         OutputName=$([System.IO.Path]::GetFileNameWithoutExtension($(SdkMSIInstallerFile)));
                          Version=$(Version);
                          SdkLayoutDirectoryToHarvest=$(IntermediateSdkInstallerOutputPath.TrimEnd('\'));
                          DotnetSrc=$(IntermediateSdkInstallerOutputPath.TrimEnd('\'))"/>
@@ -117,7 +119,10 @@
           Outputs="$(SdkPlaceholderMSIInstallerFile)">
 
     <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\msis\placeholder\placeholder.wixproj"
-             Properties="InstallerPath=$(SdkPlaceholderMSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion)"/>
+             Properties="InstallerPath=$(SdkPlaceholderMSIInstallerFile);
+                         OutputPath=$([System.IO.Path]::GetDirectoryName($(SdkPlaceholderMSIInstallerFile)));
+                         OutputName=$([System.IO.Path]::GetFileNameWithoutExtension($(SdkPlaceholderMSIInstallerFile)));
+                         ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion)"/>
   </Target>
 
   <Target Name="GenerateTemplatesMsis"
@@ -138,6 +143,8 @@
 
     <MSBuild Projects="%(TemplatesMsi.Project)"
              Properties="InstallerPath=%(MSIInstallerFile);ProductVersion=$(ProductVersion);BundleVersion=$(BundleVersion);
+                         OutputPath=$([System.IO.Path]::GetDirectoryName(%(MSIInstallerFile)));
+                         OutputName=$([System.IO.Path]::GetFileNameWithoutExtension(%(MSIInstallerFile)));
                          DependencyKeyName=%(DependencyKeyName);TemplateLayoutDirectoryToHarvest=%(LayoutPath);
                          BrandName=%(BrandName);UpgradeCode=%(UpgradeCode); 
                          DotnetSrc=%(LayoutPath)"/>
@@ -212,8 +219,7 @@
           Inputs="$(SdkMSIInstallerFile);
                   $(DownloadedSharedFrameworkInstallerFile);
                   $(DownloadedHostFxrInstallerFile);
-                  $(DownloadedSharedHostInstallerFile);
-                  $(SdkGenerateBundlePowershellScript)"
+                  $(DownloadedSharedHostInstallerFile)"
           Outputs="$(SdkBundleFile)">
     <!-- Choose "latest" template MSI to go in bundle. -->
     <ItemGroup>
@@ -287,8 +293,9 @@
 
     <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\bundles\sdk\bundle.wixproj"
              Properties="UpgradeCode=$(UpgradeCode);BundleVersion=$(BundleVersion);
+                         InstallerPath=$(SdkBundleFile);
                          OutputPath=$([System.IO.Path]::GetDirectoryName($(SdkBundleFile)));
-                         OutputName=$([System.IO.Path]::GetFileName($(SdkBundleFile)));
+                         OutputName=$([System.IO.Path]::GetFileNameWithoutExtension($(SdkBundleFile)));
                          DotNetRuntimeVersion=$(MicrosoftNETCoreAppRuntimePackageVersion);
                          AspNetCoreVersion=$(MicrosoftAspNetCoreAppRuntimePackageVersion);
                          WinFormsAndWpfVersion=$(MicrosoftWindowsDesktopAppRuntimePackageVersion);

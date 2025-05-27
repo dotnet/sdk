@@ -34,7 +34,7 @@
     <PropertyGroup>
       <!-- Product and version related preprocessor definitions. -->
       <DefineConstants>$(DefineConstants);ProductName=$(SdkBrandName) ($(InstallerPlatform))</DefineConstants>
-      <DefineConstants>$(DefineConstants);WinFormsAndWpfVersion=$(WindowsDesktopVersion)</DefineConstants>
+      <DefineConstants>$(DefineConstants);WinFormsAndWpfVersion=$(WinFormsAndWpfVersion)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRuntimeVersion=$(DotNetRuntimeVersion)</DefineConstants>
       <DefineConstants>$(DefineConstants);AspNetCoreVersion=$(AspNetCoreVersion)</DefineConstants>
       <DefineConstants>$(DefineConstants);MinimumVSVersion=$(MinimumVSVersion)</DefineConstants>
