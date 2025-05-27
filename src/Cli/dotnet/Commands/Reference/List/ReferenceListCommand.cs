@@ -44,7 +44,7 @@ internal class ReferenceListCommand : CommandBase
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
         foreach (var p2p in p2ps)
         {
-            Reporter.Output.WriteLine(p2p.Include);
+            Reporter.Output.WriteLine(p2p.EvaluatedInclude);
         }
 
         return 0;
