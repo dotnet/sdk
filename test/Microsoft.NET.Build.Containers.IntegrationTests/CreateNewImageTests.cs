@@ -58,10 +58,8 @@ public class CreateNewImageTests
         task.Repository = "dotnet/create-new-image-baseline";
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
-        task.ContainerRuntimeIdentifier = "linux-arm64";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        task.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
-
+        
         Assert.True(task.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
     }
@@ -137,8 +135,6 @@ public class CreateNewImageTests
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
         newProjectDir.Delete(true);
@@ -213,8 +209,6 @@ public class CreateNewImageTests
         cni.Entrypoint = new TaskItem[] { new($"/app/{newProjectDir.Name}") };
         cni.ImageTags = pcp.NewContainerTags;
         cni.ContainerEnvironmentVariables = pcp.NewContainerEnvironmentVariables;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
         cni.LocalRegistry = DockerAvailableFactAttribute.LocalRegistry;
 
         Assert.True(cni.Execute(), FormatBuildMessages(errors));
@@ -295,9 +289,7 @@ public class CreateNewImageTests
         task.Repository = AppImage;
         task.ImageTags = new[] { "latest" };
         task.WorkingDirectory = "app/";
-        task.ContainerRuntimeIdentifier = "linux-x64";
         task.Entrypoint = new TaskItem[] { new("dotnet"), new("build") };
-        task.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         Assert.True(task.Execute());
         newProjectDir.Delete(true);
@@ -367,8 +359,6 @@ public class CreateNewImageTests
         cni.WorkingDirectory = "app/";
         cni.Entrypoint = new TaskItem[] { new(newProjectDir.Name) };
         cni.ImageTags = pcp.NewContainerTags;
-        cni.ContainerRuntimeIdentifier = "linux-x64";
-        cni.RuntimeIdentifierGraphPath = ToolsetUtils.GetRuntimeGraphFilePath();
 
         cni.ImageFormat = KnownImageFormats.OCI.ToString();
 

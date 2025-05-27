@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -66,94 +68,33 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        KnownImageFormats? format = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse(ImageFormat, out KnownImageFormats knownFormat))
+            {
+                format = knownFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetNames(typeof(KnownImageFormats))));
+                return false;
+            }
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
-            try
-            {
-                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
-                imageBuilder = await registry.GetImageManifestAsync(
-                    BaseImageName,
-                    sourceImageReference.Reference,
-                    ContainerRuntimeIdentifier,
-                    picker,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch (RepositoryNotFoundException)
-            {
-                telemetry.LogUnknownRepository();
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (UnableToAccessRepositoryException)
-            {
-                telemetry.LogCredentialFailure(sourceImageReference);
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (ContainerHttpException e)
-            {
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
-            catch (BaseImageNotFoundException e)
-            {
-                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
+            imageBuilder = await ContainerBuilder.LoadFromManifestAndConfig(BaseImageManifestPath.ItemSpec, format, BaseImageConfigurationPath.ItemSpec, logger);
         }
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
 
-        if (imageBuilder is null)
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
-            return !Log.HasLoggedErrors;
-        }
-
-        (string message, object[] parameters) = SkipPublishing ?
-            (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+        (string message, object[] parameters) =
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
-
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
-
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
 
         var storePath = new DirectoryInfo(ContentStoreRoot);
         if (!storePath.Exists)
