@@ -343,10 +343,6 @@
     <XamarinMacOSWorkloadManifestVersion>15.2.10695-net10-p3</XamarinMacOSWorkloadManifestVersion>
     <XamarinTvOSWorkloadManifestVersion>18.2.10695-net10-p3</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <!-- This property should be defined in Arcade -->
-    <MicrosoftWixToolsetVersion Condition="'$(MicrosoftWixToolsetVersion)' == ''">5.0.2-dotnet.2690783</MicrosoftWixToolsetVersion>
-  </PropertyGroup>
   <PropertyGroup Label="Pinned dependency">
     <!-- This package is not being produced outside of the 2.0 branch of corefx and should not change. -->
     <CLI_NETStandardLibraryNETFrameworkVersion>2.0.1-servicing-26011-01</CLI_NETStandardLibraryNETFrameworkVersion>
