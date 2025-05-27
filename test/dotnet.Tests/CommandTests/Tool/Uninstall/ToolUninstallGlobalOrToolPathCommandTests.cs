@@ -231,17 +231,19 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
 
-            var packageDownloaderMock = new ToolPackageDownloaderMock(
-                    store: store,
-                    fileSystem: _fileSystem,
-                    _reporter
-                    );
-            var toolPackageDownloaderMock = new ToolPackageUninstallerMock(_fileSystem, store);
+
+            var toolPackageUninstallerMock = new ToolPackageUninstallerMock(_fileSystem, store);
+
+            var toolPackageDownloaderMock = new ToolPackageDownloaderMock2(store,
+                runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                currentWorkingDirectory: null,
+                fileSystem: _fileSystem);
+
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 new PackageId(PackageId),
-                (location, forwardArguments, currentWorkingDirectory) => (store, store, packageDownloaderMock, toolPackageDownloaderMock),
+                (location, forwardArguments, currentWorkingDirectory) => (store, store, toolPackageDownloaderMock, toolPackageUninstallerMock),
                 (_, _) => new ShellShimRepository(
                     new DirectoryPath(_shimsDirectory),
                     string.Empty,
