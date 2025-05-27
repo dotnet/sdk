@@ -441,7 +441,7 @@ namespace Microsoft.DotNet.Watch
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
                                 // additional directories may have been added:
-                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
                                 await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
