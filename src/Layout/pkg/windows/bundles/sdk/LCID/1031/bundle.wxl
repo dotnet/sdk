@@ -1,4 +1,4 @@
-﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+﻿<WixLocalization Culture="de-DE" Language="1031" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="Caption" Value="[WixBundleName]-Installationsprogramm" />
   <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="ConfirmCancelMessage" Value="Möchten Sie den Vorgang abbrechen?" />

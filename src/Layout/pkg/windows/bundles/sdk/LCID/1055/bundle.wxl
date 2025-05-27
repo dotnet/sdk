@@ -1,4 +1,4 @@
-﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+﻿<WixLocalization Culture="tr-TR" Language="1055" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="Caption" Value="[WixBundleName] Yükleyicisi" />
   <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="ConfirmCancelMessage" Value="İptal etmek istediğinizden emin misiniz?" />

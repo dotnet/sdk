@@ -11,19 +11,19 @@
     <bal:Condition Message="#(loc.InstallPathARM64x64)" Condition="WixBundleInstalled OR (NOT DOTNETHOME_ARM64 ~= DOTNETHOME_X64) OR (NOT NativeMachine=&quot;$(NativeMachine_arm64)&quot;) OR DOTNETHOMESIMILARITYCHECKOVERRIDE" />
 
     <BootstrapperApplication>
-      <bal:WixStandardBootstrapperApplication LicenseFile="..\dummyeula.rtf"
-                                              LocalizationFile="1033\bundle.wxl"
+      <bal:WixStandardBootstrapperApplication LicenseFile="..\..\dummyeula.rtf"
+                                              LocalizationFile="LCID\1033\bundle.wxl"
                                               ShowVersion="yes"
                                               SuppressDowngradeFailure="yes"
                                               SuppressOptionsUI="yes"
                                               Theme="rtfLicense"
-                                              ThemeFile="thm.xml" />
+                                              ThemeFile="bundle.thm" />
 
       <?foreach LCID in 1028;1029;1031;1036;1040;1041;1042;1045;1049;1055;2052;3082?>
-      <Payload Id="thm_$(LCID)" Compressed="yes" Name="$(LCID)\thm.wxl" SourceFile="$(LCID)\bundle.wxl" />
+      <Payload Id="thm_$(LCID)" Compressed="yes" Name="$(LCID)\thm.wxl" SourceFile="LCID\$(LCID)\bundle.wxl" />
       <?endforeach?>
 
-      <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\osx\resources\dotnetbackground.png" />
+      <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\..\osx\resources\dotnetbackground.png" />
       <!--<Payload Compressed="yes" Name="thm.wxl" SourceFile="1033\bundle.wxl" />-->
     </BootstrapperApplication>
 
@@ -148,7 +148,7 @@
     <Variable Name="DOTNETHOME_X64" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME_ARM64" bal:Overridable="yes" />
     <Variable Name="DOTNETHOME" Type="formatted" Value="[DOTNETHOME_$(PlatformToken)]" bal:Overridable="no" />
-    <Variable Name="BUNDLEMONIKER" Type="string" Value="$(ProductMoniker)" bal:Overridable="no" />
+    <Variable Name="BUNDLEMONIKER" Type="string" Value="$(SdkBrandName)" bal:Overridable="no" />
     <Variable Name="DOTNETSDKVERSION" Type="string" Value="$(Version)" bal:Overridable="no" />
     <Variable Name="DOTNETRUNTIMEVERSION" Type="string" Value="$(DotNetRuntimeVersion)" bal:Overridable="no" />
     <Variable Name="ASPNETCOREVERSION" Type="string" Value="$(AspNetCoreVersion)" bal:Overridable="no" />
@@ -162,7 +162,7 @@
 
       <!--
         The finalizer is not an actual installation package. We "detect" the EXE
-        based on the action the bundle is performing to ensure that it runs the uninstall
+        based on the action the bundle is performing to ensure it runs the uninstall
         command only when the bundle is being removed. The package is always installable because the bundle
         will remove the package (execute its UninstallCommand) if it is not installable when then bundle is 
         being installed.

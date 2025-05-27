@@ -5,7 +5,7 @@
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <!-- Example: Microsoft .NET SDK 10.0.100 -->
     <DefineConstants>$(DefineConstants);SdkBrandName=$(SdkBrandName)</DefineConstants>
-    <!-- Example: Microsoft .NET SDK 10.0.100-->
+    <!-- Example: Microsoft .NET SDK 10.0.100 (x64) -->
     <DefineConstants>$(DefineConstants);SdkPlatformBrandName=$(SdkBrandName) ($(InstallerPlatform))</DefineConstants>
 
     <!-- NativeMachine values match the expected values for image file machine constants
@@ -14,7 +14,9 @@
     <DefineConstants>$(DefineConstants);NativeMachine_x64=34404</DefineConstants>
     <DefineConstants>$(DefineConstants);NativeMachine_arm64=43620</DefineConstants>
 
+    <!-- This is the full semenatic version of the SDK. -->
     <DefineConstants>$(DefineConstants);Version=$(Version)</DefineConstants>
+    <!-- BundleVersion is used by MSIs when generating provider keys, but ProductVersion is never used when generating bundles. -->
     <DefineConstants Condition="'$(ProductVersion)' != ''">$(DefineConstants);ProductVersion=$(ProductVersion)</DefineConstants>
     <DefineConstants Condition="'$(BundleVersion)' != ''">$(DefineConstants);BundleVersion=$(BundleVersion)</DefineConstants>
   </PropertyGroup>

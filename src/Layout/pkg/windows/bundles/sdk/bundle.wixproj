@@ -6,6 +6,11 @@
     <OutputType>Bundle</OutputType>
 
     <IncludeSearchPaths>C:\git\forks\sdk\src\Layout\pkg\windows</IncludeSearchPaths>
+
+    <!-- Globbing will automatically find any .wxl relative to the project file. Since we're simshipping localized content for
+         the bundle UI, we either need to exclude the .wxl files or place them in a directory outside of the project. For simshipping
+         we only need to ensure the files are pulled in as additional payloads into the UX container. -->
+    <DefaultItemExcludes>$(DefaultItemExcludes);LCID\**\*</DefaultItemExcludes>
   </PropertyGroup>
 
   <ItemGroup>

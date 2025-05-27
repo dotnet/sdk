@@ -1,4 +1,4 @@
-﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+﻿<WixLocalization Culture="cs-CZ" Language="1029" xmlns="http://wixtoolset.org/schemas/v4/wxl">
   <String Id="Caption" Value="Instalační program pro [WixBundleName]" />
   <String Id="Title" Value="[BUNDLEMONIKER]" />
   <String Id="ConfirmCancelMessage" Value="Opravdu chcete akci zrušit?" />
