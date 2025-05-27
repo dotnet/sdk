@@ -180,16 +180,6 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         string[] readyEnvVariables = sanitizedEnvVariables.Select(i => i.ItemSpec + "=" + i.GetMetadata("Value")).ToArray();
         builder.AppendSwitchIfNotNull("--environmentvariables ", readyEnvVariables, delimiter: " ");
 
-        if (!string.IsNullOrWhiteSpace(ContainerRuntimeIdentifier))
-        {
-            builder.AppendSwitchIfNotNull("--rid ", ContainerRuntimeIdentifier);
-        }
-
-        if (!string.IsNullOrWhiteSpace(RuntimeIdentifierGraphPath))
-        {
-            builder.AppendSwitchIfNotNull("--ridgraphpath ", RuntimeIdentifierGraphPath);
-        }
-
         if (!string.IsNullOrWhiteSpace(ContainerUser))
         {
             builder.AppendSwitchIfNotNull("--container-user ", ContainerUser);
@@ -209,6 +199,9 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         {
             builder.AppendSwitch("--generate-digest-label");
         }
+
+        builder.AppendSwitchIfNotNull("--base-image-manifest", BaseImageManifestPath);
+        builder.AppendSwitchIfNotNull("--base-image-config", BaseImageConfigurationPath);
 
         return builder.ToString();
 

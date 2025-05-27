@@ -194,13 +194,15 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.get -> strin
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageConfigurationPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageConfigurationPath.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageManifestPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageManifestPath.get -> Microsoft.Build.Framework.ITaskItem!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerEnvironmentVariables.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerizeDirectory.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerRuntimeIdentifier.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContainerUser.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ContentStoreRoot.get -> string!
@@ -243,8 +245,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.get -> string
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveOutputPath.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.get -> string!
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.RuntimeIdentifierGraphPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolExe.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolPath.get -> string!
