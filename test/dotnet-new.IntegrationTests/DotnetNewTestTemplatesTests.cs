@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static readonly ImmutableArray<string> SupportedTargetFrameworks =
         [
-            "net10.0",
+            ToolsetInfo.CurrentTargetFramework
         ];
 
         private static readonly (string ProjectTemplateName, string ItemTemplateName, string[] Languages, bool SupportsTestingPlatform)[] AvailableItemTemplates =
@@ -50,13 +50,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         static DotnetNewTestTemplatesTests()
         {
+            // This is the live location of the build
             string templatePackagePath = Path.Combine(
                 RepoTemplatePackages,
-                "Microsoft.DotNet.Common.ProjectTemplates.10.0",
+                $"Microsoft.DotNet.Common.ProjectTemplates.{ToolsetInfo.CurrentTargetFrameworkVersion}",
                 "content");
 
             var dummyLog = new NullTestOutputHelper();
 
+            // Here we uninstall first, because we want to make sure we clean up before the installation
+            // i.e we want to make sure our installation is done
             new DotnetNewCommand(dummyLog, "uninstall", templatePackagePath)
                    .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                    .WithWorkingDirectory(CreateTemporaryFolder())
@@ -66,7 +69,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
-                .Should().ExitWith(0);
+                .Should()
+                .Pass();
         }
 
         [Theory]
@@ -80,19 +84,21 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language>
             string args = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory}";
             new DotnetNewCommand(_log, args)
-             .WithCustomHive(outputDirectory).WithRawArguments()
-             .WithWorkingDirectory(workingDirectory)
-             .Execute()
-             .Should().ExitWith(0);
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
 
             var itemName = "test";
 
-            // Add test item to test project: dotnet new <itemTemplate> -n <test> -lang <language> -o <testProjectName>
+            // Add test item to test project: dotnet new <itemTemplate> -n <test> -lang <language> -o <outputDirectory>
             new DotnetNewCommand(_log, $"{itemTemplate} -n {itemName} -lang {language} -o {outputDirectory}")
                 .WithCustomHive(outputDirectory).WithRawArguments()
                 .WithWorkingDirectory(workingDirectory)
                 .Execute()
-                .Should().ExitWith(0);
+                .Should()
+                .Pass();
 
             if (language == Languages.FSharp)
             {
@@ -106,9 +112,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-            result.Should().ExitWith(0);
+            result.Should().Pass();
 
             result.StdOut.Should().Contain("Passed!");
+            // We created another test class (which will contain 1 test), and we already have 1 test when we created the test project.
+            // Therefore, in total we would have 2.
             result.StdOut.Should().MatchRegex(@"Passed:\s*2");
 
             Directory.Delete(outputDirectory, true);
@@ -126,10 +134,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language>
             string args = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory}";
             new DotnetNewCommand(_log, args)
-             .WithCustomHive(outputDirectory).WithRawArguments()
-             .WithWorkingDirectory(workingDirectory)
-             .Execute()
-             .Should().ExitWith(0);
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
 
             if (runDotnetTest)
             {
@@ -137,7 +146,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-                result.Should().ExitWith(0);
+                result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
@@ -164,10 +173,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Create new test project: dotnet new <projectTemplate> -n <testProjectName> -f <targetFramework> -lang <language> --coverage-tool <coverageTool> --test-runner <testRunner>
             string args = $"{projectTemplate} -n {testProjectName} -f {targetFramework} -lang {language} -o {outputDirectory} --coverage-tool {coverageTool} --test-runner {testRunner}";
             new DotnetNewCommand(_log, args)
-             .WithCustomHive(outputDirectory).WithRawArguments()
-             .WithWorkingDirectory(workingDirectory)
-             .Execute()
-             .Should().ExitWith(0);
+                .WithCustomHive(outputDirectory).WithRawArguments()
+                .WithWorkingDirectory(workingDirectory)
+                .Execute()
+                .Should()
+                .Pass();
 
             if (runDotnetTest)
             {
@@ -175,7 +185,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .WithWorkingDirectory(outputDirectory)
                 .Execute(outputDirectory);
 
-                result.Should().ExitWith(0);
+                result.Should().Pass();
 
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
