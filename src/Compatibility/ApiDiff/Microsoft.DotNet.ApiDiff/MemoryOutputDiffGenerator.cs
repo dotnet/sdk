@@ -85,12 +85,17 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
     public IReadOnlyDictionary<string, string> Results => _results.AsReadOnly();
 
     /// <inheritdoc/>
-    public async Task RunAsync()
+    public async Task RunAsync(CancellationToken cancellationToken)
     {
         Stopwatch swRun = Stopwatch.StartNew();
 
         foreach ((string beforeAssemblyName, IAssemblySymbol beforeAssemblySymbol) in _beforeAssemblySymbols)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             // Needs to block so the _afterAssemblySymbols dictionary gets updated.
             await ProcessBeforeAndAfterAssemblyAsync(beforeAssemblyName, beforeAssemblySymbol).ConfigureAwait(false);
         }
@@ -98,6 +103,11 @@ public class MemoryOutputDiffGenerator : IDiffGenerator
         // Needs to happen after processing the before and after assemblies and filtering out the existing ones.
         foreach ((string afterAssemblyName, IAssemblySymbol afterAssemblySymbol) in _afterAssemblySymbols)
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             await ProcessNewAssemblyAsync(afterAssemblyName, afterAssemblySymbol).ConfigureAwait(false);
         }
 
