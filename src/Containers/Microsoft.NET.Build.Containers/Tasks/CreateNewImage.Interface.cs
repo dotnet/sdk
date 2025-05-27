@@ -41,6 +41,12 @@ partial class CreateNewImage
     /// </summary>
     public string BaseImageDigest { get; set; }
 
+    [Required]
+    public ITaskItem BaseImageManifestPath { get; set; }
+
+    [Required]
+    public ITaskItem BaseImageConfigurationPath { get; set; } 
+
     /// <summary>
     /// The registry to push to.
     /// </summary>
@@ -130,18 +136,6 @@ partial class CreateNewImage
     public ITaskItem[] ContainerEnvironmentVariables { get; set; }
 
     /// <summary>
-    /// The RID to use to determine the host manifest if the parent container is a manifest list
-    /// </summary>
-    [Required]
-    public string ContainerRuntimeIdentifier { get; set; }
-
-    /// <summary>
-    /// The path to the runtime identifier graph file. This is used to compute RID compatibility for Image Manifest List entries.
-    /// </summary>
-    [Required]
-    public string RuntimeIdentifierGraphPath { get; set; }
-
-    /// <summary>
     /// The username or UID which is a platform-specific structure that allows specific control over which user the process run as.
     /// This acts as a default value to use when the value is not specified when creating a container.
     /// For Linux based systems, all of the following are valid: user, uid, user:group, uid:gid, uid:group, user:gid.
@@ -206,6 +200,8 @@ partial class CreateNewImage
         BaseImageName = "";
         BaseImageTag = "";
         BaseImageDigest = "";
+        BaseImageManifestPath = null!;
+        BaseImageConfigurationPath = null!;
         OutputRegistry = "";
         ArchiveOutputPath = "";
         Repository = "";
@@ -221,8 +217,6 @@ partial class CreateNewImage
         Labels = Array.Empty<ITaskItem>();
         ExposedPorts = Array.Empty<ITaskItem>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
-        ContainerRuntimeIdentifier = "";
-        RuntimeIdentifierGraphPath = "";
         LocalRegistry = "";
         ContainerUser = "";
         ContentStoreRoot = "";
