@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: false
+  default: true
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -69,7 +69,7 @@ extends:
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
       fedora39:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
       mariner20CrossArm:
@@ -145,33 +145,6 @@ extends:
                 _SignType: real
               dependsOn: Official_windows_x64
               downloadManifestMsiPackages: true
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: x86
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: arm64
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -266,21 +239,6 @@ extends:
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
               runTests: false
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
-              runTests: false
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
-              runTests: false
 
       ############### MACOS ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -332,15 +290,16 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
-        dependsOn: build
+        dependsOn: []
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
+            isAssetlessBuild: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

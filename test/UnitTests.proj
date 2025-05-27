@@ -135,7 +135,6 @@
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "Get-ChildItem -Recurse -File -Filter '*hangdump.dmp' | Copy-Item -Destination $env:HELIX_WORKITEM_UPLOAD_ROOT";$(HelixPostCommands)</HelixPostCommands>
       <HelixPostCommands Condition="$(IsPosixShell)">find "$HELIX_WORKITEM_UPLOAD_ROOT/../../.." -name '*hangdump.dmp' -exec cp {} "$HELIX_WORKITEM_UPLOAD_ROOT" \%3B;$(HelixPostCommands)</HelixPostCommands>
-      <TestDotnetRoot>$(RepoRoot)artifacts\bin\redist\$(Configuration)\dotnet</TestDotnetRoot>
       <TestDotnetVersion>$(Version)</TestDotnetVersion>
       <MSBuildSdkResolverDir>$(RepoRoot)artifacts\bin\Microsoft.DotNet.MSBuildSdkResolver</MSBuildSdkResolverDir>
       <HelixStage0Targz>$(RepoRoot)artifacts\tmp\HelixStage0.tar.gz</HelixStage0Targz>
@@ -144,7 +143,7 @@
 
     <TarGzFileCreateFromDirectory
         Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' "
-        SourceDirectory="$(TestDotnetRoot)"
+        SourceDirectory="$(TestHostDotNetRoot)"
         DestinationArchive="$(HelixStage0Targz)"
         OverwriteDestination="true" />
 
@@ -158,8 +157,8 @@
         <Destination>d</Destination>
       </HelixCorrelationPayload>
 
-      <HelixCorrelationPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestDotnetRoot)">
-        <PayloadDirectory>$(TestDotnetRoot)</PayloadDirectory>
+      <HelixCorrelationPayload Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(TestHostDotNetRoot)">
+        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d</Destination>
       </HelixCorrelationPayload>
 
@@ -174,13 +173,13 @@
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="SDKTestRunPackages.zip">
-        <PayloadDirectory>$(TestDotnetRoot)</PayloadDirectory>
+        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d/.nuget</Destination>
         <Uri>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/any/sdk-test-assets/SDKTestRunPackages.zip</Uri>
       </HelixCorrelationPayload>
 
       <HelixCorrelationPayload Include="SDKTestRunPackages2.zip">
-        <PayloadDirectory>$(TestDotnetRoot)</PayloadDirectory>
+        <PayloadDirectory>$(TestHostDotNetRoot)</PayloadDirectory>
         <Destination>d/.nuget</Destination>
         <Uri>https://netcorenativeassets.blob.core.windows.net/resource-packages/external/any/sdk-test-assets/SDKTestRunPackages2.zip</Uri>
       </HelixCorrelationPayload>
