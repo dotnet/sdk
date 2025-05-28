@@ -114,7 +114,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorJsFile>
         <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
       </_BlazorJsFile>
-      <!-- Fingeprint only javascript files -->
+      <!-- Fingerprint only javascript files -->
       <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
 
       <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
