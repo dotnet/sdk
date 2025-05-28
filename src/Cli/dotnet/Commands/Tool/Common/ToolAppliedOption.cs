@@ -67,7 +67,7 @@ internal class ToolAppliedOption
             options.Add(LocalOptionName);
         }
 
-        if (!string.IsNullOrWhiteSpace(parseResult.GetValue<string>(ToolPathName)))
+        if (parseResult.RootCommandResult.GetResult(ToolPathName) is not null)
         {
             options.Add(ToolPathName);
         }
@@ -108,7 +108,7 @@ internal class ToolAppliedOption
     internal static void EnsureToolManifestAndOnlyLocalFlagCombination(ParseResult parseResult)
     {
         if (GlobalOrToolPath(parseResult) &&
-            !string.IsNullOrWhiteSpace(parseResult.GetValue<string>(ToolManifestName)))
+            parseResult.RootCommandResult.GetResult(ToolManifestName) is not null)
         {
             throw new GracefulException(
                 string.Format(
@@ -117,10 +117,7 @@ internal class ToolAppliedOption
     }
 
     private static bool GlobalOrToolPath(ParseResult parseResult)
-    {
-        return GlobalOptionWasProvided(parseResult) ||
-               !string.IsNullOrWhiteSpace(parseResult.GetValue<string>(ToolPathName));
-    }
+        => GlobalOptionWasProvided(parseResult) || parseResult.RootCommandResult.GetResult(ToolPathName) is not null;
 
     private static bool GlobalOptionWasProvided(ParseResult parseResult)
         => (parseResult.RootCommandResult.GetResult(GlobalOptionName) ?? parseResult.RootCommandResult.GetResult(GlobalOptionAlias)) is not null;

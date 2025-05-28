@@ -258,7 +258,8 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetValue<string>(RuntimeOptionLongName) ?? parseResult.GetValue<string>(RuntimeOptionShortName)) is not null)
+        if ((parseResult.RootCommandResult.GetResult(RuntimeOptionLongName) ??
+             parseResult.RootCommandResult.GetResult(RuntimeOptionShortName)) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
         }
@@ -274,7 +275,8 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetValue<string>(RuntimeOptionLongName) ?? parseResult.GetValue<string>(RuntimeOptionShortName)) is not null)
+        if ((parseResult.RootCommandResult.GetResult(RuntimeOptionLongName) ??
+             parseResult.RootCommandResult.GetResult(RuntimeOptionShortName)) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
         }

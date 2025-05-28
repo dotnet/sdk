@@ -254,7 +254,7 @@ public static class Parser
 
         return 1;
     }
-    
+
     internal class DotnetHelpBuilder : HelpBuilder
     {
         private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
