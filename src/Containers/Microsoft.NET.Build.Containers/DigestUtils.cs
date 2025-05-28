@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -10,7 +12,7 @@ internal sealed class DigestUtils
     /// <summary>
     /// Gets digest for string <paramref name="str"/>.
     /// </summary>
-    internal static string GetDigest(string str) => GetDigestFromSha(GetSha(str));
+    internal static string GetDigest<T>(T content) => GetDigestFromSha(GetSha(content));
 
     /// <summary>
     /// Formats digest based on ready SHA <paramref name="sha"/>.
@@ -36,5 +38,11 @@ internal sealed class DigestUtils
         SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
 
         return Convert.ToHexStringLower(hash);
+    }
+
+    internal static string GetSha<T>(T content)
+    {
+        var jsonstring = JsonSerializer.Serialize(content);
+        return GetSha(jsonstring);
     }
 }

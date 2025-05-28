@@ -9,7 +9,10 @@ namespace Microsoft.NET.Build.Containers;
 /// <summary>
 /// Marker interface so we can return polymorphic manifests of all kinds
 /// </summary>
-public interface IManifest;
+public interface IManifest
+{
+    public string? MediaType { get; }
+};
 
 /// <summary>
 /// The struct represents image manifest specification.

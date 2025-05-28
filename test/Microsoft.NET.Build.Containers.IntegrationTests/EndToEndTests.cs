@@ -260,11 +260,14 @@ public class EndToEndTests : IDisposable
         var ociImage = new BuiltImage
         {
             Config = builtImage.Config,
-            ImageDigest = builtImage.ImageDigest,
-            ImageSha = builtImage.ImageSha,
-            Manifest = builtImage.Manifest,
-            ManifestDigest = builtImage.ManifestDigest,
-            ManifestMediaType = SchemaTypes.OciManifestV1,
+            Manifest = new()
+            {
+                Config = builtImage.Manifest.Config,
+                Layers = builtImage.Manifest.Layers,
+                SchemaVersion = builtImage.Manifest.SchemaVersion,
+                MediaType = SchemaTypes.OciManifestV1,
+                KnownDigest = builtImage.Manifest.KnownDigest,
+            },
             Layers = builtImage.Layers
         };
 
