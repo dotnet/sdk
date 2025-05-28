@@ -362,7 +362,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     private void MarkBuildStart()
     {
         string directory = GetArtifactsPath();
-        Directory.CreateDirectory(directory);
+
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(directory);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
+
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
@@ -498,9 +510,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (isVirtualProject)
             {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.props" Sdk="{EscapeValue(sdk.ToSlashDelimitedString())}" />
-                    """);
+                WriteImport(writer, "Sdk.props", sdk);
             }
             else if (sdk.Version is null)
             {
@@ -617,9 +627,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             foreach (var sdk in sdkDirectives)
             {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.targets" Sdk="{EscapeValue(sdk.ToSlashDelimitedString())}" />
-                    """);
+                WriteImport(writer, "Sdk.targets", sdk);
             }
 
             if (!sdkDirectives.Any())
@@ -667,6 +675,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             """);
 
         static string EscapeValue(string value) => SecurityElement.Escape(value);
+
+        static void WriteImport(TextWriter writer, string project, CSharpDirective.Sdk sdk)
+        {
+            if (sdk.Version is null)
+            {
+                writer.WriteLine($"""
+                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" />
+                    """);
+            }
+            else
+            {
+                writer.WriteLine($"""
+                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" Version="{EscapeValue(sdk.Version)}" />
+                    """);
+            }
+        }
     }
 
     /// <param name="reportAllErrors">

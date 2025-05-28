@@ -433,6 +433,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAssetFingerprintingEnabled Condition="'$(StaticWebAssetFingerprintingEnabled)' == ''">true</StaticWebAssetFingerprintingEnabled>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == 'browser'">Browser</StaticWebAssetMergeTarget>
       <StaticWebAssetMergeTarget Condition="'$(TargetFrameworks)' != '' and '$(TargetPlatformIdentifier)' == ''">Server</StaticWebAssetMergeTarget>
+      <StaticWebAssetsCacheDefineStaticWebAssetsEnabled Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == ''">true</StaticWebAssetsCacheDefineStaticWebAssetsEnabled>
 
       <!-- Manifest paths -->
       <_StaticWebAssetsManifestBase Condition="'$(_StaticWebAssetsManifestBase)' == ''">$(IntermediateOutputPath)</_StaticWebAssetsManifestBase>
@@ -672,7 +673,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     DependsOnTargets="ResolveStaticWebAssetsConfiguration;UpdateExistingPackageStaticWebAssets">
 
     <PropertyGroup>
-      <_ResolveProjectStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
+      <_ResolveProjectStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rpswa.dswa.cache.json</_ResolveProjectStaticWebAssetsCachePath>
     </PropertyGroup>
 
     <DefineStaticWebAssets
@@ -707,6 +708,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       </StaticWebAssetDiscoveryPattern>
 
       <Content Remove="@(StaticWebAsset)" />
+
+      <FileWrites Include="$(_ResolveProjectStaticWebAssetsCachePath)" />
     </ItemGroup>
 
   </Target>

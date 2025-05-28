@@ -9,8 +9,8 @@ function InitializeCustomSDKToolset {
   }
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in source build.
-  if ($productBuild -or $properties -like "*DotNetBuildRepo=true*") {
+  # Do not attempt to install them in product build.
+  if ($productBuild) {
     return
   }
 
