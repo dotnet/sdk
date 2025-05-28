@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -61,13 +62,14 @@ internal sealed class ImageBuilder
         AssignUserFromEnvironment();
         AssignPortsFromEnvironment();
 
-        string imageJsonStr = _baseImageConfig.BuildConfig();
-        string imageSha = DigestUtils.GetSha(imageJsonStr);
+        JsonObject config = _baseImageConfig.BuildConfig();
+        string configAsString = config.ToJsonString();
+        string imageSha = DigestUtils.GetSha(configAsString);
         string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
-        long imageSize = Encoding.UTF8.GetBytes(imageJsonStr).Length;
+        long imageSize = Encoding.UTF8.GetBytes(configAsString).Length;
 
-        ManifestConfig newManifestConfig = _manifest.Config with
-        {
+        ManifestConfig newManifestConfig = 
+            new(){
             digest = imageDigest,
             size = imageSize,
             mediaType = ManifestMediaType switch
@@ -88,12 +90,8 @@ internal sealed class ImageBuilder
 
         return new BuiltImage()
         {
-            Config = imageJsonStr,
-            ImageDigest = imageDigest,
-            ImageSha = imageSha,
-            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
-            ManifestDigest = newManifest.GetDigest(),
-            ManifestMediaType = ManifestMediaType,
+            Config = config,
+            Manifest = newManifest,
             Layers = _manifest.Layers
         };
     }
