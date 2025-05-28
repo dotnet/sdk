@@ -76,7 +76,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
 
-        GeneratedImageIndex = multiArchImage.ImageIndex;
+        GeneratedImageIndex = JsonSerializer.Serialize(multiArchImage.ImageIndex);
         GeneratedArchiveOutputPath = ArchiveOutputPath;
 
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
@@ -110,34 +110,12 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
             (string architecture, string os) = GetArchitectureAndOsFromConfig(config);
 
-            // We don't need ImageDigest, ImageSha, Layers for remote registry, as the individual images should be pushed already
-            string? imageDigest = null;
-            string? imageSha = null;
-            List<ManifestLayer>? layers = null;
-
-            if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
-            {
-                var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest);
-                if (manifestV2 == null)
-                {
-                    Log.LogError(Strings.InvalidImageManifest);
-                    break;
-                }
-
-                imageDigest = manifestV2.Config.digest;
-                imageSha = DigestUtils.GetShaFromDigest(imageDigest);
-                layers = manifestV2.Layers;
-            }     
-
+            var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest)!;
             images[i] = new BuiltImage()
             {
-                Config = config,
-                ImageDigest = imageDigest,
-                ImageSha = imageSha,
-                Manifest = manifest,
-                ManifestDigest = manifestDigest,
-                ManifestMediaType = manifestMediaType,
-                Layers = layers,
+                Config = JsonNode.Parse(config)!.AsObject(),
+                Manifest = manifestV2,
+                Layers = manifestV2.Layers,
                 OS = os,
                 Architecture = architecture
             };
@@ -177,16 +155,14 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return new MultiArchImage()
                 {
                     // For multi-arch we publish only oci-formatted image tarballs.
-                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
-                    ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
+                    ImageIndex = ImageIndexGenerator.GenerateDockerManifestList(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
                     Images = images
                 };
             case DestinationImageReferenceKind.RemoteRegistry:
-                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                var imageIndex = ImageIndexGenerator.GenerateImageIndex(images);
                 return new MultiArchImage()
                 {
                     ImageIndex = imageIndex,
-                    ImageIndexMediaType = mediaType,
                     // For remote registry we don't need individual images, as they should be pushed already
                 };
             default:
