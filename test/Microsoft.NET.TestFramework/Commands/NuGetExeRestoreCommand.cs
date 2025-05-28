@@ -24,17 +24,6 @@ namespace Microsoft.NET.TestFramework.Commands
 
         protected override SdkCommandSpec CreateCommand(IEnumerable<string> args)
         {
-            var newArgs = new List<string>();
-
-            newArgs.Add("restore");
-
-            newArgs.Add(FullPathProjectFile);
-
-            newArgs.Add("-PackagesDirectory");
-            newArgs.Add(PackagesDirectory ?? TestContext.Current.NuGetCachePath ?? string.Empty);
-
-            newArgs.AddRange(args);
-
             if (string.IsNullOrEmpty(TestContext.Current.NuGetExePath))
             {
                 throw new InvalidOperationException("Path to nuget.exe not set");
@@ -58,20 +47,28 @@ namespace Microsoft.NET.TestFramework.Commands
                     "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe" :
                     $"https://dist.nuget.org/win-x86-commandline/v{NuGetExeVersion}/nuget.exe";
 
-                using (var client = new System.Net.Http.HttpClient())
-                using (var response = client.GetAsync(url).ConfigureAwait(false).GetAwaiter().GetResult())
-                using (var fs = new FileStream(nugetExePath, FileMode.CreateNew))
+                DownloadNuGetAsync().ConfigureAwait(false).GetAwaiter().GetResult();
+
+                async Task DownloadNuGetAsync()
                 {
-#pragma warning disable CA2025 // we force synchronous so sourceCacheContext can't be disposed early
-                    response.Content.CopyToAsync(fs).ConfigureAwait(false).GetAwaiter().GetResult();
-#pragma warning restore CA2025
+                    using var client = new System.Net.Http.HttpClient();
+                    using var response = await client.GetAsync(url).ConfigureAwait(false);
+                    using var fs = new FileStream(nugetExePath, FileMode.CreateNew);
+                    await response.Content.CopyToAsync(fs).ConfigureAwait(false);
                 }
             }
 
             var ret = new SdkCommandSpec()
             {
                 FileName = nugetExePath,
-                Arguments = newArgs
+                Arguments =
+                [
+                    "restore",
+                    FullPathProjectFile,
+                    "-PackagesDirectory",
+                    PackagesDirectory ?? TestContext.Current.NuGetCachePath ?? string.Empty,
+                    .. args
+                ]
             };
 
             TestContext.Current.AddTestEnvironmentVariables(ret.Environment);
