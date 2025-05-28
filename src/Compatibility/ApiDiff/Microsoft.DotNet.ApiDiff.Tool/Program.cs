@@ -152,10 +152,7 @@ public static class Program
 
     private static Task HandleCommandAsync(DiffConfiguration diffConfig, CancellationToken cancellationToken = default)
     {
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return Task.FromCanceled(cancellationToken);
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         var log = new ConsoleLog(MessageImportance.Normal);
 

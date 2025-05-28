@@ -92,10 +92,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
         Debug.Assert(_beforeAssembliesFolderPaths.Length == 1);
         Debug.Assert(_afterAssembliesFolderPaths.Length == 1);
 
-        if (cancellationToken.IsCancellationRequested)
-        {
-            return;
-        }
+        cancellationToken.ThrowIfCancellationRequested();
 
         (IAssemblySymbolLoader beforeLoader, Dictionary<string, IAssemblySymbol> beforeAssemblySymbols) =
             AssemblySymbolLoader.CreateFromFiles(
@@ -140,10 +137,7 @@ internal sealed class FileOutputDiffGenerator : IDiffGenerator
 
         foreach ((string assemblyName, string text) in generator.Results.OrderBy(r => r.Key))
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                return;
-            }
+            cancellationToken.ThrowIfCancellationRequested();
 
             string fileName = $"{_tableOfContentsTitle}_{assemblyName}.md";
             tableOfContents.AppendLine($"* [{assemblyName}]({fileName})");
