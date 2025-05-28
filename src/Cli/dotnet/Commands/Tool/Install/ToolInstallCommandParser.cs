@@ -72,7 +72,7 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolInstallGlobalOptionDescription);
 
     public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
 
@@ -106,7 +106,7 @@ internal static class ToolInstallCommandParser
 
     public static Command AddCommandOptions(Command command)
     {
-        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallGlobalOptionDescription));
+        command.Options.Add(GlobalOption);
         command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallLocalOptionDescription));
         command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolInstallToolPathOptionDescription));
         command.Options.Add(VersionOption);

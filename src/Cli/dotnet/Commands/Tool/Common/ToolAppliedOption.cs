@@ -11,9 +11,13 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 internal class ToolAppliedOption
 {
-    public static Option<bool> GlobalOption = new("--global", "-g")
+    private const string GlobalOptionName = "--global";
+    private const string GlobalOptionAlias = "-g";
+
+    public static Option<bool> GlobalOption(string description) => new(GlobalOptionName, GlobalOptionAlias)
     {
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Description = description
     };
 
     public static Option<bool> LocalOption = new("--local")
@@ -47,9 +51,9 @@ internal class ToolAppliedOption
         string message)
     {
         List<string> options = [];
-        if (parseResult.GetResult(GlobalOption) is not null)
+        if (GlobalOptionWasProvided(parseResult))
         {
-            options.Add(GlobalOption.Name);
+            options.Add(GlobalOptionName);
         }
 
         if (parseResult.GetResult(LocalOption) is not null)
@@ -108,7 +112,10 @@ internal class ToolAppliedOption
 
     private static bool GlobalOrToolPath(ParseResult parseResult)
     {
-        return parseResult.GetResult(GlobalOption) is not null ||
+        return GlobalOptionWasProvided(parseResult) ||
                !string.IsNullOrWhiteSpace(parseResult.GetValue(ToolPathOption));
     }
+
+    private static bool GlobalOptionWasProvided(ParseResult parseResult)
+        => (parseResult.RootCommandResult.GetResult(GlobalOptionName) ?? parseResult.RootCommandResult.GetResult(GlobalOptionAlias)) is not null;
 }

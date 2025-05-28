@@ -20,7 +20,7 @@ internal static class ToolUninstallCommandParser
         Arity = ArgumentArity.ExactlyOne
     };
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolUninstallGlobalOptionDescription);
 
     public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
 
@@ -40,7 +40,7 @@ internal static class ToolUninstallCommandParser
         Command command = new("uninstall", CliCommandStrings.ToolUninstallCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallGlobalOptionDescription));
+        command.Options.Add(GlobalOption);
         command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallLocalOptionDescription));
         command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallToolPathOptionDescription));
         command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolUninstallManifestPathOptionDescription));
