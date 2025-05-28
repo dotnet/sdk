@@ -13,7 +13,7 @@ function Run-TestTemplateTests {
     $ErrorActionPreference = 'Stop'
     $RepoRoot = Resolve-Path (Join-Path $PSScriptRoot '..')
     $classNameFilter = "--filter"
-	$filterValue = "FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests"
+    $filterValue = "FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests"
     $TestDll = Join-Path $RepoRoot "artifacts\bin\dotnet-new.IntegrationTests\$configuration\dotnet-new.IntegrationTests.dll"
 
     # Check if the test DLL exists
