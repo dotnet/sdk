@@ -254,7 +254,7 @@ public static class Parser
 
         return 1;
     }
-
+    
     internal class DotnetHelpBuilder : HelpBuilder
     {
         private DotnetHelpBuilder(int maxWidth = int.MaxValue) : base(maxWidth) { }
@@ -273,15 +273,8 @@ public static class Parser
 
             DotnetHelpBuilder dotnetHelpBuilder = new(windowWidth);
 
-            SetHelpCustomizations(dotnetHelpBuilder);
-
             return dotnetHelpBuilder;
         });
-
-        private static void SetHelpCustomizations(HelpBuilder builder)
-        {
-            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
-        }
 
         public static void additionalOption(HelpContext context)
         {

@@ -34,7 +34,7 @@ internal static class WorkloadSearchVersionsCommandParser
 
     private static Command ConstructCommand()
     {
-        var command = new Command("version", CliCommandStrings.PrintSetVersionsDescription);
+        var command = new Command("version", CliStrings.ShortWorkloadSearchVersionDescription);
         command.Arguments.Add(WorkloadVersionArgument);
         command.Options.Add(FormatOption);
         command.Options.Add(TakeOption);
