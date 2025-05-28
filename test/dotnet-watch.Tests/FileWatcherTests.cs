@@ -78,15 +78,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
+                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
                 ?
                 [
-                    new(file, ChangeKind.Update),
                     new(file, ChangeKind.Add),
                 ]
                 :
                 [
                     new(file, ChangeKind.Add),
+                    new(file, ChangeKind.Update),
                 ],
                 usePolling,
                 watchSubdirectories: true,
@@ -104,15 +104,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
+                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || usePolling
                 ?
                 [
-                    new(fileInSubdir, ChangeKind.Update),
                     new(fileInSubdir, ChangeKind.Add),
                 ]
                 :
                 [
                     new(fileInSubdir, ChangeKind.Add),
+                    new(fileInSubdir, ChangeKind.Update),
                 ],
                 usePolling,
                 watchSubdirectories: true,
@@ -185,18 +185,34 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var fileInSubdir = Path.Combine(subdir, "file_in_subdir");
             File.WriteAllText(fileInSubdir, string.Empty);
 
-            await TestOperation(
-                dir,
-                expectedChanges: watchSubdirectories
-                ?
+            ChangedPath[] expectedChanges;
+
+            if (watchSubdirectories)
+            {
+                expectedChanges = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling ?
                 [
                     new(fileInDir, ChangeKind.Update),
                     new(fileInSubdir, ChangeKind.Update)
                 ]
                 :
                 [
-                    new(fileInDir, ChangeKind.Update)
-                ],
+                    new(fileInDir, ChangeKind.Update),
+                    new(fileInDir, ChangeKind.Add),
+                    new(fileInSubdir, ChangeKind.Update),
+                    new(fileInSubdir, ChangeKind.Add),
+                ];
+            }
+            else
+            {
+                expectedChanges =
+                [
+                    new(fileInDir, ChangeKind.Update),
+                ];
+            }
+
+            await TestOperation(
+                dir,
+                expectedChanges,
                 usePolling,
                 watchSubdirectories,
                 () =>
