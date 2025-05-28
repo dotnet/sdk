@@ -280,22 +280,6 @@ public static class Parser
 
         private static void SetHelpCustomizations(HelpBuilder builder)
         {
-            foreach (var option in OptionForwardingExtensions.HelpDescriptionCustomizations.Keys)
-            {
-                Func<HelpContext, string> descriptionCallback = (HelpContext context) =>
-                {
-                    foreach (var (command, helpText) in OptionForwardingExtensions.HelpDescriptionCustomizations[option])
-                    {
-                        if (context.ParseResult.CommandResult.Command.Equals(command))
-                        {
-                            return helpText;
-                        }
-                    }
-                    return null;
-                };
-                builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
-            }
-
             builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
         }
 
