@@ -202,7 +202,9 @@
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
 
-      <!--<PackageGroupRef Id="PG_WorkloadManifests" />-->
+      <?if $(IncludeWorkloadManifests)=true?>
+      <PackageGroupRef Id="PG_WorkloadManifests" />
+      <?endif?>
     </Chain>
   </Bundle>
 </Wix>

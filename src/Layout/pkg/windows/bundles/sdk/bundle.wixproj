@@ -22,6 +22,9 @@
          to chain external MSIs from runtime, ASP.NET, and Windows Desktop into the bundle. There is no conditional
          check. If the file doesn't exist, there is likely a problem with the build. -->
     <Compile Include="$(DotNetPackageGroupWxsPath)" />
+
+    <!-- Workload manifests will be included only if the source fragment was generated. -->
+    <Compile Include="$(WorkloadManifestsWxsPath)" Condition="'$(WorkloadManifestsWxsPath)' != '' AND Exists('$(WorkloadManifestsWxsPath)')" />
   </ItemGroup>
 
   <ItemGroup>
@@ -47,6 +50,8 @@
       <DefineConstants>$(DefineConstants);FinalizerExeSourceFile=$(FinalizerExeSourceFile)</DefineConstants>
       <DefineConstants>$(DefineConstants);TemplatesMsiSourceFile=$(TemplatesMsiSourceFile)</DefineConstants>
       <DefineConstants>$(DefineConstants);SdkMsiSourceFile=$(SdkMsiSourceFile)</DefineConstants>
+
+      <DefineConstants Condition="'$(WorkloadManifestsWxsPath)' != '' AND Exists('$(WorkloadManifestsWxsPath)')">$(DefineConstants);IncludeWorkloadManifests=true</DefineConstants>
     </PropertyGroup>
   </Target>
 </Project>

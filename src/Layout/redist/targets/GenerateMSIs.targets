@@ -301,6 +301,7 @@
                          WinFormsAndWpfVersion=$(MicrosoftWindowsDesktopAppRuntimePackageVersion);
                          MinimumVSVersion=$(MinimumVSVersion);
                          DotNetPackageGroupWxsPath=$(DotNetPackageGroupWxsPath);
+                         WorkloadManifestsWxsPath=$(WorkloadManifestsWxsPath);
                          FinalizerExeSourceFile=$(FinalizerExe);
                          TemplatesMsiSourceFile=$(LatestTemplateMsiInstallerFile);
                          SdkMsiSourceFile=$(SdkMSIInstallerFile)" />
