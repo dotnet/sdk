@@ -3,6 +3,7 @@
 
 using System.Net;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
@@ -38,11 +39,9 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, IManifest manifest, CancellationToken cancellationToken)
     {
-        HttpContent manifestUploadContent = new StringContent(manifestJson);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
-
+        JsonContent manifestUploadContent = JsonContent.Create(manifest, mediaType: new MediaTypeHeaderValue(manifest.MediaType!));
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 
         if (!putResponse.IsSuccessStatusCode)

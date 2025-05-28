@@ -318,7 +318,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, image, sourceReference, d => $"{d.Substring("sha256:".Length)}/layer.tar", cancellationToken, layerTarballPaths)
             .ConfigureAwait(false);
 
-        string configTarballPath = $"{image.ImageSha!}.json";
+        string configTarballPath = $"{image.Manifest.Config.digest.Split(':')[1]!}.json";
         await WriteImageConfig(writer, image, configTarballPath, cancellationToken)
             .ConfigureAwait(false);
 
@@ -367,7 +367,7 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config)))
+        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config.ToJsonString())))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -454,7 +454,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestPath = $"{_blobsPath}/{image.ManifestDigest.Substring("sha256:".Length)}";
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(image.Manifest)))
+        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -472,14 +472,14 @@ internal sealed class DockerCli
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+        var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
             SchemaTypes.OciManifestV1,
             image.ManifestDigest,
-            image.Manifest.Length,
+            (Encoding.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))).Length,
             destinationReference.Repository,
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(index))))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -498,7 +498,7 @@ internal sealed class DockerCli
         await WriteImageLayers(writer, image, sourceReference, d => $"{_blobsPath}/{d.Substring("sha256:".Length)}", cancellationToken)
             .ConfigureAwait(false);
 
-        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.ImageSha!}", cancellationToken)
+        await WriteImageConfig(writer, image, $"{_blobsPath}/{image.Manifest.Config.digest.Split(':')[1]!}", cancellationToken)
             .ConfigureAwait(false);
 
         await WriteManifestForOciImage(writer, image, cancellationToken)
@@ -541,8 +541,8 @@ internal sealed class DockerCli
         var manifestListDigest = DigestUtils.GetDigest(multiArchImage.ImageIndex);
         var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
-        
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(multiArchImage.ImageIndex)))
+        var manifestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(multiArchImage.ImageIndex));
+        using (MemoryStream indexStream = new(manifestBytes))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
             {
@@ -554,14 +554,14 @@ internal sealed class DockerCli
         // 2. create index.json that points to manifest list in the blobs
         cancellationToken.ThrowIfCancellationRequested();
 
-        string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            multiArchImage.ImageIndexMediaType, 
+        var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
+            multiArchImage.ImageIndex.MediaType!, 
             manifestListDigest, 
-            multiArchImage.ImageIndex.Length, 
+            manifestBytes.Length, 
             destinationReference.Repository, 
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))
+        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(index))))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
