@@ -63,15 +63,19 @@ internal static class CommonOptions
         return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
-    public static Option<string> RuntimeOption =
-        new DynamicForwardedOption<string>("--runtime", "-r")
+    public const string RuntimeOptionLongName = "--runtime";
+    public const string RuntimeOptionShortName = "-r";
+
+    public static Option<string> RuntimeOption(string description) =>
+        new DynamicForwardedOption<string>(RuntimeOptionLongName, RuntimeOptionShortName)
         {
-            HelpName = RuntimeArgName
+            HelpName = RuntimeArgName,
+            Description = description
         }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<string> LongFormRuntimeOption =
-        new DynamicForwardedOption<string>("--runtime")
+        new DynamicForwardedOption<string>(RuntimeOptionLongName)
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc!)
@@ -254,7 +258,7 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if ((parseResult.GetValue<string>(RuntimeOptionLongName) ?? parseResult.GetValue<string>(RuntimeOptionShortName)) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
         }
@@ -270,7 +274,7 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if ((parseResult.GetValue<string>(RuntimeOptionLongName) ?? parseResult.GetValue<string>(RuntimeOptionShortName)) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
         }

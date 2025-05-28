@@ -178,8 +178,10 @@ public static class ParseResultExtensions
 
     internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
     {
-        return parseResult.HasOption(CommonOptions.RuntimeOption) ?
-            parseResult.GetValue(CommonOptions.RuntimeOption) :
+        string fromRuntimeOption = parseResult.GetValue<string>(CommonOptions.RuntimeOptionLongName) ??
+            parseResult.GetValue<string>(CommonOptions.RuntimeOptionShortName);
+
+        return fromRuntimeOption is not null ? fromRuntimeOption :
             parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
             parseResult.HasOption(CommonOptions.ArchitectureOption) ||
             parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?

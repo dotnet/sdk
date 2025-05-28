@@ -47,8 +47,9 @@ internal static class ValidationUtility
                 parseResult.HasOption(TestingPlatformOptions.ConfigurationOption) ||
                 parseResult.HasOption(TestingPlatformOptions.FrameworkOption) ||
                 parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
-                parseResult.HasOption(CommonOptions.RuntimeOption)
-                )
+                ((parseResult.GetValue<string>(CommonOptions.RuntimeOptionLongName) ??
+                 parseResult.GetValue<string>(CommonOptions.RuntimeOptionShortName)) is not null)
+            )
             {
                 throw new GracefulException(CliCommandStrings.CmdOptionCannotBeUsedWithTestModulesDescription);
             }
