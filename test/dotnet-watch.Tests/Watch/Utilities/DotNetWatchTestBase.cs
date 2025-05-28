@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
@@ -21,19 +23,19 @@ public abstract class DotNetWatchTestBase : IDisposable
         AppDomain.CurrentDomain.ProcessExit += (_, _) => Dispose();
     }
 
-    public DebugTestOutputLogger Logger => (DebugTestOutputLogger)App.Logger;
+    public DebugTestOutputLogger Logger => App.Logger;
 
-    public void Log(string message)
-        => Logger.WriteLine($"[TEST] {message}");
+    public void Log(string message, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        => App.Logger.Log(message, testPath, testLine);
 
-    public void UpdateSourceFile(string path, string text)
+    public void UpdateSourceFile(string path, string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
         WriteAllText(path, text);
-        Log($"File '{path}' updated.");
+        Log($"File '{path}' updated", testPath, testLine);
     }
 
-    public void UpdateSourceFile(string path, Func<string, string> contentTransform)
-        => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)));
+    public void UpdateSourceFile(string path, Func<string, string> contentTransform, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)), testPath, testLine);
 
     /// <summary>
     /// Replacement for <see cref="File.WriteAllText"/>, which fails to write to hidden file
