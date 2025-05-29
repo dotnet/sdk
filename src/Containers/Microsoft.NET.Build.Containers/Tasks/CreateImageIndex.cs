@@ -75,6 +75,8 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         }
 
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
+        using var fileStream = File.OpenWrite(GeneratedManifestPath);
+        await JsonSerializer.SerializeAsync(fileStream, multiArchImage.ImageIndex);
 
         GeneratedImageIndex = JsonSerializer.Serialize(multiArchImage.ImageIndex);
         GeneratedArchiveOutputPath = ArchiveOutputPath;
@@ -82,7 +84,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         logger.LogInformation(Strings.BuildingImageIndex, destinationImageReference, string.Join(", ", images.Select(i => i.ManifestDigest)));
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
-
+        // TODO: remove this push and extract to another Task
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
             .ConfigureAwait(false);
 

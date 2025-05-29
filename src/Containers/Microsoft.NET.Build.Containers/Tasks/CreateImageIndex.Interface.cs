@@ -67,6 +67,12 @@ partial class CreateImageIndex
     public string[] ImageTags { get; set; }
 
     /// <summary>
+    /// Where to write the generated image index to
+    /// </summary>
+    [Required]
+    public string GeneratedManifestPath { get; set; }
+
+    /// <summary>
     /// The generated archive output path.
     /// </summary>
     [Output]
@@ -92,6 +98,7 @@ partial class CreateImageIndex
         ImageTags = Array.Empty<string>();
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
+        GeneratedManifestPath = string.Empty;
 
         TaskResources = Resource.Manager;
     }

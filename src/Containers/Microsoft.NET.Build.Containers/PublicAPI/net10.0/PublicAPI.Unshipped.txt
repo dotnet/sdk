@@ -29,6 +29,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.get -> str
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedManifestPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedManifestPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.get -> string!
