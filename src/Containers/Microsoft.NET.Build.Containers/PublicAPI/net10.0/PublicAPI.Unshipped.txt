@@ -46,6 +46,12 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> stri
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.set -> void
 override Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Execute() -> bool
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerHelpers

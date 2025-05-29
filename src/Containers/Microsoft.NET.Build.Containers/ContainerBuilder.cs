@@ -44,6 +44,9 @@ internal static class ContainerBuilder
         string contentStoreRoot,
         FileInfo baseImageManifestPath,
         FileInfo baseImageConfigPath,
+        FileInfo generatedConfigPath,
+        FileInfo generatedManifestPath,
+        FileInfo generatedLayerPath,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -111,7 +114,7 @@ internal static class ContainerBuilder
         var store = new ContentStore(storePath);
 
         var userId = imageBuilder.IsWindows ? null : TryParseUserId(containerUser);
-        Layer newLayer = Layer.FromFiles(inputFiles, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, userId: userId);
+        Layer newLayer = await Layer.FromFiles(inputFiles, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, generatedLayerPath, cancellationToken, userId: userId);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
 
@@ -169,6 +172,16 @@ internal static class ContainerBuilder
         }
         BuiltImage builtImage = imageBuilder.Build();
         cancellationToken.ThrowIfCancellationRequested();
+
+        // at this point we're done with modifications and are just pushing the data other places
+
+        var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        var manifestWriteTask = File.WriteAllTextAsync(generatedManifestPath.FullName, serializedManifest, Encoding.UTF8);
+
+        var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
+        var configWriteTask = File.WriteAllTextAsync(generatedConfigPath.FullName, serializedConfig, Encoding.UTF8);
+
+        await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
 
         int exitCode;
         switch (destinationImageReference.Kind)
@@ -281,12 +294,12 @@ internal static class ContainerBuilder
         var mediaType = baseImageManifest.MediaType;
         if (desiredImageFormat is not null)
         {
-                mediaType = desiredImageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => mediaType // should be impossible unless we add to the enum
-                };
+            mediaType = desiredImageFormat switch
+            {
+                KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                _ => mediaType // should be impossible unless we add to the enum
+            };
         }
         return new ImageBuilder(baseImageManifest, mediaType!, new ImageConfig(baseImageConfig), logger);
     }
