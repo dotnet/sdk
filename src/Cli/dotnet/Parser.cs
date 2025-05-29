@@ -118,6 +118,7 @@ public static class Parser
 
     public static readonly Option<bool> CliSchemaOption = new("--cli-schema")
     {
+        Description = CliStrings.SDKSchemaCommandDefinition,
         Arity = ArgumentArity.Zero,
         Recursive = true
     };

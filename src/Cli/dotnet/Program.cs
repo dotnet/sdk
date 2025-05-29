@@ -142,7 +142,7 @@ public class Program
 
             if (parseResult.GetValue(Parser.CliSchemaOption))
             {
-                CommandLineInfo.PrintCliSchema(parseResult.CommandResult.Command);
+                CliSchema.PrintCliSchema(parseResult.CommandResult.Command);
                 return 0;
             }
             else if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
