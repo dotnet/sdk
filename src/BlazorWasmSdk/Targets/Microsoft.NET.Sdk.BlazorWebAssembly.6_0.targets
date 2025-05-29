@@ -37,6 +37,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
+    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
+    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
+    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+    <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
+
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
@@ -48,12 +53,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
-    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == '' and '$(_TargetingNET100OrLater)' != 'true'">true</BlazorCacheBootResources>
     <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(OverrideHtmlAssetPlaceholders)' == 'true'">true</BlazorFingerprintBlazorJs>
-
-    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
-    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
 
     <!--  8 <  .NET      we want to fingerprint dotnet.js because it's part of the blazor.boot.json which is loaded from blazor.webassembly.js -->
     <!--  8 <= .NET < 10 we don't want to fingerprint dotnet.js because it's path is hardcoded in blazor.webassembly.js -->
