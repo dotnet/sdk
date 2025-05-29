@@ -10,10 +10,13 @@ install_dependencies() {
     case "$ID" in
       centos)
         sudo dnf install -y epel-release || echo "Warning: Failed to install epel-release"
+        sudo dnf install -y zlib-devel libunwind || echo "Warning: Failed to install zlib-devel or libunwind"
         ;;
 
       fedora)
-        sudo dnf install -y zlib-devel clang || echo "Warning: Failed to install zlib-devel or clang"
+        sudo dnf install -y zlib-devel clang libicu libicu-devel || echo "Warning: Failed to install zlib-devel, libicu, libicu-devel or clang"
+        export OPENSSL_ENABLE_SHA1_SIGNATURES=1
+        export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
         ;;
 
       alpine)
