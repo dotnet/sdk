@@ -96,7 +96,7 @@ public class DiffDiskTests
             outputFolderPath.DirPath,
             writeToDisk: true);
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, DefaultExpectedAssemblyMarkdowns);
     }
@@ -255,7 +255,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             outputFolderPath.DirPath,
             writeToDisk: true);
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, expectedTableOfContents, expectedAssemblyMarkdowns);
     }
@@ -286,7 +286,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             writeToDisk: true,
             filesWithAssembliesToExclude: await GetFileWithListsAsync(root, [DefaultAssemblyName]));
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         VerifyDiskWrite(outputFolderPath.FullName, DefaultTableOfContentsTitle, ExpectedEmptyTableOfContents, []);
     }
@@ -376,7 +376,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             outputFolderPath.DirPath,
             writeToDisk: true);
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         VerifyDiskWrite(outputFolderPath.DirPath, DefaultTableOfContentsTitle, ExpectedTableOfContents, expectedAssemblyMarkdowns);
     }
@@ -401,7 +401,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             outputFolderPath.DirPath,
             writeToDisk: false);
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.DirPath, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
@@ -440,7 +440,7 @@ Lines preceded by a '+' are additions and a '-' indicates removal.
             writeToDisk: false,
             filesWithAssembliesToExclude: await GetFileWithListsAsync(root, [DefaultAssemblyName]));
 
-        await generator.RunAsync();
+        await generator.RunAsync(CancellationToken.None);
 
         string tableOfContentsMarkdownFilePath = Path.Join(outputFolderPath.FullName, $"{DefaultTableOfContentsTitle}.md");
         Assert.Contains(tableOfContentsMarkdownFilePath, generator.Results.Keys);
