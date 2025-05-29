@@ -179,6 +179,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             GeneratedDigestLabel = labelItem;
         }
 
+        // TODO: remove this push and extract to separate Task
         if (!SkipPublishing)
         {
             await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
