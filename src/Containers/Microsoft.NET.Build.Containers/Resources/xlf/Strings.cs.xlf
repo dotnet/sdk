@@ -225,8 +225,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="translated">Index image nejde vytvořit, protože zadané image nejsou platné. Položky musí mít metadata Config, Manifest, ManifestMediaType a ManifestDigest.</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'ConfigurationPath' and 'ManifestPath' metadata.</source>
+        <target state="needs-review-translation">Index image nejde vytvořit, protože zadané image nejsou platné. Položky musí mít metadata Config, Manifest, ManifestMediaType a ManifestDigest.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
