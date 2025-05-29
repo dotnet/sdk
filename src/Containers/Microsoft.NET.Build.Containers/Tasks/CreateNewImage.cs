@@ -108,7 +108,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             .Select(f => (f.ItemSpec, f.GetMetadata("TargetPath") is string tp && !string.IsNullOrEmpty(tp) ? tp : f.GetMetadata("RelativePath")))
             .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
             .ToArray();
-        Layer newLayer = Layer.FromFiles(filesWithRelativePaths, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store);
+        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, new(GeneratedLayerPath), cancellationToken);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
@@ -156,8 +156,17 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
-        GeneratedContainerConfiguration = JsonSerializer.Serialize(builtImage.Config);
+
+        var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, Encoding.UTF8);
+
+        var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, Encoding.UTF8);
+
+        await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
+
+        GeneratedContainerManifest = serializedManifest;
+        GeneratedContainerConfiguration = serializedConfig;
         GeneratedContainerDigest = builtImage.ManifestDigest;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;

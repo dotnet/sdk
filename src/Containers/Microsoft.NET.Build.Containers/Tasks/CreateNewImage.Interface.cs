@@ -45,7 +45,7 @@ partial class CreateNewImage
     public ITaskItem BaseImageManifestPath { get; set; }
 
     [Required]
-    public ITaskItem BaseImageConfigurationPath { get; set; } 
+    public ITaskItem BaseImageConfigurationPath { get; set; }
 
     /// <summary>
     /// The registry to push to.
@@ -169,6 +169,24 @@ partial class CreateNewImage
     public bool SkipPublishing { get; set; }
 
     public string ContentStoreRoot { get; set; }
+
+    /// <summary>
+    /// Where to write the generated manifest file.
+    /// </summary>
+    [Required]
+    public string GeneratedManifestPath { get; set; } = "";
+
+    /// <summary>
+    /// Where to write the generated configuration file.
+    /// </summary>
+    [Required]
+    public string GeneratedConfigurationPath { get; set; } = "";
+
+    /// <summary>
+    /// Where to write the generated layer tarball.
+    /// </summary>
+    [Required]
+    public string GeneratedLayerPath { get; set; } = "";
 
     [Output]
     public string GeneratedContainerManifest { get; set; }
