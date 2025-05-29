@@ -178,10 +178,8 @@ public static class ParseResultExtensions
 
     internal static string GetCommandLineRuntimeIdentifier(this ParseResult parseResult)
     {
-        return parseResult.HasOption(CommonOptions.RuntimeOptionLongName) ?
-            parseResult.GetValue<string>(CommonOptions.RuntimeOptionLongName) :
-            parseResult.HasOption(CommonOptions.RuntimeOptionShortName) ?
-            parseResult.GetValue<string>(CommonOptions.RuntimeOptionShortName) :
+        return parseResult.HasOption(CommonOptions.RuntimeOptionName) ?
+            parseResult.GetValue<string>(CommonOptions.RuntimeOptionName) :
             parseResult.HasOption(CommonOptions.OperatingSystemOption) ||
             parseResult.HasOption(CommonOptions.ArchitectureOption) ||
             parseResult.HasOption(CommonOptions.LongFormArchitectureOption) ?
@@ -275,9 +273,9 @@ public static class ParseResultExtensions
     public static bool HasOption(this ParseResult parseResult, Option option) => parseResult.GetResult(option) is OptionResult or && !or.Implicit;
 
     /// <summary>
-    /// Checks if the option with given name/alias is present and not implicit (i.e. not set by default).
+    /// Checks if the option with given name is present and not implicit (i.e. not set by default).
     /// This is useful for checking if the user has explicitly set an option, as opposed to it being set by default.
     /// </summary>
-    public static bool HasOption(this ParseResult parseResult, string nameOrAlias)
-        => parseResult.RootCommandResult.GetResult(nameOrAlias) is OptionResult or && !or.Implicit;
+    public static bool HasOption(this ParseResult parseResult, string name)
+        => parseResult.GetResult(name) is OptionResult or && !or.Implicit;
 }
