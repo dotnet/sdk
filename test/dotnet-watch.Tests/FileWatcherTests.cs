@@ -78,15 +78,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
                 ?
                 [
                     new(file, ChangeKind.Add),
                 ]
                 :
                 [
-                    new(file, ChangeKind.Add),
                     new(file, ChangeKind.Update),
+                    new(file, ChangeKind.Add),
                 ],
                 usePolling,
                 watchSubdirectories: true,
@@ -104,15 +104,15 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || usePolling
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
                 ?
                 [
                     new(fileInSubdir, ChangeKind.Add),
                 ]
                 :
                 [
-                    new(fileInSubdir, ChangeKind.Add),
                     new(fileInSubdir, ChangeKind.Update),
+                    new(fileInSubdir, ChangeKind.Add),
                 ],
                 usePolling,
                 watchSubdirectories: true,
