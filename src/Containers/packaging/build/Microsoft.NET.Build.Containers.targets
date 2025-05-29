@@ -467,13 +467,22 @@
         BuildInParallel="$([MSBuild]::ValueOrDefault('$(ContainerPublishInParallel)', 'true'))">
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
-
-    <ItemGroup>
-      <MultiRidContainerInputs Include="@(GeneratedContainer->'%(ManifestPath)');@(GeneratedContainer->'%(ConfigurationPath)')" />
-    </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" DependsOnTargets="_BuildMultiRidImages" Returns="@(GeneratedContainer)" >
+  <Target Name="_ComputeMultiArchManifestInputsAndOutputs">
+    <ItemGroup>
+      <_MultiArchManifestInputs Include="@(GeneratedContainer->'%(ManifestPath)');@(GeneratedContainer->'%(ConfigurationPath)')" />
+    </ItemGroup>
+    <PropertyGroup>
+      <_MultiArchManifestFilePath>$(IntermediateOutputPath)multiarchcontainer.manifest</_MultiArchManifestFilePath>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="_PublishMultiArchContainers"
+          DependsOnTargets="_BuildMultiRidImages;_ComputeMultiArchManifestInputsAndOutputs"
+          Inputs="@(_MultiArchManifestInputs)"
+          Outputs="$(_MultiArchManifestFilePath)"
+          Returns="@(GeneratedContainer)" >
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
                       GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
@@ -484,10 +493,14 @@
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
                       BaseImageTag="$(ContainerBaseTag)"
-                      BaseImageDigest="$(ContainerBaseDigest)">
+                      BaseImageDigest="$(ContainerBaseDigest)"
+                      GeneratedManifestPath="$(_MultiArchManifestFilePath)">
       <Output TaskParameter="GeneratedImageIndex" PropertyName="GeneratedImageIndex" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
     </CreateImageIndex>
+    <ItemGroup>
+      <FileWrites Include="$(_MultiArchManifestFilePath)" />
+    </ItemGroup>
   </Target>
 
   <Target Name="_ParseItemsForPublishingSingleContainer">
