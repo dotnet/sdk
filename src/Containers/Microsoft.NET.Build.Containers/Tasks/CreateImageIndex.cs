@@ -68,7 +68,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             OutputRegistry,
             LocalRegistry);
 
-        var images = ParseImages(destinationImageReference.Kind);
+        var images = await ParseImages(GeneratedContainers, cancellationToken);
         if (Log.HasLoggedErrors)
         {
             return false;
@@ -84,67 +84,68 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-            .ConfigureAwait(false); 
+            .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
     }
 
-    private BuiltImage[] ParseImages(DestinationImageReferenceKind destinationKind)
+    private async Task<BuiltImage[]> ParseImages(ITaskItem[] containers, CancellationToken ctok)
     {
-        var images = new BuiltImage[GeneratedContainers.Length];
+        var images = await Task.WhenAll(containers.Select(itemDescription => ParseBuiltImage(itemDescription)));
+        var validImages = images.Where(image => image is not null).Cast<BuiltImage>().ToArray()!;
+        return validImages;
 
-        for (int i = 0; i < GeneratedContainers.Length; i++)
+        async Task<BuiltImage?> ParseBuiltImage(ITaskItem itemDescription)
         {
-            var unparsedImage = GeneratedContainers[i];
+            var configFile = new FileInfo(itemDescription.GetMetadata("ConfigurationPath"));
+            var manifestFile = new FileInfo(itemDescription.GetMetadata("ManifestPath"));
 
-            string config = unparsedImage.GetMetadata("Configuration");
-            string manifestDigest = unparsedImage.GetMetadata("ManifestDigest");
-            string manifest = unparsedImage.GetMetadata("Manifest");
-            string manifestMediaType = unparsedImage.GetMetadata("ManifestMediaType");
-
-            if (string.IsNullOrEmpty(config) || string.IsNullOrEmpty(manifestDigest) || string.IsNullOrEmpty(manifest) || string.IsNullOrEmpty(manifestMediaType))
+            if (!configFile.Exists || !manifestFile.Exists)
             {
                 Log.LogError(Strings.InvalidImageMetadata);
-                break;
+                return null;
             }
 
-            (string architecture, string os) = GetArchitectureAndOsFromConfig(config);
-
-            var manifestV2 = JsonSerializer.Deserialize<ManifestV2>(manifest)!;
-            images[i] = new BuiltImage()
+            if (await GetArchitectureAndOsFromConfig(configFile, ctok) is not (var config, var architecture, var os))
             {
-                Config = JsonNode.Parse(config)!.AsObject(),
+                Log.LogError(Strings.InvalidImageConfig);
+                return null;
+            }
+
+            ManifestV2 manifestV2 = (await JsonSerializer.DeserializeAsync<ManifestV2>(manifestFile.OpenRead()))!;
+            return new BuiltImage()
+            {
+                Config = config,
                 Manifest = manifestV2,
                 Layers = manifestV2.Layers,
                 OS = os,
                 Architecture = architecture
             };
         }
-
-        return images;
     }
 
-    private (string, string) GetArchitectureAndOsFromConfig(string config)
+    private async Task<(JsonObject, string, string)?> GetArchitectureAndOsFromConfig(FileInfo config, CancellationToken cTok)
     {
-        var configJson = JsonNode.Parse(config) as JsonObject;
+        using var fileStream = config.OpenRead();
+        var configJson = await JsonNode.ParseAsync(fileStream, cancellationToken: cTok) as JsonObject;
         if (configJson is null)
         {
             Log.LogError(Strings.InvalidImageConfig);
-            return (string.Empty, string.Empty);
+            return null;
         }
         var architecture = configJson["architecture"]?.ToString();
         if (architecture is null)
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
-            return (string.Empty, string.Empty);
-        } 
+            return null;
+        }
         var os = configJson["os"]?.ToString();
         if (os is null)
         {
             Log.LogError(Strings.ImageConfigMissingOs);
-            return (string.Empty, string.Empty);
+            return null;
         }
-        return (architecture, os);
+        return (configJson, architecture, os);
     }
 
     private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)

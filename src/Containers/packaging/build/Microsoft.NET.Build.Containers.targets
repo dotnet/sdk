@@ -395,11 +395,7 @@
                     GeneratedConfigurationPath="$(_ContainerGeneratedConfigurationPath)"
                     GeneratedLayerPath="$(_ContainerGeneratedLayerPath)">
 
-      <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
-      <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
-      <Output TaskParameter="GeneratedContainerDigest" PropertyName="GeneratedContainerDigest" />
       <Output TaskParameter="GeneratedArchiveOutputPath" PropertyName="GeneratedArchiveOutputPath" />
-      <Output TaskParameter="GeneratedContainerMediaType" PropertyName="GeneratedContainerMediaType" />
       <Output TaskParameter="GeneratedContainerNames" ItemName="GeneratedContainerName" />
       <Output TaskParameter="GeneratedDigestLabel" ItemName="ContainerLabel" />
     </CreateNewImage>
@@ -409,15 +405,13 @@
       <FileWrites Include="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath);$(_ContainerGeneratedLayerPath)" />
 
       <GeneratedContainer Include="GeneratedContainer">
-        <Manifest>$(GeneratedContainerManifest)</Manifest>
-        <Configuration>$(GeneratedContainerConfiguration)</Configuration>
-        <ManifestDigest>$(GeneratedContainerDigest)</ManifestDigest>
-        <ManifestMediaType>$(GeneratedContainerMediaType)</ManifestMediaType>
+        <ManifestPath>$(_ContainerGeneratedManifestPath)</ManifestPath>
+        <ConfigurationPath>$(_ContainerGeneratedConfigurationPath)</ConfigurationPath>
       </GeneratedContainer>
     </ItemGroup>
   </Target>
 
-  <Target Name="_PublishMultiArchContainers" Returns="@(GeneratedContainer)" >
+  <Target Name="_ComputeMultiRidPublishDefaults">
     <PropertyGroup>
       <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
@@ -435,7 +429,9 @@
       <!-- If we are publishing to local tarball or to local Docker, force OCI to prevent mismatches between inner images and the outer manifest -->
       <_SingleImageContainerFormat Condition="$(_SkipContainerPublishing) == 'true' ">OCI</_SingleImageContainerFormat>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_BuildMultiRidImages" DependsOnTargets="_ComputeMultiRidPublishDefaults" Returns="@(GeneratedContainer)">
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -472,6 +468,12 @@
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
+    <ItemGroup>
+      <MultiRidContainerInputs Include="@(GeneratedContainer->'%(ManifestPath)');@(GeneratedContainer->'%(ConfigurationPath)')" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_PublishMultiArchContainers" DependsOnTargets="_BuildMultiRidImages" Returns="@(GeneratedContainer)" >
     <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
                       GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
