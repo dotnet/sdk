@@ -223,6 +223,10 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
         builder.AppendSwitchIfNotNull("--base-image-manifest", BaseImageManifestPath);
         builder.AppendSwitchIfNotNull("--base-image-config", BaseImageConfigurationPath);
 
+        builder.AppendSwitchIfNotNull("--generated-manifest", GeneratedManifestPath);
+        builder.AppendSwitchIfNotNull("--generated-configuration", GeneratedConfigurationPath);
+        builder.AppendSwitchIfNotNull("--generated-layer", GeneratedLayerPath);
+
         return builder.ToString();
 
         void AppendSwitchIfNotNullSanitized(CommandLineBuilder builder, string commandArgName, string propertyName, ITaskItem[] value)

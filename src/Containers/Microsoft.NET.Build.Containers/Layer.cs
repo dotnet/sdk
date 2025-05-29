@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.IO.Enumeration;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
@@ -34,14 +36,14 @@ internal class Layer
 
     public virtual Descriptor Descriptor { get; }
 
-    public string BackingFile { get; }
+    public FileInfo BackingFile { get; }
 
     internal Layer()
     {
         Descriptor = new Descriptor();
-        BackingFile = "";
+        BackingFile = null!;
     }
-    internal Layer(string backingFile, Descriptor descriptor)
+    internal Layer(FileInfo backingFile, Descriptor descriptor)
     {
         BackingFile = backingFile;
         Descriptor = descriptor;
@@ -49,14 +51,14 @@ internal class Layer
 
     public static Layer FromDescriptor(Descriptor descriptor, ContentStore store)
     {
-        return new(store.PathForDescriptor(descriptor), descriptor);
+        return new(new(store.PathForDescriptor(descriptor)), descriptor);
     }
 
-    public static Layer FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, int? userId = null)
+    public static async Task<Layer> FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, FileInfo layerWritePath, CancellationToken ct, int? userId = null)
     {
         long fileSize;
-        Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
-        Span<byte> uncompressedHash = stackalloc byte[SHA256.HashSizeInBytes];
+        var hash = MemoryPool<byte>.Shared.Rent(SHA256.HashSizeInBytes);
+        var uncompressedHash = MemoryPool<byte>.Shared.Rent(SHA256.HashSizeInBytes);
         int? resolvedUserId = isWindowsLayer ? null : userId;
 
         // Docker treats a COPY instruction that copies to a path like `/app` by
@@ -100,7 +102,7 @@ internal class Layer
                     if (isWindowsLayer)
                     {
                         var entry = new PaxTarEntry(TarEntryType.Directory, "Files", entryAttributes);
-                        writer.WriteEntry(entry);
+                        await writer.WriteEntryAsync(entry, ct);
                     }
 
                     // Write an entry for the container working directory.
@@ -114,7 +116,7 @@ internal class Layer
                     {
                         workingDirectoryEntry.Uid = uid;
                     }
-                    writer.WriteEntry(workingDirectoryEntry);
+                    await writer.WriteEntryAsync(workingDirectoryEntry, ct);
 
                     // Write entries for the application directory contents.
                     foreach ((string absolutePath, string containerRelativePath) in inputFiles)
@@ -122,31 +124,31 @@ internal class Layer
                         var file = new FileInfo(absolutePath);
                         var adjustedRelativePath = OperatingSystem.IsWindows() ? containerRelativePath.Replace('\\', '/') : containerRelativePath;
                         var finalRelativePath = $"{containerPath}/{adjustedRelativePath}";
-                        WriteTarEntryForFile(writer, file, finalRelativePath, entryAttributes, resolvedUserId);
+                        await WriteTarEntryForFile(writer, file, finalRelativePath, entryAttributes, resolvedUserId, ct);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
                     if (isWindowsLayer)
                     {
                         var entry = new PaxTarEntry(TarEntryType.Directory, "Hives", entryAttributes);
-                        writer.WriteEntry(entry);
+                        await writer.WriteEntryAsync(entry, ct);
                     }
 
                 } // Dispose of the TarWriter before getting the hash so the final data get written to the tar stream
 
-                int bytesWritten = gz.GetCurrentUncompressedHash(uncompressedHash);
-                Debug.Assert(bytesWritten == uncompressedHash.Length);
+                int bytesWritten = gz.GetCurrentUncompressedHash(uncompressedHash.Memory);
+                Debug.Assert(bytesWritten == uncompressedHash.Memory.Length);
             }
 
             fileSize = fs.Length;
 
             fs.Position = 0;
 
-            int bW = SHA256.HashData(fs, hash);
-            Debug.Assert(bW == hash.Length);
+            int bW = await SHA256.HashDataAsync(fs, hash.Memory, ct);
+            Debug.Assert(bW == hash.Memory.Length);
 
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId)
+            static async Task WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId, CancellationToken ct)
             {
                 UnixFileMode mode = DetermineFileMode(file);
                 PaxTarEntry entry;
@@ -170,7 +172,7 @@ internal class Layer
                     entry.Uid = uid;
                 }
 
-                writer.WriteEntry(entry);
+                await writer.WriteEntryAsync(entry);
 
                 if (entry.DataStream is not null)
                 {
@@ -192,12 +194,12 @@ internal class Layer
             }
         }
 
-        string contentHash = Convert.ToHexStringLower(hash);
-        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash);
+        string contentHash = Convert.ToHexStringLower(hash.Memory.Span);
+        string uncompressedContentHash = Convert.ToHexStringLower(uncompressedHash.Memory.Span);
 
         string layerMediaType = manifestMediaType switch
         {
-             // TODO: configurable? gzip always?
+            // TODO: configurable? gzip always?
             SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
             SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
@@ -212,17 +214,18 @@ internal class Layer
         };
 
         string storedContent = store.PathForDescriptor(descriptor);
-
         var _ = store.ContentRoot;
+        // TODO: the publish side of things requires that the layer exists in the content root (because we look it up by digest),
+        // but we should ideally store these in the msbuild intermediate path so that we can clean it nicely.
+        File.Copy(tempTarballPath, storedContent, overwrite: true);
+        File.Move(tempTarballPath, layerWritePath.FullName, overwrite: true);
 
-        File.Move(tempTarballPath, storedContent, overwrite: true);
-
-        return new(storedContent, descriptor);
+        return new(layerWritePath, descriptor);
     }
 
-    internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);
+    internal virtual Stream OpenBackingFile() => BackingFile.OpenRead();
 
-    private static readonly char[] PathSeparators = new char[] { Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar };
+    private static readonly char[] PathSeparators = [Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar];
 
     /// <summary>
     /// A stream capable of computing the hash digest of raw uncompressed data while also compressing it.
@@ -258,6 +261,7 @@ internal class Layer
         }
 
         internal int GetCurrentUncompressedHash(Span<byte> buffer) => sha256Hash.GetCurrentHash(buffer);
+        internal int GetCurrentUncompressedHash(Memory<byte> buffer) => sha256Hash.GetCurrentHash(buffer.Span);
 
         protected override void Dispose(bool disposing)
         {
@@ -272,11 +276,16 @@ internal class Layer
             }
         }
 
-        // This class is never used with async writes, but if it ever is, implement these overrides
         public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-            => throw new NotImplementedException();
+        {
+            sha256Hash.AppendData(buffer, offset, count);
+            return compressionStream.WriteAsync(buffer, offset, count, cancellationToken);
+        }
         public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken)
-            => throw new NotImplementedException();
+        {
+            sha256Hash.AppendData(buffer.Span);
+            return compressionStream.WriteAsync(buffer, cancellationToken);
+        }
 
         public override bool CanRead => false;
         public override bool CanSeek => false;

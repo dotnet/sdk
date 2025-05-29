@@ -172,22 +172,31 @@ internal sealed class Registry
             var descriptor = new Descriptor(mediaType, digest, size);
             // write the manifest contents to the durable store
             var storagePath = _store.PathForDescriptor(descriptor);
-            using var storageStream = File.OpenWrite(storagePath);
-            using var responseStream = await response.Content.ReadAsStreamAsync(cTok);
-            await responseStream.CopyToAsync(storageStream);
-            responseStream.Position = 0;
-            // write the marker file for the reference
-            // IMPORTANT: must stay in sync with the lines read in the if block above
-            var parentDir = Path.GetDirectoryName(referencePath)!;
-            // we're creating a multi-level directory structure, so ensure the parent directories exist before writing
-            Directory.CreateDirectory(parentDir);
-            await File.WriteAllLinesAsync(referencePath, [
-                digest,
+            // if the file already exists at this digest then we can skip the download
+            if (File.Exists(storagePath))
+            {
+                using var fs = File.OpenRead(storagePath);
+                return await ParseManifest(mediaType, fs, digest);
+            }
+            else
+            {
+                using var storageStream = File.OpenWrite(storagePath);
+                using var responseStream = await response.Content.ReadAsStreamAsync(cTok);
+                await responseStream.CopyToAsync(storageStream);
+                responseStream.Position = 0;
+                // write the marker file for the reference
+                // IMPORTANT: must stay in sync with the lines read in the if block above
+                var parentDir = Path.GetDirectoryName(referencePath)!;
+                // we're creating a multi-level directory structure, so ensure the parent directories exist before writing
+                Directory.CreateDirectory(parentDir);
+                await File.WriteAllLinesAsync(referencePath, [
+                    digest,
                 mediaType,
                 size.ToString()
-            ], Encoding.UTF8, cTok);
-            // now that the data is all set for next time, return the manifest
-            return await ParseManifest(mediaType, responseStream, digest);
+                ], Encoding.UTF8, cTok);
+                // now that the data is all set for next time, return the manifest
+                return await ParseManifest(mediaType, responseStream, digest);
+            }
         }
 
         async Task<IManifest> ParseManifest(string? mediaType, Stream content, string? digest)
@@ -274,8 +283,9 @@ internal sealed class Registry
             using var jsonStream = await _registryAPI.Blob.GetStreamAsync(repositoryName, digest, cancellationToken);
             using var fsStream = File.OpenWrite(storagePath);
             await jsonStream.CopyToAsync(fsStream, cancellationToken);
-            jsonStream.Position = 0;
-            return (await JsonNode.ParseAsync(jsonStream, cancellationToken: cancellationToken))!;
+            // note: cannot just use the jsonStream here, as it may not be seekable
+            fsStream.Position = 0;
+            return (await JsonNode.ParseAsync(fsStream, cancellationToken: cancellationToken))!;
         }
     }
 
@@ -384,7 +394,7 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = _store.PathForDescriptor(descriptor);
-    
+
         if (File.Exists(localPath))
         {
             // Assume file is up to date and just return it
@@ -421,10 +431,10 @@ internal sealed class Registry
                 _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
     
                 // Wait before retrying
-                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
+                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);   
             }
         }
-    
+
         File.Move(tempTarballPath, localPath, overwrite: true);
     
         return localPath;
@@ -543,7 +553,7 @@ internal sealed class Registry
             _logger.LogInformation(Strings.Registry_TagUploadStarted, tag, RegistryName);
             await _registryAPI.Manifest.PutAsync(destinationImageReference.Repository, tag, multiArchImage.ImageIndex, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_TagUploaded, tag, RegistryName);
-        }          
+        }
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)

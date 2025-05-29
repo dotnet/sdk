@@ -40,7 +40,7 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
     public void Cancel() => _cts.Cancel();
 
     public override bool Execute() => ExecuteAsync().GetAwaiter().GetResult();
-    
+
     public async Task<bool> ExecuteAsync()
     {
         if (Tag is null && Digest is null)
@@ -60,13 +60,14 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
         var outerManifest = await registry.GetManifestCore(Repository, (Digest ?? Tag)!, _cts.Token, skipCache: true);
         if (outerManifest is ManifestV2 singleArchManifest)
         {
-            var configJson = await registry.GetJsonBlobCore(Repository, singleArchManifest.Config.digest, singleArchManifest.Config.mediaType, _cts.Token);
-            var platformData = configJson.Deserialize<PlatformInformation>();
+            Log.LogMessage($"Found single-arch manifest for {Repository} with digest {singleArchManifest.KnownDigest}");
+            var platformData = await DownloadConfigForManifest(registry, singleArchManifest);
             SetOutputs([(singleArchManifest, platformData)], store);
             return true;
         }
         else if (outerManifest is IMultiImageManifest multiArchManifest)
         {
+            Log.LogMessage($"Found multi-arch manifest for {Repository}, fetching child manifests"); ;
             if (multiArchManifest is ManifestListV2 manifestList)
             {
                 var manifests = await Task.WhenAll(manifestList.manifests.Select(GetPlatformDataForManifest));
@@ -95,7 +96,9 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             {
                 throw new InvalidOperationException("Expected single-arch manifest");
             }
-            return (manifestV2, p.platform);
+            Log.LogMessage($"Found child manifest for platform {p.platform} with digest {manifestV2.KnownDigest}");
+            var platformData = await DownloadConfigForManifest(registry, manifestV2);
+            return (manifestV2, platformData);
         }
 
         async Task<(ManifestV2, PlatformInformation)> GetOciPlatformDataForManifest(PlatformSpecificOciManifest p)
@@ -105,8 +108,23 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             {
                 throw new InvalidOperationException("Expected single-arch manifest");
             }
-            return (manifestV2, p.platform);
+            Log.LogMessage($"Found child manifest for platform {p.platform} with digest {manifestV2.KnownDigest}");
+            var platformData = await DownloadConfigForManifest(registry, manifestV2);
+            return (manifestV2, platformData);
         }
+    }
+
+    /// <summary>
+    /// Downloads the configuration for a manifest, which contains platform information.
+    /// This ensures that the per-RID configs are present for future build steps
+    /// </summary>
+    /// <param name="registry"></param>
+    /// <param name="manifest"></param>
+    /// <returns></returns>
+    async Task<PlatformInformation> DownloadConfigForManifest(Registry registry, ManifestV2 manifest)
+    {
+        var configJson = await registry.GetJsonBlobCore(Repository, manifest.Config.digest, manifest.Config.mediaType, _cts.Token);
+        return configJson.Deserialize<PlatformInformation>();
     }
 
     void SetOutputs(IReadOnlyList<(ManifestV2 manifest, PlatformInformation platformInfo)> manifests, ContentStore store)

@@ -4,6 +4,7 @@
 using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
+using System.Threading.Tasks;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -19,7 +20,7 @@ public sealed class LayerEndToEndTests : IDisposable
     }
 
     [Fact]
-    public void SingleFileInFolder()
+    public async Task SingleFileInFolder()
     {
         using TransientTestFolder folder = new();
 
@@ -28,7 +29,9 @@ public sealed class LayerEndToEndTests : IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
+
+        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None);
 
         Console.WriteLine(l.Descriptor);
 
@@ -44,7 +47,7 @@ public sealed class LayerEndToEndTests : IDisposable
     }
 
     [Fact]
-    public void SingleFileInFolderWindows()
+    public async Task SingleFileInFolderWindows()
     {
         using TransientTestFolder folder = new();
 
@@ -52,8 +55,9 @@ public sealed class LayerEndToEndTests : IDisposable
         string testString = $"Test content for {nameof(SingleFileInFolder)}";
 
         File.WriteAllText(testFilePath, testString);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2, _store);
+        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), "TestFile.txt")], containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.True(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
@@ -72,7 +76,7 @@ public sealed class LayerEndToEndTests : IDisposable
     }
 
     [Fact] // https://github.com/dotnet/sdk/issues/40511
-    public void SingleFileInHiddenFolder()
+    public async Task SingleFileInHiddenFolder()
     {
         using TransientTestFolder folder = new();
 
@@ -86,8 +90,9 @@ public sealed class LayerEndToEndTests : IDisposable
         string testString = $"Test content for {nameof(SingleFileInHiddenFolder)}";
 
         File.WriteAllText(testFilePath, testString);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromFiles([(Path.GetFullPath(testFilePath), ".well-known/wwwroot")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store);
+        Layer l = await Layer.FromFiles([(Path.GetFullPath(testFilePath), ".well-known/wwwroot")], containerPath: "/app", false, SchemaTypes.DockerManifestV2, _store, layerFilePath, CancellationToken.None);
 
         VerifyDescriptorInfo(l);
 
@@ -120,12 +125,12 @@ public sealed class LayerEndToEndTests : IDisposable
 
     private static void VerifyDescriptorInfo(Layer l)
     {
-        Assert.Equal(l.Descriptor.Size, new FileInfo(l.BackingFile).Length);
+        Assert.Equal(l.Descriptor.Size, l.BackingFile.Length);
 
         byte[] hashBytes;
         byte[] uncompressedHashBytes;
 
-        using (FileStream fs = File.OpenRead(l.BackingFile))
+        using (FileStream fs = l.BackingFile.OpenRead())
         {
             hashBytes = SHA256.HashData(fs);
 
@@ -149,9 +154,9 @@ public sealed class LayerEndToEndTests : IDisposable
         testSpecificArtifactRoot?.Dispose();
     }
 
-    private static Dictionary<string, TarEntry> LoadAllTarEntries(string file)
+    private static Dictionary<string, TarEntry> LoadAllTarEntries(FileInfo file)
     {
-        using var gzip = new GZipStream(File.OpenRead(file), CompressionMode.Decompress);
+        using var gzip = new GZipStream(file.OpenRead(), CompressionMode.Decompress);
         using var tar = new TarReader(gzip);
 
         var entries = new Dictionary<string, TarEntry>();

@@ -122,7 +122,8 @@
 
     <PropertyGroup>
       <ContainerGenerateLabels Condition="'$(ContainerGenerateLabels)' == ''">true</ContainerGenerateLabels>
-      <ContainerGenerateLabelsImageCreated Condition="'$(ContainerGenerateLabelsImageCreated)' == ''">true</ContainerGenerateLabelsImageCreated>
+      <!-- NOTE: this label screws up incrementality - may want to disable it by default -->
+      <ContainerGenerateLabelsImageCreated Condition="'$(ContainerGenerateLabelsImageCreated)' != 'true'">false</ContainerGenerateLabelsImageCreated>
       <ContainerGenerateLabelsImageDescription Condition="'$(ContainerGenerateLabelsImageDescription)' == ''">true</ContainerGenerateLabelsImageDescription>
       <ContainerGenerateLabelsImageAuthors Condition="'$(ContainerGenerateLabelsImageAuthors)' == ''">true</ContainerGenerateLabelsImageAuthors>
       <ContainerGenerateLabelsImageUrl Condition="'$(ContainerGenerateLabelsImageUrl)' == ''">true</ContainerGenerateLabelsImageUrl>
@@ -266,10 +267,10 @@
 
   <!-- Downloads the manifest jsons to the content store if necessary. If the manifest is a multi-arch manifest then the child manifests are downloaded as well. -->
   <Target Name="_EnsureManifestsAvailable" DependsOnTargets="_ComputeManifestInputsAndOutputs;ComputeContainerConfig" >
-    <DownloadContainerManifest 
-      Registry="$(ContainerBaseRegistry)" 
-      Repository="$(ContainerBaseName)" 
-      Tag="$(ContainerBaseTag)" 
+    <DownloadContainerManifest
+      Registry="$(ContainerBaseRegistry)"
+      Repository="$(ContainerBaseName)"
+      Tag="$(ContainerBaseTag)"
       Digest="$(ContainerBaseDigest)"
       ContentStore="$(ContainerContentStoreRoot)">
       <Output TaskParameter="Manifests" ItemName="_ContainerSingleArchImageManifest" />
@@ -313,7 +314,7 @@
     <PropertyGroup>
       <_ContainerGeneratedConfigTrackingFile>$(IntermediateOutputPath)$(MSBuildProjectName).GeneratedContainerConfig</_ContainerGeneratedConfigTrackingFile>
     </PropertyGroup>
-    <WriteLinesToFile 
+    <WriteLinesToFile
       File="$(_ContainerGeneratedConfigTrackingFile)" Overwrite="true"
       WriteOnlyWhenDifferent="true"
       Lines="
@@ -328,21 +329,30 @@
         @(ContainerDefaultArgs);
         @(ContainerLabel->'%(Identity)=%(Value)');;
         @(ContainerPort->'%(Identity):%(Type)');
-        @(ContainerEnvironmentVariables->'%(Identity)=%(Value)');" />	
+        @(ContainerEnvironmentVariables->'%(Identity)=%(Value)');" />
     <ItemGroup>
-      <FileWrites Include="@(_ContainerGeneratedConfigTrackingFile)" />	
+      <FileWrites Include="@(_ContainerGeneratedConfigTrackingFile)" />
     </ItemGroup>
+  </Target>
+
+  <Target Name="_CreateGeneratedContainerProperties">
+    <PropertyGroup>
+      <_ContainerGeneratedManifestPath>$(IntermediateOutputPath)container.manifest.json</_ContainerGeneratedManifestPath>
+      <_ContainerGeneratedConfigurationPath>$(IntermediateOutputPath)container.config.json</_ContainerGeneratedConfigurationPath>
+      <_ContainerGeneratedLayerPath>$(IntermediateOutputPath)container.layer.tar.gz</_ContainerGeneratedLayerPath>
+    </PropertyGroup>
   </Target>
 
 
   <!-- There is an implicit dependency here in that both of ComputeContainerConfig and _ComputeContainerExecutionArgs must have been run, but because we call this Target
        in a few different ways we can't express that dependency directly here. -->
-  <!-- Big concern I have here: tracking the inputs to the publishdir individually (ResolvedFileToPublish, _PublishStaticWebAssetsTargetPath, etc) is very whack-a-mole, and I'm certain that
+  <!-- NOTE: tracking the inputs to the publishdir individually (ResolvedFileToPublish, _PublishStaticWebAssetsTargetPath, etc) is very whack-a-mole, and I'm certain that
        we'll miss some. Should we just be doing a glob of PublishDir + assigning our own RelativePath metadata ourselves to ensure completeness while still handling incrementality? -->
-  <Target Name="_PublishSingleContainer" 
-    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile"
-    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_ContainerThisArchLayer);@(_ContainerThisArchConfig);@(_ContainerThisArchManifest);@(ResolvedFileToPublish);@(_PublishStaticWebAssetsTargetPath)" 
-    Outputs="$(IntermediateOutputPath)Container/Manifest;$(IntermediateOutputPath)Container/Configuration;$(IntermediateOutputPath)Container/layer.tar.gz"
+  <!-- NOTE: the apphost screws with incrementality because it's marked with CopyToPublishDirectory=Always in _ComputeNETCoreBuildOutputFiles - we should find a better way to handle that. -->
+  <Target Name="_PublishSingleContainer"
+    DependsOnTargets="_DownloadLayers;_GenerateContainerConfigTrackingFile;_CreateGeneratedContainerProperties"
+    Inputs="$(_ContainerGeneratedConfigTrackingFile);@(_ContainerThisArchLayer);@(_ContainerThisArchConfig);@(_ContainerThisArchManifest);@(ResolvedFileToPublish);@(_PublishStaticWebAssetsTargetPath)"
+    Outputs="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath);$(_ContainerGeneratedLayerPath)"
     Returns="@(GeneratedContainer)">
     <PropertyGroup Condition="'$(DOTNET_HOST_PATH)' == ''">
       <DotNetHostDirectory>$(NetCoreRoot)</DotNetHostDirectory>
@@ -380,7 +390,10 @@
                     SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"
-                    ContentStoreRoot="$(ContainerContentStoreRoot)">
+                    ContentStoreRoot="$(ContainerContentStoreRoot)"
+                    GeneratedManifestPath="$(_ContainerGeneratedManifestPath)"
+                    GeneratedConfigurationPath="$(_ContainerGeneratedConfigurationPath)"
+                    GeneratedLayerPath="$(_ContainerGeneratedLayerPath)">
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
       <Output TaskParameter="GeneratedContainerConfiguration" PropertyName="GeneratedContainerConfiguration" />
@@ -392,6 +405,9 @@
     </CreateNewImage>
 
     <ItemGroup>
+      <!-- Track the generated files for cleanup later -->
+      <FileWrites Include="$(_ContainerGeneratedManifestPath);$(_ContainerGeneratedConfigurationPath);$(_ContainerGeneratedLayerPath)" />
+
       <GeneratedContainer Include="GeneratedContainer">
         <Manifest>$(GeneratedContainerManifest)</Manifest>
         <Configuration>$(GeneratedContainerConfiguration)</Configuration>
