@@ -225,8 +225,8 @@
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageMetadata">
-        <source>Cannot create image index because provided images are invalid. Items must have 'Config', 'Manifest', 'ManifestMediaType' and 'ManifestDigest' metadata.</source>
-        <target state="translated">无法创建映像索引，因为提供的映像无效。项必须具有 “Config”、“Manifest”、“ManifestMediaType” 和 “ManifestDigest” 元数据。</target>
+        <source>Cannot create image index because provided images are invalid. Items must have 'ConfigurationPath' and 'ManifestPath' metadata.</source>
+        <target state="needs-review-translation">无法创建映像索引，因为提供的映像无效。项必须具有 “Config”、“Manifest”、“ManifestMediaType” 和 “ManifestDigest” 元数据。</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidImageName_EntireNameIsInvalidCharacters">
