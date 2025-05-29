@@ -12,12 +12,11 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 internal class ToolAppliedOption
 {
     private const string GlobalOptionName = "--global";
-    private const string GlobalOptionAlias = "-g";
     private const string LocalOptionName = "--local";
     private const string ToolPathName = "--tool-path";
     private const string ToolManifestName = "--tool-manifest";
 
-    public static Option<bool> GlobalOption(string description) => new(GlobalOptionName, GlobalOptionAlias)
+    public static Option<bool> GlobalOption(string description) => new(GlobalOptionName, "-g")
     {
         Arity = ArgumentArity.Zero,
         Description = description

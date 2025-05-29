@@ -372,6 +372,11 @@ public static class Parser
                     // Don't show package completions in help
                     PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
                 }
+                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                {
+                    // Set shorter description for displaying parent command help.
+                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                }
 
                 base.Write(context);
             }
