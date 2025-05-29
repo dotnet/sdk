@@ -14,8 +14,7 @@ install_dependencies() {
         ;;
 
       fedora)
-        sudo dnf install -y zlib-devel clang libicu libicu-devel || echo "Warning: Failed to install zlib-devel, libicu, libicu-devel or clang"
-        export OPENSSL_ENABLE_SHA1_SIGNATURES=1
+        sudo dnf install -y zlib-devel clang icu libicu libicu-devel || echo "Warning: Failed to install zlib-devel or clang"
         export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
         ;;
 

@@ -34,7 +34,7 @@ parameters:
     osProperties: $(linuxOsPortableProperties)
     runTests: true
   - categoryName: ContainerBased
-    container: fedora41
+    container: fedora39
     helixTargetContainer: $(helixTargetContainerPrefix)fedora-41-helix-amd64
     osProperties: $(linuxOsPortableProperties)
     runTests: true
