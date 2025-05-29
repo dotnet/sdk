@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
-using System.CommandLine.Help;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
@@ -45,6 +44,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
@@ -129,9 +129,9 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is HelpOption helpOption)
+            else if (option is System.CommandLine.Help.HelpOption helpOption)
             {
-                helpOption.Action = new HelpAction()
+                helpOption.Action = new DotnetHelpAction()
                 {
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
