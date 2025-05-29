@@ -59,7 +59,7 @@ public class EndToEndTests : IDisposable
     {
         var files = Directory.GetFiles(publishDir, "*", new EnumerationOptions()
         {
-            RecurseSubdirectories=true
+            RecurseSubdirectories = true
         });
 
         return files.Select<string, (string, string)>(f => new(f, Path.GetRelativePath(publishDir, f))).ToArray();
@@ -85,7 +85,9 @@ public class EndToEndTests : IDisposable
 
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
+
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
         imageBuilder.AddLayer(l);
 
@@ -131,7 +133,9 @@ public class EndToEndTests : IDisposable
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
 
-        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
+
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
         imageBuilder.AddLayer(l);
 
@@ -171,8 +175,9 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "/app", false, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
         imageBuilder.AddLayer(l);
 
@@ -1411,8 +1416,9 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), isWin ? "C:\\app" : "/app", isWin, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory(workingDir);
@@ -1462,8 +1468,9 @@ public class EndToEndTests : IDisposable
             ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
         Assert.NotNull(imageBuilder);
+        var layerFilePath = new FileInfo(_store.GetTempFile());
 
-        Layer l = Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "C:\\app", true, imageBuilder.ManifestMediaType, _store);
+        Layer l = await Layer.FromFiles(MakeItemsForPublishDir(publishDirectory), "C:\\app", true, imageBuilder.ManifestMediaType, _store, layerFilePath, CancellationToken.None);
 
         imageBuilder.AddLayer(l);
         imageBuilder.SetWorkingDirectory("C:\\app");

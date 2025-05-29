@@ -256,6 +256,27 @@ internal class ContainerizeCommand : RootCommand
         Arity = ArgumentArity.ExactlyOne
     };
 
+    internal Option<FileInfo> GeneratedManifestPathOption { get; } = new("--generated-manifest")
+    {
+        Description = "The path to the generated manifest file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> GeneratedConfigurationPathOption { get; } = new("--generated-configuration")
+    {
+        Description = "The path to the generated configuration file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> GeneratedLayerPathOption { get; } = new("--generated-layer")
+    {
+        Description = "The path to the generated layer file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
         Options.Add(InputFilesOption);
@@ -316,6 +337,9 @@ internal class ContainerizeCommand : RootCommand
             string _contentStoreRoot = parseResult.GetValue(ContentStoreRootOption)!;
             FileInfo _baseImageManifestFile = parseResult.GetValue(BaseImageManifestFileOption)!;
             FileInfo _baseImageConfigFile = parseResult.GetValue(BaseImageConfigFileOption)!;
+            FileInfo _generatedManifestPath = parseResult.GetValue(GeneratedManifestPathOption)!;
+            FileInfo _generatedConfigPath = parseResult.GetValue(GeneratedConfigurationPathOption)!;
+            FileInfo _generatedLayerPath = parseResult.GetValue(GeneratedLayerPathOption)!;
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -350,6 +374,9 @@ internal class ContainerizeCommand : RootCommand
                 _contentStoreRoot,
                 _baseImageManifestFile,
                 _baseImageConfigFile,
+                _generatedManifestPath,
+                _generatedConfigPath,
+                _generatedLayerPath,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });
