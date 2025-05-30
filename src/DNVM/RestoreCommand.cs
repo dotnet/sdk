@@ -12,7 +12,7 @@ using Zio;
 using static Dnvm.InstallCommand;
 using RollForwardOptions =  Dnvm.GlobalJsonSubset.SdkSubset.RollForwardOptions;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 [GenerateDeserialize]
 internal sealed partial record GlobalJsonSubset

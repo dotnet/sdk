@@ -553,7 +553,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DNVM", "DNVM", "{02EA681E-C
 		src\DNVM\CommandLineArguments.cs = src\DNVM\CommandLineArguments.cs
 		src\DNVM\dnvm.csproj = src\DNVM\dnvm.csproj
 		src\DNVM\DnvmEnv.cs = src\DNVM\DnvmEnv.cs
-		src\DNVM\DnvmReleases.cs = src\DNVM\DnvmReleases.cs
 		src\DNVM\DotnetReleasesIndex.cs = src\DNVM\DotnetReleasesIndex.cs
 		src\DNVM\InstallCommand.cs = src\DNVM\InstallCommand.cs
 		src\DNVM\ListCommand.cs = src\DNVM\ListCommand.cs
@@ -564,10 +563,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DNVM", "DNVM", "{02EA681E-C
 		src\DNVM\RestoreCommand.cs = src\DNVM\RestoreCommand.cs
 		src\DNVM\ScalarDeserializer.cs = src\DNVM\ScalarDeserializer.cs
 		src\DNVM\SelectCommand.cs = src\DNVM\SelectCommand.cs
-		src\DNVM\SelfInstallCommand.cs = src\DNVM\SelfInstallCommand.cs
-		src\DNVM\TrackCommand.cs = src\DNVM\TrackCommand.cs
 		src\DNVM\UninstallCommand.cs = src\DNVM\UninstallCommand.cs
-		src\DNVM\UntrackCommand.cs = src\DNVM\UntrackCommand.cs
 		src\DNVM\UpdateCommand.cs = src\DNVM\UpdateCommand.cs
 	EndProjectSection
 EndProject

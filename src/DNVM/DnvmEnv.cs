@@ -12,7 +12,7 @@ using Zio;
 using Zio.FileSystems;
 using static System.Environment;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 /// <summary>
 /// Represents the environment of a dnvm process.
@@ -28,7 +28,6 @@ public sealed partial class DnvmEnv
     public Func<string, string?> GetUserEnvVar { get; }
     public Action<string, string> SetUserEnvVar { get; }
     public IEnumerable<string> DotnetFeedUrls { get; }
-    public string DnvmReleasesUrl { get; }
     public string UserHome { get; }
     public ScopedHttpClient HttpClient { get; }
 
@@ -41,7 +40,6 @@ public sealed partial class DnvmEnv
         Func<string, string?> getUserEnvVar,
         Action<string, string> setUserEnvVar,
         IEnumerable<string>? dotnetFeedUrls = null,
-        string releasesUrl = DefaultReleasesUrl,
         HttpClient? httpClient = null)
     {
         UserHome = userHome;
@@ -58,7 +56,6 @@ public sealed partial class DnvmEnv
         GetUserEnvVar = getUserEnvVar;
         SetUserEnvVar = setUserEnvVar;
         DotnetFeedUrls = dotnetFeedUrls ?? DefaultDotnetFeedUrls;
-        DnvmReleasesUrl = releasesUrl;
         HttpClient = new ScopedHttpClient(httpClient ?? new HttpClient() {
             Timeout = Timeout.InfiniteTimeSpan
         });
@@ -72,7 +69,6 @@ public sealed partial class DnvmEnv : IDisposable
         "https://builds.dotnet.microsoft.com/dotnet",
         "https://dotnetcli.blob.core.windows.net/dotnet",
     ];
-    public const string DefaultReleasesUrl = "https://github.com/dn-vm/dn-vm.github.io/raw/gh-pages/releases.json";
     public static UPath ManifestPath => UPath.Root / ManifestFileName;
     public static UPath EnvPath => UPath.Root / "env";
     public static UPath DnvmExePath => UPath.Root / Utilities.DnvmExeName;

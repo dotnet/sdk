@@ -12,7 +12,7 @@ using Spectre.Console;
 using StaticCs;
 using Zio;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public static partial class InstallCommand
 {

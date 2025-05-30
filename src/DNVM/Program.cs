@@ -4,7 +4,7 @@ using Semver;
 using Spectre.Console;
 using StaticCs;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public static class Program
 {

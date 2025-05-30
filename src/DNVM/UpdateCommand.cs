@@ -15,7 +15,7 @@ using Spectre.Console;
 using StaticCs;
 using static Dnvm.UpdateCommand.Result;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public sealed partial class UpdateCommand
 {

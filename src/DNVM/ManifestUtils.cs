@@ -10,7 +10,7 @@ using Serde;
 using Serde.Json;
 using StaticCs.Collections;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 [GenerateSerde]
 /// <summary>

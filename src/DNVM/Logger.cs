@@ -1,7 +1,7 @@
 using System;
 using Spectre.Console;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public enum LogLevel
 {

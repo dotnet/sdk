@@ -10,7 +10,7 @@ using Serde.CmdLine;
 using Spectre.Console;
 using StaticCs;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 [GenerateDeserialize]
 [Command("dnvm", Summary = "Install and manage .NET SDKs.")]
@@ -84,34 +84,9 @@ public abstract partial record DnvmSubCommand
         public string? SdkDir { get; init; } = null;
     }
 
-    [Command("selfinstall", Summary = "Install dnvm to the local machine.")]
-    public sealed partial record SelfInstallArgs : DnvmSubCommand
-    {
-        [CommandOption("-v|--verbose", Description = "Print debugging messages to the console.")]
-        public bool? Verbose { get; init; } = null;
-
-        [CommandOption("-f|--force", Description = "Force install the given SDK, even if already installed")]
-        public bool? Force { get; init; } = null;
-
-        [CommandOption("--feed-url", Description = "Set the feed URL to download the SDK from.")]
-        public string? FeedUrl { get; init; }
-
-        [CommandOption("-y", Description = "Answer yes to all prompts.")]
-        public bool? Yes { get; init; } = null;
-
-        [CommandOption("--update", Description = "[internal] Update the current dnvm installation. Only intended to be called from dnvm.")]
-        public bool? Update { get; init; } = null;
-
-        [CommandOption("--dest-path", Description = "Set the destination path for the dnvm executable.")]
-        public string? DestPath { get; init; } = null;
-    }
-
-    [Command("update", Summary = "Update the installed SDKs or dnvm itself.")]
+    [Command("update", Summary = "Update the installed SDKs.")]
     public sealed partial record UpdateArgs : DnvmSubCommand
     {
-        [CommandOption("--dnvm-url", Description = "Set the URL for the dnvm releases endpoint.")]
-        public string? DnvmReleasesUrl { get; init; } = null;
-
         [CommandOption("--feed-url", Description = "Set the feed URL to download the SDK from.")]
         public string? FeedUrl { get; init; } = null;
 

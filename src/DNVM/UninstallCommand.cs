@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Semver;
 using Zio;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public sealed class UninstallCommand
 {

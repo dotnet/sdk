@@ -3,7 +3,7 @@ using System;
 using System.Buffers;
 using Serde;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public sealed class ScalarDeserializer(string s) : IDeserializer
 {

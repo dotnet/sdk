@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Spectre.Console;
 using Zio;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public static class ListCommand
 {

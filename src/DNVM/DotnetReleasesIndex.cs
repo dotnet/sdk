@@ -11,7 +11,7 @@ using Semver;
 using Serde;
 using Serde.Json;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 [GenerateSerde]
 public partial record DotnetReleasesIndex

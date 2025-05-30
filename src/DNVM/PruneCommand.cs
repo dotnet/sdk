@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Semver;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public sealed class PruneCommand
 {

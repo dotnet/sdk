@@ -7,7 +7,7 @@ using Semver;
 using Serde;
 using StaticCs;
 
-namespace Dnvm;
+namespace Microsoft.DotNet.DNVM;
 
 public static class Channels
 {
