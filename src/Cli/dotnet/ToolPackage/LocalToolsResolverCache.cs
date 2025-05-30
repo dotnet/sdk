@@ -29,9 +29,11 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
     }
 
     public void Save(
-        IDictionary<RestoredCommandIdentifier, RestoredCommand> restoredCommandMap)
+        IDictionary<RestoredCommandIdentifier, ToolCommand> restoredCommandMap)
     {
         EnsureFileStorageExists();
+
+        //  TODO: Save resolved package info here?
 
         foreach (var distinctPackageIdAndRestoredCommandMap in restoredCommandMap.GroupBy(x => x.Key.PackageId))
         {
@@ -69,7 +71,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
     public bool TryLoad(
         RestoredCommandIdentifier restoredCommandIdentifier,
-        out RestoredCommand restoredCommand)
+        out ToolCommand toolCommand)
     {
         string packageCacheFile = GetCacheFile(restoredCommandIdentifier.PackageId);
         if (_fileSystem.File.Exists(packageCacheFile))
@@ -77,13 +79,13 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
             if (TryGetMatchingRestoredCommand(
                 restoredCommandIdentifier,
                 GetCacheTable(packageCacheFile),
-                out restoredCommand))
+                out toolCommand))
             {
                 return true;
             }
         }
 
-        restoredCommand = null;
+        toolCommand = null;
         return false;
     }
 
@@ -106,9 +108,9 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
     public bool TryLoadHighestVersion(
         RestoredCommandIdentifierVersionRange query,
-        out RestoredCommand restoredCommandList)
+        out ToolCommand toolCommandList)
     {
-        restoredCommandList = null;
+        toolCommandList = null;
         string packageCacheFile = GetCacheFile(query.PackageId);
         if (_fileSystem.File.Exists(packageCacheFile))
         {
@@ -122,9 +124,9 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
                 .OrderByDescending(allMatched => allMatched.restoredCommandIdentifier.Version)
                 .FirstOrDefault();
 
-            if (!list.restoredCommand.Equals(default(RestoredCommand)))
+            if (!list.toolCommand.Equals(default(ToolCommand)))
             {
-                restoredCommandList = list.restoredCommand;
+                toolCommandList = list.toolCommand;
                 return true;
             }
         }
@@ -144,7 +146,7 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
     private static CacheRow ConvertToCacheRow(
         RestoredCommandIdentifier restoredCommandIdentifier,
-        RestoredCommand restoredCommandList)
+        ToolCommand toolCommand)
     {
         return new CacheRow
         {
@@ -152,14 +154,14 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
             TargetFramework = restoredCommandIdentifier.TargetFramework.GetShortFolderName(),
             RuntimeIdentifier = restoredCommandIdentifier.RuntimeIdentifier.ToLowerInvariant(),
             Name = restoredCommandIdentifier.CommandName.Value,
-            Runner = restoredCommandList.Runner,
-            PathToExecutable = restoredCommandList.Executable.Value
+            Runner = toolCommand.Runner,
+            PathToExecutable = toolCommand.Executable.Value
         };
     }
 
     private static
         (RestoredCommandIdentifier restoredCommandIdentifier,
-        RestoredCommand restoredCommand)
+        ToolCommand toolCommand)
         Convert(
             PackageId packageId,
             CacheRow cacheRow)
@@ -172,21 +174,21 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
                 cacheRow.RuntimeIdentifier,
                 new ToolCommandName(cacheRow.Name));
 
-        RestoredCommand restoredCommand =
+        ToolCommand toolCommand =
             new(
                 new ToolCommandName(cacheRow.Name),
                 cacheRow.Runner,
                 new FilePath(cacheRow.PathToExecutable));
 
-        return (restoredCommandIdentifier, restoredCommand);
+        return (restoredCommandIdentifier, toolCommand);
     }
 
     private static bool TryGetMatchingRestoredCommand(
         RestoredCommandIdentifier restoredCommandIdentifier,
         CacheRow[] cacheTable,
-        out RestoredCommand restoredCommandList)
+        out ToolCommand toolCommandList)
     {
-        (RestoredCommandIdentifier restoredCommandIdentifier, RestoredCommand restoredCommand)[] matchingRow =
+        (RestoredCommandIdentifier restoredCommandIdentifier, ToolCommand toolCommand)[] matchingRow =
             [.. cacheTable
                 .Select(c => Convert(restoredCommandIdentifier.PackageId, c))
                 .Where(candidate => candidate.restoredCommandIdentifier == restoredCommandIdentifier)];
@@ -199,11 +201,11 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
 
         if (matchingRow.Length == 1)
         {
-            restoredCommandList = matchingRow[0].restoredCommand;
+            toolCommandList = matchingRow[0].toolCommand;
             return true;
         }
 
-        restoredCommandList = null;
+        toolCommandList = null;
         return false;
     }
 
@@ -215,5 +217,6 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         public string Name { get; set; }
         public string Runner { get; set; }
         public string PathToExecutable { get; set; }
+        //  TODO: Need resolved package info here
     }
 }

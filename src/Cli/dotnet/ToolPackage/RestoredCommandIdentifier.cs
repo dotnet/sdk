@@ -19,6 +19,9 @@ internal class RestoredCommandIdentifier(
     string runtimeIdentifier,
     ToolCommandName commandName) : IEquatable<RestoredCommandIdentifier>
 {
+
+    // TODO: What is this class and how is it different from CacheRow?  Does it need to have the resolved package information?
+
     public PackageId PackageId { get; } = packageId;
     public NuGetVersion Version { get; } = version ?? throw new ArgumentException(nameof(version));
     public NuGetFramework TargetFramework { get; } = targetFramework ?? throw new ArgumentException(nameof(targetFramework));

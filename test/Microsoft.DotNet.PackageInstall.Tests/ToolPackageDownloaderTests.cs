@@ -475,6 +475,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             static void FailedStepAfterSuccessDownload() => throw new GracefulException("simulated error");
             ISettings settings = Settings.LoadDefaultSettings(Directory.GetCurrentDirectory());
             var localToolDownloadDir = Path.Combine(new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings)).ToString().Trim('"'), TestPackageId.ToString());
+            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+
+            if (fileSystem.Directory.Exists(localToolVersionDir))
+            {
+                fileSystem.Directory.Delete(localToolVersionDir, true);
+            }
 
             Action a = () =>
             {
@@ -489,9 +495,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         targetFramework: _testTargetframework,
                         verifySignatures: false);
 
-                    fileSystem
-                    .Directory
+                    fileSystem.Directory
                         .Exists(localToolDownloadDir)
+                        .Should()
+                        .BeTrue();
+
+                    fileSystem.Directory
+                        .Exists(localToolVersionDir)
                         .Should()
                         .BeTrue();
 
@@ -508,7 +518,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Should()
                 .BeTrue();
 
-            var localToolVersionDir = Path.Combine(localToolDownloadDir, TestPackageVersion.ToString());
+            
             fileSystem
                 .Directory
                 .Exists(localToolVersionDir)
@@ -551,6 +561,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     t.Complete();
                 }
             };
+
+            a();
         }
 
         [Theory]
@@ -992,18 +1004,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var frameworksMap = new Dictionary<PackageId, IEnumerable<NuGetFramework>>()
                         { {TestPackageId, TestFrameworks } };
                 WriteNugetConfigFileToPointToTheFeed(fileSystem, writeLocalFeedToNugetConfig);
-                var toolPackageStoreMock = new ToolPackageStoreMock(root, fileSystem, frameworksMap);
-                store = toolPackageStoreMock;
-                storeQuery = toolPackageStoreMock;
-                downloader = new ToolPackageDownloaderMock(
-                    store: toolPackageStoreMock,
-                    fileSystem: fileSystem,
-                    reporter: reporter,
-                    feeds: feeds == null
-                            ? GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)
-                            : feeds.Concat(GetMockFeedsForConfigFile(writeLocalFeedToNugetConfig)).ToList(),
-                    frameworksMap: frameworksMap);
-                uninstaller = new ToolPackageUninstallerMock(fileSystem, toolPackageStoreMock);
+                var storeAndQuery = new ToolPackageStoreAndQuery(root, fileSystem);
+                store = storeAndQuery;
+                storeQuery = storeAndQuery;
+                downloader = new ToolPackageDownloaderMock2(storeAndQuery,
+                    runtimeJsonPathForTests: TestContext.GetRuntimeGraphFilePath(),
+                    currentWorkingDirectory: root.Value,
+                    fileSystem);
+
+                uninstaller = new ToolPackageUninstallerMock(fileSystem, storeAndQuery);
             }
             else
             {
@@ -1013,7 +1022,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
                 var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
-                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
+                downloader = new ToolPackageDownloader(store, testRuntimeJsonPath, root.Value);
                 uninstaller = new ToolPackageUninstaller(store);
             }
 
@@ -1065,7 +1074,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private const string TestPackageVersion = "1.0.4";
         private static readonly PackageId TestPackageId = new("global.tool.console.demo");
-        private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse("netcoreapp2.1") };
+        private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse(ToolPackageDownloaderMock2.DefaultTargetFramework) };
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
         public ToolPackageDownloaderTests(ITestOutputHelper log) : base(log)
         {

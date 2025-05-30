@@ -15,6 +15,11 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 {
+    //  This class should be superceded by ToolPackageDownloaderMock2.  The Mock2 version derives from ToolPackageDownloaderBase, so a lot less
+    //  business logic needs to be duplicated.
+    //  The class here on the other hand has a lot of code/behavior copied from the product and they could get out of sync.
+    //  So ideally we should migrate existing tests that use this class to the Mock2 version, then delete this version and rename the Mock2 version
+    //  to ToolPackageDownlnoaderMock.
     internal class ToolPackageDownloaderMock : IToolPackageDownloader
     {
         private readonly IToolPackageStore _toolPackageStore;
@@ -174,7 +179,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                         {
                             Id = packageId,
                             Version = NuGetVersion.Parse(feedPackage.Version),
-                            Command = new RestoredCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
+                            Command = new ToolCommand(new ToolCommandName(feedPackage.ToolCommandName), "runner", executable),
                             Warnings = Array.Empty<string>(),
                             PackagedShims = Array.Empty<FilePath>()
                         };
@@ -336,13 +341,17 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             public NuGetVersion Version { get; set; }
             public DirectoryPath PackageDirectory { get; set; }
 
-            public RestoredCommand Command { get; set; }
+            public ToolCommand Command { get; set; }
 
             public IEnumerable<string> Warnings { get; set; }
 
             public IReadOnlyList<FilePath> PackagedShims { get; set; }
 
             public IEnumerable<NuGetFramework> Frameworks => throw new NotImplementedException();
+
+            public PackageId ResolvedPackageId { get; set; }
+
+            public NuGetVersion ResolvedPackageVersion { get; set; }
         }
     }
 }

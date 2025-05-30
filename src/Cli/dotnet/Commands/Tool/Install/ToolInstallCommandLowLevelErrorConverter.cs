@@ -14,6 +14,7 @@ internal static class InstallToolCommandLowLevelErrorConverter
     {
         if (ex is ToolPackageException)
         {
+            //  TODO: Delete CliCommandStrings.ToolInstallationFailedWithRestoreGuidance
             yield return ex.Message;
             yield return string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
         }
