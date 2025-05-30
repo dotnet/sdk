@@ -1,4 +1,5 @@
-﻿Microsoft Visual Studio Solution File, Format Version 12.00
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.1.31903.286
 MinimumVisualStudioVersion = 10.0.40219.1
@@ -545,6 +546,30 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.ApiDiff.Tests", "test\Microsoft.DotNet.ApiDiff.Tests\Microsoft.DotNet.ApiDiff.Tests.csproj", "{A57B724D-D12B-483E-82F2-2183DEA2DFA7}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.DotNet.ApiDiff", "src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff\Microsoft.DotNet.ApiDiff.csproj", "{4F23A9C8-945A-A4F4-51E9-FCA215943C0D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DNVM", "DNVM", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		src\DNVM\Channel.cs = src\DNVM\Channel.cs
+		src\DNVM\CommandLineArguments.cs = src\DNVM\CommandLineArguments.cs
+		src\DNVM\dnvm.csproj = src\DNVM\dnvm.csproj
+		src\DNVM\DnvmEnv.cs = src\DNVM\DnvmEnv.cs
+		src\DNVM\DnvmReleases.cs = src\DNVM\DnvmReleases.cs
+		src\DNVM\DotnetReleasesIndex.cs = src\DNVM\DotnetReleasesIndex.cs
+		src\DNVM\InstallCommand.cs = src\DNVM\InstallCommand.cs
+		src\DNVM\ListCommand.cs = src\DNVM\ListCommand.cs
+		src\DNVM\Logger.cs = src\DNVM\Logger.cs
+		src\DNVM\ManifestUtils.cs = src\DNVM\ManifestUtils.cs
+		src\DNVM\Program.cs = src\DNVM\Program.cs
+		src\DNVM\PruneCommand.cs = src\DNVM\PruneCommand.cs
+		src\DNVM\RestoreCommand.cs = src\DNVM\RestoreCommand.cs
+		src\DNVM\ScalarDeserializer.cs = src\DNVM\ScalarDeserializer.cs
+		src\DNVM\SelectCommand.cs = src\DNVM\SelectCommand.cs
+		src\DNVM\SelfInstallCommand.cs = src\DNVM\SelfInstallCommand.cs
+		src\DNVM\TrackCommand.cs = src\DNVM\TrackCommand.cs
+		src\DNVM\UninstallCommand.cs = src\DNVM\UninstallCommand.cs
+		src\DNVM\UntrackCommand.cs = src\DNVM\UntrackCommand.cs
+		src\DNVM\UpdateCommand.cs = src\DNVM\UpdateCommand.cs
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -1237,6 +1262,7 @@ Global
 		{3F0093BF-A64D-4EE8-8A2A-22800BB25CFF} = {C66B5859-B05E-5DF4-58E9-78CA919DB89A}
 		{A57B724D-D12B-483E-82F2-2183DEA2DFA7} = {AFA55F45-CFCB-9821-A210-2D3496088416}
 		{4F23A9C8-945A-A4F4-51E9-FCA215943C0D} = {C66B5859-B05E-5DF4-58E9-78CA919DB89A}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {22AB674F-ED91-4FBC-BFEE-8A1E82F9F05E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FB8F26CE-4DE6-433F-B32A-79183020BBD6}
