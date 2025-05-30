@@ -1,7 +1,6 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
-          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps" >
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"

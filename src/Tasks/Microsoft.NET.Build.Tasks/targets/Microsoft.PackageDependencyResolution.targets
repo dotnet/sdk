@@ -175,7 +175,7 @@ Copyright (c) .NET Foundation. All rights reserved.
            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolvePackageAssets"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  
+
   <!-- The condition on this target causes it to be skipped during design-time builds if
         the restore operation hasn't run yet.  This is to avoid displaying an error in
         the Visual Studio error list when a project is created before NuGet restore has
@@ -214,9 +214,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_ResolveCompilerVersion"
           Condition="'$(CompilerApiVersion)' == '' And
                      ('$(Language)' == 'C#' Or '$(Language)' == 'VB') And
-                     Exists('$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll')">
-    
-    <GetAssemblyIdentity AssemblyFiles="$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll">
+                     Exists('$(RoslynTasksAssembly)')">
+
+    <GetAssemblyIdentity AssemblyFiles="$(RoslynTasksAssembly)">
       <Output TaskParameter="Assemblies" ItemName="_CodeAnalysisIdentity" />
     </GetAssemblyIdentity>
 
@@ -224,7 +224,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_RoslynApiVersion>$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Major).$([System.Version]::Parse(%(_CodeAnalysisIdentity.Version)).Minor)</_RoslynApiVersion>
       <CompilerApiVersion>roslyn$(_RoslynApiVersion)</CompilerApiVersion>
     </PropertyGroup>
-    
+
   </Target>
 
   <Target Name="ResolvePackageAssets"
