@@ -803,4 +803,7 @@ For a list of locations searched, specify the "-d" option before the tool name.<
     <value>Cannot specify --version when the package argument already contains a version.</value>
     <comment>{Locked="--version"}</comment>
   </data>
+  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
+    <value>Display the command schema as JSON.</value>
+  </data>
 </root>
