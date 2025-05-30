@@ -8,6 +8,11 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!-- Disable this analyzer due to NullReferenceException it throws: https://github.com/dotnet/roslyn-analyzers/issues/7652 -->
+    <NoWarn>$(NoWarn);CA2025</NoWarn>
+  </PropertyGroup>
+
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
