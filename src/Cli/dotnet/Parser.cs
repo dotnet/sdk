@@ -41,6 +41,7 @@ using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.Commands.VSTest;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
+using Microsoft.DotNet.Cli.Commands.DNVM;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -89,6 +90,7 @@ public static class Parser
         VSTestCommandParser.GetCommand(),
         HelpCommandParser.GetCommand(),
         SdkCommandParser.GetCommand(),
+        DnvmCommandParser.GetCommand(),
         InstallSuccessCommand,
         WorkloadCommandParser.GetCommand(),
         new System.CommandLine.StaticCompletions.CompletionsCommand()
