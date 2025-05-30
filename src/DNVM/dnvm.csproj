@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <PublishAot>true</PublishAot>
+    <EmitCompilerGeneratedFiles>true</EmitCompilerGeneratedFiles>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Resources/env.sh" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Semver" />
+
+    <PackageReference Include="Spectre.Console" />
+    <PackageReference Include="StaticCs" />
+    <PackageReference Include="StaticCs.Collections" />
+    <PackageReference Include="StaticCs.Result" />
+    <PackageReference Include="zio" />
+  </ItemGroup>
+</Project>
