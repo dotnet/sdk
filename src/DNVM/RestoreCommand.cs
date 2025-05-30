@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Semver;
-using Serde;
-using Serde.Json;
 using StaticCs;
 using Zio;
 using static Dnvm.InstallCommand;
@@ -22,7 +20,6 @@ internal sealed partial record GlobalJsonSubset
     [GenerateDeserialize]
     public sealed partial record SdkSubset
     {
-        [SerdeMemberOptions(DeserializeProxy = typeof(NullableRefProxy.De<SemVersion, SemVersionProxy>))]
         public SemVersion? Version { get; init; }
         public RollForwardOptions? RollForward { get; init; }
         public bool? AllowPrerelease { get; init; }

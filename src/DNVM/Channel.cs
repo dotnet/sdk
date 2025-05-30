@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using Semver;
-using Serde;
 using StaticCs;
 
 namespace Microsoft.DotNet.DNVM;
@@ -71,8 +70,6 @@ partial record Channel : ISerializeProvider<Channel>
         /// <summary>
         /// Serialize as a string.
         /// </summary>
-        ISerdeInfo ISerdeInfoProvider.SerdeInfo => StringProxy.SerdeInfo;
-
         void ISerialize<Channel>.Serialize(Channel channel, ISerializer serializer)
             => serializer.WriteString(channel.GetLowerName());
     }
@@ -145,8 +142,6 @@ partial record Channel : IDeserializeProvider<Channel>
         /// <summary>
         /// Deserialize as a string.
         /// </summary>
-        ISerdeInfo ISerdeInfoProvider.SerdeInfo => StringProxy.SerdeInfo;
-
         public Channel Deserialize(IDeserializer deserializer)
             => FromString(StringProxy.Instance.Deserialize(deserializer));
     }

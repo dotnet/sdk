@@ -50,7 +50,4 @@ public sealed class ScalarDeserializer(string s) : IDeserializer
     {
         return deserialize.Deserialize(this);
     }
-
-    ITypeDeserializer IDeserializer.ReadType(ISerdeInfo typeInfo)
-        => throw new DeserializeException("Found nullable ref, expected scalar");
 }

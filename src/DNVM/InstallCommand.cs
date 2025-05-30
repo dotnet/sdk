@@ -6,8 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Semver;
-using Serde;
-using Serde.Json;
+
 using Spectre.Console;
 using StaticCs;
 using Zio;
@@ -199,7 +198,6 @@ public static partial class InstallCommand
         [GenerateDeserialize]
         public partial record Component
         {
-            [SerdeMemberOptions(DeserializeProxy = typeof(SemVersionProxy))]
             public required SemVersion Version { get; init;  }
         }
     }

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Semver;
-using Serde.Json;
+
 using Spectre.Console;
 using StaticCs;
 using static Dnvm.UpdateCommand.Result;

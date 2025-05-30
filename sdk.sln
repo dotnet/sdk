@@ -550,7 +550,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DNVM", "DNVM", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 	ProjectSection(SolutionItems) = preProject
 		src\DNVM\Channel.cs = src\DNVM\Channel.cs
-		src\DNVM\CommandLineArguments.cs = src\DNVM\CommandLineArguments.cs
 		src\DNVM\dnvm.csproj = src\DNVM\dnvm.csproj
 		src\DNVM\DnvmEnv.cs = src\DNVM\DnvmEnv.cs
 		src\DNVM\DotnetReleasesIndex.cs = src\DNVM\DotnetReleasesIndex.cs

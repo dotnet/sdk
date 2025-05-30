@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -6,17 +5,15 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Semver;
-using Serde;
-using Serde.Json;
+
 using StaticCs.Collections;
 
 namespace Microsoft.DotNet.DNVM;
 
-[GenerateSerde]
 /// <summary>
 /// Holds the simple name of a directory that contains one or more SDKs and lives under DNVM_HOME.
 /// This is a wrapper to prevent being used directly as a path.
-/// </summary>
+/// </summary>  
 public sealed partial record SdkDirName(string Name)
 {
     public string Name { get; init; } = Name.ToLower();
@@ -160,7 +157,6 @@ public static partial class ManifestUtils
         };
     }
 
-    [GenerateDeserialize]
     private sealed partial class ManifestVersionOnly
     {
         public int? Version { get; init; }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -15,9 +15,6 @@
 
   <ItemGroup>
     <PackageReference Include="Semver" />
-
-    <PackageReference Include="Serde" />
-    <PackageReference Include="Serde.CmdLine" />
 
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="StaticCs" />

@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
@@ -8,27 +7,20 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Xml.Schema;
 using Semver;
-using Serde;
-using Serde.Json;
 
 namespace Microsoft.DotNet.DNVM;
 
-[GenerateSerde]
 public partial record DotnetReleasesIndex
 {
     public static readonly DotnetReleasesIndex Empty = new() { ChannelIndices = [ ] };
 
-    [SerdeMemberOptions(Rename = "releases-index")]
     public required ImmutableArray<ChannelIndex> ChannelIndices { get; init; }
 
-    [GenerateSerde]
-    [SerdeTypeOptions(MemberFormat = MemberFormat.KebabCase)]
     public partial record ChannelIndex
     {
         /// <summary>
         /// The major and minor version of the release, e.g. '42.42'.
         /// </summary>
-        [SerdeMemberOptions(Rename = "channel-version")]
         public required string MajorMinorVersion { get; init; }
         /// <summary>
         /// The version number of the latest SDK, e.g. '42.42.104'.
@@ -49,12 +41,10 @@ public partial record DotnetReleasesIndex
         /// <summary>
         /// The URL to the releases index for this channel.
         /// </summary>
-        [SerdeMemberOptions(Rename = "releases.json")]
         public required string ChannelReleaseIndexUrl { get; init; }
     }
 }
 
-[GenerateSerde]
 public partial record ChannelReleaseIndex
 {
     public static readonly ChannelReleaseIndex Empty = new() { Releases = [ ] };
@@ -65,33 +55,23 @@ public partial record ChannelReleaseIndex
 
     public required EqArray<Release> Releases { get; init; }
 
-    [GenerateSerde]
-    [SerdeTypeOptions(MemberFormat = MemberFormat.KebabCase)]
     public partial record Release()
     {
-        [SerdeMemberOptions(Proxy = typeof(SemVersionProxy))]
         public required SemVersion ReleaseVersion { get; init; }
         public required Component Runtime { get; init; }
         public required Component Sdk { get; init; }
         public required EqArray<Component> Sdks { get; init; }
-        [SerdeMemberOptions(Rename = "aspnetcore-runtime")]
         public required Component AspNetCore { get; init; }
-        [SerdeMemberOptions(Rename = "windowsdesktop")]
         public required Component WindowsDesktop { get; init; }
     }
 
-    [GenerateSerde]
-    [SerdeTypeOptions(MemberFormat = MemberFormat.KebabCase)]
     public partial record Component
     {
-        [SerdeMemberOptions(Proxy = typeof(SemVersionProxy))]
         public required SemVersion Version { get; init; }
 
         public required EqArray<File> Files { get; init; }
     }
 
-    [GenerateSerde]
-    [SerdeTypeOptions(MemberFormat = MemberFormat.KebabCase)]
     public partial record File
     {
         public required string Name { get; init; }
