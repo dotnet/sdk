@@ -26,17 +26,26 @@
     <ItemGroup>
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
                           SetTargetFramework="TargetFramework=$(TargetFramework)"
-                          OutputItemType="ContainerLibraryOutput"/>
+                          OutputItemType="ContainerLibraryOutput"
+                          GlobalPropertiesToRemove="PublishDir"/>
 
         <ProjectReference Include="../../Cli/Microsoft.DotNet.Cli.Utils/Microsoft.DotNet.Cli.Utils.csproj"
                           SetTargetFramework="TargetFramework=$(ResolverTargetFramework)"
-                          OutputItemType="DotNetCliUtilsLibraryOutput"/>
+                          OutputItemType="DotNetCliUtilsLibraryOutput"
+                          GlobalPropertiesToRemove="PublishDir"/>
 
         <ProjectReference Include="../Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj"
                           SetTargetFramework="TargetFramework=$(VSCompatTargetFramework)"
-                          OutputItemType="ContainerLibraryOutputNet472" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+                          OutputItemType="ContainerLibraryOutputNet472" 
+                          Condition="'$(DotNetBuildSourceOnly)' != 'true'"
+                          GlobalPropertiesToRemove="PublishDir" />
 
-        <ProjectReference Include="../containerize/containerize.csproj" PrivateAssets="all" IncludeAssets="runtime" ReferenceOutputAssembly="true" Condition="'$(DotNetBuildSourceOnly)' != 'true'" />
+        <ProjectReference Include="../containerize/containerize.csproj" 
+                          PrivateAssets="all" 
+                          IncludeAssets="runtime" 
+                          ReferenceOutputAssembly="true" 
+                          Condition="'$(DotNetBuildSourceOnly)' != 'true'"
+                          GlobalPropertiesToRemove="PublishDir" />
     </ItemGroup>
 
     <Target Name="PreparePackageReleaseNotesFromFile" BeforeTargets="GenerateNuspec">
