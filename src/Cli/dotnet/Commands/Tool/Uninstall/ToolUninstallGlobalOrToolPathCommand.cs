@@ -31,8 +31,8 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
     public override int Execute()
     {
-        var global = _parseResult.GetValue(ToolAppliedOption.GlobalOption);
-        var toolPath = _parseResult.GetValue(ToolAppliedOption.ToolPathOption);
+        var global = _parseResult.GetValue(ToolUninstallCommandParser.GlobalOption);
+        var toolPath = _parseResult.GetValue(ToolUninstallCommandParser.ToolPathOption);
 
         DirectoryPath? toolDirectoryPath = null;
         if (!string.IsNullOrWhiteSpace(toolPath))

@@ -50,7 +50,7 @@ internal static class PublishCommandParser
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
@@ -78,7 +78,7 @@ internal static class PublishCommandParser
         command.Options.Add(NoSelfContainedOption);
         command.Options.Add(NoLogoOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.PublishRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

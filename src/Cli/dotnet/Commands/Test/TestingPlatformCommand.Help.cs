@@ -5,7 +5,7 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.CommandLine.Help;
+using Microsoft.TemplateEngine.Cli.Help;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 

@@ -86,7 +86,7 @@ internal static class StoreCommandParser
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
         command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);

@@ -41,8 +41,8 @@ _testhost() {
                         '-f=[The target framework to build for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to use for building the project. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
@@ -107,8 +107,8 @@ _testhost() {
                     _arguments "${_arguments_options[@]}" : \
                         '--framework=[The target framework to clean for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to clean for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to clean for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to clean for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to clean for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to clean for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
@@ -690,8 +690,8 @@ _testhost() {
                         '--nologo[Do not display the startup banner or the copyright message.]' \
                         '--framework=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to publish for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--configuration=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '-c=[The configuration to publish for. The default is '\''Release'\'' for NET 8.0 projects and above, but '\''Debug'\'' for older projects.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--version-suffix=[Set the value of the \$(VersionSuffix) property to use when building the project.]:VERSION_SUFFIX: ' \
@@ -832,8 +832,8 @@ _testhost() {
                         '-c=[The configuration to run for. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]: : ' \
                         '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]: : ' \
                         '-lp=[The name of the launch profile (if any) to use when launching the application.]: : ' \
@@ -932,8 +932,8 @@ _testhost() {
                         '--skip-symbols[Skip creating symbol files which can be used for profiling the optimized assemblies.]' \
                         '--framework=[The target framework to store packages for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to store packages for. The target framework has to be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to store packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to store packages for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
@@ -986,8 +986,8 @@ _testhost() {
                         '-c=[The configuration to use for running tests. The default for most projects is '\''Debug'\''.]:CONFIGURATION:->dotnet_dynamic_complete' \
                         '--framework=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '-f=[The target framework to run tests for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
-                        '--runtime=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '-r=[]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '--runtime=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to test for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--no-restore[Do not restore the project before building.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
                         '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -1025,13 +1025,13 @@ _testhost() {
                                 case $line[1] in
                                     (install)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--global[]' \
-                                            '-g[]' \
-                                            '--local[]' \
-                                            '--tool-path=[]:PATH: ' \
+                                            '--global[Install the tool for the current user.]' \
+                                            '-g[Install the tool for the current user.]' \
+                                            '--local[Install the tool and add to the local tool manifest (default).]' \
+                                            '--tool-path=[The directory where the tool will be installed. The directory will be created if it does not exist.]:PATH: ' \
                                             '--version=[The version of the tool package to install.]:VERSION: ' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
-                                            '--tool-manifest=[]:PATH: ' \
+                                            '--tool-manifest=[Path to the manifest file.]:PATH: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
                                             '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
                                             '--framework=[The target framework to install the tool for.]:FRAMEWORK: ' \
@@ -1064,11 +1064,11 @@ _testhost() {
                                         ;;
                                     (uninstall)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--global[]' \
-                                            '-g[]' \
-                                            '--local[]' \
-                                            '--tool-path=[]:PATH: ' \
-                                            '--tool-manifest=[]:PATH: ' \
+                                            '--global[Uninstall the tool from the current user'\''s tools directory.]' \
+                                            '-g[Uninstall the tool from the current user'\''s tools directory.]' \
+                                            '--local[Uninstall the tool and remove it from the local tool manifest.]' \
+                                            '--tool-path=[The directory containing the tool to uninstall.]:PATH: ' \
+                                            '--tool-manifest=[Path to the manifest file.]:PATH: ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':packageId -- Package reference: ' \
@@ -1076,13 +1076,13 @@ _testhost() {
                                         ;;
                                     (update)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--global[]' \
-                                            '-g[]' \
-                                            '--local[]' \
-                                            '--tool-path=[]:PATH: ' \
+                                            '--global[Install the tool for the current user.]' \
+                                            '-g[Install the tool for the current user.]' \
+                                            '--local[Install the tool and add to the local tool manifest (default).]' \
+                                            '--tool-path=[The directory where the tool will be installed. The directory will be created if it does not exist.]:PATH: ' \
                                             '--version=[The version of the tool package to install.]:VERSION: ' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
-                                            '--tool-manifest=[]:PATH: ' \
+                                            '--tool-manifest=[Path to the manifest file.]:PATH: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
                                             '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
                                             '--framework=[The target framework to install the tool for.]:FRAMEWORK: ' \
@@ -1112,11 +1112,11 @@ _testhost() {
                                         ;;
                                     (list)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--global[]' \
-                                            '-g[]' \
-                                            '--local[]' \
-                                            '--tool-path=[]:PATH: ' \
-                                            '--format=[]: :((json\:"json" table\:"table" ))' \
+                                            '--global[List tools installed for the current user.]' \
+                                            '-g[List tools installed for the current user.]' \
+                                            '--local[List the tools installed in the local tool manifest.]' \
+                                            '--tool-path=[The directory containing the tools to list.]:PATH: ' \
+                                            '--format=[The output format for the list of tools.]: :((json\:"json" table\:"table" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '::packageId -- The NuGet Package Id of the tool to list: ' \
@@ -1146,7 +1146,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
-                                            '--tool-manifest=[]:PATH: ' \
+                                            '--tool-manifest=[Path to the manifest file.]:PATH: ' \
                                             '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
                                             '--no-http-cache[Do not cache packages and http requests.]' \
