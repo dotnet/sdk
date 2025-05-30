@@ -1559,7 +1559,7 @@ namespace GenerateDocumentationAndConfigFiles
                         propertyStr += $"""
 
                                   <!-- Default '{packageVersionPropName}' to '{effectiveAnalysisLevelPropName}' with trimmed trailing '.0' -->
-                                  <{packageVersionPropName} Condition="'$({packageVersionPropName})' == '' and $({effectiveAnalysisLevelPropName}) != ''">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '(.0)*$', ''))</{packageVersionPropName}>
+                                  <{packageVersionPropName} Condition="'$({packageVersionPropName})' == '' and '$({effectiveAnalysisLevelPropName})' != ''">$([System.Text.RegularExpressions.Regex]::Replace($({effectiveAnalysisLevelPropName}), '([.]0)*$', ''))</{packageVersionPropName}>
 
                             """;
                         return propertyStr;
