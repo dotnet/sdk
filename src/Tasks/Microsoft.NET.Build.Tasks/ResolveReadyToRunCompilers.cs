@@ -263,6 +263,11 @@ namespace Microsoft.NET.Build.Tasks
                 case "x86":
                     architecture = Architecture.X86;
                     break;
+#if !NETFRAMEWORK
+                case "loongarch64":
+                    architecture = Architecture.LoongArch64;
+                    break;
+#endif
                 default:
                     return false;
             }
@@ -424,6 +429,9 @@ namespace Microsoft.NET.Build.Tasks
                 Architecture.X64 => "x64",
                 Architecture.Arm => "arm",
                 Architecture.Arm64 => "arm64",
+#if !NETFRAMEWORK
+                Architecture.LoongArch64 => "loongarch64",
+#endif
                 _ => null
             };
         }
