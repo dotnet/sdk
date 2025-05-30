@@ -101,6 +101,13 @@ namespace Microsoft.NET.TestFramework
                         return false;
                     }
                 }
+                else if (osId.Equals("centos", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
+                    {
+                        return false;
+                    }
+                }
                 else if (osId.Equals("debian", StringComparison.OrdinalIgnoreCase))
                 {
                     if (nugetFramework.Version < new Version(2, 0, 0, 0))
@@ -108,63 +115,18 @@ namespace Microsoft.NET.TestFramework
                         return false;
                     }
                 }
-                else if (Version.TryParse(versionString, out Version? osVersion))
+                else if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (osId.Equals("fedora", StringComparison.OrdinalIgnoreCase))
+                    if (nugetFramework.Version < new Version(2, 2, 0, 0))
                     {
-                        if (osVersion.Major <= 27)
-                        {
-                            if (nugetFramework.Version < new Version(2, 1, 0, 0))
-                            {
-                                return true;
-                            }
-                            else
-                            {
-                                return false;
-                            }
-                        }
-                        else if (osVersion.Major == 28)
-                        {
-                            if (nugetFramework.Version < new Version(2, 1, 0, 0))
-                            {
-                                return false;
-                            }
-                            else
-                            {
-                                return true;
-                            }
-                        }
-                        else if (osVersion.Major >= 29)
-                        {
-                            if (nugetFramework.Version < new Version(2, 2, 0, 0))
-                            {
-                                return false;
-                            }
-                            else
-                            {
-                                return true;
-                            }
-                        }
+                        return false;
                     }
-                    else if (osId.Equals("rhel", StringComparison.OrdinalIgnoreCase))
+                }
+                else if (osId.Equals("ubuntu", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (nugetFramework.Version < new Version(2, 0, 0, 0))
                     {
-                        if (osVersion.Major == 6)
-                        {
-                            if (nugetFramework.Version < new Version(2, 0, 0, 0))
-                            {
-                                return false;
-                            }
-                        }
-                    }
-                    else if (osId.Equals("ubuntu", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (osVersion > new Version(16, 04))
-                        {
-                            if (nugetFramework.Version < new Version(2, 0, 0, 0))
-                            {
-                                return false;
-                            }
-                        }
+                        return false;
                     }
                 }
             }

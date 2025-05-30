@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.Workload.Restore.Tests;
@@ -60,6 +60,16 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
     private bool IsRunningInContainer()
     {
-        return File.Exists("/.dockerenv") && (RuntimeInformation.OSDescription.Contains("Ubuntu") || RuntimeInformation.OSDescription.Contains("Debian"));
+        if (!File.Exists("/.dockerenv"))
+        {
+            return false;
+        }
+
+        string osDescription = RuntimeInformation.OSDescription.ToLowerInvariant();
+        return osDescription.Contains("alpine") ||
+               osDescription.Contains("centos") ||
+               osDescription.Contains("debian") ||
+               osDescription.Contains("fedora") ||
+               osDescription.Contains("ubuntu");
     }
 }

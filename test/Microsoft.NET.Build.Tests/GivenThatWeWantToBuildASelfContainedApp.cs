@@ -18,7 +18,7 @@ namespace Microsoft.NET.Build.Tests
         [Theory]
         [InlineData("netcoreapp1.1", false)]
         [InlineData("netcoreapp2.0", false)]
-        [InlineData("netcoreapp3.0", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void It_builds_a_runnable_output(string targetFramework, bool dependenciesIncluded)
         {
             if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
