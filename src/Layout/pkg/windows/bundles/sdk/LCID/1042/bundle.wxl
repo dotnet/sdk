@@ -1,0 +1,59 @@
+﻿<WixLocalization Culture="ko-KR" Language="1042" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <String Id="Caption" Value="[WixBundleName] 설치 관리자" />
+  <String Id="Title" Value="[BUNDLEMONIKER]" />
+  <String Id="ConfirmCancelMessage" Value="취소하시겠습니까?" />
+  <String Id="ExecuteUpgradeRelatedBundleMessage" Value="이전 버전" />
+  <String Id="HelpHeader" Value="설치 도움말" />
+  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [\[]&quot;directory&quot;[\]] - 설치, 복구, 제거 또는 디렉터리에 번들의 전체 로컬 복사본을 만듭니다. '/install'이 기본값입니다. /passive | /quiet - 프롬프트 없이 최소 UI를 표시하거나 UI 및 프롬프트를 표시하지 않습니다. 기본적으로 UI 및 모든 프롬프트가 표시됩니다. /norestart - 다시 시작 시도를 중지합니다. 기본적으로 UI는 다시 시작하기 전에 메시지를 표시합니다. /log [\[]&quot;log.txt&quot;[\]] - 특정 파일에 로그합니다. 기본적으로 로그 파일은 %TEMP%에 만들어집니다." />
+  <String Id="HelpCloseButton" Value="닫기(&amp;C)" />
+  <String Id="InstallAcceptCheckbox" Value="동의함(&amp;A)" />
+  <String Id="InstallOptionsButton" Value="옵션(&amp;O)" />
+  <String Id="InstallInstallButton" Value="설치(&amp;I)" />
+  <String Id="InstallCloseButton" Value="닫기(&amp;C)" />
+  <String Id="ProgressHeader" Value="설치 진행률" />
+  <String Id="ProgressLabel" Value="처리 중:" />
+  <String Id="OverallProgressPackageText" Value="초기화하는 중..." />
+  <String Id="ProgressCancelButton" Value="취소(&amp;C)" />
+  <String Id="ModifyHeader" Value="설치 수정" />
+  <String Id="ModifyRepairButton" Value="복구(&amp;R)" />
+  <String Id="ModifyUninstallButton" Value="제거(&amp;U)" />
+  <String Id="ModifyCloseButton" Value="닫기(&amp;C)" />
+  <String Id="SuccessRepairHeader" Value="복구 완료됨" />
+  <String Id="SuccessUninstallHeader" Value="제거 완료됨" />
+  <String Id="SuccessHeader" Value="설치 완료" />
+  <String Id="SuccessLaunchButton" Value="시작(&amp;L)" />
+  <String Id="SuccessRestartText" Value="소프트웨어 설치를 완료하려면 컴퓨터를 다시 시작해야 합니다." />
+  <String Id="SuccessRestartButton" Value="다시 시작(&amp;R)" />
+  <String Id="SuccessCloseButton" Value="닫기(&amp;C)" />
+  <String Id="FailureHeader" Value="설치 실패" />
+  <String Id="FailureInstallHeader" Value="설치 실패" />
+  <String Id="FailureUninstallHeader" Value="제거 실패" />
+  <String Id="FailureRepairHeader" Value="복구 실패" />
+  <String Id="FailureHyperlinkLogText" Value="하나 이상의 문제가 발생하여 설치하지 못했습니다. 문제를 해결한 다음 설치를 다시 시도하세요. 자세한 내용은 &lt;a href=&quot;#&quot;&gt;로그 파일&lt;/a&gt;을 참조하세요" />
+  <String Id="FailureRestartText" Value="소프트웨어 롤백을 완료하려면 컴퓨터를 다시 시작해야 합니다." />
+  <String Id="FailureRestartButton" Value="다시 시작(&amp;R)" />
+  <String Id="FailureCloseButton" Value="닫기(&amp;C)" />
+  <String Id="FilesInUseHeader" Value="사용 중인 파일" />
+  <String Id="FilesInUseLabel" Value="다음의 응용 프로그램이 업데이트해야 할 파일을 사용 중입니다." />
+  <String Id="FilesInUseCloseRadioButton" Value="응용 프로그램을 닫고 다시 시작합니다(&amp;A)." />
+  <String Id="FilesInUseDontCloseRadioButton" Value="응용 프로그램을 닫지 않습니다(&amp;D). 다시 부팅해야 합니다." />
+  <String Id="FilesInUseOkButton" Value="확인(&amp;O)" />
+  <String Id="FilesInUseCancelButton" Value="취소(&amp;C)" />
+  <String Id="FirstTimeWelcomeMessage" Value="설치가 완료되었습니다. 다음 제품이 설치되었습니다. • .NET SDK [DOTNETSDKVERSION] • .NET 런타임 [DOTNETRUNTIMEVERSION] • ASP.NET Core 런타임 [ASPNETCOREVERSION] • .NET Windows 데스크톱 런타임 [WINFORMSANDWPFVERSION] 이 제품은 사용량 현황 데이터를 수집합니다. • 추가 정보 및 옵트아웃 https://aka.ms/dotnet-cli-telemetry 리소스 • .NET 문서 https://aka.ms/dotnet-docs • SDK 문서 https://aka.ms/dotnet-sdk-docs • 릴리스 정보 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes • 자습서 https://aka.ms/dotnet-tutorials" />
+  <String Id="WelcomeHeaderMessage" Value=".NET SDK" />
+  <String Id="WelcomeDescription" Value=".NET SDK는 .NET 애플리케이션을 빌드, 실행 및 테스트하는 데 사용됩니다. 여러 언어, 편집기 및 개발자 도구 중에서 선택하고 대규모 라이브러리 에코시스템을 활용하여 웹, 모바일, 데스크톱, 게임 및 IoT용 앱을 빌드할 수 있습니다. .NET SDK를 유용하게 사용하시길 바랍니다." />
+  <String Id="LearnMoreTitle" Value=".NET에 대한 자세한 정보" />
+  <String Id="ResourcesHeader" Value="리소스" />
+  <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET 설명서&lt;/A&gt;" />
+  <String Id="SDKDocumentation" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-docs&quot;&gt;SDK 설명서&lt;/A&gt;" />
+  <String Id="PrivacyStatementLink" Value="&lt;A HREF=&quot;https://aka.ms/dev-privacy&quot;&gt;개인정보처리방침&lt;/A&gt;" />
+  <String Id="DotNetEulaLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-license-windows&quot;&gt;.NET에 대한 라이선스 정보&lt;/A&gt;" />
+  <String Id="DotNetCLITelemetryLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;원격 분석 수집 및 옵트아웃&lt;/A&gt;" />
+  <String Id="InstallationNoteTitle" Value="설치 정보" />
+  <String Id="InstallationNote" Value="프로젝트 복원 속도를 향상하고 오프라인 액세스를 사용할 수 있도록 하는 설치 프로세스 중 명령이 실행됩니다. 완료하는 데 최대 1분이 걸립니다." />
+  <String Id="VisualStudioWarning" Value="Visual Studio에서 .NET [VERSIONMAJOR].[VERSIONMINOR]을(를) 사용하려는 경우 Visual Studio 2022 [MINIMUMVSVERSION] 이상이 필요합니다. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;자세히 알아보기&lt;/A&gt;." />
+  <String Id="LicenseAssent" Value="설치를 클릭하면 다음 사용 약관에 동의하는 것입니다." />
+  <String Id="InstallPathx64x86" Value="x64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_x64]&quot; x86 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X86]&quot;" />
+  <String Id="InstallPathARM64x86" Value="ARM64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_ARM64]&quot; x86 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X86]&quot;" />
+  <String Id="InstallPathARM64x64" Value="ARM64 SDK 설치의 설치 경로: &quot; [DOTNETHOME_ARM64]&quot; x64 SDK 설치의 경우와 같을 수 없습니다. &quot; [DOTNETHOME_X64]&quot;" />
+</WixLocalization>
