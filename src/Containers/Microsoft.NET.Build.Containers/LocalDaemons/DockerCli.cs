@@ -429,7 +429,7 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(image.Config.ToJsonString())))
+        using (MemoryStream configStream = new(DigestUtils.UTF8.GetBytes(image.Config.ToJsonString())))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -446,7 +446,7 @@ internal sealed class DockerCli
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream configStream = new(Encoding.UTF8.GetBytes(config.ToJsonString())))
+        using (MemoryStream configStream = new(DigestUtils.UTF8.GetBytes(config.ToJsonString())))
         {
             PaxTarEntry configEntry = new(TarEntryType.RegularFile, configPath)
             {
@@ -478,7 +478,7 @@ internal sealed class DockerCli
         });
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream manifestStream = new(Encoding.UTF8.GetBytes(manifestNode.ToJsonString())))
+        using (MemoryStream manifestStream = new(DigestUtils.UTF8.GetBytes(manifestNode.ToJsonString())))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, "manifest.json")
             {
@@ -540,7 +540,7 @@ internal sealed class DockerCli
 
         string ociLayoutPath = "oci-layout";
         var ociLayoutContent = "{\"imageLayoutVersion\": \"1.0.0\"}";
-        using (MemoryStream ociLayoutStream = new MemoryStream(Encoding.UTF8.GetBytes(ociLayoutContent)))
+        using (MemoryStream ociLayoutStream = new MemoryStream(DigestUtils.UTF8.GetBytes(ociLayoutContent)))
         {
             PaxTarEntry layoutEntry = new(TarEntryType.RegularFile, ociLayoutPath)
             {
@@ -558,7 +558,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestPath = $"{_blobsPath}/{image.ManifestDigest.Substring("sha256:".Length)}";
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))))
+        using (MemoryStream manifestStream = new MemoryStream(DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -576,7 +576,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string manifestPath = $"{_blobsPath}/{manifest.GetDigest().Substring("sha256:".Length)}";
-        using (MemoryStream manifestStream = new MemoryStream(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(manifest))))
+        using (MemoryStream manifestStream = new MemoryStream(DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(manifest))))
         {
             PaxTarEntry manifestEntry = new(TarEntryType.RegularFile, manifestPath)
             {
@@ -597,11 +597,11 @@ internal sealed class DockerCli
         var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
             SchemaTypes.OciManifestV1,
             image.ManifestDigest,
-            (Encoding.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))).Length,
+            (DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(image.Manifest))).Length,
             destinationReference.Repository,
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(index))))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -624,11 +624,11 @@ internal sealed class DockerCli
         var index = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
             SchemaTypes.OciManifestV1,
             manifest.GetDigest(),
-            Encoding.UTF8.GetBytes(JsonSerializer.Serialize(manifest)).Length,
+            DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(manifest)).Length,
             repository,
             tags);
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(index))))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {
@@ -708,7 +708,7 @@ internal sealed class DockerCli
         var manifestListDigest = DigestUtils.GetDigest(multiArchImage.ImageIndex);
         var manifestListSha = DigestUtils.GetShaFromDigest(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
-        var manifestBytes = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(multiArchImage.ImageIndex));
+        var manifestBytes = DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(multiArchImage.ImageIndex));
         using (MemoryStream indexStream = new(manifestBytes))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
@@ -728,7 +728,7 @@ internal sealed class DockerCli
             destinationReference.Repository,
             destinationReference.Tags);
 
-        using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(JsonSerializer.Serialize(index))))
+        using (MemoryStream indexStream = new(DigestUtils.UTF8.GetBytes(JsonSerializer.Serialize(index))))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")
             {

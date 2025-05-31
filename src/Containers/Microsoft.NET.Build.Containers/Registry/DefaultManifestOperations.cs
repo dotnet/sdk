@@ -39,7 +39,7 @@ internal class DefaultManifestOperations : IManifestOperations
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, IManifest manifest, CancellationToken cancellationToken)
+    public async Task PutAsync<T>(string repositoryName, string reference, T manifest, CancellationToken cancellationToken) where T : IManifest
     {
         JsonContent manifestUploadContent = JsonContent.Create(manifest, mediaType: new MediaTypeHeaderValue(manifest.MediaType!));
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
