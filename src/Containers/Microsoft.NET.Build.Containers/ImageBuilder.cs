@@ -64,21 +64,22 @@ internal sealed class ImageBuilder
 
         JsonObject config = _baseImageConfig.BuildConfig();
         string configAsString = config.ToJsonString();
-        string imageSha = DigestUtils.GetSha(configAsString);
+        string imageSha = DigestUtils.GetSha(config);
         string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
         long imageSize = Encoding.UTF8.GetBytes(configAsString).Length;
 
-        ManifestConfig newManifestConfig = 
-            new(){
-            digest = imageDigest,
-            size = imageSize,
-            mediaType = ManifestMediaType switch
+        ManifestConfig newManifestConfig =
+            new()
             {
-                SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
-                SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
-                _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
-            }
-        };
+                digest = imageDigest,
+                size = imageSize,
+                mediaType = ManifestMediaType switch
+                {
+                    SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
+                    SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
+                    _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
+                }
+            };
 
         ManifestV2 newManifest = new ManifestV2()
         {

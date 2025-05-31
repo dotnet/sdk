@@ -15,9 +15,9 @@ internal sealed class DigestUtils
     internal static string GetDigest<T>(T content) => GetDigestFromSha(GetSha(content));
 
     /// <summary>
-    /// Formats digest based on ready SHA <paramref name="sha"/>.
+    /// Formats digest based on ready SHA <paramref name="sha256"/>.
     /// </summary>
-    internal static string GetDigestFromSha(string sha) => $"sha256:{sha}";
+    internal static string GetDigestFromSha(string sha256) => $"sha256:{sha256}";
 
     internal static string GetShaFromDigest(string digest)
     {
@@ -32,17 +32,18 @@ internal sealed class DigestUtils
     /// <summary>
     /// Gets the SHA of <paramref name="str"/>.
     /// </summary>
-    internal static string GetSha(string str)
+    internal static (long size, string sha256) GetSha(string str)
     {
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
-        SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
+        var bytes = Encoding.UTF8.GetBytes(str);
+        SHA256.HashData(bytes, hash);
 
-        return Convert.ToHexStringLower(hash);
+        return (bytes.LongLength, Convert.ToHexStringLower(hash));
     }
 
     internal static string GetSha<T>(T content)
     {
         var jsonstring = JsonSerializer.Serialize(content);
-        return GetSha(jsonstring);
+        return GetSha(jsonstring).sha256;
     }
 }

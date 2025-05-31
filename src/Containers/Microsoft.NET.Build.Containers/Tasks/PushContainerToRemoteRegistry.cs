@@ -40,37 +40,93 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
     {
         using MSBuildLoggerProvider loggerProvider = new(Log);
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
-        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
-        var destinationRegistry = new Registry(Registry, logger, RegistryMode.Push);
+        ILogger logger = msbuildLoggerFactory.CreateLogger(nameof(PushContainerToRemoteRegistry));
+        var destinationRegistry = new Registry(Registry, msbuildLoggerFactory.CreateLogger(Registry), RegistryMode.Push);
 
         // functionally, we need to
         // * upload the layers
-        var layerUploadTasks = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).Select(l => destinationRegistry.PushLayerAsync(l, Repository, _cts.Token)).ToArray();
+        var layerUploadTasks = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).Select(async l =>
+        {
+            using var _layerScope = logger.BeginScope(new Dictionary<string, object>
+            {
+                ["Layer"] = l.Descriptor.Digest,
+                ["Repository"] = Repository,
+                ["MediaType"] = l.Descriptor.MediaType,
+                ["Digest"] = l.Descriptor.Digest,
+                ["Size"] = l.Descriptor.Size
+            });
+            logger.LogTrace($"Pushing layer to {Registry}.");
+            await destinationRegistry.PushLayerAsync(l, Repository, _cts.Token);
+        }).ToArray();
         await Task.WhenAll(layerUploadTasks);
 
         // * upload the config
         var (size, digest, manifestStructure) = await ReadManifest().ConfigureAwait(false);
         _cts.Token.ThrowIfCancellationRequested();
-        var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
-        var configBytes = Encoding.UTF8.GetBytes(configText);
-        var configDigest = DigestUtils.GetDigest(configText);
-        System.Diagnostics.Debug.Assert(configDigest == manifestStructure.Config.digest, "Manifest config digest does not match the computed digest from the configuration file.");
-        using (MemoryStream configStream = new(configBytes))
+        using (logger.BeginScope(new Dictionary<string, object>
         {
-            logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.digest);
-            await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.digest, configStream, _cts.Token);
-            logger.LogInformation(Strings.Registry_ConfigUploaded);
+            ["Repository"] = Repository,
+            ["MediaType"] = Configuration.GetMetadata("MediaType")!,
+            ["Digest"] = Configuration.GetMetadata("Digest")!,
+            ["Size"] = Configuration.GetMetadata("Size")!
+        }))
+        {
+            logger.LogTrace($"Pushing config to {Registry}.");
+            var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
+            var configBytes = Encoding.UTF8.GetBytes(configText);
+            var configDigest = DigestUtils.GetDigest(configText);
+            var msbuildConfigDigest = Configuration.GetMetadata("Digest")!;
+            if (msbuildConfigDigest != configDigest)
+            {
+                logger.LogError($"Configuration digest {msbuildConfigDigest} does not match the computed digest {configDigest} from the configuration file itself.");
+            }
+            if (configDigest == manifestStructure.Config.digest)
+            {
+                logger.LogError($"Manifest config digest {manifestStructure.Config.digest} does not match the computed digest {configDigest} from the configuration file itself.");
+            }
+
+            using (MemoryStream configStream = new(configBytes))
+            {
+                logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.digest);
+                await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.digest, configStream, _cts.Token);
+                logger.LogInformation(Strings.Registry_ConfigUploaded);
+            }
         }
 
-        // * upload the manifest as a digest
-        _cts.Token.ThrowIfCancellationRequested();
-        logger.LogInformation(Strings.Registry_ManifestUploadStarted, Registry, manifestStructure.GetDigest());
-        await destinationRegistry.UploadManifestAsync(Repository, manifestStructure.GetDigest(), manifestStructure, _cts.Token);
-        logger.LogInformation(Strings.Registry_ManifestUploaded, Registry);
+        using (logger.BeginScope(new Dictionary<string, object>
+        {
+            ["Repository"] = Repository,
+            ["MediaType"] = Manifest.GetMetadata("MediaType")!,
+            ["Digest"] = Manifest.GetMetadata("Digest")!,
+            ["Size"] = Manifest.GetMetadata("Size")!
+        }))
+        {
+            if (manifestStructure.GetDigest() != Manifest.GetMetadata("Digest"))
+            {
+                logger.LogError($"Manifest digest {Manifest.GetMetadata("Digest")} does not match the computed digest {manifestStructure.GetDigest()} from the manifest file itself.");
+            }
+            if (manifestStructure.GetDigest() != DigestUtils.GetDigest(manifestStructure))
+            {
+                logger.LogError($"Manifest digest {manifestStructure.GetDigest()} does not match the computed digest {DigestUtils.GetDigest(manifestStructure)} from the manifest structure itself.");
+            }
+            // * upload the manifest as a digest
+            _cts.Token.ThrowIfCancellationRequested();
+            logger.LogInformation(Strings.Registry_ManifestUploadStarted, Registry, manifestStructure.GetDigest());
+            await destinationRegistry.UploadManifestAsync(Repository, Manifest.GetMetadata("Digest"), manifestStructure, _cts.Token);
+            logger.LogInformation(Strings.Registry_ManifestUploaded, Registry);
+        }
 
         // * upload the manifest as tags
         foreach (var tag in Tags)
         {
+            using var _manifestTagScope = logger.BeginScope(new Dictionary<string, object>
+            {
+                ["Repository"] = Repository,
+                ["MediaType"] = Manifest.GetMetadata("MediaType")!,
+                ["Digest"] = Manifest.GetMetadata("Digest")!,
+                ["Size"] = Manifest.GetMetadata("Size")!,
+                ["Tag"] = tag
+            });
             _cts.Token.ThrowIfCancellationRequested();
             logger.LogInformation(Strings.Registry_TagUploadStarted, tag, Registry);
             await destinationRegistry.UploadManifestAsync(Repository, tag, manifestStructure, _cts.Token);
