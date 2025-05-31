@@ -63,16 +63,15 @@ internal sealed class ImageBuilder
         AssignPortsFromEnvironment();
 
         JsonObject config = _baseImageConfig.BuildConfig();
-        string configAsString = config.ToJsonString();
-        string imageSha = DigestUtils.GetSha(config);
+        string configAsString = JsonSerializer.Serialize(config);
+        (long length, string imageSha) = DigestUtils.GetSha(configAsString);
         string imageDigest = DigestUtils.GetDigestFromSha(imageSha);
-        long imageSize = Encoding.UTF8.GetBytes(configAsString).Length;
 
         ManifestConfig newManifestConfig =
             new()
             {
                 digest = imageDigest,
-                size = imageSize,
+                size = length,
                 mediaType = ManifestMediaType switch
                 {
                     SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,

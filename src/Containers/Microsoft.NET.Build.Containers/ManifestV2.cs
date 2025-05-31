@@ -20,7 +20,7 @@ public interface IManifest
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-public class ManifestV2: IManifest
+public class ManifestV2 : IManifest
 {
     [JsonIgnore]
     public string? KnownDigest { get; set; }
@@ -58,7 +58,7 @@ public class ManifestV2: IManifest
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(this);
 }
 
 public record struct ManifestConfig(string mediaType, long size, string digest);
