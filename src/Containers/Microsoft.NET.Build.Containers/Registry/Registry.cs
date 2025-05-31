@@ -514,7 +514,15 @@ internal sealed class Registry
         }
     }
 
-    private async Task UploadBlobAsync(string repository, string digest, Stream contents, CancellationToken cancellationToken)
+    /// <summary>
+    /// Uploads an opaque blob to the registry, checking for existence first.
+    /// </summary>
+    /// <param name="repository"></param>
+    /// <param name="digest"></param>
+    /// <param name="contents"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task UploadBlobAsync(string repository, string digest, Stream contents, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -636,6 +644,14 @@ internal sealed class Registry
             await _registryAPI.Manifest.PutAsync(destination.Repository, builtImage.ManifestDigest, builtImage.Manifest, cancellationToken).ConfigureAwait(false);
             _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
         }
+    }
+
+    public async Task UploadManifestAsync(string repository, string tagOrDigest, IManifest manifest, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, tagOrDigest);
+        await _registryAPI.Manifest.PutAsync(repository, tagOrDigest, manifest, cancellationToken).ConfigureAwait(false);
+        _logger.LogInformation(Strings.Registry_ManifestUploaded, RegistryName);
     }
 
     private readonly ref struct RegistryApiFactory

@@ -48,13 +48,72 @@ Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.get -> stri
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.OutputRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Repository.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedConfigurationPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.ArchivePath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.ArchivePath.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Cancel() -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Configuration.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Configuration.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.ExecuteAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.GeneratedArchiveFilePath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.GeneratedArchiveFilePath.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Layers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Layers.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.MakeContainerTarball() -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Manifest.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Manifest.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Repository.set -> void
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Tags.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Tags.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Cancel() -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Configuration.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Configuration.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.ExecuteAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Layers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Layers.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.LocalRegistry.get -> string?
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.LocalRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Manifest.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Manifest.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.PushContainerToLocal() -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Repository.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Tags.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Tags.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Cancel() -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Configuration.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Configuration.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.ExecuteAsync() -> System.Threading.Tasks.Task<bool>!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Layers.get -> Microsoft.Build.Framework.ITaskItem![]!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Layers.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Manifest.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Manifest.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.PushContainerToRemoteRegistry() -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Registry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Registry.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Repository.get -> string!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Repository.set -> void
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Tags.get -> string![]!
+Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Tags.set -> void
 override Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Execute() -> bool
+override Microsoft.NET.Build.Containers.Tasks.MakeContainerTarball.Execute() -> bool
+override Microsoft.NET.Build.Containers.Tasks.PushContainerToLocal.Execute() -> bool
+override Microsoft.NET.Build.Containers.Tasks.PushContainerToRemoteRegistry.Execute() -> bool
 static readonly Microsoft.NET.Build.Containers.Constants.Version -> string!
 Microsoft.NET.Build.Containers.ContainerHelpers
 Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError
@@ -263,8 +322,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?

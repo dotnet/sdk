@@ -142,6 +142,8 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             manifestItem.SetMetadata("MediaType", manifest.MediaType ?? string.Empty);
             manifestItem.SetMetadata("ConfigDigest", manifest.Config.digest);
             manifestItem.SetMetadata("RuntimeIdentifier", itemRid);
+            manifestItem.SetMetadata("Registry", Registry);
+            manifestItem.SetMetadata("Repository", Repository);
             manifestItems.Add(manifestItem);
 
             var configDescriptor = new Descriptor(manifest.Config.mediaType, manifest.Config.digest, manifest.Config.size);
@@ -151,6 +153,8 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
             configItem.SetMetadata("Size", manifest.Config.size.ToString());
             configItem.SetMetadata("Digest", manifest.Config.digest);
             configItem.SetMetadata("RuntimeIdentifier", itemRid);
+            configItem.SetMetadata("Registry", Registry);
+            configItem.SetMetadata("Repository", Repository);
             configItems.Add(configItem);
 
             foreach (var layer in manifest.Layers)
@@ -163,6 +167,8 @@ public class DownloadContainerManifest : Microsoft.Build.Utilities.Task, ICancel
                 layerItem.SetMetadata("Digest", layer.digest);
                 layerItem.SetMetadata("ConfigDigest", manifest.Config.digest);
                 layerItem.SetMetadata("RuntimeIdentifier", itemRid);
+                layerItem.SetMetadata("Registry", Registry);
+                layerItem.SetMetadata("Repository", Repository);
                 layerItems.Add(layerItem);
             }
         }

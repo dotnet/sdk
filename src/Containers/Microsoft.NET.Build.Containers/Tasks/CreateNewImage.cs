@@ -105,7 +105,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         (string absolutefilePath, string relativeContainerPath)[] filesWithRelativePaths =
             PublishFiles
-            .Select(f => (f.ItemSpec, f.GetMetadata("TargetPath") is string tp && !string.IsNullOrEmpty(tp) ? tp : f.GetMetadata("RelativePath")))
+            .Select(f => (f.ItemSpec, f.GetMetadata("RelativePath")))
             .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
             .ToArray();
         var userId = imageBuilder.IsWindows ? null : ContainerBuilder.TryParseUserId(ContainerUser);
@@ -172,18 +172,32 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
+        GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(4)
+        {
+            ["Size"] = newLayer.Descriptor.Size.ToString(),
+            ["MediaType"] = newLayer.Descriptor.MediaType,
+            ["Digest"] = newLayer.Descriptor.Digest,
+        });
+
+        GeneratedAppContainerConfig = new Microsoft.Build.Utilities.TaskItem(GeneratedConfigurationPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = builtImage.Manifest.Config.size.ToString(),
+            ["MediaType"] = builtImage.Manifest.Config.mediaType,
+            ["Digest"] = builtImage.Manifest.Config.digest,
+        });
+
+        GeneratedAppContainerManifest = new Microsoft.Build.Utilities.TaskItem(GeneratedManifestPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = new FileInfo(GeneratedManifestPath).Length.ToString(),
+            ["MediaType"] = builtImage.Manifest.MediaType!,
+            ["Digest"] = builtImage.Manifest.GetDigest(),
+        });
+
         if (baseImageLabel is not null && baseImageDigest is not null)
         {
             var labelItem = new Microsoft.Build.Utilities.TaskItem(baseImageLabel);
             labelItem.SetMetadata("Value", baseImageDigest);
             GeneratedDigestLabel = labelItem;
-        }
-
-        // TODO: remove this push and extract to separate Task
-        if (!SkipPublishing)
-        {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-                .ConfigureAwait(false);
         }
 
         return !Log.HasLoggedErrors;

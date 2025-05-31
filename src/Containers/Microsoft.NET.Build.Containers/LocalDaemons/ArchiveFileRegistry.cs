@@ -14,9 +14,9 @@ internal class ArchiveFileRegistry : ILocalRegistry
         ArchiveOutputPath = archiveOutputPath;
     }
 
-    internal async Task LoadAsync<T>(T image, SourceImageReference sourceReference, 
+    internal async Task LoadAsync<T>(T pushData, SourceImageReference sourceReference,
         DestinationImageReference destinationReference, CancellationToken cancellationToken,
-        Func<T, SourceImageReference, DestinationImageReference, Stream, CancellationToken, Task> writeStreamFunc)
+        Func<(T, SourceImageReference, DestinationImageReference), Stream, CancellationToken, Task> writeStreamFunc)
     {
         var fullPath = Path.GetFullPath(ArchiveOutputPath);
 
@@ -25,7 +25,7 @@ internal class ArchiveFileRegistry : ILocalRegistry
         // if doesn't end with a file extension, assume it's a directory
         if (!Path.HasExtension(fullPath))
         {
-           fullPath += Path.DirectorySeparatorChar;
+            fullPath += Path.DirectorySeparatorChar;
         }
 
         // pointing to a directory? -> append default name
@@ -45,18 +45,18 @@ internal class ArchiveFileRegistry : ILocalRegistry
         await using var fileStream = File.Create(fullPath);
 
         // Call the delegate to write the image to the stream
-        await writeStreamFunc(image, sourceReference, destinationReference, fileStream, cancellationToken).ConfigureAwait(false);
+        await writeStreamFunc((pushData, sourceReference, destinationReference), fileStream, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
-        CancellationToken cancellationToken) 
+        CancellationToken cancellationToken)
         => await LoadAsync(image, sourceReference, destinationReference, cancellationToken,
-            DockerCli.WriteImageToStreamAsync);
+            (tup, a, b) => DockerCli.WriteImageToStreamAsync(tup.Item1, tup.Item2, tup.Item3, a, b));
 
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference,
         DestinationImageReference destinationReference,
-        CancellationToken cancellationToken) 
+        CancellationToken cancellationToken)
         => await LoadAsync(multiArchImage, sourceReference, destinationReference, cancellationToken,
             DockerCli.WriteMultiArchOciImageToStreamAsync);
 
