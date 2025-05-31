@@ -14,27 +14,33 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-add-reference" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-reference-add" "1" "2025-05-30" "" ".NET Documentation"
 .hy
-.SH dotnet add reference
+.SH dotnet reference add
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-add-reference - Adds project-to-project (P2P) references.
+dotnet-reference-add - Adds project-to-project (P2P) references.
+.RS
+.PP
+If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-add-reference) instead.
+The \[lq]noun first\[rq] form was introduced in .NET 10.
+For more information, see More consistent command order.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet add [<PROJECT>] reference [-f|--framework <FRAMEWORK>]
-     [--interactive] <PROJECT_REFERENCES>
+dotnet reference add reference [-f|--framework <FRAMEWORK>]
+     [--interactive] <PROJECT_REFERENCES> [--project <PROJECT>]
 
-dotnet add reference -h|--help
+dotnet reference add -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet add reference\f[R] command provides a convenient option to add project references to a project.
+The \f[V]dotnet reference add\f[R] command provides a convenient option to add project references to a project.
 After running the command, the \f[V]<ProjectReference>\f[R] elements are added to the project file.
 .IP
 .nf
@@ -43,6 +49,7 @@ After running the command, the \f[V]<ProjectReference>\f[R] elements are added t
   <ProjectReference Include=\[dq]app.csproj\[dq] />
   <ProjectReference Include=\[dq]..\[rs]lib2\[rs]lib2.csproj\[dq] />
   <ProjectReference Include=\[dq]..\[rs]lib1\[rs]lib1.csproj\[dq] />
+  <ProjectReference Include=\[dq]..\[rs]lib3\[rs]lib3.fsproj\[dq] />
 </ItemGroup>
 \f[R]
 .fi
@@ -104,7 +111,17 @@ Add a project reference:
 .IP
 .nf
 \f[C]
-dotnet add app/app.csproj reference lib/lib.csproj
+dotnet reference add lib/lib.csproj --project app/app.csproj
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Add a compatible .NET language (for example, F#) project reference, which works in both directions:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet add app/app.csproj reference lib/lib.fsproj
 \f[R]
 .fi
 .RE
@@ -114,7 +131,7 @@ Add multiple project references to the project in the current directory:
 .IP
 .nf
 \f[C]
-dotnet add reference lib1/lib1.csproj lib2/lib2.csproj
+dotnet reference add lib1/lib1.csproj lib2/lib2.csproj
 \f[R]
 .fi
 .RE
@@ -124,7 +141,7 @@ Add multiple project references using a globbing pattern on Linux/Unix:
 .IP
 .nf
 \f[C]
-dotnet add app/app.csproj reference **/*.csproj
+dotnet reference add **/*.csproj --project app/app.csproj
 \f[R]
 .fi
 .RE
