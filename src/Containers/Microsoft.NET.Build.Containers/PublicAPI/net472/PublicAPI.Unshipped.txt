@@ -90,8 +90,6 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?
@@ -104,6 +102,12 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.get -> st
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedLayerPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedManifestPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerLayer.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerConfig.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.get -> Microsoft.Build.Framework.ITaskItem!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedAppContainerManifest.set -> void
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ToolName.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateCommandLineCommands() -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateFullPathToTool() -> string!

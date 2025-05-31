@@ -1,0 +1,74 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Build.Framework;
+using Microsoft.Extensions.Logging;
+using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.NET.Build.Containers.Resources;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+namespace Microsoft.NET.Build.Containers.Tasks;
+
+public class PushContainerToLocal : Microsoft.Build.Utilities.Task, ICancelableTask
+{
+    private CancellationTokenSource _cts = new();
+
+    public string? LocalRegistry { get; set; }
+
+    [Required]
+    public string Repository { get; set; } = string.Empty;
+
+    [Required]
+    public string[] Tags { get; set; } = [];
+
+    [Required]
+    public ITaskItem Manifest { get; set; } = null!;
+
+    [Required]
+    public ITaskItem Configuration { get; set; } = null!;
+
+    [Required]
+    public ITaskItem[] Layers { get; set; } = [];
+
+
+    public void Cancel() => _cts.Cancel();
+
+    public override bool Execute() => ExecuteAsync().GetAwaiter().GetResult();
+
+    public async Task<bool> ExecuteAsync()
+    {
+        using MSBuildLoggerProvider loggerProvider = new(Log);
+        ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
+        ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
+        (long manifestSize, string manifestDigest, ManifestV2 manifestStructure) = await ReadManifest();
+        var configDigest = manifestStructure.Config.digest;
+        var config = await JsonSerializer.DeserializeAsync<JsonObject>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
+        var containerCli = new DockerCli(LocalRegistry, msbuildLoggerFactory);
+        var layers = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).ToArray();
+        await containerCli.LoadAsync((Repository, Tags, configDigest, config!, layers), DockerCli.WriteDockerImageToStreamAsync, _cts.Token);
+        return true;
+    }
+
+    private Descriptor GetDescriptor(ITaskItem item)
+    {
+        var mediaType = item.GetMetadata("MediaType");
+        var digest = item.GetMetadata("Digest");
+        var size = long.Parse(item.GetMetadata("Size")!);
+        return new Descriptor
+        {
+            MediaType = mediaType,
+            Digest = digest,
+            Size = size
+        };
+    }
+
+    private async Task<(long size, string digest, ManifestV2 manifest)> ReadManifest()
+    {
+        var size = long.Parse(Manifest.GetMetadata("Size")!);
+        var digest = Manifest.GetMetadata("Digest")!;
+        var manifestStructure = await JsonSerializer.DeserializeAsync<ManifestV2>(File.OpenRead(Manifest.ItemSpec), cancellationToken: _cts.Token);
+        return (size, digest, manifestStructure!);
+    }
+}
