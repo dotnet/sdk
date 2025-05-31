@@ -138,7 +138,7 @@ internal sealed class DockerCli
         (string repository, string[] tags, string configDigest, JsonObject config, Layer[] layers) imageData,
         Func<(string repository, string[] tags, string configDigest, JsonObject config, Layer[] layers), Stream, CancellationToken, Task> writeStreamFunc,
         CancellationToken cancellationToken)
-        => await LoadAsync(imageData, writeStreamFunc, cancellationToken);
+        => await LoadAsync(imageData, writeStreamFunc, cancellationToken, checkContainerdStore: false);
 
     public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
         => await LoadAsync((multiArchImage, sourceReference, destinationReference), WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
