@@ -10,6 +10,11 @@ namespace Microsoft.NET.Build.Containers;
 internal sealed class DigestUtils
 {
     /// <summary>
+    /// UTF8 encoding without BOM.
+    /// </summary>
+    internal static Encoding UTF8 = new UTF8Encoding(false);
+
+    /// <summary>
     /// Gets digest for string <paramref name="str"/>.
     /// </summary>
     internal static string GetDigest<T>(T content) => GetDigestFromSha(GetSha(content));
@@ -35,7 +40,8 @@ internal sealed class DigestUtils
     internal static string GetSha(string str)
     {
         Span<byte> hash = stackalloc byte[SHA256.HashSizeInBytes];
-        SHA256.HashData(Encoding.UTF8.GetBytes(str), hash);
+        var bytes = UTF8.GetBytes(str);
+        SHA256.HashData(bytes, hash);
 
         return Convert.ToHexStringLower(hash);
     }
@@ -45,4 +51,6 @@ internal sealed class DigestUtils
         var jsonstring = JsonSerializer.Serialize(content);
         return GetSha(jsonstring);
     }
+
+    internal static long GetUtf8Length(string content) => UTF8.GetBytes(content).LongLength;
 }

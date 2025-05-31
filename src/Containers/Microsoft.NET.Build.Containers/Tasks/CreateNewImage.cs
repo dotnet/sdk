@@ -159,10 +159,10 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         // at this point we're done with modifications and are just pushing the data other places
 
         var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
-        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, Encoding.UTF8);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestUtils.UTF8);
 
         var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
-        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, Encoding.UTF8);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestUtils.UTF8);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
 

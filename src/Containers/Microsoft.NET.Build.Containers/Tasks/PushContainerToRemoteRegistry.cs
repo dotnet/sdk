@@ -4,7 +4,7 @@
 using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Logging;
+using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
@@ -51,15 +51,26 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
         // * upload the config
         var (size, digest, manifestStructure) = await ReadManifest().ConfigureAwait(false);
         _cts.Token.ThrowIfCancellationRequested();
-        var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
-        var configBytes = Encoding.UTF8.GetBytes(configText);
-        var configDigest = DigestUtils.GetDigest(configText);
-        System.Diagnostics.Debug.Assert(configDigest == manifestStructure.Config.digest, "Manifest config digest does not match the computed digest from the configuration file.");
-        using (MemoryStream configStream = new(configBytes))
+        using (var scope = logger.BeginScope(new Dictionary<string, object>{
+            ["Repository"] = Repository,
+            ["MediaType"] = Configuration.GetMetadata("MediaType")!,
+            ["Digest"] = Configuration.GetMetadata("Digest")!,
+            ["Size"] = Configuration.GetMetadata("Size")!
+        }))
         {
-            logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.digest);
-            await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.digest, configStream, _cts.Token);
-            logger.LogInformation(Strings.Registry_ConfigUploaded);
+            logger.LogTrace($"Pushing config to {Registry}.");
+            var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
+            var configBytes = DigestUtils.UTF8.GetBytes(configText);
+            var configDigest = DigestUtils.GetDigest(configText);
+            var msbuildConfigDigest = Configuration.GetMetadata("Digest")!;
+            System.Diagnostics.Debug.Assert(configDigest == manifestStructure.Config.digest, "Manifest config digest does not match the computed digest from the configuration file.");
+
+            using (MemoryStream configStream = new(configBytes))
+            {
+                logger.LogInformation(Strings.Registry_ConfigUploadStarted, manifestStructure.Config.digest);
+                await destinationRegistry.UploadBlobAsync(Repository, manifestStructure.Config.digest, configStream, _cts.Token);
+                logger.LogInformation(Strings.Registry_ConfigUploaded);
+            }
         }
 
         // * upload the manifest as a digest

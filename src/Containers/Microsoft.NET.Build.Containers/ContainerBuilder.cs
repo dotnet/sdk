@@ -176,10 +176,10 @@ internal static class ContainerBuilder
         // at this point we're done with modifications and are just pushing the data other places
 
         var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
-        var manifestWriteTask = File.WriteAllTextAsync(generatedManifestPath.FullName, serializedManifest, Encoding.UTF8);
+        var manifestWriteTask = File.WriteAllTextAsync(generatedManifestPath.FullName, serializedManifest, DigestUtils.UTF8);
 
         var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
-        var configWriteTask = File.WriteAllTextAsync(generatedConfigPath.FullName, serializedConfig, Encoding.UTF8);
+        var configWriteTask = File.WriteAllTextAsync(generatedConfigPath.FullName, serializedConfig, DigestUtils.UTF8);
 
         await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
 
