@@ -73,17 +73,9 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
         {
             logger.LogTrace($"Pushing config to {Registry}.");
             var configText = await File.ReadAllTextAsync(Configuration.ItemSpec, _cts.Token);
-            var configBytes = Encoding.UTF8.GetBytes(configText);
+            var configBytes = DigestUtils.UTF8.GetBytes(configText);
             var configDigest = DigestUtils.GetDigest(configText);
             var msbuildConfigDigest = Configuration.GetMetadata("Digest")!;
-            if (msbuildConfigDigest != configDigest)
-            {
-                logger.LogError($"Configuration digest {msbuildConfigDigest} does not match the computed digest {configDigest} from the configuration file itself.");
-            }
-            if (configDigest == manifestStructure.Config.digest)
-            {
-                logger.LogError($"Manifest config digest {manifestStructure.Config.digest} does not match the computed digest {configDigest} from the configuration file itself.");
-            }
 
             using (MemoryStream configStream = new(configBytes))
             {

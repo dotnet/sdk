@@ -190,7 +190,7 @@ internal sealed class Registry
                     digest,
                 mediaType,
                 size.ToString()
-                ], Encoding.UTF8, cTok);
+                ], DigestUtils.UTF8, cTok);
                 // now that the data is all set for next time, return the manifest
                 return await ParseManifest(mediaType, responseStream, digest);
             }
@@ -599,7 +599,7 @@ internal sealed class Registry
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config.ToJsonString())))
+        using (MemoryStream stringStream = new(DigestUtils.UTF8.GetBytes(builtImage.Config.ToJsonString())))
         {
             var configDigest = builtImage.Manifest.Config.digest;
             _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
@@ -628,7 +628,7 @@ internal sealed class Registry
         }
     }
 
-    public async Task UploadManifestAsync(string repository, string tagOrDigest, IManifest manifest, CancellationToken cancellationToken)
+    public async Task UploadManifestAsync<T>(string repository, string tagOrDigest, T manifest, CancellationToken cancellationToken) where T : IManifest
     {
         cancellationToken.ThrowIfCancellationRequested();
         _logger.LogInformation(Strings.Registry_ManifestUploadStarted, RegistryName, tagOrDigest);
