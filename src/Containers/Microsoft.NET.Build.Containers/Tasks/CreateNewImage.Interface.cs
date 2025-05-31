@@ -164,10 +164,6 @@ partial class CreateNewImage
     /// </summary>
     public string? ImageFormat { get; set; }
 
-    /// If true, the tooling will skip the publishing step.
-    /// </summary>
-    public bool SkipPublishing { get; set; }
-
     public string ContentStoreRoot { get; set; }
 
     /// <summary>
@@ -205,6 +201,15 @@ partial class CreateNewImage
 
     [Output]
     public ITaskItem[] GeneratedContainerNames { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerLayer { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerConfig { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerManifest { get; set; }
 
     [Output]
     public ITaskItem? GeneratedDigestLabel { get; set; }
@@ -246,6 +251,9 @@ partial class CreateNewImage
         GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
         GeneratedDigestLabel = null;
+        GeneratedAppContainerLayer = null!;
+        GeneratedAppContainerConfig = null!;
+        GeneratedAppContainerManifest = null!;
 
         GenerateLabels = false;
         GenerateDigestLabel = false;
