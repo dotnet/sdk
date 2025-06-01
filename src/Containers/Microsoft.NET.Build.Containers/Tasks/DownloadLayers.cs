@@ -49,7 +49,7 @@ public class DownloadLayers : Microsoft.Build.Utilities.Task, ICancelableTask
 
             if (string.IsNullOrEmpty(digest) || string.IsNullOrEmpty(size) || string.IsNullOrEmpty(mediaType))
             {
-                throw new ArgumentException($"Layer {layer.ItemSpec} must have Digest, Size, and MediaType metadata");
+                logger.LogError(new EventId(123456, "layer_item_validation_failure"), $"Layer {layer.ItemSpec} must have Digest, Size, and MediaType metadata");
             }
 
             var descriptor = new Descriptor(mediaType, digest, long.Parse(size));
@@ -58,18 +58,16 @@ public class DownloadLayers : Microsoft.Build.Utilities.Task, ICancelableTask
                 {
                     if (t.IsFaulted)
                     {
-                        this.Log.LogError($"Failed to download layer {digest} from {Registry}/{Repository}: {t.Exception?.Flatten().Message}");
+                        logger.LogError(new EventId(123457, "layer_download_failure"), exception: t.Exception, $"Failed to download layer {digest} from {Registry}/{Repository}");
                     }
                     else if (t.IsCanceled)
                     {
-                        this.Log.LogError($"Failed to download layer {digest} from {Registry}/{Repository}: Task was cancelled");
+                        logger.LogError(new EventId(123457, "layer_download_failure"), exception: t.Exception, $"Failed to download layer {digest} from {Registry}/{Repository}");
                     }
                 })
             );
         }
         await Task.WhenAll(layerDownloadTasks);
-        return true;
+        return !Log.HasLoggedErrors;
     }
-
-    
 }

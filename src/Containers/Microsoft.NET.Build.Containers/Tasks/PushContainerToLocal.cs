@@ -46,8 +46,34 @@ public class PushContainerToLocal : Microsoft.Build.Utilities.Task, ICancelableT
         var configDigest = manifestStructure.Config.digest;
         var config = await JsonSerializer.DeserializeAsync<JsonObject>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
         var containerCli = new DockerCli(LocalRegistry, msbuildLoggerFactory);
+
+        var telemetry = new Telemetry(new(null, null, null, containerCli.IsDocker ? Telemetry.LocalStorageType.Docker : Telemetry.LocalStorageType.Podman), Log);
+        if (!await containerCli.IsAvailableAsync(_cts.Token).ConfigureAwait(false))
+        {
+            telemetry.LogMissingLocalBinary();
+            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
+            return false;
+        }
+
         var layers = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).ToArray();
-        await containerCli.LoadAsync((Repository, Tags, configDigest, config!, layers), DockerCli.WriteDockerImageToStreamAsync, _cts.Token);
+        try
+        {
+            await containerCli.LoadAsync((Repository, Tags, configDigest, config!, layers), DockerCli.WriteDockerImageToStreamAsync, _cts.Token);
+        }
+        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
+        {
+            telemetry.LogLocalLoadError();
+            Log.LogErrorFromException(dle, showStackTrace: false);
+        }
+        catch (ArgumentException argEx)
+        {
+            Log.LogErrorFromException(argEx, showStackTrace: false);
+        }
+        catch (DockerLoadException dle)
+        {
+            telemetry.LogLocalLoadError();
+            Log.LogErrorFromException(dle, showStackTrace: false);
+        }
         return true;
     }
 

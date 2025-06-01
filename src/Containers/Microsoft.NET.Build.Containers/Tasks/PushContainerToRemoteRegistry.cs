@@ -43,6 +43,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         var destinationRegistry = new Registry(Registry, logger, RegistryMode.Push);
 
+        var telemetry = new Telemetry(new(null, null, Telemetry.GetRegistryType(destinationRegistry), null), Log);
         // functionally, we need to
         // * upload the layers
         var layerUploadTasks = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).Select(l => destinationRegistry.PushLayerAsync(l, Repository, _cts.Token)).ToArray();
@@ -87,6 +88,7 @@ public class PushContainerToRemoteRegistry : Microsoft.Build.Utilities.Task, ICa
             await destinationRegistry.UploadManifestAsync(Repository, tag, manifestStructure, _cts.Token);
             logger.LogInformation(Strings.Registry_TagUploaded, tag, Registry);
         }
+        telemetry.LogPublishSuccess();
         return true;
     }
 

@@ -51,6 +51,9 @@ internal sealed class DockerCli
     public DockerCli(ILoggerFactory loggerFactory) : this(null, loggerFactory)
     { }
 
+    public bool IsDocker => _command == DockerCommand;
+    public bool IsPodman => _command == PodmanCommand;
+
     private static string FindFullPathFromPath(string command)
     {
         foreach (string directory in (Environment.GetEnvironmentVariable("PATH") ?? string.Empty).Split(Path.PathSeparator))
