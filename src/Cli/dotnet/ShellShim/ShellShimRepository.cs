@@ -62,22 +62,17 @@ internal class ShellShimRepository(
                     }
                     else if (toolCommand.Runner == "executable")
                     {
+                        var shimPath = GetShimPath(toolCommand).Value;
+                        string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
+
                         if (OperatingSystem.IsWindows())
                         {
-                            var shimPath = GetShimPath(toolCommand).Value;
-                            string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
-
                             string batchContent = $"@echo off\r\n\"%~dp0{relativePathToExe}\" %*\r\n";
                             File.WriteAllText(shimPath, batchContent);
                         }
                         else
                         {
-                            // Create a symlink at shimPath pointing to the executable, using a relative path for portability
-                            var shimPath = GetShimPath(toolCommand).Value;
-                            string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
-
-                            // System.IO.File.CreateSymbolicLink is available in .NET Core 3.0+ and .NET 5+
-                            System.IO.File.CreateSymbolicLink(shimPath, relativePathToExe);
+                            File.CreateSymbolicLink(shimPath, relativePathToExe);
                             _filePermissionSetter.SetUserExecutionPermission(shimPath);
                         }
                     }
