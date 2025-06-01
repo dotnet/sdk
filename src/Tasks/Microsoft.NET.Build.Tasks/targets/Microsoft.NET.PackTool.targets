@@ -26,8 +26,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   TODO:
   - Figure out what TargetFramework for self-contained tools should be (any?)
-  - Fix packing PublishAot tool (needs _IsPublishing=true)
-
   -->
 
   

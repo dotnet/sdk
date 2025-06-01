@@ -77,6 +77,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishSelfContained>true</PublishSelfContained>
   </PropertyGroup>
 
+  <!-- Packing a tool runs the publish targets, so in that case set _IsPublishing to true -->
+  <PropertyGroup Condition="'$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true'">
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>  
 
   <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
        This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
