@@ -72,8 +72,13 @@ internal class ShellShimRepository(
                         }
                         else
                         {
-                            //  TODO: Create symlink
-                            throw new NotImplementedException();
+                            // Create a symlink at shimPath pointing to the executable, using a relative path for portability
+                            var shimPath = GetShimPath(toolCommand).Value;
+                            string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
+
+                            // System.IO.File.CreateSymbolicLink is available in .NET Core 3.0+ and .NET 5+
+                            System.IO.File.CreateSymbolicLink(shimPath, relativePathToExe);
+                            _filePermissionSetter.SetUserExecutionPermission(shimPath);
                         }
                     }
                     else
