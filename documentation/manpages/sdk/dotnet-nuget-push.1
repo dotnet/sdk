@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-push" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-nuget-push" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet nuget push
 .PP
@@ -31,6 +31,7 @@ dotnet nuget push [<ROOT>] [-d|--disable-buffering] [--force-english-output]
     [--no-service-endpoint] [-s|--source <SOURCE>] [--skip-duplicate]
     [-sk|--symbol-api-key <API_KEY>] [-ss|--symbol-source <SOURCE>]
     [-t|--timeout <TIMEOUT>]
+    [--configfile <FILE>]
 
 dotnet nuget push -h|--help
 \f[R]
@@ -149,6 +150,15 @@ Specifies the symbol server URL.
 Specifies the timeout for pushing to a server in seconds.
 Defaults to 300 seconds (5 minutes).
 Specifying 0 applies the default value.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--configfile\f[B]\f[R]
+.RS 2
+.PP
+The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
+If specified, only the settings from this file will be used.
+If not specified, the hierarchy of configuration files from the current directory will be used.
+For more information, see Common NuGet Configurations.
 .RE
 .SH EXAMPLES
 .IP \[bu] 2
