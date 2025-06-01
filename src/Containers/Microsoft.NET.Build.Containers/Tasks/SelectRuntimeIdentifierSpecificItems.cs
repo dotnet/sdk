@@ -32,20 +32,23 @@ public class SelectRuntimeIdentifierSpecificItems : Microsoft.Build.Utilities.Ta
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
         var graph = NuGet.RuntimeModel.JsonRuntimeFormat.ReadRuntimeGraph(RuntimeIdentifierGraphPath);
-        
+
         var selectedItems = new List<ITaskItem>(Items.Length);
         foreach (var item in Items)
         {
-            if (item.GetMetadata("RuntimeIdentifier") is string ridValue && 
+            if (item.GetMetadata("RuntimeIdentifier") is string ridValue &&
                 graph.AreCompatible(TargetRuntimeIdentifier, ridValue))
             {
                 selectedItems.Add(item);
             }
         }
 
+        // TODO: log if no items were selected
+        // TODO: log telemetry.LogRidMismatch
+
         SelectedItems = selectedItems.ToArray();
         return true;
     }
 
-    
+
 }

@@ -53,7 +53,9 @@ public class MakeContainerTarball : Microsoft.Build.Utilities.Task, ICancelableT
         var filePath = DetermineFilePath();
         await using var fileStream = File.Create(filePath);
         GeneratedArchiveFilePath = filePath;
+        var telemetry = new Telemetry(new(null, null, null, Telemetry.LocalStorageType.Tarball), Log);
         await DockerCli.WriteImageToStreamAsync(Repository, Tags, config!, layers, manifestStructure, fileStream, _cts.Token);
+        telemetry.LogPublishSuccess();
         return true;
     }
 
