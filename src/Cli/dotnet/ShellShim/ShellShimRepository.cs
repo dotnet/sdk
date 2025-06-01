@@ -46,16 +46,43 @@ internal class ShellShimRepository(
                         _fileSystem.Directory.CreateDirectory(_shimsDirectory.Value);
                     }
 
-                    if (TryGetPackagedShim(packagedShims, toolCommand.Name, out FilePath? packagedShim))
+                    if (toolCommand.Runner == "dotnet")
                     {
-                        _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand.Name).Value);
-                        _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand.Name).Value);
+                        if (TryGetPackagedShim(packagedShims, toolCommand, out FilePath? packagedShim))
+                        {
+                            _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand).Value);
+                            _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand).Value);
+                        }
+                        else
+                        {
+                            _appHostShellShimMaker.CreateApphostShellShim(
+                                toolCommand.Executable,
+                                GetShimPath(toolCommand));
+                        }
+                    }
+                    else if (toolCommand.Runner == "executable")
+                    {
+                        if (OperatingSystem.IsWindows())
+                        {
+                            var shimPath = GetShimPath(toolCommand).Value;
+                            string relativePathToExe = Path.GetRelativePath(_shimsDirectory.Value, toolCommand.Executable.Value);
+
+                            string batchContent = $"@echo off\r\n\"%~dp0{relativePathToExe}\" %*\r\n";
+                            File.WriteAllText(shimPath, batchContent);
+                        }
+                        else
+                        {
+                            //  TODO: Create symlink
+                            throw new NotImplementedException();
+                        }
                     }
                     else
                     {
-                        _appHostShellShimMaker.CreateApphostShellShim(
-                            toolCommand.Executable,
-                            GetShimPath(toolCommand.Name));
+                        throw new ToolConfigurationException(
+                            string.Format(
+                                CliStrings.ToolSettingsUnsupportedRunner,
+                                toolCommand.Name,
+                                toolCommand.Runner));
                     }
                 }
                 catch (FilePermissionSettingException ex)
@@ -149,7 +176,14 @@ internal class ShellShimRepository(
     {
         if (OperatingSystem.IsWindows())
         {
-            return _shimsDirectory.WithFile(toolCommand.Name.Value + ".exe");
+            if (toolCommand.Runner == "dotnet")
+            {
+                return _shimsDirectory.WithFile(toolCommand.Name.Value + ".exe");
+            }
+            else
+            {
+                return _shimsDirectory.WithFile(toolCommand.Name.Value + ".cmd");
+            }
         }
         else
         {
