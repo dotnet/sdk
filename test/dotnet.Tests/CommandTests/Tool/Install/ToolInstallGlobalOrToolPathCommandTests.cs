@@ -862,7 +862,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
-            var tokenToIdentifyPackagedShim = "win64-tool";
+
+            string toolTargetRuntimeIdentifier = OperatingSystem.IsWindows() ? "win-x64" : RuntimeInformation.RuntimeIdentifier;
+
+            var tokenToIdentifyPackagedShim = $"{toolTargetRuntimeIdentifier}-tool";
 
             var result = Parser.Instance.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
 
@@ -874,7 +877,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 ToolCommandName = ToolCommandName
             };
 
-            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/win-x64/{ToolCommandName}.exe"] = tokenToIdentifyPackagedShim;
+            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/{toolTargetRuntimeIdentifier}/{ToolCommandName}.exe"] = tokenToIdentifyPackagedShim;
 
             _toolPackageDownloader.AddMockPackage(mockPackage);
 

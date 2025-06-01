@@ -304,6 +304,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
+                .Execute().Should().Pass();
+
             var source = GetTestLocalFeedPath();
 
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(

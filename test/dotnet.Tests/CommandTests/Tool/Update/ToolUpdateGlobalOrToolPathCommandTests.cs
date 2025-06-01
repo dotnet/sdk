@@ -19,7 +19,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
-    public class ToolUpdateGlobalOrToolPathCommandTests
+    public class ToolUpdateGlobalOrToolPathCommandTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
         private readonly IFileSystem _fileSystem;
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _tempDirectory;
         private readonly ToolPackageDownloaderMock2 _toolPackageDownloader;
 
-        public ToolUpdateGlobalOrToolPathCommandTests()
+        public ToolUpdateGlobalOrToolPathCommandTests(ITestOutputHelper log) : base(log)
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -411,10 +411,15 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [Fact]
         public void GivenPackagedShimIsProvidedWhenRunWithPackageIdItCreatesShimUsingPackagedShim()
         {
+
+            Log.WriteLine($"Current RuntimeIdentifier: {RuntimeInformation.RuntimeIdentifier}");
+
+            string toolTargetRuntimeIdentifier = OperatingSystem.IsWindows() ? "win-x64" : RuntimeInformation.RuntimeIdentifier;
+
             var extension = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".exe" : string.Empty;
             var tokenToIdentifyPackagedShim = "packagedShim";
             var mockPackage = _mockFeeds[0].Packages.Single(p => p.PackageId == _packageId.ToString() && p.Version == HigherPackageVersion);
-            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/win-x64/{mockPackage.ToolCommandName}{extension}"] = tokenToIdentifyPackagedShim;
+            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/{toolTargetRuntimeIdentifier}/{mockPackage.ToolCommandName}{extension}"] = tokenToIdentifyPackagedShim;
 
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
             _reporter.Lines.Clear();
@@ -444,14 +449,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private ToolInstallGlobalOrToolPathCommand CreateInstallCommand(string options, string packageId = null)
         {
             ParseResult result = Parser.Instance.Parse("dotnet tool install " + options);
-            var store = new ToolPackageStoreMock(
-                    new DirectoryPath(_toolsDirectory),
-                    _fileSystem);
 
             return new ToolInstallGlobalOrToolPathCommand(
                 result,
                 packageId is null ? _packageId : new PackageId(packageId) ,
-                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, _toolPackageDownloader, new ToolPackageUninstallerMock(_fileSystem, store)),
+                (location, forwardArguments, currentWorkingDirectory) => (_store, _store, _toolPackageDownloader, new ToolPackageUninstallerMock(_fileSystem, _store)),
                 (_, _) => GetMockedShellShimRepository(),
                 _environmentPathInstructionMock,
                 _reporter);
