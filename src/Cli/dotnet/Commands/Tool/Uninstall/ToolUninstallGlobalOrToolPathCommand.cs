@@ -72,7 +72,7 @@ internal class ToolUninstallGlobalOrToolPathCommand(
         {
             TransactionalAction.Run(() =>
             {
-                shellShimRepository.RemoveShim(package.Command.Name);
+                shellShimRepository.RemoveShim(package.Command);
              
                 toolPackageUninstaller.Uninstall(package.PackageDirectory);
             });

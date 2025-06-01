@@ -181,7 +181,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 RunWithHandlingUninstallError(() =>
                 {
-                    shellShimRepository.RemoveShim(oldPackageNullable.Command.Name);
+                    shellShimRepository.RemoveShim(oldPackageNullable.Command);
                     toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
                 }, packageId);
             }
@@ -217,7 +217,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 }
                 string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
 
-                shellShimRepository.CreateShim(newInstalledPackage.Command.Executable, newInstalledPackage.Command.Name, newInstalledPackage.PackagedShims);
+                shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
 
                 foreach (string w in newInstalledPackage.Warnings)
                 {

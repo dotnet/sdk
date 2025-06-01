@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -20,19 +21,19 @@ internal class ShellShimRepository(
     private readonly IAppHostShellShimMaker _appHostShellShimMaker = appHostShellShimMaker ?? new AppHostShellShimMaker(appHostSourceDirectory: appHostSourceDirectory);
     private readonly IFilePermissionSetter _filePermissionSetter = filePermissionSetter ?? new FilePermissionSetter();
 
-    public void CreateShim(FilePath targetExecutablePath, ToolCommandName commandName, IReadOnlyList<FilePath> packagedShims = null)
+    public void CreateShim(ToolCommand toolCommand, IReadOnlyList<FilePath> packagedShims = null)
     {
-        if (string.IsNullOrEmpty(targetExecutablePath.Value))
+        if (string.IsNullOrEmpty(toolCommand.Executable.Value))
         {
             throw new ShellShimException(CliStrings.CannotCreateShimForEmptyExecutablePath);
         }
 
-        if (ShimExists(commandName))
+        if (ShimExists(toolCommand))
         {
             throw new ShellShimException(
                 string.Format(
                     CliStrings.ShellShimConflict,
-                    commandName));
+                    toolCommand.Name));
         }
 
         TransactionalAction.Run(
@@ -45,16 +46,16 @@ internal class ShellShimRepository(
                         _fileSystem.Directory.CreateDirectory(_shimsDirectory.Value);
                     }
 
-                    if (TryGetPackagedShim(packagedShims, commandName, out FilePath? packagedShim))
+                    if (TryGetPackagedShim(packagedShims, toolCommand.Name, out FilePath? packagedShim))
                     {
-                        _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(commandName).Value);
-                        _filePermissionSetter.SetUserExecutionPermission(GetShimPath(commandName).Value);
+                        _fileSystem.File.Copy(packagedShim.Value.Value, GetShimPath(toolCommand.Name).Value);
+                        _filePermissionSetter.SetUserExecutionPermission(GetShimPath(toolCommand.Name).Value);
                     }
                     else
                     {
                         _appHostShellShimMaker.CreateApphostShellShim(
-                            targetExecutablePath,
-                            GetShimPath(commandName));
+                            toolCommand.Executable,
+                            GetShimPath(toolCommand.Name));
                     }
                 }
                 catch (FilePermissionSettingException ex)
@@ -67,7 +68,7 @@ internal class ShellShimRepository(
                     throw new ShellShimException(
                         string.Format(
                             CliStrings.FailedToCreateShellShim,
-                            commandName,
+                            toolCommand.Name,
                             ex.Message
                         ),
                         ex);
@@ -75,14 +76,14 @@ internal class ShellShimRepository(
             },
             rollback: () =>
             {
-                foreach (var file in GetShimFiles(commandName).Where(f => _fileSystem.File.Exists(f.Value)))
+                foreach (var file in GetShimFiles(toolCommand).Where(f => _fileSystem.File.Exists(f.Value)))
                 {
                     File.Delete(file.Value);
                 }
             });
     }
 
-    public void RemoveShim(ToolCommandName commandName)
+    public void RemoveShim(ToolCommand toolCommand)
     {
         var files = new Dictionary<string, string>();
         TransactionalAction.Run(
@@ -90,7 +91,7 @@ internal class ShellShimRepository(
             {
                 try
                 {
-                    foreach (var file in GetShimFiles(commandName).Where(f => _fileSystem.File.Exists(f.Value)))
+                    foreach (var file in GetShimFiles(toolCommand).Where(f => _fileSystem.File.Exists(f.Value)))
                     {
                         var tempPath = Path.Combine(_fileSystem.Directory.CreateTemporarySubdirectory(), Path.GetRandomFileName());
                         FileAccessRetrier.RetryOnMoveAccessFailure(() => _fileSystem.File.Move(file.Value, tempPath));
@@ -102,7 +103,7 @@ internal class ShellShimRepository(
                     throw new ShellShimException(
                         string.Format(
                             CliStrings.FailedToRemoveShellShim,
-                            commandName.ToString(),
+                            toolCommand.Name.ToString(),
                             ex.Message
                         ),
                         ex);
@@ -134,38 +135,38 @@ internal class ShellShimRepository(
         public StartupOptions startupOptions { get; set; }
     }
 
-    private bool ShimExists(ToolCommandName commandName)
+    private bool ShimExists(ToolCommand toolCommand)
     {
-        return GetShimFiles(commandName).Any(p => _fileSystem.File.Exists(p.Value));
+        return GetShimFiles(toolCommand).Any(p => _fileSystem.File.Exists(p.Value));
     }
 
-    private IEnumerable<FilePath> GetShimFiles(ToolCommandName commandName)
+    private IEnumerable<FilePath> GetShimFiles(ToolCommand toolCommand)
     {
-        yield return GetShimPath(commandName);
+        yield return GetShimPath(toolCommand);
     }
 
-    private FilePath GetShimPath(ToolCommandName commandName)
+    private FilePath GetShimPath(ToolCommand toolCommand)
     {
         if (OperatingSystem.IsWindows())
         {
-            return _shimsDirectory.WithFile(commandName.Value + ".exe");
+            return _shimsDirectory.WithFile(toolCommand.Name.Value + ".exe");
         }
         else
         {
-            return _shimsDirectory.WithFile(commandName.Value);
+            return _shimsDirectory.WithFile(toolCommand.Name.Value);
         }
     }
 
     private bool TryGetPackagedShim(
         IReadOnlyList<FilePath> packagedShims,
-        ToolCommandName commandName,
+        ToolCommand toolCommand,
         out FilePath? packagedShim)
     {
         packagedShim = null;
 
         if (packagedShims != null && packagedShims.Count > 0)
         {
-            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetShimPath(commandName).Value)))];
+            FilePath[] candidatepackagedShim = [.. packagedShims.Where(s => string.Equals(Path.GetFileName(s.Value), Path.GetFileName(GetShimPath(toolCommand).Value)))];
 
             if (candidatepackagedShim.Length > 1)
             {
