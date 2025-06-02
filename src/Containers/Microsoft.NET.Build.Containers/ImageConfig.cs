@@ -217,7 +217,8 @@ internal sealed class ImageConfig
         _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
     }
 
-    internal void SetUser(string user, bool isUserInteraction = false) {
+    internal void SetUser(string user, bool isUserInteraction = false)
+    {
         // we don't let automatic/inferred user settings overwrite an explicit user request
         if (_userHasBeenExplicitlySet && !isUserInteraction)
         {
