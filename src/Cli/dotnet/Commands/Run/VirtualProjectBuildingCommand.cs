@@ -510,9 +510,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (isVirtualProject)
             {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.props" Sdk="{EscapeValue(sdk.ToSlashDelimitedString())}" />
-                    """);
+                WriteImport(writer, "Sdk.props", sdk);
             }
             else if (sdk.Version is null)
             {
@@ -629,9 +627,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             foreach (var sdk in sdkDirectives)
             {
-                writer.WriteLine($"""
-                      <Import Project="Sdk.targets" Sdk="{EscapeValue(sdk.ToSlashDelimitedString())}" />
-                    """);
+                WriteImport(writer, "Sdk.targets", sdk);
             }
 
             if (!sdkDirectives.Any())
@@ -679,6 +675,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             """);
 
         static string EscapeValue(string value) => SecurityElement.Escape(value);
+
+        static void WriteImport(TextWriter writer, string project, CSharpDirective.Sdk sdk)
+        {
+            if (sdk.Version is null)
+            {
+                writer.WriteLine($"""
+                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" />
+                    """);
+            }
+            else
+            {
+                writer.WriteLine($"""
+                      <Import Project="{EscapeValue(project)}" Sdk="{EscapeValue(sdk.Name)}" Version="{EscapeValue(sdk.Version)}" />
+                    """);
+            }
+        }
     }
 
     /// <param name="reportAllErrors">
