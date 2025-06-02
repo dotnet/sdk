@@ -241,7 +241,6 @@
     <MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreMvcApiAnalyzersPackageVersion>
     <MicrosoftAspNetCoreAnalyzersPackageVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreAnalyzersPackageVersion>
     <MicrosoftAspNetCoreTestHostPackageVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreTestHostPackageVersion>
-    <MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreAppRuntimewinx64PackageVersion>
     <MicrosoftAspNetCoreAppRefInternalPackageVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreAppRefInternalPackageVersion>
     <MicrosoftAspNetCoreAuthenticationFacebookVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreAuthenticationFacebookVersion>
     <MicrosoftAspNetCoreAuthenticationGoogleVersion>10.0.0-preview.5.25265.101</MicrosoftAspNetCoreAuthenticationGoogleVersion>
@@ -260,7 +259,6 @@
     <MicrosoftExtensionsFileProvidersEmbeddedVersion>10.0.0-preview.5.25265.101</MicrosoftExtensionsFileProvidersEmbeddedVersion>
     <MicrosoftDotNetWebItemTemplates100PackageVersion>10.0.0-preview.5.25265.101</MicrosoftDotNetWebItemTemplates100PackageVersion>
     <MicrosoftDotNetWebProjectTemplates100PackageVersion>10.0.0-preview.5.25265.101</MicrosoftDotNetWebProjectTemplates100PackageVersion>
-    <VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>10.0.0-preview.5.25265.101</VSRedistCommonAspNetCoreSharedFrameworkx64100PackageVersion>
     <dotnetdevcertsPackageVersion>10.0.0-preview.5.25265.101</dotnetdevcertsPackageVersion>
     <dotnetuserjwtsPackageVersion>10.0.0-preview.5.25265.101</dotnetuserjwtsPackageVersion>
     <dotnetusersecretsPackageVersion>10.0.0-preview.5.25265.101</dotnetusersecretsPackageVersion>
