@@ -49,7 +49,7 @@ public class MakeContainerTarball : Microsoft.Build.Utilities.Task, ICancelableT
         (long manifestSize, string manifestDigest, ManifestV2 manifestStructure) = await ReadManifest();
         var configDigest = manifestStructure.Config.digest;
         var config = await JsonSerializer.DeserializeAsync<JsonObject>(File.OpenRead(Configuration.ItemSpec), cancellationToken: _cts.Token);
-        var layers = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).ToArray();
+        var layers = Layers.Select(l => Layer.FromBackingFile(new(l.ItemSpec), GetDescriptor(l))).ToArray();
         var filePath = DetermineFilePath();
         await using var fileStream = File.Create(filePath);
         GeneratedArchiveFilePath = filePath;

@@ -51,7 +51,13 @@ internal class Layer
 
     public static Layer FromDescriptor(Descriptor descriptor, ContentStore store)
     {
-        return new(new(store.PathForDescriptor(descriptor)), descriptor);
+        FileInfo path = new(store.PathForDescriptor(descriptor));
+        return FromBackingFile(path, descriptor);
+    }
+
+    public static Layer FromBackingFile(FileInfo backingFile, Descriptor descriptor)
+    {
+        return new(backingFile, descriptor);
     }
 
     public static async Task<Layer> FromFiles((string absPath, string relPath)[] inputFiles, string containerPath, bool isWindowsLayer, string manifestMediaType, ContentStore store, FileInfo layerWritePath, CancellationToken ct, int? userId = null)
@@ -235,13 +241,16 @@ internal class Layer
         private readonly IncrementalHash sha256Hash;
         private readonly GZipStream compressionStream;
 
-        public HashDigestGZipStream(Stream writeStream, bool leaveOpen)
+        public HashDigestGZipStream(Stream writeStream, bool leaveOpen, CompressionMode compressionMode = CompressionMode.Compress)
+            : base()
         {
             sha256Hash = IncrementalHash.CreateHash(HashAlgorithmName.SHA256);
-            compressionStream = new GZipStream(writeStream, CompressionMode.Compress, leaveOpen);
+            compressionStream = new GZipStream(writeStream, compressionMode, leaveOpen);
         }
 
-        public override bool CanWrite => true;
+        public override bool CanWrite => compressionStream.CanWrite;
+        public override bool CanRead => compressionStream.CanRead;
+        public override bool CanSeek => compressionStream.CanSeek;
 
         public override void Write(byte[] buffer, int offset, int count)
         {
@@ -287,12 +296,30 @@ internal class Layer
             return compressionStream.WriteAsync(buffer, cancellationToken);
         }
 
-        public override bool CanRead => false;
-        public override bool CanSeek => false;
         public override long Length => throw new NotImplementedException();
         public override long Position { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
 
-        public override int Read(byte[] buffer, int offset, int count) => throw new NotImplementedException();
+        public override int Read(byte[] buffer, int offset, int count)
+        {
+            var read = compressionStream.Read(buffer, offset, count);
+            sha256Hash.AppendData(buffer.AsSpan(offset, read));
+            return read;
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            var read = compressionStream.ReadAsync(buffer, offset, count, cancellationToken);
+            sha256Hash.AppendData(buffer.AsSpan(offset, read.Result));
+            return read;
+        }
+
+        public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            var read = compressionStream.ReadAsync(buffer, cancellationToken);
+            sha256Hash.AppendData(buffer.Span.Slice(0, read.Result));
+            return read;
+        }
+
         public override long Seek(long offset, SeekOrigin origin) => throw new NotImplementedException();
         public override void SetLength(long value) => throw new NotImplementedException();
     }

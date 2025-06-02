@@ -363,8 +363,8 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
         using TarWriter writer = new(imageStream, TarEntryFormat.Pax, leaveOpen: true);
         // Feed each layer tarball into the stream
-        JsonArray layerTarballPaths = new();
-        await WriteImageLayers(writer, pushData.layers, l => $"{l.Descriptor.Digest.Substring("sha256:".Length)}/layer.tar", cancellationToken)
+        var layerTarballPathFunc = (Layer l) => $"{l.Descriptor.Digest.Substring("sha256:".Length)}/layer.tar";
+        await WriteImageLayers(writer, pushData.layers, layerTarballPathFunc, cancellationToken)
             .ConfigureAwait(false);
 
         string configTarballPath = $"{pushData.configDigest.Split(':')[1]!}.json";
@@ -372,6 +372,7 @@ internal sealed class DockerCli
             .ConfigureAwait(false);
 
         // Add manifest
+        JsonArray layerTarballPaths = new JsonArray([.. pushData.layers.Select(layerTarballPathFunc).Select(s => JsonValue.Create(s))]);
         await WriteManifestForDockerImage(writer, pushData.repository, pushData.tags, configTarballPath, layerTarballPaths, cancellationToken)
             .ConfigureAwait(false);
     }
