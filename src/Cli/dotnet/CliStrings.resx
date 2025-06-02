@@ -568,8 +568,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <value>outputpathresolver: {0} does not exist</value>
   </data>
   <data name="CannotFindAManifestFile" xml:space="preserve">
-    <value>Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</value>
+    <value>Cannot find a manifest file.</value>
   </data>
   <data name="CannotFindPackageIdInManifest" xml:space="preserve">
     <value>Cannot find a package with the package id {0} in the manifest file.</value>

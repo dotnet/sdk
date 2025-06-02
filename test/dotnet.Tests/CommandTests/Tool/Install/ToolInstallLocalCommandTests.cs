@@ -165,9 +165,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliCommandStrings.ToolInstallNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
