@@ -63,10 +63,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotFindAManifestFile">
-        <source>Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</source>
-        <target state="new">Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</target>
+        <source>Cannot find a manifest file.</source>
+        <target state="new">Cannot find a manifest file.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindPackageIdInManifest">
