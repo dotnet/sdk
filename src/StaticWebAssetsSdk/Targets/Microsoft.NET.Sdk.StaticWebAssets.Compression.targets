@@ -223,7 +223,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="ResolveBuildCompressedStaticWebAssets" DependsOnTargets="$(ResolveBuildCompressedStaticWebAssetsDependsOn)">
 
     <PropertyGroup>
-      <_ResolveBuildCompressedStaticWebAssetsCachePath>$(_StaticWebAssetsManifestBase)rbcswa.dswa.cache.json</_ResolveBuildCompressedStaticWebAssetsCachePath>
+      <_ResolveBuildCompressedStaticWebAssetsCachePath Condition="'$(StaticWebAssetsCacheDefineStaticWebAssetsEnabled)' == 'true'">$(_StaticWebAssetsManifestBase)rbcswa.dswa.cache.json</_ResolveBuildCompressedStaticWebAssetsCachePath>
     </PropertyGroup>
 
     <DefineStaticWebAssets
@@ -244,6 +244,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <StaticWebAsset Include="@(_CompressionBuildStaticWebAsset)" />
       <StaticWebAssetEndpoint Include="@(_CompressionBuildStaticWebAssetEndpoint)" />
       <_CompressionCurrentProjectBuildAssets Include="@(StaticWebAsset)" />
+      <FileWrites Include="@(_ResolveBuildCompressedStaticWebAssetsCachePath)" />
     </ItemGroup>
 
     <ApplyCompressionNegotiation

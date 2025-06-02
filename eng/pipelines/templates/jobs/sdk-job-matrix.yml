@@ -32,9 +32,7 @@ parameters:
     container: ubuntu2204DebPkg
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: $(linuxOsPortableProperties)
-    # Skipping all container-based testing for now.
-    # See: https://github.com/dotnet/sdk/issues/40935
-    runTests: false
+    runTests: true
   - categoryName: ContainerBased
     container: fedora39
     # No fedora Helix container is available, so use the ubuntu one instead.
@@ -54,9 +52,7 @@ parameters:
     container: debian12Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
-    # Skipping all container-based testing for now.
-    # See: https://github.com/dotnet/sdk/issues/40935
-    runTests: false
+    runTests: true
   - categoryName: ContainerBased
     container: alpine319WithNode
     helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.18-helix-amd64

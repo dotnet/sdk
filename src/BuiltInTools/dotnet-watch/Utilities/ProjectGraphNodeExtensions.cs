@@ -33,6 +33,9 @@ internal static class ProjectGraphNodeExtensions
     public static bool IsNetCoreApp(this ProjectGraphNode projectNode, Version minVersion)
         => IsNetCoreApp(projectNode) && IsTargetFrameworkVersionOrNewer(projectNode, minVersion);
 
+    public static bool IsWebApp(this ProjectGraphNode projectNode)
+        => projectNode.GetCapabilities().Any(static value => value is "AspNetCore" or "WebAssembly");
+
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue("TargetPath") is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
 

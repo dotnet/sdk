@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
@@ -809,6 +810,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Changed");
     }
 
+    [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
+    public void ArtifactsDirectory_Permissions()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir);
+
+        // Re-create directory with incorrect permissions.
+        Directory.Delete(artifactsDir, recursive: true);
+        Directory.CreateDirectory(artifactsDir, UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute);
+        var actualMode = new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().NotBe(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir).And.Subject;
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("build-start.cache"); // Unhandled exception: Access to the path '.../build-start.cache' is denied.
+
+        // Build shouldn't have changed the permissions.
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(actualMode, artifactsDir);
+    }
+
     [Fact]
     public void LaunchProfile()
     {
@@ -934,6 +971,25 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Description:
                   Sample app for System.CommandLine
                 """);
+    }
+
+    [Fact] // https://github.com/dotnet/sdk/issues/48990
+    public void SdkReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.AppHost.Sdk 9.2.1
+            #:package Aspire.Hosting.AppHost@9.2.1
+
+            var builder = DistributedApplication.CreateBuilder(args);
+            builder.Build().Run();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
     }
 
     [Fact]
@@ -1139,7 +1195,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <PropertyGroup>
                         <OutputType>Exe</OutputType>
@@ -1170,7 +1226,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk/9.1.0" />
+                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
                       <!--
                         Override targets which don't work with project files that are not present on disk.
