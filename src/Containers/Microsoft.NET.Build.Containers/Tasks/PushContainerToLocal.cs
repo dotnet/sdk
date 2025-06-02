@@ -55,7 +55,7 @@ public class PushContainerToLocal : Microsoft.Build.Utilities.Task, ICancelableT
             return false;
         }
 
-        var layers = Layers.Select(l => new Layer(new(l.ItemSpec), GetDescriptor(l))).ToArray();
+        var layers = Layers.Select(l => Layer.FromBackingFile(new(l.ItemSpec), GetDescriptor(l))).ToArray();
         try
         {
             await containerCli.LoadAsync((Repository, Tags, configDigest, config!, layers), DockerCli.WriteDockerImageToStreamAsync, _cts.Token);
