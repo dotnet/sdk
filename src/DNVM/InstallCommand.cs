@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using Semver;
 
 using Spectre.Console;
-using StaticCs;
 using Zio;
 
 namespace Microsoft.DotNet.DNVM;

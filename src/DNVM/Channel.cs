@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
 using Semver;
-using StaticCs;
 
 namespace Microsoft.DotNet.DNVM;
 
@@ -22,7 +21,6 @@ public static class Channels
 }
 
 
-[Closed]
 public abstract partial record Channel
 {
     private Channel() { }

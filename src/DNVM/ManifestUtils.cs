@@ -6,8 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Semver;
 
-using StaticCs.Collections;
-
 namespace Microsoft.DotNet.DNVM;
 
 /// <summary>

@@ -17,9 +17,6 @@
     <PackageReference Include="Semver" />
 
     <PackageReference Include="Spectre.Console" />
-    <PackageReference Include="StaticCs" />
-    <PackageReference Include="StaticCs.Collections" />
-    <PackageReference Include="StaticCs.Result" />
     <PackageReference Include="zio" />
   </ItemGroup>
 </Project>
