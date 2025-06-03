@@ -22,15 +22,14 @@ namespace Microsoft.NET.Build.Tasks
         public string TargetToRemove { get; set; }
 
         [Output]
-        public string UpdatedTargetList { get; private set; }
+        public string[] UpdatedTargetList { get; private set; }
 
         protected override void ExecuteCore()
         {
-            var targets = (TargetList ?? string.Empty)
+            UpdatedTargetList = (TargetList ?? string.Empty)
                 .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
                 .Where(t => !string.Equals(t.Trim(), TargetToRemove, StringComparison.OrdinalIgnoreCase))
                 .ToArray();
-            UpdatedTargetList = string.Join(";", targets);
         }
     }
 }
