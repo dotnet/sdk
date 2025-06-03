@@ -21,6 +21,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
              AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.RemoveTargetFromList"
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <!--
 
