@@ -44,7 +44,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!--
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <Target Name="SetPackageType"
+          Condition=" '$(PackAsTool)' == 'true' "
+          BeforeTargets="GenerateNuspec">
+
+    <PropertyGroup>
+      <!-- When packing a tool, the package type should include DotnetTool.  For RID-specific tool packages, the primary package should still
+         have a package type of DotnetTool, but the RID-specific packages should have a package type of DotnetToolRidPackage, so they don't
+         clutter up the search results for DotnetTools. -->
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
+
+      <!--
     PackageType is semicolon-delimited, case-insensitive, with an optional version.
 
     DotnetTool should be added to the set of package types if the PackAsTool property is set to true.
@@ -60,11 +74,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
     -->
-    <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';dotnettool;')) and !$(_PaddedPackageType.Contains(';dotnettool,')) ">DotnetTool;$(PackageType)</PackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
+      <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
+      <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';$(_ToolPackageType);')) and !$(_PaddedPackageType.Contains(';$(_ToolPackageType),')) ">$(_ToolPackageType);$(PackageType)</PackageType>
+      <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">$(_ToolPackageType)</PackageType>      
+    </PropertyGroup>
+    
+  </Target>
 
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>

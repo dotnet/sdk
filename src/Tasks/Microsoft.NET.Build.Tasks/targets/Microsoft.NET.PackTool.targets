@@ -26,6 +26,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   TODO:
   - Figure out what TargetFramework for self-contained tools should be (any?)
+  - Set PackageType to DotnetToolRidPackage for RID-specific packages
+  - Should "dotnet pack" support -r for RuntimeIdentifier?
   -->
 
   
@@ -136,7 +138,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolRuntimeIdentifier)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(PackageId)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(Version)" />
-      <_GenerateToolsSettingsFileInputCacheToHash Include="@(ToolPackageRuntimeIdentifier->'%(Identity)%(Id)%(Version)')" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="@(ToolPackageRuntimeIdentifier->'%(Identity)%(Version)')" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateToolsSettingsFileInputCacheToHash)">
