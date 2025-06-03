@@ -16,6 +16,16 @@ install_dependencies() {
       fedora)
         sudo dnf install -y zlib-devel clang icu libicu libicu-devel || echo "Warning: Failed to install zlib-devel or clang"
         export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+        export LD_LIBRARY_PATH=/usr/lib64:$LD_LIBRARY_PATH
+        sudo ldconfig
+        echo "Verifying ICU installation..."
+        if ldconfig -p | grep libicu; then
+          echo "ICU libraries found."
+        else
+          echo "ICU libraries not found in ldconfig. You may need to check your installation."
+        fi
+        echo ".NET Info:"
+        dotnet --info
         ;;
 
       alpine)
