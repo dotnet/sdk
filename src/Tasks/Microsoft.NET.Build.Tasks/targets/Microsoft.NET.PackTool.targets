@@ -28,7 +28,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   TODO:
   - Figure out what TargetFramework for self-contained tools should be (any?)
-  - Set PackageType to DotnetToolRidPackage for RID-specific packages
   - Should "dotnet pack" support -r for RuntimeIdentifier?
   -->
 

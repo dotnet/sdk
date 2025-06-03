@@ -62,6 +62,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
         _fileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         _globalToolStageDir = _toolPackageStore.GetRandomStagingDirectory();
+        //  NuGet settings can't use mock file system.  This means in testing we will get the real global packages folder, but that is fine because we
+        //  mock the whole file system anyway.
         ISettings settings = Settings.LoadDefaultSettings(currentWorkingDirectory ?? Directory.GetCurrentDirectory());
         _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
         _currentWorkingDirectory = currentWorkingDirectory;
@@ -199,7 +201,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
                 rollbackDirectory = toolStoreTargetDirectory.Value;
 
-                //  TODO: How to mock ToolPackageInstance?
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: toolStoreTargetDirectory,
@@ -251,7 +252,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     assetFileDirectory: _localToolAssetDir,
                     targetFramework);
 
-                //  TODO: How to mock ToolPackageInstance?
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
                     packageDirectory: _localToolDownloadDir,
