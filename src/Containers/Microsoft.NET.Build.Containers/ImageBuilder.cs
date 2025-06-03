@@ -6,6 +6,8 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using System.Text.Json.Serialization;
+using System.Text.Encodings.Web;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -86,12 +88,24 @@ internal sealed class ImageBuilder
             Layers = _manifest.Layers
         };
 
+         var nullIgnoreOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
+        var escapeOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        string manifestStr = JsonSerializer.SerializeToNode(newManifest, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
+
         return new BuiltImage()
         {
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
+            Manifest = manifestStr,
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
             Layers = _manifest.Layers
