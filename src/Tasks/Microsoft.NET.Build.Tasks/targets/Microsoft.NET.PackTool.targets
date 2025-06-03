@@ -43,6 +43,29 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </PropertyGroup>
 
+  <Target Name="PackAsToolSwitchToNoBuild"
+          BeforeTargets="_IntermediatePack"
+          Condition=" '$(PackAsTool)' == 'true' And
+                      '@(ToolPackageRuntimeIdentifier)' != '' And
+                      '$(RuntimeIdentifier)' == ''">
+
+    <!-- If we are building the primary package for a tool with RID-specific packages, we don't include any of the build output in the package, so we don't need to run Build.
+         We might not be able to build without a RuntimeIdentifier if PublishAOT or SelfContained is set to true, so we skip the build so it doesn't fail.
+
+          We use a task to remove the Build target from GenerateNuspecDependsOn. This is effectively what happens if NoBuild is set, but we can't use the same logic because
+          we need to look at items (ToolPackageRuntimeIdentifier) to determine if we are building the primary package for a tool with RID-specific packages.  So we have to fix
+          up the dependency list afterwards.
+
+          We also can't use MSBuild property functions for string replacement to remove Build from the list, because MSBuild will escape the semicolons as %3B, and there
+          doesn't seem to be a way of avoiding that without using a task.
+     -->
+    <RemoveTargetFromList TargetList="$(GenerateNuspecDependsOn)"
+                          TargetToRemove="Build">
+      <Output TaskParameter="UpdatedTargetList" PropertyName="GenerateNuspecDependsOn" />
+    </RemoveTargetFromList>
+    
+  </Target>
+
  <!--
     PackageId must be set before:
      - _GenerateRestoreProjectSpec -> _GetRestoreSettings
