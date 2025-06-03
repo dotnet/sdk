@@ -47,38 +47,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
   </PropertyGroup>
 
-  <Target Name="SetPackageType"
+  <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="SetDotnetToolPackageType"
           Condition=" '$(PackAsTool)' == 'true' "
           BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
-      <!-- When packing a tool, the package type should include DotnetTool.  For RID-specific tool packages, the primary package should still
-         have a package type of DotnetTool, but the RID-specific packages should have a package type of DotnetToolRidPackage, so they don't
-         clutter up the search results for DotnetTools. -->
       <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
       <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
-
-      <!--
-    PackageType is semicolon-delimited, case-insensitive, with an optional version.
-
-    DotnetTool should be added to the set of package types if the PackAsTool property is set to true.
-
-    Examples:
-       PackageType = ''                     -> 'DotnetTool'
-       PackageType = 'MyCustomType'         -> 'DotnetTool;MyCustomType'
-       PackageType = 'MyCustomType, 1.0'    -> 'DotnetTool;MyCustomType, 1.0'
-       PackageType = 'dotnettool'           -> 'dotnettool'
-       PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
-       PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
-       PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
-
-    _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
-    -->
-      <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
-      <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';$(_ToolPackageType);')) and !$(_PaddedPackageType.Contains(';$(_ToolPackageType),')) ">$(_ToolPackageType);$(PackageType)</PackageType>
-      <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">$(_ToolPackageType)</PackageType>      
     </PropertyGroup>
-    
+
+    <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+      <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
+    </AddPackageType>
+
   </Target>
 
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
