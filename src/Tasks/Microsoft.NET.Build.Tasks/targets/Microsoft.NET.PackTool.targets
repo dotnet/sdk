@@ -125,15 +125,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       AppHostIntermediatePath="$(AppHostIntermediatePath)"
       ResolvedFileToPublish="@(ResolvedFileToPublish)"
       PublishDir="$(PublishDir)"
-      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
-      TargetPlatformMoniker="$(TargetPlatformMoniker)">
-
+      ToolPackShortTargetFrameworkName="$(_ToolPackShortTargetFrameworkName)">
       <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
     </ResolveToolPackagePaths>
 
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(_NuGetShortFolderName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(_ResolvedFileToPublishWithPackagePath)">
@@ -203,9 +201,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformMoniker="$(TargetPlatformMoniker)">
 
-      <Output TaskParameter="NuGetShortFolderName" PropertyName="_NuGetShortFolderName" />
+      <Output TaskParameter="NuGetShortFolderName" PropertyName="_ToolPackShortTargetFrameworkName" />
 
     </GetNuGetShortFolderName>
+
+    <PropertyGroup>
+      <_ToolPackShortTargetFrameworkName Condition="'$(SelfContained)' == 'true'">any</_ToolPackShortTargetFrameworkName>
+    </PropertyGroup>
 
     <NETSdkError Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' "
                  ResourceName="DotnetToolOnlySupportNetcoreapp" />
@@ -244,7 +246,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -273,7 +275,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 
