@@ -1,5 +1,46 @@
 #!/usr/bin/env bash
 
+install_dependencies() {
+  echo "Installing dependencies..."
+
+  if [ -f /etc/os-release ]; then
+    . /etc/os-release
+    echo "Detected OS: $ID $VERSION_ID"
+
+    case "$ID" in
+      centos)
+        sudo dnf install -y epel-release || echo "Warning: Failed to install epel-release"
+        sudo dnf install -y zlib-devel libunwind || echo "Warning: Failed to install zlib-devel or libunwind"
+        ;;
+
+      fedora)
+        sudo dnf install -y zlib-devel clang icu libicu libicu-devel || echo "Warning: Failed to install zlib-devel or clang"
+        export DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
+        export LD_LIBRARY_PATH=/usr/lib64:$LD_LIBRARY_PATH
+        sudo ldconfig
+        echo "Verifying ICU installation..."
+        if ldconfig -p | grep libicu; then
+          echo "ICU libraries found."
+        else
+          echo "ICU libraries not found in ldconfig. You may need to check your installation."
+        fi
+        echo ".NET Info:"
+        dotnet --info
+        ;;
+
+      alpine)
+        sudo apk add --no-cache zlib-dev musl-dev clang || echo "Warning: Failed to install zlib-dev, musl-dev or clang"
+        ;;
+    esac
+  else
+    echo "Notice: /etc/os-release not found. Skipping dependency installation."
+  fi
+
+  echo "Dependencies installation complete."
+}
+
+install_dependencies
+
 # make NuGet network operations more robust
 export NUGET_ENABLE_EXPERIMENTAL_HTTP_RETRY=true
 export NUGET_EXPERIMENTAL_MAX_NETWORK_TRY_COUNT=6
