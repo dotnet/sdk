@@ -2,6 +2,8 @@ using Microsoft.Build.Framework;
 using Task = Microsoft.Build.Utilities.Task;
 using System;
 using System.Globalization;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -18,7 +20,6 @@ namespace Microsoft.NET.Build.Tasks
 
         public override bool Execute()
         {
-            // Normalize input
             string current = CurrentPackageType ?? string.Empty;
             string toAdd = (PackageTypeToAdd ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(toAdd))
@@ -27,23 +28,26 @@ namespace Microsoft.NET.Build.Tasks
                 return true;
             }
 
-            // Pad with semicolons for easier matching
-            string padded = ";" + current.Replace(" ", string.Empty).Trim().ToLowerInvariant() + ";";
-            string toAddLower = toAdd.ToLowerInvariant();
+            // Split current types, trim, and filter out empty
+            var types = current.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(t => t.Trim())
+                .Where(t => !string.IsNullOrEmpty(t))
+                .ToList();
 
-            // Check for exact match or versioned match
-            if (padded.Contains($";{toAddLower};") || padded.Contains($";{toAddLower},"))
+            // Check if toAdd (case-insensitive, ignoring version) is already present
+            string toAddLower = toAdd.ToLowerInvariant();
+            bool alreadyPresent = types.Any(t =>
             {
-                UpdatedPackageType = current;
-            }
-            else if (string.IsNullOrEmpty(current))
+                var typeName = t.Split(',')[0].Trim().ToLowerInvariant();
+                return typeName == toAddLower;
+            });
+
+            if (!alreadyPresent)
             {
-                UpdatedPackageType = toAdd;
+                types.Insert(0, toAdd);
             }
-            else
-            {
-                UpdatedPackageType = toAdd + ";" + current;
-            }
+
+            UpdatedPackageType = string.Join(";", types);
             return true;
         }
     }
