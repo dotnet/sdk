@@ -106,34 +106,6 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         return cacheTable;
     }
 
-    public bool TryLoadHighestVersion(
-        RestoredCommandIdentifierVersionRange query,
-        out ToolCommand toolCommandList)
-    {
-        toolCommandList = null;
-        string packageCacheFile = GetCacheFile(query.PackageId);
-        if (_fileSystem.File.Exists(packageCacheFile))
-        {
-            var list = GetCacheTable(packageCacheFile)
-                .Select(c => Convert(query.PackageId, c))
-                .Where(strongTypeStored =>
-                    query.VersionRange.Satisfies(strongTypeStored.restoredCommandIdentifier.Version))
-                .Where(onlyVersionSatisfies =>
-                    onlyVersionSatisfies.restoredCommandIdentifier ==
-                    query.WithVersion(onlyVersionSatisfies.restoredCommandIdentifier.Version))
-                .OrderByDescending(allMatched => allMatched.restoredCommandIdentifier.Version)
-                .FirstOrDefault();
-
-            if (!list.toolCommand.Equals(default(ToolCommand)))
-            {
-                toolCommandList = list.toolCommand;
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     private string GetCacheFile(PackageId packageId)
     {
         return _cacheVersionedDirectory.WithFile(packageId.ToString()).Value;

@@ -13,8 +13,4 @@ internal interface ILocalToolsResolverCache
     bool TryLoad(
         RestoredCommandIdentifier restoredCommandIdentifier,
         out ToolCommand toolCommand);
-
-    bool TryLoadHighestVersion(
-        RestoredCommandIdentifierVersionRange query,
-        out ToolCommand toolCommandList);
 }
