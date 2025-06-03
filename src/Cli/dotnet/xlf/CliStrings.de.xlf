@@ -1037,6 +1037,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageNotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="new">Command '{0}' contains one or more of the following invalid characters: {1}.</target>

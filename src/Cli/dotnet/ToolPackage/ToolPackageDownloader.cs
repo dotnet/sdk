@@ -135,19 +135,25 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         // Create ManagedCodeConventions:
         var conventions = new ManagedCodeConventions(runtimeGraph);
 
+        //  Create NuGetv3LocalRepository
+        NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
+        var package = localRepository.FindPackage(packageId.ToString(), version);
+
+        if (!package.Nuspec.GetPackageTypes().Any(pt => pt.Name.Equals(PackageType.DotnetTool.ToString(), StringComparison.OrdinalIgnoreCase) ||
+                                                        pt.Name.Equals("DotnetToolRidPackage")))
+        {
+            throw new ToolPackageException(string.Format(CliStrings.ToolPackageNotATool, packageId));
+        }
+
         //  Create LockFileTargetLibrary
         var lockFileLib = new LockFileTargetLibrary()
         {
             Name = packageId.ToString(),
             Version = version,
             Type = LibraryType.Package,
-            //  TODO: What about DotnetToolRidPackage type?
+            //  Actual package type might be DotnetToolRidPackage but for asset file processing we treat them the same
             PackageType = [PackageType.DotnetTool]
         };
-
-        //  Create NuGetv3LocalRepository
-        NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
-        var package = localRepository.FindPackage(packageId.ToString(), version);
 
         var collection = new ContentItemCollection();
         collection.Load(package.Files);

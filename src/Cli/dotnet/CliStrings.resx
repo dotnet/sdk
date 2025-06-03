@@ -413,6 +413,9 @@ setx PATH "%PATH%;{0}"
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
   </data>
+  <data name="ToolPackageNotATool" xml:space="preserve">
+    <value>Package {0} is not a .NET tool.</value>
+  </data>
   <data name="FailedToFindStagedToolPackage" xml:space="preserve">
     <value>Failed to find staged tool package '{0}'.</value>
   </data>
