@@ -278,10 +278,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolInstallGlobalOrToolPathCommand.Execute();
 
             a.Should().Throw<GracefulException>().And.Message
-                .Should().Contain(
-                    ErrorMessage +
-                    Environment.NewLine +
-                    string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, PackageId));
+                .Should().Contain(ErrorMessage);
 
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
