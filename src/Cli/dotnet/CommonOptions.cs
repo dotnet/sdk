@@ -63,15 +63,18 @@ internal static class CommonOptions
         return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
-    public static Option<string> RuntimeOption =
-        new DynamicForwardedOption<string>("--runtime", "-r")
+    public const string RuntimeOptionName = "--runtime";
+
+    public static Option<string> RuntimeOption(string description) =>
+        new DynamicForwardedOption<string>(RuntimeOptionName, "-r")
         {
-            HelpName = RuntimeArgName
+            HelpName = RuntimeArgName,
+            Description = description
         }.ForwardAsMany(RuntimeArgFunc!)
         .AddCompletions(CliCompletion.RunTimesFromProjectFile);
 
     public static Option<string> LongFormRuntimeOption =
-        new DynamicForwardedOption<string>("--runtime")
+        new DynamicForwardedOption<string>(RuntimeOptionName)
         {
             HelpName = RuntimeArgName
         }.ForwardAsMany(RuntimeArgFunc!)
@@ -254,7 +257,7 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveArchOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndArchOptions);
         }
@@ -270,7 +273,7 @@ internal static class CommonOptions
 
     internal static IEnumerable<string> ResolveOsOptionToRuntimeIdentifier(string? arg, ParseResult parseResult)
     {
-        if ((parseResult.GetResult(RuntimeOption) ?? parseResult.GetResult(LongFormRuntimeOption)) is not null)
+        if (parseResult.GetResult(RuntimeOptionName) is not null)
         {
             throw new GracefulException(CliStrings.CannotSpecifyBothRuntimeAndOsOptions);
         }
