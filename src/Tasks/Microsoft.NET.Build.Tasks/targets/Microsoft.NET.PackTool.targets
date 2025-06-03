@@ -27,9 +27,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!--
 
   TODO:
-  - Should "dotnet pack" support -r for RuntimeIdentifier?
   - We now generate an error when trying to install package as a tool if it's not of type DotnetTool: https://github.com/dotnet/sdk/issues/37010
-    - Does this need to be documented as a breaking change
+    - Does this need to be documented as a breaking change?
   - Consider a way of declaring what RID a RID-specific package is for, besides just the convention in the package ID
   -->
 
