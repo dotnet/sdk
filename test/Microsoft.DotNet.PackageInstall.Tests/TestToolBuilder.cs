@@ -47,11 +47,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         /// <summary>
-        /// Compares the files in two directories (non-recursively) and returns true if they have the same files with identical contents.
+        /// Compares the files in two directories (non-recursively) and returns true if they have the same files with identical text contents.
         /// </summary>
         /// <param name="dir1">First directory path</param>
         /// <param name="dir2">Second directory path</param>
-        /// <returns>True if the directories have the same files with the same contents, false otherwise.</returns>
+        /// <returns>True if the directories have the same files with the same text contents, false otherwise.</returns>
         public static bool AreDirectoriesEqual(string dir1, string dir2)
         {
             if (!Directory.Exists(dir1) || !Directory.Exists(dir2))
@@ -75,15 +75,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var filePath2 = Path.Combine(dir2, fileName);
                 if (!File.Exists(filePath1) || !File.Exists(filePath2))
                     return false;
-                var bytes1 = File.ReadAllBytes(filePath1);
-                var bytes2 = File.ReadAllBytes(filePath2);
-                if (bytes1.Length != bytes2.Length)
+                var text1 = File.ReadAllText(filePath1);
+                var text2 = File.ReadAllText(filePath2);
+                if (!string.Equals(text1, text2, StringComparison.Ordinal))
                     return false;
-                for (int i = 0; i < bytes1.Length; i++)
-                {
-                    if (bytes1[i] != bytes2[i])
-                        return false;
-                }
             }
             return true;
         }
