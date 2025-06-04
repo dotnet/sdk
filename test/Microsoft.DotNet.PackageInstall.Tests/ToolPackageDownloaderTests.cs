@@ -909,43 +909,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .BeEmpty();
         }
 
-        private static FilePath GetUniqueTempProjectPathEachTest()
-        {
-            var tempProjectDirectory =
-                new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
-            var tempProjectPath =
-                tempProjectDirectory.WithFile(Path.GetRandomFileName() + ".csproj");
-            return tempProjectPath;
-        }
-
-        private static List<MockFeed> GetMockFeedsForConfigFile(FilePath? nugetConfig)
-        {
-            if (nugetConfig.HasValue)
-            {
-                return new List<MockFeed>
-                {
-                    new MockFeed
-                    {
-                        Type = MockFeedType.ExplicitNugetConfig,
-                        Uri = nugetConfig.Value.Value,
-                        Packages = new List<MockFeedPackage>
-                        {
-                            new MockFeedPackage
-                            {
-                                PackageId = TestPackageId.ToString(),
-                                Version = TestPackageVersion,
-                                ToolCommandName = "SimulatorCommand"
-                            }
-                        }
-                    }
-                };
-            }
-            else
-            {
-                return new List<MockFeed>();
-            }
-        }
-
         private static List<MockFeed> GetMockFeedsForSource(string source)
         {
             return new List<MockFeed>
@@ -954,27 +917,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     Type = MockFeedType.ImplicitAdditionalFeed,
                     Uri = source,
-                    Packages = new List<MockFeedPackage>
-                    {
-                        new MockFeedPackage
-                        {
-                            PackageId = TestPackageId.ToString(),
-                            Version = TestPackageVersion,
-                            ToolCommandName = "SimulatorCommand"
-                        }
-                    }
-                }
-            };
-        }
-
-        private static List<MockFeed> GetOfflineMockFeed()
-        {
-            return new List<MockFeed>
-            {
-                new MockFeed
-                {
-                    Type = MockFeedType.ImplicitAdditionalFeed,
-                    Uri = GetTestLocalFeedPath(),
                     Packages = new List<MockFeedPackage>
                     {
                         new MockFeedPackage
