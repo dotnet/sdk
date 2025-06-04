@@ -139,8 +139,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
         var package = localRepository.FindPackage(packageId.ToString(), version);
 
-        if (!package.Nuspec.GetPackageTypes().Any(pt => pt.Name.Equals(PackageType.DotnetTool.ToString(), StringComparison.OrdinalIgnoreCase) ||
-                                                        pt.Name.Equals("DotnetToolRidPackage")))
+        if (!package.Nuspec.GetPackageTypes().Any(pt => pt.Name.Equals(PackageType.DotnetTool.Name, StringComparison.OrdinalIgnoreCase) ||
+                                                        pt.Name.Equals("DotnetToolRidPackage", StringComparison.OrdinalIgnoreCase)))
         {
             throw new ToolPackageException(string.Format(CliStrings.ToolPackageNotATool, packageId));
         }
