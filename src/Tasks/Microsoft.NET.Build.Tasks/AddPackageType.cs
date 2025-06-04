@@ -9,14 +9,13 @@ namespace Microsoft.NET.Build.Tasks
 {
     public class AddPackageType : Task
     {
-        [Required]
         public string? CurrentPackageType { get; set; }
 
         [Required]
         public string? PackageTypeToAdd { get; set; }
 
         [Output]
-        public string? UpdatedPackageType { get; set; }
+        public string[]? UpdatedPackageType { get; set; }
 
         public override bool Execute()
         {
@@ -24,7 +23,7 @@ namespace Microsoft.NET.Build.Tasks
             string toAdd = (PackageTypeToAdd ?? string.Empty).Trim();
             if (string.IsNullOrEmpty(toAdd))
             {
-                UpdatedPackageType = current;
+                UpdatedPackageType = current.Split(';');
                 return true;
             }
 
@@ -35,19 +34,22 @@ namespace Microsoft.NET.Build.Tasks
                 .ToList();
 
             // Check if toAdd (case-insensitive, ignoring version) is already present
-            string toAddLower = toAdd.ToLowerInvariant();
             bool alreadyPresent = types.Any(t =>
             {
-                var typeName = t.Split(',')[0].Trim().ToLowerInvariant();
-                return typeName == toAddLower;
+                var typeName = t.Split(',')[0].Trim();
+                return typeName.Equals(toAdd, StringComparison.InvariantCultureIgnoreCase);
             });
 
-            if (!alreadyPresent)
+
+            if (alreadyPresent)
+            {
+                UpdatedPackageType = current.Split(';');
+            }
+            else
             {
                 types.Insert(0, toAdd);
+                UpdatedPackageType = types.ToArray();
             }
-
-            UpdatedPackageType = string.Join(";", types);
             return true;
         }
     }
