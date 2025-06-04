@@ -568,7 +568,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
     <value>outputpathresolver: {0} does not exist</value>
   </data>
   <data name="CannotFindAManifestFile" xml:space="preserve">
-    <value>Cannot find a manifest file.</value>
+    <value>Cannot find a manifest file. The list of searched paths:
+{0}</value>
   </data>
   <data name="CannotFindPackageIdInManifest" xml:space="preserve">
     <value>Cannot find a package with the package id {0} in the manifest file.</value>
@@ -660,9 +661,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="LibraryNotFoundInLockFile" xml:space="preserve">
     <value>{0}: library not found in lock file.</value>
   </data>
-  <data name="ListOfSearched" xml:space="preserve">
-    <value>The list of searched paths:
-{0}</value>
   </data>
   <data name="LookingForPreferCliRuntimeFile" xml:space="preserve">
     <value>{0}: Looking for prefercliruntime file at `{1}`</value>
