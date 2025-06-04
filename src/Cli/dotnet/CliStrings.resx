@@ -661,7 +661,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="LibraryNotFoundInLockFile" xml:space="preserve">
     <value>{0}: library not found in lock file.</value>
   </data>
-  </data>
   <data name="LookingForPreferCliRuntimeFile" xml:space="preserve">
     <value>{0}: Looking for prefercliruntime file at `{1}`</value>
   </data>
