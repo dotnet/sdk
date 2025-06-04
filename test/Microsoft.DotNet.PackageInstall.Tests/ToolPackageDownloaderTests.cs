@@ -34,6 +34,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void Dispose() => Environment.SetEnvironmentVariable(_PATH_VAR_NAME, _originalPath);
     }
 
+    [Collection(nameof(TestToolBuilderCollection))]
     public class ToolPackageDownloaderTests : SdkTest, IClassFixture<DotnetEnvironmentTestFixture>
     {
         [Theory]
@@ -1024,8 +1025,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static readonly PackageId TestPackageId = new("global.tool.console.demo");
         private static readonly IEnumerable<NuGetFramework> TestFrameworks = new NuGetFramework[] { NuGetFramework.Parse(ToolPackageDownloaderMock2.DefaultTargetFramework) };
         private static readonly VerbosityOptions TestVerbosity = new VerbosityOptions();
-        public ToolPackageDownloaderTests(ITestOutputHelper log) : base(log)
+
+        private readonly TestToolBuilder ToolBuilder;
+
+        public ToolPackageDownloaderTests(ITestOutputHelper log, TestToolBuilder toolBuilder) : base(log)
         {
+            ToolBuilder = toolBuilder;
         }
     }
 }
