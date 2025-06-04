@@ -30,8 +30,8 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/commands/dotnet-format @sharwell @arunchndr
-/test/dotnet-format.UnitTests @sharwell @arunchndr
+/src/Cli/dotnet/commands/dotnet-format @arunchndr
+/test/dotnet-format.UnitTests @arunchndr
 
 # Area-NuGet
 /src/Cli/dotnet/commands/dotnet-add/dotnet-add-package @dotnet/nuget-team
