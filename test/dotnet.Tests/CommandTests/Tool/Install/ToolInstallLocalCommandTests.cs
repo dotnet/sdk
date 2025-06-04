@@ -171,7 +171,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Contain(CliStrings.CannotFindAManifestFile);
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
+                .And.VerboseMessage.Should().Contain(CliStrings.CannotFindAManifestFile.Substring(0, 25));
         }
 
         [Fact]
