@@ -305,7 +305,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            //this.ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
+            //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
+            ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
 
             var source = GetTestLocalFeedPath();
 
@@ -315,13 +316,26 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var relativePath = Path.GetRelativePath(store.Root.Value, source);
 
+            //  Use a NuGet.config
+            var nugetConfigContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
+                <configuration>
+                <packageSources>
+                <!--To inherit the global NuGet package sources remove the <clear/> line below -->
+                <clear />
+                <add key=""dotnet-public"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"" />
+                <add key=""myget-legacy"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/myget-legacy/nuget/v3/index.json"" />
+                </packageSources>
+                </configuration>";
+
+            fileSystem.File.WriteAllText(Path.Combine(store.Root.Value, "NuGet.config"), nugetConfigContents);
+
             Log.WriteLine("Root path: " + store.Root.Value);
             Log.WriteLine("Relative path: " + relativePath);
             Log.WriteLine("Current Directory: " + Directory.GetCurrentDirectory());
 
             var package = downloader.InstallPackage(
-                new PackageLocation(additionalFeeds: new[]
-                    {relativePath}), packageId: TestPackageId,
+                new PackageLocation(additionalFeeds: new[] {relativePath}),
+                packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
