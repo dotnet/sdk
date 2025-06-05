@@ -411,11 +411,6 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</target>
         <target state="new">EXPRESSION</target>
         <note />
       </trans-unit>
-      <trans-unit id="CmdFileDescription">
-        <source>Path to the file-based program.</source>
-        <target state="new">Path to the file-based program.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CmdForceRestoreOptionDescription">
         <source>Force all dependencies to be resolved even if the last restore was successful.
 This is equivalent to deleting project.assets.json.</source>
@@ -604,6 +599,11 @@ This is equivalent to deleting project.assets.json.</target>
       <trans-unit id="CmdOptionForceDescription">
         <source>Force conversion even if there are malformed directives.</source>
         <target state="new">Force conversion even if there are malformed directives.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdOptionSharedDirectoryNameDescription">
+        <source>Name of the directory where non-entry-point files should be placed.</source>
+        <target state="new">Name of the directory where non-entry-point files should be placed.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
@@ -1027,6 +1027,11 @@ dotnet.config is a name don't translate.</note>
         <target state="new">The target directory already exists: '{0}'</target>
         <note />
       </trans-unit>
+      <trans-unit id="DirectoryMustBeSpecified">
+        <source>Since there are multiple entry points, a directory must be specified rather than a file (and all entry points will be converted together): '{0}'</source>
+        <target state="new">Since there are multiple entry points, a directory must be specified rather than a file (and all entry points will be converted together): '{0}'</target>
+        <note>{0} is file path</note>
+      </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
         <source>Disables evaluating project context using MSBuild.</source>
         <target state="new">Disables evaluating project context using MSBuild.</target>
@@ -1080,6 +1085,11 @@ Make the profile names distinct.</source>
 {0}
 Make the profile names distinct.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="EntryPointInNestedFolder">
+        <source>Entry-point files cannot be in nested folders: '{0}'</source>
+        <target state="new">Entry-point files cannot be in nested folders: '{0}'</target>
+        <note>{0} is file path</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
@@ -1169,6 +1179,16 @@ Make the profile names distinct.</target>
       <trans-unit id="FailedWithWarnings">
         <source>failed with {0} warning(s)</source>
         <target state="new">failed with {0} warning(s)</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileOrDirectoryArgumentDescription">
+        <source>Path to the file-based program's entry point or directory of multiple entry points.</source>
+        <target state="new">Path to the file-based program's entry point or directory of multiple entry points.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="FileOrDirectoryArgumentName">
+        <source>FILE | DIRECTORY</source>
+        <target state="new">FILE | DIRECTORY</target>
         <note />
       </trans-unit>
       <trans-unit id="ForTest">
@@ -1406,10 +1426,10 @@ Make the profile names distinct.</target>
         <target state="new">The working directory used by the command to execute.</target>
         <note />
       </trans-unit>
-      <trans-unit id="InvalidFilePath">
-        <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
-        <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
-        <note>{Locked=".cs"}</note>
+      <trans-unit id="InvalidFileOrDirectoryPath">
+        <source>The specified path must be an existing file with '.cs' extension or an existing directory: '{0}'</source>
+        <target state="new">The specified path must be an existing file with '.cs' extension or an existing directory: '{0}'</target>
+        <note>{Locked=".cs"}. {0} is file or directory path</note>
       </trans-unit>
       <trans-unit id="InvalidOptionCombination">
         <source>Cannot combine option '{0}' and '{1}'.</source>
@@ -1642,6 +1662,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="new">Do not build project-to-project references and only build the specified project.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NoEntryPoints">
+        <source>Cannot convert, no entry points found: '{0}'</source>
+        <target state="new">Cannot convert, no entry points found: '{0}'</target>
+        <note>{0} is directory path</note>
+      </trans-unit>
       <trans-unit id="NoHistoryFound">
         <source>No workload history found</source>
         <target state="new">No workload history found</target>
@@ -1686,6 +1711,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>No tools were restored.</source>
         <target state="new">No tools were restored.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="NoTopLevelStatements">
+        <source>The entry point of a file-based program must have top-level statements: '{0}'</source>
+        <target state="new">The entry point of a file-based program must have top-level statements: '{0}'</target>
+        <note>{0} is file path</note>
       </trans-unit>
       <trans-unit id="NoTrustWithParentPID">
         <source>Failed to establish a trust relationship with parent process ({0}).</source>
@@ -2640,6 +2670,11 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <source>The --sdk-version option is no longer supported for this command.</source>
         <target state="new">The --sdk-version option is no longer supported for this command.</target>
         <note>{Locked="--sdk-version"}</note>
+      </trans-unit>
+      <trans-unit id="SharedDirectoryNameConflicts">
+        <source>Cannot put shared files into directory '{0}' because it conflicts with one of the entry points. Use option '--shared-directory-name' to specify a different value.</source>
+        <target state="new">Cannot put shared files into directory '{0}' because it conflicts with one of the entry points. Use option '--shared-directory-name' to specify a different value.</target>
+        <note>{Locked="--shared-directory-name"}. {0} is file name without extension</note>
       </trans-unit>
       <trans-unit id="ShouldInstallAWorkloadSet">
         <source>Workloads are configured to install and update using workload versions, but none were found. Run "dotnet workload restore" to install a workload version.</source>

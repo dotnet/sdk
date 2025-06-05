@@ -666,9 +666,10 @@ _testhost() {
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
                                             '--force[Force conversion even if there are malformed directives.]' \
+                                            '--shared-directory-name=[Name of the directory where non-entry-point files should be placed.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            ':file -- Path to the file-based program.: ' \
+                                            ':FILE | DIRECTORY -- Path to the file-based program'\''s entry point or directory of multiple entry points.: ' \
                                             && ret=0
                                         ;;
                                 esac
