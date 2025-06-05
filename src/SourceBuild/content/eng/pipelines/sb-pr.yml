@@ -1,18 +1,11 @@
-# This yml is used by these PR pipelines and triggers:
-# NOTE: the triggers are defined in the Azure DevOps UI as they are too complex
-#
-# - dotnet-source-build (public)
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=240
-#   - PR: ultralite build
-#   - CI: release/* only, every batched commit, full build
-#   - Schedule: main only, full build
-#
-# - dotnet-unified-build (public)
-#   https://dev.azure.com/dnceng-public/public/_build?definitionId=278
-#   - PR: lite build
-#   - CI: release/* only, every batched commit, full build
-#   - Schedule: main only, full build
-#
+# This is the non-1ES PR pipeline for dotnet/dotnet
+# https://dev.azure.com/dnceng-public/public/_build?definitionId=240
+trigger: none
+pr:
+  branches:
+    include:
+    - release/9.0.3xx
+    - internal/release/9.0.3xx
 
 variables:
 # enable source-only build for pipelines that contain the -source-build string
