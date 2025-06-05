@@ -327,6 +327,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 </packageSources>
                 </configuration>";
 
+            fileSystem.Directory.CreateDirectory(store.Root.Value);
             fileSystem.File.WriteAllText(Path.Combine(store.Root.Value, "NuGet.config"), nugetConfigContents);
 
             Log.WriteLine("Root path: " + store.Root.Value);
