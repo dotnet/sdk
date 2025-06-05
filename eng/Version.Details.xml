@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.314">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.315">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>99e2f2e1cbdc89187f45851e09adeb4d3a7483fa</Sha>
+      <Sha>6af4b92156dae4b43b081d9e080908dd9cdfeb35</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.314-servicing.25266.2">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.315-servicing.25304.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>99e2f2e1cbdc89187f45851e09adeb4d3a7483fa</Sha>
+      <Sha>6af4b92156dae4b43b081d9e080908dd9cdfeb35</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.314-servicing.25266.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.315-servicing.25304.1">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>99e2f2e1cbdc89187f45851e09adeb4d3a7483fa</Sha>
+      <Sha>6af4b92156dae4b43b081d9e080908dd9cdfeb35</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.16">
@@ -354,9 +354,9 @@
       <Sha>16bcad1c13be082bd52ce178896d1119a73081a9</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25210.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25269.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>6ae07097c0f03eb59c8a581faaedcc3f2e4cc42c</Sha>
+      <Sha>cee2d057118e3ad3c58a72a23271ad88b87d4d4d</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25064.1">
