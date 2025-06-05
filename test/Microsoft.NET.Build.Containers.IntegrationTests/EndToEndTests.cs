@@ -1461,7 +1461,7 @@ public class EndToEndTests : IDisposable
         BuiltImage builtImage = imageBuilder.Build();
 
         // Load the image into the local registry
-        var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net8ImageTag);
+        var sourceReference = new SourceImageReference(registry, "some_random_image", DockerRegistryManager.Net9ImageTag, null);
         string archivePath = Path.Combine(TestSettings.TestArtifactsDirectory, nameof(CheckDownloadErrorMessageWhenSourceRepositoryThrows));
         var destinationReference = new DestinationImageReference(new ArchiveFileRegistry(archivePath), NewImageName(), new[] { rid });
 
