@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             return packageOutputPath;
         }
 
-        void RemovePackageFromGlobalPackages(ITestOutputHelper log, string packageId, string version)
+        public void RemovePackageFromGlobalPackages(ITestOutputHelper log, string packageId, string version)
         {
             var result = new DotnetCommand(log, "nuget", "locals", "global-packages", "--list")
                 .Execute();

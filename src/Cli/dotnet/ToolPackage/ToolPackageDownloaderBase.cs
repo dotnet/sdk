@@ -123,7 +123,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             verbosity,
             restoreActionConfig);
 
-        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds);
+        var packageSourceLocation = new PackageSourceLocation(packageLocation.NugetConfig, packageLocation.RootConfigDirectory, packageLocation.SourceFeedOverrides, packageLocation.AdditionalFeeds, _currentWorkingDirectory);
 
         NuGetVersion packageVersion = nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
 
@@ -349,7 +349,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             nugetConfig: packageLocation.NugetConfig,
             rootConfigDirectory: packageLocation.RootConfigDirectory,
             sourceFeedOverrides: packageLocation.SourceFeedOverrides,
-            additionalSourceFeeds: packageLocation.AdditionalFeeds);
+            additionalSourceFeeds: packageLocation.AdditionalFeeds,
+            basePath: _currentWorkingDirectory);
 
         return nugetPackageDownloader.GetBestPackageVersionAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
     }

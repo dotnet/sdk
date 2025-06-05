@@ -305,8 +305,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenARelativeSourcePathInstallSucceeds(bool testMockBehaviorIsInSync)
         {
-            new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
-                .Execute().Should().Pass();
+            //this.ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
 
             var source = GetTestLocalFeedPath();
 
@@ -316,7 +315,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             var relativePath = Path.GetRelativePath(store.Root.Value, source);
 
+            Log.WriteLine("Root path: " + store.Root.Value);
             Log.WriteLine("Relative path: " + relativePath);
+            Log.WriteLine("Current Directory: " + Directory.GetCurrentDirectory());
 
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[]

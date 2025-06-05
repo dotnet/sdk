@@ -91,7 +91,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         var tempDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
         var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
         var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
-        var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
+        var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption, basePath: _currentWorkingDirectory);
         restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
             NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
