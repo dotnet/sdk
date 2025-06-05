@@ -94,14 +94,12 @@ internal sealed class ImageBuilder
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
-        string manifestStr = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString(escapeOptions) ?? "";
-
         return new BuiltImage()
         {
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            Manifest = manifestStr,
+            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString(escapeOptions) ?? "",
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
             Layers = _manifest.Layers
