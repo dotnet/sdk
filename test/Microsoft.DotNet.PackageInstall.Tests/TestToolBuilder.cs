@@ -74,7 +74,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     Directory.Delete(targetDirectory, true);
                 }
-                
+
+                Directory.CreateDirectory(Path.GetDirectoryName(targetDirectory)!);
+
                 Directory.Move(testAssetProjectDirectory, targetDirectory);
             }
 
@@ -127,7 +129,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             if (Directory.Exists(packagePathInGlobalPackages))
             {
-                Directory.Delete(packagePathInGlobalPackages);
+                Directory.Delete(packagePathInGlobalPackages, true);
             }            
         }
 
