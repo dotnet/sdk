@@ -1,12 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics.Metrics;
 using System.Diagnostics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 using Moq;
 using NuGet.Packaging.Core;
 using System.Net;
@@ -615,7 +616,7 @@ public class DefineStaticWebAssetEndpointsTest
             ]);
     }
 
-    private ITaskItem CreateCandidate(
+    private static ITaskItem CreateCandidate(
         string itemSpec,
         string sourceId,
         string sourceType,
@@ -658,7 +659,7 @@ public class DefineStaticWebAssetEndpointsTest
         return result.ToTaskItem();
     }
 
-    private TaskItem CreateContentMapping(string pattern, string contentType)
+    private static TaskItem CreateContentMapping(string pattern, string contentType)
     {
         return new TaskItem(contentType, new Dictionary<string, string>
         {
@@ -667,7 +668,7 @@ public class DefineStaticWebAssetEndpointsTest
         });
     }
 
-    private ITaskItem CreateCandidateEndpoint(
+    private static ITaskItem CreateCandidateEndpoint(
         string route,
         string assetFile,
         StaticWebAssetEndpointResponseHeader[] responseHeaders = null,

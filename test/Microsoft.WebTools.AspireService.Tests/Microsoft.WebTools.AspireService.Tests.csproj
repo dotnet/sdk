@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.WebTools.AspireServer.UnitTests</RootNamespace>
-    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <EnableDefaultScopedCssItems>false</EnableDefaultScopedCssItems>
   </PropertyGroup>

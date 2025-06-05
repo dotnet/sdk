@@ -122,9 +122,9 @@
         <target state="translated">无法移除 "{2}" 的类型参数 "{1}" 上的约束 "{0}"。</target>
         <note />
       </trans-unit>
-      <trans-unit id="CannotRemoveVirtualFromMember">
-        <source>Cannot remove virtual keyword from member '{0}'.</source>
-        <target state="translated">无法从成员“{0}”中删除虚拟关键字。</target>
+      <trans-unit id="CannotRemoveVirtualOrAbstractFromMember">
+        <source>Cannot remove '{0}' keyword from member '{1}'.</source>
+        <target state="new">Cannot remove '{0}' keyword from member '{1}'.</target>
         <note />
       </trans-unit>
       <trans-unit id="ElementShouldNotBeNullAtIndex">
@@ -145,11 +145,6 @@
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">{0} 索引应在 0 到 {1} (含)范围内。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="MatchingAssemblyNotFound">
-        <source>Could not find matching assembly: '{0}' in any of the search directories.</source>
-        <target state="translated">在任何搜索目录中都找不到匹配的程序集“{0}”。</target>
         <note />
       </trans-unit>
       <trans-unit id="MemberExistsOnLeft">

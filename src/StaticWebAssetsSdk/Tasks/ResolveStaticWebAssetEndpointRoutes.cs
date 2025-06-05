@@ -1,9 +1,9 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+#nullable disable
+
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -18,7 +18,7 @@ public class ResolveStaticWebAssetEndpointRoutes : Task
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints);
-        var assets = Assets.Select(StaticWebAsset.FromTaskItem).ToDictionary(a => a.Identity, a => a);
+        var assets = StaticWebAsset.ToAssetDictionary(Assets);
 
         foreach (var endpoint in endpoints)
         {
