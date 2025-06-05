@@ -88,17 +88,13 @@ internal sealed class ImageBuilder
             Layers = _manifest.Layers
         };
 
-         var nullIgnoreOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
         // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
         var escapeOptions = new JsonSerializerOptions
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
-        string manifestStr = JsonSerializer.SerializeToNode(newManifest, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
+        string manifestStr = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString(escapeOptions) ?? "";
 
         return new BuiltImage()
         {
