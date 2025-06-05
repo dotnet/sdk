@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             string getTestLocalFeedPath = GetTestLocalFeedPath();
             string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
-            Log.WriteLine(relativePath);
+            Log.WriteLine("Relative path: " + relativePath);
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),

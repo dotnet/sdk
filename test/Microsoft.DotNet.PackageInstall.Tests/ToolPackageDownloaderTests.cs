@@ -314,9 +314,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 useMock: testMockBehaviorIsInSync,
                 feeds: GetMockFeedsForSource(source));
 
+            var relativePath = Path.GetRelativePath(store.Root.Value, source);
+
+            Log.WriteLine("Relative path: " + relativePath);
+
             var package = downloader.InstallPackage(
                 new PackageLocation(additionalFeeds: new[]
-                    {Path.GetRelativePath(Directory.GetCurrentDirectory(), source)}), packageId: TestPackageId,
+                    {relativePath}), packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
