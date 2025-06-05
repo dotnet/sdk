@@ -45,9 +45,7 @@ parameters:
     container: centosStream9
     helixTargetContainer: $(helixTargetContainerPrefix)centos-stream9-helix
     osProperties: /p:OSName=linux
-    # Skipping all container-based testing for now.
-    # See: https://github.com/dotnet/sdk/issues/40935
-    runTests: false
+    runTests: true
   - categoryName: ContainerBased
     container: debian12Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)debian-11-helix-amd64
