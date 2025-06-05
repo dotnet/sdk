@@ -64,8 +64,8 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine322WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-WithNode
+      alpine322:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
@@ -215,7 +215,7 @@ extends:
               runTests: false
             ### MUSL ###
             - categoryName: Musl
-              container: alpine322WithNode
+              container: alpine322
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
