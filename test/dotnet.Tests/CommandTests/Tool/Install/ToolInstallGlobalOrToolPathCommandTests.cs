@@ -874,7 +874,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 ToolCommandName = ToolCommandName
             };
 
-            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/{toolTargetRuntimeIdentifier}/{ToolCommandName}.exe"] = tokenToIdentifyPackagedShim;
+            mockPackage.AdditionalFiles[$"tools/{ToolPackageDownloaderMock2.DefaultTargetFramework}/any/shims/{toolTargetRuntimeIdentifier}/{ToolCommandName}{EnvironmentInfo.ExecutableExtension}"] = tokenToIdentifyPackagedShim;
 
             _toolPackageDownloader.AddMockPackage(mockPackage);
 
