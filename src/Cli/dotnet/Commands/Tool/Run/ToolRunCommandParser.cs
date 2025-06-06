@@ -4,9 +4,6 @@
 #nullable disable
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
@@ -20,7 +17,7 @@ internal static class ToolRunCommandParser
 
     public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
     {
-        Description = "arguments forwarded to the tool"
+        Description = CliCommandStrings.ToolRunArguementsDescription
     };
 
     public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
@@ -42,7 +39,6 @@ internal static class ToolRunCommandParser
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);
-
         command.Options.Add(RollForwardOption);
 
         command.SetAction((parseResult) => new ToolRunCommand(parseResult).Execute());

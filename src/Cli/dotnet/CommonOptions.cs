@@ -19,13 +19,6 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         };
 
-    public static Option<bool> NoOption =
-        new DynamicOption<bool>("--no")
-        {
-            Description = CliStrings.NoOptionDescription,
-            Arity = ArgumentArity.Zero
-        };
-
     public static Option<string[]> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
         new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")

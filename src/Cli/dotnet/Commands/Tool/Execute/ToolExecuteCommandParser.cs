@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
         public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
         {
-            Description = "arguments forwarded to the tool"
+            Description = CliCommandStrings.ToolRunArguementsDescription
         };
 
         public static readonly Option<string> VersionOption = ToolInstallCommandParser.VersionOption;
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
         private static Command ConstructCommand()
         {
-            Command command = new("execute", "Execute a tool command from source");
+            Command command = new("execute", CliCommandStrings.ToolExecuteCommandDescription);
 
             command.Aliases.Add("exec");
 

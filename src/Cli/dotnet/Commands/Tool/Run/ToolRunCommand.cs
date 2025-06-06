@@ -44,6 +44,4 @@ internal class ToolRunCommand(
         var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();
         return result.ExitCode;
     }
-
-
 }

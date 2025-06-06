@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ToolPackage;
+using Microsoft.DotNet.Cli.Utils;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -28,9 +29,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
         public override int Execute()
         {
-            if (!UserAgreedToRunFromSource() || _packageToolIdentityArgument is null)
+            if (_packageToolIdentityArgument is null)
             {
+                // System.CommandLine will throw an error if the argument is not provided, but we can still check here for clarity.
                 return 1;
+            }
+
+            if (!UserAgreedToRunFromSource())
+            {
+                throw new GracefulException(CliCommandStrings.ToolRunFromSourceUserConfirmationFailed, isUserError: true);
             }
 
             if (_allowRollForward)
