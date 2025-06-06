@@ -94,10 +94,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [SkipOnPlatform(TestPlatforms.AnyUnix, "https://github.com/dotnet/runtime/issues/116351")]
         [CombinatorialData]
         public async Task NewFileInNewDirectory(bool usePolling, bool nested)
         {
+            if (!usePolling && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
+            {
+                // Skip test on Unix:
+                // https://github.com/dotnet/runtime/issues/116351
+                return;
+            }
+
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
             var dir1 = Path.Combine(dir, "dir1");
