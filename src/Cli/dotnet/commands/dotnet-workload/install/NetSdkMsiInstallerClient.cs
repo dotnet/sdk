@@ -258,58 +258,71 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        // advertisingPackagePath is the path to the workload set MSI nupkg in the advertising package.
-        public string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath)
-        {
-            var pathToReturn = string.Empty;
-            context.Run(
-                action: () =>
-                {
-                    pathToReturn = ModifyWorkloadSet(advertisingPackagePath, InstallAction.Install);
-                },
-                rollback: () =>
-                {
-                    ModifyWorkloadSet(advertisingPackagePath, InstallAction.Uninstall);
-                });
-
-            return pathToReturn;
-        }
-
-        private string ModifyWorkloadSet(string advertisingPackagePath, InstallAction requestedAction)
+        public WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache)
         {
             ReportPendingReboot();
 
-            // Resolve the package ID for the manifest payload package
-            var featureBand = Path.GetFileName(Path.GetDirectoryName(advertisingPackagePath));
-            var workloadSetVersion = File.ReadAllText(Path.Combine(advertisingPackagePath, Constants.workloadSetVersionFileName));
-            string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), new SdkFeatureBand(featureBand)).ToString();
-            string msiPackageVersion = WorkloadManifestUpdater.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion);
+            var (msi, msiPackageId, installationFolder) = GetWorkloadSetPayload(workloadSetVersion, offlineCache);
+
+            context.Run(
+                action: () =>
+                {
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Install, installedVersion);
+
+                    if (plannedAction == InstallAction.Install)
+                    {
+                        Elevate();
+
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.AddDependent, msi.Manifest.ProviderKeyName, _dependent);
+                    }
+                },
+                rollback: () =>
+                {
+                    DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
+                    InstallAction plannedAction = PlanPackage(msi, state, InstallAction.Uninstall, installedVersion);
+
+                    if (plannedAction == InstallAction.Uninstall)
+                    {
+                        Elevate();
+
+                        // Update the reference count against the MSI.
+                        UpdateDependent(InstallRequestType.RemoveDependent, msi.Manifest.ProviderKeyName, _dependent);
+
+                        ExecutePackage(msi, plannedAction, msiPackageId);
+                    }
+                });
+
+            return WorkloadSet.FromWorkloadSetFolder(installationFolder, workloadSetVersion, _sdkFeatureBand);
+        }
+
+        (MsiPayload msi, string msiPackageId, string installationFolder) GetWorkloadSetPayload(string workloadSetVersion, DirectoryPath? offlineCache)
+        {
+            SdkFeatureBand workloadSetFeatureBand;
+            string msiPackageVersion = WorkloadSet.WorkloadSetVersionToWorkloadSetPackageVersion(workloadSetVersion, out workloadSetFeatureBand);
+            string msiPackageId = GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), workloadSetFeatureBand).ToString();
 
             Log?.LogMessage($"Resolving Microsoft.NET.Workloads ({workloadSetVersion}) to {msiPackageId} ({msiPackageVersion}).");
 
             // Retrieve the payload from the MSI package cache.
-            MsiPayload msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, null);
-            VerifyPackage(msi);
-            DetectState state = DetectPackage(msi.ProductCode, out Version installedVersion);
-
-            InstallAction plannedAction = PlanPackage(msi, state, requestedAction, installedVersion);
-
-            if (plannedAction != InstallAction.None)
+            MsiPayload msi;
+            try
             {
-                Elevate();
-
-                ExecutePackage(msi, plannedAction, msiPackageId);
-
-                // Update the reference count against the MSI.
-                UpdateDependent(
-                    plannedAction == InstallAction.Uninstall ?
-                        InstallRequestType.RemoveDependent :
-                        InstallRequestType.AddDependent,
-                    msi.Manifest.ProviderKeyName,
-                    _dependent);
+                msi = GetCachedMsiPayload(msiPackageId, msiPackageVersion, offlineCache);
             }
+            //  Unwrap AggregateException caused by switch from async to sync
+            catch (Exception ex) when (ex is NuGetPackageNotFoundException || ex.InnerException is NuGetPackageNotFoundException)
+            {
+                throw new GracefulException(string.Format(Update.LocalizableStrings.WorkloadVersionRequestedNotFound, workloadSetVersion), ex is NuGetPackageNotFoundException ? ex : ex.InnerException);
+            }
+            VerifyPackage(msi);
 
-            return Path.Combine(DotNetHome, "sdk-manifests", _sdkFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+            string installationFolder = Path.Combine(DotNetHome, "sdk-manifests", workloadSetFeatureBand.ToString(), "workloadsets", workloadSetVersion);
+
+            return (msi, msiPackageId, installationFolder);
         }
 
         /// <summary>
@@ -451,18 +464,18 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
 
         public IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository() => RecordRepository;
 
-        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false)
+        public void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null)
         {
             try
             {
                 transactionContext.Run(
                     action: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache, isRollback);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache);
                     },
                     rollback: () =>
                     {
-                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, isRollback: true, action: InstallAction.Uninstall);
+                        InstallWorkloadManifestImplementation(manifestUpdate, offlineCache: null, action: InstallAction.Uninstall);
                     });
             }
             catch (Exception e)
@@ -472,14 +485,14 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, bool isRollback = false, InstallAction action = InstallAction.Install)
+        void InstallWorkloadManifestImplementation(ManifestVersionUpdate manifestUpdate, DirectoryPath? offlineCache = null, InstallAction action = InstallAction.Install)
         {
             ReportPendingReboot();
 
             // Rolling back a manifest update after a successful install is essentially a downgrade, which is blocked so we have to
             // treat it as a special case and is different from the install failing and rolling that back, though depending where the install
             // failed, it may have removed the old product already.
-            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}, rollback: {isRollback}.");
+            Log?.LogMessage($"Installing manifest: Id: {manifestUpdate.ManifestId}, version: {manifestUpdate.NewVersion}, feature band: {manifestUpdate.NewFeatureBand}.");
 
             // Resolve the package ID for the manifest payload package
             string msiPackageId = GetManifestPackageId(manifestUpdate.ManifestId, new SdkFeatureBand(manifestUpdate.NewFeatureBand)).ToString();
@@ -1081,10 +1094,11 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
             }
         }
 
-        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode)
+        void IInstaller.UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode)
         {
             UpdateInstallMode(sdkFeatureBand, newMode);
-            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newMode ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests));
+            string newModeString = newMode == null ? "<null>" : newMode.Value ? WorkloadConfigCommandParser.UpdateMode_WorkloadSet : WorkloadConfigCommandParser.UpdateMode_Manifests;
+            Reporter.WriteLine(string.Format(LocalizableStrings.UpdatedWorkloadMode, newModeString));
         }
     }
 }
