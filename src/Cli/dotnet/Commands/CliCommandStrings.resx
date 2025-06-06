@@ -1975,10 +1975,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolInstallManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
   </data>
-  <data name="ToolInstallNoManifestGuide" xml:space="preserve">
-    <value>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</value>
-  </data>
   <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
     <value>NuGet configuration file '{0}' does not exist.</value>
   </data>
