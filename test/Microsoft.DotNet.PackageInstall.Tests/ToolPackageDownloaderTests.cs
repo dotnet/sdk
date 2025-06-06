@@ -353,6 +353,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [InlineData(true)]
         public void GivenAUriSourceInstallSucceeds(bool testMockBehaviorIsInSync)
         {
+            //  CI seems to be getting an old version of the global.tool.console.demo package which targets .NET Core 2.1.  This may fix that
+            ToolBuilder.RemovePackageFromGlobalPackages(Log, TestPackageId.ToString(), TestPackageVersion);
+
             var source = GetTestLocalFeedPath();
 
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem) = Setup(
