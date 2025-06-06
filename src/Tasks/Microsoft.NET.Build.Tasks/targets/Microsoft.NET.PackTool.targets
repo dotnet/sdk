@@ -67,8 +67,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
     <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
       <ToolEntryPoint>$(TargetFileName)</ToolEntryPoint>
-      <!-- TODO: What property to use for single file (non AOT) or other modes? -->
-      <ToolEntryPoint Condition=" '$(PublishAot)' == 'true' ">$([System.IO.Path]::GetFileName($(NativeBinary)))</ToolEntryPoint>
+      <ToolEntryPoint Condition=" '$(UseAppHost)' == 'true' ">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
     </PropertyGroup>
 
     <PropertyGroup Condition="'@(ToolPackageRuntimeIdentifier)' != '' And '$(RuntimeIdentifier)' != ''">
