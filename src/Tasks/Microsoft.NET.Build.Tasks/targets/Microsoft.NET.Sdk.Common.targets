@@ -54,7 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
-      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(ToolPackageRuntimeIdentifiers)' != ''">DotnetToolRidPackage</_ToolPackageType>
       <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
     </PropertyGroup>
 

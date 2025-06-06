@@ -67,11 +67,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
     <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
       <ToolEntryPoint>$(TargetFileName)</ToolEntryPoint>
-      <ToolEntryPoint Condition=" '$(UseAppHost)' == 'true' ">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
+      <ToolEntryPoint Condition="'$(RuntimeIdentifier)' != '' and '$(UseAppHost)' == 'true' ">$(AssemblyName)$(_NativeExecutableExtension)</ToolEntryPoint>
     </PropertyGroup>
 
     <!-- inner-build tool packages get a RID suffix -->
-    <PropertyGroup Condition="'$(ToolPackageRuntimeIdentifier)' != '' And '$(RuntimeIdentifier)' != ''">
+    <PropertyGroup Condition="'$(ToolPackageRuntimeIdentifiers)' != '' And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
 
@@ -132,7 +132,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
     <ItemGroup>
-      <_ToolPackageRuntimeIdentifier Include="$(ToolRuntimeIdentifier)" />
+      <_ToolPackageRuntimeIdentifier Include="$(ToolRuntimeIdentifiers)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolEntryPoint)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandName)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandRunner)" />
