@@ -75,23 +75,14 @@ internal class ToolPackageInstance : IToolPackage
         }
         catch (Exception ex) when (ex is UnauthorizedAccessException || ex is IOException)
         {
-            throw new ToolPackageException(
-                string.Format(
-                    CliStrings.FailedToReadNuGetLockFile,
-                    Id,
-                    ex.Message),
-                ex);
+            throw new ToolPackageException(string.Format(CliStrings.FailedToReadNuGetLockFile, Id, ex.Message), ex);
         }
 
         var library = FindLibraryInLockFile(lockFile);
         if (library == null)
         {
             throw new ToolPackageException(
-                string.Format(
-                    //  TODO: Change exception message
-                    CliStrings.FailedToReadNuGetLockFile,
-                    Id,
-                    resolvedAssetsFileNameFullPath));
+                string.Format(CliStrings.FailedToFindLibraryInAssetsFile, Id, resolvedAssetsFileNameFullPath));
         }
 
 

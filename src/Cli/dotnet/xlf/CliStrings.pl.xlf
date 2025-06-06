@@ -369,6 +369,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">{0}: failed to find commandPath {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindLibraryInAssetsFile">
+        <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to find library in NuGet assets file for tool package '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
         <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
@@ -395,8 +400,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadNuGetLockFile">
-        <source>Failed to read NuGet LockFile for tool package '{0}': {1}</source>
-        <target state="new">Failed to read NuGet LockFile for tool package '{0}': {1}</target>
+        <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to read NuGet assets file for tool package '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadPidFile">
