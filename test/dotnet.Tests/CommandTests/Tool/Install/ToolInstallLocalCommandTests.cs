@@ -168,10 +168,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
 
             a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(CliStrings.CannotFindAManifestFile.Substring(0, 25));
+                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
