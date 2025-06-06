@@ -67,6 +67,9 @@ internal class ShellShimRepository(
 
                         if (OperatingSystem.IsWindows())
                         {
+                            //  Generate a batch / .cmd file to call the executable inside the package, and forward all arguments to it.
+                            //  %~dp0 expands to the directory of the batch file, so this will work regardless of the current working directory.
+                            // %* forwards all arguments passed to the batch file to the executable.
                             string batchContent = $"@echo off\r\n\"%~dp0{relativePathToExe}\" %*\r\n";
                             File.WriteAllText(shimPath, batchContent);
                         }

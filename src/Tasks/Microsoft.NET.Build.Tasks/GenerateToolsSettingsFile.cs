@@ -47,7 +47,17 @@ namespace Microsoft.NET.Build.Tasks
 
             if (commandRunner != "dotnet")
             {
-                formatVersion = 2;
+                if (commandRunner == "executable")
+                {
+                    formatVersion = 2;
+                }
+                else
+                {
+                    throw new BuildErrorException(
+                        string.Format(
+                            Strings.UnsupportedToolCommandRunner,
+                            commandRunner));
+                }
             }
 
             XElement runtimeIdentifierPackagesNode = null;
