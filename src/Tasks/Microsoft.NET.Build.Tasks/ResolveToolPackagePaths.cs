@@ -23,6 +23,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string PublishDir { get; set; }
 
+        public string RuntimeIdentifier { get; set; }
+
         [Required]
         public string ToolPackShortTargetFrameworkName { get; set; }
 
@@ -51,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 var shortFrameworkName = ToolPackShortTargetFrameworkName;
 
-                i.SetMetadata("PackagePath", $"tools/{shortFrameworkName}/any/{GetDirectoryPathInRelativePath(relativePath)}");
+                i.SetMetadata("PackagePath", $"tools/{shortFrameworkName}/{RuntimeIdentifier ?? "any"}/{GetDirectoryPathInRelativePath(relativePath)}");
                 result.Add(i);
             }
 

@@ -34,9 +34,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
 
     <!-- set up generation dependencies -->
-    <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);_PublishBuildAlternative</GenerateNuspecDependsOn>
-    <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);$(_PublishNoBuildAlternativeDependsOn)</GenerateNuspecDependsOn>
-    <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+    <!-- inner builds need publish content-->
+    <_PackToolPublishDependency Condition=" '$(RuntimeIdentifier)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
+    <!-- outer build needs to generate RID-specific tool packages, but only if we're not AOT-ing (because we can't do xplat AOT). -->
+    <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
   </PropertyGroup>
   <!--
 
@@ -94,15 +95,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
+      <_PublishFilesRaw Condition="'$(RuntimeIdentifier)' != ''" Include="$(PublishDir)/**/*" />
+      <_PublishFiles Condition="'$(RuntimeIdentifier)' != ''" Include="@(_PublishFilesRaw)">
+        <RelativePath>$([System.IO.Path]::GetRelativePath($(PublishDir), %(Identity)))</RelativePath>
+      </_PublishFiles>
     </ItemGroup>
-
-    <ResolveToolPackagePaths
-      AppHostIntermediatePath="$(AppHostIntermediatePath)"
-      ResolvedFileToPublish="@(ResolvedFileToPublish)"
-      PublishDir="$(PublishDir)"
-      ToolPackShortTargetFrameworkName="$(_ToolPackShortTargetFrameworkName)">
-      <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
-    </ResolveToolPackagePaths>
 
     <PropertyGroup>
       <_ToolRidPath Condition="'$(RuntimeIdentifier)' == ''">any</_ToolRidPath>
@@ -113,8 +110,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
 
-      <TfmSpecificPackageFile Include="@(_ResolvedFileToPublishWithPackagePath)">
-        <PackagePath>%(_ResolvedFileToPublishWithPackagePath.PackagePath)</PackagePath>
+      <TfmSpecificPackageFile Include="@(_PublishFiles)">
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_PublishFiles.RelativePath)</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
