@@ -14,20 +14,26 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-list-package" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-package-list" "1" "2025-05-30" "" ".NET Documentation"
 .hy
-.SH dotnet list package
+.SH dotnet package list
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-list-package - Lists the package references for a project or solution.
+dotnet-package-list - Lists the package references for a project or solution.
+.RS
+.PP
+If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-list-package) instead.
+The \[lq]noun first\[rq] form was introduced in .NET 10.
+For more information, see More consistent command order.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet list [<PROJECT>|<SOLUTION>] package [--config <SOURCE>]
-    [--deprecated]
+dotnet package list [--config <SOURCE>]
+    [--deprecated] [--project [<PROJECT>|<SOLUTION>]]
     [-f|--framework <FRAMEWORK>] [--highest-minor] [--highest-patch]
     [--include-prerelease] [--include-transitive] [--interactive]
     [--outdated] [--source <SOURCE>] [-v|--verbosity <LEVEL>]
@@ -35,14 +41,14 @@ dotnet list [<PROJECT>|<SOLUTION>] package [--config <SOURCE>]
     [--format <console|json>]
     [--output-version <VERSION>]
 
-dotnet list package -h|--help
+dotnet package list -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet list package\f[R] command provides a convenient option to list all NuGet package references for a specific project or a solution.
+The \f[V]dotnet package list\f[R] command provides a convenient option to list all NuGet package references for a specific project or a solution.
 You first need to build the project in order to have the assets needed for this command to process.
-The following example shows the output of the \f[V]dotnet list package\f[R] command for the SentimentAnalysis (https://github.com/dotnet/samples/tree/main/machine-learning/tutorials/SentimentAnalysis) project:
+The following example shows the output of the \f[V]dotnet package list\f[R] command for the SentimentAnalysis (https://github.com/dotnet/samples/tree/main/machine-learning/tutorials/SentimentAnalysis) project:
 .IP
 .nf
 \f[C]
@@ -63,9 +69,9 @@ The packages displaying an \f[V](A)\f[R] right next to their names represent imp
 Use the \f[V]--outdated\f[R] option to find out if there are newer versions available of the packages you\[cq]re using in your projects.
 By default, \f[V]--outdated\f[R] lists the latest stable packages unless the resolved version is also a prerelease version.
 To include prerelease versions when listing newer versions, also specify the \f[V]--include-prerelease\f[R] option.
-To update a package to the latest version, use dotnet add package.
+To update a package to the latest version, use dotnet package add.
 .PP
-The following example shows the output of the \f[V]dotnet list package --outdated --include-prerelease\f[R] command for the same project as the previous example:
+The following example shows the output of the \f[V]dotnet package list --outdated --include-prerelease\f[R] command for the same project as the previous example:
 .IP
 .nf
 \f[C]
@@ -82,7 +88,7 @@ Project \[ga]SentimentAnalysis\[ga] has the following updates to its packages
 .PP
 If you need to find out whether your project has transitive dependencies, use the \f[V]--include-transitive\f[R] option.
 Transitive dependencies occur when you add a package to your project that in turn relies on another package.
-The following example shows the output from running the \f[V]dotnet list package --include-transitive\f[R] command for the HelloPlugin (https://github.com/dotnet/samples/tree/main/core/extensions/AppWithPlugin/HelloPlugin) project, which displays top-level packages and the packages they depend on:
+The following example shows the output from running the \f[V]dotnet package list --include-transitive\f[R] command for the HelloPlugin (https://github.com/dotnet/samples/tree/main/core/extensions/AppWithPlugin/HelloPlugin) project, which displays top-level packages and the packages they depend on:
 .IP
 .nf
 \f[C]
@@ -192,8 +198,9 @@ For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .PP
 Lists packages that have known vulnerabilities.
 Cannot be combined with \f[V]--deprecated\f[R] or \f[V]--outdated\f[R] options.
-Nuget.org is the source of information about vulnerabilities.
-For more information, see Vulnerabilities and How to Scan NuGet Packages for Security Vulnerabilities (https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
+Use the \f[V]<AuditSources>\f[R] property in your configuration file to specify your source of vulnerability data, which is acquired from the VulnerabilityInfo resource.
+If \f[V]<AuditSources>\f[R] is not specified, the specified \f[V]<PackageSources>\f[R] are used to load vulnerability data.
+For more information, see Audit sources and How to scan NuGet packages for security vulnerabilities (https://devblogs.microsoft.com/nuget/how-to-scan-nuget-packages-for-security-vulnerabilities/).
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--format <console|json>\f[B]\f[R]
@@ -223,7 +230,7 @@ List package references of a specific project:
 .IP
 .nf
 \f[C]
-dotnet list SentimentAnalysis.csproj package
+dotnet package list --project SentimentAnalysis.csproj
 \f[R]
 .fi
 .RE
@@ -233,7 +240,7 @@ List package references that have newer versions available, including prerelease
 .IP
 .nf
 \f[C]
-dotnet list package --outdated --include-prerelease
+dotnet package list --outdated --include-prerelease
 \f[R]
 .fi
 .RE
@@ -243,7 +250,7 @@ List package references for a specific target framework:
 .IP
 .nf
 \f[C]
-dotnet list package --framework netcoreapp3.0
+dotnet package list --framework netcoreapp3.0
 \f[R]
 .fi
 .RE
@@ -253,7 +260,7 @@ List package references in machine readable json output format:
 .IP
 .nf
 \f[C]
-dotnet list package --format json
+dotnet package list --format json
 \f[R]
 .fi
 .RE
@@ -263,7 +270,7 @@ List package references for a specific target framework in machine readable json
 .IP
 .nf
 \f[C]
- dotnet list package --framework netcoreapp3.0 --format json
+ dotnet package list --framework netcoreapp3.0 --format json
 \f[R]
 .fi
 .RE
@@ -273,7 +280,7 @@ Save machine readable json output of package references, including transitive de
 .IP
 .nf
 \f[C]
-dotnet list package --include-transitive --vulnerable --format json >> dependencyReport.json
+dotnet package list --include-transitive --vulnerable --format json >> dependencyReport.json
 \f[R]
 .fi
 .RE
@@ -283,7 +290,7 @@ List package references in machine readable json output format with output versi
 .IP
 .nf
 \f[C]
-dotnet list package --format json --output-version 1
+dotnet package list --format json --output-version 1
 \f[R]
 .fi
 .RE
