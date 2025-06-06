@@ -288,16 +288,16 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
             var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
 
-            if (!IsPackageInstalled(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir.Value))
+            if (!IsPackageInstalled(new PackageId(resolvedPackage.Id), packageVersion, packageDownloadDir.Value))
             {
-                DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, resolvedPackage.Version, packageSourceLocation, includeUnlisted: true);
+                DownloadAndExtractPackage(new PackageId(resolvedPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true);
             }
 
-            CreateAssetFile(new PackageId(resolvedPackage.Id), resolvedPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
+            CreateAssetFile(new PackageId(resolvedPackage.Id), packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
         }
     }
 
- 
+
 
     protected void UpdateRuntimeConfig(
         ToolPackageInstance toolPackageInstance

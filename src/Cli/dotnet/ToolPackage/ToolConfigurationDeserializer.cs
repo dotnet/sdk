@@ -67,7 +67,7 @@ internal static class ToolConfigurationDeserializer
                     dotNetCliTool.Commands[0].Runner));
         }
 
-        var ridSpecificPackages = dotNetCliTool.RuntimeIdentifierPackages?.ToDictionary(p => p.RuntimeIdentifier, p => new PackageIdentity(p.Id, new NuGet.Versioning.NuGetVersion(p.Version)))
+        var ridSpecificPackages = dotNetCliTool.RuntimeIdentifierPackages?.ToDictionary(p => p.RuntimeIdentifier, p => new PackageIdentity(p.Id, null))
             .AsReadOnly();
 
         //  Also error out if there are no RID-specific packages and the runner is empty
