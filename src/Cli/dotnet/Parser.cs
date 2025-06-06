@@ -119,7 +119,7 @@ public static class Parser
     // Argument
     public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-    private static Command ConfigureCommandLine(Command rootCommand)
+    private static Command ConfigureCommandLine(RootCommand rootCommand)
     {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
@@ -155,6 +155,9 @@ public static class Parser
 
         // Add argument
         rootCommand.Arguments.Add(DotnetSubCommand);
+
+        // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand);
 
         rootCommand.SetAction(parseResult =>
         {
