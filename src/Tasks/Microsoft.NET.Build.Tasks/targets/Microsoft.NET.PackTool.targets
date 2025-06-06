@@ -103,9 +103,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
     </ResolveToolPackagePaths>
 
+    <PropertyGroup>
+      <_ToolRidPath Condition="'$(RuntimeIdentifier)' == ''">any</_ToolRidPath>
+      <_ToolRidPath Condition="'$(RuntimeIdentifier)' != ''">$(RuntimeIdentifier)</_ToolRidPath>
+    </PropertyGroup>
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(_ResolvedFileToPublishWithPackagePath)">
