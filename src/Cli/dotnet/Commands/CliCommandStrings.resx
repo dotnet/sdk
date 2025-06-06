@@ -2062,6 +2062,9 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
   <data name="ToolRunCommandDescription" xml:space="preserve">
     <value>Run a local tool. Note that this command cannot be used to run a global tool. </value>
   </data>
+  <data name="ToolRunArguementsDescription" xml:space="preserve">
+    <value>Arguments forwarded to the tool</value>
+  </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
   </data>
@@ -2483,11 +2486,17 @@ To display a value, specify the corresponding command-line option without provid
   <data name="ZeroTestsRan" xml:space="preserve">
     <value>Zero tests ran</value>
   </data>
-  <data name="ToolRunFromSourceOptionDescription" xml:space="preserve">
-    <value>Executes a tool from source without permanently installing it. </value>
+  <data name="ToolExecuteCommandDescription" xml:space="preserve">
+    <value>Executes a tool from source without permanently installing it.</value>
+  </data>
+  <data name="ToolExecuteCommandMissingPackageId" xml:space="preserve">
+    <value>Missing package ID</value>
   </data>
   <data name="ToolRunFromSourceUserConfirmationPrompt" xml:space="preserve">
-    <value>Tool not found in the system. Do you want to run it from source? [y/n] </value>
+    <value>Tool not found on the system. Do you want to run it from source? [y/n]</value>
+  </data>
+  <data name="ToolRunFromSourceUserConfirmationFailed" xml:space="preserve">
+    <value>Run from source approval denied by the user</value>
   </data>
   <data name="SolutionAddReferencedProjectsOptionDescription" xml:space="preserve">
     <value>Recursively add projects' ReferencedProjects to solution</value>

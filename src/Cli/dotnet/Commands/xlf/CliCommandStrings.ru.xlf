@@ -2926,6 +2926,16 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="new">Install or manage tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolExecuteCommandDescription">
+        <source>Executes a tool from source without permanently installing it.</source>
+        <target state="new">Executes a tool from source without permanently installing it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolExecuteCommandMissingPackageId">
+        <source>Missing package ID</source>
+        <target state="new">Missing package ID</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallAddSourceOptionDescription">
         <source>Add an additional NuGet package source to use during installation.</source>
         <target state="new">Add an additional NuGet package source to use during installation.</target>
@@ -3151,19 +3161,24 @@ For more reasons, including package naming enforcement, visit https://aka.ms/fai
         <target state="new">Path to the manifest file.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolRunArguementsDescription">
+        <source>Arguments forwarded to the tool</source>
+        <target state="new">Arguments forwarded to the tool</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolRunCommandDescription">
         <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
         <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolRunFromSourceOptionDescription">
-        <source>Executes a tool from source without permanently installing it. </source>
-        <target state="new">Executes a tool from source without permanently installing it. </target>
+      <trans-unit id="ToolRunFromSourceUserConfirmationFailed">
+        <source>Run from source approval denied by the user</source>
+        <target state="new">Run from source approval denied by the user</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRunFromSourceUserConfirmationPrompt">
-        <source>Tool not found in the system. Do you want to run it from source? [y/n] </source>
-        <target state="new">Tool not found in the system. Do you want to run it from source? [y/n] </target>
+        <source>Tool not found on the system. Do you want to run it from source? [y/n]</source>
+        <target state="new">Tool not found on the system. Do you want to run it from source? [y/n]</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
