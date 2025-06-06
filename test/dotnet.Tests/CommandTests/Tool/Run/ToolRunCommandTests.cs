@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }, toolRunCommand._allowRollForward);
 
             result.Should().NotBeNull();
-            result.Args.Should().Contain("--roll-forward", "Major", fakeExecutable.Value);
+            result.Args.Should().ContainAll("--roll-forward", "Major", fakeExecutable.Value);
         }
 
         [Fact]

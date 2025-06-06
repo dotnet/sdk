@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: false
+  default: true
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -64,12 +64,12 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine319WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+      alpine322Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
       fedora39:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
       mariner20CrossArm:
@@ -215,7 +215,7 @@ extends:
               runTests: false
             ### MUSL ###
             - categoryName: Musl
-              container: alpine319WithNode
+              container: alpine322Amd64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -290,15 +290,16 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
-        dependsOn: build
+        dependsOn: []
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
+            isAssetlessBuild: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022

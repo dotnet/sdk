@@ -93,10 +93,8 @@ public partial class OverrideHtmlAssetPlaceholders : Task
                     htmlFilesToRemove.Add(item);
 
                     string outputPath = Path.Combine(OutputPath, FileHasher.HashString(item.ItemSpec) + item.GetMetadata("Extension"));
-                    if (this.PersistFileIfChanged(Encoding.UTF8.GetBytes(outputContent), outputPath))
-                    {
-                        fileWrites.Add(outputPath);
-                    }
+                    this.PersistFileIfChanged(Encoding.UTF8.GetBytes(outputContent), outputPath);
+                    fileWrites.Add(outputPath);
 
                     var newItem = new TaskItem(outputPath, item.CloneCustomMetadata());
                     newItem.RemoveMetadata("OriginalItemSpec");
