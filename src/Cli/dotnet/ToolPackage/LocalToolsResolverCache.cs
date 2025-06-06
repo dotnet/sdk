@@ -33,8 +33,6 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
     {
         EnsureFileStorageExists();
 
-        //  TODO: Save resolved package info here?
-
         foreach (var distinctPackageIdAndRestoredCommandMap in restoredCommandMap.GroupBy(x => x.Key.PackageId))
         {
             PackageId distinctPackageId = distinctPackageIdAndRestoredCommandMap.Key;
@@ -189,6 +187,5 @@ internal class LocalToolsResolverCache : ILocalToolsResolverCache
         public string Name { get; set; }
         public string Runner { get; set; }
         public string PathToExecutable { get; set; }
-        //  TODO: Need resolved package info here
     }
 }

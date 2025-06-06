@@ -28,12 +28,6 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
     private readonly IToolPackageStore _toolPackageStore;
 
-    // The directory that the tool package is returned 
-    protected DirectoryPath _toolReturnPackageDirectory;
-
-    // The directory that the tool asset file is returned
-    protected DirectoryPath _toolReturnJsonParentDirectory;
-
     protected readonly IFileSystem _fileSystem;
 
     // The directory that global tools first downloaded
@@ -68,7 +62,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         _localToolDownloadDir = new DirectoryPath(SettingsUtility.GetGlobalPackagesFolder(settings));
         _currentWorkingDirectory = currentWorkingDirectory;
 
-        _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory()); // PathUtilities.CreateTempSubdirectory());
+        _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory());
         _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!, "RuntimeIdentifierGraph.json");
     }
 

@@ -21,6 +21,7 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public string TargetToRemove { get; set; }
 
+        //  Output needs to be an array so MSBuild won't escape semicolonns
         [Output]
         public string[] UpdatedTargetList { get; private set; }
 

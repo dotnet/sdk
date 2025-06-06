@@ -9,10 +9,6 @@ namespace Microsoft.NET.Build.Tasks
 {
     public class GenerateToolsSettingsFile : TaskBase
     {
-        // bump whenever the format changes such that it will break old consumers
-        //  TODO: Make this version 2 when tool has RID-specific packages?
-        //private static readonly int _formatVersion = 1;
-
         [Required]
         public string EntryPointRelativePath { get; set; }
 
@@ -41,6 +37,7 @@ namespace Microsoft.NET.Build.Tasks
         internal static XDocument GenerateDocument(string entryPointRelativePath, string commandName, string commandRunner, string runtimeIdentifier,
             string toolPackageId, string toolPackageVersion, ITaskItem[] toolPackageRuntimeIdentifiers)
         {
+            // Format version should bump whenever the format changes such that it will break old consumers
             int formatVersion = 1;
 
             if (string.IsNullOrEmpty(commandRunner))

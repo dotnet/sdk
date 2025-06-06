@@ -100,8 +100,6 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
 
-    <!-- TODO: Should we read Version from the corresponding ToolPackageRuntimeIdentifier item, if it's set? -->
-
   </Target>
 
   <Target Name="PackToolImplementation" Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'">

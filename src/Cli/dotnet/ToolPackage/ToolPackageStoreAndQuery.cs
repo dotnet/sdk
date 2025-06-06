@@ -89,10 +89,6 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root, IFileSystem fileSyst
 
         foreach (var subdirectory in _fileSystem.Directory.EnumerateDirectories(packageRootDirectory.Value))
         {
-            // TODO: How to handle redirected RID-specific packages?
-            //  Probably we can restore both priamry and RID-specific packages under the same versioned folder,
-            //  for example .dotnet\tools\.store\microsoft.dotnet-interactive\1.0.415202
-            //  Probably the RID-specific package assets file can be stored under a different name, such as project.assets.<RID>.json
             yield return new ToolPackageInstance(id: packageId,
                 version: NuGetVersion.Parse(Path.GetFileName(subdirectory)),
                 packageDirectory: new DirectoryPath(subdirectory),

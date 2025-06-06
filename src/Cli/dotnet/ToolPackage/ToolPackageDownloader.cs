@@ -177,7 +177,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         managedCriteria.Add(standardCriteria);
 
         //  Create asset file
-        //  TODO: What about DotnetToolRidPackage type?
+        //  Note that we know that the package type for the lock file is DotnetTool because we just set it to that.
+        //  This if statement is still here because this mirrors code in NuGet for restore so maybe it will be easier to keep in sync if need be
         if (lockFileLib.PackageType.Contains(PackageType.DotnetTool))
         {
             AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
