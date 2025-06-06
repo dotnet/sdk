@@ -18,16 +18,17 @@ internal static class ToolListCommandParser
         Arity = ArgumentArity.ZeroOrOne,
     };
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolListGlobalOptionDescription);
 
-    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolListLocalOptionDescription);
 
-    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolListToolPathOptionDescription);
 
     public static readonly Option<ToolListOutputFormat> ToolListFormatOption = new("--format")
     {
         Arity = ArgumentArity.ZeroOrOne,
         DefaultValueFactory = _ => ToolListOutputFormat.table,
+        Description = CliCommandStrings.ToolListFormatOptionDescription
     };
 
     private static readonly Command Command = ConstructCommand();
@@ -42,10 +43,10 @@ internal static class ToolListCommandParser
         Command command = new("list", CliCommandStrings.ToolListCommandDescription);
 
         command.Arguments.Add(PackageIdArgument);
-        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolListGlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolListLocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolListToolPathOptionDescription));
-        command.Options.Add(ToolListFormatOption.WithHelpDescription(command, CliCommandStrings.ToolListFormatOptionDescription));
+        command.Options.Add(GlobalOption);
+        command.Options.Add(LocalOption);
+        command.Options.Add(ToolPathOption);
+        command.Options.Add(ToolListFormatOption);
 
         command.SetAction((parseResult) => new ToolListCommand(parseResult).Execute());
 
