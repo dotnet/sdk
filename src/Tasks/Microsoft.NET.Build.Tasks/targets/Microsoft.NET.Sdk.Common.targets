@@ -54,7 +54,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           BeforeTargets="GenerateNuspec">
 
     <PropertyGroup>
-      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
       <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
     </PropertyGroup>
 
@@ -75,7 +75,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
     -->
-    
+
     <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
       <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
     </AddPackageType>
