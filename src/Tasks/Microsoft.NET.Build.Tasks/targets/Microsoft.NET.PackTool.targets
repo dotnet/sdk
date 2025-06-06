@@ -15,8 +15,6 @@ Copyright (c) .NET Foundation. All rights reserved.
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolveToolPackagePaths"
-            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
       AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
