@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
@@ -718,5 +720,5 @@ public class StaticWebAssetPathPatternTest
         Assert.Equal(expected, routePatterns);
     }
 
-    private StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
+    private static StaticWebAssetTokenResolver CreateTestResolver(Dictionary<string, string> additionalTokens = null) => new(additionalTokens);
 }
