@@ -6,8 +6,8 @@ function InitializeCustomSDKToolset {
   fi
 
   # The following frameworks and tools are used only for testing.
-  # Do not attempt to install them in product build.
-  if [[ $product_build == true ]]; then
+  # Do not attempt to install them when building in the VMR.
+  if [[ $from_vmr == true ]]; then
     return
   fi
 
