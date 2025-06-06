@@ -44,6 +44,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="SetDotnetToolPackageType"
+          Condition=" '$(PackAsTool)' == 'true' "
+          BeforeTargets="GenerateNuspec">
+
+    <PropertyGroup>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
+    </PropertyGroup>
+
+
     <!--
     PackageType is semicolon-delimited, case-insensitive, with an optional version.
 
@@ -60,11 +75,12 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
     -->
-    <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';dotnettool;')) and !$(_PaddedPackageType.Contains(';dotnettool,')) ">DotnetTool;$(PackageType)</PackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
+    
+    <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+      <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
+    </AddPackageType>
+
+  </Target>
 
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>

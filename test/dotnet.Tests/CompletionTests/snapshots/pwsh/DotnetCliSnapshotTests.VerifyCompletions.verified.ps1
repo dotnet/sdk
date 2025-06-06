@@ -557,6 +557,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
                 [CompletionResult]::new('--use-current-runtime', '--use-current-runtime', [CompletionResultType]::ParameterName, "Use current runtime as the target runtime.")
                 [CompletionResult]::new('--use-current-runtime', '--ucr', [CompletionResultType]::ParameterName, "Use current runtime as the target runtime.")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to build for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to build for.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
