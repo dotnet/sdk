@@ -333,8 +333,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             var bestRuntimeIdentifier = Microsoft.NET.Build.Tasks.NuGetUtils.GetBestMatchingRid(runtimeGraph, RuntimeInformation.RuntimeIdentifier, toolConfiguration.RidSpecificPackages.Keys, out bool wasInGraph);
             if (bestRuntimeIdentifier == null)
             {
-                // no need to throw here - as long as we're packaging the main RID-agnostic package we can still work cross-platform.
-                return;
+                throw new ToolPackageException(string.Format(CliStrings.ToolUnsupportedRuntimeIdentifier, RuntimeInformation.RuntimeIdentifier,
+                    string.Join(" ", toolConfiguration.RidSpecificPackages.Keys)));
             }
 
             var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
