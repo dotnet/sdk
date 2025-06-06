@@ -53,7 +53,7 @@ parameters:
     runTests: true
   - categoryName: ContainerBased
     container: alpine322Amd64
-    helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.22-amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)alpine-3.22-helix-amd64
     runtimeIdentifier: linux-musl-x64
     # Use HostOSName when running on alpine.
     osProperties: /p:HostOSName=linux-musl
