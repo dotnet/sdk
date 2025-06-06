@@ -32,6 +32,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
+
+    <!-- set up generation dependencies -->
+    <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);_PublishBuildAlternative</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);$(_PublishNoBuildAlternativeDependsOn)</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
   </PropertyGroup>
   <!--
 
@@ -59,10 +64,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="SetPackToolProperties"
           BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
-    <PropertyGroup>
-      <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);_PublishBuildAlternative</GenerateNuspecDependsOn>
-      <GenerateNuspecDependsOn Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(GenerateNuspecDependsOn);$(_PublishNoBuildAlternativeDependsOn)</GenerateNuspecDependsOn>
-    </PropertyGroup>
 
     <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
     <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
@@ -288,6 +289,24 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <FileWrites Include="$(_ShimInputCacheFile)" />
     </ItemGroup>
+  </Target>
+
+  <!-- orchestrator for making the N RID-specific tool packages -->
+  <Target Name="_CreateRIDSpecificToolPackages">
+    <PropertyGroup>
+        <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
+        <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Build the RID-specific packages.-->
+        <_rids Include="$(_PackageRids)" />
+        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+    </ItemGroup>
+
+    <MSBuild BuildInParallel="true" Projects="@(_RidSpecificToolPackageProject)" Targets="Pack">
+        <Output TaskParameter="TargetOutputs" ItemName="_ToolPackageOutputs" />
+    </MSBuild>
   </Target>
 
 </Project>
