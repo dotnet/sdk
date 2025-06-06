@@ -319,6 +319,9 @@
   <data name="ToolSettingsUnsupportedRunner" xml:space="preserve">
     <value>Command '{0}' uses unsupported runner '{1}'."</value>
   </data>
+  <data name="ToolUnsupportedRuntimeIdentifier" xml:space="preserve">
+    <value>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</value>
+  </data>
   <data name="ShellShimConflict" xml:space="preserve">
     <value>Command '{0}' conflicts with an existing command from another tool.</value>
   </data>

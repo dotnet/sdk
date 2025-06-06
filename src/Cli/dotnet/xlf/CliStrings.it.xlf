@@ -1077,6 +1077,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolUnsupportedRuntimeIdentifier">
+        <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
+        <target state="new">The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Type">
         <source>Type</source>
         <target state="new">Type</target>
