@@ -16,8 +16,8 @@ internal class ToolInstallCommand(
 {
     private readonly ToolInstallLocalCommand _toolInstallLocalCommand = toolInstallLocalCommand;
     private readonly ToolInstallGlobalOrToolPathCommand _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
-    private readonly bool _global = parseResult.GetValue(ToolAppliedOption.GlobalOption);
-    private readonly string _toolPath = parseResult.GetValue(ToolAppliedOption.ToolPathOption);
+    private readonly bool _global = parseResult.GetValue(ToolInstallCommandParser.GlobalOption);
+    private readonly string _toolPath = parseResult.GetValue(ToolInstallCommandParser.ToolPathOption);
     private readonly string _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
 
 

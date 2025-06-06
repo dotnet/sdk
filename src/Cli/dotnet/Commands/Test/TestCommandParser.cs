@@ -164,8 +164,6 @@ internal static class TestCommandParser
         var builder = new ConfigurationBuilder();
 
         string? dotnetConfigPath = GetDotnetConfigPath(Environment.CurrentDirectory);
-        Debug.Assert(dotnetConfigPath is not null);
-
         if (!File.Exists(dotnetConfigPath))
         {
             return CliConstants.VSTest;
@@ -238,7 +236,7 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.ConfigurationOption);
         command.Options.Add(TestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
@@ -283,7 +281,7 @@ internal static class TestCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(CommonOptions.VerbosityOption);
