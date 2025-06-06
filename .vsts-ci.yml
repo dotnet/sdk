@@ -155,56 +155,56 @@ extends:
             timeoutInMinutes: 90
             linuxJobParameterSets:
             ### OFFICIAL ###
-            # Note: These builds are also portable like the Portable category, but that category uses containers, and doesn't publish zips and tarballs.
+            # Note: These builds are also glibc like the glibc category, but that category uses containers, and doesn't publish zips and tarballs.
             - categoryName: Official
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm
               runtimeIdentifier: linux-arm
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
             - categoryName: Official
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
+              osProperties: $(linuxOsglibcProperties)
               runTests: false
-            ### PORTABLE ###
-            - categoryName: Portable
+            ### glibc ###
+            - categoryName: glibc
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            - categoryName: Portable
+            - categoryName: glibc
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:BuildSdkDeb=true
+              osProperties: $(linuxOsglibcProperties) /p:BuildSdkDeb=true
               runTests: false
-            - categoryName: Portable
+            - categoryName: glibc
               container: azureLinux30Net10BuildAmd64
               # Do not publish zips and tarballs. The linux-x64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsglibcProperties) /p:IsRPMBasedDistro=true
               runTests: false
-            - categoryName: Portable
+            - categoryName: glibc
               container: azureLinux30Net10BuildAmd64
               targetArchitecture: arm64
               runtimeIdentifier: linux-arm64
               # Do not publish zips and tarballs. The linux-arm64 binaries are already published by Official.
               publishArgument: $(_publishArgument) /p:PublishBinariesAndBadge=false
               officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties) /p:IsRPMBasedDistro=true
+              osProperties: $(linuxOsglibcProperties) /p:IsRPMBasedDistro=true
               runTests: false
             ### MUSL ###
             - categoryName: Musl
