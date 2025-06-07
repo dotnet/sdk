@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\..\\sdk.sln",
+    "path": "..\\..\\..\\sdk.slnx",
     "projects": [
       "src\\Compatibility\\ApiDiff\\Microsoft.DotNet.ApiDiff\\Microsoft.DotNet.ApiDiff.csproj",
       "src\\Compatibility\\ApiDiff\\Microsoft.DotNet.ApiDiff.Tool\\Microsoft.DotNet.ApiDiff.Tool.csproj",

@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "sdk.sln",
+    "path": "sdk.slnx",
     "projects": [
       "test\\TestAssets\\TestPackages\\dotnet-new\\Microsoft.TemplateEngine.TestTemplates.csproj",
       "src\\Cli\\Microsoft.DotNet.Cli.Sln.Internal\\Microsoft.DotNet.Cli.Sln.Internal.csproj",
