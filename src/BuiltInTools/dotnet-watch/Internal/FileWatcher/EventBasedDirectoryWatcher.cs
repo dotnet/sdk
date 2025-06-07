@@ -8,22 +8,21 @@ namespace Microsoft.DotNet.Watch
     internal sealed class EventBasedDirectoryWatcher : IDirectoryWatcher
     {
         public event EventHandler<ChangedPath>? OnFileChange;
-
         public event EventHandler<Exception>? OnError;
 
         public string WatchedDirectory { get; }
-
-        internal Action<string>? Logger { get; set; }
+        public bool IncludeSubdirectories { get; }
+        public Action<string>? Logger { get; set; }
 
         private volatile bool _disposed;
-
         private FileSystemWatcher? _fileSystemWatcher;
+        private readonly Lock _createLock = new();
 
-        private readonly object _createLock = new();
-
-        internal EventBasedDirectoryWatcher(string watchedDirectory)
+        internal EventBasedDirectoryWatcher(string watchedDirectory, bool includeSubdirectories)
         {
             WatchedDirectory = watchedDirectory;
+            IncludeSubdirectories = includeSubdirectories;
+
             CreateFileSystemWatcher();
         }
 
@@ -40,7 +39,7 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            Logger?.Invoke("Error");
+            Logger?.Invoke("[FW] Error");
 
             var exception = e.GetException();
 
@@ -65,20 +64,22 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            Logger?.Invoke($"Renamed '{e.OldFullPath}' to '{e.FullPath}'.");
-
-            NotifyChange(e.OldFullPath, ChangeKind.Delete);
-            NotifyChange(e.FullPath, ChangeKind.Add);
+            Logger?.Invoke($"[FW] Renamed '{e.OldFullPath}' to '{e.FullPath}'.");
 
             if (Directory.Exists(e.FullPath))
             {
-                foreach (var newLocation in Directory.EnumerateFileSystemEntries(e.FullPath, "*", SearchOption.AllDirectories))
+                foreach (var newLocation in Directory.EnumerateFiles(e.FullPath, "*", SearchOption.AllDirectories))
                 {
                     // Calculated previous path of this moved item.
                     var oldLocation = Path.Combine(e.OldFullPath, newLocation.Substring(e.FullPath.Length + 1));
                     NotifyChange(oldLocation, ChangeKind.Delete);
                     NotifyChange(newLocation, ChangeKind.Add);
                 }
+            }
+            else
+            {
+                NotifyChange(e.OldFullPath, ChangeKind.Delete);
+                NotifyChange(e.FullPath, ChangeKind.Add);
             }
         }
 
@@ -89,7 +90,16 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            Logger?.Invoke($"Deleted '{e.FullPath}'.");
+            var isDir = Directory.Exists(e.FullPath);
+
+            Logger?.Invoke($"[FW] Deleted '{e.FullPath}'.");
+
+            // ignore directory changes:
+            if (isDir)
+            {
+                return;
+            }
+
             NotifyChange(e.FullPath, ChangeKind.Delete);
         }
 
@@ -100,7 +110,16 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            Logger?.Invoke($"Updated  '{e.FullPath}'.");
+            var isDir = Directory.Exists(e.FullPath);
+
+            Logger?.Invoke($"[FW] Updated '{e.FullPath}'.");
+
+            // ignore directory changes:
+            if (isDir)
+            {
+                return;
+            }
+
             NotifyChange(e.FullPath, ChangeKind.Update);
         }
 
@@ -111,7 +130,15 @@ namespace Microsoft.DotNet.Watch
                 return;
             }
 
-            Logger?.Invoke($"Added  '{e.FullPath}'.");
+            var isDir = Directory.Exists(e.FullPath);
+
+            Logger?.Invoke($"[FW] Added '{e.FullPath}'.");
+
+            if (isDir)
+            {
+                return;
+            }
+
             NotifyChange(e.FullPath, ChangeKind.Add);
         }
 
@@ -136,7 +163,7 @@ namespace Microsoft.DotNet.Watch
 
                 _fileSystemWatcher = new FileSystemWatcher(WatchedDirectory)
                 {
-                    IncludeSubdirectories = true
+                    IncludeSubdirectories = IncludeSubdirectories
                 };
 
                 _fileSystemWatcher.Created += WatcherAddedHandler;

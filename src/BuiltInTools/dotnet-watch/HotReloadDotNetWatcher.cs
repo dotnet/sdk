@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
                     var changedFilesAccumulator = ImmutableList<ChangedPath>.Empty;
 
@@ -441,7 +441,7 @@ namespace Microsoft.DotNet.Watch
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
                                 // additional directories may have been added:
-                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
                                 await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
@@ -554,7 +554,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (!fileWatcher.WatchingDirectories)
                 {
-                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
                 }
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
@@ -564,8 +564,8 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                // evaluation cancelled - watch for any changes in the directory containing the root project:
-                fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile]);
+                // evaluation cancelled - watch for any changes in the directory tree containing the root project:
+                fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
                     acceptChange: change => AcceptChange(change),
@@ -604,12 +604,6 @@ namespace Microsoft.DotNet.Watch
         private bool AcceptChange(ChangedPath change)
         {
             var (path, kind) = change;
-
-            // only handle file changes:
-            if (Directory.Exists(path))
-            {
-                return false;
-            }
 
             if (PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenDirectory) is { } containingHiddenDir)
             {
