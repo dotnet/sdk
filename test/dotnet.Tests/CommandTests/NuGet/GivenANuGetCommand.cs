@@ -171,7 +171,6 @@ namespace Microsoft.DotNet.Tools.Run.Tests
                 .Pass()
                 .And.NotHaveStdErr();
 
-            _ = listPackageCommandResult.StdOut;
             var updatedPackageVersionString = JObject.Parse(listPackageCommandResult.StdOut)
                 .SelectToken("$.projects[0].frameworks[0].topLevelPackages[?(@.id == 'dotnet-hello')].requestedVersion")
                 .ToString();
