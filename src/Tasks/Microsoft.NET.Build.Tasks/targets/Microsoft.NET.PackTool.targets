@@ -31,15 +31,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
 
-    <!-- set up generation dependencies -->
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
                                                   ('$(ToolPackageRuntimeIdentifiers)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
-    <!-- inner builds need publish content-->
+    <_HasRIDSpecificTools Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' or '$(RuntimeIdentifiers)' != '' ">true</_HasRIDSpecificTools>
+    <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
+
+    <!-- inner builds and non-RID-specific outer builds need publish content-->
     <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
-    <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+
+    <!-- Trigger RID-specific inner builds if RID-specific mode is enabled-->
+    <GenerateNuspecDependsOn Condition=" '$(_HasRIDSpecificTools)' == 'true' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+
+    <!-- finally set up the entrypoint for all tool-content regardless of tool type-->
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <!--
