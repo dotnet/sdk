@@ -34,6 +34,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- set up generation dependencies -->
     <!-- inner builds need publish content-->
     <_PackToolPublishDependency Condition=" '$(RuntimeIdentifier)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
     <!-- outer build needs to generate RID-specific tool packages, but only if we're not AOT-ing (because we can't do xplat AOT). -->
     <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
   </PropertyGroup>
