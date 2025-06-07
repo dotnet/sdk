@@ -1,6 +1,6 @@
 {
   "solution": {
-    "path": "..\\..\\sdk.sln",
+    "path": "..\\..\\sdk.slnx",
     "projects": [
       "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.Package.csproj",
       "src\\BuiltInTools\\AspireService\\Microsoft.WebTools.AspireService.shproj",
