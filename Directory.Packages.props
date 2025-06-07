@@ -50,6 +50,7 @@
     <PackageVersion Include="Microsoft.Extensions.ObjectPool" Version="$(MicrosoftExtensionsObjectPoolPackageVersion)" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Ini" Version="$(MicrosoftExtensionsConfigurationIniVersion)" />
     <PackageVersion Include="Microsoft.FSharp.Compiler" Version="$(MicrosoftFSharpCompilerPackageVersion)" />
+    <PackageVersion Include="Microsoft.IO.Redist" Version="$(MicrosoftIORedistPackageVersion)" />
     <PackageVersion Include="Microsoft.Net.Compilers.Toolset.Framework" Version="$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)" />
     <PackageVersion Include="Microsoft.Management.Infrastructure" Version="3.0.0" />
     <PackageVersion Include="Microsoft.NET.HostModel" Version="$(MicrosoftNETHostModelVersion)" />
@@ -132,7 +133,7 @@
 
        Note: This is not abstracted in Versions.props because source-only
        modes will import a version override file after Versions.props. -->
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(TargetFramework)' != 'net472' or '$(IsTestProject)' == 'true'">
     <!-- MSBuild-y stuff that runs in the CLI can always reference the latest MSBuild since
          that is what will be packaged with the .NET SDK. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildVersion)" />
@@ -145,7 +146,7 @@
     <PackageVersion Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildVersion)" />
     <PackageVersion Include="Microsoft.NET.StringTools" Version="$(MicrosoftBuildVersion)" />
   </ItemGroup>
-  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472'">
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true' and '$(TargetFramework)' == 'net472' and '$(IsTestProject)' != 'true'">
     <!-- MSBuild-y stuff that runs in VS/MSBuild.exe should reference the lagging minimum version so
          it works in that slightly-older Visual Studio. -->
     <PackageVersion Include="Microsoft.Build" Version="$(MicrosoftBuildMinimumVersion)" />
