@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+
 namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 public static class StringExtensions
@@ -26,4 +28,7 @@ public static class StringExtensions
             return 0;
         }
     }
+
+    // https://stackoverflow.com/a/66342091/294804
+    public static string ToCamelCase(this string value) => JsonNamingPolicy.CamelCase.ConvertName(value);
 }
