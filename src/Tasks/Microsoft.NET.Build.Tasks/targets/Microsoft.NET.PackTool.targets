@@ -32,11 +32,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
 
     <!-- set up generation dependencies -->
+    <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
+       (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
+    <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
+                                                  ('$(ToolPackageRuntimeIdentifiers)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+    <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
     <!-- inner builds need publish content-->
-    <_PackToolPublishDependency Condition=" '$(RuntimeIdentifier)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
-    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
-    <!-- outer build needs to generate RID-specific tool packages, but only if we're not AOT-ing (because we can't do xplat AOT). -->
+    <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
     <GenerateNuspecDependsOn Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' and '$(RuntimeIdentifier)' == '' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <!--
 
@@ -94,8 +98,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
-      <_PublishFilesRaw Condition="'$(RuntimeIdentifier)' != ''" Include="$(PublishDir)/**/*" />
-      <_PublishFiles Condition="'$(RuntimeIdentifier)' != ''" Include="@(_PublishFilesRaw)">
+      <_PublishFilesRaw Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
+      <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="@(_PublishFilesRaw)">
         <RelativePath>$([System.IO.Path]::GetRelativePath($(PublishDir), %(Identity)))</RelativePath>
       </_PublishFiles>
     </ItemGroup>
