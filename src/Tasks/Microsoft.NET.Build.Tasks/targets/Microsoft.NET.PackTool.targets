@@ -31,6 +31,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
     <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish -->
+    <_ToolRidsAreOnlyShims>false</_ToolRidsAreOnlyShims>
+    <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
     <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
@@ -38,7 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
                                                   ('$(ToolPackageRuntimeIdentifiers)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
-    <_HasRIDSpecificTools Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' or '$(RuntimeIdentifiers)' != '' ">true</_HasRIDSpecificTools>
+    <_HasRIDSpecificTools Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' or ( '$(RuntimeIdentifiers)' != '' and  $(_ToolRidsAreOnlyShims) == false ) ">true</_HasRIDSpecificTools>
     <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
