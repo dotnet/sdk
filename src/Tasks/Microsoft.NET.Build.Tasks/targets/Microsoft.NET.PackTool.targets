@@ -30,6 +30,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
+    <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish -->
+    <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
@@ -106,7 +108,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
       <_PublishFilesRaw Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
       <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="@(_PublishFilesRaw)">
-        <RelativePath>$([System.IO.Path]::GetRelativePath($(PublishDir), %(Identity)))</RelativePath>
+        <RelativePath>$([System.IO.Path]::GetRelativePath($(PublishDir), $([System.IO.Path]::GetDirectoryName(%(Identity)))))</RelativePath>
       </_PublishFiles>
     </ItemGroup>
 
@@ -116,7 +118,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(_PublishFiles)">
@@ -232,7 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)shims/$(_ToolPackShortTargetFrameworkName)"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -261,7 +263,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)shims/$(_ToolPackShortTargetFrameworkName)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 

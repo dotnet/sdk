@@ -42,11 +42,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
-
   <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="SetDotnetToolPackageType"
