@@ -136,14 +136,21 @@ public class NETFramework
             }
         }
 
-        [Fact]
-        public void PackageWithoutAssets_ShouldNotShowUpInDepsJson()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PackageWithoutAssets_ShouldNotShowUpInDepsJson(bool trimLibrariesWithoutAssets)
         {
             var testProject = new TestProject()
             {
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework
             };
             testProject.PackageReferences.Add(new TestPackageReference("Nerdbank.GitVersioning", "3.6.146"));
+
+            if (!trimLibrariesWithoutAssets)
+            {
+                testProject.AdditionalProperties["TrimDepsJsonLibrariesWithoutAssets"] = "False";
+            }
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
@@ -153,7 +160,14 @@ public class NETFramework
             using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProject.Name}.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
-                dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+                if (trimLibrariesWithoutAssets)
+                {
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+                }
+                else
+                {
+                    dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeTrue();
+                }
             }
         }
 
