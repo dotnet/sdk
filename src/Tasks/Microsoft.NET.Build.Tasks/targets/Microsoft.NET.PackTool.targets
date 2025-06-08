@@ -30,6 +30,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
+
+    <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
+    <UseAppHost Condition="'$(RuntimeIdentifier)' == ''">false</UseAppHost>
+
     <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish -->
     <_ToolRidsAreOnlyShims>false</_ToolRidsAreOnlyShims>
     <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
