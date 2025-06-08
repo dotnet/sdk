@@ -150,10 +150,32 @@ public class NETFramework
             var buildCommand = new BuildCommand(testAsset);
             buildCommand.Execute().Should().Pass();
 
-            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, "PackageWithoutAssets_ShouldNotShowUpInDepsJson.deps.json")))
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProject.Name}.deps.json")))
             {
                 var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
                 dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("Nerdbank.GitVersioning")).Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public void XUnitCoreIsNotTrimmed()
+        {
+            //  Regression test for https://github.com/dotnet/sdk/issues/49248
+
+            var testProject = new TestProject();
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.core", "2.9.3"));
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.core", "2.9.3"));
+            testProject.PackageReferences.Add(new TestPackageReference("xunit.extensibility.execution", "2.9.3"));
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand.Execute().Should().Pass();
+
+            using (var depsJsonFileStream = File.OpenRead(Path.Combine(buildCommand.GetOutputDirectory(ToolsetInfo.CurrentTargetFramework).FullName, $"{testProject.Name}.deps.json")))
+            {
+                var dependencyContext = new DependencyContextJsonReader().Read(depsJsonFileStream);
+                dependencyContext.RuntimeLibraries.Any(l => l.Name.Equals("xunit.core")).Should().BeTrue();
             }
         }
 
