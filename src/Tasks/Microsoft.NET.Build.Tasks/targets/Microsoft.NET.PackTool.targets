@@ -106,10 +106,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
-      <_PublishFilesRaw Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
-      <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="@(_PublishFilesRaw)">
-        <RelativePath>$([System.IO.Path]::GetRelativePath($(PublishDir), $([System.IO.Path]::GetDirectoryName(%(Identity)))))</RelativePath>
-      </_PublishFiles>
+      <!-- Note here that we're _not_ computing relative directories inside the package anymore. In our packages, we essentially want to
+          recreate the publish layout, but under a TFM- or RID-specific root path. Because we're globbing from the PublishDir,
+          the MSBuild Items will have the RecursiveDir metadata - this is used by the PackLogic to combine with the PackagePath
+          we set below to ensure we have the correct layout in the end. If the PackLogic didn't try to use RecursiveDir, then
+          we could just explicitly set everything ourselves.   -->
+      <_PublishFiles Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'" Include="$(PublishDir)/**/*" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -121,8 +123,11 @@ Copyright (c) .NET Foundation. All rights reserved.
         <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_GeneratedFiles.RecursiveDir)</PackagePath>
       </TfmSpecificPackageFile>
 
+      <!-- This PackagePath is a little different - instead of mapping _exactly_ where we want the files to be dropped,
+            NuGet is looking at RecursiveDir/NuGetRecursiveDir metadata (which is set in the Pack targets as part of the
+            'walk target per TFM' logic) _in addition_ to our package path. I don't see an easy way to remove RecursiveDir -->
       <TfmSpecificPackageFile Include="@(_PublishFiles)">
-        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/%(_PublishFiles.RelativePath)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/$(_ToolRidPath)/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>
