@@ -371,9 +371,10 @@ namespace Microsoft.NET.Build.Tasks
                     var lib = unprocessedLibraries.First();
                     unprocessedLibraries.Remove(lib);
 
-                    if (lib.Library.Name.Equals("xunit.core", StringComparison.OrdinalIgnoreCase))
+                    if (lib.Library.Name.Equals("xunit", StringComparison.OrdinalIgnoreCase) ||
+                        lib.Library.Name.Equals("xunit.core", StringComparison.OrdinalIgnoreCase))
                     {
-                        // Special case xunit.core, it should not be removed because the xUnit v2 runner looks for this library in the deps.json to
+                        // Special case xunit and xunit.core, they should not be removed because the xUnit v2 runner looks for these libraries in the deps.json to
                         // identify test projects.
                         // See https://github.com/dotnet/sdk/issues/49248
                         continue;
