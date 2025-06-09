@@ -297,7 +297,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     _toolCommandNameA),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeFalse("it should not add to cache if add to manifest failed. " +
                                "But restore do not need to 'revert' since it just set in nuget global directory");
         }
@@ -377,7 +377,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
@@ -500,7 +500,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);

@@ -41,7 +41,7 @@
     <!-- Directory for the zipped up light command package -->
     <LightCommandPackagesDir>$(ArtifactsNonShippingPackagesDir)</LightCommandPackagesDir>
 
-    <!-- for local SDK builds we allow skipping the workload manifest msi generation to save build time, the sdk bundle won't contain the manifest msis in that case. -->
+    <!-- For local non .NET SDK product builds, allow skipping the workload manifest msi generation to save build time. The sdk bundle won't contain the manifest msis in that case. -->
     <AllowEmptyBuiltinWorkloadManifestMsi Condition="'$(DotNetBuild)' != 'true' and '$(BuildWorkloads)' != 'true' and '$(OfficialBuild)' != 'true'">true</AllowEmptyBuiltinWorkloadManifestMsi>
   </PropertyGroup>
 

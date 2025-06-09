@@ -15,6 +15,12 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
     {
+        if(IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
+
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(DcProjAssetName)
@@ -32,6 +38,12 @@ public class GivenDotnetWorkloadRestore : SdkTest
     [Fact]
     public void ProjectsThatDoNotSupportWorkloadsAndAreTransitivelyReferencedDoNotBreakTheBuild()
     {
+        if(IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
+
         var projectPath =
             _testAssetsManager
                 .CopyTestAsset(TransitiveReferenceNoWorkloadsAssetName)
@@ -44,5 +56,18 @@ public class GivenDotnetWorkloadRestore : SdkTest
         .Should()
         // if we did try to restore the esproj in this TestAsset we would fail, so passing means we didn't!
         .Pass();
+    }
+
+    private bool IsRunningInContainer()
+    {
+        if (!File.Exists("/.dockerenv"))
+        {
+            return false;
+        }
+
+        string osDescription = RuntimeInformation.OSDescription.ToLowerInvariant();
+        return osDescription.Contains("centos") ||
+               osDescription.Contains("debian") ||
+               osDescription.Contains("ubuntu");
     }
 }

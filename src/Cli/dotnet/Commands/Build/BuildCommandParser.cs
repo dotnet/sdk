@@ -49,7 +49,7 @@ internal static class BuildCommandParser
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.BuildFrameworkOptionDescription);
 
@@ -70,7 +70,7 @@ internal static class BuildCommandParser
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: false);
         command.Options.Add(FrameworkOption);
         command.Options.Add(ConfigurationOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.BuildRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

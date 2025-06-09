@@ -77,6 +77,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishSelfContained>true</PublishSelfContained>
   </PropertyGroup>
 
+  <!-- Packing a tool runs the publish targets, so in that case set _IsPublishing to true -->
+  <PropertyGroup Condition="'$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true'">
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>  
 
   <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
        This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
@@ -91,12 +95,17 @@ Copyright (c) .NET Foundation. All rights reserved.
   The other publish properties are specifically labelled Publish* and don't 'NEED' their RID unless we are doing a publish, so the RID inference
   ... for these properties is limited to publishing only scenarios.
 
-  Finally, library projects and non-executable projects have awkward interactions here so they are excluded.-->
+  .NET Tools that build RID-specific packages will also need a primary package without a RuntimeIdentifier, so we disable RID inference for them
+  in order to build the primary package
+
+  Finally, library projects and non-executable projects have awkward interactions here so they are excluded.
+  -->
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == ''">
     <UseCurrentRuntimeIdentifier Condition="
                  '$(RuntimeIdentifier)' == '' and
                  '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
                  '$(IsRidAgnostic)' != 'true' and
+                 '$(PackAsTool)' != true and
                  (
                    '$(SelfContained)' == 'true' or
                    ('$(_IsPublishing)' == 'true' and
