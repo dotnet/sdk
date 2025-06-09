@@ -369,6 +369,8 @@ namespace Microsoft.DotNet.Watch
 
                             // Update project baselines to reflect changes to the restarted projects.
                             compilationHandler.UpdateProjectBaselines(projectsToRebuild, iterationCancellationToken);
+
+                            Context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
                         }
 
                         if (projectsToRestart is not [])
@@ -392,6 +394,8 @@ namespace Microsoft.DotNet.Watch
                                     }
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
+
+                            Context.Reporter.Report(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
                         }
 
                         async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)

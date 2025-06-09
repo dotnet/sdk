@@ -233,7 +233,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        public static void Contains(string expected, IEnumerable<string> items)
+        public static void ContainsSubstring(string expected, IEnumerable<string> items)
         {
             if (items.Any(item => item.Contains(expected)))
             {
@@ -253,8 +253,5 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Fail(message.ToString());
         }
-
-        public static void DoesNotContain(string expected, IEnumerable<string> items)
-            => Assert.DoesNotContain(expected, items);
     }
 }
