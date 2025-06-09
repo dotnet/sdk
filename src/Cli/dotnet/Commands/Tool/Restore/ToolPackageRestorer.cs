@@ -47,7 +47,7 @@ internal class ToolPackageRestorer
         _fileSystem = fileSystem ?? new FileSystemWrapper();
     }
 
-    public ToolRestoreResult InstallPackages(
+    public ToolRestoreResult InstallPackage(
         ToolManifestPackage package,
         FilePath? configFile)
     {
@@ -56,7 +56,7 @@ internal class ToolPackageRestorer
         if (PackageHasBeenRestored(package, targetFramework))
         {
             return ToolRestoreResult.Success(
-                saveToCache: [],
+                saveToCache: null,
                 message: string.Format(
                     CliCommandStrings.RestoreSuccessful, package.PackageId,
                     package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
@@ -89,13 +89,13 @@ internal class ToolPackageRestorer
 
             return ToolRestoreResult.Success(
                 saveToCache:
-                    [(new RestoredCommandIdentifier(
+                    (new RestoredCommandIdentifier(
                         toolPackage.Id,
                         toolPackage.Version,
                         NuGetFramework.Parse(targetFramework),
                         Constants.AnyRid,
                         toolPackage.Command.Name),
-                    toolPackage.Command)],
+                    toolPackage.Command),
                 message: string.Format(
                     CliCommandStrings.RestoreSuccessful,
                     package.PackageId,

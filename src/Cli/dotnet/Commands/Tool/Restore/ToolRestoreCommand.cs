@@ -115,11 +115,12 @@ internal class ToolRestoreCommand : CommandBase
         ToolRestoreResult[] toolRestoreResults =
             [.. packagesFromManifest
                 .AsEnumerable()
-                .Select(package => toolPackageRestorer.InstallPackages(package, configFile))];
+                .Select(package => toolPackageRestorer.InstallPackage(package, configFile))];
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
-            toolRestoreResults.SelectMany(result => result.SaveToCache)
-                .ToDictionary(pair => pair.Item1, pair => pair.Item2);
+            toolRestoreResults.Select(result => result.SaveToCache)
+                .Where(item => item is not null)
+                .ToDictionary(pair => pair.Value.Item1, pair => pair.Value.Item2);
 
         EnsureNoCommandNameCollision(downloaded);
 
@@ -202,12 +203,12 @@ internal class ToolRestoreCommand : CommandBase
 
     public struct ToolRestoreResult
     {
-        public (RestoredCommandIdentifier, ToolCommand)[] SaveToCache { get; }
+        public (RestoredCommandIdentifier, ToolCommand)? SaveToCache { get; }
         public bool IsSuccess { get; }
         public string Message { get; }
 
         private ToolRestoreResult(
-            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)? saveToCache,
             bool isSuccess, string message)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -215,13 +216,13 @@ internal class ToolRestoreCommand : CommandBase
                 throw new ArgumentException("message", nameof(message));
             }
 
-            SaveToCache = saveToCache ?? [];
+            SaveToCache = saveToCache;
             IsSuccess = isSuccess;
             Message = message;
         }
 
         public static ToolRestoreResult Success(
-            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)? saveToCache,
             string message)
         {
             return new ToolRestoreResult(saveToCache, true, message);
