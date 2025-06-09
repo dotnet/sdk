@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -94,14 +95,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
            console,
-           TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset) with
-           {
-               ProcessCleanupTimeout = TimeSpan.FromSeconds(0),
-           },
+           environmentOptions,
            reporter,
            out var errorCode);
 
@@ -114,7 +114,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
+        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(processRunner, factory));
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>
@@ -540,7 +540,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+    [Theory]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
@@ -596,6 +596,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
         var ignoringChangeInOutputDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInOutputDirectory);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
+        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
 
         Log("Waiting for changes...");
@@ -618,6 +619,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             case (isExisting: false, isIncluded: _, directoryKind: DirectoryKind.Ordinary):
                 Log("Waiting for file addition re-evalutation ...");
                 await fileAdditionTriggeredReEvaluation.WaitAsync(w.ShutdownSource.Token);
+                Log("Waiting for re-evalutation to complete ...");
+                await reEvaluationCompleted.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Hidden):
