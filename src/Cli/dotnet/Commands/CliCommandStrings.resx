@@ -2052,7 +2052,7 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
   <data name="ToolRunCommandDescription" xml:space="preserve">
     <value>Run a local tool. Note that this command cannot be used to run a global tool. </value>
   </data>
-  <data name="ToolRunArguementsDescription" xml:space="preserve">
+  <data name="ToolRunArgumentsDescription" xml:space="preserve">
     <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">

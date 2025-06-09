@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
         public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
         {
-            Description = CliCommandStrings.ToolRunArguementsDescription
+            Description = CliCommandStrings.ToolRunArgumentsDescription
         };
 
         public static readonly Option<string> VersionOption = ToolInstallCommandParser.VersionOption;

@@ -687,11 +687,6 @@ setx PATH "%PATH%;{0}"
         <target state="new">New</target>
         <note />
       </trans-unit>
-      <trans-unit id="NoOptionDescription">
-        <source>Overrides confirmation prompt with "no" value.</source>
-        <target state="new">Overrides confirmation prompt with "no" value.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="NoProjectsFound">
         <source>No projects found in the solution.</source>
         <target state="new">No projects found in the solution.</target>

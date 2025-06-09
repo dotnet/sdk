@@ -3142,7 +3142,7 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
         <target state="new">Path to the manifest file.</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolRunArguementsDescription">
+      <trans-unit id="ToolRunArgumentsDescription">
         <source>Arguments forwarded to the tool</source>
         <target state="new">Arguments forwarded to the tool</target>
         <note />

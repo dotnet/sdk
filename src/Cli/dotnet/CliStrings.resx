@@ -815,7 +815,4 @@ For a list of locations searched, specify the "-d" option before the tool name.<
   <data name="YesOptionDescription" xml:space="preserve">
     <value>Overrides confirmation prompt with "yes" value. </value>
   </data>
-  <data name="NoOptionDescription" xml:space="preserve">
-    <value>Overrides confirmation prompt with "no" value.</value>
-  </data>
 </root>
