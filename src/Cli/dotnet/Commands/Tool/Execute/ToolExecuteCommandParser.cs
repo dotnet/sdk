@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
     internal static class ToolExecuteCommandParser
 
     {
-        public static readonly Argument<PackageIdentity?> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
+        public static readonly Argument<PackageIdentity> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
 
         public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
         {

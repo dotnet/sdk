@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 {
     internal class ToolExecuteCommand(ParseResult result) : CommandBase(result)
     {
-        private readonly PackageIdentity? _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
+        private readonly PackageIdentity _packageToolIdentityArgument = result.GetRequiredValue(ToolExecuteCommandParser.PackageIdentityArgument);
         private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
         private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
         private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
@@ -29,12 +29,6 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
         public override int Execute()
         {
-            if (_packageToolIdentityArgument is null)
-            {
-                // System.CommandLine will throw an error if the argument is not provided, but we can still check here for clarity.
-                return 1;
-            }
-
             if (!UserAgreedToRunFromSource())
             {
                 throw new GracefulException(CliCommandStrings.ToolRunFromSourceUserConfirmationFailed, isUserError: true);
