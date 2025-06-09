@@ -324,8 +324,9 @@ $@"<ItemGroup>
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, _reporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, processRunner, _reporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
@@ -380,8 +381,9 @@ $@"<ItemGroup>
             var project1Path = GetTestProjectPath(project1);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, _reporter);
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, processRunner, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
@@ -397,7 +399,8 @@ $@"<ItemGroup>
         private async Task<EvaluationResult> Evaluate(string projectPath)
         {
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(projectPath)!, muxerPath: MuxerPath);
-            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, _reporter);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
+            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, processRunner, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;

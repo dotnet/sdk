@@ -6,7 +6,9 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class ProcessRunner
+    internal sealed class ProcessRunner(
+        TimeSpan processCleanupTimeout,
+        CancellationToken shutdownCancellationToken)
     {
         private const int SIGKILL = 9;
         private const int SIGTERM = 15;
@@ -15,14 +17,13 @@ namespace Microsoft.DotNet.Watch
         {
             public int ProcessId;
             public bool HasExited;
-            public bool ForceExit;
         }
 
         /// <summary>
         /// Launches a process.
         /// </summary>
         /// <param name="isUserApplication">True if the process is a user application, false if it is a helper process (e.g. msbuild).</param>
-        public static async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+        public async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
             Ensure.NotNull(processSpec, nameof(processSpec));
 
@@ -37,8 +38,6 @@ namespace Microsoft.DotNet.Watch
             onOutput ??= line => reporter.ReportProcessOutput(line);
 
             using var process = CreateProcess(processSpec, onOutput, state, reporter);
-
-            processTerminationToken.Register(() => TerminateProcess(process, state, reporter));
 
             stopwatch.Start();
 
@@ -85,45 +84,15 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    await process.WaitForExitAsync(processTerminationToken);
-
-                    // ensures that all process output has been reported:
-                    try
-                    {
-                        process.WaitForExit();
-                    }
-                    catch
-                    {
-                    }
+                    _ = await WaitForExitAsync(process, timeout: null, processTerminationToken);
                 }
                 catch (OperationCanceledException)
                 {
                     // Process termination requested via cancellation token.
-                    // Wait for the actual process exit.
-                    while (true)
-                    {
-                        try
-                        {
-                            // non-cancellable to not leave orphaned processes around blocking resources:
-                            await process.WaitForExitAsync(CancellationToken.None).WaitAsync(TimeSpan.FromSeconds(5), CancellationToken.None);
-                            break;
-                        }
-                        catch (TimeoutException)
-                        {
-                            // nop
-                        }
+                    // Either Ctrl+C was pressed or the process is being restarted.
 
-                        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || state.ForceExit)
-                        {
-                            reporter.Output($"Waiting for process {state.ProcessId} to exit ...");
-                        }
-                        else
-                        {
-                            reporter.Output($"Forcing process {state.ProcessId} to exit ...");
-                        }
-
-                        state.ForceExit = true;
-                    }
+                    // Non-cancellable to not leave orphaned processes around blocking resources:
+                    await TerminateProcessAsync(process, state, reporter, CancellationToken.None);
                 }
             }
             catch (Exception e)
@@ -243,24 +212,82 @@ namespace Microsoft.DotNet.Watch
             return process;
         }
 
-        private static void TerminateProcess(Process process, ProcessState state, IReporter reporter)
+        private async ValueTask TerminateProcessAsync(Process process, ProcessState state, IReporter reporter, CancellationToken cancellationToken)
+        {
+            if (!shutdownCancellationToken.IsCancellationRequested)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    // Ctrl+C hasn't been sent, force termination.
+                    // We don't have means to terminate gracefully on Windows (https://github.com/dotnet/runtime/issues/109432)
+                    TerminateProcess(process, state, reporter, force: true);
+                    _ = await WaitForExitAsync(process, timeout: null, cancellationToken);
+
+                    return;
+                }
+                else
+                {
+                    // Ctrl+C hasn't been sent, send SIGTERM now:
+                    TerminateProcess(process, state, reporter, force: false);
+                }
+            }
+
+            // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
+            if (!await WaitForExitAsync(process, processCleanupTimeout, cancellationToken))
+            {
+                // Force termination if the process is still running after the timeout.
+                TerminateProcess(process, state, reporter, force: true);
+
+                _ = await WaitForExitAsync(process, timeout: null, cancellationToken);
+            }
+        }
+
+        private static async ValueTask<bool> WaitForExitAsync(Process process, TimeSpan? timeout, CancellationToken cancellationToken)
+        {
+            var task = process.WaitForExitAsync(cancellationToken);
+
+            if (timeout.HasValue)
+            {
+                try
+                {
+                    await task.WaitAsync(timeout.Value, cancellationToken);
+                }
+                catch (TimeoutException)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                await task;
+            }
+
+            // ensures that all process output has been reported:
+            try
+            {
+                process.WaitForExit();
+            }
+            catch
+            {
+            }
+
+            return true;
+        }
+
+        private static void TerminateProcess(Process process, ProcessState state, IReporter reporter, bool force)
         {
             try
             {
                 if (!state.HasExited && !process.HasExited)
                 {
-                    reporter.Report(MessageDescriptor.KillingProcess, state.ProcessId.ToString());
-
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        TerminateWindowsProcess(process, state, reporter);
+                        TerminateWindowsProcess(process, state, reporter, force);
                     }
                     else
                     {
-                        TerminateUnixProcess(state, reporter);
+                        TerminateUnixProcess(state, reporter, force);
                     }
-
-                    reporter.Verbose($"Process {state.ProcessId} killed.");
                 }
             }
             catch (Exception ex)
@@ -272,12 +299,19 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private static void TerminateWindowsProcess(Process process, ProcessState state, IReporter reporter)
+        private static void TerminateWindowsProcess(Process process, ProcessState state, IReporter reporter, bool force)
         {
             // Needs API: https://github.com/dotnet/runtime/issues/109432
             // Code below does not work because the process creation needs CREATE_NEW_PROCESS_GROUP flag.
-#if TODO    
-            if (!state.ForceExit)
+
+            reporter.Verbose($"Terminating process {state.ProcessId}.");
+
+            if (force)
+            {
+                process.Kill();
+            }
+#if TODO
+            else
             {
                 const uint CTRL_C_EVENT = 0;
 
@@ -301,16 +335,16 @@ namespace Microsoft.DotNet.Watch
                 reporter.Verbose($"Failed to send Ctrl+C to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error})");
             }
 #endif
-
-            process.Kill();
         }
 
-        private static void TerminateUnixProcess(ProcessState state, IReporter reporter)
+        private static void TerminateUnixProcess(ProcessState state, IReporter reporter, bool force)
         {
             [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
             static extern int sys_kill(int pid, int sig);
 
-            var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
+            reporter.Verbose($"Terminating process {state.ProcessId} ({(force ? "SIGKILL" : "SIGTERM")}).");
+
+            var result = sys_kill(state.ProcessId, force ? SIGKILL : SIGTERM);
             if (result != 0)
             {
                 var error = Marshal.GetLastPInvokeError();
