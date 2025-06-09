@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
-            
+
 
             var testProject = new TestProject(toolSettings.ToolPackageId)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             if (toolSettings.NativeAOT)
             {
                 testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AddItem("ToolPackageRuntimeIdentifier", "Include", RuntimeInformation.RuntimeIdentifier);
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = RuntimeInformation.RuntimeIdentifier;
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
@@ -87,7 +87,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 new DotnetPackCommand(log)
                     .WithWorkingDirectory(targetDirectory)
-                    .Execute()
+                    .Execute("/bl:{}")
                     .Should().Pass();
 
                 if (toolSettings.NativeAOT)
@@ -95,7 +95,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     //  For Native AOT tools, we need to repack the tool to include the runtime-specific files that were generated during publish
                     new DotnetPackCommand(log, "-r", RuntimeInformation.RuntimeIdentifier)
                         .WithWorkingDirectory(targetDirectory)
-                        .Execute()
+                        .Execute("/bl:{}")
                         .Should().Pass();
                 }
 
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             if (Directory.Exists(packagePathInGlobalPackages))
             {
                 Directory.Delete(packagePathInGlobalPackages, true);
-            }            
+            }
         }
 
         /// <summary>

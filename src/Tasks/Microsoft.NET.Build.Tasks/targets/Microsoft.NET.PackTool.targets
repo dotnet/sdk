@@ -27,24 +27,31 @@ Copyright (c) .NET Foundation. All rights reserved.
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <!-- the publish* properties _can_ be set, but only for the 'inner' RID-specific builds. We need to make sure that for the outer, agnostic build they are unset  -->
     <PublishSelfContained Condition="'$(RuntimeIdentifier)' == ''">false</PublishSelfContained>
+    <!-- Have to set SelfContained similarly because PackTool targets are imported _after_ RuntimeIdentifierInference targets, where the Publish* properties are
+         forwarded to the 'base' properties. -->
+    <SelfContained Condition="'$(RuntimeIdentifier)' == ''">false</SelfContained>
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
 
     <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
     <UseAppHost Condition="'$(RuntimeIdentifier)' == ''">false</UseAppHost>
+    <!-- we want to ensure that we _do_ publish any AppHosts for the 'inner', RID-specific builds -->
+    <UseAppHost Condition="'$(RuntimeIdentifier)' != ''">true</UseAppHost>
 
     <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish -->
     <_ToolRidsAreOnlyShims>false</_ToolRidsAreOnlyShims>
     <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
-    <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+    <_UserSpecifiedToolPackageRids Condition="'$(ToolPackageRuntimeIdentifiers)' != ''">$(ToolPackageRuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
+    <_UserSpecifiedToolPackageRids Condition="'$(_UserSpecifiedToolPackageRids)' == ''">$(RuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
+    <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(_UserSpecifiedToolPackageRids);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
                                                   ('$(ToolPackageRuntimeIdentifiers)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
-    <_HasRIDSpecificTools Condition=" '$(ToolPackageRuntimeIdentifiers)' != '' or ( '$(RuntimeIdentifiers)' != '' and  $(_ToolRidsAreOnlyShims) == false ) ">true</_HasRIDSpecificTools>
+    <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
     <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
@@ -94,7 +101,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- inner-build tool packages get a RID suffix -->
-    <PropertyGroup Condition="'$(ToolPackageRuntimeIdentifiers)' != '' And '$(RuntimeIdentifier)' != ''">
+    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(RuntimeIdentifier)' != ''">
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
 
@@ -156,7 +163,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
     <ItemGroup>
-      <_ToolPackageRuntimeIdentifier Include="$(ToolRuntimeIdentifiers)" />
+      <_ToolPackageRuntimeIdentifier Include="$(_UserSpecifiedToolPackageRids)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolEntryPoint)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandName)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandRunner)" />
