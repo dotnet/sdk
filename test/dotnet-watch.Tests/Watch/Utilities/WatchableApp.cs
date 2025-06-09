@@ -91,8 +91,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// <summary>
         /// Wait till file watcher starts watching for file changes.
         /// </summary>
-        public Task AssertWaitingForChanges()
-            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+        public Task AssertWaitingForChanges([CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, testPath: testPath, testLine: testLine);
 
         public async Task AssertWaitingForFileChangeBeforeRestarting()
         {
@@ -120,8 +120,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var testOutputPath = asset.GetWatchTestOutputPath();
             Directory.CreateDirectory(testOutputPath);
-
-            commandSpec.WithEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES", "1");
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);

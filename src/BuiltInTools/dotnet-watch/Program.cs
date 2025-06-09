@@ -3,6 +3,7 @@
 
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
+using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Watch
 {
@@ -99,6 +100,7 @@ namespace Microsoft.DotNet.Watch
             var shutdownCancellationSourceDisposed = false;
             var shutdownCancellationSource = new CancellationTokenSource();
             var shutdownCancellationToken = shutdownCancellationSource.Token;
+            var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, shutdownCancellationToken);
 
             console.KeyPressed += key =>
             {
@@ -128,10 +130,10 @@ namespace Microsoft.DotNet.Watch
 
                 if (options.List)
                 {
-                    return await ListFilesAsync(shutdownCancellationToken);
+                    return await ListFilesAsync(processRunner, shutdownCancellationToken);
                 }
 
-                var watcher = CreateWatcher(runtimeProcessLauncherFactory: null);
+                var watcher = CreateWatcher(processRunner, runtimeProcessLauncherFactory: null);
                 await watcher.WatchAsync(shutdownCancellationToken);
                 return 0;
             }
@@ -154,7 +156,7 @@ namespace Microsoft.DotNet.Watch
         }
 
         // internal for testing
-        internal Watcher CreateWatcher(IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
+        internal Watcher CreateWatcher(ProcessRunner processRunner, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
         {
             if (environmentOptions.IsPollingEnabled)
             {
@@ -165,6 +167,7 @@ namespace Microsoft.DotNet.Watch
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 environmentOptions,
+                processRunner,
                 reporter);
 
             bool enableHotReload;
@@ -187,6 +190,7 @@ namespace Microsoft.DotNet.Watch
             var context = new DotNetWatchContext
             {
                 Reporter = reporter,
+                ProcessRunner = processRunner,
                 Options = options.GlobalOptions,
                 EnvironmentOptions = environmentOptions,
                 RootProjectOptions = rootProjectOptions,
@@ -197,12 +201,13 @@ namespace Microsoft.DotNet.Watch
                 : new DotNetWatcher(context, fileSetFactory);
         }
 
-        private async Task<int> ListFilesAsync(CancellationToken cancellationToken)
+        private async Task<int> ListFilesAsync(ProcessRunner processRunner, CancellationToken cancellationToken)
         {
             var fileSetFactory = new MSBuildFileSetFactory(
                 rootProjectOptions.ProjectPath,
                 rootProjectOptions.BuildArguments,
                 environmentOptions,
+                processRunner,
                 reporter);
 
             if (await fileSetFactory.TryCreateAsync(requireProjectGraph: null, cancellationToken) is not { } evaluationResult)

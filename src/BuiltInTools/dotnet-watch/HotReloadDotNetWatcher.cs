@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.ProcessRunner, Context.EnvironmentOptions);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
@@ -459,6 +459,8 @@ namespace Microsoft.DotNet.Watch
                                 changedFiles = changedFiles
                                     .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
                                     .ToImmutableList();
+
+                                Context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
 
                             if (rebuiltProjects != null)
@@ -531,7 +533,7 @@ namespace Microsoft.DotNet.Watch
 
                     if (rootRunningProject != null)
                     {
-                        await rootRunningProject.TerminateAsync(shutdownCancellationToken);
+                        await rootRunningProject.TerminateAsync();
                     }
 
                     if (runtimeProcessLauncher != null)
@@ -835,7 +837,7 @@ namespace Microsoft.DotNet.Watch
 
             Context.Reporter.Output($"Building {projectPath} ...");
 
-            var exitCode = await ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+            var exitCode = await Context.ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
             return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 
