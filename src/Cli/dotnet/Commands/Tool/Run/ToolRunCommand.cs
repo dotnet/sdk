@@ -28,17 +28,21 @@ internal class ToolRunCommand(
 
     public override int Execute()
     {
-        CommandSpec commandSpec = _localToolsCommandResolver.ResolveStrict(new CommandResolverArguments()
+        return ExecuteCommand(_localToolsCommandResolver, _toolCommandName, _forwardArgument, _allowRollForward);
+    }
+    public static int ExecuteCommand(LocalToolsCommandResolver commandResolver, string toolCommandName, IEnumerable<string> argumentsToForward, bool allowRollForward)
+    {
+        CommandSpec commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
-            CommandName = $"dotnet-{_toolCommandName}",
-            CommandArguments = _forwardArgument,
+            CommandName = $"dotnet-{toolCommandName}",
+            CommandArguments = argumentsToForward,
 
-        }, _allowRollForward);
+        }, allowRollForward);
 
         if (commandSpec == null)
         {
-            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, _toolCommandName)], isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.CannotFindCommandName, toolCommandName)], isUserError: false);
         }
 
         var result = CommandFactoryUsingResolver.Create(commandSpec).Execute();

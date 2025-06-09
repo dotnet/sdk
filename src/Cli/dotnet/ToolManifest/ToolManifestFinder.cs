@@ -132,6 +132,34 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         return false;
     }
 
+    public bool TryFindPackageId(PackageId packageId, out ToolManifestPackage toolManifestPackage)
+    {
+        toolManifestPackage = default;
+        foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in
+            EnumerateDefaultAllPossibleManifests())
+        {
+            if (!_fileSystem.File.Exists(possibleManifest.Value))
+            {
+                continue;
+            }
+            (List<ToolManifestPackage> manifestPackages, bool isRoot) =
+                _toolManifestEditor.Read(possibleManifest, correspondingDirectory);
+            foreach (var package in manifestPackages)
+            {
+                if (package.PackageId.Equals(packageId))
+                {
+                    toolManifestPackage = package;
+                    return true;
+                }
+            }
+            if (isRoot)
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private IEnumerable<(FilePath manifestfile, DirectoryPath manifestFileFirstEffectDirectory)>
         EnumerateDefaultAllPossibleManifests()
     {
