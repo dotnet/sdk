@@ -128,7 +128,7 @@ public class Program
         {
             // If we get C# file path as the first argument, parse as `dotnet run file.cs`.
             parseResult = args is [{ } filePath, ..] && VirtualProjectBuildingCommand.IsValidEntryPointPath(filePath)
-                ? Parser.Instance.Parse(["run", .. args])
+                ? Parser.Instance.Parse(["run", "-p:Configuration=Release", .. args])
                 : Parser.Instance.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo

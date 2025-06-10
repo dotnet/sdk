@@ -64,7 +64,8 @@ For example, the remaining command-line arguments after the first argument (the 
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
 and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
-`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` exists and has `.cs` file extension.
+`dotnet path.cs` is a shortcut for `dotnet run -p:Configuration=Release path.cs` provided that `path.cs` exists and has `.cs` file extension.
+Because of the `-p:Configuration=Release` option, `dotnet path.cs` builds and runs the program with Release configuration by default unlike `dotnet run path.cs`.
 
 ## Entry points
 
