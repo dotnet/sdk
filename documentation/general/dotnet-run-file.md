@@ -305,6 +305,8 @@ but that would require changes to the native dotnet host.
 ### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
+Command `dotnet publish file.cs` is also supported for file-based programs.
+
 We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
 
@@ -318,7 +320,6 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 `dotnet clean` could be extended to support cleaning [the output directory](#build-outputs),
 e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
 or `dotnet clean --all-file-based-programs`.
-
 
 Adding package references via `dotnet package add` could be supported for file-based programs as well,
 i.e., the command would add a `#:package` directive to the top of a `.cs` file.
