@@ -933,7 +933,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            "project" => Project.Parse(span, directiveText),
+            "project" => Project.Parse(sourceFile, span, directiveText),
             _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1085,8 +1085,18 @@ internal abstract class CSharpDirective
 
         public required string Name { get; init; }
 
-        public static Project? Parse(TextSpan span, string directiveText)
+        public static Project? Parse(SourceFile sourceFile, TextSpan span, string directiveText)
         {
+            // Transform a directory path like '../lib' to a path to the project file like '../lib/lib.csproj'.
+            // We normalize blackslashes to forward slashes to ensure the directive works on all platforms.
+            var directory = Path.GetDirectoryName(sourceFile.Path) ?? ".";
+            var resolvedPath = Path.Combine(directory, directiveText.Replace('\\', '/'));
+            if (Directory.Exists(resolvedPath))
+            {
+                var fullFilePath = MsbuildProject.GetProjectFileFromDirectory(resolvedPath).FullName;
+                directiveText = Path.GetRelativePath(relativeTo: directory, fullFilePath);
+            }
+
             return new Project
             {
                 Span = span,

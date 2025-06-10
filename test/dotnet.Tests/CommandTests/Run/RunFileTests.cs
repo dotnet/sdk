@@ -1013,8 +1013,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
     }
 
-    [Fact]
-    public void ProjectReference()
+    [Theory]
+    [InlineData("../lib/lib.csproj")]
+    [InlineData("../lib")]
+    [InlineData(@"..\lib\lib.csproj")]
+    [InlineData(@"..\lib")]
+    public void ProjectReference(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
 
@@ -1040,8 +1044,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var appDir = Path.Join(testInstance.Path, "App");
         Directory.CreateDirectory(appDir);
 
-        File.WriteAllText(Path.Join(appDir, "Program.cs"), """
-            #:project ../lib/lib.csproj
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), $"""
+            #:project {arg}
             Console.WriteLine(Lib.LibClass.GetMessage());
             """);
 
