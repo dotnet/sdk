@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void MSBuildArgumentsAreForwardedCorrectly(string[] arguments, bool buildCommand)
         {
             RestoringCommand command = buildCommand ?
-                BuildCommand.FromArgs(arguments) :
+                ((RestoringCommand)BuildCommand.FromArgs(arguments)) :
                 PublishCommand.FromArgs(arguments);
             var expectedArguments = arguments.Select(a => a.Replace("-property:", "--property:").Replace("-p:", "--property:"));
             var argString = command.MSBuildArguments;
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
         {
             var forwardingFunction = (CommonOptions.PropertiesOption as ForwardedOption<string[]>).GetForwardingFunction();
-            var result = new CliRootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
+            var result = new RootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
             var parsedTokens = forwardingFunction(result);
             parsedTokens.Should().BeEquivalentTo(forwardedTokens);
         }

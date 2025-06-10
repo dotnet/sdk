@@ -1,47 +1,49 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal static class WorkloadInstallCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
+    public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = new("workloadId")
     {
         HelpName = CliCommandStrings.WorkloadIdArgumentName,
         Arity = ArgumentArity.OneOrMore,
         Description = CliCommandStrings.WorkloadIdArgumentDescription
     };
 
-    public static readonly CliOption<bool> SkipSignCheckOption = new("--skip-sign-check")
+    public static readonly Option<bool> SkipSignCheckOption = new("--skip-sign-check")
     {
         Description = CliCommandStrings.SkipSignCheckOptionDescription,
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
+    public static readonly Option<bool> SkipManifestUpdateOption = new("--skip-manifest-update")
     {
         Description = CliCommandStrings.SkipManifestUpdateOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<string> TempDirOption = new("--temp-dir")
+    public static readonly Option<string> TempDirOption = new("--temp-dir")
     {
         Description = CliCommandStrings.TempDirOptionDescription
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("install", CliCommandStrings.WorkloadInstallCommandDescription);
+        Command command = new("install", CliCommandStrings.WorkloadInstallCommandDescription);
 
         command.Arguments.Add(WorkloadIdArgument);
         AddWorkloadInstallCommandOptions(command);
@@ -51,7 +53,7 @@ internal static class WorkloadInstallCommandParser
         return command;
     }
 
-    internal static void AddWorkloadInstallCommandOptions(CliCommand command)
+    internal static void AddWorkloadInstallCommandOptions(Command command)
     {
         InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 

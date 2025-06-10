@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Package;
 using Microsoft.DotNet.Cli.Commands.Package.Add;
@@ -10,16 +12,16 @@ namespace Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 
 internal static class AddPackageCommandParser
 {
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("package", CliCommandStrings.PackageAddAppFullName);
+        Command command = new("package", CliCommandStrings.PackageAddAppFullName);
 
         command.Arguments.Add(PackageAddCommandParser.CmdPackageArgument);
         command.Options.Add(PackageAddCommandParser.VersionOption);
@@ -41,7 +43,7 @@ internal static class AddPackageCommandParser
             }
             else
             {
-                return new PackageAddCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument)).Execute();
+                return new PackageAddCommand(parseResult, parseResult.GetValue(AddCommandParser.ProjectArgument) ?? Directory.GetCurrentDirectory()).Execute();
             }
         });
 

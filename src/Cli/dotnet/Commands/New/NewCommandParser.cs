@@ -17,6 +17,7 @@ using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using Microsoft.TemplateEngine.Cli;
 using Microsoft.TemplateEngine.Cli.Commands;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
+using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 
@@ -31,14 +32,14 @@ internal static class NewCommandParser
 
     private const VerbosityOptions DefaultVerbosity = VerbosityOptions.normal;
 
-    private static readonly CliOption<bool> s_disableSdkTemplatesOption = new CliOption<bool>("--debug:disable-sdk-templates")
+    private static readonly Option<bool> s_disableSdkTemplatesOption = new Option<bool>("--debug:disable-sdk-templates")
     {
         DefaultValueFactory = static _ => false,
         Description = CliCommandStrings.DisableSdkTemplates_OptionDescription,
         Recursive = true
     }.Hide();
 
-    private static readonly CliOption<bool> s_disableProjectContextEvaluationOption = new CliOption<bool>(
+    private static readonly Option<bool> s_disableProjectContextEvaluationOption = new Option<bool>(
         "--debug:disable-project-context")
     {
         DefaultValueFactory = static _ => false,
@@ -46,7 +47,7 @@ internal static class NewCommandParser
         Recursive = true
     }.Hide();
 
-    private static readonly CliOption<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
+    private static readonly Option<VerbosityOptions> s_verbosityOption = new("--verbosity", "-v")
     {
         DefaultValueFactory = _ => DefaultVerbosity,
         Description = CliCommandStrings.Verbosity_OptionDescription,
@@ -54,16 +55,16 @@ internal static class NewCommandParser
         Recursive = true
     };
 
-    private static readonly CliOption<bool> s_diagnosticOption =
+    private static readonly Option<bool> s_diagnosticOption =
         CommonOptionsFactory
             .CreateDiagnosticsOption(recursive: true)
             .WithDescription(CliCommandStrings.Diagnostics_OptionDescription);
 
-    internal static readonly CliCommand s_command = GetCommand();
+    internal static readonly Command s_command = GetCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
-        CliCommand command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
+        Command command = NewCommandFactory.Create(CommandName, (Func<ParseResult, CliTemplateEngineHost>)GetEngineHost);
         command.Options.Add(s_disableSdkTemplatesOption);
         command.Options.Add(s_disableProjectContextEvaluationOption);
         command.Options.Add(s_verbosityOption);
@@ -92,7 +93,7 @@ internal static class NewCommandParser
             else if (verbosityOptionResult != null
                 && !verbosityOptionResult.Implicit
                 // if verbosityOptionResult contains an error, ArgumentConverter.GetValueOrDefault throws an exception
-                // and callstack is pushed to process output 
+                // and callstack is pushed to process output
                 && !parseResult.Errors.Any(error => error.SymbolResult == verbosityOptionResult))
             {
                 VerbosityOptions userSetVerbosity = verbosityOptionResult.GetValueOrDefault<VerbosityOptions>();
@@ -167,7 +168,7 @@ internal static class NewCommandParser
             { "prefs:language", preferredLang },
             { "dotnet-cli-version", Product.Version },
             { "RuntimeFrameworkVersion", new Muxer().SharedFxVersion },
-            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() },
+            { "NetStandardImplicitPackageVersion", new FrameworkDependencyFile().GetNetStandardLibraryVersion() ?? "" },
         };
         return new CliTemplateEngineHost(
             HostIdentifier,

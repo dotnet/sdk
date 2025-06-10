@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.ComponentDetection.Detectors.NuGet;
@@ -42,7 +44,7 @@ namespace Microsoft.NET.Build.Tasks
             public string TargetFrameworkVersion { get; set; }
             public HashSet<string> FrameworkReferences { get; set; }
 
-            public override bool Equals(object? obj) => obj is CacheKey key &&
+            public override bool Equals(object obj) => obj is CacheKey key &&
                 TargetFrameworkIdentifier == key.TargetFrameworkIdentifier &&
                 TargetFrameworkVersion == key.TargetFrameworkVersion &&
                 FrameworkReferences.SetEquals(key.FrameworkReferences);
@@ -210,7 +212,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 string version;
                 if (key.TargetFrameworkIdentifier.Equals(".NETCoreApp", StringComparison.OrdinalIgnoreCase) && !p.Value.IsPrerelease)
-                { 
+                {
                     //  If a given version of a package is included in a framework, assume that any patches
                     //  to that package will be included in patches to the framework, and thus should be pruned.
                     //  See https://github.com/dotnet/sdk/issues/44566

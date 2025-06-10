@@ -20,6 +20,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public List<string> EnvironmentToRemove { get; } = new List<string>();
 
+        public bool RedirectStandardInput { get; set; }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
@@ -40,6 +42,18 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
+            return this;
+        }
+
+        public TestCommand WithStandardInput(string stdin)
+        {
+            Debug.Assert(ProcessStartedHandler == null);
+            RedirectStandardInput = true;
+            ProcessStartedHandler = (process) =>
+            {
+                process.StandardInput.Write(stdin);
+                process.StandardInput.Close();
+            };
             return this;
         }
 
@@ -83,6 +97,8 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 commandSpec.Arguments = Arguments.Concat(commandSpec.Arguments).ToList();
             }
+
+            commandSpec.RedirectStandardInput = RedirectStandardInput;
 
             return commandSpec;
         }
@@ -137,8 +153,11 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 Log.WriteLine($"❌{line}");
             });
-
-            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+            
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);

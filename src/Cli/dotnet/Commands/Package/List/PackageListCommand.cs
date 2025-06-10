@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.NuGet;
@@ -33,8 +35,8 @@ internal class PackageListCommand(
 
         if (!noRestore)
         {
-            ReportOutputFormat formatOption = _parseResult.GetValue((CliOption<ReportOutputFormat>)PackageListCommandParser.FormatOption);
-            bool interactive = _parseResult.GetValue((CliOption<bool>)PackageListCommandParser.InteractiveOption);
+            ReportOutputFormat formatOption = _parseResult.GetValue((Option<ReportOutputFormat>)PackageListCommandParser.FormatOption);
+            bool interactive = _parseResult.GetValue((Option<bool>)PackageListCommandParser.InteractiveOption);
             restoreExitCode = RunRestore(projectFile, formatOption, interactive);
         }
 

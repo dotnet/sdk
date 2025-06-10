@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
@@ -22,9 +24,7 @@ namespace Microsoft.NET.Build.Tasks
         public string PublishDir { get; set; }
 
         [Required]
-        public string TargetFrameworkMoniker { get; set; }
-
-        public string TargetPlatformMoniker { get; set; }
+        public string ToolPackShortTargetFrameworkName { get; set; }
 
         [Output]
         public ITaskItem[] ResolvedFileToPublishWithPackagePath { get; private set; }
@@ -49,9 +49,7 @@ namespace Microsoft.NET.Build.Tasks
                     relativePath));
                 var i = new TaskItem(fullpath);
 
-                var shortFrameworkName = NuGetFramework
-                    .ParseComponents(TargetFrameworkMoniker, TargetPlatformMoniker)
-                    .GetShortFolderName();
+                var shortFrameworkName = ToolPackShortTargetFrameworkName;
 
                 i.SetMetadata("PackagePath", $"tools/{shortFrameworkName}/any/{GetDirectoryPathInRelativePath(relativePath)}");
                 result.Add(i);

@@ -32,7 +32,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             ShellShimRepository shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
 
-            shellShimRepository.CreateShim(outputDll, new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", outputDll);
+
+            shellShimRepository.CreateShim(command);
 
             var stdOut = ExecuteInShell(shellCommandName, pathToShim);
 
@@ -53,7 +55,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
             ShellShimRepository shellShimRepository = ConfigBasicTestDependencyShellShimRepository(relativePathToShim);
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
 
-            shellShimRepository.CreateShim(outputDll, new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", outputDll);
+            shellShimRepository.CreateShim(command);
 
             var stdOut = ExecuteInShell(shellCommandName, relativePathToShim);
 
@@ -75,11 +78,13 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
 
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", outputDll);
+
             using (var transactionScope = new TransactionScope(
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                shellShimRepository.CreateShim(outputDll, new ToolCommandName(shellCommandName));
+                shellShimRepository.CreateShim(command);
                 transactionScope.Complete();
             }
 
@@ -96,8 +101,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var extraNonExistDirectory = Path.GetRandomFileName();
             var shellShimRepository = new ShellShimRepository(new DirectoryPath(Path.Combine(testFolder, extraNonExistDirectory)), GetAppHostTemplateFromStage2());
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", outputDll);
 
-            Action a = () => shellShimRepository.CreateShim(outputDll, new ToolCommandName(shellCommandName));
+            Action a = () => shellShimRepository.CreateShim(command);
 
             a.Should().NotThrow<DirectoryNotFoundException>();
         }
@@ -112,8 +118,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
             var pathToShim = GetNewCleanFolderUnderTempRoot();
             var shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             var shellCommandName = nameof(ShellShimRepositoryTests) + Path.GetRandomFileName();
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", outputDll);
 
-            shellShimRepository.CreateShim(outputDll, new ToolCommandName(shellCommandName));
+            shellShimRepository.CreateShim(command);
 
             var stdOut = ExecuteInShell(shellCommandName, pathToShim, arguments);
 
@@ -142,13 +149,15 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             }
 
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", new FilePath("dummy.dll"));
+
             Action a = () =>
             {
                 using (var scope = new TransactionScope(
                     TransactionScopeOption.Required,
                     TimeSpan.Zero))
                 {
-                    shellShimRepository.CreateShim(new FilePath("dummy.dll"), new ToolCommandName(shellCommandName));
+                    shellShimRepository.CreateShim(command);
 
                     scope.Complete();
                 }
@@ -184,7 +193,11 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 shellShimRepository = ConfigBasicTestDependencyShellShimRepository(pathToShim);
             }
 
+            
+
             Action intendedError = () => throw new ToolPackageException("simulated error");
+
+            
 
             Action a = () =>
             {
@@ -193,7 +206,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
                     TimeSpan.Zero))
                 {
                     FilePath targetExecutablePath = MakeHelloWorldExecutableDll(identifier: testMockBehaviorIsInSync.ToString());
-                    shellShimRepository.CreateShim(targetExecutablePath, new ToolCommandName(shellCommandName));
+                    var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", targetExecutablePath);
+                    shellShimRepository.CreateShim(command);
 
                     intendedError();
                     scope.Complete();
@@ -224,7 +238,9 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
-            shellShimRepository.RemoveShim(new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", new FilePath("dummyExe"));
+
+            shellShimRepository.RemoveShim(command);
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
@@ -250,11 +266,12 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
             FilePath targetExecutablePath = MakeHelloWorldExecutableDll(identifier: testMockBehaviorIsInSync.ToString());
-            shellShimRepository.CreateShim(targetExecutablePath, new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", targetExecutablePath);
+            shellShimRepository.CreateShim(command);
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
-            shellShimRepository.RemoveShim(new ToolCommandName(shellCommandName));
+            shellShimRepository.RemoveShim(command);
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
         }
@@ -280,7 +297,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
             FilePath targetExecutablePath = MakeHelloWorldExecutableDll(identifier: testMockBehaviorIsInSync.ToString());
-            shellShimRepository.CreateShim(targetExecutablePath, new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", targetExecutablePath);
+            shellShimRepository.CreateShim(command);
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
@@ -288,7 +306,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                shellShimRepository.RemoveShim(new ToolCommandName(shellCommandName));
+                shellShimRepository.RemoveShim(command);
 
                 Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
             }
@@ -317,7 +335,8 @@ namespace Microsoft.DotNet.ShellShim.Tests
             Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
             FilePath targetExecutablePath = MakeHelloWorldExecutableDll(identifier: testMockBehaviorIsInSync.ToString());
-            shellShimRepository.CreateShim(targetExecutablePath, new ToolCommandName(shellCommandName));
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", targetExecutablePath);
+            shellShimRepository.CreateShim(command);
 
             Directory.EnumerateFileSystemEntries(pathToShim).Should().NotBeEmpty();
 
@@ -325,7 +344,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
                 TransactionScopeOption.Required,
                 TimeSpan.Zero))
             {
-                shellShimRepository.RemoveShim(new ToolCommandName(shellCommandName));
+                shellShimRepository.RemoveShim(command);
 
                 Directory.EnumerateFileSystemEntries(pathToShim).Should().BeEmpty();
 
@@ -354,9 +373,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             ShellShimRepository shellShimRepository = GetShellShimRepositoryWithMockMaker(pathToShim);
 
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", new FilePath("dummy.dll"));
+
             shellShimRepository.CreateShim(
-                new FilePath("dummy.dll"),
-                new ToolCommandName(shellCommandName),
+                command,
                 new[] { new FilePath(dummyShimPath) });
 
             var createdShim = Directory.EnumerateFileSystemEntries(pathToShim).Single();
@@ -383,9 +403,10 @@ namespace Microsoft.DotNet.ShellShim.Tests
 
             FilePath[] filePaths = new[] { new FilePath(dummyShimPath), new FilePath("path" + dummyShimPath) };
 
+            var command = new ToolCommand(new ToolCommandName(shellCommandName), "dotnet", new FilePath("dummy.dll"));
+
             Action a = () => shellShimRepository.CreateShim(
-                new FilePath("dummy.dll"),
-                new ToolCommandName(shellCommandName),
+                command,
                 new[] { new FilePath(dummyShimPath), new FilePath("path" + dummyShimPath) });
 
             a.Should().Throw<ShellShimException>()

@@ -409,7 +409,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             cmd.StdErr.Should().BeEmpty();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42841")]
+        [Fact]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "AppWithLaunchSettings";
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testProjectDirectory = testInstance.Path;
             var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
 
-            var cmd = new DotnetCommand(Log, "run")
+            var cmd = new DotnetCommand(Log, "run", "--verbosity", "quiet")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute();
 
@@ -695,23 +695,6 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 result.Should().HaveStdOutContaining("Restore")
                     .And.HaveStdOutContaining("CoreCompile");
             }
-        }
-
-        [Fact]
-        public void ItDoesShowImportantLevelMessageByDefault()
-        {
-            var testAppName = "MSBuildTestApp";
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
-                .WithSource()
-                .WithProjectChanges(ProjectModification.AddDisplayMessageBeforeRestoreToProject);
-
-            var result = new DotnetCommand(Log, "run")
-                .WithWorkingDirectory(testInstance.Path)
-                .Execute();
-
-            // this message should show because interactivity (and therefore nuget auth) is the default
-            result.Should().Pass()
-                .And.HaveStdOutContaining("Important text");
         }
 
         [Fact]

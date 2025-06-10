@@ -44,6 +44,21 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
+  </PropertyGroup>
+
+  <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+
+  <Target Name="SetDotnetToolPackageType"
+          Condition=" '$(PackAsTool)' == 'true' "
+          BeforeTargets="GenerateNuspec">
+
+    <PropertyGroup>
+      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
+    </PropertyGroup>
+
+
     <!--
     PackageType is semicolon-delimited, case-insensitive, with an optional version.
 
@@ -57,14 +72,15 @@ Copyright (c) .NET Foundation. All rights reserved.
        PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
        PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
        PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
-    
+
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
     -->
-    <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';dotnettool;')) and !$(_PaddedPackageType.Contains(';dotnettool,')) ">DotnetTool;$(PackageType)</PackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
+    
+    <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+      <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
+    </AddPackageType>
+
+  </Target>
 
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>
@@ -75,18 +91,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NETSdkInformation" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ShowPreviewMessage" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
-    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
-          This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag.
-          This is done in Common.targets so that it applies to ApiCompat which uses RoslynTargetsPath in the outer build. -->
-    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
-                                                    and '$(_IsDisjointMSBuildVersion)' == 'true'
-                                                    and ('$(Language)' == 'C#'
-                                                    or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT'">
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'FrameworkPackage' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <RoslynTasksAssembly>$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
     <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>

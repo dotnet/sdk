@@ -1,29 +1,31 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 
 internal static class CompleteCommandParser
 {
-    public static readonly CliArgument<string> PathArgument = new("path");
+    public static readonly Argument<string> PathArgument = new("path");
 
-    public static readonly CliOption<int?> PositionOption = new("--position")
+    public static readonly Option<int?> PositionOption = new("--position")
     {
         HelpName = "command"
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("complete")
+        Command command = new("complete")
         {
             Hidden = true
         };

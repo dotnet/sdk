@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -10,20 +12,20 @@ internal static class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly CliOption<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
+    public static readonly Option<IEnumerable<string>> SourceOption = new ForwardedOption<IEnumerable<string>>("--source", "-s")
     {
         Description = CliCommandStrings.CmdSourceOptionDescription,
         HelpName = CliCommandStrings.CmdSourceOption
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
-    private static IEnumerable<CliOption> FullRestoreOptions() =>
+    private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(
             [
                 CommonOptions.VerbosityOption,
@@ -51,18 +53,18 @@ internal static class RestoreCommandParser
                 }.ForwardAs("-property:RestoreForceEvaluate=true"),
             ]);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
         var command = new DocumentedCommand("restore", DocsLink, CliCommandStrings.RestoreAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
         foreach (var option in FullRestoreOptions())
@@ -76,7 +78,7 @@ internal static class RestoreCommandParser
         return command;
     }
 
-    public static void AddImplicitRestoreOptions(CliCommand command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
+    public static void AddImplicitRestoreOptions(Command command, bool showHelp = false, bool useShortOptions = false, bool includeRuntimeOption = true, bool includeNoDependenciesOption = true)
     {
         foreach (var option in ImplicitRestoreOptions(showHelp, useShortOptions, includeRuntimeOption, includeNoDependenciesOption))
         {
@@ -102,7 +104,7 @@ internal static class RestoreCommandParser
         return $"-property:RuntimeIdentifiers={string.Join("%3B", convertedRids)}";
     }
 
-    private static IEnumerable<CliOption> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
+    private static IEnumerable<Option> ImplicitRestoreOptions(bool showHelp, bool useShortOptions, bool includeRuntimeOption, bool includeNoDependenciesOption)
     {
         if (showHelp && useShortOptions)
         {
@@ -110,7 +112,7 @@ internal static class RestoreCommandParser
         }
         else
         {
-            CliOption<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
+            Option<IEnumerable<string>> sourceOption = new ForwardedOption<IEnumerable<string>>("--source")
             {
                 Description = showHelp ? CliCommandStrings.CmdSourceOptionDescription : string.Empty,
                 HelpName = CliCommandStrings.CmdSourceOption,
@@ -186,7 +188,7 @@ internal static class RestoreCommandParser
 
         if (includeRuntimeOption)
         {
-            CliOption<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
+            Option<IEnumerable<string>> runtimeOption = new DynamicForwardedOption<IEnumerable<string>>("--runtime")
             {
                 Description = CliCommandStrings.CmdRuntimeOptionDescription,
                 HelpName = CliCommandStrings.CmdRuntimeOption,

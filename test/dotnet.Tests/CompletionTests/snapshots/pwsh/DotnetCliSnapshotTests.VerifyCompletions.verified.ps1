@@ -67,8 +67,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to build for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to use for building the project. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to use for building the project. The default for most projects is `'Debug`'.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to build for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to build for.")
                 [CompletionResult]::new('--version-suffix', '--version-suffix', [CompletionResultType]::ParameterName, "Set the value of the `$(VersionSuffix) property to use when building the project.")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
@@ -118,8 +118,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to clean for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to clean for. The target framework must also be specified in the project file.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to clean for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to clean for.")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to clean for. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to clean for. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
@@ -557,6 +557,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--disable-build-servers', '--disable-build-servers', [CompletionResultType]::ParameterName, "Force the command to ignore any persistent build servers.")
                 [CompletionResult]::new('--use-current-runtime', '--use-current-runtime', [CompletionResultType]::ParameterName, "Use current runtime as the target runtime.")
                 [CompletionResult]::new('--use-current-runtime', '--ucr', [CompletionResultType]::ParameterName, "Use current runtime as the target runtime.")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to build for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to build for.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -689,8 +691,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--nologo', '--nologo', [CompletionResultType]::ParameterName, "Do not display the startup banner or the copyright message.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to publish for. The target framework has to be specified in the project file.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to publish for. The target framework has to be specified in the project file.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to publish for. This is used when creating a self-contained deployment. The default is to publish a framework-dependent application.")
                 [CompletionResult]::new('--configuration', '--configuration', [CompletionResultType]::ParameterName, "The configuration to publish for. The default is `'Release`' for NET 8.0 projects and above, but `'Debug`' for older projects.")
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to publish for. The default is `'Release`' for NET 8.0 projects and above, but `'Debug`' for older projects.")
                 [CompletionResult]::new('--version-suffix', '--version-suffix', [CompletionResultType]::ParameterName, "Set the value of the `$(VersionSuffix) property to use when building the project.")
@@ -795,8 +797,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to run for. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to run for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to run for. The target framework must also be specified in the project file.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to run for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to run for.")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The path to the project file to run (defaults to the current directory if there is only one project).")
                 [CompletionResult]::new('--launch-profile', '--launch-profile', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
                 [CompletionResult]::new('--launch-profile', '-lp', [CompletionResultType]::ParameterName, "The name of the launch profile (if any) to use when launching the application.")
@@ -804,6 +806,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--no-build', '--no-build', [CompletionResultType]::ParameterName, "Do not build the project before running. Implies --no-restore.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
+                [CompletionResult]::new('--no-cache', '--no-cache', [CompletionResultType]::ParameterName, "Skip up to date checks and always build the program before running.")
                 [CompletionResult]::new('--self-contained', '--self-contained', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--self-contained', '--sc', [CompletionResultType]::ParameterName, "Publish the .NET runtime with your application so the runtime doesn`'t need to be installed on the target machine. The default is `'false.`' However, when targeting .NET 7 or lower, the default is `'true`' if a runtime identifier is specified.")
                 [CompletionResult]::new('--no-self-contained', '--no-self-contained', [CompletionResultType]::ParameterName, "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.")
@@ -839,6 +842,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--in-root', '--in-root', [CompletionResultType]::ParameterName, "Place project in root of the solution, rather than creating a solution folder.")
                 [CompletionResult]::new('--solution-folder', '--solution-folder', [CompletionResultType]::ParameterName, "The destination solution folder path to add the projects to.")
                 [CompletionResult]::new('--solution-folder', '-s', [CompletionResultType]::ParameterName, "The destination solution folder path to add the projects to.")
+                [CompletionResult]::new('--include-references', '--include-references', [CompletionResultType]::ParameterName, "Recursively add projects`' ReferencedProjects to solution")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -883,8 +887,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--skip-symbols', '--skip-symbols', [CompletionResultType]::ParameterName, "Skip creating symbol files which can be used for profiling the optimized assemblies.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to store packages for. The target framework has to be specified in the project file.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to store packages for. The target framework has to be specified in the project file.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to store packages for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to store packages for.")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--use-current-runtime', '--use-current-runtime', [CompletionResultType]::ParameterName, "Use current runtime as the target runtime.")
@@ -928,8 +932,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--configuration', '-c', [CompletionResultType]::ParameterName, "The configuration to use for running tests. The default for most projects is `'Debug`'.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to run tests for. The target framework must also be specified in the project file.")
                 [CompletionResult]::new('--framework', '-f', [CompletionResultType]::ParameterName, "The target framework to run tests for. The target framework must also be specified in the project file.")
-                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "--runtime")
-                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "--runtime")
+                [CompletionResult]::new('--runtime', '--runtime', [CompletionResultType]::ParameterName, "The target runtime to test for.")
+                [CompletionResult]::new('--runtime', '-r', [CompletionResultType]::ParameterName, "The target runtime to test for.")
                 [CompletionResult]::new('--no-restore', '--no-restore', [CompletionResultType]::ParameterName, "Do not restore the project before building.")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
@@ -961,13 +965,13 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;tool;install' {
             $staticCompletions = @(
-                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "--local")
-                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "--tool-path")
+                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "Install the tool for the current user.")
+                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "Install the tool for the current user.")
+                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "Install the tool and add to the local tool manifest (default).")
+                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "The directory where the tool will be installed. The directory will be created if it does not exist.")
                 [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the tool package to install.")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")
-                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "--tool-manifest")
+                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "Path to the manifest file.")
                 [CompletionResult]::new('--add-source', '--add-source', [CompletionResultType]::ParameterName, "Add an additional NuGet package source to use during installation.")
                 [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "Replace all NuGet package sources to use during installation with these.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to install the tool for.")
@@ -987,15 +991,19 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;tool;uninstall' {
             $staticCompletions = @(
-                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "--local")
-                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "--tool-path")
-                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "--tool-manifest")
+                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "Uninstall the tool from the current user`'s tools directory.")
+                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "Uninstall the tool from the current user`'s tools directory.")
+                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "Uninstall the tool and remove it from the local tool manifest.")
+                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "The directory containing the tool to uninstall.")
+                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "Path to the manifest file.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -1004,13 +1012,13 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         }
         'testhost;tool;update' {
             $staticCompletions = @(
-                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "--local")
-                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "--tool-path")
+                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "Install the tool for the current user.")
+                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "Install the tool for the current user.")
+                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "Install the tool and add to the local tool manifest (default).")
+                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "The directory where the tool will be installed. The directory will be created if it does not exist.")
                 [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the tool package to install.")
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")
-                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "--tool-manifest")
+                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "Path to the manifest file.")
                 [CompletionResult]::new('--add-source', '--add-source', [CompletionResultType]::ParameterName, "Add an additional NuGet package source to use during installation.")
                 [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "Replace all NuGet package sources to use during installation with these.")
                 [CompletionResult]::new('--framework', '--framework', [CompletionResultType]::ParameterName, "The target framework to install the tool for.")
@@ -1027,15 +1035,19 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;tool;list' {
             $staticCompletions = @(
-                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "--global")
-                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "--local")
-                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "--tool-path")
-                [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "--format")
+                [CompletionResult]::new('--global', '--global', [CompletionResultType]::ParameterName, "List tools installed for the current user.")
+                [CompletionResult]::new('--global', '-g', [CompletionResultType]::ParameterName, "List tools installed for the current user.")
+                [CompletionResult]::new('--local', '--local', [CompletionResultType]::ParameterName, "List the tools installed in the local tool manifest.")
+                [CompletionResult]::new('--tool-path', '--tool-path', [CompletionResultType]::ParameterName, "The directory containing the tools to list.")
+                [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, "The output format for the list of tools.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
@@ -1067,7 +1079,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")
                 [CompletionResult]::new('--add-source', '--add-source', [CompletionResultType]::ParameterName, "Add an additional NuGet package source to use during installation.")
-                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "--tool-manifest")
+                [CompletionResult]::new('--tool-manifest', '--tool-manifest', [CompletionResultType]::ParameterName, "Path to the manifest file.")
                 [CompletionResult]::new('--disable-parallel', '--disable-parallel', [CompletionResultType]::ParameterName, "Prevent restoring multiple projects in parallel.")
                 [CompletionResult]::new('--ignore-failed-sources', '--ignore-failed-sources', [CompletionResultType]::ParameterName, "Treat package source failures as warnings.")
                 [CompletionResult]::new('--no-http-cache', '--no-http-cache', [CompletionResultType]::ParameterName, "Do not cache packages and http requests.")

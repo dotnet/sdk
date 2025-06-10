@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.CommandLine.Completions;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -13,51 +15,15 @@ namespace Microsoft.DotNet.Cli.Commands.Package.Add;
 
 internal static class PackageAddCommandParser
 {
-    public static PackageIdentity ParsePackageIdentity(ArgumentResult packageArgResult)
-    {
-        // per the Arity of the CmdPackageArgument's Arity, we should have exactly one token - 
-        // this is a safety net for if we change the Arity in the future and forget to update this parser.
-        if (packageArgResult.Tokens.Count != 1)
-        {
-            throw new ArgumentException($"Expected exactly one token, but got {packageArgResult.Tokens.Count}.");
-        }
-        var token = packageArgResult.Tokens[0].Value;
-        var indexOfAt = token.IndexOf('@');
-        if (indexOfAt == -1)
-        {
-            // no version specified, so we just return the package id
-            return new PackageIdentity(token, null);
-        }
-        // we have a version specified, so we need to split the token into id and version
-        else
-        {
-            var id = token[0..indexOfAt];
-            var versionString = token[(indexOfAt + 1)..];
-            if (SemanticVersion.TryParse(versionString, out var version))
-            {
-                return new PackageIdentity(id, new NuGetVersion(version.Major, version.Minor, version.Patch, version.ReleaseLabels, version.Metadata));
-            }
-            else
-            {
-                throw new ArgumentException(string.Format(CliCommandStrings.InvalidSemVerVersionString, versionString));
-            }
-        };
-    }
-
-    public static readonly CliArgument<PackageIdentity> CmdPackageArgument = new DynamicArgument<PackageIdentity>(CliCommandStrings.CmdPackage)
-    {
-        Description = CliCommandStrings.CmdPackageDescription,
-        Arity = ArgumentArity.ExactlyOne,
-        CustomParser = ParsePackageIdentity,
-
-    }.AddCompletions((context) =>
+    public static readonly Argument<PackageIdentity> CmdPackageArgument = CommonArguments.PackageIdentityArgument(true)
+    .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
         var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
         return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
     });
 
-    public static readonly CliOption<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
+    public static readonly Option<string> VersionOption = new DynamicForwardedOption<string>("--version", "-v")
     {
         Description = CliCommandStrings.CmdVersionDescription,
         HelpName = CliCommandStrings.CmdVersion
@@ -79,48 +45,48 @@ internal static class PackageAddCommandParser
             }
         });
 
-    public static readonly CliOption<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new ForwardedOption<string>("--framework", "-f")
     {
         Description = CliCommandStrings.PackageAddCmdFrameworkDescription,
         HelpName = CliCommandStrings.PackageAddCmdFramework
     }.ForwardAsSingle(o => $"--framework {o}");
 
-    public static readonly CliOption<bool> NoRestoreOption = new("--no-restore", "-n")
+    public static readonly Option<bool> NoRestoreOption = new("--no-restore", "-n")
     {
         Description = CliCommandStrings.PackageAddCmdNoRestoreDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<string> SourceOption = new ForwardedOption<string>("--source", "-s")
+    public static readonly Option<string> SourceOption = new ForwardedOption<string>("--source", "-s")
     {
         Description = CliCommandStrings.PackageAddCmdSourceDescription,
         HelpName = CliCommandStrings.PackageAddCmdSource
     }.ForwardAsSingle(o => $"--source {o}");
 
-    public static readonly CliOption<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
+    public static readonly Option<string> PackageDirOption = new ForwardedOption<string>("--package-directory")
     {
         Description = CliCommandStrings.CmdPackageDirectoryDescription,
         HelpName = CliCommandStrings.CmdPackageDirectory
     }.ForwardAsSingle(o => $"--package-directory {o}");
 
-    public static readonly CliOption<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
+    public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption().ForwardIfEnabled("--interactive");
 
-    public static readonly CliOption<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
+    public static readonly Option<bool> PrereleaseOption = new ForwardedOption<bool>("--prerelease")
     {
         Description = CliStrings.CommandPrereleaseOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("--prerelease");
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("add", CliCommandStrings.PackageAddAppFullName);
+        Command command = new("add", CliCommandStrings.PackageAddAppFullName);
 
         VersionOption.Validators.Add(DisallowVersionIfPackageIdentityHasVersionValidator);
         command.Arguments.Add(CmdPackageArgument);

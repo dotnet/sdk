@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine.Invocation;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
@@ -34,7 +36,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string curren
     private static bool TryGetBuiltInCommand(string commandName, out Func<string[], int> commandFunc)
     {
         var command = Parser.GetBuiltInCommand(commandName);
-        if (command?.Action is AsynchronousCliAction action)
+        if (command?.Action is AsynchronousCommandLineAction action)
         {
             commandFunc = (args) => action.InvokeAsync(Parser.Instance.Parse(args)).Result;
             return true;

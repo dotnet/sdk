@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
@@ -44,9 +46,9 @@ internal class ToolInstallLocalCommand : CommandBase
         : base(parseResult)
     {
         _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Id;
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
-        _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
+        _explicitManifestFile = parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption);
 
         _createManifestIfNeeded = parseResult.GetValue(ToolInstallCommandParser.CreateManifestIfNeededOption);
 

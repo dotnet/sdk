@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -36,7 +38,7 @@ internal class ToolUpdateGlobalOrToolPathCommand : CommandBase
             createShellShimRepository ?? ShellShimRepositoryFactory.CreateShellShimRepository;
 
         PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Id is string s)
         {
             packageId = new PackageId(s);
         }

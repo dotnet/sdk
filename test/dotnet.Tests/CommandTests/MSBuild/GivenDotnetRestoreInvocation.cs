@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -8,7 +9,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetRestoreInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-target:Restore", "-property:NuGetInteractive=true"];
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-target:Restore"];
+        private static readonly string NuGetDisabledProperty = "-property:NuGetInteractive=false";
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetRestoreInvocation));
 
@@ -46,10 +48,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                RestoreCommand.FromArgs(args, msbuildPath)
+                ((MSBuildForwardingApp)RestoreCommand.FromArgs(args, msbuildPath))
                     .GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs, NuGetDisabledProperty]);
             });
         }
     }

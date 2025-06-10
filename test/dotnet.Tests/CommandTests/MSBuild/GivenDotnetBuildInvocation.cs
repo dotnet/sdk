@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Commands.Restore;
 using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
@@ -10,7 +11,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     {
         string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
 
-        const string NugetInteractiveProperty = "-property:NuGetInteractive=true";
+        const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
         private static readonly string WorkingDirectory =
             TestPathUtilities.FormatAbsolutePath(nameof(GivenDotnetBuildInvocation));
@@ -45,7 +46,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedAdditionalArgs = expectedAdditionalArgs.Select(arg => arg.Replace("<cwd>", WorkingDirectory)).ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 var commandArgs = command.GetArgumentTokensToMSBuild();
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
-                var command = BuildCommand.FromArgs(args, msbuildPath);
+                var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
                 command.SeparateRestoreCommand.GetArgumentTokensToMSBuild()
                     .Should()

@@ -10,5 +10,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public string PackageId;
         public string Version;
         public string ToolCommandName;
+        public string ToolFormatVersion = "1";
+
+        /// <summary>
+        /// Key: Path inside package.  Value: Contents of file
+        /// </summary>
+        public Dictionary<string, string> AdditionalFiles { get; } = new();
     }
 }

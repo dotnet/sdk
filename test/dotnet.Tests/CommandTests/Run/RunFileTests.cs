@@ -1,6 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.Versioning;
+using System.Text.Json;
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 
@@ -16,6 +19,9 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Console.WriteLine("Hello from " + System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
         #if !DEBUG
         Console.WriteLine("Release config");
+        #endif
+        #if CUSTOM_DEFINE
+        Console.WriteLine("Custom define");
         #endif
         """;
 
@@ -708,11 +714,87 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
-    public void NoBuild()
+    public void NoRestore()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // It is an error when never restored before.
+        new DotnetCommand(Log, "run", "--no-restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("NETSDK1004"); // error NETSDK1004: Assets file '...\obj\project.assets.json' not found. Run a NuGet package restore to generate this file.
+
+        // Run restore.
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // --no-restore works.
+        new DotnetCommand(Log, "run", "--no-restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [Fact]
+    public void NoBuild_01()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // It is an error when never built before.
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("An error occurred trying to start process");
+
+        // Now build it.
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // Changing the program has no effect when it is not built.
+        File.WriteAllText(programFile, """Console.WriteLine("Changed");""");
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        // The change has an effect when built again.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Changed");
+    }
+
+    [Fact]
+    public void NoBuild_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
         // It is an error when never built before.
         new DotnetCommand(Log, "run", "--no-build", "Program.cs")
@@ -742,6 +824,42 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Changed");
+    }
+
+    [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
+    public void ArtifactsDirectory_Permissions()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir);
+
+        // Re-create directory with incorrect permissions.
+        Directory.Delete(artifactsDir, recursive: true);
+        Directory.CreateDirectory(artifactsDir, UnixFileMode.GroupRead | UnixFileMode.GroupWrite | UnixFileMode.GroupExecute);
+        var actualMode = new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().NotBe(UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute, artifactsDir).And.Subject;
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining("build-start.cache"); // Unhandled exception: Access to the path '.../build-start.cache' is denied.
+
+        // Build shouldn't have changed the permissions.
+        new DirectoryInfo(artifactsDir).UnixFileMode
+            .Should().Be(actualMode, artifactsDir);
     }
 
     [Fact]
@@ -869,5 +987,482 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 Description:
                   Sample app for System.CommandLine
                 """);
+    }
+
+    [Fact] // https://github.com/dotnet/sdk/issues/48990
+    public void SdkReference()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.AppHost.Sdk 9.2.1
+            #:package Aspire.Hosting.AppHost@9.2.1
+
+            var builder = DistributedApplication.CreateBuilder(args);
+            builder.Build().Run();
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+    }
+
+    [Fact]
+    public void UpToDate()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        Build(expectedUpToDate: false);
+
+        Build(expectedUpToDate: true);
+
+        Build(expectedUpToDate: true);
+
+        // Change the source file (a rebuild is necessary).
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + " ");
+
+        Build(expectedUpToDate: false);
+
+        Build(expectedUpToDate: true);
+
+        // Change an unrelated source file (no rebuild necessary).
+        File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "test");
+
+        Build(expectedUpToDate: true);
+
+        // Add an implicit build file (a rebuild is necessary).
+        string buildPropsFile = Path.Join(testInstance.Path, "Directory.Build.props");
+        File.WriteAllText(buildPropsFile, """
+            <Project>
+                <PropertyGroup>
+                    <DefineConstants>$(DefineConstants);CUSTOM_DEFINE</DefineConstants>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        Build(expectedUpToDate: false, expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        Build(expectedUpToDate: true, expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        // Change the implicit build file (a rebuild is necessary).
+        string importedFile = Path.Join(testInstance.Path, "Settings.props");
+        File.WriteAllText(importedFile, """
+            <Project>
+            </Project>
+            """);
+        File.WriteAllText(buildPropsFile, """
+            <Project>
+                <Import Project="Settings.props" />
+            </Project>
+            """);
+
+        Build(expectedUpToDate: false);
+
+        // Change the imported build file (this is not recognized).
+        File.WriteAllText(importedFile, """
+            <Project>
+                <PropertyGroup>
+                    <DefineConstants>$(DefineConstants);CUSTOM_DEFINE</DefineConstants>
+                </PropertyGroup>
+            </Project>
+            """);
+
+        Build(expectedUpToDate: true);
+
+        // Force rebuild.
+        Build(expectedUpToDate: false, args: ["--no-cache"], expectedOutput: """
+            Hello from Program
+            Custom define
+            """);
+
+        // Remove an implicit build file (a rebuild is necessary).
+        File.Delete(buildPropsFile);
+        Build(expectedUpToDate: false);
+
+        // Force rebuild.
+        Build(expectedUpToDate: false, args: ["--no-cache"]);
+
+        Build(expectedUpToDate: true);
+
+        // Pass argument (no rebuild necessary).
+        Build(expectedUpToDate: true, args: ["--", "test-arg"], expectedOutput: """
+            echo args:test-arg
+            Hello from Program
+            """);
+
+        // Change config (a rebuild is necessary).
+        Build(expectedUpToDate: false, args: ["-c", "Release"], expectedOutput: """
+            Hello from Program
+            Release config
+            """);
+
+        // Keep changed config (no rebuild necessary).
+        Build(expectedUpToDate: true, args: ["-c", "Release"], expectedOutput: """
+            Hello from Program
+            Release config
+            """);
+
+        // Change config back (a rebuild is necessary).
+        Build(expectedUpToDate: false);
+
+        // Build with a failure.
+        new DotnetCommand(Log, ["run", "Program.cs", "-p:LangVersion=Invalid"])
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("error CS1617"); // Invalid option 'Invalid' for /langversion.
+
+        // A rebuild is necessary since the last build failed.
+        Build(expectedUpToDate: false);
+
+        void Build(bool expectedUpToDate, ReadOnlySpan<string> args = default, string expectedOutput = "Hello from Program")
+        {
+            new DotnetCommand(Log, ["run", "Program.cs", "-bl", .. args])
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut(expectedUpToDate
+                    ? $"""
+                        {CliCommandStrings.NoBinaryLogBecauseUpToDate}
+                        {expectedOutput}
+                        """
+                    : expectedOutput);
+
+            var binlogs = new DirectoryInfo(testInstance.Path)
+                .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly);
+
+            binlogs.Select(f => f.Name)
+                .Should().BeEquivalentTo(
+                    expectedUpToDate
+                        ? ["msbuild-dotnet-run.binlog"]
+                        : ["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
+
+            foreach (var binlog in binlogs)
+            {
+                binlog.Delete();
+            }
+        }
+    }
+
+    [Fact]
+    public void UpToDate_InvalidOptions()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
+
+        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-restore")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
+    }
+
+    private static string ToJson(string s) => JsonSerializer.Serialize(s);
+
+    /// <summary>
+    /// Simplifies using interpolated raw strings with nested JSON,
+    /// e.g, in <c>$$"""{x:{y:1}}"""</c>, the <c>}}</c> would result in an error.
+    /// </summary>
+    private const string nop = "";
+
+    [Fact]
+    public void Api()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #!/program
+            #:sdk Microsoft.NET.Sdk
+            #:sdk Aspire.Hosting.Sdk 9.1.0
+            #:property TargetFramework net11.0
+            #:package System.CommandLine 2.0.0-beta4.22272.1
+            #:property LangVersion preview
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <TargetFramework>net11.0</TargetFramework>
+                        <LangVersion>preview</LangVersion>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+                      </ItemGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+                      <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":[]}
+                """);
+    }
+
+    [Fact]
+    public void Api_Diagnostic_01()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            #:property LangVersion preview
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":1,"Character":0},"End":{"Line":1,"Character":30}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.CannotConvertDirective, $"{programPath}:2"))}}}]}
+                """.ReplaceLineEndings(""));
+    }
+
+    [Fact]
+    public void Api_Diagnostic_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            #:unknown directive
+            Console.WriteLine();
+            """);
+
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetProject","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":"/artifacts"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($$"""
+                {"$type":"Project","Version":1,"Content":{{ToJson($"""
+                    <Project>
+
+                      <PropertyGroup>
+                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
+                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                      </PropertyGroup>
+
+                      <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
+                      <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+                      <PropertyGroup>
+                        <OutputType>Exe</OutputType>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                        <ImplicitUsings>enable</ImplicitUsings>
+                        <Nullable>enable</Nullable>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <EnableDefaultItems>false</EnableDefaultItems>
+                      </PropertyGroup>
+
+                      <PropertyGroup>
+                        <Features>$(Features);FileBasedProgram</Features>
+                      </PropertyGroup>
+
+                      <ItemGroup>
+                        <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+
+                      <!--
+                        Override targets which don't work with project files that are not present on disk.
+                        See https://github.com/NuGet/Home/issues/14148.
+                      -->
+
+                      <Target Name="_FilterRestoreGraphProjectInputItems"
+                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
+                              Returns="@(FilteredRestoreGraphProjectInputItems)">
+                        <ItemGroup>
+                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GetAllRestoreProjectPathItems"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
+                              Returns="@(_RestoreProjectPathItems)">
+                        <ItemGroup>
+                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
+                        </ItemGroup>
+                      </Target>
+
+                      <Target Name="_GenerateRestoreGraph"
+                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                              Returns="@(_RestoreGraphEntry)">
+                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
+                      </Target>
+
+                    </Project>
+
+                    """)}},"Diagnostics":
+                [{"Location":{
+                "Path":{{ToJson(programPath)}},
+                "Span":{"Start":{"Line":0,"Character":0},"End":{"Line":1,"Character":0}{{nop}}}{{nop}}},
+                "Message":{{ToJson(string.Format(CliCommandStrings.UnrecognizedDirective, "unknown", $"{programPath}:1"))}}}]}
+                """.ReplaceLineEndings(""));
+    }
+
+    [Fact]
+    public void Api_Error()
+    {
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput("""
+                {"$type":"Unknown1"}
+                {"$type":"Unknown2"}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("""
+                {"$type":"Error","Version":1,"Message":
+                """)
+            .And.HaveStdOutContaining("Unknown1")
+            .And.HaveStdOutContaining("Unknown2");
     }
 }

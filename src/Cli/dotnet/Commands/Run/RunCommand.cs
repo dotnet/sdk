@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.Diagnostics;
@@ -43,6 +41,7 @@ public class RunCommand
 
     public string[] Args { get; set; }
     public bool NoRestore { get; }
+    public bool NoCache { get; }
     public VerbosityOptions? Verbosity { get; }
     public bool Interactive { get; }
     public string[] RestoreArgs { get; }
@@ -69,6 +68,7 @@ public class RunCommand
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
+        bool noCache,
         bool interactive,
         VerbosityOptions? verbosity,
         string[] restoreArgs,
@@ -85,6 +85,7 @@ public class RunCommand
         Args = args;
         Interactive = interactive;
         NoRestore = noRestore;
+        NoCache = noCache;
         Verbosity = verbosity;
         RestoreArgs = GetRestoreArguments(restoreArgs);
         EnvironmentVariables = environmentVariables;
@@ -107,12 +108,17 @@ public class RunCommand
 
             EnsureProjectIsBuilt(out projectFactory);
         }
-        else if (EntryPointFileFullPath is not null)
+        else
         {
-            projectFactory = new VirtualProjectBuildingCommand
+            if (EntryPointFileFullPath is not null)
             {
-                EntryPointFileFullPath = EntryPointFileFullPath,
-            }.PrepareProjectInstance().CreateProjectInstance;
+                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
+            }
+
+            if (NoCache)
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            }
         }
 
         try
@@ -245,17 +251,9 @@ public class RunCommand
         int buildResult;
         if (EntryPointFileFullPath is not null)
         {
-            var command = new VirtualProjectBuildingCommand
-            {
-                EntryPointFileFullPath = EntryPointFileFullPath,
-            };
-
-            CommonRunHelpers.AddUserPassedProperties(command.GlobalProperties, RestoreArgs);
-
+            var command = CreateVirtualCommand();
             projectFactory = command.CreateProjectInstance;
-            buildResult = command.Execute(
-                binaryLoggerArgs: RestoreArgs,
-                consoleLogger: MakeTerminalLogger(Verbosity ?? GetDefaultVerbosity()));
+            buildResult = command.Execute();
         }
         else
         {
@@ -276,13 +274,28 @@ public class RunCommand
         }
     }
 
+    private VirtualProjectBuildingCommand CreateVirtualCommand()
+    {
+        Debug.Assert(EntryPointFileFullPath != null);
+
+        return new(
+            entryPointFileFullPath: EntryPointFileFullPath,
+            msbuildArgs: RestoreArgs,
+            verbosity: Verbosity,
+            interactive: Interactive)
+        {
+            NoRestore = NoRestore,
+            NoCache = NoCache,
+        };
+    }
+
     private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
     {
         List<string> args = ["-nologo"];
 
         if (Verbosity is null)
         {
-            args.Add($"-verbosity:{GetDefaultVerbosity()}");
+            args.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
         }
 
         args.AddRange(cliRestoreArgs);
@@ -290,11 +303,11 @@ public class RunCommand
         return [.. args];
     }
 
-    private VerbosityOptions GetDefaultVerbosity()
+    internal static VerbosityOptions GetDefaultVerbosity(bool interactive)
     {
         // --interactive need to output guide for auth. It cannot be
         // completely "quiet"
-        return Interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
+        return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
     private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
@@ -308,7 +321,7 @@ public class RunCommand
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[]? restoreArgs, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
@@ -381,8 +394,7 @@ public class RunCommand
         }
     }
 
-
-    static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 
@@ -530,6 +542,7 @@ public class RunCommand
             noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
             noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
+            noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
             verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             restoreArgs: [.. restoreArgs],

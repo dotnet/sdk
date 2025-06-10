@@ -50,14 +50,16 @@ jobs:
           if [[ "$current_date" > "$third_tuesday" || "$current_date" < "$first_tuesday" ]]; then
             echo "Within the label period. Checking if the branch matches..."
 
-            # Get all open PRs targeting branches release/8* and release/9* excluding release/9.0.3xx
+            # Get all open PRs targeting branches release/8* and release/9*
             echo "Running gh pr list query..."
             prs=$(gh pr list --state open --limit 200 --json number,baseRefName,author,labels)
             echo "Total PRs Count: $(echo "$prs" | jq length)"
             echo "PRs JSON: $prs"
 
-            echo "Filtering PRs targeting release/8* and release/9* excluding release/9.0.3xx..."
-            prs_targeting_branches=$(echo "$prs" | jq '[.[] | select(.baseRefName | test("^release/[89].*")) | select(.baseRefName | test("^release/9.0.3xx") | not)]')
+            echo "Filtering PRs targeting release/8* and release/9*"
+            # when the next feature band branch gets created, we'll want to add a filter here for a few months while the feature band previews are ongoing
+            # | select(.baseRefName | test("^release/10.0.2xx") | not)
+            prs_targeting_branches=$(echo "$prs" | jq '[.[] | select(.baseRefName | test("^release/[89].*"))]')
             echo "Count of PRs targeting specific branches: $(echo "$prs_targeting_branches" | jq length)"
 
             echo "Filtering PRs without Branch Lockdown label..."
