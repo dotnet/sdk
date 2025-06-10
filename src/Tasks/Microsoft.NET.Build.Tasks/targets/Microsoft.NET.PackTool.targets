@@ -21,7 +21,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
              AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="Microsoft.NET.Build.Tasks.RemoveTargetFromList"
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
+  <!--
+
+  TODO:
+  - We now generate an error when trying to install package as a tool if it's not of type DotnetTool: https://github.com/dotnet/sdk/issues/37010
+    - Does this need to be documented as a breaking change?
+  - Consider a way of declaring what RID a RID-specific package is for, besides just the convention in the package ID
+  -->
+
+  
   <!--
     Mark all dependency as private assets. But keep them as Publish. So dependency DLLs will be included in NuGet package, while
     there is no dependency in nuspec. And add Microsoft.NETCore.Platforms, which is used to select correct RID assets.
@@ -29,14 +40,83 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <_ToolsSettingsFilePath>$(IntermediateOutputPath)DotnetToolSettings.xml</_ToolsSettingsFilePath>
     <SuppressDependenciesWhenPacking Condition=" '$(PackAsTool)' == 'true' ">true</SuppressDependenciesWhenPacking>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">_PublishBuildAlternative</_PackToolPublishDependency>
-    <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+
   </PropertyGroup>
 
-  <Target Name="PackTool" DependsOnTargets="GenerateToolsSettingsFileFromBuildProperty;$(_PackToolPublishDependency);_PackToolValidation" Condition=" '$(PackAsTool)' == 'true' ">
+  <Target Name="PackAsToolSwitchToNoBuild"
+          BeforeTargets="_IntermediatePack"
+          Condition=" '$(PackAsTool)' == 'true' And
+                      '@(ToolPackageRuntimeIdentifier)' != '' And
+                      '$(RuntimeIdentifier)' == ''">
+
+    <!-- If we are building the primary package for a tool with RID-specific packages, we don't include any of the build output in the package, so we don't need to run Build.
+         We might not be able to build without a RuntimeIdentifier if PublishAOT or SelfContained is set to true, so we skip the build so it doesn't fail.
+
+          We use a task to remove the Build target from GenerateNuspecDependsOn. This is effectively what happens if NoBuild is set, but we can't use the same logic because
+          we need to look at items (ToolPackageRuntimeIdentifier) to determine if we are building the primary package for a tool with RID-specific packages.  So we have to fix
+          up the dependency list afterwards.
+
+          We also can't use MSBuild property functions for string replacement to remove Build from the list, because MSBuild will escape the semicolons as %3B, and there
+          doesn't seem to be a way of avoiding that without using a task.
+     -->
+    <RemoveTargetFromList TargetList="$(GenerateNuspecDependsOn)"
+                          TargetToRemove="Build">
+      <Output TaskParameter="UpdatedTargetList" PropertyName="GenerateNuspecDependsOn" />
+    </RemoveTargetFromList>
+    
+  </Target>
+
+ <!--
+    PackageId must be set before:
+     - _GenerateRestoreProjectSpec -> _GetRestoreSettings
+     - _GenerateToolsSettingsFileInputCache
+     - _GenerateShimInputCache
+     - _GetOutputItemsFromPack
+  -->
+  <Target Name="SetPackToolProperties"
+          BeforeTargets="_GenerateRestoreProjectSpec;_GenerateToolsSettingsFileInputCache;_GenerateShimInputCache;_GetOutputItemsFromPack">
+
+    <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
+       (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
+    <PropertyGroup Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">
+      <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
+                                                   ('@(ToolPackageRuntimeIdentifier)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+      <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'">
+      <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' != 'true' and '$(NoBuild)' != 'true') and $(IsPublishable) == 'true' ">_PublishBuildAlternative</_PackToolPublishDependency>
+      <_PackToolPublishDependency Condition=" ('$(GeneratePackageOnBuild)' == 'true' or '$(NoBuild)' == 'true') and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
+    </PropertyGroup>
+
+    <!-- Needs to be in a target so we don't need to worry about evaluation order with NativeBinary property -->
+    <PropertyGroup Condition="'$(ToolEntryPoint)' == ''">
+      <ToolEntryPoint>$(TargetFileName)</ToolEntryPoint>
+      <!-- TODO: What property to use for single file (non AOT) or other modes? -->
+      <ToolEntryPoint Condition=" '$(PublishAot)' == 'true' ">$([System.IO.Path]::GetFileName($(NativeBinary)))</ToolEntryPoint>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'@(ToolPackageRuntimeIdentifier)' != '' And '$(RuntimeIdentifier)' != ''">
+      <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
+    </PropertyGroup>
+
+  </Target>
+
+  <Target Name="PackToolImplementation" Condition="'$(_ToolPackageShouldIncludeImplementation)' == 'true'">
+
     <ItemGroup>
       <_GeneratedFiles Include="$(PublishDepsFilePath)" Condition="'$(GenerateDependencyFile)' != 'true' or '$(_UseBuildDependencyFile)' == 'true'" />
       <_GeneratedFiles Include="$(PublishRuntimeConfigFilePath)"/>
+    </ItemGroup>
+    
+  </Target>
+
+  <!-- This indirection target essentially allows one target dependency (SetPackToolProperties) of PackTool modify the dependencies of PackTool. -->
+  <Target Name="PackToPublishDependencyIndirection"
+          DependsOnTargets="$(_PackToolPublishDependency)"/>
+  
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
+    <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
     </ItemGroup>
 
@@ -44,15 +124,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       AppHostIntermediatePath="$(AppHostIntermediatePath)"
       ResolvedFileToPublish="@(ResolvedFileToPublish)"
       PublishDir="$(PublishDir)"
-      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
-      TargetPlatformMoniker="$(TargetPlatformMoniker)">
-
+      ToolPackShortTargetFrameworkName="$(_ToolPackShortTargetFrameworkName)">
       <Output TaskParameter="ResolvedFileToPublishWithPackagePath" ItemName="_ResolvedFileToPublishWithPackagePath" />
     </ResolveToolPackagePaths>
 
     <ItemGroup>
       <TfmSpecificPackageFile Include="@(_GeneratedFiles)">
-        <PackagePath>tools/$(_NuGetShortFolderName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
+        <PackagePath>tools/$(_ToolPackShortTargetFrameworkName)/any/%(_GeneratedFiles.RecursiveDir)%(_GeneratedFiles.Filename)%(_GeneratedFiles.Extension)</PackagePath>
       </TfmSpecificPackageFile>
 
       <TfmSpecificPackageFile Include="@(_ResolvedFileToPublishWithPackagePath)">
@@ -63,15 +141,25 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
-    <ToolEntryPoint Condition=" '$(ToolEntryPoint)' == '' ">$(TargetFileName)</ToolEntryPoint>
+    <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
+    <ToolCommandRunner>dotnet</ToolCommandRunner>
+    <ToolCommandRunner Condition="'$(SelfContained)' == 'true'">executable</ToolCommandRunner>
   </PropertyGroup>
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
     <ItemGroup>
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolEntryPoint)" />
       <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandName)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolCommandRunner)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(ToolRuntimeIdentifier)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(PackageId)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="$(Version)" />
+      <_GenerateToolsSettingsFileInputCacheToHash Include="@(ToolPackageRuntimeIdentifier->'%(Identity)%(Version)')" />
     </ItemGroup>
 
     <Hash ItemsToHash="@(_GenerateToolsSettingsFileInputCacheToHash)">
@@ -98,6 +186,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <GenerateToolsSettingsFile
        EntryPointRelativePath="$(ToolEntryPoint)"
        CommandName="$(ToolCommandName)"
+       CommandRunner="$(ToolCommandRunner)"
+       RuntimeIdentifier="$(ToolRuntimeIdentifier)"
+       ToolPackageId="$(PackageId)"
+       ToolPackageVersion="$(Version)"
+       ToolPackageRuntimeIdentifiers="@(ToolPackageRuntimeIdentifier)"
        ToolsSettingsFilePath="$(_ToolsSettingsFilePath)" />
   </Target>
 
@@ -107,12 +200,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
       TargetPlatformMoniker="$(TargetPlatformMoniker)">
 
-      <Output TaskParameter="NuGetShortFolderName" PropertyName="_NuGetShortFolderName" />
+      <Output TaskParameter="NuGetShortFolderName" PropertyName="_ToolPackShortTargetFrameworkName" />
 
     </GetNuGetShortFolderName>
 
-    <NETSdkError Condition=" '$(SelfContained)' == 'true' "
-             ResourceName="PackAsToolCannotSupportSelfContained" />
+    <PropertyGroup>
+      <_ToolPackShortTargetFrameworkName Condition="'$(SelfContained)' == 'true'">any</_ToolPackShortTargetFrameworkName>
+    </PropertyGroup>
 
     <NETSdkError Condition=" '$(TargetFrameworkIdentifier)' != '.NETCoreApp' "
                  ResourceName="DotnetToolOnlySupportNetcoreapp" />
@@ -151,7 +245,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -180,7 +274,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_NuGetShortFolderName)"
+      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)/shims/$(_ToolPackShortTargetFrameworkName)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 

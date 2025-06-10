@@ -29,7 +29,9 @@ public static class BuildCommand
             parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
             parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
 
-        string[] fileArgument = parseResult.GetValue(BuildCommandParser.SlnOrProjectOrFileArgument) ?? [];
+        string[] args = parseResult.GetValue(BuildCommandParser.SlnOrProjectOrFileArgument) ?? [];
+
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         string[] forwardedOptions = parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()).ToArray();
 
@@ -39,11 +41,11 @@ public static class BuildCommand
 
         CommandBase command;
 
-        if (fileArgument is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             command = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: forwardedOptions,
+                msbuildArgs: [.. forwardedOptions, .. binLogArgs],
                 verbosity: parseResult.GetValue(CommonOptions.VerbosityOption),
                 interactive: parseResult.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
             {
@@ -65,7 +67,7 @@ public static class BuildCommand
 
             msbuildArgs.AddRange(forwardedOptions);
 
-            msbuildArgs.AddRange(fileArgument);
+            msbuildArgs.AddRange(args);
 
             command = new RestoringCommand(
                 msbuildArgs: msbuildArgs,

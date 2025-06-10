@@ -536,6 +536,8 @@ _testhost() {
                         '--disable-build-servers[Force the command to ignore any persistent build servers.]' \
                         '--use-current-runtime[Use current runtime as the target runtime.]' \
                         '--ucr[Use current runtime as the target runtime.]' \
+                        '--runtime=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
+                        '-r=[The target runtime to build for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::PROJECT | SOLUTION -- The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.: ' \

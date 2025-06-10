@@ -319,6 +319,9 @@
   <data name="ToolSettingsUnsupportedRunner" xml:space="preserve">
     <value>Command '{0}' uses unsupported runner '{1}'."</value>
   </data>
+  <data name="ToolUnsupportedRuntimeIdentifier" xml:space="preserve">
+    <value>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</value>
+  </data>
   <data name="ShellShimConflict" xml:space="preserve">
     <value>Command '{0}' conflicts with an existing command from another tool.</value>
   </data>
@@ -413,6 +416,9 @@ setx PATH "%PATH%;{0}"
   <data name="ToolPackageConflictPackageId" xml:space="preserve">
     <value>Tool '{0}' (version '{1}') is already installed.</value>
   </data>
+  <data name="ToolPackageNotATool" xml:space="preserve">
+    <value>Package {0} is not a .NET tool.</value>
+  </data>
   <data name="FailedToFindStagedToolPackage" xml:space="preserve">
     <value>Failed to find staged tool package '{0}'.</value>
   </data>
@@ -435,7 +441,10 @@ setx PATH "%PATH%;{0}"
     <value>More than one packaged shim is available: {0}.</value>
   </data>
   <data name="FailedToReadNuGetLockFile" xml:space="preserve">
-    <value>Failed to read NuGet LockFile for tool package '{0}': {1}</value>
+    <value>Failed to read NuGet assets file for tool package '{0}': {1}</value>
+  </data>
+  <data name="FailedToFindLibraryInAssetsFile" xml:space="preserve">
+    <value>Failed to find library in NuGet assets file for tool package '{0}': {1}</value>
   </data>
   <data name="LevelArgumentName" xml:space="preserve">
     <value>LEVEL</value>

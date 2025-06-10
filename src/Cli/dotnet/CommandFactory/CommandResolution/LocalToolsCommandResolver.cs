@@ -7,6 +7,7 @@ using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
@@ -82,22 +83,39 @@ internal class LocalToolsCommandResolver(
                 NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                 Constants.AnyRid,
                 toolCommandName),
-            out var restoredCommand))
+            out var toolCommand))
         {
-            if (!_fileSystem.File.Exists(restoredCommand.Executable.Value))
+            if (!_fileSystem.File.Exists(toolCommand.Executable.Value))
             {
                 throw new GracefulException(string.Format(CliStrings.NeedRunToolRestore,
                     toolCommandName.ToString()));
             }
 
-            if (toolManifestPackage.RollForward || allowRollForward)
+            if (toolCommand.Runner == "dotnet")
             {
-                arguments.CommandArguments = ["--allow-roll-forward", .. arguments.CommandArguments];
-            }
+                if (toolManifestPackage.RollForward || allowRollForward)
+                {
+                    arguments.CommandArguments = ["--allow-roll-forward", .. arguments.CommandArguments];
+                }
 
-            return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                restoredCommand.Executable.Value,
-                arguments.CommandArguments);
+                return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
+                    toolCommand.Executable.Value,
+                    arguments.CommandArguments);
+            }
+            else if (toolCommand.Runner == "executable")
+            {
+                var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
+                    arguments.CommandArguments);
+
+                return new CommandSpec(
+                    toolCommand.Executable.Value,
+                    escapedArgs);
+            }
+            else
+            {
+                throw new GracefulException(string.Format(CliStrings.ToolSettingsUnsupportedRunner,
+                    toolCommand.Name, toolCommand.Runner));
+            }
         }
         else
         {
