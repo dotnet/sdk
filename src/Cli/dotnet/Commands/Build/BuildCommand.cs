@@ -49,7 +49,7 @@ public static class BuildCommand
             {
                 NoRestore = noRestore,
                 NoCache = true,
-                NoIncremental = noIncremental,
+                BuildTarget = noIncremental ? "Rebuild" : "Build",
             };
         }
         else
