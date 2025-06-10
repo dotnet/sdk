@@ -1013,6 +1013,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1139: ターゲット プラットフォーム識別子 {0} は認識されませんでした。</target>
         <note>{StrBegins="NETSDK1139: "}</note>
       </trans-unit>
+      <trans-unit id="UnsupportedToolCommandRunner">
+        <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
+        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <note>{StrBegins="NETSDK1227: "}</note>
+      </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="needs-review-translation">NETSDK1200: UseArtifactsPath が true に設定されていて ArtifactsPath が設定されていない場合は、成果物フォルダーの場所を特定するには Directory.Build.props ファイルが必要です。</target>

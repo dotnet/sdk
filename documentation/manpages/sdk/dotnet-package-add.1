@@ -14,29 +14,35 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-add-package" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-package-add" "1" "2025-05-30" "" ".NET Documentation"
 .hy
-.SH dotnet add package
+.SH dotnet package add
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-add-package - Adds or updates a package reference in a project file.
+dotnet-package-add - Adds or updates a package reference in a project file.
+.RS
+.PP
+If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-add-package) instead.
+The \[lq]noun first\[rq] form was introduced in .NET 10.
+For more information, see More consistent command order.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet add [<PROJECT>] package <PACKAGE_NAME>
-    [-f|--framework <FRAMEWORK>] [--interactive]
+dotnet package add <PACKAGE_NAME>
+    [-f|--framework <FRAMEWORK>] [--interactive] [--project <PROJECT>]
     [-n|--no-restore] [--package-directory <PACKAGE_DIRECTORY>]
     [--prerelease] [-s|--source <SOURCE>] [-v|--version <VERSION>]
 
-dotnet add package -h|--help
+dotnet package add -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet add package\f[R] command provides a convenient option to add or update a package reference in a project file.
+The \f[V]dotnet package add\f[R] command provides a convenient option to add or update a package reference in a project file.
 When you run the command, there\[cq]s a compatibility check to ensure the package is compatible with the frameworks in the project.
 If the check passes and the package isn\[cq]t referenced in the project file, a \f[V]<PackageReference>\f[R] element is added to the project file.
 If the check passes and the package is already referenced in the project file, the \f[V]<PackageReference>\f[R] element is updated to the latest compatible version.
@@ -68,6 +74,92 @@ The \f[I]ToDo.csproj\f[R] file now contains a \f[V]<PackageReference>\f[R] eleme
 .nf
 \f[C]
 <PackageReference Include=\[dq]Microsoft.EntityFrameworkCore\[dq] Version=\[dq]6.0.4\[dq] />
+\f[R]
+.fi
+.PP
+If the project is onboarded onto Central Package Management (CPM) (https://devblogs.microsoft.com/nuget/introducing-central-package-management/) the \f[V]<PackageVersion>\f[R] element in the \f[V]Directory.Packages.props file\f[R] is added/updated and the \f[V]<PackageReference>\f[R] element is added to the project file.
+.PP
+The following scenarios are currently supported.
+These examples assume that the latest version of \f[V]Microsoft.EntityFrameworkCore\f[R] is 6.0.4.
+Additional scenarios related to CPM are documented in this design spec (https://github.com/NuGet/Home/pull/11915).
+.PP
+Scenario 1: \f[V]<PackageReference>\f[R] does not exist in the project file, \f[V]<PackageVersion>\f[R] element does not exist in the \f[V]Directory.Packages.props file\f[R], and the version argument is not passed from the commandline.
+.PP
+CLI command that is executed: \f[V]dotnet package add Microsoft.EntityFrameworkCore --project ToDo.csproj\f[R]
+.PP
+The \f[V]<PackageVersion>\f[R] element is added to the \f[V]Directory.Packages.props file\f[R].
+.IP
+.nf
+\f[C]
+<PackageVersion Include=\[dq]Microsoft.EntityFrameworkCore\[dq] Version=\[dq]6.0.4\[dq] />
+\f[R]
+.fi
+.PP
+The \f[V]<PackageReference>\f[R] element is added to the project file.
+.IP
+.nf
+\f[C]
+<PackageReference Include=\[dq]Microsoft.EntityFrameworkCore\[dq] />
+\f[R]
+.fi
+.PP
+Scenario 2: \f[V]<PackageReference>\f[R] does not exist in the project file, \f[V]<PackageVersion>\f[R] element does not exist in the \f[V]Directory.Packages.props file\f[R], and the version argument is passed from the commandline.
+.PP
+CLI command that is executed: \f[V]dotnet package add Microsoft.EntityFrameworkCore --version 5.0.4 --project ToDo.csproj\f[R]
+.PP
+The \f[V]<PackageVersion>\f[R] element is added to the \f[V]Directory.Packages.props file\f[R].
+.IP
+.nf
+\f[C]
+<PackageVersion Include=\[dq]Microsoft.EntityFrameworkCore\[dq] Version=\[dq]5.0.4\[dq] />
+\f[R]
+.fi
+.PP
+The \f[V]<PackageReference>\f[R] element is added to the project file.
+.IP
+.nf
+\f[C]
+<PackageReference Include=\[dq]Microsoft.EntityFrameworkCore\[dq] />
+\f[R]
+.fi
+.PP
+Scenario 3: \f[V]<PackageReference>\f[R] does not exist in the project file, \f[V]<PackageVersion>\f[R] element does exist in the \f[V]Directory.Packages.props file\f[R], and the version argument is not passed from the commandline.
+.PP
+CLI command that is executed: \f[V]dotnet package add Microsoft.EntityFrameworkCore --project ToDo.csproj\f[R]
+.PP
+The \f[V]<PackageVersion>\f[R] element is added to the \f[V]Directory.Packages.props file\f[R].
+.IP
+.nf
+\f[C]
+<PackageVersion Include=\[dq]Microsoft.EntityFrameworkCore\[dq] Version=\[dq]6.0.4\[dq] />
+\f[R]
+.fi
+.PP
+The \f[V]<PackageReference>\f[R] element is added to the project file.
+.IP
+.nf
+\f[C]
+<PackageReference Include=\[dq]Microsoft.EntityFrameworkCore\[dq] />
+\f[R]
+.fi
+.PP
+Scenario 4: \f[V]<PackageReference>\f[R] does not exist in the project file, \f[V]<PackageVersion>\f[R] element does exist in the \f[V]Directory.Packages.props file\f[R], and the version argument is passed from the commandline.
+.PP
+CLI command that is executed: \f[V]dotnet package add Microsoft.EntityFrameworkCore --version 5.0.4 --project ToDo.csproj\f[R]
+.PP
+The \f[V]<PackageVersion>\f[R] element is added to the \f[V]Directory.Packages.props file\f[R].
+.IP
+.nf
+\f[C]
+<PackageVersion Include=\[dq]Microsoft.EntityFrameworkCore\[dq] Version=\[dq]5.0.4\[dq] />
+\f[R]
+.fi
+.PP
+The \f[V]<PackageReference>\f[R] element is added to the project file.
+.IP
+.nf
+\f[C]
+<PackageReference Include=\[dq]Microsoft.EntityFrameworkCore\[dq] />
 \f[R]
 .fi
 .SS Implicit restore
@@ -153,7 +245,7 @@ Add \f[V]Microsoft.EntityFrameworkCore\f[R] NuGet package to a project:
 .IP
 .nf
 \f[C]
-dotnet add package Microsoft.EntityFrameworkCore
+dotnet package add Microsoft.EntityFrameworkCore
 \f[R]
 .fi
 .RE
@@ -163,7 +255,7 @@ Add a specific version of a package to a project:
 .IP
 .nf
 \f[C]
-dotnet add ToDo.csproj package Microsoft.Azure.DocumentDB.Core -v 1.0.0
+dotnet package add Microsoft.Azure.DocumentDB.Core -v 1.0.0 --project ToDo.csproj
 \f[R]
 .fi
 .RE
@@ -173,7 +265,7 @@ Add a package using a specific NuGet source:
 .IP
 .nf
 \f[C]
-dotnet add package Microsoft.AspNetCore.StaticFiles -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
+dotnet package add Microsoft.AspNetCore.StaticFiles -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json
 \f[R]
 .fi
 .RE

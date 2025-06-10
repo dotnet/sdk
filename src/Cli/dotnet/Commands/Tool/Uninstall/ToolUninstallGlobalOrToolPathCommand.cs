@@ -70,16 +70,12 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
         try
         {
-            using (var scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                TimeSpan.Zero))
+            TransactionalAction.Run(() =>
             {
-                shellShimRepository.RemoveShim(package.Command.Name);
+                shellShimRepository.RemoveShim(package.Command);
              
                 toolPackageUninstaller.Uninstall(package.PackageDirectory);
-
-                scope.Complete();
-            }
+            });
 
             _reporter.WriteLine(
                 string.Format(

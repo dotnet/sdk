@@ -88,6 +88,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ProjectRuntimeConfigFilePath Condition="'$(ProjectRuntimeConfigFilePath)' == ''">$(TargetDir)$(ProjectRuntimeConfigFileName)</ProjectRuntimeConfigFilePath>
     <ProjectRuntimeConfigDevFilePath Condition="'$(ProjectRuntimeConfigDevFilePath)' == '' and $(GenerateRuntimeConfigDevFile) == 'true'">$(TargetDir)$(AssemblyName).runtimeconfig.dev.json</ProjectRuntimeConfigDevFilePath>
     <IncludeMainProjectInDepsFile Condition=" '$(IncludeMainProjectInDepsFile)' == '' ">true</IncludeMainProjectInDepsFile>
+    <TrimDepsJsonLibrariesWithoutAssets Condition=" '$(TrimDepsJsonLibrariesWithoutAssets)' == '' ">true</TrimDepsJsonLibrariesWithoutAssets>
   </PropertyGroup>
 
   <Import Project="Microsoft.NET.Sdk.Shared.targets" />
@@ -316,6 +317,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                       ReferenceAssemblies="@(_ReferenceAssemblies)"
                       RuntimePackAssets="@(RuntimePackAsset)"
                       IncludeMainProject="$(IncludeMainProjectInDepsFile)"
+                      TrimDepsJsonLibrariesWithoutAssets="$(TrimDepsJsonLibrariesWithoutAssets)"
                       RuntimeIdentifier="$(RuntimeIdentifier)"
                       PlatformLibraryName="$(MicrosoftNETPlatformLibrary)"
                       RuntimeFrameworks="@(RuntimeFramework)"

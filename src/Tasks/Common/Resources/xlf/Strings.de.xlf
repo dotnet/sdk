@@ -1013,6 +1013,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1139: Der Zielplattformbezeichner "{0}" wurde nicht erkannt.</target>
         <note>{StrBegins="NETSDK1139: "}</note>
       </trans-unit>
+      <trans-unit id="UnsupportedToolCommandRunner">
+        <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
+        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <note>{StrBegins="NETSDK1227: "}</note>
+      </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="needs-review-translation">NETSDK1200: Wenn UseArtifactsPath auf TRUE und ArtifactsPath nicht festgelegt ist, muss eine Directory.Build.props-Datei vorhanden sein, um zu bestimmen, wo sich der Ordner "artifacts" befinden soll.</target>
