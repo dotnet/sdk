@@ -540,6 +540,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 <TargetFramework>net10.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
+                <PublishAot>true</PublishAot>
               </PropertyGroup>
             """);
 

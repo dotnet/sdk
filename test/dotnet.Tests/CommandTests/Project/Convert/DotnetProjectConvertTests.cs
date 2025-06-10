@@ -54,7 +54,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         var dotnetProjectConvertProjectText = File.ReadAllText(dotnetProjectConvertProject);
         var dotnetNewConsoleProjectText = File.ReadAllText(dotnetNewConsoleProject);
-        dotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
+
+        // There are some differences: we add PublishAot=true.
+        var patchedDotnetProjectConvertProjectText = dotnetProjectConvertProjectText
+            .Replace("    <PublishAot>true</PublishAot>" + Environment.NewLine, string.Empty);
+
+        patchedDotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
     }
 
@@ -314,6 +319,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                 </Project>
@@ -344,6 +350,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -379,6 +386,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -420,6 +428,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -514,6 +523,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -550,6 +560,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -607,6 +618,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -655,6 +667,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -700,6 +713,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>

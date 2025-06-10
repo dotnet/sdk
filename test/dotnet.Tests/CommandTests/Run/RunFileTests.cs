@@ -825,7 +825,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(artifactsDir).Sub("publish/release").Should().Exist();
+        new DirectoryInfo(artifactsDir).Sub("publish/release")
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_Options()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).Sub("publish/debug")
+            .Should().Exist()
+            .And.HaveFile("Program.deps.json");
     }
 
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
