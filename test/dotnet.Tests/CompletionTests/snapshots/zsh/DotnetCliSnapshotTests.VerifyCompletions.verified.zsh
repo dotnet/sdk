@@ -646,6 +646,14 @@ _testhost() {
                                             '*::PACKAGE_NAME -- The package reference to remove.: ' \
                                             && ret=0
                                         ;;
+                                    (update)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            '*::packages: ' \
+                                            && ret=0
+                                        ;;
                                 esac
                             ;;
                         esac
@@ -1640,6 +1648,7 @@ _testhost__package_commands() {
         'add:Add a NuGet package reference to the project.' \
         'list:List all package references of the project or solution.' \
         'remove:Remove a NuGet package reference from the project.' \
+        'update:Update referenced packages in a project or solution.' \
     )
     _describe -t commands 'testhost package commands' commands "$@"
 }
@@ -1666,6 +1675,12 @@ _testhost__package__list_commands() {
 _testhost__package__remove_commands() {
     local commands; commands=()
     _describe -t commands 'testhost package remove commands' commands "$@"
+}
+
+(( $+functions[_testhost__package__update_commands] )) ||
+_testhost__package__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package update commands' commands "$@"
 }
 
 (( $+functions[_testhost__project_commands] )) ||
