@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet command
 .PP
@@ -52,7 +52,7 @@ dotnet [--additionalprobingpath <PATH>] [--additional-deps <PATH>]
     [--fx-version <VERSION>]  [--roll-forward <SETTING>]
     <PATH_TO_APPLICATION> [arguments]
 
-dotnet exec [--additionalprobingpath] [--additional-deps <PATH>]
+dotnet exec [--additionalprobingpath <PATH>] [--additional-deps <PATH>]
     [--depsfile <PATH>]
     [--fx-version <VERSION>]  [--roll-forward <SETTING>]
     [--runtimeconfig <PATH>]
@@ -345,17 +345,17 @@ Function
 T}
 _
 T{
-dotnet add reference
+dotnet reference add
 T}@T{
 Adds a project reference.
 T}
 T{
-dotnet list reference
+dotnet reference list
 T}@T{
 Lists project references.
 T}
 T{
-dotnet remove reference
+dotnet reference remove
 T}@T{
 Removes a project reference.
 T}
@@ -372,14 +372,24 @@ Function
 T}
 _
 T{
-dotnet add package
+dotnet package add
 T}@T{
 Adds a NuGet package.
 T}
 T{
-dotnet remove package
+dotnet package list
+T}@T{
+Lists NuGet packages.
+T}
+T{
+dotnet package remove
 T}@T{
 Removes a NuGet package.
+T}
+T{
+dotnet package search
+T}@T{
+Searches for a NuGet package.
 T}
 .TE
 .SS NuGet commands
