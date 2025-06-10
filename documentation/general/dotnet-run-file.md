@@ -148,7 +148,8 @@ They are not cleaned immediately because they can be re-used on subsequent runs 
 
 It is possible to specify some project metadata via *app directives*
 which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
-Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
+Directives `sdk`, `package`, `property`, and `project` are translated into
+`<Project Sdk="...">`, `<PackageReference>`, `<PropertyGroup>`, and `<ProjectReference>` project elements, respectively.
 Other directives result in an error, reserving them for future use.
 
 ```cs
@@ -156,6 +157,7 @@ Other directives result in an error, reserving them for future use.
 #:property TargetFramework net11.0
 #:property LangVersion preview
 #:package System.CommandLine@2.0.0-*
+#:project ../MyLibrary
 ```
 
 The value must be separated from the name of the directive by white space (`@` is additionally allowed separator for the package directive)
@@ -168,6 +170,9 @@ The value of `#:property` is split by the separator and injected as `<{0}>{1}</{
 It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty) or contains invalid characters.
 The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if there is no separator) in an `<ItemGroup>`.
 It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
+The value of `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
+If the value points to an existing directory, a project file is found inside that directory and its path is used instead
+(because `ProjectReference` items don't support directory paths).
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
@@ -319,9 +324,8 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
 or `dotnet clean --all-file-based-programs`.
 
-
-Adding package references via `dotnet package add` could be supported for file-based programs as well,
-i.e., the command would add a `#:package` directive to the top of a `.cs` file.
+Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
+i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
 
 ### Explicit importing
 
