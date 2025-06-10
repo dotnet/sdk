@@ -1565,6 +1565,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DotnetCommand(Log, "run", unicodeFileName)
             .WithWorkingDirectory(testInstance.Path)
+            .WithStandardOutputEncoding(Encoding.UTF8)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut($"EntryPointFilePath: {filePath}");
