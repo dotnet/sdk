@@ -153,8 +153,11 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 Log.WriteLine($"❌{line}");
             });
-
-            var display = $"dotnet {string.Join(" ", spec.Arguments)}";
+            
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);

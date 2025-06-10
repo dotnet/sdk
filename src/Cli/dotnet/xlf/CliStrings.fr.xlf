@@ -369,6 +369,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">{0}: failed to find commandPath {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindLibraryInAssetsFile">
+        <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to find library in NuGet assets file for tool package '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
         <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
@@ -395,8 +400,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadNuGetLockFile">
-        <source>Failed to read NuGet LockFile for tool package '{0}': {1}</source>
-        <target state="new">Failed to read NuGet LockFile for tool package '{0}': {1}</target>
+        <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to read NuGet assets file for tool package '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadPidFile">
@@ -1037,6 +1042,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageNotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="new">Command '{0}' contains one or more of the following invalid characters: {1}.</target>
@@ -1070,6 +1080,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ToolSettingsUnsupportedRunner">
         <source>Command '{0}' uses unsupported runner '{1}'."</source>
         <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUnsupportedRuntimeIdentifier">
+        <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
+        <target state="new">The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Type">

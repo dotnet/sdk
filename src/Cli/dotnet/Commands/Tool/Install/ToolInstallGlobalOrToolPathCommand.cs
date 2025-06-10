@@ -91,7 +91,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         var tempDir = new DirectoryPath(PathUtilities.CreateTempSubdirectory());
         var configOption = parseResult.GetValue(ToolInstallCommandParser.ConfigOption);
         var sourceOption = parseResult.GetValue(ToolInstallCommandParser.AddSourceOption);
-        var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption);
+        var packageSourceLocation = new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), additionalSourceFeeds: sourceOption, basePath: _currentWorkingDirectory);
         restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
             NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
@@ -175,15 +175,13 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             }   
         }
 
-        using (var scope = new TransactionScope(
-            TransactionScopeOption.Required,
-            TimeSpan.Zero))
+        TransactionalAction.Run(() =>
         {
             if (oldPackageNullable != null)
             {
                 RunWithHandlingUninstallError(() =>
                 {
-                    shellShimRepository.RemoveShim(oldPackageNullable.Command.Name);
+                    shellShimRepository.RemoveShim(oldPackageNullable.Command);
                     toolPackageUninstaller.Uninstall(oldPackageNullable.PackageDirectory);
                 }, packageId);
             }
@@ -219,7 +217,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                 }
                 string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
 
-                shellShimRepository.CreateShim(newInstalledPackage.Command.Executable, newInstalledPackage.Command.Name, newInstalledPackage.PackagedShims);
+                shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
 
                 foreach (string w in newInstalledPackage.Warnings)
                 {
@@ -232,10 +230,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
                 PrintSuccessMessage(oldPackageNullable, newInstalledPackage);
             }, packageId);
-
-            scope.Complete();
-
-        }
+        });
         return 0;
     }
 
