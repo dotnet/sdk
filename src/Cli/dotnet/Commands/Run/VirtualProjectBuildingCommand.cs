@@ -847,7 +847,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
-        return entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPointFilePath);
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
