@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
@@ -473,6 +473,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var sdkDirectives = directives.OfType<CSharpDirective.Sdk>();
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
+        var libraryDirectives = directives.OfType<CSharpDirective.Library>();
 
         string sdkValue = "Microsoft.NET.Sdk";
 
@@ -605,6 +606,24 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         """);
                 }
 
+                processedDirectives++;
+            }
+
+            writer.WriteLine("  </ItemGroup>");
+        }
+
+        if (libraryDirectives.Any())
+        {
+            writer.WriteLine("""
+
+                  <ItemGroup>
+                """);
+
+            foreach (var library in libraryDirectives)
+            {
+                writer.WriteLine($"""
+                            <Reference Include="{EscapeValue(library.Path)}" />
+                        """);
                 processedDirectives++;
             }
 
@@ -890,6 +909,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
+            "library" => Library.Parse(errors, sourceFile, span, directiveKind, directiveText),
             _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1028,6 +1048,43 @@ internal abstract class CSharpDirective
                 Span = span,
                 Name = packageName,
                 Version = packageVersion,
+            };
+        }
+    }
+
+    /// <summary>
+    /// <c>#:library</c> directive.
+    /// </summary>
+    public sealed class Library : CSharpDirective
+    {
+        private Library() { }
+
+        public required string Path { get; init; }
+
+        public static new Library? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+        {
+            if (string.IsNullOrWhiteSpace(directiveText))
+            {
+                return ReportError<Library?>(errors, sourceFile, span, $"The '{directiveKind}' directive requires an argument specifying the library path. Location: {sourceFile.GetLocationString(span)}");
+            }
+
+            string? sourceFileDirectory = System.IO.Path.GetDirectoryName(sourceFile.Path);
+            if (sourceFileDirectory is null)
+            {
+                return ReportError<Library?>(errors, sourceFile, span, $"Could not determine directory for source file '{sourceFile.Path}'. Location: {sourceFile.GetLocationString(span)}");
+            }
+
+            string resolvedPath = System.IO.Path.GetFullPath(directiveText, sourceFileDirectory);
+
+            if (!File.Exists(resolvedPath))
+            {
+                return ReportError<Library?>(errors, sourceFile, span, $"The library file '{resolvedPath}' specified by the '{directiveKind}' directive does not exist. Location: {sourceFile.GetLocationString(span)}");
+            }
+
+            return new Library
+            {
+                Span = span,
+                Path = resolvedPath,
             };
         }
     }

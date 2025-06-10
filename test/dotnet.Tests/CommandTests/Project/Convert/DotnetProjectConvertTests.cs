@@ -324,13 +324,24 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     [Fact]
     public void Directives()
     {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libraryFileName = "MyLibrary.dll";
+        var libraryPathInTestDir = Path.Combine(testInstance.Path, libraryFileName);
+        File.WriteAllText(libraryPathInTestDir, "dummy content"); // Create a dummy file for the library directive
+
+        // The Convert method uses "/app/Program.cs" as the source file path for parsing directives.
+        // So, the relative path "MyLibrary.dll" in the directive will be resolved relative to "/app".
+        // We need to simulate this for the expected output.
+        var expectedResolvedLibraryPath = Path.GetFullPath(libraryFileName, "/app");
+
         VerifyConversion(
-            inputCSharp: """
+            inputCSharp: $"""
                 #!/program
                 #:sdk Microsoft.NET.Sdk
                 #:sdk Aspire.Hosting.Sdk 9.1.0
                 #:property TargetFramework net11.0
                 #:package System.CommandLine 2.0.0-beta4.22272.1
+                #:library {libraryFileName}
                 #:property LangVersion preview
                 Console.WriteLine();
                 """,
@@ -355,12 +366,81 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
                   </ItemGroup>
 
+                  <ItemGroup>
+                    <Reference Include="{expectedResolvedLibraryPath}" />
+                  </ItemGroup>
+
                 </Project>
 
                 """,
             expectedCSharp: """
                 Console.WriteLine();
                 """);
+    }
+
+    [Fact]
+    public void Directives_Library()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var libraryFileName = "MyLibrary.dll";
+        var libraryPathInTestDir = Path.Combine(testInstance.Path, libraryFileName);
+        File.WriteAllText(libraryPathInTestDir, "dummy content"); // Create a dummy file
+
+        // The Convert method uses "/app/Program.cs" as the source file path for parsing directives.
+        // So, the relative path "MyLibrary.dll" in the directive will be resolved relative to "/app".
+        // We need to simulate this for the expected output.
+        var expectedResolvedLibraryPath = Path.GetFullPath(libraryFileName, "/app");
+
+        VerifyConversion(
+            inputCSharp: $"""
+                #:library {libraryFileName}
+                Console.WriteLine();
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <Reference Include="{expectedResolvedLibraryPath}" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: """
+                Console.WriteLine();
+                """);
+    }
+
+    [Fact]
+    public void Directives_Library_NonExistentFile()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var nonExistentFileName = "NonExistent.dll";
+        // The path in the error message will be resolved relative to /app
+        var expectedErrorPath = Path.GetFullPath(nonExistentFileName, "/app");
+
+        VerifyConversionThrows(
+            inputCSharp: $"""
+                #:library {nonExistentFileName}
+                """,
+            expectedWildcardPattern: string.Format("The library file '{0}' specified by the 'library' directive does not exist. Location: /app/Program.cs:1", expectedErrorPath));
+    }
+
+    [Fact]
+    public void Directives_Library_EmptyPath()
+    {
+        VerifyConversionThrows(
+            inputCSharp: """
+                #:library
+                """,
+            expectedWildcardPattern: string.Format("The 'library' directive requires an argument specifying the library path. Location: /app/Program.cs:1"));
     }
 
     [Fact]
