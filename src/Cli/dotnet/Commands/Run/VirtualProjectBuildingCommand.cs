@@ -473,6 +473,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var sdkDirectives = directives.OfType<CSharpDirective.Sdk>();
         var propertyDirectives = directives.OfType<CSharpDirective.Property>();
         var packageDirectives = directives.OfType<CSharpDirective.Package>();
+        var projectDirectives = directives.OfType<CSharpDirective.Project>();
 
         string sdkValue = "Microsoft.NET.Sdk";
 
@@ -604,6 +605,25 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                             <PackageReference Include="{EscapeValue(package.Name)}" Version="{EscapeValue(package.Version)}" />
                         """);
                 }
+
+                processedDirectives++;
+            }
+
+            writer.WriteLine("  </ItemGroup>");
+        }
+
+        if (projectDirectives.Any())
+        {
+            writer.WriteLine("""
+
+                  <ItemGroup>
+                """);
+
+            foreach (var projectReference in projectDirectives)
+            {
+                writer.WriteLine($"""
+                        <ProjectReference Include="{EscapeValue(projectReference.Name)}" />
+                    """);
 
                 processedDirectives++;
             }
@@ -890,6 +910,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
+            "project" => Project.Parse(span, directiveText),
             _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1028,6 +1049,25 @@ internal abstract class CSharpDirective
                 Span = span,
                 Name = packageName,
                 Version = packageVersion,
+            };
+        }
+    }
+
+    /// <summary>
+    /// <c>#:project</c> directive.
+    /// </summary>
+    public sealed class Project : CSharpDirective
+    {
+        private Project() { }
+
+        public required string Name { get; init; }
+
+        public static Project? Parse(TextSpan span, string directiveText)
+        {
+            return new Project
+            {
+                Span = span,
+                Name = directiveText,
             };
         }
     }
