@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">İş yükü sürümü, --version kullanılarak yüklenecek sürümler de belirtilirken workload@version belirtilemez.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -39,7 +39,7 @@
       </trans-unit>
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
-        <target state="needs-review-translation">Global.json'da iş yükü sürümü belirtildiğinde {0} seçeneği kullanılamaz.  {0} seçeneğini kaldırın veya "workloadVersion" öğesini {1}‘den kaldırın.</target>
+        <target state="translated">Global.json'da iş yükü sürümü belirtildiğinde {0} seçeneği kullanılamaz.  {0} seçeneğini kaldırın veya "workloadVersion" öğesini {1}‘den kaldırın.</target>
         <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
@@ -399,7 +399,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="needs-review-translation">Belirtilen iş yükü sürümünde güncelleştirme var.</target>
+        <target state="translated">Görüntülenecek iş yükü sürümü veya bir veya daha fazla iş yükü ve '@' karakteriyle birleştirilmiş sürümleri.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">

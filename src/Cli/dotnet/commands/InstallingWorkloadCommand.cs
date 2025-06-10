@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Workloads.Workload
             Reporter.WriteLine(string.Format(Strings.NewWorkloadSet, workloadSetVersion));
             var workloadSet = _workloadInstaller.InstallWorkloadSet(context, workloadSetVersion);
 
-            return _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
+            return workloadSet is null ? Enumerable.Empty<ManifestVersionUpdate>() : _workloadManifestUpdater.CalculateManifestUpdatesForWorkloadSet(workloadSet);
         }
 
         protected async Task<List<WorkloadDownload>> GetDownloads(IEnumerable<WorkloadId> workloadIds, bool skipManifestUpdate, bool includePreview, string downloadFolder = null,

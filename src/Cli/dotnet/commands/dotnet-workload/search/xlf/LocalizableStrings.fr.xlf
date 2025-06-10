@@ -63,7 +63,36 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="needs-review-translation">Affiche la liste des dernières versions de charge de travail publiées. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.</target>
+        <target state="translated">« dotnet workload search version » a trois fonctions en fonction de son argument :
+      1. Si aucun argument n’est spécifié, il génère une liste des dernières versions de charge de travail publiées à partir de cette bande de fonctionnalités. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.
+         Exemple :
+           dotnet workload search version --take 2 --format json
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. Si une version de charge de travail est fournie en tant qu’argument, elle génère une table de différentes charges de travail et de leurs versions pour la version de charge de travail spécifiée. Prend l’option --format pour modifier le format de sortie.
+         Exemple :
+           dotnet workload search version 9.0.201
+           ID du manifeste de la charge de travail                               Manifeste de la bande de caractéristiques      Version du manifeste
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8             9.0.100-rc.1               9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android                          9.0.100-rc.1               35.0.0-rc.1.80
+           microsoft.net.sdk.ios                              9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst                      9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.sdk.macos                            9.0.100-rc.1               14.5.9270-net9-rc1
+           microsoft.net.sdk.maui                             9.0.100-rc.1               9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos                             9.0.100-rc.1               17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current      9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
+           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
+      3. Si une ou plusieurs charges de travail sont fournies avec leurs versions (en les joignant avec le caractère « @ »), elle génère des versions de charge de travail qui correspondent aux versions fournies. Prend l’option --take pour spécifier le nombre à fournir et --format pour modifier le format.
+         Exemple :
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
         <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
@@ -108,7 +137,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">Aucune version de charge de travail correspondant à {0} n’a été trouvée.</target>
         <note />
       </trans-unit>
     </body>

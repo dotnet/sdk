@@ -1,53 +1,43 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Nodes;
+using System.Text.Json.Serialization;
 using Microsoft.NET.Build.Containers.Resources;
-using Microsoft.NET.Build.Containers.Tasks;
 
 namespace Microsoft.NET.Build.Containers;
-
-internal readonly struct ImageInfo
-{
-    internal string Config { get; init; }
-    internal string ManifestDigest { get; init; }
-    internal string Manifest { get; init; }
-    internal string ManifestMediaType { get; init; }
-
-    public override string ToString() => ManifestDigest;
-}
 
 internal static class ImageIndexGenerator
 {
     /// <summary>
     /// Generates an image index from the given images.
     /// </summary>
-    /// <param name="imageInfos"></param>
+    /// <param name="images">Images to generate image index from.</param>
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static (string, string) GenerateImageIndex(ImageInfo[] imageInfos)
+    internal static (string, string) GenerateImageIndex(BuiltImage[] images)
     {
-        if (imageInfos.Length == 0)
+        if (images.Length == 0)
         {
-            throw new ArgumentException(string.Format(Strings.ImagesEmpty));
+            throw new ArgumentException(Strings.ImagesEmpty);
         }
 
-        string manifestMediaType = imageInfos[0].ManifestMediaType;
+        string manifestMediaType = images[0].ManifestMediaType;
 
-        if (!imageInfos.All(image => string.Equals(image.ManifestMediaType, manifestMediaType, StringComparison.OrdinalIgnoreCase)))
+        if (!images.All(image => string.Equals(image.ManifestMediaType, manifestMediaType, StringComparison.OrdinalIgnoreCase)))
         {
             throw new ArgumentException(Strings.MixedMediaTypes);
         }
 
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return GenerateImageIndex(imageInfos, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
+            return (GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2), SchemaTypes.DockerManifestListV2);
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return GenerateImageIndex(imageInfos, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
+            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1), SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -55,46 +45,94 @@ internal static class ImageIndexGenerator
         }
     }
 
-    private static (string, string) GenerateImageIndex(ImageInfo[] images, string manifestMediaType, string imageIndexMediaType)
+    /// <summary>
+    /// Generates an image index from the given images.
+    /// </summary>
+    /// <param name="images">Images to generate image index from.</param>
+    /// <param name="manifestMediaType">Media type of the manifest.</param>
+    /// <param name="imageIndexMediaType">Media type of the produced image index.</param>
+    /// <returns>Returns json string of image index and image index mediaType.</returns>
+    /// <exception cref="ArgumentException"></exception>
+    /// <exception cref="NotSupportedException"></exception>
+    internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
-        // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
-        // We are filling the same fiels, so we can use the same struct.
-        var manifests = new PlatformSpecificManifest[images.Length];
-        for (int i = 0; i < images.Length; i++)
+        if (images.Length == 0)
         {
-            var image = images[i];
-
-            var manifest = new PlatformSpecificManifest
-            {
-                mediaType = manifestMediaType,
-                size = image.Manifest.Length,
-                digest = image.ManifestDigest,
-                platform = GetArchitectureAndOsFromConfig(image)
-            };
-            manifests[i] = manifest;
+            throw new ArgumentException(Strings.ImagesEmpty);
         }
 
-        var dockerManifestList = new ManifestListV2
+        // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
+        // We are filling the same fields, so we can use the same struct.
+        var manifests = new PlatformSpecificManifest[images.Length];
+        
+        for (int i = 0; i < images.Length; i++)
+        {
+            manifests[i] = new PlatformSpecificManifest
+            {
+                mediaType = manifestMediaType,
+                size = images[i].Manifest.Length,
+                digest = images[i].ManifestDigest,
+                platform = new PlatformInformation
+                {
+                    architecture = images[i].Architecture!,
+                    os = images[i].OS!
+                }
+            };
+        }
+
+        var imageIndex = new ManifestListV2
         {
             schemaVersion = 2,
             mediaType = imageIndexMediaType,
             manifests = manifests
         };
 
-        return (JsonSerializer.SerializeToNode(dockerManifestList)?.ToJsonString() ?? "", dockerManifestList.mediaType);
+        return GetJsonStringFromImageIndex(imageIndex);
     }
 
-    private static PlatformInformation GetArchitectureAndOsFromConfig(ImageInfo image)
+    internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
     {
-        var configJson = JsonNode.Parse(image.Config) as JsonObject ??
-            throw new ArgumentException($"{nameof(image.Config)} should be a JSON object.", nameof(image.Config));
+        string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
+        
+        var manifests = new PlatformSpecificOciManifest[tags.Length];
+        for (int i = 0; i < tags.Length; i++)
+        {
+            var tag = tags[i];
+            manifests[i] = new PlatformSpecificOciManifest
+            {
+                mediaType = manifestMediaType,
+                size = manifestSize,
+                digest = manifestDigest,
+                annotations = new Dictionary<string, string> 
+                {
+                    { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },
+                    { "org.opencontainers.image.ref.name", tag } 
+                }
+            };
+        }
 
-        var architecture = configJson["architecture"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should contain 'architecture'.", nameof(image.Config));
+        var index = new ImageIndexV1
+        {
+            schemaVersion = 2,
+            mediaType = SchemaTypes.OciImageIndexV1,
+            manifests = manifests
+        };
 
-        var os = configJson["os"]?.ToString() ??
-            throw new ArgumentException($"{nameof(image.Config)} should contain 'os'.", nameof(image.Config));
+        return GetJsonStringFromImageIndex(index);
+    }
 
-        return new PlatformInformation { architecture = architecture, os = os };
+    private static string GetJsonStringFromImageIndex<T>(T imageIndex)
+    {
+        var nullIgnoreOptions = new JsonSerializerOptions
+        {
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        };
+        // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
+        var escapeOptions = new JsonSerializerOptions
+        {
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+        };
+
+        return JsonSerializer.SerializeToNode(imageIndex, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
     }
 }

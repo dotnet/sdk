@@ -29,7 +29,7 @@
       </trans-unit>
       <trans-unit id="CannotMigrateSlnx">
         <source>Only .sln files can be migrated to .slnx format.</source>
-        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <target state="translated">只有.sln文件可以迁移到 .slnx 格式。</target>
         <note />
       </trans-unit>
       <trans-unit id="InRoot">
@@ -44,7 +44,7 @@
       </trans-unit>
       <trans-unit id="MigrateAppFullName">
         <source>Generate a .slnx file from a .sln file.</source>
-        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <target state="translated">从.sln文件生成 .slnx 文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveAppFullName">
@@ -69,12 +69,12 @@
       </trans-unit>
       <trans-unit id="SerializerNotFound">
         <source>Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</source>
-        <target state="new">Could not read solution file {0}. Supported files are .sln and .slnx valid solutions.</target>
+        <target state="translated">无法读取解决方案文件 {0}。受支持的文件是.sln和 .slnx 有效解决方案。</target>
         <note />
       </trans-unit>
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
-        <target state="new">.slnx file {0} generated.</target>
+        <target state="translated">{0} 生成 .slnx 文件。</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionArgumentName">

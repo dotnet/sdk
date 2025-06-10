@@ -12,7 +12,6 @@ internal sealed class StartupHook
 {
     private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.HotReloadDeltaClientLogMessages) == "1";
     private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadNamedPipeName);
-    private static readonly string s_targetProcessPath = Environment.GetEnvironmentVariable(EnvironmentVariables.Names.DotnetWatchHotReloadTargetProcessPath);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -20,16 +19,6 @@ internal sealed class StartupHook
     public static void Initialize()
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
-
-        // Workaround for https://github.com/dotnet/sdk/issues/40484
-        // When launching the application process dotnet-watch sets Hot Reload environment variables via CLI environment directives (dotnet [env:X=Y] run).
-        // Currently, the CLI parser sets the env variables to the dotnet.exe process itself, rather then to the target process.
-        // This may cause the dotnet.exe process to connect to the named pipe and break it for the target process.
-        if (!IsMatchingProcess(processPath, s_targetProcessPath))
-        {
-            Log($"Ignoring process '{processPath}', expecting '{s_targetProcessPath}'");
-            return;
-        }
 
         Log($"Loaded into process: {processPath}");
 
@@ -58,26 +47,36 @@ internal sealed class StartupHook
             {
                 agent.Reporter.Report("Writing capabilities: " + agent.Capabilities, AgentMessageSeverity.Verbose);
 
-                var initPayload = new ClientInitializationPayload(agent.Capabilities);
+                var initPayload = new ClientInitializationRequest(agent.Capabilities);
                 await initPayload.WriteAsync(pipeClient, CancellationToken.None);
 
                 while (pipeClient.IsConnected)
                 {
-                    var update = await UpdatePayload.ReadAsync(pipeClient, CancellationToken.None);
-
+                    var update = await ManagedCodeUpdateRequest.ReadAsync(pipeClient, CancellationToken.None);
                     Log($"ResponseLoggingLevel = {update.ResponseLoggingLevel}");
 
-                    agent.ApplyDeltas(update.Deltas);
+                    bool success;
+                    try
+                    {
+                        agent.ApplyDeltas(update.Deltas);
+                        success = true;
+                    }
+                    catch (Exception e)
+                    {
+                        agent.Reporter.Report($"The runtime failed to applying the change: {e.Message}", AgentMessageSeverity.Error);
+                        agent.Reporter.Report("Further changes won't be applied to this process.", AgentMessageSeverity.Warning);
+                        success = false;
+                    }
+
                     var logEntries = agent.GetAndClearLogEntries(update.ResponseLoggingLevel);
 
-                    // response:
-                    await pipeClient.WriteAsync((byte)UpdatePayload.ApplySuccessValue, CancellationToken.None);
-                    await UpdatePayload.WriteLogAsync(pipeClient, logEntries, CancellationToken.None);
+                    var response = new UpdateResponse(logEntries, success);
+                    await response.WriteAsync(pipeClient, CancellationToken.None);
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                Log(ex.Message);
+                Log(e.ToString());
             }
 
             Log("Stopped received delta updates. Server is no longer connected.");

@@ -63,7 +63,36 @@
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="needs-review-translation">Вывод списка последних выпущенных версий рабочей нагрузки. Принимает параметр --take для указания количества и --format для изменения формата.</target>
+        <target state="translated">'dotnet workload search version' имеет три функции в зависимости от своего аргумента:
+      1. Если аргумент не указан, он выводит список последних выпущенных версий рабочей нагрузки из этого диапазона функций. Принимает параметр --take, чтобы указать количество --format и изменить формат.
+         Пример:
+           dotnet workload search version --take 2 --format JSON
+           [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
+      2. Если в качестве аргумента указана версия рабочей нагрузки, она выводит таблицу различных рабочих нагрузок и их версии для указанной версии рабочей нагрузки. Принимает параметр --format для изменения формата выходных данных.
+         Пример:
+           dotnet workload search version 9.0.201
+           Версия манифеста манифеста манифеста рабочей нагрузки
+           ------------------------------------------------------------------------------------------------
+           microsoft.net.workload.emscripten.current 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net6 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net7 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.workload.emscripten.net8 9.0.100-rc.1 9.0.0-rc.1.24430.3
+           microsoft.net.sdk.android 9.0.100-rc.1 35.0.0-rc.1.80
+           microsoft.net.sdk.ios 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.maccatalyst 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.sdk.macos 9.0.100-rc.1 14.5.9270-net9-rc1
+           microsoft.net.sdk.maui 9.0.100-rc.1 9.0.0-rc.1.24453.9
+           microsoft.net.sdk.tvos 9.0.100-rc.1 17.5.9270-net9-rc1
+           microsoft.net.workload.mono.toolchain.current 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net6 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net7 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.workload.mono.toolchain.net8 9.0.100-rc.1 9.0.0-rc.1.24431.7
+           microsoft.net.sdk.веб-сайт 8.0.100 8.2.0
+      3. Если одна или несколько рабочих нагрузок предоставляются вместе с их версиями (путем присоединения к ним с символом "@"), выводить версии рабочей нагрузки, соответствующие указанным версиям. Принимает параметр --take, чтобы указать, сколько нужно предоставить и --format изменить формат.
+         Пример:
+           dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
+           9.0.201
+    </target>
         <note>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</note>
       </trans-unit>
       <trans-unit id="TakeOptionMustBePositive">
@@ -108,7 +137,7 @@
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">Версия рабочей нагрузки, соответствующая {0}, не найдена.</target>
         <note />
       </trans-unit>
     </body>

@@ -51,9 +51,9 @@
         <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
-        <target state="new">The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
-    This can be done with this command:
-  dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
+        <target state="translated">“dotnet 工具搜索”命令无条件访问 nuget.org 以查找工具，但 nuget.config 中不存在该命令。添加它以运行此命令。
+    可以使用此命令完成此操作：
+  dotnet nuget 添加源 https://api.nuget.org/v3/index.json -n nuget.org</target>
         <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
       </trans-unit>
       <trans-unit id="NoResult">

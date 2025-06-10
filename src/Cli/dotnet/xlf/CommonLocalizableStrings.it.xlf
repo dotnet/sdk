@@ -49,22 +49,22 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Imposta il valore di una variabile di ambiente. 
+Crea la variabile se non esiste e la sostituisce se esiste. 
+In questo modo forza l'esecuzione dei test in un processo isolato. 
+È possibile specificare più volte questo argomento per fornire più variabili.
 
-Examples:
+Esempi:
 -e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="valore con spazi"
+-e VARIABLE="valore;delimitato da;punti e virgola"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
-        <target state="new">NAME="VALUE"</target>
+        <target state="translated">NAME="VALORE"</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
@@ -162,7 +162,7 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
         <source>Incorrectly formatted environment variables: {0}</source>
-        <target state="new">Incorrectly formatted environment variables: {0}</target>
+        <target state="translated">Variabili di ambiente in formato non corretto: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
@@ -259,7 +259,7 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       </trans-unit>
       <trans-unit id="ShortWorkloadSearchVersionDescription">
         <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
-        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <target state="translated">Cercare le versioni del carico di lavoro disponibili o il contenuto di una versione del carico di lavoro. Per altre informazioni, usare 'dotnet workload search version --help'.</target>
         <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">

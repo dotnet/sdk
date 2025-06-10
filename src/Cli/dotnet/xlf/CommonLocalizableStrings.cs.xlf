@@ -49,22 +49,22 @@ Examples:
 -e VARIABLE="value;seperated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
-        <target state="new">Sets the value of an environment variable. 
-Creates the variable if it does not exist, overrides if it does. 
-This will force the tests to be run in an isolated process. 
-This argument can be specified multiple times to provide multiple variables.
+        <target state="translated">Nastaví hodnotu proměnné prostředí.
+Pokud proměnná neexistuje, vytvoří ji, a pokud existuje, přepíše ji.
+Tímto se vynutí spuštění testů v izolovaném procesu.
+Tento argument je možné zadat vícekrát a určit tak více proměnných.
 
-Examples:
--e VARIABLE=abc
--e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
--e VAR1=abc -e VAR2=def -e VAR3=ghi
+Příklady:
+-e PROMĚNNÁ=abc
+-e PROMĚNNÁ="hodnota s mezerami"
+-e PROMĚNNÁ="hodnota;oddělená;pomocí;středníků"
+-e PROM1=abc -e PROM2=def -e PROM3=ghi
 </target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
-        <target state="new">NAME="VALUE"</target>
+        <target state="translated">NÁZEV="HODNOTA"</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
@@ -162,7 +162,7 @@ export PATH="$PATH:{0}"
       </trans-unit>
       <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
         <source>Incorrectly formatted environment variables: {0}</source>
-        <target state="new">Incorrectly formatted environment variables: {0}</target>
+        <target state="translated">Nesprávně formátované proměnné prostředí: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="MSBuildAdditionalOptionTitle">
@@ -259,7 +259,7 @@ Výchozí hodnota je false, ale pokud cílíte na .NET 7 nebo nižší a je zad�
       </trans-unit>
       <trans-unit id="ShortWorkloadSearchVersionDescription">
         <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
-        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <target state="translated">Vyhledejte dostupné verze úlohy nebo to, co se skládá z verze úlohy. Další informace získáte pomocí 'dotnet workload search version --help'.</target>
         <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="Solution">

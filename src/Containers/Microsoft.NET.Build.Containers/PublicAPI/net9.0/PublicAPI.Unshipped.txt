@@ -19,6 +19,20 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UserBaseImage.
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.get -> bool
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.UsesInvariantGlobalization.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageName.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageDigest.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.ArchiveOutputPath.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.LocalRegistry.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.GeneratedArchiveOutputPath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Cancel() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.CreateImageIndex() -> void
 Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.Dispose() -> void
@@ -176,6 +190,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageDigest.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseRegistry.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Cancel() -> void
@@ -239,8 +255,12 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateLabels.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.set -> void
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ContainerEnvironmentVariables.set -> void
@@ -262,6 +282,7 @@ Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParseContainerProp
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerImage.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerRegistry.get -> string!
 Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerTag.get -> string!
+Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.ParsedContainerDigest.get -> string!
 override Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Execute() -> bool
 override Microsoft.NET.Build.Containers.Tasks.ParseContainerProperties.Execute() -> bool
 static Microsoft.NET.Build.Containers.ContainerHelpers.TryParsePort(string! input, out Microsoft.NET.Build.Containers.Port? port, out Microsoft.NET.Build.Containers.ContainerHelpers.ParsePortError? error) -> bool
