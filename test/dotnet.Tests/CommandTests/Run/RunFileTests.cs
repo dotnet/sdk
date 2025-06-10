@@ -1265,6 +1265,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -1357,6 +1358,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -1443,6 +1445,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>
