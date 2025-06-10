@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Tool;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
@@ -91,31 +92,8 @@ internal class LocalToolsCommandResolver(
                     toolCommandName.ToString()));
             }
 
-            if (toolCommand.Runner == "dotnet")
-            {
-                if (toolManifestPackage.RollForward || allowRollForward)
-                {
-                    arguments.CommandArguments = ["--allow-roll-forward", .. arguments.CommandArguments];
-                }
-
-                return MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(
-                    toolCommand.Executable.Value,
-                    arguments.CommandArguments);
-            }
-            else if (toolCommand.Runner == "executable")
-            {
-                var escapedArgs = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
-                    arguments.CommandArguments);
-
-                return new CommandSpec(
-                    toolCommand.Executable.Value,
-                    escapedArgs);
-            }
-            else
-            {
-                throw new GracefulException(string.Format(CliStrings.ToolSettingsUnsupportedRunner,
-                    toolCommand.Name, toolCommand.Runner));
-            }
+            return ToolCommandSpecCreator.CreateToolCommandSpec(toolCommand.Name.Value, toolCommand.Executable.Value, toolCommand.Runner,
+                toolManifestPackage.RollForward || allowRollForward, arguments.CommandArguments);
         }
         else
         {

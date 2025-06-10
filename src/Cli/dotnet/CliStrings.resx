@@ -317,7 +317,7 @@
     <value>More than one command is defined for the tool.</value>
   </data>
   <data name="ToolSettingsUnsupportedRunner" xml:space="preserve">
-    <value>Command '{0}' uses unsupported runner '{1}'."</value>
+    <value>Tool '{0}' uses unsupported runner '{1}'."</value>
   </data>
   <data name="ToolUnsupportedRuntimeIdentifier" xml:space="preserve">
     <value>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</value>

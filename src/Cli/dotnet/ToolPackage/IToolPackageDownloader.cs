@@ -30,8 +30,9 @@ internal interface IToolPackageDownloader
         RestoreActionConfig restoreActionConfig = null
     );
 
-    bool IsLocalToolDownloaded(
+    bool TryGetDownloadedTool(
         PackageId packageId,
         NuGetVersion packageVersion,
-        string targetFramework = null);
+        string targetFramework,
+        out IToolPackage toolPackage);
 }

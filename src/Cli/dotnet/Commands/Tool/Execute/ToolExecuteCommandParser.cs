@@ -58,6 +58,8 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             command.Options.Add(YesOption);
             command.Options.Add(VerbosityOption);
 
+            //  TODO: Framework?
+
             command.SetAction((parseResult) => new ToolExecuteCommand(parseResult).Execute());
 
             return command;

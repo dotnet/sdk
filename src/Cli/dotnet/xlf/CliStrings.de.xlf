@@ -1078,8 +1078,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsUnsupportedRunner">
-        <source>Command '{0}' uses unsupported runner '{1}'."</source>
-        <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="new">Tool '{0}' uses unsupported runner '{1}'."</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUnsupportedRuntimeIdentifier">

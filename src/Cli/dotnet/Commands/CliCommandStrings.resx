@@ -2486,7 +2486,7 @@ To display a value, specify the corresponding command-line option without provid
     <value>Missing package ID</value>
   </data>
   <data name="ToolRunFromSourceUserConfirmationPrompt" xml:space="preserve">
-    <value>Tool not found on the system. Do you want to run it from source? [y/n]</value>
+    <value>Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</value>
   </data>
   <data name="ToolRunFromSourceUserConfirmationFailed" xml:space="preserve">
     <value>Run from source approval denied by the user</value>

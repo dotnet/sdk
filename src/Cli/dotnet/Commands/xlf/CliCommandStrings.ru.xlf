@@ -3158,8 +3158,8 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
         <note />
       </trans-unit>
       <trans-unit id="ToolRunFromSourceUserConfirmationPrompt">
-        <source>Tool not found on the system. Do you want to run it from source? [y/n]</source>
-        <target state="new">Tool not found on the system. Do you want to run it from source? [y/n]</target>
+        <source>Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</source>
+        <target state="new">Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">

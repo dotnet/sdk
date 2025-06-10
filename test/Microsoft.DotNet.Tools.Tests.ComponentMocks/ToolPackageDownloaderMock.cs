@@ -334,7 +334,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
         }
 
-        public bool IsLocalToolDownloaded(PackageId packageId, NuGetVersion packageVersion, string targetFramework = null) => throw new NotImplementedException();
+        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string targetFramework, out IToolPackage toolPackage) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {

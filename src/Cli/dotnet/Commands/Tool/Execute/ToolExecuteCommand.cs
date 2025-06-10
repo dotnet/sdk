@@ -16,6 +16,7 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
@@ -87,40 +88,54 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
                 }
             }
 
-
-            if (!UserAgreedToRunFromSource())
-            {
-                throw new GracefulException(CliCommandStrings.ToolRunFromSourceUserConfirmationFailed, isUserError: true);
-            }
-
-            if (_allowRollForward)
-            {
-                _forwardArguments.Append("--allow-roll-forward");
-            }
-
-
-            string tempDirectory = NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp);
-
-            IToolPackage toolPackage = _toolPackageDownloader.InstallPackage(
-                new PackageLocation(
+            var packageLocation = new PackageLocation(
                     nugetConfig: _configFile != null ? new(_configFile) : null,
                     sourceFeedOverrides: _sources,
-                    additionalFeeds: _addSource),
-                packageId: packageId,
-                verbosity: _verbosity,
-                versionRange: versionRange,
-                isGlobalToolRollForward: _allowRollForward, // Needed to update .runtimeconfig.json
-                restoreActionConfig: new(
-                    IgnoreFailedSources: _ignoreFailedSources,
-                    Interactive: _interactive));
+                    additionalFeeds: _addSource);
 
-            CommandSpec commandSpec = MuxerCommandSpecMaker.CreatePackageCommandSpecUsingMuxer(toolPackage.Command.Executable.ToString(), _forwardArguments);
+            var restoreActionConfig = new RestoreActionConfig(
+                    IgnoreFailedSources: _ignoreFailedSources,
+                    Interactive: _interactive);
+
+            (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, restoreActionConfig);
+
+            IToolPackage toolPackage;
+
+            //  TODO: Add framework argument
+            if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
+            {
+                if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
+                {
+                    //  TODO: Refactor this to print a better message, and probably a different message depending on whether the user selected no
+                    //  or whether interactive mode was off
+                    throw new GracefulException(CliCommandStrings.ToolRunFromSourceUserConfirmationFailed, isUserError: true);
+                }
+
+                //  We've already determined which source we will use and displayed that in a confirmation message to the user.
+                //  So set the package location here to override the source feeds to just the source we already resolved to.
+                //  This does mean that we won't work with feeds that have a primary package but where the RID-specific packages are on
+                //  other feeds, but this is probably OK.
+                var downloadPackageLocation = new PackageLocation(
+                    nugetConfig: _configFile != null ? new(_configFile) : null,
+                    sourceFeedOverrides: [packageSource.Source],
+                    additionalFeeds: _addSource);
+
+                toolPackage = _toolPackageDownloader.InstallPackage(
+                    downloadPackageLocation,
+                    packageId: packageId,
+                    verbosity: _verbosity,
+                    versionRange: new VersionRange(bestVersion, true, bestVersion, true),
+                    isGlobalToolRollForward: false,
+                    restoreActionConfig: restoreActionConfig);
+            }
+
+            var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
             var command = CommandFactoryUsingResolver.Create(commandSpec);
             var result = command.Execute();
             return result.ExitCode;
         }
 
-        private bool UserAgreedToRunFromSource()
+        private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
         {
             if (_yes)
             {
@@ -132,19 +147,22 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
                 return false;
             }
 
-            // TODO: Use a better way to ask for user input
-            Console.Write(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt);
+            //  TODO: Use a better way to ask for user input
+            //  TODO: How to localize y/n and interpret keys correctly?  Does Spectre.Console handle this?
+            string promptMessage = string.Format(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt, packageId, version.ToString(), source.Source);
+
+            Console.Write(promptMessage);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
 
             if (_verbosity >= VerbosityOptions.detailed)
             {
                 Console.WriteLine();
-                Console.WriteLine(new String('-', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length));
+                Console.WriteLine(new String('-', promptMessage.Length));
             }
             else
             {
                 // Clear the line
-                Console.Write("\r" + new string(' ', CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt.Length + 1) + "\r");
+                Console.Write("\r" + new string(' ', promptMessage.Length + 1) + "\r");
             }
 
             return userAccepted;

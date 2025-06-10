@@ -288,13 +288,15 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    public bool IsLocalToolDownloaded(
+    public bool TryGetDownloadedTool(
         PackageId packageId,
         NuGetVersion packageVersion,
-        string? targetFramework = null)
+        string targetFramework,
+        out IToolPackage? toolPackage)
     {
         if (!IsPackageInstalled(packageId, packageVersion, _localToolDownloadDir.Value))
         {
+            toolPackage = null;
             return false;
         }
         CreateAssetFile(packageId, packageVersion, _localToolDownloadDir, Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, targetFramework);
@@ -302,12 +304,22 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         var ridSpecificPackage = ResolveRidSpecificPackage(packageId, packageVersion, _localToolDownloadDir, _localToolAssetDir);
         if (ridSpecificPackage != null)
         {
-            return IsPackageInstalled(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, _localToolDownloadDir.Value);
+            if (!IsPackageInstalled(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, _localToolDownloadDir.Value))
+            {
+                toolPackage = null;
+                return false;
+            }
+            CreateAssetFile(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, _localToolDownloadDir,
+                Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
         }
-        else
-        {
-            return true;
-        }
+
+        toolPackage = new ToolPackageInstance(id: packageId,
+                    version: packageVersion,
+                    packageDirectory: _localToolDownloadDir,
+                    assetsJsonParentDirectory: _localToolAssetDir,
+                    fileSystem: _fileSystem);
+        return true;
+
     }
 
     private PackageIdentity? ResolveRidSpecificPackage(PackageId packageId,
