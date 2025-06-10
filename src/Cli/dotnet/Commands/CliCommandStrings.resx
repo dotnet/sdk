@@ -1513,6 +1513,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
     <comment>{Locked="--force"}. {0} is the file path and line number.</comment>
   </data>
+  <data name="DuplicateDirective" xml:space="preserve">
+    <value>Duplicate directives are not supported: {0} at {1}</value>
+    <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
+  </data>
   <data name="InvalidOptionCombination" xml:space="preserve">
     <value>Cannot combine option '{0}' and '{1}'.</value>
     <comment>{0} and {1} are option names like '--no-build'.</comment>
