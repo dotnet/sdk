@@ -1037,12 +1037,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
             """);
 
-        // TODO: We shouldn't need to restore lib separately.
-        new DotnetCommand(Log, "restore")
-            .WithWorkingDirectory(libDir)
-            .Execute()
-            .Should().Pass();
-
         var appDir = Path.Join(testInstance.Path, "App");
         Directory.CreateDirectory(appDir);
 
@@ -1294,32 +1288,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -1376,32 +1345,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -1462,32 +1406,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 

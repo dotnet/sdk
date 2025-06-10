@@ -58,6 +58,56 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "MSBuild.rsp",
     ];
 
+    internal static readonly string TargetOverrides = """
+          <!--
+            Override targets which don't work with project files that are not present on disk.
+            See https://github.com/NuGet/Home/issues/14148.
+          -->
+
+          <Target Name="_FilterRestoreGraphProjectInputItems"
+                  DependsOnTargets="_LoadRestoreGraphEntryPoints">
+            <!-- No-op, the original output is not needed by the overwritten targets. -->
+          </Target>
+
+          <Target Name="_GetAllRestoreProjectPathItems"
+                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GenerateRestoreProjectPathWalk"
+                  Returns="@(_RestoreProjectPathItems)">
+            <!-- Output from dependency _GenerateRestoreProjectPathWalk. -->
+          </Target>
+
+          <Target Name="_GenerateRestoreGraph"
+                  DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
+                  Returns="@(_RestoreGraphEntry)">
+            <!-- Output partly from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph. -->
+
+            <ItemGroup>
+              <_GenerateRestoreGraphProjectEntryInput Include="@(_RestoreProjectPathItems)" Exclude="$(MSBuildProjectFullPath)" />
+            </ItemGroup>
+
+            <MSBuild
+                BuildInParallel="$(RestoreBuildInParallel)"
+                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
+                Targets="_GenerateRestoreGraphProjectEntry"
+                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
+
+              <Output
+                  TaskParameter="TargetOutputs"
+                  ItemName="_RestoreGraphEntry" />
+            </MSBuild>
+
+            <MSBuild
+                BuildInParallel="$(RestoreBuildInParallel)"
+                Projects="@(_GenerateRestoreGraphProjectEntryInput)"
+                Targets="_GenerateProjectRestoreGraph"
+                Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
+        
+              <Output
+                  TaskParameter="TargetOutputs"
+                  ItemName="_RestoreGraphEntry" />
+            </MSBuild>
+          </Target>
+        """;
+
     private ImmutableArray<CSharpDirective> _directives;
 
     public VirtualProjectBuildingCommand(
@@ -658,35 +708,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     """);
             }
 
-            writer.WriteLine("""
-
-                  <!--
-                    Override targets which don't work with project files that are not present on disk.
-                    See https://github.com/NuGet/Home/issues/14148.
-                  -->
-
-                  <Target Name="_FilterRestoreGraphProjectInputItems"
-                          DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                          Returns="@(FilteredRestoreGraphProjectInputItems)">
-                    <ItemGroup>
-                      <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                    </ItemGroup>
-                  </Target>
-
-                  <Target Name="_GetAllRestoreProjectPathItems"
-                          DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                          Returns="@(_RestoreProjectPathItems)">
-                    <ItemGroup>
-                      <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                    </ItemGroup>
-                  </Target>
-
-                  <Target Name="_GenerateRestoreGraph"
-                          DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                          Returns="@(_RestoreGraphEntry)">
-                    <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                  </Target>
-                """);
+            writer.WriteLine();
+            writer.WriteLine(TargetOverrides);
         }
 
         writer.WriteLine("""
