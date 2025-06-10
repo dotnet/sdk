@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
@@ -246,14 +246,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Only <c>.cs</c> files can be run without a project file,
-    /// others fall back to normal <c>dotnet run</c> behavior.
+    /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
+    /// execute as a single file program if we find them.
     /// </summary>
     [Theory]
     [InlineData("Program")]
     [InlineData("Program.csx")]
     [InlineData("Program.vb")]
-    public void NonCsFileExtension(string fileName)
+    public void NonCsFileExtensionWithShebang(string fileName)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, fileName), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        new DotnetCommand(Log, "run", fileName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("hello world");
+    }
+
+    /// <summary>
+    /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
+    /// fall back to normal <c>dotnet run</c> behavior if we don't find them.
+    /// </summary>
+    [Theory]
+    [InlineData("Program")]
+    [InlineData("Program.csx")]
+    [InlineData("Program.vb")]
+    public void NonCsFileExtensionWithNoShebang(string fileName)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, fileName), s_program);
