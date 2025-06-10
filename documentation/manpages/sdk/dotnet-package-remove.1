@@ -14,26 +14,32 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-remove-package" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-package-remove" "1" "2025-05-30" "" ".NET Documentation"
 .hy
-.SH dotnet remove package
+.SH dotnet package remove
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-remove-package - Removes package reference from a project file.
+dotnet-package-remove - Removes package reference from a project file.
+.RS
+.PP
+If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-remove-package) instead.
+The \[lq]noun first\[rq] form was introduced in .NET 10.
+For more information, see More consistent command order.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet remove [<PROJECT>] package <PACKAGE_NAME>
+dotnet package remove <PACKAGE_NAME> [--project <PROJECT>]
 
-dotnet remove package -h|--help
+dotnet package remove -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet remove package\f[R] command provides a convenient option to remove a NuGet package reference from a project.
+The \f[V]dotnet package remove\f[R] command provides a convenient option to remove a NuGet package reference from a project.
 .SH ARGUMENTS
 .PP
 \f[V]PROJECT\f[R]
@@ -58,7 +64,7 @@ Remove \f[V]Newtonsoft.Json\f[R] NuGet package from a project in the current dir
 .IP
 .nf
 \f[C]
-dotnet remove package Newtonsoft.Json
+dotnet package remove Newtonsoft.Json
 \f[R]
 .fi
 .RE
