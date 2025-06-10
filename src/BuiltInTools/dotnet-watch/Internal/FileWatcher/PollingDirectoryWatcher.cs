@@ -1,17 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class PollingDirectoryWatcher : IDirectoryWatcher
+    internal sealed class PollingDirectoryWatcher : DirectoryWatcher
     {
         // The minimum interval to rerun the scan
         private static readonly TimeSpan _minRunInternal = TimeSpan.FromSeconds(.5);
 
         private readonly DirectoryInfo _watchedDirectory;
-        private readonly bool _includeSubdirectories;
 
         private Dictionary<string, DateTime> _currentSnapshot = new(PathUtilities.OSSpecificPathComparer);
 
@@ -24,19 +24,10 @@ namespace Microsoft.DotNet.Watch
 
         private volatile bool _disposed;
 
-        public event EventHandler<ChangedPath>? OnFileChange;
-
-#pragma warning disable CS0067 // not used
-        public event EventHandler<Exception>? OnError;
-#pragma warning restore
-
-        public string WatchedDirectory { get; }
-
-        public PollingDirectoryWatcher(string watchedDirectory, bool includeSubdirectories)
+        public PollingDirectoryWatcher(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories)
+            : base(watchedDirectory, watchedFileNames, includeSubdirectories)
         {
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
-            _includeSubdirectories = includeSubdirectories;
-            WatchedDirectory = _watchedDirectory.FullName;
 
             _pollingThread = new Thread(new ThreadStart(PollingLoop))
             {
@@ -49,13 +40,13 @@ namespace Microsoft.DotNet.Watch
             _pollingThread.Start();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             EnableRaisingEvents = false;
             _disposed = true;
         }
 
-        public bool EnableRaisingEvents
+        public override bool EnableRaisingEvents
         {
             get => _raiseEvents;
             set
@@ -161,7 +152,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (entity is DirectoryInfo subdirInfo)
                 {
-                    if (_includeSubdirectories)
+                    if (IncludeSubdirectories)
                     {
                         ForeachEntityInDirectory(subdirInfo, fileAction);
                     }
@@ -194,7 +185,7 @@ namespace Microsoft.DotNet.Watch
                     break;
                 }
 
-                OnFileChange?.Invoke(this, new ChangedPath(path, kind));
+                NotifyChange(path, kind);
             }
         }
     }
