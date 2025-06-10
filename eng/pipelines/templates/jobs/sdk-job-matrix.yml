@@ -31,11 +31,6 @@ parameters:
   - categoryName: ContainerBased
     container: azureLinux30Net10BuildAmd64
     helixTargetContainer: $(helixTargetContainerPrefix)azurelinux.3.amd64.open
-    osProperties: $(linuxOsglibcProperties)
-    runTests: true
-  - categoryName: ContainerBased
-    container: azureLinux30Net10BuildAmd64
-    helixTargetContainer: $(helixTargetContainerPrefix)azurelinux.3.amd64.open
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
     runTests: true
   - categoryName: TemplateEngine
