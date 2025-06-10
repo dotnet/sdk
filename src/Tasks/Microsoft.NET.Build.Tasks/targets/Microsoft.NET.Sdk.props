@@ -41,7 +41,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <AssemblyName Condition=" '$(AssemblyName)' == '' ">$(MSBuildProjectName)</AssemblyName>
     <!-- Transform project name for RootNamespace: replace spaces and dashes with underscores, prefix with underscore if starts with digit -->
     <_TempRootNamespace Condition=" '$(RootNamespace)' == '' ">$(MSBuildProjectName.Replace(" ", "_").Replace("-", "_"))</_TempRootNamespace>
-    <_FirstChar Condition=" '$(RootNamespace)' == '' ">$(_TempRootNamespace.Substring(0,1))</_FirstChar>
+    <_FirstChar Condition=" '$(RootNamespace)' == '' AND '$(_TempRootNamespace)' != '' ">$(_TempRootNamespace.Substring(0,1))</_FirstChar>
     <_IsFirstCharDigit Condition=" '$(RootNamespace)' == '' ">false</_IsFirstCharDigit>
     <_IsFirstCharDigit Condition=" '$(RootNamespace)' == '' AND ('$(_FirstChar)' == '0' OR '$(_FirstChar)' == '1' OR '$(_FirstChar)' == '2' OR '$(_FirstChar)' == '3' OR '$(_FirstChar)' == '4' OR '$(_FirstChar)' == '5' OR '$(_FirstChar)' == '6' OR '$(_FirstChar)' == '7' OR '$(_FirstChar)' == '8' OR '$(_FirstChar)' == '9')">true</_IsFirstCharDigit>
     <RootNamespace Condition=" '$(RootNamespace)' == '' AND '$(_IsFirstCharDigit)' == 'true' ">_$(_TempRootNamespace)</RootNamespace>
