@@ -35,7 +35,9 @@ public class PublishCommand : RestoringCommand
             "--property:_IsPublishing=true" // This property will not hold true for MSBuild /t:Publish or in VS.
         };
 
-        string[] fileArgs = parseResult.GetValue(PublishCommandParser.SlnOrProjectOrFileArgument) ?? [];
+        string[] args = parseResult.GetValue(PublishCommandParser.SlnOrProjectOrFileArgument) ?? [];
+
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         CommonOptions.ValidateSelfContainedOptions(parseResult.HasOption(PublishCommandParser.SelfContainedOption),
             parseResult.HasOption(PublishCommandParser.NoSelfContainedOption));
@@ -46,12 +48,14 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(PublishCommandParser.NoRestoreOption);
 
-        if (fileArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             if (!parseResult.HasOption(PublishCommandParser.ConfigurationOption))
             {
                 msbuildArgs.Add("-p:Configuration=Release");
             }
+
+            msbuildArgs.AddRange(binLogArgs);
 
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
@@ -68,14 +72,14 @@ public class PublishCommand : RestoringCommand
 
         ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE,
             new ReleasePropertyProjectLocator.DependentCommandOptions(
-                    fileArgs,
+                    nonBinLogArgs,
                     parseResult.HasOption(PublishCommandParser.ConfigurationOption) ? parseResult.GetValue(PublishCommandParser.ConfigurationOption) : null,
                     parseResult.HasOption(PublishCommandParser.FrameworkOption) ? parseResult.GetValue(PublishCommandParser.FrameworkOption) : null
                 )
          );
         msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
 
-        msbuildArgs.AddRange(fileArgs ?? []);
+        msbuildArgs.AddRange(args ?? []);
 
         msbuildArgs.Insert(0, "-target:Publish");
 

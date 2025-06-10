@@ -861,7 +861,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
-        new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false")
+        new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false", "-bl")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -869,6 +869,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(artifactsDir).Sub("publish/debug")
             .Should().Exist()
             .And.HaveFile("Program.deps.json");
+
+        new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
     }
 
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
