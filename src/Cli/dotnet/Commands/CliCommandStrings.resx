@@ -2485,10 +2485,14 @@ To display a value, specify the corresponding command-line option without provid
   <data name="ToolExecuteCommandMissingPackageId" xml:space="preserve">
     <value>Missing package ID</value>
   </data>
-  <data name="ToolRunFromSourceUserConfirmationPrompt" xml:space="preserve">
-    <value>Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</value>
+  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
+    <value>Tool package {0}@{1} will be downloaded from source {2}.
+Proceed? [y/n]</value>
   </data>
-  <data name="ToolRunFromSourceUserConfirmationFailed" xml:space="preserve">
-    <value>Run from source approval denied by the user</value>
+  <data name="ToolDownloadCanceled" xml:space="preserve">
+    <value>Tool package download canceled</value>
+  </data>
+  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
+    <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
   </data>
 </root>

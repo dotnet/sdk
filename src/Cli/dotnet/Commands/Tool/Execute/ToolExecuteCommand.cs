@@ -46,9 +46,6 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
 
-        //  TODO: Use prerelease
-        private readonly bool _prerelease = result.GetValue(ToolExecuteCommandParser.PrereleaseOption);
-
         private readonly ToolManifestFinder _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
 
         public override int Execute()
@@ -106,9 +103,15 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
             {
                 if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
                 {
-                    //  TODO: Refactor this to print a better message, and probably a different message depending on whether the user selected no
-                    //  or whether interactive mode was off
-                    throw new GracefulException(CliCommandStrings.ToolRunFromSourceUserConfirmationFailed, isUserError: true);
+                    if (_interactive)
+                    {
+                        //  TODO: Should we return an exit code that indicates the user canceled the operation?
+                        throw new GracefulException(CliCommandStrings.ToolDownloadCanceled, isUserError: true);
+                    }
+                    else
+                    {
+                        throw new GracefulException(CliCommandStrings.ToolDownloadNeedsConfirmation, isUserError: true);
+                    }
                 }
 
                 //  We've already determined which source we will use and displayed that in a confirmation message to the user.
@@ -149,21 +152,14 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Execute
 
             //  TODO: Use a better way to ask for user input
             //  TODO: How to localize y/n and interpret keys correctly?  Does Spectre.Console handle this?
-            string promptMessage = string.Format(CliCommandStrings.ToolRunFromSourceUserConfirmationPrompt, packageId, version.ToString(), source.Source);
+            string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt + " ", packageId, version.ToString(), source.Source);
 
             Console.Write(promptMessage);
             bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
 
-            if (_verbosity >= VerbosityOptions.detailed)
-            {
-                Console.WriteLine();
-                Console.WriteLine(new String('-', promptMessage.Length));
-            }
-            else
-            {
-                // Clear the line
-                Console.Write("\r" + new string(' ', promptMessage.Length + 1) + "\r");
-            }
+            Console.WriteLine();
+            //  TODO: Do we want a separator like this?  Seems like it's meant to separate the output of the tool from the prompt.
+            //Console.WriteLine(new String('-', promptMessage.Length + 2));
 
             return userAccepted;
         }

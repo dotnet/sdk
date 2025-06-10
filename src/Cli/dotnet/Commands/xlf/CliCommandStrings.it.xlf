@@ -2926,6 +2926,23 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="new">Install or manage tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolDownloadCanceled">
+        <source>Tool package download canceled</source>
+        <target state="new">Tool package download canceled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDownloadConfirmationPrompt">
+        <source>Tool package {0}@{1} will be downloaded from source {2}.
+Proceed? [y/n]</source>
+        <target state="new">Tool package {0}@{1} will be downloaded from source {2}.
+Proceed? [y/n]</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDownloadNeedsConfirmation">
+        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
+        <target state="new">Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
         <target state="new">Executes a tool from source without permanently installing it.</target>
@@ -3150,16 +3167,6 @@ If you would like to create a manifest, use the `--create-manifest-if-needed` fl
       <trans-unit id="ToolRunCommandDescription">
         <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
         <target state="new">Run a local tool. Note that this command cannot be used to run a global tool. </target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRunFromSourceUserConfirmationFailed">
-        <source>Run from source approval denied by the user</source>
-        <target state="new">Run from source approval denied by the user</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolRunFromSourceUserConfirmationPrompt">
-        <source>Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</source>
-        <target state="new">Tool package {0}@{1} will be downloaded from source {2}.  Proceed? [y/n]</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
