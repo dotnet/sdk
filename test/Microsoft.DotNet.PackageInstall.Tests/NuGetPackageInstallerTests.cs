@@ -60,6 +60,17 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [Fact]
+        public async Task GivenSourceWithLeadingWhitespaceInstallSucceeds()
+        {
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(sourceFeedOverrides: new[] { " " + GetTestLocalFeedPath() })); // Leading space
+            File.Exists(packagePath).Should().BeTrue();
+            packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
+        }
+
+        [Fact]
         public async Task GivenAFailedSourceItShouldError()
         {
             DirectoryPath nonExistFeed =
@@ -226,6 +237,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
             packagePath.Should().Contain(TestPackageId + "." + TestPreviewPackageVersion,
                 "Package should download higher package version");
+        }
+
+        [Fact]
+        public async Task GivenAdditionalSourceWithLeadingWhitespaceInstallSucceeds()
+        {
+            string getTestLocalFeedPath = GetTestLocalFeedPath();
+            string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
+            string packagePath = await _installer.DownloadPackageAsync(
+                TestPackageId,
+                new NuGetVersion(TestPackageVersion),
+                new PackageSourceLocation(additionalSourceFeeds: new[] { " " + relativePath })); // Leading space
+            File.Exists(packagePath).Should().BeTrue();
+            packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
         [WindowsOnlyFact]

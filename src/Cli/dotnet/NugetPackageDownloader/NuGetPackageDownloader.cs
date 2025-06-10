@@ -355,7 +355,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 continue;
             }
 
-            PackageSource packageSource = new(source);
+            PackageSource packageSource = new(source.Trim());
             if (packageSource.TrySourceAsUri == null)
             {
                 _verboseLogger.LogWarning(string.Format(
@@ -418,7 +418,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                     continue;
                 }
 
-                PackageSource packageSource = new(source);
+                PackageSource packageSource = new(source.Trim());
                 if (packageSource.TrySourceAsUri == null)
                 {
                     _verboseLogger.LogWarning(string.Format(
