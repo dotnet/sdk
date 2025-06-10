@@ -515,24 +515,12 @@ public class RunCommand
         // bl information to synchronize the restore and build logger configurations
         var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
 
-        var binlogArgs = new List<string>();
-        var nonBinLogArgs = new List<string>();
-        foreach (var arg in applicationArguments ?? [])
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binlogArgs.Add(arg);
-            }
-            else
-            {
-                nonBinLogArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
         var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
-        if (binlogArgs.Count > 0)
+        if (binLogArgs.Count > 0)
         {
-            restoreArgs.AddRange(binlogArgs);
+            restoreArgs.AddRange(binLogArgs);
         }
 
         var command = new RunCommand(
