@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
