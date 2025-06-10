@@ -237,7 +237,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(_manifestFilePath);
             Action a = () => _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
 
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                 .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 

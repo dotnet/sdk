@@ -254,11 +254,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             Action a = () => toolManifest.Find(new FilePath(Path.Combine(_testDirectoryRoot, "non-exists")));
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""))
-                .And.Contain(
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, "")).And.Contain(
                     Path.Combine(_testDirectoryRoot, "non-exists"),
                     "the specificied manifest file name is in the 'searched list'");
         }
@@ -275,9 +271,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.Find();
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                  .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -444,9 +437,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => toolManifest.FindByPackageId(new PackageId("t-rex"));
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
-                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
                 .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
@@ -741,9 +731,6 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
                     .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
-
-            a.Should().Throw<ToolManifestCannotBeFoundException>().And.VerboseMessage.Should()
-                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
