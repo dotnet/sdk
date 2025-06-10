@@ -869,6 +869,9 @@ internal static partial class Patterns
 {
     [GeneratedRegex("""\s+""")]
     public static partial Regex Whitespace { get; }
+
+    [GeneratedRegex("""[\s@=/]""")]
+    public static partial Regex DisallowedNameCharacters { get; }
 }
 
 /// <summary>
@@ -907,25 +910,29 @@ internal abstract class CSharpDirective
         }
     }
 
-    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
+    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, char separator)
     {
-        var i = separators != null
-            ? directiveText.AsSpan().IndexOfAny(separators)
-            : directiveText.IndexOf(' ', StringComparison.Ordinal);
-        var firstPart = i < 0 ? directiveText : directiveText[..i];
+        var i = directiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (i < 0 ? directiveText : directiveText.AsSpan(..i)).TrimEnd();
 
-        if (string.IsNullOrWhiteSpace(firstPart))
+        if (firstPart.IsWhiteSpace())
         {
             return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+        }
+
+        // If the name contains characters that resemble separators, report an error to avoid any confusion.
+        if (Patterns.DisallowedNameCharacters.IsMatch(firstPart))
+        {
+            return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator, sourceFile.GetLocationString(span)));
         }
 
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
         {
-            return (firstPart, null);
+            return (firstPart.ToString(), null);
         }
 
-        return (firstPart, secondPart.ToString());
+        return (firstPart.ToString(), secondPart.ToString());
     }
 
     /// <summary>
@@ -945,7 +952,7 @@ internal abstract class CSharpDirective
 
         public static new Sdk? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (sdkName, sdkVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (sdkName, sdkVersion))
             {
                 return null;
             }
@@ -976,7 +983,7 @@ internal abstract class CSharpDirective
 
         public static new Property? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (propertyName, propertyValue))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '=') is not var (propertyName, propertyValue))
             {
                 return null;
             }
@@ -1009,8 +1016,6 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Package : CSharpDirective
     {
-        private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
-
         private Package() { }
 
         public required string Name { get; init; }
@@ -1018,7 +1023,7 @@ internal abstract class CSharpDirective
 
         public static new Package? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, s_separators) is not var (packageName, packageVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (packageName, packageVersion))
             {
                 return null;
             }
