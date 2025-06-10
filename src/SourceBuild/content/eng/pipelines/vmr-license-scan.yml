@@ -34,7 +34,7 @@ parameters:
 
 variables:
   # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
-- group: DotNet-Source-Build-Bot-Secrets-MVP
+- group: Dotnet-SourceBuild-Secrets
 - name: sdkRoot
   value: '$(Build.SourcesDirectory)/src/sdk'
 
