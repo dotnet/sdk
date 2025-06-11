@@ -20,6 +20,8 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 
 public class RunCommand
 {
+    public const string ReadFromStdin = "-";
+
     public bool NoBuild { get; }
 
     /// <summary>
@@ -38,6 +40,13 @@ public class RunCommand
     /// Full path to an entry-point <c>.cs</c> file to run without a project file.
     /// </summary>
     public string? EntryPointFileFullPath { get; }
+
+    /// <summary>
+    /// Whether <c>dotnet run -</c> is being executed.
+    /// In that case, <see cref="EntryPointFileFullPath"/> points to a temporary file
+    /// containing all text read from the standard input.
+    /// </summary>
+    public bool FromStdin { get; }
 
     public string[] Args { get; set; }
     public bool NoRestore { get; }
@@ -77,8 +86,9 @@ public class RunCommand
     {
         NoBuild = noBuild;
         ProjectFileOrDirectory = projectFileOrDirectory;
-        ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory, ref args, out string? entryPointFileFullPath);
+        ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory, ref args, out string? entryPointFileFullPath, out bool fromStdin);
         EntryPointFileFullPath = entryPointFileFullPath;
+        FromStdin = fromStdin;
         LaunchProfile = launchProfile;
         NoLaunchProfile = noLaunchProfile;
         NoLaunchProfileArguments = noLaunchProfileArguments;
@@ -112,6 +122,11 @@ public class RunCommand
         {
             if (EntryPointFileFullPath is not null)
             {
+                if (FromStdin)
+                {
+                    throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+                }
+
                 projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
             }
 
@@ -180,7 +195,7 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
+        var launchSettingsPath = FromStdin ? null : TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
         if (!File.Exists(launchSettingsPath))
         {
             if (!string.IsNullOrEmpty(LaunchProfile))
@@ -439,7 +454,7 @@ public class RunCommand
                     project.GetPropertyValue("OutputType")));
     }
 
-    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, ref string[] args, out string? entryPointFilePath)
+    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, ref string[] args, out string? entryPointFilePath, out bool fromStdin)
     {
         bool emptyProjectOption = false;
         if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
@@ -463,6 +478,22 @@ public class RunCommand
             throw new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, projectFileOrDirectoryPath, "--project");
         }
 
+        if (entryPointFilePath is ReadFromStdin)
+        {
+            // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
+            fromStdin = true;
+            entryPointFilePath = Path.GetTempFileName();
+            using (var stdinStream = Console.OpenStandardInput())
+            using (var fileStream = File.OpenWrite(entryPointFilePath))
+            {
+                stdinStream.CopyTo(fileStream);
+            }
+        }
+        else
+        {
+            fromStdin = false;
+        }
+
         return projectFilePath;
 
         static string? TryFindSingleProjectInDirectory(string directory)
@@ -484,14 +515,26 @@ public class RunCommand
 
         static string? TryFindEntryPointFilePath(ref string[] args)
         {
-            if (args is not [{ } arg, ..] ||
-                !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+            if (args is not [{ } arg, ..])
+            {
+                return null;
+            }
+
+            if (arg == ReadFromStdin)
+            {
+                // No need to transform the argument.
+            }
+            else if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+            {
+                arg = Path.GetFullPath(arg);
+            }
+            else
             {
                 return null;
             }
 
             args = args[1..];
-            return Path.GetFullPath(arg);
+            return arg;
         }
     }
 

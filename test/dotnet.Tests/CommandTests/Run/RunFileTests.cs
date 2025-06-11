@@ -181,6 +181,35 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <c>dotnet run -</c> reads the C# code from stdin.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin()
+    {
+        new DotnetCommand(Log, "run", "-")
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                Console.WriteLine("Read: " + (Console.ReadLine() ?? "null"));
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from stdin
+                Read: null
+                """);
+    }
+
+    [Fact]
+    public void ReadFromStdin_NoBuild()
+    {
+        new DotnetCommand(Log, "run", "-", "--no-build")
+            .WithStandardInput("")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--no-build"));
+    }
+
+    /// <summary>
     /// <c>dotnet run folder</c> without a project file is not supported.
     /// </summary>
     [Theory]
