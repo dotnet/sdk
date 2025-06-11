@@ -1173,8 +1173,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
       <trans-unit id="YesOptionDescription">
-        <source>Suppresses confirmation prompt with "yes" value.</source>
-        <target state="new">Suppresses confirmation prompt with "yes" value.</target>
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="new">Accept all confirmation prompts using "yes."</target>
         <note />
       </trans-unit>
     </body>

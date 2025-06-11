@@ -813,6 +813,6 @@ For a list of locations searched, specify the "-d" option before the tool name.<
     <comment>{Locked="--version"}</comment>
   </data>
   <data name="YesOptionDescription" xml:space="preserve">
-    <value>Suppresses confirmation prompt with "yes" value.</value>
+    <value>Accept all confirmation prompts using "yes."</value>
   </data>
 </root>
