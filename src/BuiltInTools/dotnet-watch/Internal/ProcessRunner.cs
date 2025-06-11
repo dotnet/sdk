@@ -216,7 +216,9 @@ namespace Microsoft.DotNet.Watch
         {
             if (!shutdownCancellationToken.IsCancellationRequested)
             {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                // SIGTERM no longer works on Linux https://github.com/dotnet/sdk/issues/49307
+
+                // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     // Ctrl+C hasn't been sent, force termination.
                     // We don't have means to terminate gracefully on Windows (https://github.com/dotnet/runtime/issues/109432)
@@ -225,11 +227,11 @@ namespace Microsoft.DotNet.Watch
 
                     return;
                 }
-                else
-                {
-                    // Ctrl+C hasn't been sent, send SIGTERM now:
-                    TerminateProcess(process, state, reporter, force: false);
-                }
+                //else
+                //{
+                //    // Ctrl+C hasn't been sent, send SIGTERM now:
+                //    TerminateProcess(process, state, reporter, force: false);
+                //}
             }
 
             // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
