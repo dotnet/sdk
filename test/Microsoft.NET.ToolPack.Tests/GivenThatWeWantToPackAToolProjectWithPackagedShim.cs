@@ -157,7 +157,16 @@ namespace Microsoft.NET.ToolPack.Tests
 
             var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
 
-            packCommand.Execute("-bl:{}").Should().Pass();
+            var result = packCommand.Execute("-bl:{}");
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(helloWorldAsset.TestRoot, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
+            }
+            result.Should().Pass();
 
             string windowShimPath = Path.Combine(shimoutputPath, $"shims/{targetFramework}/win-x64/{_customToolCommandName}.exe");
             File.Exists(windowShimPath).Should().BeTrue($"Shim {windowShimPath} should exist");
