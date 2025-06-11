@@ -134,7 +134,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
