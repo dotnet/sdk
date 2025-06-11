@@ -1053,7 +1053,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .WithWorkingDirectory(appDir)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining("Hello from Lib");
+            .And.HaveStdOut("Hello from Lib");
+    }
+
+    [Fact]
+    public void ProjectReference_NonExistent()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:project wrong.csproj
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // warning MSB3202: The project file was not found.
+            .And.HaveStdOutContaining("MSB3202");
     }
 
     [Fact]
