@@ -155,15 +155,37 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         //  TODO: Use a better way to ask for user input
         //  TODO: How to localize y/n and interpret keys correctly?  Does Spectre.Console handle this?
-        string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt + " ", packageId, version.ToString(), source.Source);
+        string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
 
-        Console.Write(promptMessage);
-        bool userAccepted = Console.ReadKey().Key == ConsoleKey.Y;
+        static string AddPromptOptions(string message)
+        {
+            return $"{message} [{CliCommandStrings.ConfirmationPromptYesValue}/{CliCommandStrings.ConfirmationPromptNoValue}] ({CliCommandStrings.ConfirmationPromptYesValue}): ";
+        }
 
-        Console.WriteLine();
-        //  TODO: Do we want a separator like this?  Seems like it's meant to separate the output of the tool from the prompt.
-        //Console.WriteLine(new String('-', promptMessage.Length + 2));
+        Console.Write(AddPromptOptions(promptMessage));
 
-        return userAccepted;
+        static bool KeyMatches(ConsoleKeyInfo pressedKey, string valueKey)
+        {
+            //  Apparently you can't do invariant case insensitive comparison on a char directly, so we have to convert it to a string.
+            //  The resource string should be a single character, but we take the first character just to be sure.
+            return pressedKey.KeyChar.ToString().ToLowerInvariant().Equals(
+                    valueKey.ToLowerInvariant().Substring(0, 1));
+        }
+
+        while (true)
+        {
+            var key = Console.ReadKey();
+            Console.WriteLine();
+            if (key.Key == ConsoleKey.Enter || KeyMatches(key, CliCommandStrings.ConfirmationPromptYesValue))
+            {
+                return true;
+            }
+            if (key.Key == ConsoleKey.Escape || KeyMatches(key, CliCommandStrings.ConfirmationPromptNoValue))
+            {
+                return false;
+            }
+
+            Console.Write(AddPromptOptions(string.Format(CliCommandStrings.ConfirmationPromptInvalidChoiceMessage, CliCommandStrings.ConfirmationPromptYesValue, CliCommandStrings.ConfirmationPromptNoValue)));
+        }
     }
 }
