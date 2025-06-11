@@ -160,7 +160,7 @@ namespace Microsoft.NET.ToolPack.Tests
             var result = packCommand.Execute("-bl:{}");
             if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
             {
-                var binlogFiles = Directory.GetFiles(helloWorldAsset.TestRoot, "*.binlog");
+                var binlogFiles = Directory.GetFiles(Environment.CurrentDirectory, "*.binlog");
                 foreach (string binlogFile in binlogFiles)
                 {
                     File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
