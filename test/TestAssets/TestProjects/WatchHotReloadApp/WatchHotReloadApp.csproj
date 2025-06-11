@@ -3,4 +3,7 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
   </PropertyGroup>
+  <ItemGroup>
+    <!-- placeholder -->
+  </ItemGroup>
 </Project>
