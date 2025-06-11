@@ -58,9 +58,9 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
       </trans-unit>
       <trans-unit id="NoManifestGuide">
         <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="translated">如果你打算安装全局工具，请在命令中添加 `--global`。
-如果你想要创建一个清单，请使用 `dotnet new tool-manifest`，通常位于存储库的根目录中。</target>
+If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
+        <target state="translated">如果打算安装全局工具，请将 `--global` 添加到命令。
+如果要创建清单，请将 `--create-manifest-if-needed` 标志与 `dotnet tool install` 命令结合使用，或使用 `dotnet new tool-manifest`(通常在存储库根目录中)。</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdArgumentDescription">
