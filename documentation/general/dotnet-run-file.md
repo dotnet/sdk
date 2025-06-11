@@ -48,7 +48,7 @@ The command takes a path which can be either
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
 The target path must be a file which either has the `.cs` file extension,
-or a file who's contents start with `#!`.
+or a file whose contents start with `#!`.
 *The target directory* is the directory of the target file.
 
 ## Integration into the existing `dotnet run` command
