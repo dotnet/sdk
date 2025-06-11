@@ -129,10 +129,9 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(_packageVersions.Max());
         }
 
-        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
         {
-            return GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)
-                .ContinueWith(t => t.Result.version, TaskContinuationOptions.OnlyOnRanToCompletion);
+            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
         }
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
