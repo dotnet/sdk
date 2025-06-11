@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
@@ -144,6 +144,7 @@ We recommend that you specify \f[V]PublishReadyToRun\f[R] in a publish profile r
 .PP
 Packages the app into a platform-specific single-file executable.
 For more information about single-file publishing, see the single-file bundler design document (https://github.com/dotnet/designs/blob/main/accepted/2020/single-file/design.md).
+When this property is set to \f[V]true\f[R], the \f[V]PublishSelfContained\f[R] property is implicitly set to \f[V]true\f[R].
 .PP
 We recommend that you specify this option in the project file rather than on the command line.
 .RE
@@ -180,7 +181,7 @@ The project or solution to publish.
 \f[V]PROJECT\f[R] is the path and filename of a C#, F#, or Visual Basic project file, or the path to a directory that contains a C#, F#, or Visual Basic project file.
 If the directory is not specified, it defaults to the current directory.
 .IP \[bu] 2
-\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] extension), or the path to a directory that contains a solution file.
+\f[V]SOLUTION\f[R] is the path and filename of a solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] extension), or the path to a directory that contains a solution file.
 If the directory is not specified, it defaults to the current directory.
 .RE
 .SH OPTIONS

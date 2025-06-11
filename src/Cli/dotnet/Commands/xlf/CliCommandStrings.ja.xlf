@@ -2998,13 +2998,6 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
         <target state="new">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNoManifestGuide">
-        <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="new">If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
         <source>NuGet configuration file '{0}' does not exist.</source>
         <target state="new">NuGet configuration file '{0}' does not exist.</target>

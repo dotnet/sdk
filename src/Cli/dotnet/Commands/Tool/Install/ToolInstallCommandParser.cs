@@ -49,7 +49,8 @@ internal static class ToolInstallCommandParser
     public static readonly Option<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
     {
         Description = CliCommandStrings.CreateManifestIfNeededOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => true,
     };
 
     public static readonly Option<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
