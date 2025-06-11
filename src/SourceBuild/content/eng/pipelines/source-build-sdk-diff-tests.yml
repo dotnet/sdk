@@ -9,8 +9,8 @@ schedules:
 # https://learn.microsoft.com/en-us/azure/devops/pipelines/process/pipeline-triggers?view=azure-devops#branch-considerations
 resources:
   pipelines:
-  - pipeline: dotnet-source-build
-    source: dotnet-source-build
+  - pipeline: dotnet-source-build-pre10.0
+    source: dotnet-source-build-pre10.0
     # For releases branches only run on internal/release branches because that's where dependencies flow.
 
     # Previews don't have internal/release branches so they must be run from non-internal release branches.
@@ -37,7 +37,7 @@ variables:
 - template: /src/sdk/eng/pipelines/templates/variables/vmr-build.yml@self
 
 # GH access token for SB bot - BotAccount-dotnet-sb-bot-pat
-- group: DotNet-Source-Build-Bot-Secrets-MVP
+- group: Dotnet-SourceBuild-Secrets
 
 jobs:
 - template: templates/jobs/sdk-diff-tests.yml
