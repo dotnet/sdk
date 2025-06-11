@@ -23,7 +23,6 @@ internal static class ToolExecuteCommandParser
     public static readonly Option<string> ConfigOption = ToolInstallCommandParser.ConfigOption;
     public static readonly Option<string[]> SourceOption = ToolInstallCommandParser.SourceOption;
     public static readonly Option<string[]> AddSourceOption = ToolInstallCommandParser.AddSourceOption;
-    public static readonly Option<bool> IgnoreFailedSourcesOption = ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption;
     public static readonly Option<bool> InteractiveOption = CommonOptions.InteractiveOption();
     public static readonly Option<bool> YesOption = CommonOptions.YesOption;
     public static readonly Option<VerbosityOptions> VerbosityOption = ToolInstallCommandParser.VerbosityOption;
@@ -45,17 +44,18 @@ internal static class ToolExecuteCommandParser
         command.Arguments.Add(CommandArgument);
 
         command.Options.Add(VersionOption);
+        command.Options.Add(YesOption);
+        command.Options.Add(InteractiveOption);
         command.Options.Add(RollForwardOption);
         command.Options.Add(PrereleaseOption);
         command.Options.Add(ConfigOption);
         command.Options.Add(SourceOption);
         command.Options.Add(AddSourceOption);
-        command.Options.Add(IgnoreFailedSourcesOption);
-        command.Options.Add(InteractiveOption);
-        command.Options.Add(YesOption);
+        command.Options.Add(ToolCommandRestorePassThroughOptions.DisableParallelOption);
+        command.Options.Add(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
+        command.Options.Add(ToolCommandRestorePassThroughOptions.NoCacheOption);
+        command.Options.Add(ToolCommandRestorePassThroughOptions.NoHttpCacheOption);
         command.Options.Add(VerbosityOption);
-
-        //  TODO: Framework?
 
         command.SetAction((parseResult) => new ToolExecuteCommand(parseResult).Execute());
 

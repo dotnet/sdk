@@ -33,20 +33,15 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
     private readonly string[] _sources = result.GetValue(ToolExecuteCommandParser.SourceOption) ?? [];
     private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
-    private readonly bool _ignoreFailedSources = result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption);
     private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
     private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
     private readonly bool _yes = result.GetValue(ToolExecuteCommandParser.YesOption);
+    private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
-    //  TODO: Does result.OptionValuesToBeForwarded work here?
-    private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-            additionalRestoreArguments: result.OptionValuesToBeForwarded(ToolExecuteCommandParser.GetCommand())).downloader;
-
-    //  TODO: Make sure to add these options to the command
     private readonly RestoreActionConfig _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
         NoCache: result.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || result.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
         IgnoreFailedSources: result.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
-        Interactive: result.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
+        Interactive: result.GetValue(ToolExecuteCommandParser.InteractiveOption));
 
     private readonly ToolManifestFinder _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
 
@@ -92,15 +87,12 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource);
 
-        var restoreActionConfig = new RestoreActionConfig(
-                IgnoreFailedSources: _ignoreFailedSources,
-                Interactive: _interactive);
-
-        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, restoreActionConfig);
+        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
 
         IToolPackage toolPackage;
 
-        //  TODO: Add framework argument
+        //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
+        //  but we don't support this for local or one-shot tools.
         if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
@@ -132,7 +124,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion, true, bestVersion, true),
                 isGlobalToolRollForward: false,
-                restoreActionConfig: restoreActionConfig);
+                restoreActionConfig: _restoreActionConfig);
         }
 
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
@@ -153,8 +145,6 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
             return false;
         }
 
-        //  TODO: Use a better way to ask for user input
-        //  TODO: How to localize y/n and interpret keys correctly?  Does Spectre.Console handle this?
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
 
         static string AddPromptOptions(string message)

@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 internal static class ToolPackageFactory
 {
     public static (IToolPackageStore packageStore, IToolPackageStoreQuery packageStoreQuery, IToolPackageDownloader downloader) CreateToolPackageStoresAndDownloader(
-        DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null, string runtimeJsonPathForTests = null)
+        DirectoryPath? nonGlobalLocation = null, string runtimeJsonPathForTests = null)
     {
         ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
         var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore, runtimeJsonPathForTests);
