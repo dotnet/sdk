@@ -269,7 +269,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
