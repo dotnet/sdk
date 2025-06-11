@@ -62,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
 
     <!-- Trigger RID-specific inner builds if RID-specific mode is enabled-->
-    <GenerateNuspecDependsOn Condition=" '$(_HasRIDSpecificTools)' == 'true' and '$(PublishAot)' != 'true' ">$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
 
     <!-- finally set up the entrypoint for all tool-content regardless of tool type-->
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
@@ -322,7 +322,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- orchestrator for making the N RID-specific tool packages -->
-  <Target Name="_CreateRIDSpecificToolPackages">
+  <Target Name="_CreateRIDSpecificToolPackages" Condition="'$(RuntimeIdentifier)' == '' and $(_HasRIDSpecificTools) and '$(PublishAot)' != 'true'">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
         <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
