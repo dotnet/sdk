@@ -97,11 +97,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (NoCache)
             {
-                if (NoRestore)
-                {
-                    throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
-                }
-
                 cacheEntry = ComputeCacheEntry(out _);
             }
             else if (!NeedsToBuild(out cacheEntry))
