@@ -87,7 +87,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-
         var consoleLogger = RunCommand.MakeTerminalLogger(Verbosity);
         var binaryLogger = GetBinaryLogger(BinaryLoggerArgs);
 
@@ -616,6 +615,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                   <ItemGroup>
                     <Compile Include="{EscapeValue(targetFilePath)}" />
+                  </ItemGroup>
+
+                """);
+
+            var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
+            writer.WriteLine($"""
+                  <ItemGroup>
+                    <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
+                    <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
                   </ItemGroup>
 
                 """);
