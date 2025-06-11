@@ -310,7 +310,10 @@ namespace Microsoft.DotNet.Watch
             [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
             static extern int sys_kill(int pid, int sig);
 
-            var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
+            // SIGTERM no longer works on Linux https://github.com/dotnet/sdk/issues/49307
+            // state.ForceExit ? SIGKILL : SIGTERM
+
+            var result = sys_kill(state.ProcessId, SIGKILL);
             if (result != 0)
             {
                 var error = Marshal.GetLastPInvokeError();
