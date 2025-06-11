@@ -20,7 +20,7 @@ namespace ConsoleApplication
             while (true)
             {
                 Lib.Print();
-                Thread.Sleep(10);
+                Thread.Sleep(1000);
             }
         }
     }
