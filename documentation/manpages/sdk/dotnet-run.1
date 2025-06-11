@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-run" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-run" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet run
 .PP
@@ -27,6 +27,7 @@ dotnet-run - Runs source code without any explicit compile or launch commands.
 .nf
 \f[C]
 dotnet run [-a|--arch <ARCHITECTURE>] [-c|--configuration <CONFIGURATION>]
+    [-e|--environment <KEY=VALUE>]
     [-f|--framework <FRAMEWORK>] [--force] [--interactive]
     [--launch-profile <NAME>] [--no-build]
     [--no-dependencies] [--no-launch-profile] [--no-restore]
@@ -42,7 +43,7 @@ dotnet run -h|--help
 The \f[V]dotnet run\f[R] command provides a convenient option to run your application from the source code with one command.
 It\[cq]s useful for fast iterative development from the command line.
 The command depends on the \f[V]dotnet build\f[R] command to build the code.
-Any requirements for the build, such as that the project must be restored first, apply to \f[V]dotnet run\f[R] as well.
+Any requirements for the build apply to \f[V]dotnet run\f[R] as well.
 .RS
 .PP
 \f[V]dotnet run\f[R] doesn\[cq]t respect arguments like \f[V]/property:property=value\f[R], which are respected by \f[V]dotnet build\f[R].
@@ -65,7 +66,7 @@ dotnet myapp.dll
 \f[R]
 .fi
 .PP
-For more information on the \f[V]dotnet\f[R] driver, see the .NET Command Line Tools (CLI) topic.
+For more information on the \f[V]dotnet\f[R] driver, see .NET CLI overview.
 .PP
 To run the application, the \f[V]dotnet run\f[R] command resolves the dependencies of the application that are outside of the shared runtime from the NuGet cache.
 Because it uses cached dependencies, it\[cq]s not recommended to use \f[V]dotnet run\f[R] to run applications in production.
@@ -110,6 +111,18 @@ Available since .NET 6 Preview 7.
 .PP
 Defines the build configuration.
 The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-e|--environment <KEY=VALUE>\f[B]\f[R]
+.RS 2
+.PP
+Sets the specified environment variable in the process that will be run by the command.
+The specified environment variable is \f[I]not\f[R] applied to the \f[V]dotnet run\f[R] process.
+.PP
+Environment variables passed through this option take precedence over ambient environment variables, System.CommandLine \f[V]env\f[R] directives, and \f[V]environmentVariables\f[R] from the chosen launch profile.
+For more information, see Environment variables.
+.PP
+(This option was added in .NET SDK 9.0.200.)
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
@@ -265,6 +278,22 @@ Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
 .RE
+.SH ENVIRONMENT VARIABLES
+.PP
+There are four mechanisms by which environment variables can be applied to the launched application:
+.IP "1." 3
+Ambient environment variables from the operating system when the command is run.
+.IP "2." 3
+System.CommandLine \f[V]env\f[R] directives, like \f[V][env:key=value]\f[R].
+These apply to the entire \f[V]dotnet run\f[R] process, not just the project being run by \f[V]dotnet run\f[R].
+.IP "3." 3
+\f[V]environmentVariables\f[R] from the chosen launch profile (\f[V]-lp\f[R]) in the project\[cq]s launchSettings.json file, if any.
+These apply to the project being run by \f[V]dotnet run\f[R].
+.IP "4." 3
+\f[V]-e|--environment\f[R] CLI option values (added in .NET SDK version 9.0.200).
+These apply to the project being run by \f[V]dotnet run\f[R].
+.PP
+The environment is constructed in the same order as this list, so the \f[V]-e|--environment\f[R] option has the highest precedence.
 .SH EXAMPLES
 .IP \[bu] 2
 Run the project in the current directory:

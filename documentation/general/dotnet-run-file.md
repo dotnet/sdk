@@ -71,11 +71,11 @@ We want to report an error for non-entry-point files to avoid the confusion of b
 
 Internally, the SDK CLI detects entry points by parsing all `.cs` files in the directory tree of the entry point file with default parsing options (in particular, no `<DefineConstants>`)
 and checking which ones contain top-level statements (`Main` methods are not supported for now as that would require full semantic analysis, not just parsing).
-Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [app directive collection](#directives-for-project-metadata).
+Results of this detection are used to exclude other entry points from [builds](#multiple-entry-points) and [file-level directive collection](#directives-for-project-metadata).
 This means the CLI might consider a file to be an entry point which later the compiler doesn't
 (for example because its top-level statements are under `#if !SYMBOL` and the build has `DefineConstants=SYMBOL`).
 However such inconsistencies should be rare and hence that is a better trade off than letting the compiler decide which files are entry points
-because that could require multiple builds (first determine entry points and then re-build with app directives except those from other entry points).
+because that could require multiple builds (first determine entry points and then re-build with file-level directives except those from other entry points).
 To avoid parsing all C# files twice (in CLI and in the compiler), the CLI could use the compiler server for parsing so the trees are reused
 (unless the parse options change via the directives), and also [cache](#optimizations) the results to avoid parsing on subsequent runs.
 
@@ -146,7 +146,7 @@ They are not cleaned immediately because they can be re-used on subsequent runs 
 
 ## Directives for project metadata
 
-It is possible to specify some project metadata via *app directives*
+It is possible to specify some project metadata via *file-level directives*
 which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
 Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
 Other directives result in an error, reserving them for future use.
