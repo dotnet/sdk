@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-sdk-templates" "7" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-new-sdk-templates" "7" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH NAME
 .PP
@@ -150,9 +150,20 @@ T}@T{
 3.0
 T}
 T{
-Unit Test Project
+MSTest Test Project
 T}@T{
 \f[V]mstest\f[R]
+T}@T{
+[C#], F#, VB
+T}@T{
+Test/MSTest
+T}@T{
+1.0
+T}
+T{
+MSTest Test Class
+T}@T{
+\f[V]mstest-class\f[R]
 T}@T{
 [C#], F#, VB
 T}@T{
@@ -530,6 +541,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -539,23 +555,12 @@ T{
 T}@T{
 \f[V]net7.0\f[R]
 T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
 .TE
 .PP
 The ability to create a project for an earlier TFM depends on having that version of the SDK installed.
-For example, if you have only the .NET 7 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net7.0\f[R].
-If you install the .NET 6 SDK the value \f[V]net6.0\f[R] becomes available for \f[V]--framework\f[R].
-If you install the .NET Core 3.1 SDK, \f[V]netcoreapp3.1\f[R] becomes available, and so on.
-So by specifying \f[V]--framework netcoreapp3.1\f[R] you can target .NET Core 3.1 even while running \f[V]dotnet new\f[R] in the .NET 6 SDK.
+For example, if you have only the .NET 9 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net9.0\f[R].
+If, for example, you install the .NET 8 SDK, the value \f[V]net8.0\f[R] becomes available for \f[V]--framework\f[R].
+So by specifying \f[V]--framework net8.0\f[R] you can target .NET 8 even while running \f[V]dotnet new\f[R] in the .NET 9 SDK.
 .PP
 Alternatively, to create a project that targets a framework earlier than the SDK that you\[cq]re using, you might be able to do it by installing the NuGet package for the template.
 Common (https://www.nuget.org/packages?q=Microsoft.DotNet.Common.ProjectTemplates), web (https://www.nuget.org/packages?q=Microsoft.DotNet.Web.ProjectTemplates), and SPA (https://www.nuget.org/packages?q=Microsoft.DotNet.Web.Spa.ProjectTemplates) project types use different packages per target framework moniker (TFM).
@@ -568,7 +573,6 @@ For example, to create a \f[V]console\f[R] project that targets \f[V]netcoreapp1
 Sets the \f[V]LangVersion\f[R] property in the created project file.
 For example, use \f[V]--langVersion 7.3\f[R] to use C# 7.3.
 Not supported for F#.
-Available since .NET Core 2.2 SDK.
 .PP
 For a list of default C# versions, see Defaults.
 .RE
@@ -577,7 +581,6 @@ For a list of default C# versions, see Defaults.
 .RS 2
 .PP
 If specified, doesn\[cq]t execute an implicit restore during project creation.
-Available since .NET Core 2.2 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--use-program-main\f[B]\f[R]
@@ -596,8 +599,8 @@ Available only for C#.
 .RS 2
 .PP
 Specifies the framework to target.
-Values: \f[V]net8.0\f[R], \f[V]net7.0\f[R], or \f[V]net6.0\f[R] to create a .NET Class Library, or \f[V]netstandard2.1\f[R] or \f[V]netstandard2.0\f[R] to create a .NET Standard Class Library.
-The default value for .NET SDK 8.0.x is \f[V]net8.0\f[R].
+Values: \f[V]net9.0\f[R], \f[V]net8.0\f[R], or \f[V]net7.0\f[R] to create a .NET Class Library, or \f[V]netstandard2.1\f[R] or \f[V]netstandard2.0\f[R] to create a .NET Standard Class Library.
+The default value for .NET SDK 9.0.x is \f[V]net9.0\f[R].
 .PP
 To create a project that targets a framework earlier than the SDK that you\[cq]re using, see \f[V]--framework\f[R] for \f[V]console\f[R] projects earlier in this article.
 .RE
@@ -608,7 +611,6 @@ To create a project that targets a framework earlier than the SDK that you\[cq]r
 Sets the \f[V]LangVersion\f[R] property in the created project file.
 For example, use \f[V]--langVersion 7.3\f[R] to use C# 7.3.
 Not supported for F#.
-Available since .NET Core 2.2 SDK.
 .PP
 For a list of default C# versions, see Defaults.
 .RE
@@ -626,8 +628,7 @@ Doesn\[cq]t execute an implicit restore during project creation.
 .RS 2
 .PP
 Specifies the framework to target.
-For the .NET 8 SDK, the default value is \f[V]net8.0\f[R].
-Available since .NET Core 3.1 SDK.
+For the .NET 9 SDK, the default value is \f[V]net9.0\f[R].
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--langVersion <VERSION_NUMBER>\f[B]\f[R]
@@ -670,8 +671,7 @@ Doesn\[cq]t execute an implicit restore during project creation.
 .RS 2
 .PP
 Specifies the framework to target.
-The default value for .NET 8 SDK is \f[V]net8.0\f[R].
-Available since .NET Core 3.1 SDK.
+The default value for .NET 9 SDK is \f[V]net9.0\f[R].
 .PP
 To create a project that targets a framework earlier than the SDK that you\[cq]re using, see \f[V]--framework\f[R] for \f[V]console\f[R] projects earlier in this article.
 .RE
@@ -697,13 +697,12 @@ Default value: \f[V]false\f[R].
 .RE
 .PP
    *   *   *   *   *
-.SS  \f[V]mstest\f[R], \f[V]xunit\f[R]
+.SS  \f[V]mstest\f[R]
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
 .PP
 Specifies the framework to target.
-Option available since .NET Core 3.0 SDK.
 .PP
 The following table lists the default values according to the SDK version number you\[cq]re using:
 .PP
@@ -717,6 +716,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -726,29 +730,157 @@ T{
 T}@T{
 \f[V]net7.0\f[R]
 T}
+.TE
+.RE
+.PP
+The ability to create a project for an earlier TFM depends on having that version of the SDK installed.
+For example, if you have only the .NET 9 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net9.0\f[R].
+If you install, for example, the .NET 8 SDK, the value \f[V]net8.0\f[R] becomes available for \f[V]--framework\f[R].
+So by specifying \f[V]--framework net8.0\f[R] you can target .NET 8 even while running \f[V]dotnet new\f[R] in the .NET 9 SDK.
+.IP \[bu] 2
+\f[B]\f[VB]--no-restore\f[B]\f[R]
+.RS 2
+.PP
+Doesn\[cq]t execute an implicit restore during project creation.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--sdk\f[B]\f[R]
+.RS 2
+.PP
+Use MSTest.Sdk project style.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--test-runner <TEST_RUNNER>\f[B]\f[R]
+.RS 2
+.PP
+The runner/platform for the test project.
+The possible values are:
+.IP \[bu] 2
+\f[V]VSTest\f[R] - VSTest platform (Default).
+.IP \[bu] 2
+\f[V]MSTest\f[R] - Microsoft.Testing.Platform.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--coverage-tool <COVERAGE_TOOL>\f[B]\f[R]
+.RS 2
+.PP
+The coverage tool to use for the test project.
+The possible values are:
+.IP \[bu] 2
+\f[V]Microsoft.CodeCoverage\f[R] - Microsoft Code Coverage (Default).
+.IP \[bu] 2
+\f[V]coverlet\f[R] - coverlet coverage tool.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--extensions-profile <EXTENSIONS_PROFILE>\f[B]\f[R]
+.RS 2
+.PP
+The SDK extensions profile when using Microsoft.Testing.Platform.
+The possible values are:
+.IP \[bu] 2
+\f[V]Default\f[R] - Default extensions profile (Default).
+.IP \[bu] 2
+\f[V]None\f[R] - No extensions are enabled.
+.IP \[bu] 2
+\f[V]AllMicrosoft\f[R] - Enable all extensions shipped by Microsoft (including extensions with a restrictive license).
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--fixture <FIXTURE>\f[B]\f[R]
+.RS 2
+.PP
+The fixture kinds to include in the test project.
+The possible values are:
+.IP \[bu] 2
+\f[V]None\f[R] - No fixture methods.
+.IP \[bu] 2
+\f[V]AssemblyInitialize\f[R] - AssemblyInitialize fixture method.
+.IP \[bu] 2
+\f[V]AssemblyCleanup\f[R] - AssemblyCleanup fixture method.
+.IP \[bu] 2
+\f[V]ClassInitialize\f[R] - ClassInitialize fixture method.
+.IP \[bu] 2
+\f[V]ClassCleanup\f[R] - ClassCleanup fixture method.
+.IP \[bu] 2
+\f[V]TestInitialize\f[R] - TestInitialize fixture method.
+.IP \[bu] 2
+\f[V]TestCleanup\f[R] - TestCleanup fixture method.
+.PP
+Where multiple values are allowed.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-p|--enable-pack\f[B]\f[R]
+.RS 2
+.PP
+Enables packaging for the project using dotnet pack.
+.RE
+.PP
+   *   *   *   *   *
+.SS  \f[V]mstest-class\f[R]
+.IP \[bu] 2
+\f[B]\f[VB]--fixture <FIXTURE>\f[B]\f[R]
+.RS 2
+.PP
+The fixture kinds to include in the test project.
+The possible values are:
+.IP \[bu] 2
+\f[V]None\f[R] - No fixture methods.
+.IP \[bu] 2
+\f[V]AssemblyInitialize\f[R] - AssemblyInitialize fixture method.
+.IP \[bu] 2
+\f[V]AssemblyCleanup\f[R] - AssemblyCleanup fixture method.
+.IP \[bu] 2
+\f[V]ClassInitialize\f[R] - ClassInitialize fixture method.
+.IP \[bu] 2
+\f[V]ClassCleanup\f[R] - ClassCleanup fixture method.
+.IP \[bu] 2
+\f[V]TestInitialize\f[R] - TestInitialize fixture method.
+.IP \[bu] 2
+\f[V]TestCleanup\f[R] - TestCleanup fixture method.
+.PP
+Where multiple values are allowed.
+.RE
+.PP
+   *   *   *   *   *
+.SS  \f[V]xunit\f[R]
+.IP \[bu] 2
+\f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the framework to target.
+.PP
+The following table lists the default values according to the SDK version number you\[cq]re using:
+.PP
+.TS
+tab(@);
+l l.
 T{
-6.0
+SDK version
 T}@T{
-\f[V]net6.0\f[R]
+Default value
+T}
+_
+T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
 T}
 T{
-5.0
+8.0
 T}@T{
-\f[V]net5.0\f[R]
+\f[V]net8.0\f[R]
 T}
 T{
-3.1
+7.0
 T}@T{
-\f[V]netcoreapp3.1\f[R]
+\f[V]net7.0\f[R]
 T}
 .TE
 .RE
 .PP
 The ability to create a project for an earlier TFM depends on having that version of the SDK installed.
-For example, if you have only the .NET 6 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net6.0\f[R].
-If you install the .NET 5 SDK, the value \f[V]net5.0\f[R] becomes available for \f[V]--framework\f[R].
-If you install the .NET Core 3.1 SDK, \f[V]netcoreapp3.1\f[R] becomes available, and so on.
-So by specifying \f[V]--framework netcoreapp3.1\f[R] you can target .NET Core 3.1 even while running \f[V]dotnet new\f[R] in the .NET 6 SDK.
+For example, if you have only the .NET 9 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net9.0\f[R].
+If you install, for example, the .NET 8 SDK, the value \f[V]net8.0\f[R] becomes available for \f[V]--framework\f[R].
+So by specifying \f[V]--framework net8.0\f[R] you can target .NET 8 even while running \f[V]dotnet new\f[R] in the .NET 9 SDK.
 .IP \[bu] 2
 \f[B]\f[VB]-p|--enable-pack\f[B]\f[R]
 .RS 2
@@ -763,7 +895,7 @@ Doesn\[cq]t execute an implicit restore during project creation.
 .RE
 .PP
    *   *   *   *   *
-.SS \f[V]nunit\f[R]
+.SS  \f[V]nunit\f[R]
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
@@ -782,6 +914,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -791,29 +928,13 @@ T{
 T}@T{
 \f[V]net7.0\f[R]
 T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
 .TE
 .RE
 .PP
 The ability to create a project for an earlier TFM depends on having that version of the SDK installed.
-For example, if you have only the .NET 6 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net6.0\f[R].
-If you install the .NET 5 SDK, the value \f[V]net5.0\f[R] becomes available for \f[V]--framework\f[R].
-If you install the .NET Core 3.1 SDK, \f[V]netcoreapp3.1\f[R] becomes available, and so on.
-So by specifying \f[V]--framework netcoreapp3.1\f[R] you can target .NET Core 3.1 even while running \f[V]dotnet new\f[R] in the .NET 6 SDK.
+For example, if you have only the .NET 9 SDK installed, then the only value available for \f[V]--framework\f[R] is \f[V]net9.0\f[R].
+If you install, for example, the .NET 8 SDK, the value \f[V]net8.0\f[R] becomes available for \f[V]--framework\f[R].
+So by specifying \f[V]--framework net8.0\f[R] you can target .NET 8 even while running \f[V]dotnet new\f[R] in the .NET 9 SDK.
 .IP \[bu] 2
 \f[B]\f[VB]-p|--enable-pack\f[B]\f[R]
 .RS 2
@@ -1104,6 +1225,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -1112,21 +1238,6 @@ T{
 7.0
 T}@T{
 \f[V]net7.0\f[R]
-T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
 T}
 .TE
 .PP
@@ -1344,6 +1455,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -1352,31 +1468,6 @@ T{
 7.0
 T}@T{
 \f[V]net7.0\f[R]
-T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
-T{
-3.0
-T}@T{
-\f[V]netcoreapp3.0\f[R]
-T}
-T{
-2.1
-T}@T{
-\f[V]netcoreapp2.1\f[R]
 T}
 .TE
 .PP
@@ -1553,6 +1644,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -1561,26 +1657,6 @@ T{
 7.0
 T}@T{
 \f[V]net7.0\f[R]
-T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
-T{
-3.0
-T}@T{
-\f[V]netcoreapp3.0\f[R]
 T}
 .TE
 .PP
@@ -1597,14 +1673,12 @@ Doesn\[cq]t execute an implicit restore during project creation.
 .RS 2
 .PP
 Includes BrowserLink in the project.
-Option not available in .NET Core 2.2 and 3.1 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-rrc|--razor-runtime-compilation\f[B]\f[R]
 .RS 2
 .PP
 Determines if the project is configured to use Razor runtime compilation in Debug builds.
-Option available since .NET Core 3.1.201 SDK.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--kestrelHttpPort\f[B]\f[R]
@@ -1637,7 +1711,6 @@ Default value: \f[V]false\f[R].
 .RS 2
 .PP
 The type of authentication to use.
-Available since .NET Core 3.0 SDK.
 .PP
 The possible values are:
 .IP \[bu] 2
@@ -1677,7 +1750,6 @@ Available since .NET Core 3.0 SDK.
 .RS 2
 .PP
 Specifies the framework to target.
-Option not available in .NET Core 2.2 SDK.
 .PP
 The following table lists the default values according to the SDK version number you\[cq]re using:
 .RS
@@ -1698,31 +1770,6 @@ T{
 7.0
 T}@T{
 \f[V]net7.0\f[R]
-T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
-T{
-3.0
-T}@T{
-\f[V]netcoreapp3.0\f[R]
-T}
-T{
-2.1
-T}@T{
-\f[V]netcoreapp2.0\f[R]
 T}
 .TE
 .PP
@@ -1763,7 +1810,6 @@ Doesn\[cq]t execute an implicit restore during project creation.
 .RS 2
 .PP
 Supports adding traditional Razor pages and Views in addition to components to this library.
-Available since .NET Core 3.0 SDK.
 .RE
 .PP
    *   *   *   *   *
@@ -1794,6 +1840,11 @@ T}@T{
 Default value
 T}
 _
+T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
 T{
 8.0
 T}@T{
@@ -1916,7 +1967,7 @@ Excludes \f[I]launchSettings.json\f[R] from the generated template.
 .RS 2
 .PP
 Turns off OpenAPI (Swagger) support.
-\f[V]AddSwaggerGen\f[R], \f[V]UseSwagger\f[R], and \f[V]UseSwaggerUI\f[R] aren\[cq]t called.
+\f[V]AddOpenApi\f[R] and \f[V]MapOpenApi\f[R] aren\[cq]t called.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--no-https\f[B]\f[R]
@@ -1953,6 +2004,11 @@ Default value
 T}
 _
 T{
+9.0
+T}@T{
+\f[V]net9.0\f[R]
+T}
+T{
 8.0
 T}@T{
 \f[V]net8.0\f[R]
@@ -1961,31 +2017,6 @@ T{
 7.0
 T}@T{
 \f[V]net7.0\f[R]
-T}
-T{
-6.0
-T}@T{
-\f[V]net6.0\f[R]
-T}
-T{
-5.0
-T}@T{
-\f[V]net5.0\f[R]
-T}
-T{
-3.1
-T}@T{
-\f[V]netcoreapp3.1\f[R]
-T}
-T{
-3.0
-T}@T{
-\f[V]netcoreapp3.0\f[R]
-T}
-T{
-2.1
-T}@T{
-\f[V]netcoreapp2.1\f[R]
 T}
 .TE
 .PP

@@ -14,27 +14,33 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-remove-reference" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-reference-remove" "1" "2025-05-30" "" ".NET Documentation"
 .hy
-.SH dotnet remove reference
+.SH dotnet reference remove
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-remove-reference - Removes project-to-project (P2P) references.
+dotnet-reference-remove - Removes project-to-project (P2P) references.
+.RS
+.PP
+If you\[cq]re using .NET 9 SDK or earlier, use the \[lq]verb first\[rq] form (dotnet-reference-remove) instead.
+The \[lq]noun first\[rq] form was introduced in .NET 10.
+For more information, see More consistent command order.
+.RE
 .SH SYNOPSIS
 .IP
 .nf
 \f[C]
-dotnet remove [<PROJECT>] reference [-f|--framework <FRAMEWORK>]
+dotnet reference remove [-f|--framework <FRAMEWORK>] [--project <PROJECT>]
      <PROJECT_REFERENCES>
 
-dotnet remove reference -h|--help
+dotnet reference remove -h|--help
 \f[R]
 .fi
 .SH DESCRIPTION
 .PP
-The \f[V]dotnet remove reference\f[R] command provides a convenient option to remove project references from a project.
+The \f[V]dotnet reference remove\f[R] command provides a convenient option to remove project references from a project.
 .SH ARGUMENTS
 .PP
 \f[V]PROJECT\f[R]
@@ -67,7 +73,7 @@ Remove a project reference from the specified project:
 .IP
 .nf
 \f[C]
-dotnet remove app/app.csproj reference lib/lib.csproj
+dotnet reference remove lib/lib.csproj --project app/app.csproj
 \f[R]
 .fi
 .RE
@@ -77,7 +83,7 @@ Remove multiple project references from the project in the current directory:
 .IP
 .nf
 \f[C]
-dotnet remove reference lib1/lib1.csproj lib2/lib2.csproj
+dotnet reference remove lib1/lib1.csproj lib2/lib2.csproj
 \f[R]
 .fi
 .RE
@@ -87,7 +93,7 @@ Remove multiple project references using a glob pattern on Unix/Linux:
 .IP
 .nf
 \f[C]
-dotnet remove app/app.csproj reference **/*.csproj\[ga]
+dotnet reference remove **/*.csproj\[ga] --project app/app.csproj
 \f[R]
 .fi
 .RE

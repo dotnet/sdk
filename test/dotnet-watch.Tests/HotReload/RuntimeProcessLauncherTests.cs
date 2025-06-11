@@ -540,7 +540,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
