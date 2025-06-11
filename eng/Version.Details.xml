@@ -73,18 +73,18 @@
       <Sha>78f6f07d38e8755e573039a8aa04e131d3e59b76</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.12.35">
+    <Dependency Name="Microsoft.Build" Version="17.12.38">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>13c590f8d138d6a30b899a5172cc6ec494db930b</Sha>
+      <Sha>6c6276d5998f8be9811497003566e5924141d600</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.12.35-preview-25210-18">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.12.38-preview-25306-07">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>13c590f8d138d6a30b899a5172cc6ec494db930b</Sha>
+      <Sha>6c6276d5998f8be9811497003566e5924141d600</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.35-preview-25210-18">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.12.38-preview-25306-07">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>13c590f8d138d6a30b899a5172cc6ec494db930b</Sha>
+      <Sha>6c6276d5998f8be9811497003566e5924141d600</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.9.101-beta.25070.7">
@@ -451,9 +451,9 @@
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25266.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="9.0.0-alpha.1.25272.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>2bdf6b694572c45f6249c5406ae2303d678cda3f</Sha>
+      <Sha>9859d82ffce48f49b5e93fa46a38bdddc4ba26be</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25059.4">
