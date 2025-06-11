@@ -1014,10 +1014,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Theory]
-    [InlineData("../lib/lib.csproj")]
-    [InlineData("../lib")]
-    [InlineData(@"..\lib\lib.csproj")]
-    [InlineData(@"..\lib")]
+    [InlineData("../Lib/Lib.csproj")]
+    [InlineData("../Lib")]
+    [InlineData(@"..\Lib\Lib.csproj")]
+    [InlineData(@"..\Lib")]
     public void ProjectReference(string arg)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
