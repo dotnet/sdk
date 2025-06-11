@@ -1156,7 +1156,7 @@ _testhost_project_convert() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --force --help" 
+    opts="--output --force --shared-directory-name --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

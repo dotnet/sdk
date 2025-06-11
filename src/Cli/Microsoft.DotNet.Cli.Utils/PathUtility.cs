@@ -416,4 +416,60 @@ public static class PathUtility
 
         return null;
     }
+
+    public static void SafeRenameDirectory(string sourceDir, string destDir)
+    {
+        if (Directory.Exists(destDir))
+        {
+            throw new IOException($"Cannot rename directory: destination '{destDir}' already exists");
+        }
+
+        // Check if destination is a subdirectory of the source
+        if (IsChildOfDirectory(sourceDir, destDir))
+        {
+            // Create a temporary location outside of the source directory
+            string tempDir = Path.Combine(
+                Path.GetDirectoryName(sourceDir) ?? Path.GetTempPath(),
+                Path.GetRandomFileName());
+
+            try
+            {
+                // First move to temp location
+                Directory.Move(sourceDir, tempDir);
+
+                // Create parent directories of destination if needed
+                EnsureDirectoryExists(Path.GetDirectoryName(destDir));
+
+                // Move from temp to final destination
+                Directory.Move(tempDir, destDir);
+            }
+            catch (Exception)
+            {
+                // Try to restore original directory if possible
+                if (Directory.Exists(tempDir) && !Directory.Exists(sourceDir))
+                {
+                    try
+                    {
+                        Directory.Move(tempDir, sourceDir);
+                    }
+                    catch
+                    {
+                        // Last resort, if we can't move back, at least don't lose the data
+                        // Leave it in the temp dir and report the location
+                        throw new IOException(
+                            $"Failed to rename directory '{sourceDir}' to '{destDir}'. " +
+                            $"Data has been moved to temporary location: {tempDir}");
+                    }
+                }
+
+                throw;
+            }
+        }
+        else
+        {
+            // For non-nested moves, we can just use Directory.Move directly
+            EnsureDirectoryExists(Path.GetDirectoryName(destDir));
+            Directory.Move(sourceDir, destDir);
+        }
+    }
 }
