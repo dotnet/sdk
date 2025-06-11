@@ -143,6 +143,22 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("""
                 Hello from Program
                 """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
+            #:property Configuration Debug
+            {s_program}
+            """);
+
+        // `dotnet Program.cs` passes `-p:Configuration=Release` on the command line,
+        // whereas user's `#:property` ends up in the project file, hence the former takes precedence.
+        new DotnetCommand(Log, "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from Program
+                Release config
+                """);
     }
 
     /// <summary>

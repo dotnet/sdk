@@ -79,7 +79,7 @@ internal static class RunCommandParser
         DocumentedCommand command = new("run", DocsLink, CliCommandStrings.RunAppFullName);
 
         // Having property option before configuration option allows us to pass
-        // `-p:Configuration=Release` when `dotnet file.cs` is executed where we want the Release config to be the deafult
+        // `-p:Configuration=Release` when `dotnet file.cs` is executed where we want the Release config to be the default
         // and it gets overwritten by a user-specified configuration option if any.
         command.Options.Add(PropertyOption);
 
