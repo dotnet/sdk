@@ -1,0 +1,35 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?include "Variables.wxi" ?>
+  <Product Id="*" Name="$(var.ProductName) from Visual Studio" Language="$(var.ProductLanguage)" Version="$(var.SDKBundleVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
+    <Package Compressed="yes" InstallScope="perMachine" InstallerVersion="200" />
+
+    <Condition Message="$(var.ProductName) must be installed as part of a coordinated SDK installation.">
+      Installed OR ALLOWMSIINSTALL
+    </Condition>
+
+    <Condition Message="$(var.ProductName) was installed with Visual Studio. If you wish to uninstall it, use the Visual Studio Installer and select &apos;Modify&apos;">
+      NOT Installed OR ALLOWMSIUNINSTALL
+    </Condition>
+
+    <MajorUpgrade DowngradeErrorMessage="$(var.DowngradeErrorMessage)" Schedule="afterInstallInitialize"/>
+
+    <Feature Id="Provider" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" Level="1" InstallDefault="local" Title="RefCounting" TypicalDefault="install">
+      <ComponentRef Id="$(var.DependencyKeyId)" />
+    </Feature>
+
+    <Icon Id="icon.ico" SourceFile="msi.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+    <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
+    <Property Id="ProductEdition" Value="$(var.ProductEdition)" />
+    <Property Id="ProductCPU" Value="$(var.Platform)" />
+    <Property Id="RTM_ProductVersion" Value="$(var.Dotnet_ProductVersion)" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.MicrosoftEula)" />
+  </Product>
+
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir" />
+  </Fragment>
+</Wix>

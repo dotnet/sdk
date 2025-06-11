@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="GetStaticWebAssetsProjectConfiguration" Returns="@(_StaticWebAssetThisProjectConfiguration)">
+    <ItemGroup>
+      <_StaticWebAssetThisProjectConfiguration Include="$(MSBuildProjectFullPath)">
+        <Version>2</Version>
+        <Source>$(StaticWebAssetSourceId)</Source>
+        <GetBuildAssetsTargets>GetCurrentProjectBuildStaticWebAssetItems</GetBuildAssetsTargets>
+        <AdditionalBuildProperties>
+        </AdditionalBuildProperties>
+        <AdditionalBuildPropertiesToRemove>
+        </AdditionalBuildPropertiesToRemove>
+        <GetPublishAssetsTargets>GetCurrentProjectPublishStaticWebAssetItems</GetPublishAssetsTargets>
+        <AdditionalPublishProperties>
+        </AdditionalPublishProperties>
+        <AdditionalPublishPropertiesToRemove>
+        </AdditionalPublishPropertiesToRemove>
+      </_StaticWebAssetThisProjectConfiguration>
+    </ItemGroup>
+  </Target>
+  
+  <Target Name="GetCurrentProjectBuildStaticWebAssetItems" Returns="@(_BuildAsset)">
+    <ItemGroup>
+      <CandidateBuildAssets Include="wwwroot\**" />
+      <_BuildAsset Include="@(CandidateBuildAssets->'%(FullPath)')">
+        <SourceId>$(PackageId)</SourceId>
+        <SourceType>Discovered</SourceType>
+        <BasePath>_content/$(PackageId)</BasePath>
+        <ContentRoot>$(MSBuildProjectFileDirectory)wwwroot\</ContentRoot>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <AssetKind>All</AssetKind>
+        <AssetMode>All</AssetMode>
+        <AssetRole>Primary</AssetRole>
+        <RelatedAsset></RelatedAsset>
+        <AssetTraitName></AssetTraitName>
+        <AssetTraitValue></AssetTraitValue>
+        <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <OriginalItemSpec>%(CandidateBuildAssets.Identity)</OriginalItemSpec>
+        <ResultType>StaticWebAsset</ResultType>
+      </_BuildAsset>
+    </ItemGroup>
+  </Target>
+
+  <Target Name="GetCurrentProjectPublishStaticWebAssetItems" Returns="@(_PublishAsset)">
+
+    <ItemGroup>
+      <CandidatePublishAssets Include="wwwroot\**" />
+      <_PublishAsset Include="@(CandidatePublishAssets->'%(FullPath)')">
+        <SourceId>$(PackageId)</SourceId>
+        <SourceType>Discovered</SourceType>
+        <BasePath>_content/$(PackageId)</BasePath>
+        <ContentRoot>$(MSBuildProjectFileDirectory)wwwroot\</ContentRoot>
+        <RelativePath>%(RecursiveDir)%(FileName)%(Extension)</RelativePath>
+        <AssetKind>Publish</AssetKind>
+        <AssetMode>All</AssetMode>
+        <AssetRole>Primary</AssetRole>
+        <RelatedAsset></RelatedAsset>
+        <AssetTraitName></AssetTraitName>
+        <AssetTraitValue></AssetTraitValue>
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+        <OriginalItemSpec>%(CandidatePublishAssets.Identity)</OriginalItemSpec>
+        <ResultType>StaticWebAsset</ResultType>
+      </_PublishAsset>
+    </ItemGroup>
+  </Target>
+</Project>
