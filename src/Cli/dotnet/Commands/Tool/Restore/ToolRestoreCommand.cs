@@ -120,7 +120,7 @@ internal class ToolRestoreCommand : CommandBase
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.Select(result => result.SaveToCache)
                 .Where(item => item is not null)
-                .ToDictionary(pair => pair.Value.Item1, pair => pair.Value.Item2);
+                .ToDictionary(pair => pair.Value.restoredCommandIdentifier, pair => pair.Value.toolCommand);
 
         EnsureNoCommandNameCollision(downloaded);
 
@@ -203,7 +203,7 @@ internal class ToolRestoreCommand : CommandBase
 
     public struct ToolRestoreResult
     {
-        public (RestoredCommandIdentifier, ToolCommand)? SaveToCache { get; }
+        public (RestoredCommandIdentifier restoredCommandIdentifier, ToolCommand toolCommand)? SaveToCache { get; }
         public bool IsSuccess { get; }
         public string Message { get; }
 

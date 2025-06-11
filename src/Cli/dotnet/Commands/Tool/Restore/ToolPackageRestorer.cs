@@ -1,15 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 using static Microsoft.DotNet.Cli.Commands.Tool.Restore.ToolRestoreCommand;

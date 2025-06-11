@@ -36,8 +36,6 @@ internal static class ParseResultExtension
 
         if (prerelease)
         {
-            // TODO: This is probably broken if you try to specify --prerelease together with a version.  Should that be allowed?
-            // It seems like it would make sense to specify a version of something like 2.* and want to allow prerelease versions.
             packageVersion = "*-*";
         }
 
