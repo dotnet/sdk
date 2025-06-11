@@ -1130,7 +1130,7 @@ _testhost() {
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':commandName -- The command name of the tool to run.: ' \
-                                            '*::toolArguments -- arguments forwarded to the tool: ' \
+                                            '*::toolArguments -- Arguments forwarded to the tool: ' \
                                             && ret=0
                                         ;;
                                     (search)
@@ -1162,21 +1162,23 @@ _testhost() {
                                     (execute)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--version=[The version of the tool package to install.]:VERSION: ' \
+                                            '--yes[Suppresses confirmation prompt with \"yes\" value.]' \
+                                            '-y[Suppresses confirmation prompt with \"yes\" value.]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--prerelease[Include pre-release packages.]' \
                                             '--configfile=[The NuGet configuration file to use.]:FILE: ' \
                                             '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
                                             '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
+                                            '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
                                             '--ignore-failed-sources[Treat package source failures as warnings.]' \
-                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--yes[Overrides confirmation prompt with \"yes\" value. ]' \
-                                            '-y[Overrides confirmation prompt with \"yes\" value. ]' \
+                                            '--no-http-cache[Do not cache packages and http requests.]' \
                                             '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
-                                            '*::commandArguments -- arguments forwarded to the tool: ' \
+                                            '*::commandArguments -- Arguments forwarded to the tool: ' \
                                             && ret=0
                                             case $state in
                                                 (dotnet_dynamic_complete)
@@ -1815,7 +1817,7 @@ _testhost__tool_commands() {
         'run:Run a local tool. Note that this command cannot be used to run a global tool. ' \
         'search:Search dotnet tools in nuget.org' \
         'restore:Restore tools defined in the local tool manifest.' \
-        'execute:Execute a tool command from source' \
+        'execute:Executes a tool from source without permanently installing it.' \
     )
     _describe -t commands 'testhost tool commands' commands "$@"
 }
