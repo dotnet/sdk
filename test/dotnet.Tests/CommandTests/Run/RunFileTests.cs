@@ -573,6 +573,27 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().BeEquivalentTo(["msbuild.binlog", "msbuild-dotnet-run.binlog"]);
     }
 
+    [Theory, CombinatorialData]
+    public void BinaryLog_Build([CombinatorialValues("restore", "build")] string command, bool beforeFile)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        string[] args = beforeFile
+            ? [command, "-bl", "Program.cs"]
+            : [command, "Program.cs", "-bl"];
+
+        new DotnetCommand(Log, args)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
+            .Select(f => f.Name)
+            .Should().BeEquivalentTo(["msbuild.binlog"]);
+    }
+
     [Theory]
     [InlineData("-bl")]
     [InlineData("-BL")]
