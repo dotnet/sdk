@@ -61,20 +61,7 @@ internal static class MSBuildUtility
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
-        var binLogArgs = new List<string>();
-        var otherArgs = new List<string>();
-
-        foreach (var arg in parseResult.UnmatchedTokens)
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binLogArgs.Add(arg);
-            }
-            else
-            {
-                otherArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);

@@ -12,12 +12,7 @@ internal static class InstallToolCommandLowLevelErrorConverter
 {
     public static IEnumerable<string> GetUserFacingMessages(Exception ex, PackageId packageId)
     {
-        if (ex is ToolPackageException)
-        {
-            yield return ex.Message;
-            yield return string.Format(CliCommandStrings.ToolInstallationFailedWithRestoreGuidance, packageId);
-        }
-        else if (ex is ToolConfigurationException)
+        if (ex is ToolConfigurationException)
         {
             yield return string.Format(CliCommandStrings.InvalidToolConfiguration, ex.Message);
             yield return string.Format(CliCommandStrings.ToolInstallationFailedContactAuthor, packageId);
@@ -31,8 +26,7 @@ internal static class InstallToolCommandLowLevelErrorConverter
 
     public static bool ShouldConvertToUserFacingError(Exception ex)
     {
-        return ex is ToolPackageException
-               || ex is ToolConfigurationException
+        return ex is ToolConfigurationException
                || ex is ShellShimException;
     }
 }

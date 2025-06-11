@@ -1013,6 +1013,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="needs-review-translation">NETSDK1139: Identifikátor cílové platformy {0} se nerozpoznal.</target>
         <note>{StrBegins="NETSDK1139: "}</note>
       </trans-unit>
+      <trans-unit id="UnsupportedToolCommandRunner">
+        <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
+        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <note>{StrBegins="NETSDK1227: "}</note>
+      </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
         <source>NETSDK1200: If UseArtifactsPath is set to true and ArtifactsPath is not set, there must be a Directory.Build.props file in order to determine where the artifacts folder should be located.</source>
         <target state="needs-review-translation">NETSDK1200: Pokud je vlastnost UseArtifactsPath nastavena na hodnotu true a parametr ArtifactsPath není nastaven, musí existovat soubor Directory.Build.props, aby bylo možné určit, kde má být složka artefaktů umístěna.</target>
