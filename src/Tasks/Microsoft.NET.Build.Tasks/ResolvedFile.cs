@@ -70,6 +70,11 @@ namespace Microsoft.NET.Build.Tasks
             {
                 Asset = AssetType.Resources;
             }
+            // Workaround for issue 40015: nuget restore uses 'resource' instead of 'resources'
+            else if (assetType.Equals("resource", StringComparison.OrdinalIgnoreCase))
+            {
+                Asset = AssetType.Resources;
+            }
             else
             {
                 throw new InvalidOperationException($"Unrecognized AssetType '{assetType}' for {SourcePath}");

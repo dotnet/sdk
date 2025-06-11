@@ -27,6 +27,11 @@
         <target state="translated">Impossibile utilizzare contemporaneamente le opzioni {0} e {1}.  Rimuove una delle opzioni.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
+        <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
+        <target state="translated">Non è possibile specificare una versione del carico di lavoro usando l'opzione --version specificando anche le versioni da installare con workload@version sintassi.</target>
+        <note>{Locked="--version"}</note>
+      </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
         <source>Cannot specify a particular workload version on the command line via --version or --from-history when there is already a version specified in global.json file {0}. To update the globally installed workload version, run the command outside of the path containing that global.json file or update the version specified in the global.json file and run "dotnet workload update."</source>
         <target state="translated">Impossibile specificare una determinata versione del carico di lavoro nella riga di comando tramite --version o --from-history quando è già specificata una versione nel file global.json {0}. Per aggiornare la versione del carico di lavoro installata a livello globale, eseguire il comando all'esterno del percorso contenente tale file global.json o aggiornare la versione specificata nel file di global.json ed eseguire "dotnet workload update".</target>
@@ -35,7 +40,7 @@
       <trans-unit id="CannotUseSkipManifestWithGlobalJsonWorkloadVersion">
         <source>Cannot use the {0} option when workload version is specified in global.json.  Remove the {0} option, or remove the 'workloadVersion' element from {1}.</source>
         <target state="translated">Non è possibile usare l'opzione {0} quando la versione del carico di lavoro è specificata in global.json.  Rimuovere l'opzione {0} o rimuovere l'elemento 'workloadVersion' da {1}.</target>
-        <note>"workloadVersion" and "global.json" are literal values and should not be translated.</note>
+        <note>{Locked="workloadVersion"} Locked={"global.json"}</note>
       </trans-unit>
       <trans-unit id="CheckForUpdatedWorkloadManifests">
         <source>Checking for updated workload version.</source>
@@ -393,8 +398,8 @@
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
-        <source>Update to the specified workload version.</source>
-        <target state="translated">Eseguire l'aggiornamento alla versione del carico di lavoro specificata.</target>
+        <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
+        <target state="translated">Versione del carico di lavoro da visualizzare o da uno o più carichi di lavoro e relative versioni aggiunte dal carattere '@'.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdatesAvailable">
