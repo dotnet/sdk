@@ -38,7 +38,7 @@ internal class PackageSourceLocation
             string[] localFeedsThatIsRooted = new string[sourceFeedOverrides.Length];
             for (int index = 0; index < sourceFeedOverrides.Length; index++)
             {
-                string feed = sourceFeedOverrides[index];
+                string feed = sourceFeedOverrides[index].Trim();
                 if (!Uri.IsWellFormedUriString(feed, UriKind.Absolute) && !Path.IsPathRooted(feed))
                 {
                     localFeedsThatIsRooted[index] = Path.GetFullPath(feed, basePath);
