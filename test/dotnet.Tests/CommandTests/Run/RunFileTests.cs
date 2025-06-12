@@ -203,10 +203,25 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     public void ReadFromStdin_NoBuild()
     {
         new DotnetCommand(Log, "run", "-", "--no-build")
-            .WithStandardInput("")
             .Execute()
             .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, "--no-build"));
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
+    }
+
+    /// <summary>
+    /// <c>dotnet run -- -</c> should NOT read the C# file from stdin,
+    /// the hyphen should be considred an app argument instead since it's after <c>--</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_AfterDoubleDash()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        new DotnetCommand(Log, "run", "--", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""Console.WriteLine("stdin code");""")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandParser.ProjectOption.Name));
     }
 
     /// <summary>
