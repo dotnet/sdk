@@ -228,21 +228,21 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>5535e31a712343a63f5d7d796cd874e563e5ac14</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.17">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="8.0.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>5ce68f29d66fae8adb0e78b44afbb09dc3cdfbb7</Sha>
+      <Sha>a6f159eb263aa0b45be92800081f53cac9684dd2</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.17-servicing.25267.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.8.0" Version="8.0.18-servicing.25311.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>5ce68f29d66fae8adb0e78b44afbb09dc3cdfbb7</Sha>
+      <Sha>a6f159eb263aa0b45be92800081f53cac9684dd2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.17">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="8.0.18">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>5ce68f29d66fae8adb0e78b44afbb09dc3cdfbb7</Sha>
+      <Sha>a6f159eb263aa0b45be92800081f53cac9684dd2</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.17-servicing.25267.1">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.8.0" Version="8.0.18-servicing.25311.3">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>5ce68f29d66fae8adb0e78b44afbb09dc3cdfbb7</Sha>
+      <Sha>a6f159eb263aa0b45be92800081f53cac9684dd2</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="8.0.17-servicing.25266.9" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
