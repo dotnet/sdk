@@ -3,15 +3,15 @@
   <ProductDependencies>
     <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="8.0.315">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>21cba5567f1417702a6dc27e9e225b48a35686f7</Sha>
+      <Sha>7994f94ec4071d4803af1b4f75f4ba964d3391f2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.315-servicing.25304.12">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="8.0.315-servicing.25311.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>21cba5567f1417702a6dc27e9e225b48a35686f7</Sha>
+      <Sha>7994f94ec4071d4803af1b4f75f4ba964d3391f2</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.315-servicing.25304.12">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="8.0.315-servicing.25311.2">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>21cba5567f1417702a6dc27e9e225b48a35686f7</Sha>
+      <Sha>7994f94ec4071d4803af1b4f75f4ba964d3391f2</Sha>
       <SourceBuild RepoName="templating" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.NETCore.App.Ref" Version="8.0.17">
@@ -77,9 +77,9 @@
       <Sha>80c165644db640d0f309affe0daa281c7e17b939</Sha>
       <SourceBuild RepoName="fsharp" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="dotnet-format" Version="8.3.626605">
-      <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-format</Uri>
-      <Sha>6512c545de4e74d1cafcf305430185287c19a549</Sha>
+    <Dependency Name="dotnet-format" Version="8.3.631206">
+      <Uri>https://github.com/dotnet/format</Uri>
+      <Sha>c7e5d39bdc5e4a2fedd4fb4f46e35a9843ddff4a</Sha>
       <SourceBuild RepoName="format" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Net.Compilers.Toolset" Version="4.10.0-3.25064.8">
