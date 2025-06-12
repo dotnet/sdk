@@ -10,6 +10,23 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 
+<!--
+
+NOTE: This file is imported from the following contexts, so be aware when writing Conditions and thinking about evaluation order:
+* cross-targeting (multi-TFM) builds.
+  * these may not have a RID or RIDs set, but still need to be able to pack tools
+  * IsCrossTargetingBuild is set to true in this case
+* 'outer' builds for a single TFM
+  * these builds are RID-agnostic, but still need to be able to pack 'inner', RID-specific tools.
+  * IsCrossTargetingBuild is unset in this case, RuntimeIdentifier is unset, and RuntimeIdentifiers or ToolPackageRuntimeIdentifiers is set to a list of RIDs
+  * if these builds are RID-specific but not AOT, then we pack the outer tool without implementation dlls and the N inner-RID-specific tools
+  * if these builds are RID-specific and AOT, then we pack the outer tool only without implementation dlls
+  * if these builds are RID-agnostic, then we pack the outer tool only with implementation dlls
+* 'inner' builds for a single TFM
+  * these builds are RID-specific, and have RuntimeIdentifier set to a single RID, and RuntimeIdentifiers or ToolPackageRuntimeIdentifiers set to a list of RIDs
+  * these builds pack only the inner, RID-specific tool implementation dlls and have a unique PackageType of DotnetToolRidPackage
+-->
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateToolsSettingsFile"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
@@ -23,6 +40,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
+
     <!-- the publish* properties _can_ be set, but only for the 'inner' RID-specific builds. We need to make sure that for the outer, agnostic build they are unset  -->
     <PublishSelfContained Condition="'$(RuntimeIdentifier)' == ''">false</PublishSelfContained>
     <!-- Have to set SelfContained similarly because PackTool targets are imported _after_ RuntimeIdentifierInference targets, where the Publish* properties are
@@ -30,6 +48,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SelfContained Condition="'$(RuntimeIdentifier)' == ''">false</SelfContained>
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
+    <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
+         Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
     <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
     <_InnerToolsPublishAot Condition="'$(RuntimeIdentifier)' == '' and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
@@ -39,11 +59,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- we want to ensure that we _do_ publish any AppHosts for the 'inner', RID-specific builds -->
     <UseAppHost Condition="'$(RuntimeIdentifier)' != ''">true</UseAppHost>
 
-    <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish -->
+    <!-- If shims are included, we need to make sure we restore for those RIDs so the apphost shims are available during restore/publish.
+         This means that we need to set RuntimeIdentifiers. However we need to track certain information about the _users_ decisions around RIDs
+         so that we can correctly decide if we need to package RID-specific tools or not. -->
     <_ToolRidsAreOnlyShims>false</_ToolRidsAreOnlyShims>
     <_ToolRidsAreOnlyShims Condition="'$(RuntimeIdentifiers)' == '' and $(PackAsToolShimRuntimeIdentifiers) != '' ">true</_ToolRidsAreOnlyShims>
     <_UserSpecifiedToolPackageRids Condition="'$(ToolPackageRuntimeIdentifiers)' != ''">$(ToolPackageRuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
     <_UserSpecifiedToolPackageRids Condition="'$(_UserSpecifiedToolPackageRids)' == ''">$(RuntimeIdentifiers)</_UserSpecifiedToolPackageRids>
+    <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
+    <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
     <RuntimeIdentifiers Condition="'$(PackAsToolShimRuntimeIdentifiers)' != ''">$(_UserSpecifiedToolPackageRids);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
 
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
@@ -51,8 +75,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
                                                   ('$(_UserSpecifiedToolPackageRids)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
-    <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
-    <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
     <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' != 'true' and $(IsPublishable) == 'true' ">Publish</_PackToolPublishDependency>
@@ -61,10 +83,16 @@ Copyright (c) .NET Foundation. All rights reserved.
          dependencies of the no-build Publish Target, _PublishNoBuildAlternative -->
     <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
 
-    <!-- Trigger RID-specific inner builds if RID-specific mode is enabled-->
+    <!-- GenerateNuspec is called in two places: crossTargeting NuGet targets, and single-targeting NuGet targets.
+         Tools need to ensure that
+           a) they can set the correct PackageType(s) and
+           b) we can create the necessary inner-RID packages
+         regardless of which way we are invoked. This means that these key entry points need to be callable from both GenerateNuspec methods.
+         This also means that we need to set correct Conditions on the Targets themselves so they don't run if they aren't actually necessary. -->
     <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetDotnetToolPackageType;_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
 
-    <!-- finally set up the entrypoint for all tool-content regardless of tool type-->
+    <!-- Finally set up the entrypoint for all tool-content regardless of tool type. This doesn't get set as a GenerateNuspecDependsOn
+         Because this target is inherently TFM-specific, and NuGet handles invoking this target once per TFM as part of the packaging process. -->
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
   </PropertyGroup>
   <!--
@@ -353,7 +381,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
-  <!-- orchestrator for making the N RID-specific tool packages -->
+  <!-- Orchestrator for making the N RID-specific tool packages if this Tool supports that mode.
+       We can't call this for AOT'd tools because we can't AOT cross-architecture and cross-platform in .NET today. -->
   <Target Name="_CreateRIDSpecificToolPackages" Condition="'$(RuntimeIdentifier)' == '' and $(_HasRIDSpecificTools) and !$(_InnerToolsPublishAot) and !$(_ToolPackageShouldIncludeImplementation)">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
