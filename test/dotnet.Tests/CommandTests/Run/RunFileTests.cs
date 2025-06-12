@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.Versioning;
@@ -719,7 +719,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
-    public void NoRestore()
+    public void NoRestore_01()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         var programFile = Path.Join(testInstance.Path, "Program.cs");
@@ -744,6 +744,43 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // --no-restore works.
         new DotnetCommand(Log, "run", "--no-restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+    }
+
+    [Fact]
+    public void NoRestore_02()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        // Remove artifacts from possible previous runs of this test.
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        // It is an error when never restored before.
+        new DotnetCommand(Log, "build", "--no-restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining("NETSDK1004"); // error NETSDK1004: Assets file '...\obj\project.assets.json' not found. Run a NuGet package restore to generate this file.
+
+        // Run restore.
+        new DotnetCommand(Log, "restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // --no-restore works.
+        new DotnetCommand(Log, "build", "--no-restore", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass()
@@ -1265,12 +1302,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name));
-
-        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-restore")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name));
     }
 
     private static string ToJson(string s) => JsonSerializer.Serialize(s);
@@ -1343,6 +1374,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Compile Include="{programPath}" />
                       </ItemGroup>
 
+                      <ItemGroup>
+                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{programPath}" />
+                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{testInstance.Path}" />
+                      </ItemGroup>
+
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
@@ -1399,6 +1435,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <ItemGroup>
                         <Compile Include="{programPath}" />
+                      </ItemGroup>
+
+                      <ItemGroup>
+                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{programPath}" />
+                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{testInstance.Path}" />
                       </ItemGroup>
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
@@ -1462,6 +1503,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <Compile Include="{programPath}" />
                       </ItemGroup>
 
+                      <ItemGroup>
+                        <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{programPath}" />
+                        <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{testInstance.Path}" />
+                      </ItemGroup>
+
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
                     {VirtualProjectBuildingCommand.TargetOverrides}
@@ -1491,5 +1537,134 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """)
             .And.HaveStdOutContaining("Unknown1")
             .And.HaveStdOutContaining("Unknown2");
+    }
+
+    [Fact]
+    public void Api_RunCommand()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+
+        string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
+        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            // DOTNET_ROOT environment variable is platform dependent so we don't verify it fully for simplicity
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(executablePath)}},"CommandLineArguments":"","WorkingDirectory":"","EnvironmentVariables":{"DOTNET_ROOT
+                """);
+    }
+
+    [Fact]
+    public void EntryPointFilePath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, """"
+            var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+            Console.WriteLine($"""EntryPointFilePath: {entryPointFilePath}""");
+            """");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {filePath}");
+    }
+
+    [Fact]
+    public void EntryPointFileDirectoryPath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """"
+            var entryPointFileDirectoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
+            Console.WriteLine($"""EntryPointFileDirectoryPath: {entryPointFileDirectoryPath}""");
+            """");
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFileDirectoryPath: {testInstance.Path}");
+    }
+
+    [Fact]
+    public void EntryPointFilePath_WithRelativePath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var fileName = "Program.cs";
+        File.WriteAllText(Path.Join(testInstance.Path, fileName), """
+            var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+            Console.WriteLine($"EntryPointFilePath: {entryPointFilePath}");
+            """);
+
+        var relativePath = Path.GetRelativePath(Directory.GetCurrentDirectory(), Path.Join(testInstance.Path, fileName));
+        new DotnetCommand(Log, "run", relativePath)
+            .WithWorkingDirectory(Directory.GetCurrentDirectory())
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {Path.GetFullPath(relativePath)}");
+    }
+
+    [Fact]
+    public void EntryPointFilePath_WithSpacesInPath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var dirWithSpaces = Path.Join(testInstance.Path, "dir with spaces");
+        Directory.CreateDirectory(dirWithSpaces);
+        var filePath = Path.Join(dirWithSpaces, "Program.cs");
+        File.WriteAllText(filePath, """
+        var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+        Console.WriteLine($"EntryPointFilePath: {entryPointFilePath}");
+        """);
+
+        new DotnetCommand(Log, "run", filePath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {filePath}");
+    }
+
+    [Fact]
+    public void EntryPointFileDirectoryPath_WithDotSlash()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var fileName = "Program.cs";
+        File.WriteAllText(Path.Join(testInstance.Path, fileName), """
+        var entryPointFileDirectoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
+        Console.WriteLine($"EntryPointFileDirectoryPath: {entryPointFileDirectoryPath}");
+        """);
+
+        new DotnetCommand(Log, "run", $"./{fileName}")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFileDirectoryPath: {testInstance.Path}");
+    }
+
+    [Fact]
+    public void EntryPointFilePath_WithUnicodeCharacters()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var unicodeFileName = "Программа.cs";
+        var filePath = Path.Join(testInstance.Path, unicodeFileName);
+        File.WriteAllText(filePath, """
+        var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
+        Console.WriteLine($"EntryPointFilePath: {entryPointFilePath}");
+        """);
+
+        new DotnetCommand(Log, "run", unicodeFileName)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardOutputEncoding(Encoding.UTF8)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"EntryPointFilePath: {filePath}");
     }
 }
