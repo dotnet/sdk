@@ -256,7 +256,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ApphostsForShimRuntimeIdentifiers="@(_ApphostsForShimRuntimeIdentifiers)"
       IntermediateAssembly="@(IntermediateAssembly->'%(FullPath)')"
       OutputType="$(OutputType)"
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)shims/$(_ToolPackShortTargetFrameworkName)"
+      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       PackageId="$(PackageId)"
       PackageVersion="$(PackageVersion)"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
@@ -285,7 +285,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="_ComputeExpectedEmbeddedApphostPaths">
     <GetEmbeddedApphostPaths
-      PackagedShimOutputDirectory="$(PackagedShimOutputRootDirectory)shims/$(_ToolPackShortTargetFrameworkName)"
+      PackagedShimOutputDirectory="$([System.IO.Path]::Combine($(PackagedShimOutputRootDirectory), 'shims', $(_ToolPackShortTargetFrameworkName)))"
       ShimRuntimeIdentifiers="@(_PackAsToolShimRuntimeIdentifiers)"
       ToolCommandName="$(ToolCommandName)">
 
