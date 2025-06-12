@@ -61,8 +61,6 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         bool includeUnlisted = false
         )
     {
-        using var _downloadActivity = Activities.s_source.StartActivity("download-tool");
-        _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
         string? folderToDeleteOnFailure = null;
