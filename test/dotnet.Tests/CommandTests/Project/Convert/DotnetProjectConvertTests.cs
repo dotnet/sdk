@@ -333,7 +333,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:property TargetFramework net11.0
                 #:package System.CommandLine 2.0.0-beta4.22272.1
                 #:property LangVersion preview
-                #:project ../test
                 Console.WriteLine();
                 """,
             expectedProject: $"""
@@ -355,10 +354,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
                   <ItemGroup>
                     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-                  </ItemGroup>
-
-                  <ItemGroup>
-                    <ProjectReference Include="../test" />
                   </ItemGroup>
 
                 </Project>
