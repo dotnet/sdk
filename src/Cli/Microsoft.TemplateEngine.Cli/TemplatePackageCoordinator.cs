@@ -208,7 +208,8 @@ namespace Microsoft.TemplateEngine.Cli
 
             foreach (string installArg in args.TemplatePackages)
             {
-                string[] split = installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
+                bool isPath = File.Exists(installArg) || Directory.Exists(installArg);
+                string[] split = isPath ? new[] { installArg } : installArg.Split(["::"], StringSplitOptions.RemoveEmptyEntries).SelectMany(arg => arg.Split('@', StringSplitOptions.RemoveEmptyEntries)).ToArray();
                 string identifier = split[0];
                 string? version = split.Length > 1 ? split[1] : null;
 

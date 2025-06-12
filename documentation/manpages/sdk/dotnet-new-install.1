@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-new-install" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-new-install" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet new install
 .PP
@@ -26,7 +26,7 @@ dotnet-new-install - installs a template package.
 .IP
 .nf
 \f[C]
-dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force] 
+dotnet new install <PATH|NUGET_ID>  [--interactive] [--add-source|--nuget-source <SOURCE>] [--force]
     [-d|--diagnostics] [--verbosity <LEVEL>] [-h|--help]
 \f[R]
 .fi
@@ -85,11 +85,8 @@ If you want to install a specific version or prerelease version of a template pa
 .PP
 By default, \f[V]dotnet new install\f[R] uses the hierarchy of NuGet configuration files from the current directory to determine the NuGet source the package can be installed from.
 If \f[V]--nuget-source\f[R] is specified, the source will be added to the list of sources to be checked.
-.PD 0
-.P
-.PD
 To check the configured sources for the current directory use \f[V]dotnet nuget list source\f[R].
-For more information, see Common NuGet Configurations
+For more information, see Common NuGet Configurations.
 .RS
 .PP
 Following NuGet\[cq]s Https Everywhere (https://devblogs.microsoft.com/nuget/https-everywhere/) initiative, \f[V]dotnet new\f[R] is phasing out \f[V]http\f[R] feeds.
@@ -161,7 +158,7 @@ Install version 2.0 of the SPA templates for ASP.NET Core from a custom NuGet so
 .IP
 .nf
 \f[C]
-dotnet new --install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
+dotnet new install Microsoft.DotNet.Web.Spa.ProjectTemplates::2.0.0 --add-source \[dq]https://api.my-custom-nuget.com/v3/index.json\[dq] --interactive
 \f[R]
 .fi
 .RE

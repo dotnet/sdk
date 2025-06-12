@@ -1,20 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
 namespace Microsoft.DotNet.Cli.CommandFactory;
 
 public class CommandSpec(
-    string? path,
+    string path,
     string? args,
-    Dictionary<string, string> environmentVariables = null)
+    Dictionary<string, string>? environmentVariables = null)
 {
     public string Path { get; } = path;
 
-    public string Args { get; } = args;
+    public string? Args { get; } = args;
 
     public Dictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? [];
 

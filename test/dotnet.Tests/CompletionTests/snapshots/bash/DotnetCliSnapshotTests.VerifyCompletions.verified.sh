@@ -970,7 +970,7 @@ _testhost_pack() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --nologo --interactive --no-restore --verbosity --version-suffix --configuration --disable-build-servers --use-current-runtime --help" 
+    opts="--output --artifacts-path --no-build --include-symbols --include-source --serviceable --nologo --interactive --no-restore --verbosity --version-suffix --configuration --disable-build-servers --use-current-runtime --runtime --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -990,6 +990,10 @@ _testhost_pack() {
             COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
             return
         ;;
+        --runtime|-r)
+            COMPREPLY=( $(compgen -W "(${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' ')" -- "$cur") )
+            return
+        ;;
     esac
     
     COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1002,7 +1006,7 @@ _testhost_package() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="search add list remove --help" 
+    opts="search add list remove update --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1027,6 +1031,11 @@ _testhost_package() {
             
         (remove)
             _testhost_package_remove $(($1+1))
+            return
+            ;;
+            
+        (update)
+            _testhost_package_update $(($1+1))
             return
             ;;
             
@@ -1112,6 +1121,23 @@ _testhost_package_remove() {
     COMPREPLY=()
     
     opts="--interactive --project --help" 
+    
+    if [[ $COMP_CWORD == "$1" ]]; then
+        COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+        return
+    fi
+    
+    COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
+}
+
+
+_testhost_package_update() {
+
+    cur="${COMP_WORDS[COMP_CWORD]}" 
+    prev="${COMP_WORDS[COMP_CWORD-1]}" 
+    COMPREPLY=()
+    
+    opts="--project --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1645,6 +1671,10 @@ _testhost_tool_install() {
     case $prev in
         --verbosity|-v)
             COMPREPLY=( $(compgen -W "d detailed diag diagnostic m minimal n normal q quiet" -- "$cur") )
+            return
+        ;;
+        --create-manifest-if-needed)
+            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
             return
         ;;
     esac

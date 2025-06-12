@@ -104,6 +104,10 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+          
+      - powershell: build/RunTestTemplateTests.ps1
+        displayName: 🟣 Run Test Templates Tests
+        
     - ${{ else }}:
       - script: |
           source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-migrate" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-migrate" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet migrate
 .PP
@@ -49,7 +49,7 @@ A single project by specifying the \f[I]project.json\f[R] file to migrate.
 .IP \[bu] 2
 All of the directories specified in the \f[I]global.json\f[R] file by passing in a path to the \f[I]global.json\f[R] file.
 .IP \[bu] 2
-A \f[I]solution.sln\f[R] file, where it migrates the projects referenced in the solution.
+A \f[I]solution.sln(x)\f[R] file, where it migrates the projects referenced in the solution.
 .IP \[bu] 2
 On all subdirectories of the given directory recursively.
 .PP
@@ -72,7 +72,7 @@ a \f[I]project.json\f[R] file to migrate.
 .IP \[bu] 2
 a \f[I]global.json\f[R] file: the folders specified in \f[I]global.json\f[R] are migrated.
 .IP \[bu] 2
-a \f[I]solution.sln\f[R] file: the projects referenced in the solution are migrated.
+a \f[I]solution.sln(x)\f[R] file: the projects referenced in the solution are migrated.
 .IP \[bu] 2
 a directory to migrate: recursively searches for \f[I]project.json\f[R] files to migrate inside the specified directory.
 .PP

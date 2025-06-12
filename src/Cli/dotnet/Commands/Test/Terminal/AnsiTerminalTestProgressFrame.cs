@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-#nullable disable warnings
-
 using System.Globalization;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
@@ -36,7 +34,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
         terminal.Append('[');
         charsTaken++;
-        terminal.SetColor(TerminalColor.Green);
+        terminal.SetColor(TerminalColor.DarkGreen);
         terminal.Append('✓');
         charsTaken++;
         string passedText = passed.ToString(CultureInfo.CurrentCulture);
@@ -47,7 +45,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         terminal.Append('/');
         charsTaken++;
 
-        terminal.SetColor(TerminalColor.Red);
+        terminal.SetColor(TerminalColor.DarkRed);
         terminal.Append('x');
         charsTaken++;
         string failedText = failed.ToString(CultureInfo.CurrentCulture);
@@ -58,7 +56,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
         terminal.Append('/');
         charsTaken++;
 
-        terminal.SetColor(TerminalColor.Yellow);
+        terminal.SetColor(TerminalColor.DarkYellow);
         terminal.Append('↓');
         charsTaken++;
         string skippedText = skipped.ToString(CultureInfo.CurrentCulture);

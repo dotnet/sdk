@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 
@@ -61,6 +59,23 @@ internal static class LoggerUtility
     {
         var dispatcher = new PersistentDispatcher(binaryLoggers);
         return new FacadeLogger(dispatcher);
+    }
+
+    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    {
+        binLogArgs = new List<string>();
+        nonBinLogArgs = new List<string>();
+        foreach (var arg in args ?? [])
+        {
+            if (IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                nonBinLogArgs.Add(arg);
+            }
+        }
     }
 
     internal static bool IsBinLogArgument(string arg)

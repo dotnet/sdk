@@ -14,14 +14,14 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-sln" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-sln" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet sln
 .PP
 \f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
-dotnet-sln - Lists or modifies the projects in a .NET solution file.
+dotnet-sln - Lists or modifies the projects in a .NET solution file, or migrates the file to an \f[I].slnx\f[R] file.
 .SH SYNOPSIS
 .IP
 .nf
@@ -67,9 +67,11 @@ dotnet new sln --output MySolution
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use.
-If this argument is omitted, the command searches the current directory for one.
-If it finds no solution file or multiple solution files, the command fails.
+The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+.PP
+If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files are found, the user is prompted to specify a file explicitly.
+If none are found, the command fails.
 .RE
 .SH OPTIONS
 .IP \[bu] 2
@@ -79,6 +81,16 @@ If it finds no solution file or multiple solution files, the command fails.
 Prints out a description of how to use the command.
 .RE
 .SS Commands
+.PP
+The following commands are available:
+.IP \[bu] 2
+\f[V]list\f[R]
+.IP \[bu] 2
+\f[V]add\f[R]
+.IP \[bu] 2
+\f[V]remove\f[R]
+.IP \[bu] 2
+\f[V]migrate\f[R]
 .SS \f[V]list\f[R]
 .PP
 Lists all projects in a solution file.
@@ -94,9 +106,13 @@ dotnet sln list [-h|--help]
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use.
-If this argument is omitted, the command searches the current directory for one.
-If it finds no solution file or multiple solution files, the command fails.
+The solution file (\f[I].sln\f[R] or \f[I].slnx\f[R] file) or solution filter (\f[I].slnf\f[R] file) to use.
+.PP
+If unspecified, the command searches the current directory for an \f[I].sln\f[R], \f[I].slnx\f[R], or \f[I].slnf\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files or filters are found, the user is prompted to specify a file explicitly.
+If none are found, the command fails.
+.PP
+(Support for \f[I].slnf\f[R] files was added in .NET SDK 9.0.3xx.)
 .RE
 .SH OPTIONS
 .IP \[bu] 2
@@ -121,8 +137,11 @@ dotnet sln add [-h|--help]
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use.
-If it is unspecified, the command searches the current directory for one and fails if there are multiple solution files.
+The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+.PP
+If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files are found, the user is prompted to specify a file explicitly.
+If none are found, the command fails.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]PROJECT_PATH\f[B]\f[R]
@@ -172,7 +191,7 @@ Removes a project or multiple projects from the solution file.
 .IP
 .nf
 \f[C]
-dotnet sln [<SOLUTION_FILE>] remove <PROJECT_PATH> [<PROJECT_PATH>...]
+dotnet sln [<SOLUTION_FILE>] remove <PROJECT_PATH|PROJECT_NAME> [<PROJECT_PATH|PROJECT_NAME>...]
 dotnet sln [<SOLUTION_FILE>] remove [-h|--help]
 \f[R]
 .fi
@@ -181,15 +200,54 @@ dotnet sln [<SOLUTION_FILE>] remove [-h|--help]
 \f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
 .RS 2
 .PP
-The solution file to use.
-If it is unspecified, the command searches the current directory for one and fails if there are multiple solution files.
+The solution file to use (either an \f[I].sln\f[R] or \f[I].slnx\f[R] file).
+.PP
+If unspecified, the command searches the current directory for an \f[I].sln\f[R] or \f[I].slnx\f[R] file and, if it finds exactly one, uses that file.
+If multiple solution files are found, the user is prompted to specify a file explicitly.
+If none are found, the command fails.
 .RE
 .IP \[bu] 2
-\f[B]\f[VB]PROJECT_PATH\f[B]\f[R]
+\f[B]\f[VB]PROJECT_PATH\f[B] or \f[VB]PROJECT_NAME\f[B]\f[R]
 .RS 2
 .PP
-The path to the project or projects to remove from the solution.
+The path to, or name of, the project or projects to remove from the solution.
 Unix/Linux shell globbing pattern (https://en.wikipedia.org/wiki/Glob_(programming)) expansions are processed correctly by the \f[V]dotnet sln\f[R] command.
+.PP
+If a project name is provided instead of a path, the project in the solution that matches the name, regardless of its path, is removed.
+If more than one matching project is found in the solution, the command errors out.
+Omit the project file extension in the name.
+(Support for removing projects by name was added in .NET 10.)
+.RE
+.SH OPTIONS
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
+.RE
+.SS \f[V]migrate\f[R]
+.PP
+Generates an \f[I].slnx\f[R] solution file from an \f[I].sln\f[R] file.
+.SH SYNOPSIS
+.IP
+.nf
+\f[C]
+dotnet sln [<SOLUTION_FILE>] migrate
+dotnet sln [<SOLUTION_FILE>] migrate [-h|--help]
+\f[R]
+.fi
+.SH ARGUMENTS
+.IP \[bu] 2
+\f[B]\f[VB]SOLUTION_FILE\f[B]\f[R]
+.RS 2
+.PP
+The \f[I].sln\f[R] solution file to migrate.
+.PP
+If unspecified, the command searches the current directory for an \f[I].sln\f[R] file and, if it finds exactly one, uses that file.
+If multiple \f[I].sln\f[R] files are found, the user is prompted to specify a file explicitly.
+If none are found, the command fails.
+.PP
+If you specify an \f[I].slnx\f[R] file instead of an \f[I].sln\f[R] file, or if an \f[I].slnx\f[R] file with the same file name (minus the \f[I].sln\f[R] extension) already exists in the directory, the command fails.
 .RE
 .SH OPTIONS
 .IP \[bu] 2
@@ -205,7 +263,7 @@ List the projects in a solution:
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln list
+dotnet sln todo.slnx list
 \f[R]
 .fi
 .RE
@@ -235,7 +293,7 @@ Add multiple C# projects to the root of a solution:
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln add todo-app/todo-app.csproj back-end/back-end.csproj --in-root
+dotnet sln todo.slnx add todo-app/todo-app.csproj back-end/back-end.csproj --in-root
 \f[R]
 .fi
 .RE
@@ -245,7 +303,7 @@ Add multiple C# projects to a solution:
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln add todo-app/todo-app.csproj back-end/back-end.csproj
+dotnet sln todo.slnx add todo-app/todo-app.csproj back-end/back-end.csproj
 \f[R]
 .fi
 .RE
@@ -255,7 +313,7 @@ Remove multiple C# projects from a solution:
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln remove todo-app/todo-app.csproj back-end/back-end.csproj
+dotnet sln todo.slnx remove todo-app/todo-app.csproj back-end/back-end.csproj
 \f[R]
 .fi
 .RE
@@ -265,7 +323,7 @@ Add multiple C# projects to a solution using a globbing pattern (Unix/Linux only
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln add **/*.csproj
+dotnet sln todo.slnx add **/*.csproj
 \f[R]
 .fi
 .RE
@@ -275,7 +333,7 @@ Add multiple C# projects to a solution using a globbing pattern (Windows PowerSh
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln add (ls -r **/*.csproj)
+dotnet sln todo.slnx add (ls -r **/*.csproj)
 \f[R]
 .fi
 .RE
@@ -285,7 +343,7 @@ Remove multiple C# projects from a solution using a globbing pattern (Unix/Linux
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln remove **/*.csproj
+dotnet sln todo.slnx remove **/*.csproj
 \f[R]
 .fi
 .RE
@@ -295,7 +353,17 @@ Remove multiple C# projects from a solution using a globbing pattern (Windows Po
 .IP
 .nf
 \f[C]
-dotnet sln todo.sln remove (ls -r **/*.csproj)
+dotnet sln todo.slnx remove (ls -r **/*.csproj)
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Generate an \f[I].slnx\f[R] file from a \f[I].sln\f[R] file:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet sln todo.sln migrate
 \f[R]
 .fi
 .RE
@@ -310,9 +378,9 @@ dotnet new sln -n mysolution
 dotnet new console -o myapp
 dotnet new classlib -o mylib1
 dotnet new classlib -o mylib2
-dotnet sln mysolution.sln add myapp\[rs]myapp.csproj
-dotnet sln mysolution.sln add mylib1\[rs]mylib1.csproj --solution-folder mylibs
-dotnet sln mysolution.sln add mylib2\[rs]mylib2.csproj --solution-folder mylibs
+dotnet sln mysolution.slnx add myapp\[rs]myapp.csproj
+dotnet sln mysolution.slnx add mylib1\[rs]mylib1.csproj --solution-folder mylibs
+dotnet sln mysolution.slnx add mylib2\[rs]mylib2.csproj --solution-folder mylibs
 \f[R]
 .fi
 .PP
