@@ -298,14 +298,6 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Shutdown()
     {
-        try
-        {
-            _sentinel?.Dispose();
-        }
-        catch (Exception)
-        {
-            // Exceptions during telemetry shouldn't cause anything else to fail
-        }
     }
 
     public LoggerVerbosity Verbosity { get; set; }

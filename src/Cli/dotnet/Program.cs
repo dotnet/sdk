@@ -24,6 +24,11 @@ using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli;
 
+public static class Activities
+{
+    public static ActivitySource s_source = new("dotnet-cli", Product.Version);
+}
+
 public class Program
 {
     private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
@@ -34,8 +39,13 @@ public class Program
         // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
         // See https://github.com/dotnet/docs/issues/46226.
         using var termSignalRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, _ => Environment.Exit(0));
-
-        using AutomaticEncodingRestorer _ = new();
+        
+        // capture the time to we can compute muxer/host startup overhead
+        DateTime mainTimeStamp = DateTime.Now;
+        using var _mainActivity = Activities.s_source.StartActivity("main");
+        _mainActivity.AddTag("process.pid", Process.GetCurrentProcess().Id);
+        _mainActivity.AddTag("process.executable.name", "dotnet");
+        using AutomaticEncodingRestorer _encodingRestorer = new();
 
         // Setting output encoding is not available on those platforms
         if (UILanguageOverride.OperatingSystemSupportsUtf8())
@@ -45,46 +55,20 @@ public class Program
 
         DebugHelper.HandleDebugSwitch(ref args);
 
-        // Capture the current timestamp to calculate the host overhead.
-        DateTime mainTimeStamp = DateTime.Now;
-        TimeSpan startupTime = mainTimeStamp - Process.GetCurrentProcess().StartTime;
+        TrackHostStartup(mainTimeStamp);
 
-        bool perfLogEnabled = Env.GetEnvironmentVariableAsBool("DOTNET_CLI_PERF_LOG", false);
+        SetupMSBuildEnvironmentInvariants();
 
-        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
-        {
-            Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
-        }
-
-        // Avoid create temp directory with root permission and later prevent access in non sudo
-        if (SudoEnvironmentDirectoryOverride.IsRunningUnderSudo())
-        {
-            perfLogEnabled = false;
-        }
-
-        PerformanceLogStartupInformation startupInfo = null;
-        if (perfLogEnabled)
-        {
-            startupInfo = new PerformanceLogStartupInformation(mainTimeStamp);
-            PerformanceLogManager.InitializeAndStartCleanup(FileSystemWrapper.Default);
-        }
-
-        PerformanceLogEventListener perLogEventListener = null;
         try
         {
-            if (perfLogEnabled)
-            {
-                perLogEventListener = PerformanceLogEventListener.Create(FileSystemWrapper.Default, PerformanceLogManager.Instance.CurrentLogDirectory);
-            }
-
-            PerformanceLogEventSource.Log.LogStartUpInformation(startupInfo);
-            PerformanceLogEventSource.Log.CLIStart();
-
             InitializeProcess();
 
             try
             {
-                return ProcessArgs(args, startupTime);
+                var exitCode = ProcessArgs(args);
+                _mainActivity.AddTag("process.exit.code", exitCode);
+                _mainActivity.SetStatus(ActivityStatusCode.Ok);
+                return exitCode;
             }
             catch (Exception e) when (e.ShouldBeDisplayedAsError())
             {
@@ -97,7 +81,8 @@ public class Program
                 {
                     commandParsingException.ParseResult.ShowHelp();
                 }
-
+                _mainActivity.AddTag("process.exit.code", exitCode);
+                _mainActivity.SetStatus(ActivityStatusCode.Error);
                 return 1;
             }
             catch (Exception e) when (!e.ShouldBeDisplayedAsError())
@@ -105,7 +90,8 @@ public class Program
                 // If telemetry object has not been initialized yet. It cannot be collected
                 TelemetryEventEntry.SendFiltered(e);
                 Reporter.Error.WriteLine(e.ToString().Red().Bold());
-
+                _mainActivity.AddTag("process.exit.code", exitCode);
+                _mainActivity.SetStatus(ActivityStatusCode.Error);
                 return 1;
             }
             finally
@@ -115,25 +101,41 @@ public class Program
         }
         finally
         {
-            if (perLogEventListener != null)
+            Activities.s_source.Dispose();
+        }
+    }
+
+    private static void TrackHostStartup(DateTime mainTimeStamp)
+    {
+        using var hostStartupActivity = Activities.s_source.CreateActivity("host-startup", ActivityKind.Server);
+        hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
+        if (TelemetryClient.Enabled)
+        {
+            // Get the global.json state to report in telemetry along with this command invocation.
+            if (NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory) is string globalJsonState)
             {
-                perLogEventListener.Dispose();
+                hostStartupActivity?.AddTag("dotnet.globalJson", globalJsonState);
             }
+        }
+        hostStartupActivity?.SetEndTime(mainTimeStamp);
+    }
+
+    /// <summary>
+    /// We have some behaviors in MSBuild that we want to enforce (either when using MSBuild API or by shelling out to it),
+    /// so we set those ASAP as globally as possible.
+    /// </summary>
+    private static void SetupMSBuildEnvironmentInvariants()
+    {
+        if (string.IsNullOrEmpty(Env.GetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD")))
+        {
+            Environment.SetEnvironmentVariable("MSBUILDFAILONDRIVEENUMERATINGWILDCARD", "1");
         }
     }
 
     internal static int ProcessArgs(string[] args)
     {
-        return ProcessArgs(args, new TimeSpan(0));
-    }
-
-    internal static int ProcessArgs(string[] args, TimeSpan startupTime)
-    {
-        Dictionary<string, double> performanceData = [];
-
-        PerformanceLogEventSource.Log.BuiltInCommandParserStart();
         ParseResult parseResult;
-        using (new PerformanceMeasurement(performanceData, "Parse Time"))
+        using (var _parseActivity = Activities.s_source.StartActivity("parse"))
         {
             parseResult = Parser.Parse(args);
 
@@ -142,110 +144,70 @@ public class Program
             // https://github.com/dotnet/sdk/issues/20195
             SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
         }
-        PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
-        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel())
+        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use"))
         {
-            IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = disposableFirstTimeUseNoticeSentinel;
+            IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
+
             IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-            IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, ToolPathSentinelFileName)));
+            IFileSentinel toolPathSentinel = new FileSentinel(
+                new FilePath(
+                    Path.Combine(
+                        CliFolderPathCalculator.DotnetUserProfileFolderPath,
+                        ToolPathSentinelFileName)));
 
-            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
+            var environmentProvider = new EnvironmentProvider();
 
-            TelemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-            TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
-            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+            bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
+            bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
+            bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
+            bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
+            bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
+                // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
+                defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
 
-            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
+            ReportDotnetHomeUsage(environmentProvider);
 
-            if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
+            var isDotnetBeingInvokedFromNativeInstaller = false;
+            if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
             {
-                // We found --diagnostic or -d, but we still need to determine whether the option should
-                // be attached to the dotnet command or the subcommand.
-                if (args.DiagOptionPrecedesSubcommand(parseResult.RootSubCommandResult()))
-                {
-                    Environment.SetEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString);
-                    CommandLoggingContext.SetVerbose(true);
-                    Reporter.Reset();
-                }
+                aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
+                firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
+                toolPathSentinel = new NoOpFileSentinel(exists: false);
+                isDotnetBeingInvokedFromNativeInstaller = true;
             }
-            if (parseResult.HasOption(Parser.VersionOption) && parseResult.IsTopLevelDotnetCommand())
-            {
-                CommandLineInfo.PrintVersion();
-                return 0;
-            }
-            else if (parseResult.HasOption(Parser.InfoOption) && parseResult.IsTopLevelDotnetCommand())
-            {
-                CommandLineInfo.PrintInfo();
-                return 0;
-            }
-            else
-            {
-                PerformanceLogEventSource.Log.FirstTimeConfigurationStart();
 
-                var environmentProvider = new EnvironmentProvider();
+            var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
+                generateAspNetCertificate: generateAspNetCertificate,
+                telemetryOptout: telemetryOptout,
+                addGlobalToolsToPath: addGlobalToolsToPath,
+                nologo: nologo,
+                skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
 
-                bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
-                bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-                bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
-                bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-                bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
-                    // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-                    defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
+            string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
+            char[] switchIndicators = ['-', '/'];
+            var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
+                getStarOperators.Any(o =>
+                switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
 
-                ReportDotnetHomeUsage(environmentProvider);
-
-                var isDotnetBeingInvokedFromNativeInstaller = false;
-                if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
-                {
-                    aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
-                    firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
-                    toolPathSentinel = new NoOpFileSentinel(exists: false);
-                    isDotnetBeingInvokedFromNativeInstaller = true;
-                }
-
-                var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
-                    generateAspNetCertificate: generateAspNetCertificate,
-                    telemetryOptout: telemetryOptout,
-                    addGlobalToolsToPath: addGlobalToolsToPath,
-                    nologo: nologo,
-                    skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
-
-                string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
-                char[] switchIndicators = ['-', '/'];
-                var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
-                    getStarOperators.Any(o =>
-                    switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
-
-                ConfigureDotNetForFirstTimeUse(
-                    firstTimeUseNoticeSentinel,
-                    aspNetCertificateSentinel,
-                    toolPathSentinel,
-                    isDotnetBeingInvokedFromNativeInstaller,
-                    dotnetFirstRunConfiguration,
-                    environmentProvider,
-                    performanceData,
-                    skipFirstTimeUseCheck: getStarOptionPassed);
-                PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
-            }
+            ConfigureDotNetForFirstTimeUse(
+                firstTimeUseNoticeSentinel,
+                aspNetCertificateSentinel,
+                toolPathSentinel,
+                isDotnetBeingInvokedFromNativeInstaller,
+                dotnetFirstRunConfiguration,
+                environmentProvider,
+                skipFirstTimeUseCheck: getStarOptionPassed);
         }
+
+        var telemetryClient = new Telemetry.Telemetry();
+        TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
+        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
         if (CommandLoggingContext.IsVerbose)
         {
             Console.WriteLine($"Telemetry is: {(TelemetryClient.Enabled ? "Enabled" : "Disabled")}");
         }
-        PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
-        performanceData.Add("Startup Time", startupTime.TotalMilliseconds);
-
-        string globalJsonState = string.Empty;
-        if (TelemetryClient.Enabled)
-        {
-            // Get the global.json state to report in telemetry along with this command invocation.
-            globalJsonState = NativeWrapper.NETCoreSdkResolverNativeWrapper.GetGlobalJsonState(Environment.CurrentDirectory);
-        }
-
-        TelemetryEventEntry.SendFiltered(Tuple.Create(parseResult, performanceData, globalJsonState));
-        PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStop();
 
         int exitCode;
         if (parseResult.CanBeInvoked())
@@ -254,15 +216,16 @@ public class Program
         }
         else
         {
-            PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
             try
             {
+                var _lookupExternalCommandActivity = Activities.s_source.StartActivity("lookup-external-command");
                 string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
                 var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
                     new DefaultCommandResolverPolicy(),
                     commandName,
                     args.GetSubArguments(),
                     FrameworkConstants.CommonFrameworks.NetStandardApp15);
+                _lookupExternalCommandActivity?.Dispose();
 
                 if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
                 {
@@ -270,13 +233,10 @@ public class Program
                 }
                 else
                 {
+                    var _executionActivity = Activities.s_source.StartActivity("execute-extensible-command");
                     var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
-                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
-
-                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
                     var result = resolvedCommand.Execute();
-                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
-
+                    _executionActivity?.Dispose();
                     exitCode = result.ExitCode;
                 }
             }
@@ -287,18 +247,6 @@ public class Program
                 exitCode = 1;
             }
         }
-
-        TelemetryClient.TrackEvent("command/finish", properties: new Dictionary<string, string>
-                    {
-                        { "exitCode", exitCode.ToString() }
-                    },
-            measurements: new Dictionary<string, double>());
-
-        PerformanceLogEventSource.Log.TelemetryClientFlushStart();
-        TelemetryClient.Flush();
-        PerformanceLogEventSource.Log.TelemetryClientFlushStop();
-
-        TelemetryClient.Dispose();
 
         return exitCode;
 
@@ -330,9 +278,7 @@ public class Program
         static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
         {
             Debug.Assert(parseResult.CanBeInvoked());
-
-            PerformanceLogEventSource.Log.BuiltInCommandStart();
-
+            using var _invocationActivity = Activities.s_source.StartActivity("invocation");
             try
             {
                 exitCode = Parser.Invoke(parseResult);
@@ -342,8 +288,6 @@ public class Program
             {
                 exitCode = Parser.ExceptionHandler(exception, parseResult);
             }
-
-            PerformanceLogEventSource.Log.BuiltInCommandStop();
         }
     }
 
@@ -391,7 +335,6 @@ public class Program
        bool isDotnetBeingInvokedFromNativeInstaller,
        DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
        IEnvironmentProvider environmentProvider,
-       Dictionary<string, double> performanceMeasurements,
        bool skipFirstTimeUseCheck)
     {
         var isFirstTimeUse = !firstTimeUseNoticeSentinel.Exists() && !skipFirstTimeUseCheck;
@@ -407,7 +350,6 @@ public class Program
             dotnetFirstRunConfiguration,
             reporter,
             environmentPath,
-            performanceMeasurements,
             skipFirstTimeUseCheck: skipFirstTimeUseCheck);
 
         dotnetConfigurer.Configure();
