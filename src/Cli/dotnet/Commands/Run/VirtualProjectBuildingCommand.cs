@@ -79,6 +79,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public Dictionary<string, string> GlobalProperties { get; }
     public string[] BinaryLoggerArgs { get; }
     public VerbosityOptions Verbosity { get; }
+    public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
@@ -437,7 +438,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private string GetArtifactsPath() => GetArtifactsPath(EntryPointFileFullPath);
+    private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
     // internal for testing
     internal static string GetArtifactsPath(string entryPointFileFullPath)
