@@ -77,10 +77,10 @@ internal sealed class ProjectLauncher(
         // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
 
-        if (appModel.InjectDeltaApplier)
+        if (appModel.TryGetStartupHookPath(out var startupHookPath))
         {
             // HotReload startup hook should be loaded before any other startup hooks:
-            environmentBuilder.DotNetStartupHooks.Insert(0, DeltaApplier.StartupHookPath);
+            environmentBuilder.DotNetStartupHooks.Insert(0, startupHookPath);
 
             environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetWatchHotReloadNamedPipeName, namedPipeName);
 

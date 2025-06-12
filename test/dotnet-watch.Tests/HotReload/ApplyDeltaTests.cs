@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [Fact]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [Fact]
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
