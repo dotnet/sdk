@@ -305,20 +305,21 @@ namespace Microsoft.DotNet.Watch
             process.Kill();
         }
 
-        private static void TerminateUnixProcess(ProcessState state, IReporter reporter)
+        private static void TerminateUnixProcess(Process process, ProcessState state, IReporter reporter)
         {
-            [DllImport("libc", SetLastError = true, EntryPoint = "kill")]
-            static extern int sys_kill(int pid, int sig);
+            // Signals no longer work on Linux https://github.com/dotnet/sdk/issues/49307
 
-            // SIGTERM no longer works on Linux https://github.com/dotnet/sdk/issues/49307
-            // state.ForceExit ? SIGKILL : SIGTERM
+            //[DllImport("libc", SetLastError = true, EntryPoint = "kill")]
+            //static extern int sys_kill(int pid, int sig);
 
-            var result = sys_kill(state.ProcessId, SIGKILL);
-            if (result != 0)
-            {
-                var error = Marshal.GetLastPInvokeError();
-                reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
-            }
+            //var result = sys_kill(state.ProcessId, state.ForceExit ? SIGKILL : SIGTERM);
+            //if (result != 0)
+            //{
+            //    var error = Marshal.GetLastPInvokeError();
+            //    reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
+            //}
+
+            process.Kill();
         }
     }
 }
