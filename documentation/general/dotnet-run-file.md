@@ -161,7 +161,7 @@ Other directives result in an error, reserving them for future use.
 The value must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
 and any leading and trailing white space is not considered part of the value.
 Any value can optionally have two parts separated by `@` in case of `package`/`sdk` or `=` in case of `property`
-and white space is trimmed from the two parts around the separator.
+and whitespace is trimmed from the two parts around the separator.
 The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
 and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
 It is an error if the first part (name) is empty (the version is allowed to be empty, but that results in empty `Version=""`).
