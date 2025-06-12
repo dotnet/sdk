@@ -12,6 +12,13 @@ namespace Microsoft.DotNet.Cli;
 
 internal static class CommonOptions
 {
+    public static Option<bool> YesOption =
+        new DynamicOption<bool>("--yes", "-y")
+        {
+            Description = CliStrings.YesOptionDescription,
+            Arity = ArgumentArity.Zero
+        };
+
     public static Option<string[]> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
         new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")

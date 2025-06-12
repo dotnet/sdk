@@ -167,8 +167,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.GetNuGetVersion(
                 new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
-                verbosity: TestVerbosity,
-                isGlobalTool: true);
+                verbosity: TestVerbosity).version;
 
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
@@ -194,8 +193,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
-                versionRange: VersionRange.Parse(requestedVersion),
-                isGlobalTool: true);
+                versionRange: VersionRange.Parse(requestedVersion)).version;
 
             package.OriginalVersion.Should().Be(expectedVersion);
         }

@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private static readonly string EOL = Environment.NewLine;
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public void WritesToStandardStreams(bool suppressEmojis)
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             testConsole.Clear();
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public void WritesToStandardStreamsWithCustomEmojis(bool suppressEmojis)

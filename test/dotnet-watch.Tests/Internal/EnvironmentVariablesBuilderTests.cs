@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class EnvironmentVariablesBuilderTests
     {
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public void Value()
         {
             var builder = new EnvironmentVariablesBuilder();
@@ -20,7 +20,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ], env);
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public void MultipleValues()
         {
             var builder = new EnvironmentVariablesBuilder();

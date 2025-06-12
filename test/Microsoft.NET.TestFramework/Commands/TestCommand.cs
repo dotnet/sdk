@@ -26,6 +26,8 @@ namespace Microsoft.NET.TestFramework.Commands
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
 
+        public Encoding? StandardOutputEncoding { get; set; }
+
         protected TestCommand(ITestOutputHelper log)
         {
             Log = log;
@@ -54,6 +56,12 @@ namespace Microsoft.NET.TestFramework.Commands
                 process.StandardInput.Write(stdin);
                 process.StandardInput.Close();
             };
+            return this;
+        }
+
+        public TestCommand WithStandardOutputEncoding(Encoding encoding)
+        {
+            StandardOutputEncoding = encoding;
             return this;
         }
 
@@ -153,6 +161,11 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 Log.WriteLine($"❌{line}");
             });
+
+            if (StandardOutputEncoding is not null)
+            {
+                command.StandardOutputEncoding(StandardOutputEncoding);
+            }
             
             string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
                 "dotnet" :

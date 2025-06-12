@@ -49,6 +49,8 @@ namespace Microsoft.NET.Build.Tasks
         [Required]
         public bool IncludeMainProject { get; set; }
 
+        public bool TrimDepsJsonLibrariesWithoutAssets { get; set; }
+
         // @(ReferencePath) that will be passed to
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
 
@@ -230,6 +232,7 @@ namespace Microsoft.NET.Build.Tasks
 
             builder = builder
                 .WithMainProjectInDepsFile(IncludeMainProject)
+                .WithTrimLibrariesWithoutAssets(TrimDepsJsonLibrariesWithoutAssets)
                 .WithReferenceAssemblies(referenceAssemblyInfos)
                 .WithDirectReferences(directReferences)
                 .WithDependencyReferences(dependencyReferences)

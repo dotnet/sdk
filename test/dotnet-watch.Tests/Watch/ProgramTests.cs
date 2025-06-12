@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ProgramTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ConsoleCancelKey()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchKitchenSink")
@@ -41,7 +41,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await shutdownRequested.WaitAsync();
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(new[] { "--no-hot-reload", "run" }, "")]
         [InlineData(new[] { "--no-hot-reload", "run", "args" }, "args")]
         [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "Argument Specified in Props,run,args")]
         [InlineData(new[] { "--", "run", "args" }, "Argument Specified in Props,run,args")]
         // if arguments specified on command line the ones from launch profile are ignored
@@ -80,7 +80,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.Equal(expectedApplicationArgs, await App.AssertOutputLineStartsWith("Arguments = "));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task RunArguments_NoHotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -114,7 +114,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task RunArguments_HotReload()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -145,7 +145,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains(App.Process.Output, l => l.Contains("Hot reload enabled."));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData("P1", "argP1")]
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains(App.Process.Output, l => l.Contains("Hot Reload disabled by command line switch."));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData("P1", "argP1")]
         [InlineData("P and Q and \"R\"", "argPQR")]
         public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains(App.Process.Output, l => l.Contains($"Found named launch profile '{profileName}'."));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task TestCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("XunitCore")
@@ -212,7 +212,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("    TestNamespace.VSTestXunitTests.VSTestXunitPassTest2");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task TestCommand_MultiTargeting()
         {
             var testAsset = TestAssets.CopyTestAsset("XunitMulti")
@@ -224,7 +224,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BuildCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -242,7 +242,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("warning : The value of property is '123'");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MSBuildCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -260,7 +260,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("warning : The value of property is '123'");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task PackCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -280,7 +280,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"Successfully created package '{packagePath}'");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task PublishCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -299,7 +299,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task FormatCommand()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -317,7 +317,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Format complete in");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectGraphLoadFailure()
         {
             var testAsset = TestAssets

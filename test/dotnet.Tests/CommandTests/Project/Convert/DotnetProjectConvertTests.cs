@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -285,7 +286,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:sdk Aspire.Hosting.Sdk/9.1.0
+            #:sdk Aspire.Hosting.Sdk@9.1.0
             Console.WriteLine();
             """);
 
@@ -328,10 +329,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #!/program
                 #:sdk Microsoft.NET.Sdk
-                #:sdk Aspire.Hosting.Sdk 9.1.0
-                #:property TargetFramework net11.0
-                #:package System.CommandLine 2.0.0-beta4.22272.1
-                #:property LangVersion preview
+                #:sdk Aspire.Hosting.Sdk@9.1.0
+                #:property TargetFramework=net11.0
+                #:package System.CommandLine@2.0.0-beta4.22272.1
+                #:property LangVersion=preview
                 Console.WriteLine();
                 """,
             expectedProject: $"""
@@ -368,8 +369,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:package MyPackage $(MyProp)
-                #:property MyProp MyValue
+                #:package MyPackage@$(MyProp)
+                #:property MyProp=MyValue
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -400,13 +401,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop1   One=a/b
-                #:property Prop2   Two/a=b
-                #:sdk First 1.0=a/b
-                #:sdk Second 2.0/a=b
-                #:sdk Third 3.0=a/b
-                #:package P1 1.0/a=b
-                #:package P2 2.0/a=b
+                #:property Prop1 = One=a/b
+                #:property Prop2 = Two/a=b
+                #:sdk First @ 1.0=a/b
+                #:sdk Second @ 2.0/a=b
+                #:sdk Third @ 3.0=a/b
+                #:package P1 @ 1.0/a=b
+                #:package P2 @ 2.0/a=b
                 #:package P3@1.0 ab
                 """,
             expectedProject: $"""
@@ -490,11 +491,28 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversionThrows(
             inputCSharp: """
-                #:property Name" Value
+                #:property Name"=Value
                 """,
             expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1", """
                 The '"' character, hexadecimal value 0x22, cannot be included in a name.
                 """));
+    }
+
+    [Theory]
+    [InlineData("sdk", "@", "/")]
+    [InlineData("sdk", "@", " ")]
+    [InlineData("sdk", "@", "=")]
+    [InlineData("package", "@", "/")]
+    [InlineData("package", "@", " ")]
+    [InlineData("package", "@", "=")]
+    [InlineData("property", "=", "/")]
+    [InlineData("property", "=", " ")]
+    [InlineData("property", "=", "@")]
+    public void Directives_InvalidName(string directiveKind, string expectedSeparator, string actualSeparator)
+    {
+        VerifyConversionThrows(
+            inputCSharp: $"#:{directiveKind} Abc{actualSeparator}Xyz",
+            expectedWildcardPattern: string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, expectedSeparator, "/app/Program.cs:1"));
     }
 
     [Fact]
@@ -502,9 +520,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop <test">
-                #:sdk <test"> ="<>test
-                #:package <test"> ="<>test
+                #:property Prop=<test">
+                #:sdk <test"> @="<>test
+                #:package <test"> @="<>test
                 """,
             expectedProject: $"""
                 <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;test">
@@ -536,11 +554,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VerifyConversion(
             inputCSharp: """
                     #:   sdk   TestSdk
-                #:property Name   Value   
-                #:property NugetPackageDescription "My package with spaces"
+                #:property Name  =  Value   
+                #:property NugetPackageDescription="My package with spaces"
                  #  !  /test
                   #!  /program   x   
-                 # :property Name Value
+                 # :property Name=Value
                 """,
             expectedProject: $"""
                 <Project Sdk="TestSdk">
@@ -563,19 +581,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                  #  !  /test
                   #!  /program   x   
-                 # :property Name Value
+                 # :property Name=Value
                 """);
-    }
-
-    [Fact]
-    public void Directives_Whitespace_Invalid()
-    {
-        VerifyConversionThrows(
-            inputCSharp: $"""
-                #:   property   Name{'\t'}     Value
-                """,
-            expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1",
-                "The '\t' character, hexadecimal value 0x09, cannot be included in a name."));
     }
 
     /// <summary>
@@ -585,11 +592,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_AfterToken()
     {
         string source = """
-            #:property Prop 1
+            #:property Prop1=1
             #define X
-            #:property Prop 2
+            #:property Prop2=2
             Console.WriteLine();
-            #:property Prop 3
+            #:property Prop1=3
             """;
 
         VerifyConversionThrows(
@@ -610,8 +617,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <Prop>1</Prop>
-                    <Prop>2</Prop>
+                    <Prop1>1</Prop1>
+                    <Prop2>2</Prop2>
                   </PropertyGroup>
 
                 </Project>
@@ -620,7 +627,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                 #define X
                 Console.WriteLine();
-                #:property Prop 3
+                #:property Prop1=3
                 """);
     }
 
@@ -631,13 +638,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_AfterIf()
     {
         string source = """
-            #:property Prop 1
+            #:property Prop1=1
             #define X
-            #:property Prop 2
+            #:property Prop2=2
             #if X
-            #:property Prop 3
+            #:property Prop1=3
             #endif
-            #:property Prop 4
+            #:property Prop2=4
             """;
 
         VerifyConversionThrows(
@@ -658,8 +665,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <Prop>1</Prop>
-                    <Prop>2</Prop>
+                    <Prop1>1</Prop1>
+                    <Prop2>2</Prop2>
                   </PropertyGroup>
 
                 </Project>
@@ -668,9 +675,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                 #define X
                 #if X
-                #:property Prop 3
+                #:property Prop1=3
                 #endif
-                #:property Prop 4
+                #:property Prop2=4
                 """);
     }
 
@@ -688,8 +695,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:package MyJson
                 // #:package Unused
                 /* Custom props: */
-                #:property Prop 1
-                #:property Prop 2
+                #:property Prop1=1
+                #:property Prop2=2
                 Console.Write();
                 """,
             expectedProject: $"""
@@ -703,8 +710,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                   </PropertyGroup>
 
                   <PropertyGroup>
-                    <Prop>1</Prop>
-                    <Prop>2</Prop>
+                    <Prop1>1</Prop1>
+                    <Prop2>2</Prop2>
                   </PropertyGroup>
 
                   <ItemGroup>
@@ -721,6 +728,76 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 /* Custom props: */
                 Console.Write();
                 """);
+    }
+
+    [Fact]
+    public void Directives_Duplicate()
+    {
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:property Prop=1
+                #:property Prop=2
+                """,
+            expectedErrors:
+            [
+                string.Format(CliCommandStrings.DuplicateDirective, "#:property Prop", "/app/Program.cs:2"),
+            ]);
+
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:sdk Name
+                #:sdk Name@X
+                #:sdk Name
+                #:sdk Name2
+                """,
+            expectedErrors:
+            [
+                string.Format(CliCommandStrings.DuplicateDirective, "#:sdk Name", "/app/Program.cs:2"),
+                string.Format(CliCommandStrings.DuplicateDirective, "#:sdk Name", "/app/Program.cs:3"),
+            ]);
+
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:package Name
+                #:package Name@X
+                #:package Name
+                #:package Name2
+                """,
+            expectedErrors:
+            [
+                string.Format(CliCommandStrings.DuplicateDirective, "#:package Name", "/app/Program.cs:2"),
+                string.Format(CliCommandStrings.DuplicateDirective, "#:package Name", "/app/Program.cs:3"),
+            ]);
+
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:sdk Prop@1
+                #:property Prop=2
+                """,
+            expectedErrors: []);
+
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:property Prop=1
+                #:property Prop=2
+                #:property Prop2=3
+                #:property Prop=4
+                """,
+            expectedErrors:
+            [
+                string.Format(CliCommandStrings.DuplicateDirective, "#:property Prop", "/app/Program.cs:2"),
+                string.Format(CliCommandStrings.DuplicateDirective, "#:property Prop", "/app/Program.cs:4"),
+            ]);
+
+        VerifyDirectiveConversionErrors(
+            inputCSharp: """
+                #:property prop=1
+                #:property PROP=2
+                """,
+            expectedErrors:
+            [
+                string.Format(CliCommandStrings.DuplicateDirective, "#:property prop", "/app/Program.cs:2"),
+            ]);
     }
 
     private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
@@ -747,5 +824,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var convert = () => Convert(inputCSharp, out _, out _, force: false);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
+    }
+
+    private static void VerifyDirectiveConversionErrors(string inputCSharp, IEnumerable<string> expectedErrors)
+    {
+        var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
+        var errors = ImmutableArray.CreateBuilder<SimpleDiagnostic>();
+        VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: true, errors: errors);
+        errors.Select(e => e.Message).Should().BeEquivalentTo(expectedErrors);
     }
 }

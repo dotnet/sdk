@@ -241,9 +241,8 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             packageId: packageId,
             versionRange: versionRange,
             verbosity: _verbosity,
-            isGlobalTool: true,
             restoreActionConfig: restoreActionConfig
-        );
+        ).version;
     }
 
     private static bool ToolVersionAlreadyInstalled(IToolPackage oldPackageNullable, NuGetVersion nuGetVersion)

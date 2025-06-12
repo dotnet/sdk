@@ -181,4 +181,9 @@ public class BuiltInCommand : ICommand
     {
         throw new NotImplementedException();
     }
+
+    public ICommand StandardOutputEncoding(Encoding encoding)
+    {
+        throw new NotImplementedException();
+    }
 }

@@ -39,4 +39,8 @@ internal interface INuGetPackageDownloader
     Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
          PackageSourceLocation packageSourceLocation = null);
+
+    Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
+        VersionRange versionRange,
+        PackageSourceLocation packageSourceLocation = null);
 } 

@@ -15,14 +15,44 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2025-05-30" "" ".NET Documentation"
 .hy
 .SH dotnet test
-.PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH NAME
 .PP
 dotnet-test - .NET test driver used to execute unit tests.
+.SH DESCRIPTION
+.PP
+The \f[V]dotnet test\f[R] command builds the solution and runs the tests with either VSTest or Microsoft Testing Platform (MTP).
+To enable MTP, you need to add a config file named \f[V]dotnet.config\f[R] with an INI-like format located at the root of the solution or repository.
+.PP
+Some examples of the \f[V]dotnet.config\f[R] file:
+.IP
+.nf
+\f[C]
+[dotnet.test:runner]
+name = \[dq]Microsoft.Testing.Platform\[dq]
+\f[R]
+.fi
+.IP
+.nf
+\f[C]
+[dotnet.test:runner]
+name = \[dq]VSTest\[dq]
+\f[R]
+.fi
+.RS
+.PP
+The format will change from \f[V]dotnet.test:runner\f[R] to \f[V]dotnet.test.runner\f[R] in .NET 10 SDK Preview 4.
+.RE
+.RS
+.PP
+[!TIP] For conceptual documentation about \f[V]dotnet test\f[R], see Testing with dotnet test.
+.RE
+.SS VSTest and Microsoft.Testing.Platform (MTP)
+.SS dotnet test with VSTest
+.PP
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
 .SH SYNOPSIS
 .IP
 .nf
@@ -488,22 +518,22 @@ dotnet test --logger trx
 .fi
 .RE
 .IP \[bu] 2
-Run the tests in the project in the current directory, and generate a code coverage file (after installing Coverlet (https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/VSTestIntegration.md) collectors integration):
-.RS 2
-.IP
-.nf
-\f[C]
-dotnet test --collect:\[dq]XPlat Code Coverage\[dq]
-\f[R]
-.fi
-.RE
-.IP \[bu] 2
-Run the tests in the project in the current directory, and generate a code coverage file (Windows only):
+Run the tests in the project in the current directory, and generate a code coverage file using Microsoft Code Coverage (https://github.com/microsoft/codecoverage/blob/main/README.md):
 .RS 2
 .IP
 .nf
 \f[C]
 dotnet test --collect \[dq]Code Coverage\[dq]
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the project in the current directory, and generate a code coverage file using Coverlet (https://github.com/coverlet-coverage/coverlet/blob/master/README.md) (after installing Coverlet (https://github.com/coverlet-coverage/coverlet/blob/master/Documentation/VSTestIntegration.md) collectors integration):
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --collect:\[dq]XPlat Code Coverage\[dq]
 \f[R]
 .fi
 .RE
@@ -696,3 +726,323 @@ Frameworks and Targets
 \&.NET Runtime Identifier (RID) catalog
 .IP \[bu] 2
 Passing runsettings arguments through commandline (https://github.com/microsoft/vstest/blob/main/docs/RunSettingsArguments.md)
+.SS dotnet test with MTP
+.PP
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 10 SDK and later versions
+.SH SYNOPSIS
+.IP
+.nf
+\f[C]
+dotnet test
+    [--project <PROJECT_PATH>]
+    [--solution <SOLUTION_PATH>]
+    [--directory <DIRECTORY_PATH>]
+    [--test-modules <EXPRESSION>] 
+    [--root-directory <ROOT_PATH>]
+    [--max-parallel-test-modules <NUMBER>]
+    [-a|--arch <ARCHITECTURE>]
+    [-c|--configuration <CONFIGURATION>]
+    [-f|--framework <FRAMEWORK>]
+    [--os <OS>]
+    [-r|--runtime <RUNTIME_IDENTIFIER>]
+    [-v|--verbosity <LEVEL>]
+    [--no-build]
+    [--no-restore]
+    [--no-ansi]
+    [--no-progress]
+    [--output <VERBOSITY_LEVEL>]
+    [<args>...]
+
+dotnet test -h|--help
+\f[R]
+.fi
+.SH DESCRIPTION
+.PP
+With Microsoft Testing Platform, \f[V]dotnet test\f[R] operates faster than with VSTest.
+The test-related arguments are no longer fixed, as they are tied to the registered extensions in the test project(s).
+Moreover, MTP supports a globbing filter when running tests.
+For more information, see Microsoft.Testing.Platform.
+.RS
+.PP
+[!WARNING] When Microsoft.Testing.Platform is opted in via \f[V]dotnet.config\f[R], \f[V]dotnet test\f[R] expects all test projects to use Microsoft.Testing.Platform.
+It is an error if any of the test projects use VSTest.
+.RE
+.SS Implicit restore
+.PP
+You don\[cq]t have to run \f[V]dotnet restore\f[R] because it\[cq]s run implicitly by all commands that require a restore to occur, such as \f[V]dotnet new\f[R], \f[V]dotnet build\f[R], \f[V]dotnet run\f[R], \f[V]dotnet test\f[R], \f[V]dotnet publish\f[R], and \f[V]dotnet pack\f[R].
+To disable implicit restore, use the \f[V]--no-restore\f[R] option.
+.PP
+The \f[V]dotnet restore\f[R] command is still useful in certain scenarios where explicitly restoring makes sense, such as continuous integration builds in Azure DevOps Services or in build systems that need to explicitly control when the restore occurs.
+.PP
+For information about how to manage NuGet feeds, see the \f[V]dotnet restore\f[R] documentation.
+.SH OPTIONS
+.RS
+.PP
+You can use only one of the following options at a time: \f[V]--project\f[R], \f[V]--solution\f[R], \f[V]--directory\f[R], or \f[V]--test-modules\f[R].
+These options can\[cq]t be combined.
+In addition, when using \f[V]--test-modules\f[R], you can\[cq]t specify \f[V]--arch\f[R], \f[V]--configuration\f[R], \f[V]--framework\f[R], \f[V]--os\f[R], or \f[V]--runtime\f[R].
+These options are not relevant for an already-built module.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--project <PROJECT_PATH>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the path to the test project.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--solution <SOLUTION_PATH>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the path to the solution.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--directory <DIRECTORY_PATH>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the path to a directory that contains a project or a solution.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--test-modules <EXPRESSION>\f[B]\f[R]
+.RS 2
+.PP
+Filters test modules using file globbing in .NET.
+Only tests belonging to those test modules will run.
+For more information and examples on how to use file globbing in .NET, see File globbing.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--root-directory <ROOT_PATH>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the root directory of the \f[V]--test-modules\f[R] option.
+It can only be used with the \f[V]--test-modules\f[R] option.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--max-parallel-test-modules <NUMBER>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the maximum number of test modules that can run in parallel.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--arch <ARCHITECTURE>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target architecture.
+This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
+If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
+Available since .NET 6 Preview 7.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
+.RS 2
+.PP
+Defines the build configuration.
+The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
+.RS 2
+.PP
+The target framework moniker (TFM) of the target framework to run tests for.
+The target framework must also be specified in the project file.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--os <OS>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target operating system (OS).
+This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
+If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
+Available since .NET 6.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-r|--runtime <RUNTIME_IDENTIFIER>\f[B]\f[R]
+.RS 2
+.PP
+The target runtime to test for.
+.PP
+Short form \f[V]-r\f[R] available starting in .NET SDK 7.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
+.RS 2
+.PP
+Sets the MSBuild verbosity level.
+Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
+For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-build\f[B]\f[R]
+.RS 2
+.PP
+Specifies that the test project isn\[cq]t built before being run.
+It also implicitly sets the \f[V]--no-restore\f[R] flag.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-restore\f[B]\f[R]
+.RS 2
+.PP
+Specifies that an implicit restore isn\[cq]t executed when running the command.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-ansi\f[B]\f[R]
+.RS 2
+.PP
+Disables outputting ANSI escape characters to screen.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-progress\f[B]\f[R]
+.RS 2
+.PP
+Disables reporting progress to screen.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--output <VERBOSITY_LEVEL>\f[B]\f[R]
+.RS 2
+.PP
+Specifies the output verbosity when reporting tests.
+Valid values are \f[V]Normal\f[R] and \f[V]Detailed\f[R].
+The default is \f[V]Normal\f[R].
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--property:<NAME>=<VALUE>\f[B]\f[R]
+.RS 2
+.PP
+Sets one or more MSBuild properties.
+Specify multiple properties by repeating the option:
+.IP
+.nf
+\f[C]
+--property:<NAME1>=<VALUE1> --property:<NAME2>=<VALUE2>
+\f[R]
+.fi
+.PP
+The short form \f[V]-p\f[R] can be used for \f[V]--property\f[R].
+The same applies for \f[V]/property:property=value\f[R] and its short form is \f[V]/p\f[R].
+More informatiom about the available arguments can be found in the dotnet msbuild documentation.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-?|-h|--help\f[B]\f[R]
+.RS 2
+.PP
+Prints out a description of how to use the command.
+Some options are static while others, namely platform and extension options, are dynamic.
+These dynamic options might differ from one test application to another, as they are based on the registered extensions in the test project.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]args\f[B]\f[R]
+.RS 2
+.PP
+Specifies extra arguments to pass to the test application(s).
+Use a space to separate multiple arguments.
+For more information and examples on what to pass, see Microsoft.Testing.Platform overview and Microsoft.Testing.Platform extensions.
+.RS
+.PP
+[!TIP] To specify extra arguments for specific projects, use the \f[V]TestingPlatformCommandLineArguments\f[R] MSBuild property.
+.RE
+.RE
+.RS
+.PP
+To enable trace logging to a file, use the environment variable \f[V]DOTNET_CLI_TEST_TRACEFILE\f[R] to provide the path to the trace file.
+.RE
+.SH EXAMPLES
+.IP \[bu] 2
+Run the tests in the project or solution in the current directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the \f[V]TestProject\f[R] project:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --project ./TestProject/TestProject.csproj
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the \f[V]TestProjects\f[R] solution:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --solution ./TestProjects/TestProjects.sln
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in a solution or project that can be found in the \f[V]TestProjects\f[R] directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --directory ./TestProjects
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests using \f[V]TestProject.dll\f[R] assembly:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --test-modules \[dq]**/bin/**/Debug/net10.0/TestProject.dll\[dq]
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests using \f[V]TestProject.dll\f[R] assembly with the root directory:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --test-modules \[dq]**/bin/**/Debug/net10.0/TestProject.dll\[dq] --root-directory \[dq]c:\[rs]code\[dq]
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the current directory with code coverage:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --coverage
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the \f[V]TestProject\f[R] project, providing the \f[V]-bl\f[R] (binary log) argument to \f[V]msbuild\f[R]:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --project ./TestProject/TestProject.csproj -bl
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Run the tests in the \f[V]TestProject\f[R] project, setting the MSBuild \f[V]DefineConstants\f[R] property to \f[V]DEV\f[R]:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet test --project ./TestProject/TestProject.csproj -p:DefineConstants=\[dq]DEV\[dq]
+\f[R]
+.fi
+.RE
+.SH SEE ALSO
+.IP \[bu] 2
+Frameworks and Targets
+.IP \[bu] 2
+\&.NET Runtime Identifier (RID) catalog
+.IP \[bu] 2
+Microsoft.Testing.Platform
+.IP \[bu] 2
+Microsoft.Testing.Platform extensions

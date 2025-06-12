@@ -36,7 +36,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
         return reader.ReadToEnd();
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public async Task Roundtrip()
     {
         var result1 = new MSBuildFileSetResult()
@@ -101,7 +101,7 @@ public class FileSetSerializerTests(ITestOutputHelper output)
             """.Replace("\r\n", "\n"), serialized1.Replace("\r\n", "\n"));
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public async Task Task()
     {
         var dir = _testAssetManager.CreateTestDirectory().Path;

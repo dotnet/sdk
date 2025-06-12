@@ -16,7 +16,7 @@ public class LaunchSettingsProfileTest
         _testAssets = new TestAssetsManager(output);
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public void LoadsLaunchProfiles()
     {
         var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -60,7 +60,7 @@ public class LaunchSettingsProfileTest
         Assert.NotNull(expected);
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public void DefaultLaunchProfileWithoutProjectCommand()
     {
         var project = _testAssets.CreateTestProject(new TestProject("Project1")

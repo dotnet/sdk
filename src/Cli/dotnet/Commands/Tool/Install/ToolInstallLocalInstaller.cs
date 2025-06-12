@@ -39,7 +39,7 @@ internal class ToolInstallLocalInstaller
             IToolPackageStoreQuery,
             IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                 = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                    additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()), runtimeJsonPathForTests: runtimeJsonPathForTests);
+                    runtimeJsonPathForTests: runtimeJsonPathForTests);
         _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
         _restoreActionConfig = restoreActionConfig;
 

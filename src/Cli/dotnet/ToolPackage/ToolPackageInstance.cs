@@ -37,7 +37,7 @@ internal class ToolPackageInstance : IToolPackage
 
     private IFileSystem _fileSystem;
 
-    private const string AssetsFileName = "project.assets.json";
+    public const string AssetsFileName = "project.assets.json";
     public const string RidSpecificPackageAssetsFileName = "project.assets.ridpackage.json";
     private const string ToolSettingsFileName = "DotnetToolSettings.xml";
 

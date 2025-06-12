@@ -79,6 +79,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public Dictionary<string, string> GlobalProperties { get; }
     public string[] BinaryLoggerArgs { get; }
     public VerbosityOptions Verbosity { get; }
+    public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
@@ -87,7 +88,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-
         var consoleLogger = RunCommand.MakeTerminalLogger(Verbosity);
         var binaryLogger = GetBinaryLogger(BinaryLoggerArgs);
 
@@ -97,11 +97,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (NoCache)
             {
-                if (NoRestore)
-                {
-                    throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
-                }
-
                 cacheEntry = ComputeCacheEntry(out _);
             }
             else if (!NeedsToBuild(out cacheEntry))
@@ -443,7 +438,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private string GetArtifactsPath() => GetArtifactsPath(EntryPointFileFullPath);
+    private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
     // internal for testing
     internal static string GetArtifactsPath(string entryPointFileFullPath)
@@ -625,6 +620,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 """);
 
+            var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
+            writer.WriteLine($"""
+                  <ItemGroup>
+                    <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
+                    <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
+                  </ItemGroup>
+
+                """);
+
             foreach (var sdk in sdkDirectives)
             {
                 WriteImport(writer, "Sdk.targets", sdk);
@@ -709,6 +713,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
 #pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
+        var deduplicated = new HashSet<CSharpDirective.Named>(NamedDirectiveComparer.Instance);
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
             CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
@@ -750,6 +755,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (CSharpDirective.Parse(errors, sourceFile, span, name.ToString(), value.ToString()) is { } directive)
                 {
+                    // If the directive is already present, report an error.
+                    if (deduplicated.TryGetValue(directive, out var existingDirective))
+                    {
+                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+                        if (errors != null)
+                        {
+                            errors.Add(new SimpleDiagnostic
+                            {
+                                Location = sourceFile.GetFileLinePositionSpan(directive.Span),
+                                Message = string.Format(CliCommandStrings.DuplicateDirective, typeAndName, sourceFile.GetLocationString(directive.Span)),
+                            });
+                        }
+                        else
+                        {
+                            throw new GracefulException(CliCommandStrings.DuplicateDirective, typeAndName, sourceFile.GetLocationString(directive.Span));
+                        }
+                    }
+                    else
+                    {
+                        deduplicated.Add(directive);
+                    }
+
                     builder.Add(directive);
                 }
             }
@@ -847,7 +874,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
-        return entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPointFilePath);
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
@@ -869,10 +917,14 @@ internal static partial class Patterns
 {
     [GeneratedRegex("""\s+""")]
     public static partial Regex Whitespace { get; }
+
+    [GeneratedRegex("""[\s@=/]""")]
+    public static partial Regex DisallowedNameCharacters { get; }
 }
 
 /// <summary>
-/// Represents a C# directive starting with <c>#:</c>. Those are ignored by the language but recognized by us.
+/// Represents a C# directive starting with <c>#:</c> (a.k.a., "file-level directive").
+/// Those are ignored by the language but recognized by us.
 /// </summary>
 internal abstract class CSharpDirective
 {
@@ -883,14 +935,14 @@ internal abstract class CSharpDirective
     /// </summary>
     public required TextSpan Span { get; init; }
 
-    public static CSharpDirective? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+    public static Named? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
     {
         return directiveKind switch
         {
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
+            _ => ReportError<Named>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
 
@@ -907,25 +959,29 @@ internal abstract class CSharpDirective
         }
     }
 
-    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
+    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, char separator)
     {
-        var i = separators != null
-            ? directiveText.AsSpan().IndexOfAny(separators)
-            : directiveText.IndexOf(' ', StringComparison.Ordinal);
-        var firstPart = i < 0 ? directiveText : directiveText[..i];
+        var i = directiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (i < 0 ? directiveText : directiveText.AsSpan(..i)).TrimEnd();
 
-        if (string.IsNullOrWhiteSpace(firstPart))
+        if (firstPart.IsWhiteSpace())
         {
             return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+        }
+
+        // If the name contains characters that resemble separators, report an error to avoid any confusion.
+        if (Patterns.DisallowedNameCharacters.IsMatch(firstPart))
+        {
+            return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator, sourceFile.GetLocationString(span)));
         }
 
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
         {
-            return (firstPart, null);
+            return (firstPart.ToString(), null);
         }
 
-        return (firstPart, secondPart.ToString());
+        return (firstPart.ToString(), secondPart.ToString());
     }
 
     /// <summary>
@@ -933,19 +989,23 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Shebang : CSharpDirective;
 
+    public abstract class Named : CSharpDirective
+    {
+        public required string Name { get; init; }
+    }
+
     /// <summary>
     /// <c>#:sdk</c> directive.
     /// </summary>
-    public sealed class Sdk : CSharpDirective
+    public sealed class Sdk : Named
     {
         private Sdk() { }
 
-        public required string Name { get; init; }
         public string? Version { get; init; }
 
         public static new Sdk? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (sdkName, sdkVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (sdkName, sdkVersion))
             {
                 return null;
             }
@@ -967,16 +1027,15 @@ internal abstract class CSharpDirective
     /// <summary>
     /// <c>#:property</c> directive.
     /// </summary>
-    public sealed class Property : CSharpDirective
+    public sealed class Property : Named
     {
         private Property() { }
 
-        public required string Name { get; init; }
         public required string Value { get; init; }
 
         public static new Property? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (propertyName, propertyValue))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '=') is not var (propertyName, propertyValue))
             {
                 return null;
             }
@@ -1007,18 +1066,15 @@ internal abstract class CSharpDirective
     /// <summary>
     /// <c>#:package</c> directive.
     /// </summary>
-    public sealed class Package : CSharpDirective
+    public sealed class Package : Named
     {
-        private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
-
         private Package() { }
 
-        public required string Name { get; init; }
         public string? Version { get; init; }
 
         public static new Package? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, s_separators) is not var (packageName, packageVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (packageName, packageVersion))
             {
                 return null;
             }
@@ -1030,6 +1086,33 @@ internal abstract class CSharpDirective
                 Version = packageVersion,
             };
         }
+    }
+}
+
+/// <summary>
+/// Used for deduplication - compares directives by their type and name (ignoring case).
+/// </summary>
+internal sealed class NamedDirectiveComparer : IEqualityComparer<CSharpDirective.Named>
+{
+    public static readonly NamedDirectiveComparer Instance = new();
+
+    private NamedDirectiveComparer() { }
+
+    public bool Equals(CSharpDirective.Named? x, CSharpDirective.Named? y)
+    {
+        if (ReferenceEquals(x, y)) return true;
+
+        if (x is null || y is null) return false;
+
+        return x.GetType() == y.GetType() &&
+            string.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public int GetHashCode(CSharpDirective.Named obj)
+    {
+        return HashCode.Combine(
+            obj.GetType().GetHashCode(),
+            obj.Name.GetHashCode(StringComparison.OrdinalIgnoreCase));
     }
 }
 

@@ -646,6 +646,14 @@ _testhost() {
                                             '*::PACKAGE_NAME -- The package reference to remove.: ' \
                                             && ret=0
                                         ;;
+                                    (update)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--project=[Path to a project or solution file, or a directory.]: : ' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            '*::packages: ' \
+                                            && ret=0
+                                        ;;
                                 esac
                             ;;
                         esac
@@ -1046,7 +1054,7 @@ _testhost() {
                                             '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--arch=[The target architecture.]: : ' \
                                             '-a=[The target architecture.]: : ' \
-                                            '--create-manifest-if-needed[Create a tool manifest if one isn'\''t found during tool installation. For information on how manifests are located, see https\://aka.ms/dotnet/tools/create-manifest-if-needed]' \
+                                            '--create-manifest-if-needed=[Create a tool manifest if one isn'\''t found during tool installation. For information on how manifests are located, see https\://aka.ms/dotnet/tools/create-manifest-if-needed]: :((False\:"False" True\:"True" ))' \
                                             '--allow-downgrade[Allow package downgrade when installing a .NET tool package.]' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--help[Show command line help.]' \
@@ -1130,7 +1138,7 @@ _testhost() {
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':commandName -- The command name of the tool to run.: ' \
-                                            '*::toolArguments -- arguments forwarded to the tool: ' \
+                                            '*::toolArguments -- Arguments forwarded to the tool: ' \
                                             && ret=0
                                         ;;
                                     (search)
@@ -1158,6 +1166,38 @@ _testhost() {
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
+                                        ;;
+                                    (execute)
+                                        _arguments "${_arguments_options[@]}" : \
+                                            '--version=[The version of the tool package to install.]:VERSION: ' \
+                                            '--yes[Accept all confirmation prompts using \"yes.\"]' \
+                                            '-y[Accept all confirmation prompts using \"yes.\"]' \
+                                            '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
+                                            '--prerelease[Include pre-release packages.]' \
+                                            '--configfile=[The NuGet configuration file to use.]:FILE: ' \
+                                            '*--source=[Replace all NuGet package sources to use during installation with these.]:SOURCE: ' \
+                                            '*--add-source=[Add an additional NuGet package source to use during installation.]:ADDSOURCE: ' \
+                                            '--disable-parallel[Prevent restoring multiple projects in parallel.]' \
+                                            '--ignore-failed-sources[Treat package source failures as warnings.]' \
+                                            '--no-http-cache[Do not cache packages and http requests.]' \
+                                            '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
+                                            '--help[Show command line help.]' \
+                                            '-h[Show command line help.]' \
+                                            ':packageId -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.:->dotnet_dynamic_complete' \
+                                            '*::commandArguments -- Arguments forwarded to the tool: ' \
+                                            && ret=0
+                                            case $state in
+                                                (dotnet_dynamic_complete)
+                                                    local completions=()
+                                                    local result=$(dotnet complete -- "${original_args[@]}")
+                                                    for line in ${(f)result}; do
+                                                        completions+=(${(q)line})
+                                                    done
+                                                    _describe 'completions' $completions && ret=0
+                                                ;;
+                                            esac
                                         ;;
                                 esac
                             ;;
@@ -1640,6 +1680,7 @@ _testhost__package_commands() {
         'add:Add a NuGet package reference to the project.' \
         'list:List all package references of the project or solution.' \
         'remove:Remove a NuGet package reference from the project.' \
+        'update:Update referenced packages in a project or solution.' \
     )
     _describe -t commands 'testhost package commands' commands "$@"
 }
@@ -1666,6 +1707,12 @@ _testhost__package__list_commands() {
 _testhost__package__remove_commands() {
     local commands; commands=()
     _describe -t commands 'testhost package remove commands' commands "$@"
+}
+
+(( $+functions[_testhost__package__update_commands] )) ||
+_testhost__package__update_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost package update commands' commands "$@"
 }
 
 (( $+functions[_testhost__project_commands] )) ||
@@ -1785,6 +1832,7 @@ _testhost__tool_commands() {
         'run:Run a local tool. Note that this command cannot be used to run a global tool. ' \
         'search:Search dotnet tools in nuget.org' \
         'restore:Restore tools defined in the local tool manifest.' \
+        'execute:Executes a tool from source without permanently installing it.' \
     )
     _describe -t commands 'testhost tool commands' commands "$@"
 }
@@ -1829,6 +1877,12 @@ _testhost__tool__search_commands() {
 _testhost__tool__restore_commands() {
     local commands; commands=()
     _describe -t commands 'testhost tool restore commands' commands "$@"
+}
+
+(( $+functions[_testhost__tool__execute_commands] )) ||
+_testhost__tool__execute_commands() {
+    local commands; commands=()
+    _describe -t commands 'testhost tool execute commands' commands "$@"
 }
 
 (( $+functions[_testhost__vstest_commands] )) ||

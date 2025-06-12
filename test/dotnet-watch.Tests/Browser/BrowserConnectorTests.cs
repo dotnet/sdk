@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class BrowserConnectorTests
 {
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
     [InlineData(null, "https://localhost:1234", "https://localhost:1234")]
     [InlineData(null, "https://localhost:1234/", "https://localhost:1234/")]
     [InlineData("", "https://localhost:1234", "https://localhost:1234")]
