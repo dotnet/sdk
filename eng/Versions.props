@@ -1,7 +1,4 @@
 <Project DefaultTargets="Build">
-  <PropertyGroup>
-    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
-  </PropertyGroup>
   <PropertyGroup Label="Repo version information">
     <VersionMajor>10</VersionMajor>
     <VersionMinor>0</VersionMinor>
