@@ -18,20 +18,45 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
+using OpenTelemetry;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli;
-
-public static class Activities
-{
-    public static ActivitySource s_source = new("dotnet-cli", Product.Version);
-}
 
 public class Program
 {
     private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
     public static ITelemetry TelemetryClient;
+    // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
+    // It is important to keep the TracerProvider instance active throughout the process lifetime.
+    private static TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
+        .ConfigureResource(r =>
+        {
+            r.AddService("dotnet-cli", serviceVersion: Product.Version);
+        })
+        .AddSource(Activities.s_source.Name)
+        .AddHttpClientInstrumentation()
+        .AddOtlpExporter()
+        .Build();
+
+    // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
+    // It is important to keep the MetricsProvider instance active throughout the process lifetime.
+    private static MeterProvider metricsProvider = Sdk.CreateMeterProviderBuilder()
+        .ConfigureResource(r =>
+        {
+            r.AddService("dotnet-cli", serviceVersion: Product.Version);
+        })
+        .AddMeter(Activities.s_source.Name)
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddOtlpExporter()
+        .Build();
+
+
     public static int Main(string[] args)
     {
         // capture the time to we can compute muxer/host startup overhead
@@ -88,6 +113,8 @@ public class Program
         }
         finally
         {
+            tracerProvider?.ForceFlush();
+            metricsProvider?.ForceFlush();
             Activities.s_source.Dispose();
         }
     }
@@ -95,10 +122,10 @@ public class Program
     private static void TrackHostStartup(DateTime mainTimeStamp)
     {
         var hostStartupActivity = Activities.s_source.CreateActivity("host-startup", ActivityKind.Server);
-        hostStartupActivity.SetStartTime(Process.GetCurrentProcess().StartTime);
-        hostStartupActivity.SetEndTime(mainTimeStamp);
-        hostStartupActivity.SetStatus(ActivityStatusCode.Ok);
-        hostStartupActivity.Dispose();
+        hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
+        hostStartupActivity?.SetEndTime(mainTimeStamp);
+        hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
+        hostStartupActivity?.Dispose();
     }
 
     /// <summary>
@@ -181,8 +208,8 @@ public class Program
                 skipFirstTimeUseCheck: getStarOptionPassed);
         }
 
-        var telemetryClient = new Telemetry.Telemetry();
-        TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
+        TelemetryClient = new Telemetry.Telemetry();
+        TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
         TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
         if (CommandLoggingContext.IsVerbose)
@@ -229,7 +256,7 @@ public class Program
             }
         }
 
-        telemetryClient.Dispose();
+        TelemetryClient.Dispose();
         return exitCode;
 
         static int? TryRunFileBasedApp(ParseResult parseResult)
@@ -261,6 +288,16 @@ public class Program
         {
             Debug.Assert(parseResult.CanBeInvoked());
             using var _invocationActivity = Activities.s_source.StartActivity("invocation");
+            // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
+            List<string> parentNames = [parseResult.CommandResult.Command.Name];
+            var current = parseResult.CommandResult.Parent;
+            while (parseResult.CommandResult.Parent is CommandResult parentCommandResult)
+            {
+                parentNames.Add(parentCommandResult.Command.Name);
+                current = parentCommandResult.Parent;
+            }
+            parentNames.Reverse();
+            _invocationActivity?.DisplayName = string.Join(' ', parentNames);
             try
             {
                 exitCode = parseResult.Invoke();
