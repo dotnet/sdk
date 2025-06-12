@@ -296,7 +296,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Assert.Equal("P", options.ProjectPath);
             Assert.Equal("F", options.TargetFramework);
-            AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", "-property:TargetFramework=F", NugetInteractiveProperty], options.BuildArguments);
+            AssertEx.SequenceEqual(["-property:TargetFramework=F", "--property:P1=V1", "--property:P2=V2", NugetInteractiveProperty], options.BuildArguments);
             AssertEx.SequenceEqual(["--project", "P", "--framework", "F", "--property:P1=V1", "--property:P2=V2", InteractiveOption], options.CommandArguments);
         }
 
