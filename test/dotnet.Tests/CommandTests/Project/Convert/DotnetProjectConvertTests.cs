@@ -735,8 +735,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property Prop 1
-                #:property Prop 2
+                #:property Prop=1
+                #:property Prop=2
                 """,
             expectedErrors:
             [
@@ -746,7 +746,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VerifyDirectiveConversionErrors(
             inputCSharp: """
                 #:sdk Name
-                #:sdk Name X
+                #:sdk Name@X
                 #:sdk Name
                 #:sdk Name2
                 """,
@@ -771,17 +771,17 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:sdk Prop 1
-                #:property Prop 2
+                #:sdk Prop@1
+                #:property Prop=2
                 """,
             expectedErrors: []);
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property Prop 1
-                #:property Prop 2
-                #:property Prop2 3
-                #:property Prop 4
+                #:property Prop=1
+                #:property Prop=2
+                #:property Prop2=3
+                #:property Prop=4
                 """,
             expectedErrors:
             [
@@ -791,8 +791,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property prop 1
-                #:property PROP 2
+                #:property prop=1
+                #:property PROP=2
                 """,
             expectedErrors:
             [
