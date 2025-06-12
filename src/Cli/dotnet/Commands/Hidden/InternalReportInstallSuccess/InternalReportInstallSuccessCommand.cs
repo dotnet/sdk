@@ -49,7 +49,7 @@ public class InternalReportInstallSuccessCommand
         {
             var sessionId =
             Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
-            telemetry = new Telemetry.Telemetry(new NoOpFirstTimeUseNoticeSentinel(), sessionId, blockThreadInitialization: true);
+            telemetry = new Telemetry.Telemetry(sessionId, blockThreadInitialization: true);
         }
         public bool Enabled => telemetry.Enabled;
 

@@ -28,10 +28,7 @@ public class Telemetry : ITelemetry
 
     public Telemetry() : this(null) { }
 
-    public Telemetry(IFirstTimeUseNoticeSentinel sentinel) : this(sentinel, null) { }
-
     public Telemetry(
-        IFirstTimeUseNoticeSentinel sentinel,
         string sessionId,
         bool blockThreadInitialization = false,
         IEnvironmentProvider environmentProvider = null,
@@ -45,8 +42,7 @@ public class Telemetry : ITelemetry
 
         environmentProvider ??= new EnvironmentProvider();
 
-        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault)
-                    && PermissionExists(sentinel);
+        Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
 
         if (!Enabled)
         {

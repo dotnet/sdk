@@ -84,9 +84,12 @@ public static class ParseResultExtensions
 
     public static string RootSubCommandResult(this ParseResult parseResult)
     {
-        return parseResult.RootCommandResult.Children?
-            .Select(child => GetSymbolResultValue(parseResult, child))
-            .FirstOrDefault(subcommand => !string.IsNullOrEmpty(subcommand)) ?? string.Empty;
+        CommandResult commandResult = parseResult.CommandResult;
+        while (commandResult != parseResult.RootCommandResult && commandResult.Parent is CommandResult parentCommand)
+        {
+            commandResult = parentCommand;
+        }
+        return commandResult.Command.Name;
     }
 
     public static bool IsDotnetBuiltInCommand(this ParseResult parseResult)
@@ -100,12 +103,7 @@ public static class ParseResultExtensions
         return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
-    public static bool CanBeInvoked(this ParseResult parseResult)
-    {
-        return GetBuiltInCommand(parseResult.RootSubCommandResult()) != null ||
-            parseResult.Tokens.Any(token => token.Type == TokenType.Directive) ||
-            (parseResult.IsTopLevelDotnetCommand() && string.IsNullOrEmpty(parseResult.GetValue(DotnetSubCommand)));
-    }
+    public static bool CanBeInvoked(this ParseResult parseResult) => parseResult.Action is not null;
 
     public static int HandleMissingCommand(this ParseResult parseResult)
     {
