@@ -1,13 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Security.Cryptography;
+#if NET9_0_OR_GREATER
+using System.Globalization;
+#endif
 using Microsoft.Build.Framework;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
 {
     public class ConcatenateCssFiles : Task
     {
+        private static readonly char[] _separator = ['/'];
+
         private static readonly IComparer<ITaskItem> _fullPathComparer =
             Comparer<ITaskItem>.Create((x, y) => StringComparer.OrdinalIgnoreCase.Compare(x.GetMetadata("FullPath"), y.GetMetadata("FullPath")));
 
@@ -54,13 +58,17 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 // We could produce shorter paths if we detected common segments between the final bundle base path and the imported bundle
                 // base paths, but its more work and it will not have a significant impact on the bundle size size.
                 var normalizedBasePath = NormalizePath(ScopedCssBundleBasePath);
-                var currentBasePathSegments = normalizedBasePath.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
+                var currentBasePathSegments = normalizedBasePath.Split(_separator, StringSplitOptions.RemoveEmptyEntries);
                 var prefix = string.Join("/", Enumerable.Repeat("..", currentBasePathSegments.Length));
                 for (var i = 0; i < ProjectBundles.Length; i++)
                 {
                     var importPath = NormalizePath(Path.Combine(prefix, ProjectBundles[i].ItemSpec));
 
+#if !NET9_0_OR_GREATER
                     builder.AppendLine($"@import '{importPath}';");
+#else
+                    builder.AppendLine(CultureInfo.InvariantCulture, $"@import '{importPath}';");
+#endif
                 }
 
                 builder.AppendLine();
@@ -69,7 +77,11 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             for (var i = 0; i < ScopedCssFiles.Length; i++)
             {
                 var current = ScopedCssFiles[i];
-                builder.AppendLine($"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
+#if !NET9_0_OR_GREATER
+                builder.AppendLine($"/* {ConcatenateCssFiles.NormalizePath(current.GetMetadata("BasePath"))}/{ConcatenateCssFiles.NormalizePath(current.GetMetadata("RelativePath"))} */");
+#else
+                builder.AppendLine(CultureInfo.InvariantCulture, $"/* {NormalizePath(current.GetMetadata("BasePath"))}/{NormalizePath(current.GetMetadata("RelativePath"))} */");
+#endif
                 foreach (var line in File.ReadLines(current.GetMetadata("FullPath")))
                 {
                     builder.AppendLine(line);
@@ -84,34 +96,15 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 File.WriteAllText(OutputFile, content);
             }
 
-
             return !Log.HasLoggedErrors;
         }
 
-        private string NormalizePath(string path) => path.Replace("\\", "/").Trim('/');
+        private static string NormalizePath(string path) => path.Replace("\\", "/").Trim('/');
 
-        private bool SameContent(string content, string outputFilePath)
+        private static bool SameContent(string content, string outputFilePath)
         {
-            var contentHash = GetContentHash(content);
-
             var outputContent = File.ReadAllText(outputFilePath);
-            var outputContentHash = GetContentHash(outputContent);
-
-            for (int i = 0; i < outputContentHash.Length; i++)
-            {
-                if (outputContentHash[i] != contentHash[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
-
-            static byte[] GetContentHash(string content)
-            {
-                using var sha256 = SHA256.Create();
-                return sha256.ComputeHash(Encoding.UTF8.GetBytes(content));
-            }
+            return string.Equals(content, outputContent);
         }
     }
 }

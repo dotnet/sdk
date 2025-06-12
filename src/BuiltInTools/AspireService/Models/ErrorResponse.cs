@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.WebTools.AspireServer.Models;
+namespace Aspire.Tools.Service;
 
 /// <summary>
 /// Detailed error information serialized into the body of the response
