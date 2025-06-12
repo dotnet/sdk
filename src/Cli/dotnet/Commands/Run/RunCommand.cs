@@ -56,7 +56,7 @@ public class RunCommand
 
     private bool ShouldBuild => !NoBuild;
 
-    public string LaunchProfile { get; }
+    public string? LaunchProfile { get; }
     public bool NoLaunchProfile { get; }
 
     /// <summary>
@@ -68,7 +68,7 @@ public class RunCommand
         bool noBuild,
         string? projectFileFullPath,
         string? entryPointFileFullPath,
-        string launchProfile,
+        string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
@@ -115,15 +115,15 @@ public class RunCommand
         }
         else
         {
+            if (NoCache)
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            }
+
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
                 projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
-            }
-
-            if (NoCache)
-            {
-                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
             }
         }
 
@@ -151,7 +151,7 @@ public class RunCommand
         }
     }
 
-    private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
@@ -178,7 +178,7 @@ public class RunCommand
         }
     }
 
-    private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -316,7 +316,7 @@ public class RunCommand
         return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
-    private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
