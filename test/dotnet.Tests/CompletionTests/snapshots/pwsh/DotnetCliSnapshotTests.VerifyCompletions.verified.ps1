@@ -573,6 +573,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('add', 'add', [CompletionResultType]::ParameterValue, "Add a NuGet package reference to the project.")
                 [CompletionResult]::new('list', 'list', [CompletionResultType]::ParameterValue, "List all package references of the project or solution.")
                 [CompletionResult]::new('remove', 'remove', [CompletionResultType]::ParameterValue, "Remove a NuGet package reference from the project.")
+                [CompletionResult]::new('update', 'update', [CompletionResultType]::ParameterValue, "Update referenced packages in a project or solution.")
             )
             $completions += $staticCompletions
             break
@@ -650,6 +651,15 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "The project file to operate on. If a file is not specified, the command will search the current directory for one.")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            break
+        }
+        'testhost;package;update' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--project', '--project', [CompletionResultType]::ParameterName, "Path to a project or solution file, or a directory.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

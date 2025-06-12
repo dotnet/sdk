@@ -146,7 +146,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -757,7 +757,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
         public async Task Aspire()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
