@@ -291,7 +291,7 @@ public class Program
             // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
             List<string> parentNames = [parseResult.CommandResult.Command.Name];
             var current = parseResult.CommandResult.Parent;
-            while (parseResult.CommandResult.Parent is CommandResult parentCommandResult)
+            while (current is CommandResult parentCommandResult)
             {
                 parentNames.Add(parentCommandResult.Command.Name);
                 current = parentCommandResult.Parent;
