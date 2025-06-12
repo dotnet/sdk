@@ -252,8 +252,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             configurer.Configure();
 
-            return new Telemetry(firstTimeUseNoticeSentinel,
-                "test",
+            return new Telemetry("test",
                 environmentProvider: _environmentProviderObject,
                 senderCount: 0);
         }
