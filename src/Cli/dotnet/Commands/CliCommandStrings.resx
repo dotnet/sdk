@@ -1513,6 +1513,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
     <comment>{Locked="--force"}. {0} is the file path and line number.</comment>
   </data>
+  <data name="DuplicateDirective" xml:space="preserve">
+    <value>Duplicate directives are not supported: {0} at {1}</value>
+    <comment>{0} is the directive type and name. {1} is the file path and line number.</comment>
+  </data>
   <data name="InvalidOptionCombination" xml:space="preserve">
     <value>Cannot combine option '{0}' and '{1}'.</value>
     <comment>{0} and {1} are option names like '--no-build'.</comment>
@@ -1974,10 +1978,6 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   </data>
   <data name="ToolInstallManifestPathOptionName" xml:space="preserve">
     <value>PATH</value>
-  </data>
-  <data name="ToolInstallNoManifestGuide" xml:space="preserve">
-    <value>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</value>
   </data>
   <data name="ToolInstallNuGetConfigurationFileDoesNotExist" xml:space="preserve">
     <value>NuGet configuration file '{0}' does not exist.</value>

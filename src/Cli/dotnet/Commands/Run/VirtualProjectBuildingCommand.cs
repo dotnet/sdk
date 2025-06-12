@@ -87,7 +87,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-
         var consoleLogger = RunCommand.MakeTerminalLogger(Verbosity);
         var binaryLogger = GetBinaryLogger(BinaryLoggerArgs);
 
@@ -97,11 +96,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             if (NoCache)
             {
-                if (NoRestore)
-                {
-                    throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoRestoreOption.Name);
-                }
-
                 cacheEntry = ComputeCacheEntry(out _);
             }
             else if (!NeedsToBuild(out cacheEntry))
@@ -625,6 +619,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 """);
 
+            var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
+            writer.WriteLine($"""
+                  <ItemGroup>
+                    <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
+                    <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
+                  </ItemGroup>
+
+                """);
+
             foreach (var sdk in sdkDirectives)
             {
                 WriteImport(writer, "Sdk.targets", sdk);
@@ -709,6 +712,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
 #pragma warning disable RSEXPERIMENTAL003 // 'SyntaxTokenParser' is experimental
 
+        var deduplicated = new HashSet<CSharpDirective.Named>(NamedDirectiveComparer.Instance);
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
         SyntaxTokenParser tokenizer = SyntaxFactory.CreateTokenParser(sourceFile.Text,
             CSharpParseOptions.Default.WithFeatures([new("FileBasedProgram", "true")]));
@@ -750,6 +754,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (CSharpDirective.Parse(errors, sourceFile, span, name.ToString(), value.ToString()) is { } directive)
                 {
+                    // If the directive is already present, report an error.
+                    if (deduplicated.TryGetValue(directive, out var existingDirective))
+                    {
+                        var typeAndName = $"#:{existingDirective.GetType().Name.ToLowerInvariant()} {existingDirective.Name}";
+                        if (errors != null)
+                        {
+                            errors.Add(new SimpleDiagnostic
+                            {
+                                Location = sourceFile.GetFileLinePositionSpan(directive.Span),
+                                Message = string.Format(CliCommandStrings.DuplicateDirective, typeAndName, sourceFile.GetLocationString(directive.Span)),
+                            });
+                        }
+                        else
+                        {
+                            throw new GracefulException(CliCommandStrings.DuplicateDirective, typeAndName, sourceFile.GetLocationString(directive.Span));
+                        }
+                    }
+                    else
+                    {
+                        deduplicated.Add(directive);
+                    }
+
                     builder.Add(directive);
                 }
             }
@@ -872,7 +898,8 @@ internal static partial class Patterns
 }
 
 /// <summary>
-/// Represents a C# directive starting with <c>#:</c>. Those are ignored by the language but recognized by us.
+/// Represents a C# directive starting with <c>#:</c> (a.k.a., "file-level directive").
+/// Those are ignored by the language but recognized by us.
 /// </summary>
 internal abstract class CSharpDirective
 {
@@ -883,14 +910,14 @@ internal abstract class CSharpDirective
     /// </summary>
     public required TextSpan Span { get; init; }
 
-    public static CSharpDirective? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
+    public static Named? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
     {
         return directiveKind switch
         {
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            _ => ReportError<CSharpDirective>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
+            _ => ReportError<Named>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
 
@@ -933,14 +960,18 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Shebang : CSharpDirective;
 
+    public abstract class Named : CSharpDirective
+    {
+        public required string Name { get; init; }
+    }
+
     /// <summary>
     /// <c>#:sdk</c> directive.
     /// </summary>
-    public sealed class Sdk : CSharpDirective
+    public sealed class Sdk : Named
     {
         private Sdk() { }
 
-        public required string Name { get; init; }
         public string? Version { get; init; }
 
         public static new Sdk? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
@@ -967,11 +998,10 @@ internal abstract class CSharpDirective
     /// <summary>
     /// <c>#:property</c> directive.
     /// </summary>
-    public sealed class Property : CSharpDirective
+    public sealed class Property : Named
     {
         private Property() { }
 
-        public required string Name { get; init; }
         public required string Value { get; init; }
 
         public static new Property? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
@@ -1007,13 +1037,12 @@ internal abstract class CSharpDirective
     /// <summary>
     /// <c>#:package</c> directive.
     /// </summary>
-    public sealed class Package : CSharpDirective
+    public sealed class Package : Named
     {
         private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
 
         private Package() { }
 
-        public required string Name { get; init; }
         public string? Version { get; init; }
 
         public static new Package? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
@@ -1030,6 +1059,33 @@ internal abstract class CSharpDirective
                 Version = packageVersion,
             };
         }
+    }
+}
+
+/// <summary>
+/// Used for deduplication - compares directives by their type and name (ignoring case).
+/// </summary>
+internal sealed class NamedDirectiveComparer : IEqualityComparer<CSharpDirective.Named>
+{
+    public static readonly NamedDirectiveComparer Instance = new();
+
+    private NamedDirectiveComparer() { }
+
+    public bool Equals(CSharpDirective.Named? x, CSharpDirective.Named? y)
+    {
+        if (ReferenceEquals(x, y)) return true;
+
+        if (x is null || y is null) return false;
+
+        return x.GetType() == y.GetType() &&
+            string.Equals(x.Name, y.Name, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public int GetHashCode(CSharpDirective.Named obj)
+    {
+        return HashCode.Combine(
+            obj.GetType().GetHashCode(),
+            obj.Name.GetHashCode(StringComparison.OrdinalIgnoreCase));
     }
 }
 
