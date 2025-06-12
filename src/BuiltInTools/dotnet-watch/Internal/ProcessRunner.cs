@@ -257,7 +257,7 @@ namespace Microsoft.DotNet.Watch
                     }
                     else
                     {
-                        TerminateUnixProcess(state, reporter);
+                        TerminateUnixProcess(process, state, reporter);
                     }
 
                     reporter.Verbose($"Process {state.ProcessId} killed.");
