@@ -141,6 +141,9 @@ public class ResourcesData
     /// </summary>
     public string hash { get; set; }
 
+    [DataMember(EmitDefaultValue = false)]
+    public Dictionary<string, string> fingerprinting { get; set; }
+
     /// <summary>
     /// .NET Wasm runtime resources (dotnet.wasm, dotnet.js) etc.
     /// </summary>
@@ -408,12 +411,147 @@ public class BootJsonDataLoader
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         options.Converters.Add(new ResourcesConverter());
         BootJsonData config = JsonSerializer.Deserialize<BootJsonData>(jsonContent, options);
+        TransformResourcesToAssets(config, false);
         if (config.resourcesRaw is AssetsData assets)
         {
             config.resourcesRaw = ConvertAssetsToResources(assets);
         }
 
         return config;
+    }
+
+    public static string TransformResourcesToAssets(BootJsonData config, bool bundlerFriendly = false)
+    {
+        List<string> imports = [];
+
+        ResourcesData resources = (ResourcesData)config.resourcesRaw;
+        var assets = new AssetsData();
+
+        assets.hash = resources.hash;
+        assets.jsModuleRuntime = MapJsAssets(resources.jsModuleRuntime);
+        assets.jsModuleNative = MapJsAssets(resources.jsModuleNative);
+        assets.jsModuleWorker = MapJsAssets(resources.jsModuleWorker);
+        assets.jsModuleDiagnostics = MapJsAssets(resources.jsModuleDiagnostics);
+
+        assets.wasmNative = resources.wasmNative?.Select(a =>
+        {
+            var asset = new WasmAsset()
+            {
+                name = a.Key,
+                integrity = a.Value
+            };
+
+            if (bundlerFriendly)
+            {
+                string escaped = EscapeName(a.Key);
+                imports.Add($"import {escaped} from \"./{a.Key}\";");
+                asset.resolvedUrl = EncodeJavascriptVariableInJson(escaped);
+            }
+
+            return asset;
+        }).ToList();
+        assets.wasmSymbols = resources.wasmSymbols?.Select(a => new SymbolsAsset()
+        {
+            name = a.Key,
+        }).ToList();
+
+        assets.icu = MapGeneralAssets(resources.icu);
+        assets.coreAssembly = MapGeneralAssets(resources.coreAssembly);
+        assets.assembly = MapGeneralAssets(resources.assembly);
+        assets.corePdb = MapGeneralAssets(resources.corePdb);
+        assets.pdb = MapGeneralAssets(resources.pdb);
+        assets.lazyAssembly = MapGeneralAssets(resources.lazyAssembly);
+
+        if (resources.satelliteResources != null)
+        {
+            assets.satelliteResources = resources.satelliteResources.ToDictionary(
+                kvp => kvp.Key,
+                kvp => MapGeneralAssets(kvp.Value, variableNamePrefix: kvp.Key, subFolder: kvp.Key)
+            );
+        }
+
+        assets.libraryInitializers = MapJsAssets(resources.libraryInitializers, subFolder: "..");
+        assets.modulesAfterConfigLoaded = MapJsAssets(resources.modulesAfterConfigLoaded);
+        assets.modulesAfterRuntimeReady = MapJsAssets(resources.modulesAfterRuntimeReady);
+
+        assets.extensions = resources.extensions;
+
+        assets.coreVfs = MapVfsAssets(resources.coreVfs);
+        assets.vfs = MapVfsAssets(resources.vfs);
+
+        if (bundlerFriendly && config.appsettings != null)
+        {
+            config.appsettings = config.appsettings.Select(a =>
+            {
+                string escaped = EscapeName(a);
+                imports.Add($"import {escaped} from \"./{a}\";");
+                return EncodeJavascriptVariableInJson(escaped);
+            }).ToList();
+        }
+
+        string EscapeName(string name) => name;
+        string EncodeJavascriptVariableInJson(string name) => $"$#[{name}]#$";
+
+        List<GeneralAsset> MapGeneralAssets(Dictionary<string, string> assets, string variableNamePrefix = null, string subFolder = null) => assets?.Select(a =>
+        {
+            var asset = new GeneralAsset()
+            {
+                virtualPath = resources.fingerprinting?[a.Key] ?? a.Key,
+                name = a.Key,
+                integrity = a.Value
+            };
+
+            if (bundlerFriendly)
+            {
+                string escaped = EscapeName(string.Concat(subFolder, a.Key));
+                string subFolderWithSeparator = subFolder != null ? $"{subFolder}/" : string.Empty;
+                imports.Add($"import {escaped} from \"./{subFolderWithSeparator}{a.Key}\";");
+                asset.resolvedUrl = EncodeJavascriptVariableInJson(escaped);
+            }
+
+            return asset;
+        }).ToList();
+
+        List<JsAsset> MapJsAssets(Dictionary<string, string> assets, string variableNamePrefix = null, string subFolder = null) => assets?.Select(a =>
+        {
+            var asset = new JsAsset()
+            {
+                name = a.Key
+            };
+
+            if (bundlerFriendly)
+            {
+                string escaped = EscapeName(string.Concat(subFolder, a.Key));
+                string subFolderWithSeparator = subFolder != null ? $"{subFolder}/" : string.Empty;
+                imports.Add($"import * as {escaped} from \"./{subFolderWithSeparator}{a.Key}\";");
+                asset.moduleExports = EncodeJavascriptVariableInJson(escaped);
+            }
+
+            return asset;
+        }).ToList();
+
+        List<VfsAsset> MapVfsAssets(Dictionary<string, Dictionary<string, string>> assets) => assets?.Select(a =>
+        {
+            var asset = new VfsAsset()
+            {
+                virtualPath = a.Key,
+                name = a.Value.Keys.First(),
+                integrity = a.Value.Values.First()
+            };
+
+            if (bundlerFriendly)
+            {
+                string escaped = EscapeName(string.Concat(asset.name));
+                imports.Add($"import * as {escaped} from \"./{asset.name}\";");
+                asset.resolvedUrl = EncodeJavascriptVariableInJson(escaped);
+            }
+
+            return asset;
+        }).ToList();
+
+        config.resourcesRaw = assets;
+
+        return string.Join(Environment.NewLine, imports);
     }
 
     private static ResourcesData ConvertAssetsToResources(AssetsData assets)
