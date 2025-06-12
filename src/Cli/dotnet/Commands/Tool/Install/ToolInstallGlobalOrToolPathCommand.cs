@@ -370,6 +370,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
+
                         newInstalledPackage.Version.IsPrerelease ?
                         CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());
