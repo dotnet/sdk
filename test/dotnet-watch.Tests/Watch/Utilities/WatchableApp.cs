@@ -3,9 +3,11 @@
 
 #nullable disable
 
+using System.Runtime.CompilerServices;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    internal sealed class WatchableApp(ITestOutputHelper logger) : IDisposable
+    internal sealed class WatchableApp(DebugTestOutputLogger logger) : IDisposable
     {
         // Test apps should output this message as soon as they start running:
         private const string StartedMessage = "Started";
@@ -18,7 +20,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public TestFlags TestFlags { get; private set; }
 
-        public ITestOutputHelper Logger => logger;
+        public DebugTestOutputLogger Logger => logger;
 
         public AwaitableProcess Process { get; private set; }
 
@@ -32,32 +34,32 @@ namespace Microsoft.DotNet.Watch.UnitTests
             => $"dotnet watch {descriptor.Emoji}{(projectDisplay != null ? $" [{projectDisplay}]" : "")} {descriptor.Format}";
 
         public void AssertOutputContains(string message)
-            => AssertEx.Contains(message, Process.Output);
+            => AssertEx.ContainsSubstring(message, Process.Output);
 
         public void AssertOutputDoesNotContain(string message)
-            => AssertEx.DoesNotContain(message, Process.Output);
+            => Assert.DoesNotContain(Process.Output, line => line.Contains(message));
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
 
-        public async ValueTask WaitUntilOutputContains(string message)
+        public async ValueTask WaitUntilOutputContains(string message, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
             if (!Process.Output.Any(line => line.Contains(message)))
             {
-                Logger.WriteLine($"[TEST] Test waiting for output: '{message}'");
+                Logger.Log($"Test waiting for output: '{message}'", testPath, testLine);
                 _ = await AssertOutputLine(line => line.Contains(message));
             }
         }
 
-        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null)
-            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure);
+        public Task<string> AssertOutputLineStartsWith(MessageDescriptor descriptor, string projectDisplay = null, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+            => AssertOutputLineStartsWith(GetLinePrefix(descriptor, projectDisplay), failure, testPath, testLine);
 
         /// <summary>
         /// Asserts that the watched process outputs a line starting with <paramref name="expectedPrefix"/> and returns the remainder of that line.
         /// </summary>
-        public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null)
+        public async Task<string> AssertOutputLineStartsWith(string expectedPrefix, Predicate<string> failure = null, [CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
         {
-            Logger.WriteLine($"[TEST] Test waiting for output: '{expectedPrefix}'");
+            Logger.Log($"Test waiting for output: '{expectedPrefix}'", testPath, testLine);
 
             var line = await Process.GetOutputLineAsync(
                 success: line => line.StartsWith(expectedPrefix, StringComparison.Ordinal),
@@ -89,8 +91,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// <summary>
         /// Wait till file watcher starts watching for file changes.
         /// </summary>
-        public Task AssertWaitingForChanges()
-            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+        public Task AssertWaitingForChanges([CallerFilePath] string testPath = null, [CallerLineNumber] int testLine = 0)
+            => AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, testPath: testPath, testLine: testLine);
 
         public async Task AssertWaitingForFileChangeBeforeRestarting()
         {
@@ -118,8 +120,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var testOutputPath = asset.GetWatchTestOutputPath();
             Directory.CreateDirectory(testOutputPath);
-
-            commandSpec.WithEnvironmentVariable("HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES", "1");
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);

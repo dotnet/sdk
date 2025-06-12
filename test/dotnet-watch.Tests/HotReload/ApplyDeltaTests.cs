@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [Theory]
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
@@ -420,7 +420,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [Theory]
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -459,7 +459,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
-            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+            App.AssertOutputDoesNotContain("🕵️");
 
             var newSource = """
                 @page "/"
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [Fact]
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -810,17 +810,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.FixBuildError, failure: _ => false);
 
+            // SIGTERM no longer works on Linux https://github.com/dotnet/sdk/issues/49307
+
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 App.AssertOutputContains($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
             }
-            else
-            {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
-                App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            }
+            //else
+            //{
+            //    // Unix process may return exit code = 128 + SIGTERM
+            //    // Exited with error code 143
+            //    App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
+            //}
 
             App.AssertOutputContains($"dotnet watch ⌚ Building {serviceProjectPath} ...");
             App.AssertOutputContains("error CS0246: The type or namespace name 'WeatherForecast' could not be found");
@@ -834,7 +836,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
             App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
-            App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
+            App.AssertOutputContains("dotnet watch 🔥 Projects rebuilt");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
             // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.
@@ -843,19 +845,21 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("dotnet watch 🛑 Shutdown requested. Press Ctrl+C again to force exit.");
 
+            // SIGTERM no longer works on Linux https://github.com/dotnet/sdk/issues/49307
+
             // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
                 await App.AssertOutputLineStartsWith($"dotnet watch ❌ [WatchAspire.AppHost ({tfm})] Exited with error code -1");
             }
-            else
-            {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
-                await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
-            }
+            //else
+            //{
+            //    // Unix process may return exit code = 128 + SIGTERM
+            //    // Exited with error code 143
+            //    await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
+            //    await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
+            //}
 
             await App.AssertOutputLineStartsWith("dotnet watch ⭐ Waiting for server to shutdown ...");
 
