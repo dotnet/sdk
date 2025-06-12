@@ -13,6 +13,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="Microsoft.NET.Sdk.Common.targets"/>
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.Sdk.SourceLink.targets" Condition="'$(SuppressImplicitGitSourceLink)' != 'true'"/>
+  <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'" />
 
   <!--
   ============================================================

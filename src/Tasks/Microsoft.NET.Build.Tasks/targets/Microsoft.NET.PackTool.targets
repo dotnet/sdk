@@ -30,6 +30,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <SelfContained Condition="'$(RuntimeIdentifier)' == ''">false</SelfContained>
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
+    <_InnerToolsPublishAot>false</_InnerToolsPublishAot>
+    <_InnerToolsPublishAot Condition="'$(RuntimeIdentifier)' == '' and '$(PublishAot)' == 'true'">true</_InnerToolsPublishAot>
     <PublishAot Condition="'$(RuntimeIdentifier)' == ''">false</PublishAot>
 
     <!-- we want to ensure that we don't publish any AppHosts for the 'outer', RID-agnostic builds -->
@@ -47,7 +49,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
-                                                  ('$(ToolPackageRuntimeIdentifiers)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+                                                  ('$(_UserSpecifiedToolPackageRids)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
     <_HasRIDSpecificTools Condition=" '$(_UserSpecifiedToolPackageRids)' != '' ">true</_HasRIDSpecificTools>
     <_HasRIDSpecificTools Condition="'$(_HasRIDSpecificTools)' == ''">false</_HasRIDSpecificTools>
@@ -60,7 +62,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_PackToolPublishDependency Condition=" '$(_ToolPackageShouldIncludeImplementation)' != '' and '$(GeneratePackageOnBuild)' == 'true' and $(IsPublishable) == 'true' ">$(_PublishNoBuildAlternativeDependsOn)</_PackToolPublishDependency>
 
     <!-- Trigger RID-specific inner builds if RID-specific mode is enabled-->
-    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
+    <GenerateNuspecDependsOn>$(GenerateNuspecDependsOn);SetDotnetToolPackageType;_CreateRIDSpecificToolPackages</GenerateNuspecDependsOn>
 
     <!-- finally set up the entrypoint for all tool-content regardless of tool type-->
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackTool</TargetsForTfmSpecificContentInPackage>
@@ -321,9 +323,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <Target Name="SetDotnetToolPackageType"
-          Condition=" '$(PackAsTool)' == 'true' "
-          BeforeTargets="GenerateNuspec">
+  <Target Name="SetDotnetToolPackageType">
 
     <PropertyGroup>
       <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
@@ -354,7 +354,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- orchestrator for making the N RID-specific tool packages -->
-  <Target Name="_CreateRIDSpecificToolPackages" Condition="'$(RuntimeIdentifier)' == '' and $(_HasRIDSpecificTools) and '$(PublishAot)' != 'true'">
+  <Target Name="_CreateRIDSpecificToolPackages" Condition="'$(RuntimeIdentifier)' == '' and $(_HasRIDSpecificTools) and !$(_InnerToolsPublishAot) and !$(_ToolPackageShouldIncludeImplementation)">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
         <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
