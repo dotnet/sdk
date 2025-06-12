@@ -82,7 +82,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
-    public string? BuildTarget { get; init; }
+    public string BuildTarget { get; init; } = "Build";
 
     public override int Execute()
     {
@@ -164,7 +164,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: [BuildTarget ?? "Build"]);
+                    targetsToBuild: [BuildTarget]);
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {

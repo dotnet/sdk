@@ -64,6 +64,14 @@ For example, the remaining command-line arguments after the first argument (the 
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
 and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
+### Other commands
+
+Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
+
+Command `dotnet publish file.cs` is also supported for file-based programs.
+Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
+To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
+
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -302,10 +310,7 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
 but that would require changes to the native dotnet host.
 
-### Other commands
-
-Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
-Command `dotnet publish file.cs` is also supported for file-based programs.
+### Other possible commands
 
 We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
