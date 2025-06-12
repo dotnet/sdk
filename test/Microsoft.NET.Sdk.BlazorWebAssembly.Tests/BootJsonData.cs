@@ -420,17 +420,19 @@ public class BootJsonDataLoader
     {
         static Dictionary<string, ResourceHashesByNameDictionary> ConvertSatelliteResources(Dictionary<string, List<GeneralAsset>> satelliteResources)
         {
+            if (satelliteResources == null)
+                return null;
+
             var result = new Dictionary<string, ResourceHashesByNameDictionary>();
             foreach (var kvp in satelliteResources)
-            {
                 result[kvp.Key] = kvp.Value.ToDictionary(a => a.name, a => a.integrity);
-            }
+
             return result;
         }
 
         static Dictionary<string, ResourceHashesByNameDictionary> ConvertVfsAssets(List<VfsAsset> vfsAssets)
         {
-            return vfsAssets.ToDictionary(a => a.virtualPath, a => new ResourceHashesByNameDictionary
+            return vfsAssets?.ToDictionary(a => a.virtualPath, a => new ResourceHashesByNameDictionary
             {
                 { a.name, a.integrity }
             });
@@ -439,22 +441,22 @@ public class BootJsonDataLoader
         var resources = new ResourcesData
         {
             hash = assets.hash,
-            jsModuleWorker = assets.jsModuleWorker.ToDictionary(a => a.name, a => (string)null),
-            jsModuleDiagnostics = assets.jsModuleDiagnostics.ToDictionary(a => a.name, a => (string)null),
-            jsModuleNative = assets.jsModuleNative.ToDictionary(a => a.name, a => (string)null),
-            jsModuleRuntime = assets.jsModuleRuntime.ToDictionary(a => a.name, a => (string)null),
-            wasmNative = assets.wasmNative.ToDictionary(a => a.name, a => a.integrity),
-            wasmSymbols = assets.wasmSymbols.ToDictionary(a => a.name, a => (string)null),
-            icu = assets.icu.ToDictionary(a => a.name, a => a.integrity),
-            coreAssembly = assets.coreAssembly.ToDictionary(a => a.name, a => a.integrity),
-            assembly = assets.assembly.ToDictionary(a => a.name, a => a.integrity),
-            corePdb = assets.corePdb.ToDictionary(a => a.name, a => a.integrity),
-            pdb = assets.pdb.ToDictionary(a => a.name, a => a.integrity),
+            jsModuleWorker = assets.jsModuleWorker?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleDiagnostics = assets.jsModuleDiagnostics?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleNative = assets.jsModuleNative?.ToDictionary(a => a.name, a => (string)null),
+            jsModuleRuntime = assets.jsModuleRuntime?.ToDictionary(a => a.name, a => (string)null),
+            wasmNative = assets.wasmNative?.ToDictionary(a => a.name, a => a.integrity),
+            wasmSymbols = assets.wasmSymbols?.ToDictionary(a => a.name, a => (string)null),
+            icu = assets.icu?.ToDictionary(a => a.name, a => a.integrity),
+            coreAssembly = assets.coreAssembly?.ToDictionary(a => a.name, a => a.integrity),
+            assembly = assets.assembly?.ToDictionary(a => a.name, a => a.integrity),
+            corePdb = assets.corePdb?.ToDictionary(a => a.name, a => a.integrity),
+            pdb = assets.pdb?.ToDictionary(a => a.name, a => a.integrity),
             satelliteResources = ConvertSatelliteResources(assets.satelliteResources),
-            lazyAssembly = assets.lazyAssembly.ToDictionary(a => a.name, a => a.integrity),
-            libraryInitializers = assets.libraryInitializers.ToDictionary(a => a.name, a => (string)null),
-            modulesAfterConfigLoaded = assets.modulesAfterConfigLoaded.ToDictionary(a => a.name, a => (string)null),
-            modulesAfterRuntimeReady = assets.modulesAfterRuntimeReady.ToDictionary(a => a.name, a => (string)null),
+            lazyAssembly = assets.lazyAssembly?.ToDictionary(a => a.name, a => a.integrity),
+            libraryInitializers = assets.libraryInitializers?.ToDictionary(a => a.name, a => (string)null),
+            modulesAfterConfigLoaded = assets.modulesAfterConfigLoaded?.ToDictionary(a => a.name, a => (string)null),
+            modulesAfterRuntimeReady = assets.modulesAfterRuntimeReady?.ToDictionary(a => a.name, a => (string)null),
             extensions = assets.extensions,
             coreVfs = ConvertVfsAssets(assets.coreVfs),
             vfs = ConvertVfsAssets(assets.vfs)
