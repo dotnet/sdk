@@ -47,7 +47,8 @@ The command takes a path which can be either
 ## Target path
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
-The target path must be a file which has the `.cs` file extension.
+The target path must be a file which either has the `.cs` file extension,
+or a file whose contents start with `#!`.
 *The target directory* is the directory of the target file.
 
 ## Integration into the existing `dotnet run` command
@@ -57,7 +58,7 @@ specifically `file.cs` is passed as the first command-line argument to the targe
 We preserve this behavior to avoid a breaking change.
 The file-based build and run kicks in only when:
 - a project file cannot be found (in the current directory or via the `--project` option), and
-- if the target file exists and has the `.cs` file extension.
+- if the target file exists, and has the `.cs` file extension or contents that start with `#!`.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
