@@ -194,18 +194,8 @@ internal class ToolInstallLocalCommand : CommandBase
 
     public FilePath GetManifestFilePath()
     {
-        try
-        {
-            return string.IsNullOrWhiteSpace(_explicitManifestFile)
-                ? _toolManifestFinder.FindFirst(_createManifestIfNeeded)
-                : new FilePath(_explicitManifestFile);
-        }
-        catch (ToolManifestCannotBeFoundException e)
-        {
-            throw new GracefulException(
-                [e.Message, CliCommandStrings.ToolInstallNoManifestGuide],
-                verboseMessages: [e.VerboseMessage],
-                isUserError: false);
-        }
+        return string.IsNullOrWhiteSpace(_explicitManifestFile)
+            ? _toolManifestFinder.FindFirst(_createManifestIfNeeded)
+            : new FilePath(_explicitManifestFile);
     }
 }

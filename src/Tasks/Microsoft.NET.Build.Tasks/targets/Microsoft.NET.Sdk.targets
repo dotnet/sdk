@@ -1237,7 +1237,6 @@ Copyright (c) .NET Foundation. All rights reserved.
          PublicSign="$(PublicSign)"
          PathMap="$(PathMap)"
          Features="$(Features)"
-         CompilerType="$(RoslynCompilerType)"
          DelaySign="$(DelaySign)"
          Deterministic="$(Deterministic)"
          DisabledWarnings="$(DisabledWarnings)"
