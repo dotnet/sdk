@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotSame(fileChanged, finished);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ListsFiles()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)

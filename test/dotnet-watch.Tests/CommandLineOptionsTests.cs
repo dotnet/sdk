@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotEqual(0, errorCode);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData([new[] { "-h" }])]
         [InlineData([new[] { "-?" }])]
         [InlineData([new[] { "--help" }])]
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains("Usage:", output.ToString());
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData("-p:P=V", "P", "V")]
         [InlineData("-p:P==", "P", "=")]
         [InlineData("-p:P=A=B", "P", "A=B")]
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([(name, value)], properties);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData("P")]
         [InlineData("=P3")]
         [InlineData("=")]
@@ -78,7 +78,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([], properties);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ImplicitCommand()
         {
             var options = VerifyOptions([]);
@@ -86,7 +86,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData("add")]
         [InlineData("build")]
         [InlineData("build-server")]
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Empty(args);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public void WatchOptions_NotPassedThrough_BeforeCommand(
             [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(option == "--non-interactive" ? [] : [InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_LaunchProfile_Watch()
         {
             var options = VerifyOptions(["-lp", "P", "run"]);
@@ -139,7 +139,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["-lp", "P", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_LaunchProfile_Run()
         {
             var options = VerifyOptions(["run", "-lp", "P"]);
@@ -148,14 +148,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["-lp", "P", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_LaunchProfile_Both()
         {
             VerifyErrors(["-lp", "P1", "run", "-lp", "P2"],
                 "error ❌ Option '-lp' expects a single argument but 2 were provided.");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_NoProfile_Watch()
         {
             var options = VerifyOptions(["--no-launch-profile", "run"]);
@@ -165,7 +165,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_NoProfile_Run()
         {
             var options = VerifyOptions(["run", "--no-launch-profile"]);
@@ -175,7 +175,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RunOptions_NoProfile_Both()
         {
             var options = VerifyOptions(["--no-launch-profile", "run", "--no-launch-profile"]);
@@ -185,7 +185,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--no-launch-profile", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RemainingOptions()
         {
             var options = VerifyOptions(["-watchArg", "--verbose", "run", "-runArg"]);
@@ -195,7 +195,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "-watchArg", "-runArg"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void UnknownOption()
         {
             var options = VerifyOptions(["--verbose", "--unknown", "x", "y", "run", "--project", "p"]);
@@ -205,7 +205,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--project", "p", InteractiveOption, "--unknown", "x", "y"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RemainingOptionsDashDash()
         {
             var options = VerifyOptions(["-watchArg", "--", "--verbose", "run", "-runArg"]);
@@ -215,7 +215,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "-watchArg", "--", "--verbose", "run", "-runArg",], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void RemainingOptionsDashDashRun()
         {
             var options = VerifyOptions(["--", "run"]);
@@ -225,7 +225,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "run"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void NoOptionsAfterDashDash()
         {
             var options = VerifyOptions(["--"]);
@@ -240,7 +240,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// Therfore, it has to also be ignored by `dotnet run`,
         /// otherwise the TFMs would be inconsistent between `dotnet watch` and `dotnet run`.
         /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ParsedNonWatchOptionsAfterDashDash_Framework()
         {
             var options = VerifyOptions(["--", "-f", "TFM"]);
@@ -249,7 +249,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "-f", "TFM"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ParsedNonWatchOptionsAfterDashDash_Project()
         {
             var options = VerifyOptions(["--", "--project", "proj"]);
@@ -258,7 +258,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "--project", "proj"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ParsedNonWatchOptionsAfterDashDash_NoLaunchProfile()
         {
             var options = VerifyOptions(["--", "--no-launch-profile"]);
@@ -267,7 +267,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "--no-launch-profile"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ParsedNonWatchOptionsAfterDashDash_LaunchProfile()
         {
             var options = VerifyOptions(["--", "--launch-profile", "p"]);
@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "--launch-profile", "p"], options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ParsedNonWatchOptionsAfterDashDash_Property()
         {
             var options = VerifyOptions(["--", "--property", "x=1"]);
@@ -285,7 +285,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual([InteractiveOption, "--", "--property", "x=1"], options.CommandArguments);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
         {
@@ -307,7 +307,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Both
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public void OptionDuplicates_Allowed_Bool(
             ArgPosition position,
@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             });
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void MultiplePropertyValues()
         {
             var options = VerifyOptions(["--property", "P1=V1", "run", "--property", "P2=V2"]);
@@ -352,7 +352,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(["--property:P1=V1", "--property:P2=V2", InteractiveOption], options.CommandArguments);
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData("--project")]
         [InlineData("--framework")]
         public void OptionDuplicates_NotAllowed(string option)
@@ -361,7 +361,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 $"error ❌ Option '{option}' expects a single argument but 2 were provided.");
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData(new[] { "--unrecognized-arg" }, new[] { InteractiveOption, "--unrecognized-arg" })]
         [InlineData(new[] { "run" }, new string[] { InteractiveOption })]
         [InlineData(new[] { "run", "--", "runarg" }, new[] { InteractiveOption, "--", "runarg" })]
@@ -376,14 +376,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal(expected, options.CommandArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void CannotHaveQuietAndVerbose()
         {
             VerifyErrors(["--quiet", "--verbose"],
                 $"error ❌ {Resources.Error_QuietAndVerboseSpecified}");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ShortFormForProjectArgumentPrintsWarning()
         {
             var options = VerifyOptions(["-p", "MyProject.csproj"],
@@ -392,14 +392,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void LongFormForProjectArgumentWorks()
         {
             var options = VerifyOptions(["--project", "MyProject.csproj"]);
             Assert.Equal("MyProject.csproj", options.ProjectPath);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void LongFormForLaunchProfileArgumentWorks()
         {
             var options = VerifyOptions(["--launch-profile", "CustomLaunchProfile"]);
@@ -407,7 +407,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("CustomLaunchProfile", options.LaunchProfileName);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ShortFormForLaunchProfileArgumentWorks()
         {
             var options = VerifyOptions(["-lp", "CustomLaunchProfile"]);
@@ -419,7 +419,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// <summary>
         /// Validates that options that the "run" command forwards to "build" command are forwarded by dotnet-watch.
         /// </summary>
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [InlineData(new[] { "--configuration", "release" }, new[] { "-property:Configuration=release", NugetInteractiveProperty })]
         [InlineData(new[] { "--framework", "net9.0" }, new[] { "-property:TargetFramework=net9.0", NugetInteractiveProperty })]
         [InlineData(new[] { "--runtime", "arm64" }, new[] { "-property:RuntimeIdentifier=arm64", "-property:_CommandLineDefinedRuntimeIdentifier=true", NugetInteractiveProperty })]
@@ -438,7 +438,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(buildArgs, options.BuildArguments);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public void ForwardedBuildOptions_ArtifactsPath()
         {
             var path = TestContext.Current.TestAssetsDirectory;
