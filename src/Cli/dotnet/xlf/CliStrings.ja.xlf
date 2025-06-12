@@ -1071,8 +1071,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsUnsupportedRunner">
-        <source>Command '{0}' uses unsupported runner '{1}'."</source>
-        <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="new">Tool '{0}' uses unsupported runner '{1}'."</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUnsupportedRuntimeIdentifier">
@@ -1164,6 +1164,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="new">An issue was encountered verifying workloads. For more information, run "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="new">Accept all confirmation prompts using "yes."</target>
+        <note />
       </trans-unit>
     </body>
   </file>

@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Execute;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
@@ -37,6 +38,7 @@ internal static class ToolCommandParser
         command.Subcommands.Add(ToolRunCommandParser.GetCommand());
         command.Subcommands.Add(ToolSearchCommandParser.GetCommand());
         command.Subcommands.Add(ToolRestoreCommandParser.GetCommand());
+        command.Subcommands.Add(ToolExecuteCommandParser.GetCommand());
 
         command.SetAction((parseResult) => parseResult.HandleMissingCommand());
 

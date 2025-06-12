@@ -129,6 +129,34 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
         return false;
     }
 
+    public bool TryFindPackageId(PackageId packageId, out ToolManifestPackage toolManifestPackage)
+    {
+        toolManifestPackage = default;
+        foreach ((FilePath possibleManifest, DirectoryPath correspondingDirectory) in
+            EnumerateDefaultAllPossibleManifests())
+        {
+            if (!_fileSystem.File.Exists(possibleManifest.Value))
+            {
+                continue;
+            }
+            (List<ToolManifestPackage> manifestPackages, bool isRoot) =
+                _toolManifestEditor.Read(possibleManifest, correspondingDirectory);
+            foreach (var package in manifestPackages)
+            {
+                if (package.PackageId.Equals(packageId))
+                {
+                    toolManifestPackage = package;
+                    return true;
+                }
+            }
+            if (isRoot)
+            {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private IEnumerable<(FilePath manifestfile, DirectoryPath manifestFileFirstEffectDirectory)>
         EnumerateDefaultAllPossibleManifests()
     {
@@ -184,7 +212,7 @@ internal class ToolManifestFinder : IToolManifestFinder, IToolManifestInspector
 
     /*
     The --create-manifest-if-needed will use the following priority to choose the folder where the tool manifest goes:
-        1. Walk up the directory tree searching for one that has a.git subfolder
+        1. Walk up the directory tree searching for one that has a .git subfolder
         2. Walk up the directory tree searching for one that has a .sln(x)/git file in it
         3. Use the current working directory
     */
