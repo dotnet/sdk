@@ -1162,8 +1162,8 @@ _testhost() {
                                     (execute)
                                         _arguments "${_arguments_options[@]}" : \
                                             '--version=[The version of the tool package to install.]:VERSION: ' \
-                                            '--yes[Suppresses confirmation prompt with \"yes\" value.]' \
-                                            '-y[Suppresses confirmation prompt with \"yes\" value.]' \
+                                            '--yes[Accept all confirmation prompts using \"yes.\"]' \
+                                            '-y[Accept all confirmation prompts using \"yes.\"]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--allow-roll-forward[Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn'\''t installed.]' \
                                             '--prerelease[Include pre-release packages.]' \

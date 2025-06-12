@@ -1097,8 +1097,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;tool;execute' {
             $staticCompletions = @(
                 [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the tool package to install.")
-                [CompletionResult]::new('--yes', '--yes', [CompletionResultType]::ParameterName, "Suppresses confirmation prompt with `"yes`" value.")
-                [CompletionResult]::new('--yes', '-y', [CompletionResultType]::ParameterName, "Suppresses confirmation prompt with `"yes`" value.")
+                [CompletionResult]::new('--yes', '--yes', [CompletionResultType]::ParameterName, "Accept all confirmation prompts using `"yes.`"")
+                [CompletionResult]::new('--yes', '-y', [CompletionResultType]::ParameterName, "Accept all confirmation prompts using `"yes.`"")
                 [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--allow-roll-forward', '--allow-roll-forward', [CompletionResultType]::ParameterName, "Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn`'t installed.")
                 [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Include pre-release packages.")
