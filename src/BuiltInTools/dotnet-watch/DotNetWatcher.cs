@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watch
                 };
 
                 var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, DefaultAppModel.Instance, shutdownCancellationToken)
+                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, new DefaultAppModel(projectRootNode), shutdownCancellationToken)
                     : null;
 
                 environmentBuilder.SetProcessEnvironmentVariables(processSpec);

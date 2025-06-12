@@ -3,6 +3,7 @@
 
 using System.Diagnostics;
 using System.IO.Pipes;
+using System.Reflection;
 using Microsoft.DotNet.HotReload;
 
 /// <summary>
@@ -13,7 +14,7 @@ internal sealed class StartupHook
     private const int ConnectionTimeoutMS = 5000;
 
     private static readonly bool s_logToStandardOutput = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.HotReloadDeltaClientLogMessages) == "1";
-    private static readonly string s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
+    private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
 
     /// <summary>
     /// Invoked by the runtime when the containing assembly is listed in DOTNET_STARTUP_HOOKS.
@@ -27,6 +28,12 @@ internal sealed class StartupHook
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 
         Log($"Connecting to hot-reload server");
+
+        if (s_namedPipeName == null)
+        {
+            Log($"Environment variable {AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName} has no value");
+            return;
+        }
 
         // Connect to the pipe synchronously.
         //
@@ -48,20 +55,44 @@ internal sealed class StartupHook
             return;
         }
 
+        RegisterPosixSignalHandlers();
+
         var agent = new HotReloadAgent();
         try
         {
             // block until initialization completes:
             InitializeAsync(pipeClient, agent, CancellationToken.None).GetAwaiter().GetResult();
 
+#pragma warning disable CA2025 // Ensure tasks using 'IDisposable' instances complete before the instances are disposed
             // fire and forget:
             _ = ReceiveAndApplyUpdatesAsync(pipeClient, agent, initialUpdates: false, CancellationToken.None);
+#pragma warning restore
         }
         catch (Exception ex)
         {
             Log(ex.Message);
             pipeClient.Dispose();
+            agent.Dispose();
         }
+    }
+
+    private static void RegisterPosixSignalHandlers()
+    {
+#if NET10_0_OR_GREATER
+        // Register a handler for SIGTERM to allow graceful shutdown of the application on Unix.
+        // See https://github.com/dotnet/docs/issues/46226.
+
+        // Note: registered handlers are executed in reverse order of their registration.
+        // Since the startup hook is executed before any code of the application, it is the first handler registered and thus the last to run.
+
+        _ = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
+        {
+            if (!context.Cancel)
+                Environment.Exit(0);
+        });
+
+        Log("Posix signal handlers registered.");
+#endif
     }
 
     private static async ValueTask InitializeAsync(NamedPipeClientStream pipeClient, HotReloadAgent agent, CancellationToken cancellationToken)
