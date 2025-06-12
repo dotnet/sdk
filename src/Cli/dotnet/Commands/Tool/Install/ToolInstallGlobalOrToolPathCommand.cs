@@ -144,6 +144,9 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
     private int ExecuteInstallCommand(PackageId packageId)
     {
+        using var _activity = Activities.s_source.StartActivity("install-tool");
+        _activity?.DisplayName = $"Install {packageId}";
+        _activity?.SetTag("toolId", packageId);
         ValidateArguments();
 
         DirectoryPath? toolPath = null;
@@ -167,12 +170,14 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
         if (oldPackageNullable != null)
         {
             NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
+            _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
+            _activity?.SetTag("toolVersion", nugetVersion);
 
             if (ToolVersionAlreadyInstalled(oldPackageNullable, nugetVersion))
             {
                 _reporter.WriteLine(string.Format(CliCommandStrings.ToolAlreadyInstalled, oldPackageNullable.Id, oldPackageNullable.Version.ToNormalizedString()).Green());
                 return 0;
-            }   
+            }
         }
 
         TransactionalAction.Run(() =>
@@ -188,6 +193,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             RunWithHandlingInstallError(() =>
             {
+                var toolPackageDownloaderActivity = Activities.s_source.StartActivity("download-tool-package");
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                 new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
@@ -199,6 +205,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                     verifySignatures: _verifySignatures ?? true,
                     restoreActionConfig: restoreActionConfig
                 );
+                toolPackageDownloaderActivity?.Dispose();
 
                 EnsureVersionIsHigher(oldPackageNullable, newInstalledPackage, _allowPackageDowngrade);
 
@@ -215,9 +222,10 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                         null :
                         NuGetFramework.Parse(_framework);
                 }
+                var shimActivity = Activities.s_source.StartActivity("create-shell-shim");
                 string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
-
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
+                shimActivity?.Dispose();
 
                 foreach (string w in newInstalledPackage.Warnings)
                 {
@@ -303,7 +311,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
     {
         try
         {
-            uninstallAction();           
+            uninstallAction();
         }
         catch (Exception ex)
             when (ToolUninstallCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))
@@ -381,7 +389,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
             {
                 _reporter.WriteLine(
                     string.Format(
-                        
+
                         newInstalledPackage.Version.IsPrerelease ?
                         CliCommandStrings.UpdateSucceededPreVersionNoChange : CliCommandStrings.UpdateSucceededStableVersionNoChange,
                         newInstalledPackage.Id, newInstalledPackage.Version).Green());

@@ -61,6 +61,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         bool includeUnlisted = false
         )
     {
+        using var _downloadActivity = Activities.s_source.StartActivity("download-tool");
+        _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
         string? folderToDeleteOnFailure = null;
@@ -68,7 +70,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         {
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-
+            _downloadActivity?.AddEvent(new("Downloaded package"));
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
             // look for package on disk and read the version
@@ -78,11 +80,15 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             {
                 PackageArchiveReader reader = new(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
+                _downloadActivity?.AddEvent(new("Read package version"));
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
+                _downloadActivity?.AddEvent(new("Calculated package hash"));
+
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
                 File.WriteAllText(hashPath, packageHash);
+                _downloadActivity?.AddEvent(new("Wrote package hash to disk"));
             }
 
             if (verbosity.IsDetailedOrDiagnostic())
@@ -92,6 +98,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             // Extract the package
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
+            _downloadActivity?.AddEvent(new("Extracted package to disk"));
 
             return version;
         }, rollback: () =>
