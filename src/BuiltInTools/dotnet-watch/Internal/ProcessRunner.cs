@@ -319,7 +319,7 @@ namespace Microsoft.DotNet.Watch
             //    reporter.Verbose($"Error while sending SIGTERM to process {state.ProcessId}: {Marshal.GetPInvokeErrorMessage(error)} (code {error}).");
             //}
 
-            process.Kill();
+            process.Kill(entireProcessTree: true);
         }
     }
 }
