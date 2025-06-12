@@ -134,6 +134,9 @@
   <data name="WorkloadSetFromGlobalJsonInstalled" xml:space="preserve">
     <value>Found workload version {0} pinned in the global.json file at {1}.</value>
   </data>
+  <data name="WorkloadVersionNotInstalledShort" xml:space="preserve">
+    <value>(not installed)</value>
+  </data>
   <data name="WorkloadSetFromGlobalJsonNotInstalled" xml:space="preserve">
     <value>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</value>
   </data>
