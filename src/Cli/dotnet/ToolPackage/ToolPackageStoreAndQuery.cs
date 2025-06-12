@@ -8,11 +8,13 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQuery, IToolPackageStore
+internal class ToolPackageStoreAndQuery(DirectoryPath root, IFileSystem fileSystem = null) : IToolPackageStoreQuery, IToolPackageStore
 {
     public const string StagingDirectory = ".stage";
 
     public DirectoryPath Root { get; private set; } = new DirectoryPath(Path.GetFullPath(root.Value));
+
+    private IFileSystem _fileSystem = fileSystem ?? new FileSystemWrapper();
 
     public DirectoryPath GetRandomStagingDirectory()
     {
@@ -23,7 +25,7 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
     {
         if (NuGetVersion.TryParse(
             Path.GetFileName(
-                Directory.EnumerateDirectories(
+                _fileSystem.Directory.EnumerateDirectories(
                     stagingDirectory.WithSubDirectories(packageId.ToString()).Value).FirstOrDefault()),
             out var version))
         {
@@ -54,12 +56,12 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
 
     public IEnumerable<IToolPackage> EnumeratePackages()
     {
-        if (!Directory.Exists(Root.Value))
+        if (!_fileSystem.Directory.Exists(Root.Value))
         {
             yield break;
         }
 
-        foreach (var subdirectory in Directory.EnumerateDirectories(Root.Value))
+        foreach (var subdirectory in _fileSystem.Directory.EnumerateDirectories(Root.Value))
         {
             var name = Path.GetFileName(subdirectory);
             var packageId = new PackageId(name);
@@ -80,17 +82,17 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
     public IEnumerable<IToolPackage> EnumeratePackageVersions(PackageId packageId)
     {
         var packageRootDirectory = Root.WithSubDirectories(packageId.ToString());
-        if (!Directory.Exists(packageRootDirectory.Value))
+        if (!_fileSystem.Directory.Exists(packageRootDirectory.Value))
         {
             yield break;
         }
 
-        foreach (var subdirectory in Directory.EnumerateDirectories(packageRootDirectory.Value))
+        foreach (var subdirectory in _fileSystem.Directory.EnumerateDirectories(packageRootDirectory.Value))
         {
             yield return new ToolPackageInstance(id: packageId,
                 version: NuGetVersion.Parse(Path.GetFileName(subdirectory)),
                 packageDirectory: new DirectoryPath(subdirectory),
-                assetsJsonParentDirectory: new DirectoryPath(subdirectory));
+                assetsJsonParentDirectory: new DirectoryPath(subdirectory), _fileSystem);
         }
     }
 
@@ -102,7 +104,7 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
         }
 
         var directory = GetPackageDirectory(packageId, version);
-        if (!Directory.Exists(directory.Value))
+        if (!_fileSystem.Directory.Exists(directory.Value))
         {
             return null;
         }
@@ -110,6 +112,7 @@ internal class ToolPackageStoreAndQuery(DirectoryPath root) : IToolPackageStoreQ
         return new ToolPackageInstance(id: packageId,
             version: version,
             packageDirectory: directory,
-            assetsJsonParentDirectory: directory);
+            assetsJsonParentDirectory: directory,
+            fileSystem: _fileSystem);
     }
 }

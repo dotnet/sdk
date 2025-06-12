@@ -22,7 +22,7 @@ namespace Microsoft.NET.ToolPack.Tests
         {
 
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
+                .CopyTestAsset("PortableTool", callingMethod + multiTarget + (packageType ?? ""))
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
