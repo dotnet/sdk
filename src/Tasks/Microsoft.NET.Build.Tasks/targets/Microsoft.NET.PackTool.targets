@@ -48,6 +48,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <SelfContained Condition="'$(RuntimeIdentifier)' == ''">false</SelfContained>
     <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
     <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
+    <PublishSingleFile Condition="'$(RuntimeIdentifier)' == ''">false</PublishSingleFile>
+
     <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
          Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
     <_InnerToolsPublishAot>false</_InnerToolsPublishAot>

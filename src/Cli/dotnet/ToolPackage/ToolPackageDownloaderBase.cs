@@ -343,10 +343,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             {
                 return new PackageId(p.Id);
             }
-            else
-            {
-                return null;
-            }
+            return null;
         }
 
         return null;

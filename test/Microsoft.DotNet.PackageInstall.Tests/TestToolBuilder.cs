@@ -94,7 +94,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 new DotnetPackCommand(log)
                     .WithWorkingDirectory(targetDirectory)
-                    .Execute("/bl:{}")
+                    .Execute()
                     .Should().Pass();
 
                 if (toolSettings.NativeAOT)
@@ -102,7 +102,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     //  For Native AOT tools, we need to repack the tool to include the runtime-specific files that were generated during publish
                     new DotnetPackCommand(log, "-r", RuntimeInformation.RuntimeIdentifier)
                         .WithWorkingDirectory(targetDirectory)
-                        .Execute("/bl:{}")
+                        .Execute()
                         .Should().Pass();
                 }
 
