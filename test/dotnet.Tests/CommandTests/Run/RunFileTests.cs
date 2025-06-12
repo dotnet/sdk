@@ -1057,19 +1057,57 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
-    public void ProjectReference_NonExistent()
+    public void ProjectReference_Errors()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:project wrong.csproj
             """);
 
+        // Project file does not exist.
         new DotnetCommand(Log, "run", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
-            // warning MSB3202: The project file was not found.
-            .And.HaveStdOutContaining("MSB3202");
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:project dir/
+            """);
+
+        // Project directory does not exist.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
+
+        // Directory exists but has no project file.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
+
+        // Directory exists but has multiple project files.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
     }
 
     [Fact]
