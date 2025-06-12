@@ -146,11 +146,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-<<<<<<< HEAD
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
-=======
         [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
->>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -219,11 +215,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// We currently do not support applying project changes.
         /// The workaround is to restart via Ctrl+R.
         /// </summary>
-<<<<<<< HEAD
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
-=======
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
->>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         public async Task ProjectChangeAndRestart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -277,11 +269,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>");
         }
 
-<<<<<<< HEAD
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
-=======
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
->>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
