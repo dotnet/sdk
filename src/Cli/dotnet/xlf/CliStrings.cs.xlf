@@ -63,10 +63,10 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotFindAManifestFile">
-        <source>Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</source>
-        <target state="new">Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</target>
+        <source>Cannot find a manifest file. The list of searched paths:
+{0}</source>
+        <target state="new">Cannot find a manifest file. The list of searched paths:
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindPackageIdInManifest">
@@ -578,13 +578,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="List">
         <source>List</source>
         <target state="new">List</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListOfSearched">
-        <source>The list of searched paths:
-{0}</source>
-        <target state="new">The list of searched paths:
-{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForPreferCliRuntimeFile">
