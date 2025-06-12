@@ -13,8 +13,6 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly IFirstTimeUseNoticeSentinel _sentinel =
-        new FirstTimeUseNoticeSentinel();
     private readonly ITelemetry _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
@@ -64,7 +62,6 @@ public sealed class MSBuildLogger : INodeLogger
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
                 _telemetry = new Telemetry.Telemetry(
-                    _sentinel,
                     sessionId,
                     senderCount: 0);
             }
@@ -215,14 +212,6 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Shutdown()
     {
-        try
-        {
-            _sentinel?.Dispose();
-        }
-        catch (Exception)
-        {
-            // Exceptions during telemetry shouldn't cause anything else to fail
-        }
     }
 
     public LoggerVerbosity Verbosity { get; set; }
