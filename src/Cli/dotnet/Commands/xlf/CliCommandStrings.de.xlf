@@ -1081,6 +1081,11 @@ Make the profile names distinct.</source>
 Make the profile names distinct.</target>
         <note />
       </trans-unit>
+      <trans-unit id="DuplicateDirective">
+        <source>Duplicate directives are not supported: {0} at {1}</source>
+        <target state="new">Duplicate directives are not supported: {0} at {1}</target>
+        <note>{0} is the directive type and name. {1} is the file path and line number.</note>
+      </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
         <target state="new">Restore failed. Run `dotnet restore` for more details on the issue.</target>
@@ -2991,13 +2996,6 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
       <trans-unit id="ToolInstallManifestPathOptionName">
         <source>PATH</source>
         <target state="new">PATH</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolInstallNoManifestGuide">
-        <source>If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</source>
-        <target state="new">If you intended to install a global tool, add `--global` to the command.
-If you would like to create a manifest, use the `--create-manifest-if-needed` flag with the `dotnet tool install` command, or use `dotnet new tool-manifest`, usually in the repo root directory.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
