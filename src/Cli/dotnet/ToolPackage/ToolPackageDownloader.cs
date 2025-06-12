@@ -66,13 +66,13 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         bool includeUnlisted = false
         )
     {
-        using var _downloadActivity = Activities.s_source.StartActivity("download-tool");
-        _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
         var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
 
         string folderToDeleteOnFailure = null;
         return TransactionalAction.Run<NuGetVersion>(() =>
         {
+            using var _downloadActivity = Activities.s_source.StartActivity("download-tool");
+            _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
             _downloadActivity?.AddEvent(new("Downloaded package"));
