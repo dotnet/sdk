@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task AddSourceFile()
         {
             Logger.WriteLine("AddSourceFile started");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
         {
@@ -146,7 +146,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
+<<<<<<< HEAD
         [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+=======
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+>>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         [CombinatorialData]
         public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
         {
@@ -188,7 +192,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// <summary>
         /// Unchanged project doesn't build. Wait for source change and rebuild.
         /// </summary>
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BaselineCompilationError()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -215,7 +219,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// We currently do not support applying project changes.
         /// The workaround is to restart via Ctrl+R.
         /// </summary>
+<<<<<<< HEAD
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+=======
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+>>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         public async Task ProjectChangeAndRestart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -254,7 +262,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ChangeFileInFSharpProject()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -269,7 +277,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>");
         }
 
+<<<<<<< HEAD
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+=======
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+>>>>>>> ae74142ffd (Skip all tests on Linux/OSX)
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -339,7 +351,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MetadataUpdateHandler_NoActions()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -371,7 +383,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task MetadataUpdateHandler_Exception(bool verbose)
         {
@@ -480,7 +492,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -524,7 +536,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -650,7 +662,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
@@ -702,7 +714,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
@@ -757,7 +769,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Aspire()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
