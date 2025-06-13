@@ -140,9 +140,17 @@ public class Program
             IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
             IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath,ToolPathSentinelFileName)));
 
+            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
+
+            telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
+            TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
+            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
+            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
+
             if (parseResult.GetValue(Parser.CliSchemaOption))
             {
-                CliSchema.PrintCliSchema(parseResult.CommandResult.Command);
+                CliSchema.PrintCliSchema(parseResult.CommandResult, telemetryClient);
                 return 0;
             }
             else if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
@@ -215,14 +223,6 @@ public class Program
                     skipFirstTimeUseCheck: getStarOptionPassed);
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
             }
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
-
-            telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-            TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
-            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
         }
 
         if (CommandLoggingContext.IsVerbose)

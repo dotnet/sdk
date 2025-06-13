@@ -4,9 +4,11 @@
 using System.CommandLine;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Command = System.CommandLine.Command;
+using CommandResult = System.CommandLine.Parsing.CommandResult;
 
 namespace Microsoft.DotNet.Cli;
 
@@ -17,11 +19,15 @@ internal static class CliSchema
     private static readonly JsonWriterOptions s_jsonWriterOptions = new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
-    public static void PrintCliSchema(Command command)
+    public static void PrintCliSchema(CommandResult commandResult, ITelemetry telemetryClient)
     {
+        var commandString = CommandHierarchyAsString(commandResult);
+        Console.WriteLine($"Schema for command '{commandString}' written to standard output.");
+
         using var writer = new Utf8JsonWriter(Console.OpenStandardOutput(), s_jsonWriterOptions);
         writer.WriteStartObject();
 
+        var command = commandResult.Command;
         // Explicitly write "name" into the root JSON object as the name for any sub-commands are used as the key to the sub-command object.
         writer.WriteString("name", command.Name);
         writer.WriteString("version", Product.Version);
@@ -29,6 +35,9 @@ internal static class CliSchema
 
         writer.WriteEndObject();
         writer.Flush();
+
+        var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
+        telemetryClient.TrackEvent("schema", telemetryProperties, null);
     }
 
     private static void WriteCommand(Command command, Utf8JsonWriter writer)
@@ -145,5 +154,18 @@ internal static class CliSchema
         }
 
         writer.WriteEndObject();
+    }
+
+    private static string CommandHierarchyAsString(CommandResult commandResult)
+    {
+        var commands = new List<string>();
+        var currentResult = commandResult;
+        while (currentResult is not null)
+        {
+            commands.Add(currentResult.Command.Name);
+            currentResult = currentResult.Parent as CommandResult;
+        }
+
+        return string.Join(" ", commands.AsEnumerable().Reverse());
     }
 }
