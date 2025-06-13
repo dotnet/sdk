@@ -15,8 +15,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 {
     public class GivenAnMSBuildSdkResolver : SdkTest
     {
-        private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
+        private const string DotnetHostPathKey = "DOTNET_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
+
+        private static string DotnetHostPathValue = null;
 
         public GivenAnMSBuildSdkResolver(ITestOutputHelper logger) : base(logger)
         {
@@ -207,13 +209,13 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(2);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
+                DotnetHostPathKey.Should().NotBeNullOrEmpty();
             }
             else
             {
-                result.PropertiesToAdd.Count.Should().Be(1);
+                DotnetHostPathKey.Should().BeNull();
             }
+            result.PropertiesToAdd.Count.Should().Be(1);
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.Version.Should().Be(disallowPreviews ? "98.98.98" : "99.99.99-preview");
@@ -292,13 +294,13 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // DotnetHost is the path to dotnet.exe. Can be only on Windows.
-                result.PropertiesToAdd.Count.Should().Be(4);
-                result.PropertiesToAdd.Should().ContainKey(DotnetHostExperimentalKey);
+                DotnetHostPathValue.Should().NotBeNull();
             }
             else
             {
-                result.PropertiesToAdd.Count.Should().Be(3);
+                DotnetHostPathValue.Should().BeNull();
             }
+            result.PropertiesToAdd.Count.Should().Be(3);
             result.PropertiesToAdd.Should().ContainKey(MSBuildTaskHostRuntimeVersion);
             result.PropertiesToAdd[MSBuildTaskHostRuntimeVersion].Should().Be("mockRuntimeVersion");
             result.PropertiesToAdd.Should().ContainKey("SdkResolverHonoredGlobalJson");
@@ -608,6 +610,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             public SdkResolver CreateResolver(bool useAmbientSettings = false)
                 => new DotNetMSBuildSdkResolver(
                     GetEnvironmentVariable,
+                    (key, value) => { if (key == DotnetHostPathKey) DotnetHostPathValue = value; },
                     // force current executable location to be the mocked dotnet executable location
                     () => ProcessPath,
                     (x, y) => "mockRuntimeVersion",

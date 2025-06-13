@@ -28,11 +28,12 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         public override int Priority => 5000;
 
         private readonly Func<string, string?> _getEnvironmentVariable;
+        private readonly Action<string, string?> _setEnvironmentVariable;
         private readonly Func<string>? _getCurrentProcessPath;
         private readonly Func<string, string, string?> _getMsbuildRuntime;
         private readonly NETCoreSdkResolver _netCoreSdkResolver;
-
-        private const string DotnetHostExperimentalKey = "DOTNET_EXPERIMENTAL_HOST_PATH";
+        
+        private const string DotnetHostPath = "DOTNET_HOST_PATH";
         private const string MSBuildTaskHostRuntimeVersion = "SdkResolverMSBuildTaskHostRuntimeVersion";
 
         private static CachingWorkloadResolver _staticWorkloadResolver = new();
@@ -40,14 +41,20 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
         private bool _shouldLog = false;
 
         public DotNetMSBuildSdkResolver()
-            : this(Environment.GetEnvironmentVariable, null, GetMSbuildRuntimeVersion, VSSettings.Ambient)
+            : this(Environment.GetEnvironmentVariable, Environment.SetEnvironmentVariable, null, GetMSbuildRuntimeVersion, VSSettings.Ambient)
         {
         }
 
         // Test constructor
-        public DotNetMSBuildSdkResolver(Func<string, string?> getEnvironmentVariable, Func<string>? getCurrentProcessPath, Func<string, string, string?> getMsbuildRuntime, VSSettings vsSettings)
+        public DotNetMSBuildSdkResolver(
+            Func<string, string?> getEnvironmentVariable,
+            Action<string, string?> setEnvironmentVariable,
+            Func<string>? getCurrentProcessPath,
+            Func<string, string, string?> getMsbuildRuntime,
+            VSSettings vsSettings)
         {
             _getEnvironmentVariable = getEnvironmentVariable;
+            _setEnvironmentVariable = setEnvironmentVariable;
             _getCurrentProcessPath = getCurrentProcessPath;
             _netCoreSdkResolver = new NETCoreSdkResolver(getEnvironmentVariable, vsSettings);
             _getMsbuildRuntime = getMsbuildRuntime;
@@ -196,21 +203,22 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
                         minimumVSDefinedSDKVersion);
                 }
 
-                string? dotnetExe = dotnetRoot != null ?
-                    Path.Combine(dotnetRoot, Constants.DotNetExe) :
+                // the grandparent of resolverResult.ResolvedSdkDirectory
+                string? dotnetFolderPath = Path.GetDirectoryName(Path.GetDirectoryName(resolverResult.ResolvedSdkDirectory));
+                string? dotnetExe = dotnetFolderPath != null ?
+                    Path.Combine(dotnetFolderPath, Constants.DotNetExe) :
                     null;
                 if (File.Exists(dotnetExe))
                 {
-                    propertiesToAdd ??= new Dictionary<string, string?>();
-                    propertiesToAdd.Add(DotnetHostExperimentalKey, dotnetExe);
+                    _setEnvironmentVariable(DotnetHostPath, dotnetExe);
                 }
                 else
                 {
-                    logger?.LogMessage($"Could not set '{DotnetHostExperimentalKey}' because dotnet executable '{dotnetExe}' does not exist.");
+                    logger?.LogMessage($"Could not set environmental variable '{DotnetHostPath}' because dotnet executable '{dotnetExe}' does not exist.");
                 }
 
-                string? runtimeVersion = dotnetRoot != null ?
-                    _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetRoot) :
+                string? runtimeVersion = dotnetFolderPath != null ?
+                    _getMsbuildRuntime(resolverResult.ResolvedSdkDirectory, dotnetFolderPath) :
                     null;
                 if (!string.IsNullOrEmpty(runtimeVersion))
                 {
@@ -288,7 +296,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
             return factory.IndicateSuccess(msbuildSdkDir, netcoreSdkVersion, propertiesToAdd, itemsToAdd, warnings);
         }
 
-        private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetRoot)
+        private static string? GetMSbuildRuntimeVersion(string sdkDirectory, string dotnetFolderPath)
         {
             // 1. Get the runtime version from the MSBuild.runtimeconfig.json file
             string runtimeConfigPath = Path.Combine(sdkDirectory, "MSBuild.runtimeconfig.json");
@@ -306,7 +314,7 @@ namespace Microsoft.DotNet.MSBuildSdkResolver
 
             // 2. Check that the runtime version is installed (in shared folder)
             return (!string.IsNullOrEmpty(runtimeName) && !string.IsNullOrEmpty(runtimeVersion) &&
-                    Directory.Exists(Path.Combine(dotnetRoot, "shared", runtimeName, runtimeVersion)))
+                    Directory.Exists(Path.Combine(dotnetFolderPath, "shared", runtimeName, runtimeVersion)))
                     ? runtimeVersion : null;
         }
 
