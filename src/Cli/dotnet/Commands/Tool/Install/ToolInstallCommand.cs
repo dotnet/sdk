@@ -21,15 +21,6 @@ internal class ToolInstallCommand(
     private readonly string _framework = parseResult.GetValue(ToolInstallCommandParser.FrameworkOption);
 
 
-    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
-    {
-        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
-            !string.IsNullOrEmpty(parseResult.GetValue(ToolInstallCommandParser.VersionOption)))
-        {
-            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
-        }
-    }
-
     public override int Execute()
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
@@ -38,8 +29,6 @@ internal class ToolInstallCommand(
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(
             _parseResult);
-
-        EnsureNoConflictPackageIdentityVersionOption(_parseResult);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
