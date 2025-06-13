@@ -136,7 +136,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #:property Configuration Release
+            #:property Configuration=Release
             {s_program}
             """);
 
