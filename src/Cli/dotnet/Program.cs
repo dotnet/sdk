@@ -19,6 +19,7 @@ using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Frameworks;
 using OpenTelemetry;
+using OpenTelemetry.Context.Propagation;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
@@ -56,12 +57,16 @@ public class Program
         .AddOtlpExporter()
         .Build();
 
+    private static ActivityContext s_parentActivityContext = default;
+    private static ActivityKind s_activityKind = ActivityKind.Internal;
+
 
     public static int Main(string[] args)
     {
         // capture the time to we can compute muxer/host startup overhead
         DateTime mainTimeStamp = DateTime.Now;
-        using var _mainActivity = Activities.s_source.StartActivity("main");
+        (s_parentActivityContext, s_activityKind) = DeriveParentActivityContextFromEnv();
+        using var _mainActivity = Activities.s_source.StartActivity("main", s_activityKind, s_parentActivityContext);
         using AutomaticEncodingRestorer _encodingRestorer = new();
 
         // Setting output encoding is not available on those platforms
@@ -119,9 +124,44 @@ public class Program
         }
     }
 
+    /// <summary>
+    /// uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
+    /// from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// </summary>
+    /// <returns></returns>
+    private static (ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
+    {
+        var traceParent = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACEPARENT);
+        var traceState = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACESTATE);
+        static IEnumerable<string> GetValueFromCarrier(Dictionary<string, IEnumerable<string>> carrier, string key)
+        {
+            return carrier.TryGetValue(key, out var value) ? value : Enumerable.Empty<string>();
+        }
+
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            return (default, ActivityKind.Internal);
+        }
+        var carriermap = new Dictionary<string, IEnumerable<string>>
+        {
+            { "traceparent", [traceParent] },
+            { "tracestate", [traceState] }
+        };
+
+        // Use the OpenTelemetry Propagator to extract the parent activity context and kind. For some reason this isn't set by the OTel SDK like docs say it should be.
+        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([
+            new TraceContextPropagator(),
+            new BaggagePropagator()
+        ]));
+        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carriermap, GetValueFromCarrier);
+        var kind = parentActivityContext.ActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
+
+        return (parentActivityContext.ActivityContext, kind);
+    }
+
     private static void TrackHostStartup(DateTime mainTimeStamp)
     {
-        var hostStartupActivity = Activities.s_source.CreateActivity("host-startup", ActivityKind.Server);
+        var hostStartupActivity = Activities.s_source.CreateActivity("host-startup", s_activityKind, s_parentActivityContext);
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         hostStartupActivity?.SetEndTime(mainTimeStamp);
         hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -140,20 +180,48 @@ public class Program
         }
     }
 
-    internal static int ProcessArgs(string[] args)
+    private static string GetCommandName(ParseResult r)
+    {
+        // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
+        List<string> parentNames = [r.CommandResult.Command.Name];
+        var current = r.CommandResult.Parent;
+        while (current is CommandResult parentCommandResult)
+        {
+            parentNames.Add(parentCommandResult.Command.Name);
+            current = parentCommandResult.Parent;
+        }
+        parentNames.Reverse();
+        return string.Join(' ', parentNames);
+    }
+    private static void SetDisplayName(Activity activity, ParseResult parseResult)
+    {
+        if (activity == null)
+        {
+            return;
+        }
+        var name = GetCommandName(parseResult);
+        // Set the display name to the full command name
+        activity.DisplayName = name;
+
+        // Set the command name as an attribute for better filtering in telemetry
+        activity.SetTag("command.name", name);
+    }
+
+    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
     {
         ParseResult parseResult;
-        using (var _parseActivity = Activities.s_source.StartActivity("parse"))
+        using (var _parseActivity = Activities.s_source.StartActivity("parse", s_activityKind, s_parentActivityContext))
         {
             parseResult = Parser.Instance.Parse(args);
 
+            SetDisplayName(_parseActivity, parseResult);
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
             // https://github.com/dotnet/sdk/issues/20195
             SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
         }
 
-        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use"))
+        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use", s_activityKind, s_parentActivityContext))
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
 
@@ -309,7 +377,7 @@ public class Program
             }
         }
     }
-
+    
     private static int AdjustExitCode(ParseResult parseResult, int exitCode)
     {
         if (parseResult.Errors.Count > 0)
