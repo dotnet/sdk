@@ -120,7 +120,8 @@ public static class Parser
     {
         Description = CliStrings.SDKSchemaCommandDefinition,
         Arity = ArgumentArity.Zero,
-        Recursive = true
+        Recursive = true,
+        Hidden = true
     };
 
     // Argument

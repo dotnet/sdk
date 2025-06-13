@@ -21,9 +21,6 @@ internal static class CliSchema
 
     public static void PrintCliSchema(CommandResult commandResult, ITelemetry telemetryClient)
     {
-        var commandString = CommandHierarchyAsString(commandResult);
-        Console.WriteLine($"Schema for command '{commandString}' written to standard output.");
-
         using var writer = new Utf8JsonWriter(Console.OpenStandardOutput(), s_jsonWriterOptions);
         writer.WriteStartObject();
 
@@ -36,6 +33,7 @@ internal static class CliSchema
         writer.WriteEndObject();
         writer.Flush();
 
+        var commandString = CommandHierarchyAsString(commandResult);
         var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
         telemetryClient.TrackEvent("schema", telemetryProperties, null);
     }
@@ -156,6 +154,8 @@ internal static class CliSchema
         writer.WriteEndObject();
     }
 
+    // Produces a string that represents the command call.
+    // For example, calling the workload install command produces `dotnet workload install`.
     private static string CommandHierarchyAsString(CommandResult commandResult)
     {
         var commands = new List<string>();
