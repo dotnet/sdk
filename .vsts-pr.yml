@@ -27,8 +27,8 @@ variables:
 
 resources:
   containers:
-  - container: alpine319WithNode
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+  - container: alpine322Amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
   - container: debian12Amd64

@@ -5,7 +5,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
-using System.CommandLine.Help;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
@@ -45,6 +44,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.TemplateEngine.Cli;
+using Microsoft.TemplateEngine.Cli.Help;
 using Command = System.CommandLine.Command;
 
 namespace Microsoft.DotNet.Cli;
@@ -119,7 +119,7 @@ public static class Parser
     // Argument
     public static readonly Argument<string> DotnetSubCommand = new("subcommand") { Arity = ArgumentArity.ZeroOrOne, Hidden = true };
 
-    private static Command ConfigureCommandLine(Command rootCommand)
+    private static Command ConfigureCommandLine(RootCommand rootCommand)
     {
         for (int i = rootCommand.Options.Count - 1; i >= 0; i--)
         {
@@ -129,9 +129,9 @@ public static class Parser
             {
                 rootCommand.Options.RemoveAt(i);
             }
-            else if (option is HelpOption helpOption)
+            else if (option is System.CommandLine.Help.HelpOption helpOption)
             {
-                helpOption.Action = new HelpAction()
+                helpOption.Action = new DotnetHelpAction()
                 {
                     Builder = DotnetHelpBuilder.Instance.Value
                 };
@@ -155,6 +155,9 @@ public static class Parser
 
         // Add argument
         rootCommand.Arguments.Add(DotnetSubCommand);
+
+        // NuGet implements several commands in its own repo. Add them to the .NET SDK via the provided API.
+        NuGet.CommandLine.XPlat.NuGetCommands.Add(rootCommand);
 
         rootCommand.SetAction(parseResult =>
         {
@@ -273,31 +276,8 @@ public static class Parser
 
             DotnetHelpBuilder dotnetHelpBuilder = new(windowWidth);
 
-            SetHelpCustomizations(dotnetHelpBuilder);
-
             return dotnetHelpBuilder;
         });
-
-        private static void SetHelpCustomizations(HelpBuilder builder)
-        {
-            foreach (var option in OptionForwardingExtensions.HelpDescriptionCustomizations.Keys)
-            {
-                Func<HelpContext, string> descriptionCallback = (HelpContext context) =>
-                {
-                    foreach (var (command, helpText) in OptionForwardingExtensions.HelpDescriptionCustomizations[option])
-                    {
-                        if (context.ParseResult.CommandResult.Command.Equals(command))
-                        {
-                            return helpText;
-                        }
-                    }
-                    return null;
-                };
-                builder.CustomizeSymbol(option, secondColumnText: descriptionCallback);
-            }
-
-            builder.CustomizeSymbol(WorkloadSearchVersionsCommandParser.GetCommand(), secondColumnText: CliStrings.ShortWorkloadSearchVersionDescription);
-        }
 
         public static void additionalOption(HelpContext context)
         {
@@ -394,6 +374,11 @@ public static class Parser
                 {
                     // Don't show package completions in help
                     PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
+                }
+                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                {
+                    // Set shorter description for displaying parent command help.
+                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
                 }
 
                 base.Write(context);
