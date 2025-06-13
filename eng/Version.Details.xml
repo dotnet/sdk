@@ -59,11 +59,11 @@
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>af11d4f253ee5c813bfd4f9d5902772638014572</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.8.31-servicing-25313-09">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.8.31-servicing-25313-13">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>af11d4f253ee5c813bfd4f9d5902772638014572</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.31-servicing-25313-09">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.8.31-servicing-25313-13">
       <Uri>https://github.com/dotnet/msbuild</Uri>
       <Sha>af11d4f253ee5c813bfd4f9d5902772638014572</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
