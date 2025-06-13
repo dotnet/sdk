@@ -906,7 +906,7 @@ The header is followed by the list of parameters and their errors (might be seve
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
-        <source>Failed to instatiate template '{0}', the following constraints are not met:</source>
+        <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
         <target state="translated">'{0}' 템플릿을 예로 들지 못했습니다. 다음 제약 조건이 충족되지 않습니다.</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
