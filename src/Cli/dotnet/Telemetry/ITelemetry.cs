@@ -5,13 +5,11 @@
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-public interface ITelemetry
+public interface ITelemetry : IDisposable
 {
     bool Enabled { get; }
 
     void TrackEvent(string eventName, IDictionary<string, string> properties, IDictionary<string, double> measurements);
 
     void Flush();
-
-    void Dispose();
 }
