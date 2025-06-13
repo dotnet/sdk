@@ -24,7 +24,7 @@
       <?endforeach?>
 
       <Payload Name="DotNetLogo_124x.png" Compressed="yes" SourceFile="DotNetLogo_124x.png" />
-      <Payload Name="dotnet.ico" Compressed="yes" SourceFile="dotnet.ico" />
+      <Payload Name="dotnet.ico" Compressed="yes" SourceFile="..\..\dotnet.ico" />
     </BootstrapperApplication>
 
     <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles6432Folder]dotnet" />

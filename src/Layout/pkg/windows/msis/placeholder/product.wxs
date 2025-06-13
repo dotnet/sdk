@@ -19,7 +19,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="..\..\dummyeula.rtf" />
     <ui:WixUI Id="WixUI_Minimal" />
 
-    <Icon Id="icon.ico" SourceFile="..\..\msi.ico"/>
+    <Icon Id="icon.ico" SourceFile="..\..\dotnet.ico"/>
     <Property Id="ARPPRODUCTICON" Value="icon.ico" />
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="RTM_ProductVersion" Value="$(ProductVersion)" />

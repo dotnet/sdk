@@ -21,6 +21,8 @@
     </Feature>
     <FeatureRef Id="F_DependencyProvider" />
 
+    <Icon Id="icon.ico" SourceFile="..\..\dotnet.ico"/>
+    <Property Id="ARPPRODUCTICON" Value="icon.ico" />
     <Property Id="ARPNOMODIFY" Value="1" />
     <Property Id="ARPNOREPAIR" Value="1" />
     <Property Id="RTM_ProductVersion" Value="$(ProductVersion)" />
