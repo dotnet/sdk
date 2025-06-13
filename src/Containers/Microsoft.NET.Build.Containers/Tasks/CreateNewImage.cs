@@ -1,10 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Text.Json;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -25,7 +23,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     /// </summary>
     public string ToolPath { get; set; }
 
-    private bool IsLocalPull => string.IsNullOrEmpty(BaseRegistry);
+    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -72,6 +70,8 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             OutputRegistry,
             LocalRegistry);
 
+        var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
@@ -87,16 +87,24 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             }
             catch (RepositoryNotFoundException)
             {
+                telemetry.LogUnknownRepository();
                 Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
             catch (UnableToAccessRepositoryException)
             {
+                telemetry.LogCredentialFailure(sourceImageReference);
                 Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
             catch (ContainerHttpException e)
             {
+                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+                return !Log.HasLoggedErrors;
+            }
+            catch (BaseImageNotFoundException e)
+            {
+                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
                 Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
                 return !Log.HasLoggedErrors;
             }
@@ -112,7 +120,28 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
-        SafeLog(Strings.ContainerBuilder_StartBuildingImage, Repository, String.Join(",", ImageTags), sourceImageReference);
+        (string message, object[] parameters) = SkipPublishing ?
+            ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+            ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
+        Log.LogMessage(MessageImportance.High, message, parameters);
+
+        // forcibly change the media type if required
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                imageBuilder.ManifestMediaType = imageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+                };
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
+        }
 
         Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
@@ -160,100 +189,20 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        GeneratedContainerManifest = builtImage.Manifest;
         GeneratedContainerConfiguration = builtImage.Config;
-        GeneratedContainerDigest = builtImage.Manifest.GetDigest();
+        GeneratedContainerDigest = builtImage.ManifestDigest;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
+        GeneratedContainerMediaType = builtImage.ManifestMediaType;
+        GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
 
-        switch (destinationImageReference.Kind)
+        if (!SkipPublishing)
         {
-            case DestinationImageReferenceKind.LocalRegistry:
-                await PushToLocalRegistryAsync(builtImage,
-                    sourceImageReference,
-                    destinationImageReference,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            case DestinationImageReferenceKind.RemoteRegistry:
-                await PushToRemoteRegistryAsync(builtImage,
-                    sourceImageReference,
-                    destinationImageReference,
-                    cancellationToken).ConfigureAwait(false);
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
+                .ConfigureAwait(false);
         }
-
+        
         return !Log.HasLoggedErrors;
-    }
-
-    private async Task PushToLocalRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        CancellationToken cancellationToken)
-    {
-        ILocalRegistry localRegistry = destinationImageReference.LocalRegistry!;
-        if (!(await localRegistry.IsAvailableAsync(cancellationToken).ConfigureAwait(false)))
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.LocalRegistryNotAvailable));
-            return;
-        }
-        try
-        {
-            await localRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, localRegistry);
-
-            if (localRegistry is ArchiveFileRegistry archive)
-            {
-                GeneratedArchiveOutputPath = archive.ArchiveOutputPath;
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (AggregateException ex) when (ex.InnerException is DockerLoadException dle)
-        {
-            Log.LogErrorFromException(dle, showStackTrace: false);
-        }
-    }
-
-    private async Task PushToRemoteRegistryAsync(BuiltImage builtImage, SourceImageReference sourceImageReference,
-        DestinationImageReference destinationImageReference,
-        CancellationToken cancellationToken)
-    {
-        try
-        {
-            await destinationImageReference.RemoteRegistry!.PushAsync(
-                builtImage,
-                sourceImageReference,
-                destinationImageReference,
-                cancellationToken).ConfigureAwait(false);
-            SafeLog(Strings.ContainerBuilder_ImageUploadedToRegistry, destinationImageReference, OutputRegistry);
-        }
-        catch (UnableToAccessRepositoryException)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName);
-            }
-        }
-        catch (ContainerHttpException e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorFromException(e, true);
-            }
-        }
-        catch (Exception e)
-        {
-            if (BuildEngine != null)
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RegistryOutputPushFailed), e.Message);
-                Log.LogMessage(MessageImportance.Low, "Details: {0}", e);
-            }
-        }
     }
 
     private void SetPorts(ImageBuilder image, ITaskItem[] exposedPorts)
@@ -300,11 +249,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             var value = envVar.GetMetadata("Value");
             img.AddEnvironmentVariable(envVar.ItemSpec, value);
         }
-    }
-
-    private void SafeLog(string message, params object[] formatParams)
-    {
-        if (BuildEngine != null) Log.LogMessage(MessageImportance.High, message, formatParams);
     }
 
     public void Dispose()
