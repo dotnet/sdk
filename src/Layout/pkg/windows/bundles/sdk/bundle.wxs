@@ -23,8 +23,8 @@
       <Payload Id="thm_$(LCID)" Compressed="yes" Name="$(LCID)\thm.wxl" SourceFile="LCID\$(LCID)\bundle.wxl" />
       <?endforeach?>
 
-      <Payload Name="bg.png" Compressed="yes" SourceFile="..\..\..\osx\resources\dotnetbackground.png" />
-      <!--<Payload Compressed="yes" Name="thm.wxl" SourceFile="1033\bundle.wxl" />-->
+      <Payload Name="DotNetLogo_124x.png" Compressed="yes" SourceFile="DotNetLogo_124x.png" />
+      <Payload Name="dotnet.ico" Compressed="yes" SourceFile="dotnet.ico" />
     </BootstrapperApplication>
 
     <SoftwareTag Regid="microsoft.com" InstallPath="[ProgramFiles6432Folder]dotnet" />
@@ -190,12 +190,12 @@
 
       <!-- .NET Runtime has to be installed before the CLI because of a custom action that depends on dotnet.exe. -->
       <PackageGroupRef Id="PG_DotNet"/>
-      
+
       <MsiPackage SourceFile="$(TemplatesMsiSourceFile)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="ALLOWMSIINSTALL" Value="True" />
       </MsiPackage>
-      
+
       <MsiPackage SourceFile="$(SdkMsiSourceFile)">
         <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
         <MsiProperty Name="EXEFULLPATH" Value="[WixBundleOriginalSource]" />

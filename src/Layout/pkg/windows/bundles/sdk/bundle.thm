@@ -1,21 +1,30 @@
 <!-- Copyright (c) .NET Foundation and contributors. All rights reserved. Licensed under the MIT license. See License.txt in the project root for full license information. -->
 <Theme xmlns="http://wixtoolset.org/schemas/v4/thmutil">
-  <Font Id="0" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
+  <!-- Use system colors where possible as they change based on themes and are automatically adjusted for high contrast.
+       For custom colors, ensure the contrast ratio is at least 4.5:1 (3:1 for large text and other UI components). The WinUI 3 Gallery
+       app can be used to calculate contrast settings. Take note that custom colors for <Font> elements use BGR instead of
+       RGB ordering. -->
+  <Font Id="0" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
   <Font Id="1" Height="-24" Weight="900" Foreground="FFFFFF" Background="D42B51">Segoe UI</Font>
-  <Font Id="2" Height="-22" Weight="500" Foreground="666666">Segoe UI</Font>
-  <Font Id="3" Height="-12" Weight="500" Foreground="000000" Background="FFFFFF">Segoe UI</Font>
-  <Font Id="4" Height="-12" Weight="500" Foreground="ff0000" Background="FFFFFF" Underline="yes">Segoe UI</Font>
-  <Font Id="5" Height="-14" Weight="500" Foreground="444444">Segoe UI</Font>
-  
-  <Window Width="660" Height="488" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)" AutoResize="yes">
-    <ImageControl X="0" Y="0" Width="620" Height="418" ImageFile="bg.png" Visible="yes"/>
-    <!-- Width of 0 extends the label control to the right of the window. -->
-    <Label Name="Title" X="0" Y="11" Width="0" Height="64" FontId="1" Visible="yes" Center="yes" DisablePrefix="yes">#(loc.Title)</Label>
+  <Font Id="2" Height="-22" Weight="500" Foreground="graytext">Segoe UI</Font>
+  <Font Id="3" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
+  <Font Id="5" Height="-14" Weight="500" Foreground="graytext">Segoe UI</Font>
+
+  <!-- In v5, the window width and height refers to the client area, not the window area. 
+       wixstdba may also scale the client area based on DPI settings. -->
+  <Window Width="644" Height="449" HexStyle="100a0000" FontId="0" Caption="#(loc.Caption)" IconFile="dotnet.ico">
+    <ImageControl X="11" Y="-80" Width="124" Height="124" ImageFile="DotNetLogo_124x.png" Visible="yes" />
+    <!-- A width of 0 extends the label control to the right of the window. This will render an opaque rectangle using
+         the background color of the specified font. The second label will overlay the title. -->
+    <Label X="0" Y="0" Width="0" Height="75" FontId="1" Visible="yes" DisablePrefix="yes" />
+    <!-- Overlay the title label on top of the blank label. We require two labels to offset the text vertically as we don't want
+         it vertically centered. -->
+    <Label Name="Title" X="11" Y="11" Width="-11" Height="64" FontId="1" Visible="yes" Center="yes" DisablePrefix="yes">#(loc.Title)</Label>
 
     <Page Name="Help">
-      <Label Name="HelpHeader" X="151" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.HelpHeader)</Label>
-      <Label Name="HelpText" X="11" Y="112" Width="-11" Height="-35" FontId="3" DisablePrefix="yes">#(loc.HelpText)</Label>
-      
+      <Label X="11" Y="80" Width="-11" Height="30" FontId="2" DisablePrefix="yes">#(loc.HelpHeader)</Label>
+      <Label X="160" Y="121" Width="-11" Height="-35" FontId="3" DisablePrefix="yes">#(loc.HelpText)</Label>
+
       <Button Name="HelpCancelButton" X="-32" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">
         <Text>#(loc.HelpCloseButton)</Text>
         <CloseWindowAction/>
@@ -56,16 +65,44 @@
       </Button>
     </Page>
     <Page Name="Success">
-      <Label Name="SuccessHeader" X="11" Y="80"  Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessHeader)</Label>
-      <Richedit Name="SuccessInstallHeader" X="160" Y="81" Width="-12" Height="-71" FontId="2" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Richedit>
-      <Label Name="SuccessRepairHeader" X="160" Y="80" Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRepairHeader)</Label>
-      <Label Name="SuccessUninstallHeader" X="160" Y="80" Width="-11" Height="30" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessUninstallHeader)</Label>
+      <Label Name="SuccessHeader" X="11" Y="80" Width="-11" Height="30" FontId="2">
+        <!-- Default text to display if none of the conditions are true. -->
+        <Text>#(loc.SuccessHeader)</Text>
+        <Text Condition="WixBundleAction = 2">#(loc.SuccessLayoutHeader)</Text>
+        <Text Condition="WixBundleAction = 3">#(loc.SuccessUnsafeUninstallHeader)</Text>
+        <Text Condition="WixBundleAction = 4">#(loc.SuccessUninstallHeader)</Text>
+        <Text Condition="WixBundleAction = 5">#(loc.SuccessCacheHeader)</Text>
+        <Text Condition="WixBundleAction = 6">#(loc.SuccessInstallHeader)</Text>
+        <Text Condition="WixBundleAction = 7">#(loc.SuccessModifyHeader)</Text>
+        <Text Condition="WixBundleAction = 8">#(loc.SuccessRepairHeader)</Text>
+      </Label>
+
+      <!-- Only display the welcome message when an installation was performed. -->
+      <Richedit EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="160" Y="116" Width="-11" Height="-71" FontId="5" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Richedit>
+
+      <Label X="160" Y="-40" Width="-11" Height="34" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">
+        <!--<Text>#(loc.SuccessRestartText)</Text>-->
+        <Text>You must restart your computer to complete the removal of the software.</Text>
+        <Text Condition="WixBundleAction = 3">#(loc.SuccessUninstallRestartText)</Text>
+      </Label>
+
+
+
+      <!--
       <Button Name="LaunchButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessLaunchButton)</Button>
       <Label Name="SuccessRestartText" X="-11" Y="-40" Width="425" Height="23" FontId="2" HideWhenDisabled="yes" DisablePrefix="yes">#(loc.SuccessRestartText)</Label>
       <Button Name="SuccessRestartButton" X="-133" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
       <Button Name="SuccessCancelButton" X="-32" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">
         <Text>#(loc.SuccessCloseButton)</Text>
         <CloseWindowAction/>
+      </Button>-->
+      <!-- Calculate the relative offset as follows, assuming there are two buttons, right aligned:
+           First button, X="-11" Width="75"
+           Second button, X="-91" (-11 - 75 (width of first button) - 5 (gap between buttons)) -->
+      <Button Name="SuccessRestartButton" X="-115" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.SuccessRestartButton)</Button>
+      <Button Name="SuccessCloseButton" X="-11" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">
+        <Text>#(loc.SuccessCloseButton)</Text>
+        <CloseWindowAction />
       </Button>
     </Page>
     <Page Name="Failure">
@@ -79,11 +116,11 @@
         <Text Condition="WixBundleAction = 7">#(loc.FailureModifyHeader)</Text>
         <Text Condition="WixBundleAction = 8">#(loc.FailureRepairHeader)</Text>
       </Label>
-      <Hypertext Name="FailureLogFileLink" X="11" Y="121" Width="-11" Height="42" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
-      <Hypertext Name="FailureMessageText" X="22" Y="163" Width="-11" Height="51" FontId="3" TabStop="yes" HideWhenDisabled="yes"/>
-      <Label X="-11" Y="-51" Width="400" Height="34" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">#(loc.FailureRestartText)</Label>
-      <Button Name="FailureRestartButton" X="-91" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
-      <Button Name="FailureCloseButton" X="-11" Y="-11" Width="75" Height="23" TabStop="yes" FontId="0">
+      <Hypertext Name="FailureLogFileLink" X="160" Y="121" Width="-11" Height="42" FontId="3" TabStop="yes" HideWhenDisabled="yes">#(loc.FailureHyperlinkLogText)</Hypertext>
+      <Hypertext Name="FailureMessageText" X="160" Y="163" Width="-11" Height="51" FontId="3" TabStop="yes" HideWhenDisabled="yes"/>
+      <Label X="160" Y="-40" Width="-11" Height="34" FontId="3" DisablePrefix="yes" VisibleCondition="WixStdBARestartRequired">#(loc.FailureRestartText)</Label>
+      <Button Name="FailureRestartButton" X="-115" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0" HideWhenDisabled="yes">#(loc.FailureRestartButton)</Button>
+      <Button Name="FailureCloseButton" X="-11" Y="-11" Width="99" Height="23" TabStop="yes" FontId="0">
         <Text>#(loc.FailureCloseButton)</Text>
         <CloseWindowAction/>
       </Button>
