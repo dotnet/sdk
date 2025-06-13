@@ -62,7 +62,8 @@ public sealed class MSBuildLogger : INodeLogger
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
                 _telemetry = new Telemetry.Telemetry(
-                    sessionId,
+                    sentinel: null,
+                    sessionId: sessionId,
                     senderCount: 0);
             }
         }
