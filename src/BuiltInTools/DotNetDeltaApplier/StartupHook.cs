@@ -87,8 +87,12 @@ internal sealed class StartupHook
 
         _ = PosixSignalRegistration.Create(PosixSignal.SIGTERM, context =>
         {
+            Log($"SIGTERM received. Cancel={context.Cancel}");
+
             if (!context.Cancel)
+            {
                 Environment.Exit(0);
+            }
         });
 
         Log("Posix signal handlers registered.");
