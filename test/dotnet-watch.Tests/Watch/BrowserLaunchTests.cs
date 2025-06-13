@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task LaunchesBrowserOnStart()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Contains(App.Process.Output, line => line.Contains("dotnet watch ⌚ Launching browser: https://localhost:5001"));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task UsesBrowserSpecifiedInEnvironment()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)

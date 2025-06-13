@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
         {
             var context = new DotNetWatchContext
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.True(evaluator.RequiresRevaluation);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProcessAsync_DoesNotEvaluateFileSetIfNonProjFileChanges()
         {
             var context = new DotNetWatchContext
@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal(1, counter);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProcessAsync_EvaluateFileSetOnEveryChangeIfOptimizationIsSuppressed()
         {
             var context = new DotNetWatchContext
@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal(2, counter);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProcessAsync_SetsEvaluationRequired_IfMSBuildFileChanges_ButIsNotChangedFile()
         {
             // There's a chance that the watcher does not correctly report edits to msbuild files on
