@@ -477,7 +477,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 _directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
-                artifactsPath: GetArtifactsPath());
+                artifactsPath: GetArtifactsPath(),
+                includeRuntimeConfigInformation: BuildTarget != "Publish");
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -511,7 +512,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ImmutableArray<CSharpDirective> directives,
         bool isVirtualProject,
         string? targetFilePath = null,
-        string? artifactsPath = null)
+        string? artifactsPath = null,
+        bool includeRuntimeConfigInformation = true)
     {
         int processedDirectives = 0;
 
@@ -691,14 +693,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 """);
 
-            var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
-            writer.WriteLine($"""
+            if (includeRuntimeConfigInformation)
+            {
+                var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
+                writer.WriteLine($"""
                   <ItemGroup>
                     <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
                     <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
                   </ItemGroup>
 
                 """);
+            }
 
             foreach (var sdk in sdkDirectives)
             {
