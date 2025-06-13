@@ -125,7 +125,7 @@
          because in those cases, Visual Studio is providing System.Text.Json, and we should work with whichever version it ships. -->
     <SystemBuffersToolsetPackageVersion>4.5.1</SystemBuffersToolsetPackageVersion>
     <SystemMemoryToolsetPackageVersion>4.5.5</SystemMemoryToolsetPackageVersion>
-    <SystemTextJsonToolsetPackageVersion>8.0.4</SystemTextJsonToolsetPackageVersion>
+    <SystemTextJsonToolsetPackageVersion>8.0.5</SystemTextJsonToolsetPackageVersion>
     <SystemThreadingTasksExtensionsToolsetPackageVersion>4.5.4</SystemThreadingTasksExtensionsToolsetPackageVersion>
     <SystemWindowsExtensionsPackageVersion>9.0.7</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>9.0.7</SystemFormatsAsn1Version>
