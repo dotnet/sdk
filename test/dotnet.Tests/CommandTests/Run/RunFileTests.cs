@@ -246,14 +246,37 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Only <c>.cs</c> files can be run without a project file,
-    /// others fall back to normal <c>dotnet run</c> behavior.
+    /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
+    /// execute as a single file program if we find them.
     /// </summary>
     [Theory]
     [InlineData("Program")]
     [InlineData("Program.csx")]
     [InlineData("Program.vb")]
-    public void NonCsFileExtension(string fileName)
+    public void NonCsFileExtensionWithShebang(string fileName)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, fileName), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        new DotnetCommand(Log, "run", fileName)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("hello world");
+    }
+
+    /// <summary>
+    /// When a file is not a .cs file, we probe the first characters of the file for <c>#!</c>, and
+    /// fall back to normal <c>dotnet run</c> behavior if we don't find them.
+    /// </summary>
+    [Theory]
+    [InlineData("Program")]
+    [InlineData("Program.csx")]
+    [InlineData("Program.vb")]
+    public void NonCsFileExtensionWithNoShebang(string fileName)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, fileName), s_program);
@@ -982,7 +1005,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:package System.CommandLine 2.0.0-beta4.22272.1
+            #:package System.CommandLine@2.0.0-beta4.22272.1
             using System.CommandLine;
 
             var rootCommand = new RootCommand("Sample app for System.CommandLine");
@@ -1037,7 +1060,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:sdk Microsoft.NET.Sdk
-            #:sdk Aspire.AppHost.Sdk 9.2.1
+            #:sdk Aspire.AppHost.Sdk@9.2.1
             #:package Aspire.Hosting.AppHost@9.2.1
 
             var builder = DistributedApplication.CreateBuilder(args);
@@ -1223,10 +1246,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         File.WriteAllText(programPath, """
             #!/program
             #:sdk Microsoft.NET.Sdk
-            #:sdk Aspire.Hosting.Sdk 9.1.0
-            #:property TargetFramework net11.0
-            #:package System.CommandLine 2.0.0-beta4.22272.1
-            #:property LangVersion preview
+            #:sdk Aspire.Hosting.Sdk@9.1.0
+            #:property TargetFramework=net11.0
+            #:package System.CommandLine@2.0.0-beta4.22272.1
+            #:property LangVersion=preview
             Console.WriteLine();
             """);
 
@@ -1325,7 +1348,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var programPath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(programPath, """
             Console.WriteLine();
-            #:property LangVersion preview
+            #:property LangVersion=preview
             """);
 
         new DotnetCommand(Log, "run-api")
@@ -1515,6 +1538,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """)
             .And.HaveStdOutContaining("Unknown1")
             .And.HaveStdOutContaining("Unknown2");
+    }
+
+    [Fact]
+    public void Api_RunCommand()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+
+        string artifactsPath = OperatingSystem.IsWindows() ? @"C:\artifacts" : "/artifacts";
+        string executablePath = OperatingSystem.IsWindows() ? @"C:\artifacts\bin\debug\Program.exe" : "/artifacts/bin/debug/Program";
+        new DotnetCommand(Log, "run-api")
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            // DOTNET_ROOT environment variable is platform dependent so we don't verify it fully for simplicity
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(executablePath)}},"CommandLineArguments":"","WorkingDirectory":"","EnvironmentVariables":{"DOTNET_ROOT
+                """);
     }
 
     [Fact]

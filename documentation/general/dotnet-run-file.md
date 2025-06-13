@@ -47,7 +47,8 @@ The command takes a path which can be either
 ## Target path
 
 The path passed to `dotnet run ./some/path.cs` is called *the target path*.
-The target path must be a file which has the `.cs` file extension.
+The target path must be a file which either has the `.cs` file extension,
+or a file whose contents start with `#!`.
 *The target directory* is the directory of the target file.
 
 ## Integration into the existing `dotnet run` command
@@ -57,7 +58,7 @@ specifically `file.cs` is passed as the first command-line argument to the targe
 We preserve this behavior to avoid a breaking change.
 The file-based build and run kicks in only when:
 - a project file cannot be found (in the current directory or via the `--project` option), and
-- if the target file exists and has the `.cs` file extension.
+- if the target file exists, and has the `.cs` file extension or contents that start with `#!`.
 
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
@@ -85,6 +86,10 @@ Because of the [implicit project file](#implicit-project-file),
 other files in the target directory or its subdirectories are included in the compilation.
 For example, other `.cs` files but also `.resx` (embedded resources).
 Similarly, implicit build files like `Directory.Build.props` or `Directory.Packages.props` are used during the build.
+
+> [!CAUTION]
+> Multi-file support is postponed for .NET 11.
+> In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
 
 ### Nested files
 
@@ -153,14 +158,15 @@ Other directives result in an error, reserving them for future use.
 
 ```cs
 #:sdk Microsoft.NET.Sdk.Web
-#:property TargetFramework net11.0
-#:property LangVersion preview
+#:property TargetFramework=net11.0
+#:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
 ```
 
-The value must be separated from the name of the directive by white space (`@` is additionally allowed separator for the package directive)
+The value must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
 and any leading and trailing white space is not considered part of the value.
-Any value can optionally have two parts separated by a space (more whitespace characters could be allowed in the future).
+Any value can optionally have two parts separated by `@` in case of `package`/`sdk` or `=` in case of `property`
+and whitespace is trimmed from the two parts around the separator.
 The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
 and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
 It is an error if the first part (name) is empty (the version is allowed to be empty, but that results in empty `Version=""`).

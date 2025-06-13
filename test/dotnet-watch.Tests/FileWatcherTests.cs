@@ -63,7 +63,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(expectedChanges, filesChanged.Order(Comparer<ChangedPath>.Create((x, y) => (x.Path, x.Kind).CompareTo((y.Path, y.Kind)))));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task NewFile(bool usePolling)
@@ -88,7 +88,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task NewFileInNewDirectory(bool usePolling)
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 });
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeFile(bool usePolling)
@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task MoveFile(bool usePolling)
         {
@@ -166,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task FileInSubdirectory()
         {
             var dir = _testAssetManager.CreateTestDirectory().Path;
@@ -188,7 +188,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task NoNotificationIfDisabled(bool usePolling)
@@ -217,7 +217,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task DisposedNoEvents(bool usePolling)
@@ -244,7 +244,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task MultipleFiles(bool usePolling)
@@ -272,7 +272,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 () => File.WriteAllText(testFileFullPath, string.Empty));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task MultipleTriggers(bool usePolling)
@@ -332,7 +332,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public async Task DeleteSubfolder(bool usePolling)

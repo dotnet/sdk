@@ -79,6 +79,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public Dictionary<string, string> GlobalProperties { get; }
     public string[] BinaryLoggerArgs { get; }
     public VerbosityOptions Verbosity { get; }
+    public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
@@ -437,7 +438,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private string GetArtifactsPath() => GetArtifactsPath(EntryPointFileFullPath);
+    private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
     // internal for testing
     internal static string GetArtifactsPath(string entryPointFileFullPath)
@@ -873,7 +874,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
-        return entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase) && File.Exists(entryPointFilePath);
+        if (!File.Exists(entryPointFilePath))
+        {
+            return false;
+        }
+
+        if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        // Check if the first two characters are #!
+        try
+        {
+            using var stream = File.OpenRead(entryPointFilePath);
+            int first = stream.ReadByte();
+            int second = stream.ReadByte();
+            return first == '#' && second == '!';
+        }
+        catch
+        {
+            return false;
+        }
     }
 }
 
@@ -895,6 +917,9 @@ internal static partial class Patterns
 {
     [GeneratedRegex("""\s+""")]
     public static partial Regex Whitespace { get; }
+
+    [GeneratedRegex("""[\s@=/]""")]
+    public static partial Regex DisallowedNameCharacters { get; }
 }
 
 /// <summary>
@@ -934,25 +959,29 @@ internal abstract class CSharpDirective
         }
     }
 
-    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, SearchValues<char>? separators = null)
+    private static (string, string?)? ParseOptionalTwoParts(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText, char separator)
     {
-        var i = separators != null
-            ? directiveText.AsSpan().IndexOfAny(separators)
-            : directiveText.IndexOf(' ', StringComparison.Ordinal);
-        var firstPart = i < 0 ? directiveText : directiveText[..i];
+        var i = directiveText.IndexOf(separator, StringComparison.Ordinal);
+        var firstPart = (i < 0 ? directiveText : directiveText.AsSpan(..i)).TrimEnd();
 
-        if (string.IsNullOrWhiteSpace(firstPart))
+        if (firstPart.IsWhiteSpace())
         {
             return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+        }
+
+        // If the name contains characters that resemble separators, report an error to avoid any confusion.
+        if (Patterns.DisallowedNameCharacters.IsMatch(firstPart))
+        {
+            return ReportError<(string, string?)?>(errors, sourceFile, span, string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, separator, sourceFile.GetLocationString(span)));
         }
 
         var secondPart = i < 0 ? [] : directiveText.AsSpan((i + 1)..).TrimStart();
         if (i < 0 || secondPart.IsWhiteSpace())
         {
-            return (firstPart, null);
+            return (firstPart.ToString(), null);
         }
 
-        return (firstPart, secondPart.ToString());
+        return (firstPart.ToString(), secondPart.ToString());
     }
 
     /// <summary>
@@ -976,7 +1005,7 @@ internal abstract class CSharpDirective
 
         public static new Sdk? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (sdkName, sdkVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (sdkName, sdkVersion))
             {
                 return null;
             }
@@ -1006,7 +1035,7 @@ internal abstract class CSharpDirective
 
         public static new Property? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText) is not var (propertyName, propertyValue))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '=') is not var (propertyName, propertyValue))
             {
                 return null;
             }
@@ -1039,15 +1068,13 @@ internal abstract class CSharpDirective
     /// </summary>
     public sealed class Package : Named
     {
-        private static readonly SearchValues<char> s_separators = SearchValues.Create(' ', '@');
-
         private Package() { }
 
         public string? Version { get; init; }
 
         public static new Package? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
-            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, s_separators) is not var (packageName, packageVersion))
+            if (ParseOptionalTwoParts(errors, sourceFile, span, directiveKind, directiveText, separator: '@') is not var (packageName, packageVersion))
             {
                 return null;
             }

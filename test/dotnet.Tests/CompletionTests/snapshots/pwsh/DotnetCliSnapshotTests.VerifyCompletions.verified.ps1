@@ -969,6 +969,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('run', 'run', [CompletionResultType]::ParameterValue, "Run a local tool. Note that this command cannot be used to run a global tool. ")
                 [CompletionResult]::new('search', 'search', [CompletionResultType]::ParameterValue, "Search dotnet tools in nuget.org")
                 [CompletionResult]::new('restore', 'restore', [CompletionResultType]::ParameterValue, "Restore tools defined in the local tool manifest.")
+                [CompletionResult]::new('execute', 'execute', [CompletionResultType]::ParameterValue, "Executes a tool from source without permanently installing it.")
+                [CompletionResult]::new('execute', 'exec', [CompletionResultType]::ParameterValue, "Executes a tool from source without permanently installing it.")
             )
             $completions += $staticCompletions
             break
@@ -1100,6 +1102,32 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
             $completions += $staticCompletions
+            break
+        }
+        'testhost;tool;execute' {
+            $staticCompletions = @(
+                [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "The version of the tool package to install.")
+                [CompletionResult]::new('--yes', '--yes', [CompletionResultType]::ParameterName, "Accept all confirmation prompts using `"yes.`"")
+                [CompletionResult]::new('--yes', '-y', [CompletionResultType]::ParameterName, "Accept all confirmation prompts using `"yes.`"")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
+                [CompletionResult]::new('--allow-roll-forward', '--allow-roll-forward', [CompletionResultType]::ParameterName, "Allow a .NET tool to roll forward to newer versions of the .NET runtime if the runtime it targets isn`'t installed.")
+                [CompletionResult]::new('--prerelease', '--prerelease', [CompletionResultType]::ParameterName, "Include pre-release packages.")
+                [CompletionResult]::new('--configfile', '--configfile', [CompletionResultType]::ParameterName, "The NuGet configuration file to use.")
+                [CompletionResult]::new('--source', '--source', [CompletionResultType]::ParameterName, "Replace all NuGet package sources to use during installation with these.")
+                [CompletionResult]::new('--add-source', '--add-source', [CompletionResultType]::ParameterName, "Add an additional NuGet package source to use during installation.")
+                [CompletionResult]::new('--disable-parallel', '--disable-parallel', [CompletionResultType]::ParameterName, "Prevent restoring multiple projects in parallel.")
+                [CompletionResult]::new('--ignore-failed-sources', '--ignore-failed-sources', [CompletionResultType]::ParameterName, "Treat package source failures as warnings.")
+                [CompletionResult]::new('--no-http-cache', '--no-http-cache', [CompletionResultType]::ParameterName, "Do not cache packages and http requests.")
+                [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
+                [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
+            )
+            $completions += $staticCompletions
+            $text = $commandAst.ToString()
+            $dotnetCompleteResults = @(dotnet complete --position $cursorPosition "$text") | Where-Object { $_ -NotMatch "^-|^/" }
+            $dynamicCompletions = $dotnetCompleteResults | Foreach-Object { [CompletionResult]::new($_, $_, [CompletionResultType]::ParameterValue, $_) }
+            $completions += $dynamicCompletions
             break
         }
         'testhost;vstest' {

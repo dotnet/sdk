@@ -317,7 +317,7 @@
     <value>More than one command is defined for the tool.</value>
   </data>
   <data name="ToolSettingsUnsupportedRunner" xml:space="preserve">
-    <value>Command '{0}' uses unsupported runner '{1}'."</value>
+    <value>Tool '{0}' uses unsupported runner '{1}'."</value>
   </data>
   <data name="ToolUnsupportedRuntimeIdentifier" xml:space="preserve">
     <value>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</value>
@@ -807,5 +807,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="PackageIdentityArgumentVersionOptionConflict" xml:space="preserve">
     <value>Cannot specify --version when the package argument already contains a version.</value>
     <comment>{Locked="--version"}</comment>
+  </data>
+  <data name="YesOptionDescription" xml:space="preserve">
+    <value>Accept all confirmation prompts using "yes."</value>
   </data>
 </root>
