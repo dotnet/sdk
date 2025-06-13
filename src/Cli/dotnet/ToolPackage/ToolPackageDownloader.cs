@@ -71,11 +71,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string folderToDeleteOnFailure = null;
         return TransactionalAction.Run<NuGetVersion>(() =>
         {
-            using var _downloadActivity = Activities.s_source.StartActivity("download-tool");
+            var _downloadActivity = Activities.s_source.StartActivity("download-tool");
             _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-            _downloadActivity?.AddEvent(new("Downloaded package"));
+            _downloadActivity?.Stop();
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
             // look for package on disk and read the version
@@ -85,21 +85,19 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             {
                 PackageArchiveReader reader = new(packageStream);
                 version = new NuspecReader(reader.GetNuspec()).GetVersion();
-                _downloadActivity?.AddEvent(new("Read package version"));
 
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
-                _downloadActivity?.AddEvent(new("Calculated package hash"));
 
                 Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
                 File.WriteAllText(hashPath, packageHash);
-                _downloadActivity?.AddEvent(new("Wrote package hash to disk"));
             }
 
             // Extract the package
+            var _extractActivity = Activities.s_source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
-            _downloadActivity?.AddEvent(new("Extracted package to disk"));
+            _extractActivity?.Stop();
 
             return version;
         }, rollback: () =>
