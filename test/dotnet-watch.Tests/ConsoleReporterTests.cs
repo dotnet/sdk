@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ReporterTests
     {
         private static readonly string EOL = Environment.NewLine;
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public void WritesToStandardStreams(bool suppressEmojis)
@@ -33,7 +35,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             testConsole.Clear();
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true)]
         [InlineData(false)]
         public void WritesToStandardStreamsWithCustomEmojis(bool suppressEmojis)

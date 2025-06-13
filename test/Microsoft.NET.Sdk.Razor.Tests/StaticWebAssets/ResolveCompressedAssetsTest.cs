@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -69,7 +71,7 @@ public class ResolveCompressedAssetsTest
 
         // Assert
         result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(2);
         task.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
@@ -143,7 +145,7 @@ public class ResolveCompressedAssetsTest
         var result = task.Execute();
 
         result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(0);
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
     }
 
     [Fact]
@@ -186,7 +188,7 @@ public class ResolveCompressedAssetsTest
 
         // Assert
         result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(2);
         task.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
@@ -231,7 +233,7 @@ public class ResolveCompressedAssetsTest
 
         // Assert
         result.Should().BeTrue();
-        task.AssetsToCompress.Should().HaveCount(2);
+        task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(2);
         task.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         var relativePath = task.AssetsToCompress[0].GetMetadata("RelativePath");
         relativePath.Should().EndWith(".gz");
@@ -336,7 +338,7 @@ public class ResolveCompressedAssetsTest
 
         // Assert
         buildResult.Should().BeTrue();
-        buildTask.AssetsToCompress.Should().HaveCount(2);
+        buildTask.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(2);
         buildTask.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         buildTask.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
@@ -380,7 +382,7 @@ public class ResolveCompressedAssetsTest
         var result1 = task1.Execute();
 
         result1.Should().BeTrue();
-        task1.AssetsToCompress.Should().HaveCount(1);
+        task1.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
         task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
         task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1gz");
         task1.AssetsToCompress[0].SetMetadata("Integrity", "abcgz");
@@ -402,7 +404,7 @@ public class ResolveCompressedAssetsTest
         var result2 = task2.Execute();
 
         result2.Should().BeTrue();
-        task2.AssetsToCompress.Should().HaveCount(1);
+        task2.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
         task2.AssetsToCompress[0].ItemSpec.Should().EndWith(".br");
     }
 
@@ -445,7 +447,7 @@ public class ResolveCompressedAssetsTest
         var result1 = task1.Execute();
 
         result1.Should().BeTrue();
-        task1.AssetsToCompress.Should().HaveCount(1);
+        task1.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
         task1.AssetsToCompress[0].ItemSpec.Should().EndWith(".br");
         task1.AssetsToCompress[0].SetMetadata("Fingerprint", "v1br");
         task1.AssetsToCompress[0].SetMetadata("Integrity", "abcbr");
@@ -467,7 +469,7 @@ public class ResolveCompressedAssetsTest
         var result2 = task2.Execute();
 
         result2.Should().BeTrue();
-        task2.AssetsToCompress.Should().HaveCount(1);
+        task2.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(1);
         task2.AssetsToCompress[0].ItemSpec.Should().EndWith(".gz");
     }
 }

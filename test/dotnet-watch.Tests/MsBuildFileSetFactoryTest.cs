@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class MsBuildFileSetFactoryTest(ITestOutputHelper output)
@@ -21,7 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             .OrderBy(entry => entry.Key)
             .Select(entry => $"{InspectPath(entry.Key, rootDir)}: [{string.Join(", ", entry.Value.ContainingProjectPaths.Select(p => InspectPath(p, rootDir)))}]");
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task FindsCustomWatchItems()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -53,7 +51,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -87,7 +85,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task SingleTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -120,7 +118,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MultiTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -156,7 +154,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task IncludesContentFiles()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -189,7 +187,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task IncludesContentFilesFromRCL()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -241,7 +239,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectReferences_OneLevel()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
@@ -270,7 +268,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task TransitiveProjectReferences_TwoLevels()
         {
             var project3 = _testAssets.CreateTestProject(new TestProject("Project3")
@@ -309,7 +307,7 @@ $@"<ItemGroup>
             Assert.All(result.Files.Values, f => Assert.False(f.IsStaticFile, $"File {f.FilePath} should not be a static file."));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectReferences_Graph()
         {
             // A->B,F,W(Watch=False)
@@ -365,7 +363,7 @@ $@"<ItemGroup>
                 _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MsbuildOutput()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
@@ -405,7 +403,7 @@ $@"<ItemGroup>
             return result;
         }
 
-        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject.Name + ".csproj");
+        private static string GetTestProjectPath(TestAsset target) => Path.Combine(GetTestProjectDirectory(target), target.TestProject?.Name + ".csproj");
 
         private static string WriteFile(TestAsset testAsset, string name, string contents = "")
         {
@@ -426,6 +424,6 @@ $@"<ItemGroup>
         }
 
         private static string GetTestProjectDirectory(TestAsset testAsset)
-            => Path.Combine(testAsset.Path, testAsset.TestProject.Name);
+            => Path.Combine(testAsset.Path, testAsset.TestProject?.Name ?? string.Empty);
     }
 }

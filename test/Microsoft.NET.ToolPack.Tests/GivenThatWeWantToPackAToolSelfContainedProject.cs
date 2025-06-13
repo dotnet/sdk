@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Tasks;
@@ -15,17 +17,19 @@ namespace Microsoft.NET.ToolPack.Tests
 
         }
 
-        [Fact]
-        public void It_should_fail_with_error_message()
-        {
-            TestAsset helloWorldAsset = CreateAsset();
+        //  TODO: Add tests for Self-contained / AOT tools, which are now supported
 
-            var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
+        //[Fact]
+        //public void It_should_fail_with_error_message()
+        //{
+        //    TestAsset helloWorldAsset = CreateAsset();
 
-            CommandResult result = packCommand.Execute("--property:SelfContained=true");
-            result.ExitCode.Should().NotBe(0);
-            result.StdOut.Should().Contain(Strings.PackAsToolCannotSupportSelfContained);
-        }
+        //    var packCommand = new PackCommand(Log, helloWorldAsset.TestRoot);
+
+        //    CommandResult result = packCommand.Execute("--property:SelfContained=true");
+        //    result.ExitCode.Should().NotBe(0);
+        //    result.StdOut.Should().Contain(Strings.PackAsToolCannotSupportSelfContained);
+        //}
 
         // Reproduce of https://github.com/dotnet/cli/issues/10607
         [Fact]

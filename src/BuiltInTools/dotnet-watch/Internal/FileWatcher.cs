@@ -5,8 +5,13 @@ namespace Microsoft.DotNet.Watch
 {
     internal sealed class FileWatcher(IReporter reporter) : IDisposable
     {
-        // Directory watcher for each watched directory
-        private readonly Dictionary<string, IDirectoryWatcher> _watchers = [];
+        // Directory watcher for each watched directory tree.
+        // Keyed by full path to the root directory with a trailing directory separator.
+        private readonly Dictionary<string, IDirectoryWatcher> _directoryTreeWatchers = new(PathUtilities.OSSpecificPathComparer);
+
+        // Directory watcher for each watched directory (non-recursive).
+        // Keyed by full path to the root directory with a trailing directory separator.
+        private readonly Dictionary<string, IDirectoryWatcher> _directoryWatchers = new(PathUtilities.OSSpecificPathComparer);
 
         private bool _disposed;
         public event Action<ChangedPath>? OnFileChange;
@@ -22,7 +27,7 @@ namespace Microsoft.DotNet.Watch
 
             _disposed = true;
 
-            foreach (var (_, watcher) in _watchers)
+            foreach (var (_, watcher) in _directoryTreeWatchers)
             {
                 watcher.OnFileChange -= WatcherChangedHandler;
                 watcher.OnError -= WatcherErrorHandler;
@@ -31,39 +36,33 @@ namespace Microsoft.DotNet.Watch
         }
 
         public bool WatchingDirectories
-            => _watchers.Count > 0;
+            => _directoryTreeWatchers.Count > 0 || _directoryWatchers.Count > 0;
 
-        public void WatchContainingDirectories(IEnumerable<string> filePaths)
-            => WatchDirectories(filePaths.Select(path => Path.GetDirectoryName(path)!));
+        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories)
+            => WatchDirectories(filePaths.Select(path => Path.GetDirectoryName(path)!), includeSubdirectories);
 
-        public void WatchDirectories(IEnumerable<string> directories)
+        public void WatchDirectories(IEnumerable<string> directories, bool includeSubdirectories)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
 
-            foreach (var dir in directories)
+            foreach (var dir in directories.Distinct())
             {
-                var directory = EnsureTrailingSlash(dir);
+                var directory = PathUtilities.EnsureTrailingSlash(PathUtilities.NormalizeDirectorySeparators(dir));
 
-                var alreadyWatched = _watchers
-                    .Where(d => directory.StartsWith(d.Key))
-                    .Any();
+                // the directory is watched by active directory watcher:
+                if (!includeSubdirectories && _directoryWatchers.ContainsKey(directory))
+                {
+                    continue;
+                }
 
+                // the directory is a root or subdirectory of active directory tree watcher:
+                var alreadyWatched = _directoryTreeWatchers.Any(d => directory.StartsWith(d.Key, PathUtilities.OSSpecificPathComparison));
                 if (alreadyWatched)
                 {
                     continue;
                 }
 
-                var redundantWatchers = _watchers
-                    .Where(d => d.Key.StartsWith(directory))
-                    .Select(d => d.Key)
-                    .ToList();
-
-                foreach (var watcher in redundantWatchers)
-                {
-                    DisposeWatcher(watcher);
-                }
-
-                var newWatcher = FileWatcherFactory.CreateWatcher(directory);
+                var newWatcher = FileWatcherFactory.CreateWatcher(directory, includeSubdirectories);
                 if (newWatcher is EventBasedDirectoryWatcher eventBasedWatcher)
                 {
                     eventBasedWatcher.Logger = message => reporter.Verbose(message);
@@ -73,7 +72,30 @@ namespace Microsoft.DotNet.Watch
                 newWatcher.OnError += WatcherErrorHandler;
                 newWatcher.EnableRaisingEvents = true;
 
-                _watchers.Add(directory, newWatcher);
+                // watchers that are now redundant (covered by the new directory watcher):
+                if (includeSubdirectories)
+                {
+                    var watchersToRemove = _directoryTreeWatchers
+                        .Where(d => d.Key.StartsWith(directory, PathUtilities.OSSpecificPathComparison))
+                        .ToList();
+
+                    foreach (var (watchedDirectory, watcher) in watchersToRemove)
+                    {
+                        _directoryTreeWatchers.Remove(watchedDirectory);
+
+                        watcher.EnableRaisingEvents = false;
+                        watcher.OnFileChange -= WatcherChangedHandler;
+                        watcher.OnError -= WatcherErrorHandler;
+
+                        watcher.Dispose();
+                    }
+
+                    _directoryTreeWatchers.Add(directory, newWatcher);
+                }
+                else
+                {
+                    _directoryWatchers.Add(directory, newWatcher);
+                }
             }
         }
 
@@ -92,21 +114,6 @@ namespace Microsoft.DotNet.Watch
                 OnFileChange?.Invoke(change);
             }
         }
-
-        private void DisposeWatcher(string directory)
-        {
-            var watcher = _watchers[directory];
-            _watchers.Remove(directory);
-
-            watcher.EnableRaisingEvents = false;
-            watcher.OnFileChange -= WatcherChangedHandler;
-            watcher.OnError -= WatcherErrorHandler;
-
-            watcher.Dispose();
-        }
-
-        private static string EnsureTrailingSlash(string path)
-            => (path is [.., var last] && last != Path.DirectorySeparatorChar) ? path + Path.DirectorySeparatorChar : path;
 
         public async Task<ChangedFile?> WaitForFileChangeAsync(IReadOnlyDictionary<string, FileItem> fileSet, Action? startedWatching, CancellationToken cancellationToken)
         {
@@ -151,7 +158,7 @@ namespace Microsoft.DotNet.Watch
         {
             using var watcher = new FileWatcher(reporter);
 
-            watcher.WatchDirectories([Path.GetDirectoryName(filePath)!]);
+            watcher.WatchContainingDirectories([filePath], includeSubdirectories: false);
 
             var fileChange = await watcher.WaitForFileChangeAsync(
                 acceptChange: change => change.Path == filePath,

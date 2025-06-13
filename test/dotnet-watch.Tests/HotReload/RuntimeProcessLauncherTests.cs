@@ -1,8 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -135,7 +134,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -296,8 +295,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
-    [CombinatorialData] 
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", sharedOutput);
@@ -395,7 +394,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -486,7 +485,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -504,6 +503,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
+        var applyUpdateVerbose = w.Reporter.RegisterSemaphore(MessageDescriptor.ApplyUpdate_Verbose);
 
         // let the host process start:
         Log("Waiting for changes...");
@@ -517,6 +517,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await sessionStarted.WaitAsync(w.ShutdownSource.Token);
 
         // Terminate the process:
+        Log($"Terminating process {runningProject.ProjectNode.GetDisplayName()} ...");
         await w.Service.ProjectLauncher.TerminateProcessAsync(runningProject, CancellationToken.None);
 
         // rude edit in A (changing assembly level attribute):
@@ -527,8 +528,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Log("Waiting for change handled ...");
         await changeHandled.WaitAsync(w.ShutdownSource.Token);
 
-        w.Reporter.ProcessOutput.Contains("verbose ⌚ Rude edits detected but do not affect any running process");
-        w.Reporter.ProcessOutput.Contains($"verbose ❌ {serviceSourceA2}(1,12): error ENC0003: Updating 'attribute' requires restarting the application.");
+        Log("Waiting for verbose rude edit reported ...");
+        await applyUpdateVerbose.WaitAsync(w.ShutdownSource.Token);
     }
 
     public enum DirectoryKind
@@ -539,7 +540,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {

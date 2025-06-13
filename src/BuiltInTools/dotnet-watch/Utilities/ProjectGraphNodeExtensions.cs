@@ -33,6 +33,9 @@ internal static class ProjectGraphNodeExtensions
     public static bool IsNetCoreApp(this ProjectGraphNode projectNode, Version minVersion)
         => IsNetCoreApp(projectNode) && IsTargetFrameworkVersionOrNewer(projectNode, minVersion);
 
+    public static bool IsWebApp(this ProjectGraphNode projectNode)
+        => projectNode.GetCapabilities().Any(static value => value is "AspNetCore" or "WebAssembly");
+
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue("TargetPath") is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
 
@@ -44,6 +47,9 @@ internal static class ProjectGraphNodeExtensions
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems("ProjectCapability").Select(item => item.EvaluatedInclude);
+
+    public static bool IsAutoRestartEnabled(this ProjectGraphNode projectNode)
+        => bool.TryParse(projectNode.ProjectInstance.GetPropertyValue("HotReloadAutoRestart"), out var result) && result;
 
     public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
     {

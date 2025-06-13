@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 
 namespace Microsoft.DotNet.Watch.UnitTests
@@ -14,7 +16,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task RunsWithDotnetWatchEnvVariable()
         {
             Assert.True(string.IsNullOrEmpty(Environment.GetEnvironmentVariable("DOTNET_WATCH")), "DOTNET_WATCH cannot be set already when this test is running");
@@ -26,7 +28,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("1", await App.AssertOutputLineStartsWith("DOTNET_WATCH = "));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task RunsWithDotnetLaunchProfileEnvVariableWhenNotExplicitlySpecified(bool hotReload)
         {
@@ -44,7 +46,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecified(bool hotReload)
         {
@@ -64,7 +66,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("<<<Second>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task RunsWithDotnetLaunchProfileEnvVariableWhenExplicitlySpecifiedButNotPresentIsEmpty(bool hotReload)
         {
@@ -82,7 +84,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal("<<<First>>>", await App.AssertOutputLineStartsWith("DOTNET_LAUNCH_PROFILE = "));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task RunsWithIterationEnvVariable()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -108,7 +110,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.Equal(2, int.Parse(value, CultureInfo.InvariantCulture));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")
@@ -119,7 +121,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineEquals("Environment: Development");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Run_WithHotReloadEnabled_ReadsLaunchSettings_WhenUsingProjectOption()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings")

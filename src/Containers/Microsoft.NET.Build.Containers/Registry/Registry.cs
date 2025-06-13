@@ -414,40 +414,25 @@ internal sealed class Registry
             // Assume file is up to date and just return it
             return localPath;
         }
-    
+
         string tempTarballPath = ContentStore.GetTempFile();
-    
-        int retryCount = 0;
-        while (retryCount < MaxDownloadRetries)
+
+        try
         {
-            try
+            // No local copy, so download one
+            using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
+
+            using (FileStream fs = File.Create(tempTarballPath))
             {
-                // No local copy, so download one
-                using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-    
-                using (FileStream fs = File.Create(tempTarballPath))
-                {
-                    await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
-                }
-    
-                // Break the loop if successful
-                break;
-            }
-            catch (Exception ex)
-            {
-                retryCount++;
-                if (retryCount >= MaxDownloadRetries)
-                {
-                    throw new UnableToDownloadFromRepositoryException(repository);
-                }
-    
-                _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
-    
-                // Wait before retrying
-                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
+                await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
             }
         }
-    
+        catch (Exception)
+        {
+            throw new UnableToDownloadFromRepositoryException(repository);
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+
         File.Move(tempTarballPath, localPath, overwrite: true);
     
         return localPath;

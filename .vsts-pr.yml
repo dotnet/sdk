@@ -8,6 +8,11 @@ pr:
     - main
     - release/*
     - internal/release/*
+  paths:
+    exclude:
+    - documentation/*
+    - README.md
+    - CODEOWNERS
 
 parameters:
 - name: enableArm64Job
@@ -22,12 +27,12 @@ variables:
 
 resources:
   containers:
-  - container: alpine319WithNode
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+  - container: alpine322Amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
   - container: centosStream9
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
   - container: debian12Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
   - container: fedora39
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
   - container: ubuntu2204DebPkg
@@ -75,10 +80,8 @@ stages:
         helixTargetQueue: osx.13.arm64.open
         macOSJobParameterSets:
         - categoryName: TestBuild
-          buildArchitecture: arm64
+          targetArchitecture: arm64
           runtimeIdentifier: osx-arm64
-
-# Remove the source build leg as we don't ship that outside of 1xx feature bands
 
   ############### DOTNET-FORMAT ###############
   - template: /eng/dotnet-format/dotnet-format-integration.yml

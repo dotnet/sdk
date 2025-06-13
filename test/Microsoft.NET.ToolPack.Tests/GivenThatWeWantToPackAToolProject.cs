@@ -1,8 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
@@ -15,16 +18,20 @@ namespace Microsoft.NET.ToolPack.Tests
         {
         }
 
-        private string SetupNuGetPackage(bool multiTarget, [CallerMemberName] string callingMethod = "")
+        private string SetupNuGetPackage(bool multiTarget, string packageType = null, [CallerMemberName] string callingMethod = "")
         {
 
             TestAsset helloWorldAsset = _testAssetsManager
-                .CopyTestAsset("PortableTool", callingMethod + multiTarget)
+                .CopyTestAsset("PortableTool", callingMethod + multiTarget + (packageType ?? ""))
                 .WithSource()
                 .WithProjectChanges(project =>
                 {
                     XNamespace ns = project.Root.Name.Namespace;
                     XElement propertyGroup = project.Root.Elements(ns + "PropertyGroup").First();
+                    if (packageType is not null)
+                    {
+                        propertyGroup.Add(new XElement("packageType", packageType));
+                    }
                 })
                 .WithTargetFrameworkOrFrameworks(_targetFrameworkOrFrameworks, multiTarget);
 
@@ -186,10 +193,8 @@ namespace Microsoft.NET.ToolPack.Tests
                 getValuesCommand.Execute(args)
                     .Should().Pass();
                 string runCommandPath = getValuesCommand.GetValues().Single();
-                Path.GetExtension(runCommandPath)
-                    .Should().Be(extension);
-                File.Exists(runCommandPath).Should()
-                    .BeTrue("run command should be apphost executable (for WinExe) to debug. But it will not be packed");
+                runCommandPath
+                    .Should().Be("dotnet", because: "The RunCommand should recognize that this is a non-AppHost tool and should use the muxer to launch it");
             }
         }
 
@@ -250,6 +255,35 @@ namespace Microsoft.NET.ToolPack.Tests
             {
                 nupkgReader
                     .GetPackageTypes().Should().ContainSingle(t => t.Name == "DotnetTool");
+            }
+        }
+
+        [Theory]
+        [InlineData("", "DotnetTool")]
+        [InlineData("MyCustomType", "DotnetTool;MyCustomType")]
+        [InlineData("MyCustomType, 1.0", "DotnetTool;MyCustomType, 1.0")]
+        [InlineData("dotnettool", "dotnettool")]
+        [InlineData("DotnetTool, 1.0.0.0", "DotnetTool, 1.0.0.0")]
+        [InlineData("DotnetTool , 1.0.0.0", "DotnetTool , 1.0.0.0")]
+        [InlineData("MyDotnetTool", "DotnetTool;MyDotnetTool")]
+        public void It_allows_more_package_types(string input, string expectedString)
+        {
+            var nugetPackage = SetupNuGetPackage(multiTarget: false, packageType: input);
+            using (var nupkgReader = new PackageArchiveReader(nugetPackage))
+            {
+                var packageTypes = nupkgReader.GetPackageTypes();
+                var expected = expectedString
+                    .Split(';')
+                    .Select(t => t.Split(',').Select(x => x.Trim()).ToArray())
+                    .Select(t => (Name: t[0], Version: t.Length > 1 ? Version.Parse(t[1]) : PackageType.EmptyVersion))
+                    .Select(t => new PackageType(t.Name, t.Version))
+                    .ToList();
+                packageTypes.Count.Should().Be(expected.Count);
+                for (var i = 0; i < packageTypes.Count; i++)
+                {
+                    packageTypes[i].Name.Should().Be(expected[i].Name);
+                    packageTypes[i].Version.Should().Be(expected[i].Version);
+                }
             }
         }
 

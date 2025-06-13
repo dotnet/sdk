@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
 
@@ -842,9 +844,10 @@ class Program
                 Path.Combine(testAsset.TestRoot, "App.Config"));
 
             XElement root = BuildTestAssetGetAppConfig(testAsset);
+
             root.Elements("startup").Single()
                 .Elements("supportedRuntime").Single()
-                .Should().HaveAttribute("version", "v999", "It should keep existing supportedRuntime");
+                .Should().HaveAttributeWithValue("version", "v999", "It should keep existing supportedRuntime");
         }
 
         [WindowsOnlyFact]

@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.Security.Cryptography;
 using Microsoft.Build.Evaluation;
@@ -943,21 +945,21 @@ namespace Microsoft.NET.Build.Tasks
             /// "analyzers/dotnet/roslyn3.8/analyzer.dll"
             /// "analyzers/dotnet/roslyn4.0/analyzer.dll"
             ///
-            /// When the <paramref name="compilerApiVersion"/> is 'roslyn3.9', only the assets 
+            /// When the <paramref name="compilerApiVersion"/> is 'roslyn3.9', only the assets
             /// in the folder with the highest applicable compiler version are picked.
             /// In this case,
-            /// 
+            ///
             /// "analyzers/dotnet/roslyn3.8/analyzer.dll"
-            /// 
+            ///
             /// will be picked, and the other analyzer assets will be excluded.
             /// </remarks>
             private class AnalyzerResolver
             {
                 private readonly CacheWriter _cacheWriter;
-                private readonly string? _compilerNameSearchString;
-                private readonly Version? _compilerVersion;
-                private Dictionary<(string, NuGetVersion), LockFileTargetLibrary>? _targetLibraries;
-                private List<(string, LockFileLibrary, Version)>? _potentialAnalyzers;
+                private readonly string _compilerNameSearchString;
+                private readonly Version _compilerVersion;
+                private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> _targetLibraries;
+                private List<(string, LockFileLibrary, Version)> _potentialAnalyzers;
                 private Version _maxApplicableVersion;
 
                 private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> TargetLibraries =>
@@ -974,7 +976,7 @@ namespace Microsoft.NET.Build.Tasks
                         _compilerNameSearchString = string.Concat("/".AsSpan(), compilerName.Span);
 #else
                         _compilerNameSearchString = "/" + compilerName;
-#endif                   
+#endif
                         _compilerVersion = compilerVersion;
                     }
                 }

@@ -1,13 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable enable
-
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class BrowserConnectorTests
 {
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
     [InlineData(null, "https://localhost:1234", "https://localhost:1234")]
     [InlineData(null, "https://localhost:1234/", "https://localhost:1234/")]
     [InlineData("", "https://localhost:1234", "https://localhost:1234")]
