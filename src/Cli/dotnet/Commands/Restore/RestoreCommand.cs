@@ -33,10 +33,8 @@ public static class RestoreCommand
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             return new VirtualProjectBuildingCommand(
-                    entryPointFileFullPath: Path.GetFullPath(arg),
-                    msbuildArgs: [.. forwardedOptions, ..binLogArgs],
-                    verbosity: result.GetValue(CommonOptions.VerbosityOption),
-                    interactive: result.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
+                entryPointFileFullPath: Path.GetFullPath(arg),
+                msbuildArgs: [.. forwardedOptions, ..binLogArgs])
             {
                 NoCache = true,
                 NoBuild = true,

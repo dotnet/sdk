@@ -59,9 +59,7 @@ public class PublishCommand : RestoringCommand
 
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: msbuildArgs,
-                verbosity: parseResult.GetValue(CommonOptions.VerbosityOption),
-                interactive: parseResult.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
+                msbuildArgs: [.. msbuildArgs])
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
