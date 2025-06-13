@@ -313,6 +313,9 @@
     <MicrosoftSourceLinkGitLabVersion>10.0.0-beta.25265.101</MicrosoftSourceLinkGitLabVersion>
     <MicrosoftSourceLinkBitbucketGitVersion>10.0.0-beta.25265.101</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
+  <PropertyGroup>
+    <MicrosoftWixToolsetVersion>5.0.2-dotnet.2729052</MicrosoftWixToolsetVersion>
+  </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
     <UsingToolNetFrameworkReferenceAssemblies>true</UsingToolNetFrameworkReferenceAssemblies>
