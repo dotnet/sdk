@@ -427,6 +427,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <ItemGroup>
