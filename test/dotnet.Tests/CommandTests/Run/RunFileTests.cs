@@ -891,6 +891,48 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut("Changed");
     }
 
+    [Fact]
+    public void Publish()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).Sub("publish/release")
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_Options()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false", "-bl")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(artifactsDir).Sub("publish/debug")
+            .Should().Exist()
+            .And.HaveFile("Program.deps.json");
+
+        new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
+    }
+
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()
     {
@@ -1277,6 +1319,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -1374,6 +1417,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -1465,6 +1509,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                         <ImplicitUsings>enable</ImplicitUsings>
                         <Nullable>enable</Nullable>
+                        <PublishAot>true</PublishAot>
                       </PropertyGroup>
 
                       <PropertyGroup>

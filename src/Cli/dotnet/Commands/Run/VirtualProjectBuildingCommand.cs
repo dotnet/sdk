@@ -62,7 +62,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
-        string[] msbuildArgs,
+        IReadOnlyList<string> msbuildArgs,
         VerbosityOptions? verbosity,
         bool interactive)
     {
@@ -77,13 +77,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public string EntryPointFileFullPath { get; }
     public Dictionary<string, string> GlobalProperties { get; }
-    public string[] BinaryLoggerArgs { get; }
+    public IReadOnlyList<string> BinaryLoggerArgs { get; }
     public VerbosityOptions Verbosity { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
-    public bool NoIncremental { get; init; }
+    public string BuildTarget { get; init; } = "Build";
 
     public override int Execute()
     {
@@ -165,7 +165,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: [NoIncremental ? "Rebuild" : "Build"]);
+                    targetsToBuild: [BuildTarget]);
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
@@ -196,10 +196,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             consoleLogger.Shutdown();
         }
 
-        static ILogger? GetBinaryLogger(string[] args)
+        static ILogger? GetBinaryLogger(IReadOnlyList<string> args)
         {
             // Like in MSBuild, only the last binary logger is used.
-            for (int i = args.Length - 1; i >= 0; i--)
+            for (int i = args.Count - 1; i >= 0; i--)
             {
                 var arg = args[i];
                 if (LoggerUtility.IsBinLogArgument(arg))
@@ -535,6 +535,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 <TargetFramework>net10.0</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
+                <PublishAot>true</PublishAot>
               </PropertyGroup>
             """);
 
