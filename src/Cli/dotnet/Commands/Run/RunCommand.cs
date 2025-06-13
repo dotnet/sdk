@@ -80,6 +80,9 @@ public class RunCommand
         bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables)
     {
+        Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
+        Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
+
         NoBuild = noBuild;
         ProjectFileFullPath = projectFileFullPath;
         EntryPointFileFullPath = entryPointFileFullPath;
