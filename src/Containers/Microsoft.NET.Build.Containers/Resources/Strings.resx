@@ -465,10 +465,6 @@
     <value>CONTAINER1018: Unable to download image from the repository '{0}'.</value>
     <comment>{StrBegins="CONTAINER1018:" }</comment>
   </data>
-  <data name="UnableToDownloadFromRepository" xml:space="preserve">
-    <value>CONTAINER1018: Unable to download image from the repository '{0}'.</value>
-    <comment>{StrBegins="CONTAINER1018:" }</comment>
-  </data>
   <data name="UnableToAccessRepository" xml:space="preserve">
     <value>CONTAINER1016: Unable to access the repository '{0}' in the registry '{1}'. Please confirm your credentials are correct and that you have access to this repository and registry.</value>
     <comment>{StrBegins="CONTAINER1016:" }</comment>
