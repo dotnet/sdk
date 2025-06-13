@@ -65,6 +65,8 @@ For example, the remaining command-line arguments after the first argument (the 
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
 and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
+`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path).
+
 ### Other commands
 
 Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
@@ -294,27 +296,23 @@ Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or 
 
 ### Shebang support
 
-It might be beneficial to also ship `dotnet-run` binary
-(or `dotnet-run-file` that would only work with file-based programs, not project-based ones, perhaps simply named `cs`)
-because some shells do not support multiple command-line arguments in the shebang
+Some shells do not support multiple command-line arguments in the shebang
 which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executable
-(although `-S` argument can be sometimes used to enable multiple argument support):
+(although `-S` argument can be sometimes used to enable multiple argument support),
+so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
 #!/usr/bin/env dotnet run
 // ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
 ```
 ```cs
-#!/usr/bin/env dotnet-run
+#!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
 ```cs
 #!/usr/bin/env -S dotnet run
-// ^ Workaround in some shells.
+// ^ Works in some shells.
 ```
-
-We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
-but that would require changes to the native dotnet host.
 
 ### Other possible commands
 
