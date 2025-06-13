@@ -16,7 +16,4 @@ public class DotNetCliToolRuntimeIdentifierPackage
 
     [XmlAttribute]
     public string? Id { get; set; }
-
-    [XmlAttribute]
-    public string? Version { get; set; }
 }
