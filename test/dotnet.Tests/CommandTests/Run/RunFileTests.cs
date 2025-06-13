@@ -1155,6 +1155,103 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass();
     }
 
+    [Theory]
+    [InlineData("../Lib/Lib.csproj")]
+    [InlineData("../Lib")]
+    [InlineData(@"..\Lib\Lib.csproj")]
+    [InlineData(@"..\Lib")]
+    public void ProjectReference(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        File.WriteAllText(Path.Join(appDir, "Program.cs"), $"""
+            #:project {arg}
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(appDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Lib");
+    }
+
+    [Fact]
+    public void ProjectReference_Errors()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:project wrong.csproj
+            """);
+
+        // Project file does not exist.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "wrong.csproj"))));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:project dir/
+            """);
+
+        // Project directory does not exist.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindProjectOrDirectory, Path.Join(testInstance.Path, "dir/"))));
+
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "dir"));
+
+        // Directory exists but has no project file.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.CouldNotFindAnyProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+
+        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj1.csproj"), "<Project />");
+        File.WriteAllText(Path.Join(testInstance.Path, "dir", "proj2.csproj"), "<Project />");
+
+        // Directory exists but has multiple project files.
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidProjectDirective,
+                $"{Path.Join(testInstance.Path, "Program.cs")}:1",
+                string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Join(testInstance.Path, "dir/"))));
+    }
+
     [Fact]
     public void UpToDate()
     {
@@ -1391,32 +1488,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.targets" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -1479,32 +1551,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
@@ -1571,32 +1618,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
-                      <!--
-                        Override targets which don't work with project files that are not present on disk.
-                        See https://github.com/NuGet/Home/issues/14148.
-                      -->
-
-                      <Target Name="_FilterRestoreGraphProjectInputItems"
-                              DependsOnTargets="_LoadRestoreGraphEntryPoints"
-                              Returns="@(FilteredRestoreGraphProjectInputItems)">
-                        <ItemGroup>
-                          <FilteredRestoreGraphProjectInputItems Include="@(RestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GetAllRestoreProjectPathItems"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems"
-                              Returns="@(_RestoreProjectPathItems)">
-                        <ItemGroup>
-                          <_RestoreProjectPathItems Include="@(FilteredRestoreGraphProjectInputItems)" />
-                        </ItemGroup>
-                      </Target>
-
-                      <Target Name="_GenerateRestoreGraph"
-                              DependsOnTargets="_FilterRestoreGraphProjectInputItems;_GetAllRestoreProjectPathItems;_GenerateRestoreGraphProjectEntry;_GenerateProjectRestoreGraph"
-                              Returns="@(_RestoreGraphEntry)">
-                        <!-- Output from dependency _GenerateRestoreGraphProjectEntry and _GenerateProjectRestoreGraph -->
-                      </Target>
+                    {VirtualProjectBuildingCommand.TargetOverrides}
 
                     </Project>
 
