@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
@@ -34,41 +32,57 @@ public class Program
     public static ITelemetry TelemetryClient;
     // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
     // It is important to keep the TracerProvider instance active throughout the process lifetime.
-    private static TracerProvider tracerProvider = Sdk.CreateTracerProviderBuilder()
-        .ConfigureResource(r =>
-        {
-            r.AddService("dotnet-cli", serviceVersion: Product.Version);
-        })
-        .AddSource(Activities.s_source.Name)
-        .AddHttpClientInstrumentation()
-        .AddOtlpExporter()
-        .Build();
+    private static TracerProvider tracerProvider;
 
     // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
     // It is important to keep the MetricsProvider instance active throughout the process lifetime.
-    private static MeterProvider metricsProvider = Sdk.CreateMeterProviderBuilder()
-        .ConfigureResource(r =>
-        {
-            r.AddService("dotnet-cli", serviceVersion: Product.Version);
-        })
-        .AddMeter(Activities.s_source.Name)
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddOtlpExporter()
-        .Build();
+    private static MeterProvider metricsProvider;
 
-    private static ActivityContext s_parentActivityContext = default;
-    private static ActivityKind s_activityKind = ActivityKind.Internal;
+    static Activity? s_mainActivity;
+    private static DateTime s_mainTimeStamp;
+    private static PosixSignalRegistration s_sigIntRegistration;
+    private static PosixSignalRegistration s_sigQuitRegistration;
+    private static PosixSignalRegistration s_sigTermRegistration;
 
+    static Program()
+    {
+        s_mainTimeStamp = DateTime.Now;
+        s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
+        s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
+        s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
+        metricsProvider = Sdk.CreateMeterProviderBuilder()
+            .ConfigureResource(r =>
+            {
+                r.AddService("dotnet-cli", serviceVersion: Product.Version);
+            })
+            .AddMeter(Activities.s_source.Name)
+            .AddHttpClientInstrumentation()
+            .AddRuntimeInstrumentation()
+            .AddOtlpExporter()
+            .Build();
+        tracerProvider = Sdk.CreateTracerProviderBuilder()
+            .ConfigureResource(r =>
+            {
+                r.AddService("dotnet-cli", serviceVersion: Product.Version);
+            })
+            .AddSource(Activities.s_source.Name)
+            .AddHttpClientInstrumentation()
+            .AddOtlpExporter()
+            .SetSampler(new AlwaysOnSampler())
+            .Build();
+        (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
+        s_mainActivity = Activities.s_source.CreateActivity("main", s_activityKind, s_parentActivityContext);
+        s_mainActivity?.Start();
+        s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
+        s_mainActivity?.AddTag("process.pid", Process.GetCurrentProcess().Id);
+        s_mainActivity?.AddTag("process.executable.name", "dotnet");
+        TrackHostStartup(s_mainTimeStamp);
+        SetupMSBuildEnvironmentInvariants();
+        TelemetryClient = InitializeTelemetry();
+    }
 
     public static int Main(string[] args)
     {
-        // capture the time to we can compute muxer/host startup overhead
-        DateTime mainTimeStamp = DateTime.Now;
-        (s_parentActivityContext, s_activityKind) = DeriveParentActivityContextFromEnv();
-        using var _mainActivity = Activities.Source.StartActivity("main", s_activityKind, s_parentActivityContext);
-        _mainActivity.AddTag("process.pid", Process.GetCurrentProcess().Id);
-        _mainActivity.AddTag("process.executable.name", "dotnet");
         using AutomaticEncodingRestorer _encodingRestorer = new();
 
         // Setting output encoding is not available on those platforms
@@ -79,13 +93,7 @@ public class Program
 
         DebugHelper.HandleDebugSwitch(ref args);
 
-        TrackHostStartup(mainTimeStamp);
-
-        SetupMSBuildEnvironmentInvariants();
-
-        try
-        {
-            InitializeProcess();
+        InitializeProcess();
 
             try
             {
@@ -120,16 +128,22 @@ public class Program
             }
             finally
             {
-                PerformanceLogEventSource.Log.CLIStop();
+            Shutdown(default!);
             }
         }
-        finally
-        {
-            tracerProvider?.ForceFlush();
-            metricsProvider?.ForceFlush();
-            TelemetryClient?.Dispose();
-            Activities.Source.Dispose();
-        }
+
+    }
+
+    public static void Shutdown(PosixSignalContext context)
+    {
+        s_sigIntRegistration.Dispose();
+        s_sigQuitRegistration.Dispose();
+        s_sigTermRegistration.Dispose();
+        TelemetryClient?.Flush();
+        s_mainActivity?.Stop();
+        tracerProvider?.ForceFlush();
+        metricsProvider?.ForceFlush();
+        Activities.s_source.Dispose();
     }
 
     /// <summary>
@@ -141,55 +155,23 @@ public class Program
     {
         var traceParent = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACEPARENT);
         var traceState = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACESTATE);
-        static IEnumerable<string> GetValueFromCarrier(Dictionary<string, IEnumerable<string>> carrier, string key)
+        static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key)
         {
-            return carrier.TryGetValue(key, out var value) ? value : Enumerable.Empty<string>();
+            return carrier.TryGetValue(key, out var value) ? value : null;
         }
 
         if (string.IsNullOrEmpty(traceParent))
         {
             return (default, ActivityKind.Internal);
         }
-        var carriermap = new Dictionary<string, IEnumerable<string>>
+        var carriermap = new Dictionary<string, IEnumerable<string>?>
         {
             { "traceparent", [traceParent] },
-            { "tracestate", [traceState] }
         };
-
-        // Use the OpenTelemetry Propagator to extract the parent activity context and kind. For some reason this isn't set by the OTel SDK like docs say it should be.
-        Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([
-            new TraceContextPropagator(),
-            new BaggagePropagator()
-        ]));
-        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carriermap, GetValueFromCarrier);
-        var kind = parentActivityContext.ActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
-
-        return (parentActivityContext.ActivityContext, kind);
-    }
-
-    /// <summary>
-    /// uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
-    /// from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
-    /// </summary>
-    /// <returns></returns>
-    private static (ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
-    {
-        var traceParent = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACEPARENT);
-        var traceState = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACESTATE);
-        static IEnumerable<string> GetValueFromCarrier(Dictionary<string, IEnumerable<string>> carrier, string key)
+        if (!string.IsNullOrEmpty(traceState))
         {
-            return carrier.TryGetValue(key, out var value) ? value : Enumerable.Empty<string>();
+            carriermap.Add("tracestate", [traceState]);
         }
-
-        if (string.IsNullOrEmpty(traceParent))
-        {
-            return (default, ActivityKind.Internal);
-        }
-        var carriermap = new Dictionary<string, IEnumerable<string>>
-        {
-            { "traceparent", [traceParent] },
-            { "tracestate", [traceState] }
-        };
 
         // Use the OpenTelemetry Propagator to extract the parent activity context and kind. For some reason this isn't set by the OTel SDK like docs say it should be.
         Sdk.SetDefaultTextMapPropagator(new CompositeTextMapPropagator([
@@ -204,7 +186,7 @@ public class Program
 
     private static void TrackHostStartup(DateTime mainTimeStamp)
     {
-        var hostStartupActivity = Activities.s_source.CreateActivity("host-startup", s_activityKind, s_parentActivityContext);
+        var hostStartupActivity = Activities.s_source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         string globalJsonState = string.Empty;
         if (TelemetryClient.Enabled && hostStartupActivity is not null)
@@ -249,13 +231,14 @@ public class Program
         parentNames.Reverse();
         return string.Join(' ', parentNames);
     }
-    private static void SetDisplayName(Activity activity, ParseResult parseResult)
+    private static void SetDisplayName(Activity? activity, ParseResult parseResult)
     {
         if (activity == null)
         {
             return;
         }
         var name = GetCommandName(parseResult);
+
         // Set the display name to the full command name
         activity.DisplayName = name;
 
@@ -263,21 +246,133 @@ public class Program
         activity.SetTag("command.name", name);
     }
 
-    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args)
+    {
+        ParseResult parseResult = ParseArgs(args);
+        SetupDotnetFirstRun(parseResult);
+
+        if (parseResult.CanBeInvoked())
+        {
+            InvokeBuiltInCommand(parseResult, out var exitCode);
+            return exitCode;
+        }
+        else
+        {
+            try
+            {
+                return LookupAndExecuteCommand(args, parseResult);
+            }
+            catch (CommandUnknownException e)
+            {
+                Reporter.Error.WriteLine(e.Message.Red());
+                Reporter.Output.WriteLine(e.InstructionMessage);
+                return 1;
+            }
+        }
+    }
+
+    private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
+    {
+        var _lookupExternalCommandActivity = Activities.s_source.StartActivity("lookup-external-command");
+        string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
+        var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
+            new DefaultCommandResolverPolicy(),
+            commandName,
+            args.GetSubArguments(),
+            FrameworkConstants.CommonFrameworks.NetStandardApp15);
+        _lookupExternalCommandActivity?.Dispose();
+
+        if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
+        {
+            _lookupExternalCommandActivity?.Dispose();
+            return fileBasedAppExitCode;
+        }
+        else
+        {
+            var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
+            _lookupExternalCommandActivity?.Dispose();
+
+            using var _executionActivity = Activities.s_source.StartActivity("execute-extensible-command");
+            var result = resolvedCommand.Execute();
+            return result.ExitCode;
+        }
+    }
+
+    static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
+    {
+        Debug.Assert(parseResult.CanBeInvoked());
+        using var _invocationActivity = Activities.s_source.StartActivity("invocation");
+        try
+        {
+            exitCode = parseResult.Invoke();
+            exitCode = AdjustExitCode(parseResult, exitCode);
+        }
+        catch (Exception exception)
+        {
+            exitCode = Parser.ExceptionHandler(exception, parseResult);
+        }
+    }
+
+    static int? TryRunFileBasedApp(ParseResult parseResult)
+    {
+        // If we didn't match any built-in commands, and a C# file path is the first argument,
+        // parse as `dotnet run file.cs ..rest_of_args` instead.
+        if (parseResult.CommandResult.Command is RootCommand
+            && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
+            && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+        {
+            List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+            foreach (var token in parseResult.Tokens)
+            {
+                if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                {
+                    otherTokens.Add(token.Value);
+                }
+            }
+            parseResult = Parser.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+
+            InvokeBuiltInCommand(parseResult, out var exitCode);
+            return exitCode;
+        }
+
+        return null;
+    }
+
+    private static ITelemetry InitializeTelemetry()
+    {
+        var telemetryClient = new Telemetry.Telemetry();
+        TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
+        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
+        if (CommandLoggingContext.IsVerbose)
+        {
+            Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
+        }
+
+        return telemetryClient;
+    }
+
+    private static ParseResult ParseArgs(string[] args)
     {
         ParseResult parseResult;
-        using (var _parseActivity = Activities.s_source.StartActivity("parse", s_activityKind, s_parentActivityContext))
+        using (var _parseActivity = Activities.s_source.StartActivity("parse"))
         {
             parseResult = Parser.Parse(args);
 
-            SetDisplayName(_parseActivity, parseResult);
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
             // https://github.com/dotnet/sdk/issues/20195
             SudoEnvironmentDirectoryOverride.OverrideEnvironmentVariableToTmp(parseResult);
         }
 
-        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use", s_activityKind, s_parentActivityContext))
+        SetDisplayName(s_mainActivity, parseResult);
+
+        return parseResult;
+    }
+
+    private static void SetupDotnetFirstRun(ParseResult parseResult)
+    {
+        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use"))
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
 
@@ -330,106 +425,6 @@ public class Program
                 dotnetFirstRunConfiguration,
                 environmentProvider,
                 skipFirstTimeUseCheck: getStarOptionPassed);
-        }
-
-        TelemetryClient = new Telemetry.Telemetry();
-        TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
-        TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-
-        if (CommandLoggingContext.IsVerbose)
-        {
-            Console.WriteLine($"Telemetry is: {(TelemetryClient.Enabled ? "Enabled" : "Disabled")}");
-        }
-
-        int exitCode;
-        if (parseResult.CanBeInvoked())
-        {
-            InvokeBuiltInCommand(parseResult, out exitCode);
-        }
-        else
-        {
-            try
-            {
-                var _lookupExternalCommandActivity = Activities.s_source.StartActivity("lookup-external-command");
-                string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
-                var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
-                    new DefaultCommandResolverPolicy(),
-                    commandName,
-                    args.GetSubArguments(),
-                    FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                _lookupExternalCommandActivity?.Dispose();
-
-                if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
-                {
-                    exitCode = fileBasedAppExitCode;
-                }
-                else
-                {
-                    var _executionActivity = Activities.s_source.StartActivity("execute-extensible-command");
-                    var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
-                    var result = resolvedCommand.Execute();
-                    _executionActivity?.Dispose();
-                    exitCode = result.ExitCode;
-                }
-            }
-            catch (CommandUnknownException e)
-            {
-                Reporter.Error.WriteLine(e.Message.Red());
-                Reporter.Output.WriteLine(e.InstructionMessage);
-                exitCode = 1;
-            }
-        }
-
-        return exitCode;
-
-        static int? TryRunFileBasedApp(ParseResult parseResult)
-        {
-            // If we didn't match any built-in commands, and a C# file path is the first argument,
-            // parse as `dotnet run --file file.cs ..rest_of_args` instead.
-            if (parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
-                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
-            {
-                List<string> otherTokens = new(parseResult.Tokens.Count - 1);
-                foreach (var token in parseResult.Tokens)
-                {
-                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
-                    {
-                        otherTokens.Add(token.Value);
-                    }
-                }
-
-                parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile, .. otherTokens]);
-
-                InvokeBuiltInCommand(parseResult, out var exitCode);
-                return exitCode;
-            }
-
-            return null;
-        }
-
-        static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
-        {
-            Debug.Assert(parseResult.CanBeInvoked());
-            using var _invocationActivity = Activities.s_source.StartActivity("invocation");
-            // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
-            List<string> parentNames = [parseResult.CommandResult.Command.Name];
-            var current = parseResult.CommandResult.Parent;
-            while (current is CommandResult parentCommandResult)
-            {
-                parentNames.Add(parentCommandResult.Command.Name);
-                current = parentCommandResult.Parent;
-            }
-            parentNames.Reverse();
-            _invocationActivity?.DisplayName = string.Join(' ', parentNames);
-            try
-            {
-                exitCode = Parser.Invoke(parseResult);
-                exitCode = AdjustExitCode(parseResult, exitCode);
-            }
-            catch (Exception exception)
-            {
-                exitCode = Parser.ExceptionHandler(exception, parseResult);
-            }
         }
     }
 
