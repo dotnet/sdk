@@ -2208,8 +2208,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note>{0} - type of constraint (non-localizable), {1} - name of required component (non-localizable).</note>
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_DisplayName">
-        <source>Project capabiltities</source>
-        <target state="new">Project capabiltities</target>
+        <source>Project capabilities</source>
+        <target state="new">Project capabilities</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_Error_ArgumentShouldBeString">

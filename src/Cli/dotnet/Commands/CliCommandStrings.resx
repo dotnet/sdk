@@ -1441,7 +1441,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</comment>
   </data>
   <data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
-    <value>Project capabiltities</value>
+    <value>Project capabilities</value>
   </data>
   <data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
     <value>argument should be a string</value>
