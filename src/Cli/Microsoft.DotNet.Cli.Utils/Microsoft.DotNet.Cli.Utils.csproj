@@ -58,9 +58,5 @@
     <PackageReference Include="System.IO.Hashing" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="System.Diagnostics.DiagnosticSource" />
-  </ItemGroup>
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
