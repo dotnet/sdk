@@ -129,11 +129,17 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return Task.FromResult(_packageVersions.Max());
         }
 
-        public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null)
+        {
+            return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
+        }
+
+        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
+            VersionRange versionRange,PackageSourceLocation packageSourceLocation = null)
         {
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
-                return Task.FromException<NuGetVersion>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
+                return Task.FromException<(NuGetVersion version, PackageSource source)>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));
             }
 
             var bestVersion = versionRange.FindBestMatch(_packageVersions);
@@ -141,7 +147,10 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             {
                 bestVersion = versionRange.MinVersion;
             }
-            return Task.FromResult(bestVersion);
+
+            var source = new PackageSource("http://mock-url", "MockSource");
+
+            return Task.FromResult((bestVersion, source));
         }
 
 
