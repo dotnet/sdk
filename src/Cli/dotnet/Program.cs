@@ -24,6 +24,7 @@ public class Program
 {
     private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
+    public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
         using AutomaticEncodingRestorer _ = new();
@@ -113,12 +114,12 @@ public class Program
         }
     }
 
-    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args)
     {
-        return ProcessArgs(args, new TimeSpan(0), telemetryClient);
+        return ProcessArgs(args, new TimeSpan(0));
     }
 
-    internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args, TimeSpan startupTime)
     {
         Dictionary<string, double> performanceData = [];
 
@@ -146,18 +147,13 @@ public class Program
 
             PerformanceLogEventSource.Log.TelemetryRegistrationStart();
 
-            telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-            TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
+            TelemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
+            TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
             TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
 
             PerformanceLogEventSource.Log.TelemetryRegistrationStop();
 
-            if (parseResult.GetValue(Parser.CliSchemaOption))
-            {
-                CliSchema.PrintCliSchema(parseResult.CommandResult, telemetryClient);
-                return 0;
-            }
-            else if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
+            if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
             {
                 // We found --diagnostic or -d, but we still need to determine whether the option should
                 // be attached to the dotnet command or the subcommand.
@@ -231,7 +227,7 @@ public class Program
 
         if (CommandLoggingContext.IsVerbose)
         {
-            Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
+            Console.WriteLine($"Telemetry is: {(TelemetryClient.Enabled ? "Enabled" : "Disabled")}");
         }
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
         performanceData.Add("Startup Time", startupTime.TotalMilliseconds);
@@ -281,10 +277,10 @@ public class Program
         }
 
         PerformanceLogEventSource.Log.TelemetryClientFlushStart();
-        telemetryClient.Flush();
+        TelemetryClient.Flush();
         PerformanceLogEventSource.Log.TelemetryClientFlushStop();
 
-        telemetryClient.Dispose();
+        TelemetryClient.Dispose();
 
         return exitCode;
     }

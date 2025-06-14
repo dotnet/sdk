@@ -52,9 +52,9 @@ internal static class CliSchema
 
         writer.WriteStartObject(nameof(command.Arguments).ToCamelCase());
         // Leave default ordering for arguments. Do not order by name.
-        foreach (var argument in command.Arguments)
+        foreach ((var index, var argument) in command.Arguments.Index())
         {
-            WriteArgument(argument, writer);
+            WriteArgument(index, argument, writer);
         }
         writer.WriteEndObject();
 
@@ -75,11 +75,12 @@ internal static class CliSchema
         writer.WriteEndObject();
     }
 
-    private static void WriteArgument(Argument argument, Utf8JsonWriter writer)
+    private static void WriteArgument(int index, Argument argument, Utf8JsonWriter writer)
     {
         writer.WriteStartObject(argument.Name);
 
         writer.WriteString(nameof(argument.Description).ToCamelCase(), argument.Description);
+        writer.WriteNumber("order", index);
         writer.WriteBoolean(nameof(argument.Hidden).ToCamelCase(), argument.Hidden);
         writer.WriteString(nameof(argument.HelpName).ToCamelCase(), argument.HelpName);
         writer.WriteString(nameof(argument.ValueType).ToCamelCase(), argument.ValueType.ToCliTypeString());

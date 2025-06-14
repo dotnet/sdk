@@ -5,7 +5,13 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 public static class TypeExtensions
 {
-    // This is used when outputting the Type information for the CLI schema JSON.
+    ///<summary>
+    /// Converts a Type (potentially containing generic parameters) from CLI representation (e.g. <c>System.Collections.Generic.List`1[[System.Int32, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]</c>)
+    /// to a more readable string representation (e.g. <c>System.Collections.Generic.List&lt;System.Int32&gt;</c>).
+    /// </summary>
+    ///<remarks>
+    /// This is used when outputting the Type information for the CLI schema JSON.
+    ///</remarks>
     public static string ToCliTypeString(this Type type)
     {
         var typeName = type.FullName ?? string.Empty;

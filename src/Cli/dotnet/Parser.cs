@@ -5,6 +5,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Completions;
+using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
@@ -121,7 +122,8 @@ public static class Parser
         Description = CliStrings.SDKSchemaCommandDefinition,
         Arity = ArgumentArity.Zero,
         Recursive = true,
-        Hidden = true
+        Hidden = true,
+        Action = new PrintCliSchemaAction()
     };
 
     // Argument
@@ -389,6 +391,19 @@ public static class Parser
 
                 base.Write(context);
             }
+        }
+    }
+
+    private class PrintCliSchemaAction : SynchronousCommandLineAction
+    {
+        internal PrintCliSchemaAction()
+        {
+            Terminating = true;
+        }
+        public override int Invoke(ParseResult parseResult)
+        {
+            CliSchema.PrintCliSchema(parseResult.CommandResult, Program.TelemetryClient);
+            return 1;
         }
     }
 }
