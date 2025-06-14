@@ -14,12 +14,12 @@
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonInstalled">
         <source>Found workload version {0} pinned in the global.json file at {1}.</source>
-        <target state="new">Found workload version {0} pinned in the global.json file at {1}.</target>
+        <target state="translated">在位於 {1} 的 global.json 檔案中找到已釘選的工作負載版本 {0}。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetFromGlobalJsonNotInstalled">
         <source>Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</source>
-        <target state="new">Found workload version {0} pinned in the global.json file at {1}, but it was not installed. Running `dotnet workload install`, `dotnet workload update`, or `dotnet workload restore` may fix this.</target>
+        <target state="translated">在位於 {1} 的 global.json 檔案中找到已釘選的工作負載版本 {0}，但尚未安裝。執行 `dotnet workload install`、`dotnet workload update` 或 `dotnet workload restore` 可能會修正此問題。</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSetVersion">

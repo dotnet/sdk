@@ -13,15 +13,15 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
     {
         int ExitCode { get; }
 
-        string InstallWorkloadSet(ITransactionContext context, string advertisingPackagePath);
-
         void InstallWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
         void RepairWorkloads(IEnumerable<WorkloadId> workloadIds, SdkFeatureBand sdkFeatureBand, DirectoryPath? offlineCache = null);
 
         void GarbageCollect(Func<string, IWorkloadResolver> getResolverForWorkloadSet, DirectoryPath? offlineCache = null, bool cleanAllPacks = false);
 
-        void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null, bool isRollback = false);
+        WorkloadSet InstallWorkloadSet(ITransactionContext context, string workloadSetVersion, DirectoryPath? offlineCache = null);
+
+        void InstallWorkloadManifest(ManifestVersionUpdate manifestUpdate, ITransactionContext transactionContext, DirectoryPath? offlineCache = null);
 
         IWorkloadInstallationRecordRepository GetWorkloadInstallationRecordRepository();
 
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Install
         /// <param name="manifestContents">The JSON contents describing the install state.</param>
         void SaveInstallStateManifestVersions(SdkFeatureBand sdkFeatureBand, Dictionary<string, string> manifestContents);
 
-        void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool newMode);
+        void UpdateInstallMode(SdkFeatureBand sdkFeatureBand, bool? newMode);
     }
 
     // Interface to pass to workload manifest updater
