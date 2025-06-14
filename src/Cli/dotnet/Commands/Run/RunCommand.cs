@@ -53,7 +53,7 @@ public class RunCommand
 
     private bool ShouldBuild => !NoBuild;
 
-    public string LaunchProfile { get; }
+    public string? LaunchProfile { get; }
     public bool NoLaunchProfile { get; }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class RunCommand
     public RunCommand(
         bool noBuild,
         string? projectFileOrDirectory,
-        string launchProfile,
+        string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
@@ -145,7 +145,7 @@ public class RunCommand
         }
     }
 
-    private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
@@ -172,7 +172,7 @@ public class RunCommand
         }
     }
 
-    private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -280,9 +280,7 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: RestoreArgs,
-            verbosity: Verbosity,
-            interactive: Interactive)
+            msbuildArgs: RestoreArgs)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -310,7 +308,7 @@ public class RunCommand
         return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
-    private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
@@ -394,7 +392,7 @@ public class RunCommand
         }
     }
 
-    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 

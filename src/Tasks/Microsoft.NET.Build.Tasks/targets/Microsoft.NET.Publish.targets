@@ -1281,7 +1281,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     -->
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
           AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <Target Name="ComputeEmbeddedApphostPaths">
+  <Target Name="ComputeEmbeddedApphostPaths" Condition="'$(PackAsTool)' == 'true'">
 
     <ItemGroup>
       <_PackAsToolShimRuntimeIdentifiers Condition="@(_PackAsToolShimRuntimeIdentifiers) ==''" Include="$(PackAsToolShimRuntimeIdentifiers)"/>

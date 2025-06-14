@@ -33,15 +33,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public string ToolCommandName { get; set; } = "TestTool";
 
             public bool NativeAOT { get; set; } = false;
+            public bool SelfContained { get; set; } = false;
 
-            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : "managed")}";
+            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : "managed")}";
         }
 
 
         public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
-            
+
 
             var testProject = new TestProject(toolSettings.ToolPackageId)
             {
@@ -56,7 +57,13 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             if (toolSettings.NativeAOT)
             {
                 testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AddItem("ToolPackageRuntimeIdentifier", "Include", RuntimeInformation.RuntimeIdentifier);
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = RuntimeInformation.RuntimeIdentifier;
+            }
+
+            if (toolSettings.SelfContained)
+            {
+                testProject.AdditionalProperties["SelfContained"] = "true";
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = ToolsetInfo.LatestRuntimeIdentifiers;
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
@@ -130,7 +137,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             if (Directory.Exists(packagePathInGlobalPackages))
             {
                 Directory.Delete(packagePathInGlobalPackages, true);
-            }            
+            }
         }
 
         /// <summary>

@@ -925,6 +925,21 @@ dotnet.config is a name don't translate.</note>
         <target state="new">The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior</target>
         <note />
       </trans-unit>
+      <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
+        <source>Please type '{0}' for yes or '{1}' for no.</source>
+        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ConfirmationPromptNoValue">
+        <source>n</source>
+        <target state="new">n</target>
+        <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
+      </trans-unit>
+      <trans-unit id="ConfirmationPromptYesValue">
+        <source>y</source>
+        <target state="new">y</target>
+        <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
+      </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
         <source>Console is already in batching mode.</source>
         <target state="new">Console is already in batching mode.</target>
@@ -1411,6 +1426,11 @@ Make the profile names distinct.</target>
         <target state="new">The working directory used by the command to execute.</target>
         <note />
       </trans-unit>
+      <trans-unit id="InvalidDirectiveName">
+        <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
+        <target state="new">The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</target>
+        <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
+      </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
         <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
@@ -1420,6 +1440,11 @@ Make the profile names distinct.</target>
         <source>Cannot combine option '{0}' and '{1}'.</source>
         <target state="new">Cannot combine option '{0}' and '{1}'.</target>
         <note>{0} and {1} are option names like '--no-build'.</note>
+      </trans-unit>
+      <trans-unit id="InvalidProjectDirective">
+        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
+        <target state="new">The '#:project' directive at '{0}' is invalid: {1}</target>
+        <note>{0} is the file path and line number. {1} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
@@ -2183,8 +2208,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note>{0} - type of constraint (non-localizable), {1} - name of required component (non-localizable).</note>
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_DisplayName">
-        <source>Project capabiltities</source>
-        <target state="new">Project capabiltities</target>
+        <source>Project capabilities</source>
+        <target state="new">Project capabilities</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_Error_ArgumentShouldBeString">
@@ -2268,8 +2293,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note>{0} is the file path and line number. {1} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
-        <source>The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</source>
-        <target state="new">The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</target>
+        <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
+        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</target>
         <note>{0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -2931,6 +2956,28 @@ Your project targets multiple frameworks. Specify which framework to run using '
         <target state="new">Install or manage tools that extend the .NET experience.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolDownloadCanceled">
+        <source>Tool package download canceled</source>
+        <target state="new">Tool package download canceled</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDownloadConfirmationPrompt">
+        <source>Tool package {0}@{1} will be downloaded from source {2}.
+Proceed?</source>
+        <target state="new">Tool package {0}@{1} will be downloaded from source {2}.
+Proceed?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolDownloadNeedsConfirmation">
+        <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
+        <target state="new">Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</target>
+        <note>{Locked="--yes"}</note>
+      </trans-unit>
+      <trans-unit id="ToolExecuteCommandDescription">
+        <source>Executes a tool from source without permanently installing it.</source>
+        <target state="new">Executes a tool from source without permanently installing it.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallAddSourceOptionDescription">
         <source>Add an additional NuGet package source to use during installation.</source>
         <target state="new">Add an additional NuGet package source to use during installation.</target>
@@ -3128,6 +3175,11 @@ Tool '{1}' (version '{2}') was successfully installed.</target>
       <trans-unit id="ToolRestoreManifestPathOptionDescription">
         <source>Path to the manifest file.</source>
         <target state="new">Path to the manifest file.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolRunArgumentsDescription">
+        <source>Arguments forwarded to the tool</source>
+        <target state="new">Arguments forwarded to the tool</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRunCommandDescription">

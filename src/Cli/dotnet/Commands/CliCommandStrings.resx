@@ -1046,6 +1046,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
   </data>
+  <data name="InvalidProjectDirective" xml:space="preserve">
+    <value>The '#:project' directive at '{0}' is invalid: {1}</value>
+    <comment>{0} is the file path and line number. {1} is the inner error message.</comment>
+  </data>
   <data name="MissingDirectiveName" xml:space="preserve">
     <value>Missing name of '{0}' at {1}.</value>
     <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
@@ -1437,7 +1441,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</comment>
   </data>
   <data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
-    <value>Project capabiltities</value>
+    <value>Project capabilities</value>
   </data>
   <data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
     <value>argument should be a string</value>
@@ -1506,8 +1510,12 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path and line number. {1} is an inner exception message.</comment>
   </data>
   <data name="PropertyDirectiveMissingParts" xml:space="preserve">
-    <value>The property directive needs to have two parts separated by a space like 'PropertyName PropertyValue': {0}</value>
+    <value>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</value>
     <comment>{0} is the file path and line number.</comment>
+  </data>
+  <data name="InvalidDirectiveName" xml:space="preserve">
+    <value>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</value>
+    <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
     <value>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</value>
@@ -2052,6 +2060,9 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
   <data name="ToolRunCommandDescription" xml:space="preserve">
     <value>Run a local tool. Note that this command cannot be used to run a global tool. </value>
   </data>
+  <data name="ToolRunArgumentsDescription" xml:space="preserve">
+    <value>Arguments forwarded to the tool</value>
+  </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in nuget.org</value>
   </data>
@@ -2475,5 +2486,30 @@ To display a value, specify the corresponding command-line option without provid
   </data>
   <data name="SolutionAddReferencedProjectsOptionDescription" xml:space="preserve">
     <value>Recursively add projects' ReferencedProjects to solution</value>
+  </data>
+  <data name="ToolExecuteCommandDescription" xml:space="preserve">
+    <value>Executes a tool from source without permanently installing it.</value>
+  </data>
+  <data name="ToolDownloadConfirmationPrompt" xml:space="preserve">
+    <value>Tool package {0}@{1} will be downloaded from source {2}.
+Proceed?</value>
+  </data>
+  <data name="ConfirmationPromptYesValue" xml:space="preserve">
+    <value>y</value>
+    <comment>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</comment>
+  </data>
+  <data name="ConfirmationPromptNoValue" xml:space="preserve">
+    <value>n</value>
+    <comment>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</comment>
+  </data>
+  <data name="ConfirmationPromptInvalidChoiceMessage" xml:space="preserve">
+    <value>Please type '{0}' for yes or '{1}' for no.</value>
+  </data>
+  <data name="ToolDownloadCanceled" xml:space="preserve">
+    <value>Tool package download canceled</value>
+  </data>
+  <data name="ToolDownloadNeedsConfirmation" xml:space="preserve">
+    <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
+    <comment>{Locked="--yes"}</comment>
   </data>
 </root>

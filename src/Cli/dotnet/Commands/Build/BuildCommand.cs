@@ -45,13 +45,11 @@ public static class BuildCommand
         {
             command = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, .. binLogArgs],
-                verbosity: parseResult.GetValue(CommonOptions.VerbosityOption),
-                interactive: parseResult.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
+                msbuildArgs: [.. forwardedOptions, .. binLogArgs])
             {
                 NoRestore = noRestore,
                 NoCache = true,
-                NoIncremental = noIncremental,
+                BuildTarget = noIncremental ? "Rebuild" : "Build",
             };
         }
         else

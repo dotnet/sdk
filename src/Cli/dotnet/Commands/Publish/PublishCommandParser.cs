@@ -13,9 +13,9 @@ internal static class PublishCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -67,7 +67,7 @@ internal static class PublishCommandParser
     {
         var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
 
         command.Options.Add(OutputOption);

@@ -55,7 +55,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         var dotnetProjectConvertProjectText = File.ReadAllText(dotnetProjectConvertProject);
         var dotnetNewConsoleProjectText = File.ReadAllText(dotnetNewConsoleProject);
-        dotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
+
+        // There are some differences: we add PublishAot=true.
+        var patchedDotnetProjectConvertProjectText = dotnetProjectConvertProjectText
+            .Replace("    <PublishAot>true</PublishAot>" + Environment.NewLine, string.Empty);
+
+        patchedDotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
     }
 
@@ -286,7 +291,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:sdk Aspire.Hosting.Sdk/9.1.0
+            #:sdk Aspire.Hosting.Sdk@9.1.0
             Console.WriteLine();
             """);
 
@@ -315,6 +320,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                 </Project>
@@ -329,10 +335,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             inputCSharp: """
                 #!/program
                 #:sdk Microsoft.NET.Sdk
-                #:sdk Aspire.Hosting.Sdk 9.1.0
-                #:property TargetFramework net11.0
-                #:package System.CommandLine 2.0.0-beta4.22272.1
-                #:property LangVersion preview
+                #:sdk Aspire.Hosting.Sdk@9.1.0
+                #:property TargetFramework=net11.0
+                #:package System.CommandLine@2.0.0-beta4.22272.1
+                #:property LangVersion=preview
                 Console.WriteLine();
                 """,
             expectedProject: $"""
@@ -345,6 +351,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -369,8 +376,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:package MyPackage $(MyProp)
-                #:property MyProp MyValue
+                #:package MyPackage@$(MyProp)
+                #:property MyProp=MyValue
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -380,6 +387,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -397,17 +405,53 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     [Fact]
+    public void Directives_DirectoryPath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), "test");
+
+        var slash = Path.DirectorySeparatorChar;
+        VerifyConversion(
+            filePath: Path.Join(testInstance.Path, "app", "Program.cs"),
+            inputCSharp: """
+                #:project ../lib
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="..{slash}lib{slash}Lib.csproj" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [Fact]
     public void Directives_Separators()
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop1   One=a/b
-                #:property Prop2   Two/a=b
-                #:sdk First 1.0=a/b
-                #:sdk Second 2.0/a=b
-                #:sdk Third 3.0=a/b
-                #:package P1 1.0/a=b
-                #:package P2 2.0/a=b
+                #:property Prop1 = One=a/b
+                #:property Prop2 = Two/a=b
+                #:sdk First @ 1.0=a/b
+                #:sdk Second @ 2.0/a=b
+                #:sdk Third @ 3.0=a/b
+                #:package P1 @ 1.0/a=b
+                #:package P2 @ 2.0/a=b
                 #:package P3@1.0 ab
                 """,
             expectedProject: $"""
@@ -421,6 +465,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -491,11 +536,28 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversionThrows(
             inputCSharp: """
-                #:property Name" Value
+                #:property Name"=Value
                 """,
             expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1", """
                 The '"' character, hexadecimal value 0x22, cannot be included in a name.
                 """));
+    }
+
+    [Theory]
+    [InlineData("sdk", "@", "/")]
+    [InlineData("sdk", "@", " ")]
+    [InlineData("sdk", "@", "=")]
+    [InlineData("package", "@", "/")]
+    [InlineData("package", "@", " ")]
+    [InlineData("package", "@", "=")]
+    [InlineData("property", "=", "/")]
+    [InlineData("property", "=", " ")]
+    [InlineData("property", "=", "@")]
+    public void Directives_InvalidName(string directiveKind, string expectedSeparator, string actualSeparator)
+    {
+        VerifyConversionThrows(
+            inputCSharp: $"#:{directiveKind} Abc{actualSeparator}Xyz",
+            expectedWildcardPattern: string.Format(CliCommandStrings.InvalidDirectiveName, directiveKind, expectedSeparator, "/app/Program.cs:1"));
     }
 
     [Fact]
@@ -503,9 +565,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyConversion(
             inputCSharp: """
-                #:property Prop <test">
-                #:sdk <test"> ="<>test
-                #:package <test"> ="<>test
+                #:property Prop=<test">
+                #:sdk <test"> @="<>test
+                #:package <test"> @="<>test
                 """,
             expectedProject: $"""
                 <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;test">
@@ -515,6 +577,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -537,11 +600,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VerifyConversion(
             inputCSharp: """
                     #:   sdk   TestSdk
-                #:property Name   Value   
-                #:property NugetPackageDescription "My package with spaces"
+                #:property Name  =  Value   
+                #:property NugetPackageDescription="My package with spaces"
                  #  !  /test
                   #!  /program   x   
-                 # :property Name Value
+                 # :property Name=Value
                 """,
             expectedProject: $"""
                 <Project Sdk="TestSdk">
@@ -551,6 +614,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -564,19 +628,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                  #  !  /test
                   #!  /program   x   
-                 # :property Name Value
+                 # :property Name=Value
                 """);
-    }
-
-    [Fact]
-    public void Directives_Whitespace_Invalid()
-    {
-        VerifyConversionThrows(
-            inputCSharp: $"""
-                #:   property   Name{'\t'}     Value
-                """,
-            expectedWildcardPattern: string.Format(CliCommandStrings.PropertyDirectiveInvalidName, "/app/Program.cs:1",
-                "The '\t' character, hexadecimal value 0x09, cannot be included in a name."));
     }
 
     /// <summary>
@@ -586,11 +639,11 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_AfterToken()
     {
         string source = """
-            #:property Prop1 1
+            #:property Prop1=1
             #define X
-            #:property Prop2 2
+            #:property Prop2=2
             Console.WriteLine();
-            #:property Prop1 3
+            #:property Prop1=3
             """;
 
         VerifyConversionThrows(
@@ -608,6 +661,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -621,7 +675,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                 #define X
                 Console.WriteLine();
-                #:property Prop1 3
+                #:property Prop1=3
                 """);
     }
 
@@ -632,13 +686,13 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     public void Directives_AfterIf()
     {
         string source = """
-            #:property Prop1 1
+            #:property Prop1=1
             #define X
-            #:property Prop2 2
+            #:property Prop2=2
             #if X
-            #:property Prop1 3
+            #:property Prop1=3
             #endif
-            #:property Prop2 4
+            #:property Prop2=4
             """;
 
         VerifyConversionThrows(
@@ -656,6 +710,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -669,9 +724,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             expectedCSharp: """
                 #define X
                 #if X
-                #:property Prop1 3
+                #:property Prop1=3
                 #endif
-                #:property Prop2 4
+                #:property Prop2=4
                 """);
     }
 
@@ -689,8 +744,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                 #:package MyJson
                 // #:package Unused
                 /* Custom props: */
-                #:property Prop1 1
-                #:property Prop2 2
+                #:property Prop1=1
+                #:property Prop2=2
                 Console.Write();
                 """,
             expectedProject: $"""
@@ -701,6 +756,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -729,8 +785,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property Prop 1
-                #:property Prop 2
+                #:property Prop=1
+                #:property Prop=2
                 """,
             expectedErrors:
             [
@@ -740,7 +796,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         VerifyDirectiveConversionErrors(
             inputCSharp: """
                 #:sdk Name
-                #:sdk Name X
+                #:sdk Name@X
                 #:sdk Name
                 #:sdk Name2
                 """,
@@ -765,17 +821,17 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:sdk Prop 1
-                #:property Prop 2
+                #:sdk Prop@1
+                #:property Prop=2
                 """,
             expectedErrors: []);
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property Prop 1
-                #:property Prop 2
-                #:property Prop2 3
-                #:property Prop 4
+                #:property Prop=1
+                #:property Prop=2
+                #:property Prop2=3
+                #:property Prop=4
                 """,
             expectedErrors:
             [
@@ -785,8 +841,8 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         VerifyDirectiveConversionErrors(
             inputCSharp: """
-                #:property prop 1
-                #:property PROP 2
+                #:property prop=1
+                #:property PROP=2
                 """,
             expectedErrors:
             [
@@ -794,9 +850,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
+    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
-        var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
+        var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
         var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
@@ -807,16 +863,16 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <param name="expectedCSharp">
     /// <see langword="null"/> means the conversion should not touch the C# content.
     /// </param>
-    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false)
+    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false, string? filePath = null)
     {
-        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force);
+        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force, filePath: filePath);
         actualProject.Should().Be(expectedProject);
         actualCSharp.Should().Be(expectedCSharp);
     }
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        var convert = () => Convert(inputCSharp, out _, out _, force: false);
+        var convert = () => Convert(inputCSharp, out _, out _, force: false, filePath: null);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 
