@@ -16,7 +16,8 @@ internal static class CliSchema
 {
     // Using UnsafeRelaxedJsonEscaping because this JSON is not transmitted over the web. Therefore, HTML-sensitive characters are not encoded.
     // See: https://learn.microsoft.com/dotnet/api/system.text.encodings.web.javascriptencoder.unsaferelaxedjsonescaping
-    private static readonly JsonWriterOptions s_jsonWriterOptions = new() { Indented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
+    // Force the newline to be "\n" instead of the default "\r\n" for consistency across platforms (and for testing)
+    private static readonly JsonWriterOptions s_jsonWriterOptions = new() { Indented = true, NewLine = "\n", Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
 
     public static void PrintCliSchema(CommandResult commandResult, ITelemetry telemetryClient)

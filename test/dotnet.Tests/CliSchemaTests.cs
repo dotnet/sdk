@@ -5,7 +5,7 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests;
 
-public class CliSchemaTests: SdkTest
+public class CliSchemaTests : SdkTest
 {
     public CliSchemaTests(ITestOutputHelper log) : base(log)
     {
@@ -1128,6 +1128,6 @@ public class CliSchemaTests: SdkTest
     {
         var commandResult = new DotnetCommand(Log).Execute(commandArgs);
         commandResult.Should().Pass();
-        commandResult.Should().HaveStdOut(json);
+        commandResult.Should().HaveStdOut(json.ReplaceLineEndings("\n"));
     }
 }
