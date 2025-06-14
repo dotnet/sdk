@@ -161,7 +161,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass");
             cmd.Should().Fail()
                 .And.HaveStdErrContaining("Failed to instatiate template 'ClassTemplate', the following constraints are not met:")
-                .And.HaveStdErrContaining("Project capabiltities: Multiple projects found:")
+                .And.HaveStdErrContaining("Project capabilities: Multiple projects found:")
                 .And.HaveStdErrContaining("Specify the project to use using --project option.");
 
             cmd = new DotnetNewCommand(Log)
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute("TestAssets.ClassTemplate", "--name", "MyTestClass");
             cmd.Should().Fail()
                 .And.HaveStdErrContaining("Failed to instatiate template 'ClassTemplate', the following constraints are not met:")
-                .And.HaveStdErrContaining($"Project capabiltities: The project {Path.Combine(projectPath, "ConsoleFullFramework.csproj")} is not an SDK style project, and is not supported for evaluation.");
+                .And.HaveStdErrContaining($"Project capabilities: The project {Path.Combine(projectPath, "ConsoleFullFramework.csproj")} is not an SDK style project, and is not supported for evaluation.");
         }
     }
 }

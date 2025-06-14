@@ -53,7 +53,7 @@ public class RunCommand
 
     private bool ShouldBuild => !NoBuild;
 
-    public string LaunchProfile { get; }
+    public string? LaunchProfile { get; }
     public bool NoLaunchProfile { get; }
 
     /// <summary>
@@ -64,7 +64,7 @@ public class RunCommand
     public RunCommand(
         bool noBuild,
         string? projectFileOrDirectory,
-        string launchProfile,
+        string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
@@ -110,14 +110,14 @@ public class RunCommand
         }
         else
         {
-            if (EntryPointFileFullPath is not null)
-            {
-                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
-            }
-
             if (NoCache)
             {
                 throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            }
+
+            if (EntryPointFileFullPath is not null)
+            {
+                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
             }
         }
 
@@ -145,7 +145,7 @@ public class RunCommand
         }
     }
 
-    private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
@@ -172,7 +172,7 @@ public class RunCommand
         }
     }
 
-    private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -280,9 +280,7 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: RestoreArgs,
-            verbosity: Verbosity,
-            interactive: Interactive)
+            msbuildArgs: RestoreArgs)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -310,7 +308,7 @@ public class RunCommand
         return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
-    private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
@@ -394,7 +392,7 @@ public class RunCommand
         }
     }
 
-    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 
@@ -515,24 +513,12 @@ public class RunCommand
         // bl information to synchronize the restore and build logger configurations
         var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
 
-        var binlogArgs = new List<string>();
-        var nonBinLogArgs = new List<string>();
-        foreach (var arg in applicationArguments ?? [])
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binlogArgs.Add(arg);
-            }
-            else
-            {
-                nonBinLogArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
         var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
-        if (binlogArgs.Count > 0)
+        if (binLogArgs.Count > 0)
         {
-            restoreArgs.AddRange(binlogArgs);
+            restoreArgs.AddRange(binLogArgs);
         }
 
         var command = new RunCommand(

@@ -16,7 +16,7 @@ namespace Microsoft.NET.TestFramework
         public const string LatestWinRuntimeIdentifier = "win";
         public const string LatestLinuxRuntimeIdentifier = "linux";
         public const string LatestMacRuntimeIdentifier = "osx";
-        public const string LatestRuntimeIdentifiers = $"{LatestWinRuntimeIdentifier}-x64;{LatestWinRuntimeIdentifier}-x86;osx-x64;{LatestMacRuntimeIdentifier}-x64;{LatestLinuxRuntimeIdentifier}-x64;linux-musl-x64";
+        public const string LatestRuntimeIdentifiers = $"{LatestWinRuntimeIdentifier}-x64;{LatestWinRuntimeIdentifier}-x86;{LatestMacRuntimeIdentifier}-x64;{LatestLinuxRuntimeIdentifier}-x64;linux-musl-x64";
 
         public string DotNetRoot { get; }
         public string DotNetHostPath { get; }
@@ -138,7 +138,7 @@ namespace Microsoft.NET.TestFramework
                 {
                     string? msbuildRoot = null;
                     var msbuildBinPath = Path.GetDirectoryName(FullFrameworkMSBuildPath);
-                    if(msbuildBinPath is not null)
+                    if (msbuildBinPath is not null)
                     {
                         msbuildRoot = Directory.GetParent(msbuildBinPath)?.Parent?.FullName;
                     }
@@ -158,7 +158,7 @@ namespace Microsoft.NET.TestFramework
                 string sdksPath = Path.Combine(DotNetRoot, "sdk", SdkVersion, "Sdks");
 
                 //  Use stage 2 MSBuild SDK resolver
-                if(SdkResolverPath is not null)
+                if (SdkResolverPath is not null)
                 {
                     environment["MSBUILDADDITIONALSDKRESOLVERSFOLDER"] = SdkResolverPath;
                 }

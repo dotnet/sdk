@@ -24,24 +24,24 @@ public static class RestoreCommand
 
         result.ShowHelpOrErrorIfAppropriate();
 
-        string[] fileArgument = result.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument) ?? [];
+        string[] args = result.GetValue(RestoreCommandParser.SlnOrProjectOrFileArgument) ?? [];
+
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
 
-        if (fileArgument is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             return new VirtualProjectBuildingCommand(
-                    entryPointFileFullPath: Path.GetFullPath(arg),
-                    msbuildArgs: forwardedOptions,
-                    verbosity: result.GetValue(CommonOptions.VerbosityOption),
-                    interactive: result.GetValue(CommonOptions.InteractiveMsBuildForwardOption))
+                entryPointFileFullPath: Path.GetFullPath(arg),
+                msbuildArgs: [.. forwardedOptions, ..binLogArgs])
             {
                 NoCache = true,
                 NoBuild = true,
             };
         }
 
-        return CreateForwarding(["-target:Restore", .. forwardedOptions, .. fileArgument], msbuildPath);
+        return CreateForwarding(["-target:Restore", .. forwardedOptions, .. args], msbuildPath);
     }
 
     public static MSBuildForwardingApp CreateForwarding(IEnumerable<string> msbuildArgs, string? msbuildPath = null)

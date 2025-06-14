@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument();
+    public static readonly Argument<PackageIdentity> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument();
 
     public static readonly Option<string> VersionOption = new("--version")
     {
@@ -49,7 +49,8 @@ internal static class ToolInstallCommandParser
     public static readonly Option<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
     {
         Description = CliCommandStrings.CreateManifestIfNeededOptionDescription,
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => true,
     };
 
     public static readonly Option<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
@@ -72,13 +73,13 @@ internal static class ToolInstallCommandParser
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolInstallGlobalOptionDescription);
 
-    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolInstallLocalOptionDescription);
 
-    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolInstallToolPathOptionDescription);
 
-    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolInstallManifestPathOptionDescription);
 
     private static readonly Command Command = ConstructCommand();
 
@@ -106,12 +107,12 @@ internal static class ToolInstallCommandParser
 
     public static Command AddCommandOptions(Command command)
     {
-        command.Options.Add(GlobalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallGlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, CliCommandStrings.ToolInstallLocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, CliCommandStrings.ToolInstallToolPathOptionDescription));
+        command.Options.Add(GlobalOption);
+        command.Options.Add(LocalOption);
+        command.Options.Add(ToolPathOption);
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, CliCommandStrings.ToolInstallManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption);
         command.Options.Add(AddSourceOption);
         command.Options.Add(SourceOption);
         command.Options.Add(FrameworkOption);
