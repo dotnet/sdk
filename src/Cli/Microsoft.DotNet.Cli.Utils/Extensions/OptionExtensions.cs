@@ -8,11 +8,10 @@ namespace Microsoft.DotNet.Cli.Utils.Extensions;
 
 public static class OptionExtensions
 {
-    private static readonly PropertyInfo[] s_nonPublicProperties = typeof(Option).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic);
+    private static readonly PropertyInfo s_argumentProperty =
+        typeof(Option).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic).First(pi => pi.Name == "Argument");
 
     public static Argument? GetArgument(this Option option) =>
-        s_nonPublicProperties.First(pi => pi.Name == "Argument").GetValue(option) as Argument;
+        s_argumentProperty.GetValue(option) as Argument;
 
-    public static bool? GetHasValidators(this Option option) =>
-        s_nonPublicProperties.First(pi => pi.Name == "HasValidators").GetValue(option) as bool?;
 }
