@@ -100,26 +100,10 @@ namespace Microsoft.DotNet.Watch
             _reporter.Report(MessageDescriptor.HotReloadSessionStarted);
         }
 
-        private DeltaApplier? CreateDeltaApplier(HotReloadProfile profile, ProjectGraphNode project, BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
-        {
-            if (browserRefreshServer == null && profile.RequiresBrowserRefresh)
-            {
-                // error has been reported earlier
-                return null;
-            }
-
-            return profile switch
-            {
-                HotReloadProfile.BlazorWebAssembly => new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer!, project),
-                HotReloadProfile.BlazorHosted => new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer!, project),
-                _ => new DefaultDeltaApplier(processReporter),
-            };
-        }
-
         public async Task<RunningProject?> TrackRunningProjectAsync(
             ProjectGraphNode projectNode,
             ProjectOptions projectOptions,
-            HotReloadProfile profile,
+            HotReloadAppModel appModel,
             string namedPipeName,
             BrowserRefreshServer? browserRefreshServer,
             ProcessSpec processSpec,
@@ -130,7 +114,7 @@ namespace Microsoft.DotNet.Watch
         {
             var projectPath = projectNode.ProjectInstance.FullPath;
 
-            var deltaApplier = CreateDeltaApplier(profile, projectNode, browserRefreshServer, processReporter);
+            var deltaApplier = appModel.CreateDeltaApplier(browserRefreshServer, processReporter);
             if (deltaApplier == null)
             {
                 // error already reported

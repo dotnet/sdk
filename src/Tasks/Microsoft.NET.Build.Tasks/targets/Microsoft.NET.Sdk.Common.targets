@@ -42,46 +42,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
-
-  <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-
-  <Target Name="SetDotnetToolPackageType"
-          Condition=" '$(PackAsTool)' == 'true' "
-          BeforeTargets="GenerateNuspec">
-
-    <PropertyGroup>
-      <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '@(ToolPackageRuntimeIdentifier)' != ''">DotnetToolRidPackage</_ToolPackageType>
-      <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
-    </PropertyGroup>
-
-
-    <!--
-    PackageType is semicolon-delimited, case-insensitive, with an optional version.
-
-    DotnetTool should be added to the set of package types if the PackAsTool property is set to true.
-
-    Examples:
-       PackageType = ''                     -> 'DotnetTool'
-       PackageType = 'MyCustomType'         -> 'DotnetTool;MyCustomType'
-       PackageType = 'MyCustomType, 1.0'    -> 'DotnetTool;MyCustomType, 1.0'
-       PackageType = 'dotnettool'           -> 'dotnettool'
-       PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
-       PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
-       PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
-
-    _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
-    -->
-    
-    <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
-      <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
-    </AddPackageType>
-
-  </Target>
-
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>
   </PropertyGroup>

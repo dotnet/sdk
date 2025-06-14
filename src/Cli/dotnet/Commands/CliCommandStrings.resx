@@ -1046,6 +1046,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Minimum expected tests policy violation, tests ran {0}, minimum expected {1}</value>
     <comment>{0}, {1} number of tests</comment>
   </data>
+  <data name="InvalidProjectDirective" xml:space="preserve">
+    <value>The '#:project' directive at '{0}' is invalid: {1}</value>
+    <comment>{0} is the file path and line number. {1} is the inner error message.</comment>
+  </data>
   <data name="MissingDirectiveName" xml:space="preserve">
     <value>Missing name of '{0}' at {1}.</value>
     <comment>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</comment>
@@ -1437,7 +1441,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{Locked="--take"} {Locked="--format"} {Locked="dotnet workload search version"} {Locked="workloadVersion"}</comment>
   </data>
   <data name="ProjectCapabilityConstraint_DisplayName" xml:space="preserve">
-    <value>Project capabiltities</value>
+    <value>Project capabilities</value>
   </data>
   <data name="ProjectCapabilityConstraint_Error_ArgumentShouldBeString" xml:space="preserve">
     <value>argument should be a string</value>

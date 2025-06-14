@@ -16,7 +16,12 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var bootManifestResolvedPath = Path.Combine(blazorPublishDirectory, "_framework", WasmBootConfigFileName);
             var bootManifest = BootJsonDataLoader.ParseBootData(bootManifestResolvedPath);
 
+            VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.coreAssembly);
             VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.assembly);
+            if (bootManifest.resources.corePdb != null)
+            {
+                VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.corePdb);
+            }
             if (bootManifest.resources.pdb != null)
             {
                 VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.pdb);
@@ -32,14 +37,6 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             if (bootManifest.resources.wasmNative != null)
             {
                 VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.wasmNative);
-            }
-            if (bootManifest.resources.jsModuleNative != null)
-            {
-                VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.jsModuleNative);
-            }
-            if (bootManifest.resources.jsModuleRuntime != null)
-            {
-                VerifyBootManifestHashes(testAsset, blazorPublishDirectory, bootManifest.resources.jsModuleRuntime);
             }
 
             if (bootManifest.resources.satelliteResources != null)

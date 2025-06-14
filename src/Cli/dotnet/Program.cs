@@ -6,6 +6,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -125,7 +126,10 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            // If we get C# file path as the first argument, parse as `dotnet run file.cs`.
+            parseResult = args is [{ } filePath, ..] && VirtualProjectBuildingCommand.IsValidEntryPointPath(filePath)
+                ? Parser.Instance.Parse(["run", .. args])
+                : Parser.Instance.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created

@@ -65,6 +65,16 @@ For example, the remaining command-line arguments after the first argument (the 
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
 and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
+`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path).
+
+### Other commands
+
+Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
+
+Command `dotnet publish file.cs` is also supported for file-based programs.
+Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
+To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
+
 ## Entry points
 
 If a file is given to `dotnet run`, it has to be an *entry-point file*, otherwise an error is reported.
@@ -153,7 +163,8 @@ They are not cleaned immediately because they can be re-used on subsequent runs 
 
 It is possible to specify some project metadata via *file-level directives*
 which are [ignored][ignored-directives] by the C# language but recognized by the SDK CLI.
-Directives `sdk`, `package`, and `property` are translated into `<Project Sdk="...">`, `<PackageReference>`, and `<Property>` project elements, respectively.
+Directives `sdk`, `package`, `property`, and `project` are translated into
+`<Project Sdk="...">`, `<PackageReference>`, `<PropertyGroup>`, and `<ProjectReference>` project elements, respectively.
 Other directives result in an error, reserving them for future use.
 
 ```cs
@@ -161,6 +172,7 @@ Other directives result in an error, reserving them for future use.
 #:property TargetFramework=net11.0
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
+#:project ../MyLibrary
 ```
 
 The value must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
@@ -174,6 +186,9 @@ The value of `#:property` is split by the separator and injected as `<{0}>{1}</{
 It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty) or contains invalid characters.
 The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if there is no separator) in an `<ItemGroup>`.
 It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
+The value of `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
+If the value points to an existing directory, a project file is found inside that directory and its path is used instead
+(because `ProjectReference` items don't support directory paths).
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
@@ -286,31 +301,26 @@ Also, `InternalsVisibleTo` needs to be added into a C# file as an attribute, or 
 
 ### Shebang support
 
-It might be beneficial to also ship `dotnet-run` binary
-(or `dotnet-run-file` that would only work with file-based programs, not project-based ones, perhaps simply named `cs`)
-because some shells do not support multiple command-line arguments in the shebang
+Some shells do not support multiple command-line arguments in the shebang
 which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executable
-(although `-S` argument can be sometimes used to enable multiple argument support):
+(although `-S` argument can be sometimes used to enable multiple argument support),
+so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
 #!/usr/bin/env dotnet run
 // ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
 ```
 ```cs
-#!/usr/bin/env dotnet-run
+#!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
 ```cs
 #!/usr/bin/env -S dotnet run
-// ^ Workaround in some shells.
+// ^ Works in some shells.
 ```
 
-We could also consider making `dotnet file.cs` work because `dotnet file.dll` also works today
-but that would require changes to the native dotnet host.
+### Other possible commands
 
-### Other commands
-
-Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE support and hence work for file-based programs.
 We can consider supporting other commands like `dotnet pack`, `dotnet watch`,
 however the primary scenario is `dotnet run` and we might never support additional commands.
 
@@ -325,9 +335,8 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
 or `dotnet clean --all-file-based-programs`.
 
-
-Adding package references via `dotnet package add` could be supported for file-based programs as well,
-i.e., the command would add a `#:package` directive to the top of a `.cs` file.
+Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
+i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
 
 ### Explicit importing
 

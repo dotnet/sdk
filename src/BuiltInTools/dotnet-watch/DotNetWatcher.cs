@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watch
                 };
 
                 var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, HotReloadProfile.Default, shutdownCancellationToken)
+                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, DefaultAppModel.Instance, shutdownCancellationToken)
                     : null;
 
                 environmentBuilder.SetProcessEnvironmentVariables(processSpec);
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Watch
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
                 using var fileSetWatcher = new FileWatcher(Context.Reporter);
 
-                fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys);
+                fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
                 var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
 

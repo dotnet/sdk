@@ -1441,6 +1441,11 @@ Make the profile names distinct.</target>
         <target state="new">Cannot combine option '{0}' and '{1}'.</target>
         <note>{0} and {1} are option names like '--no-build'.</note>
       </trans-unit>
+      <trans-unit id="InvalidProjectDirective">
+        <source>The '#:project' directive at '{0}' is invalid: {1}</source>
+        <target state="new">The '#:project' directive at '{0}' is invalid: {1}</target>
+        <note>{0} is the file path and line number. {1} is the inner error message.</note>
+      </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
         <target state="new">Failed to parse "{0}" as a semantic version.</target>
@@ -2203,8 +2208,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <note>{0} - type of constraint (non-localizable), {1} - name of required component (non-localizable).</note>
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_DisplayName">
-        <source>Project capabiltities</source>
-        <target state="new">Project capabiltities</target>
+        <source>Project capabilities</source>
+        <target state="new">Project capabilities</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_Error_ArgumentShouldBeString">

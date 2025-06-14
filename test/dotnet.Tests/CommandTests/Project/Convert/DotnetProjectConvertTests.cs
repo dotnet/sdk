@@ -55,7 +55,12 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         var dotnetProjectConvertProjectText = File.ReadAllText(dotnetProjectConvertProject);
         var dotnetNewConsoleProjectText = File.ReadAllText(dotnetNewConsoleProject);
-        dotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
+
+        // There are some differences: we add PublishAot=true.
+        var patchedDotnetProjectConvertProjectText = dotnetProjectConvertProjectText
+            .Replace("    <PublishAot>true</PublishAot>" + Environment.NewLine, string.Empty);
+
+        patchedDotnetProjectConvertProjectText.Should().Be(dotnetNewConsoleProjectText)
             .And.StartWith("""<Project Sdk="Microsoft.NET.Sdk">""");
     }
 
@@ -315,6 +320,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                 </Project>
@@ -345,6 +351,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -380,6 +387,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -388,6 +396,42 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
                   <ItemGroup>
                     <PackageReference Include="MyPackage" Version="$(MyProp)" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [Fact]
+    public void Directives_DirectoryPath()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "lib");
+        Directory.CreateDirectory(libDir);
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), "test");
+
+        var slash = Path.DirectorySeparatorChar;
+        VerifyConversion(
+            filePath: Path.Join(testInstance.Path, "app", "Program.cs"),
+            inputCSharp: """
+                #:project ../lib
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="..{slash}lib{slash}Lib.csproj" />
                   </ItemGroup>
 
                 </Project>
@@ -421,6 +465,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -532,6 +577,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -568,6 +614,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -614,6 +661,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -662,6 +710,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -707,6 +756,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
                   </PropertyGroup>
 
                   <PropertyGroup>
@@ -800,9 +850,9 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             ]);
     }
 
-    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force)
+    private static void Convert(string inputCSharp, out string actualProject, out string? actualCSharp, bool force, string? filePath)
     {
-        var sourceFile = new SourceFile("/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
+        var sourceFile = new SourceFile(filePath ?? "/app/Program.cs", SourceText.From(inputCSharp, Encoding.UTF8));
         var directives = VirtualProjectBuildingCommand.FindDirectives(sourceFile, reportAllErrors: !force, errors: null);
         var projectWriter = new StringWriter();
         VirtualProjectBuildingCommand.WriteProjectFile(projectWriter, directives, isVirtualProject: false);
@@ -813,16 +863,16 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     /// <param name="expectedCSharp">
     /// <see langword="null"/> means the conversion should not touch the C# content.
     /// </param>
-    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false)
+    private static void VerifyConversion(string inputCSharp, string expectedProject, string? expectedCSharp, bool force = false, string? filePath = null)
     {
-        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force);
+        Convert(inputCSharp, out var actualProject, out var actualCSharp, force: force, filePath: filePath);
         actualProject.Should().Be(expectedProject);
         actualCSharp.Should().Be(expectedCSharp);
     }
 
     private static void VerifyConversionThrows(string inputCSharp, string expectedWildcardPattern)
     {
-        var convert = () => Convert(inputCSharp, out _, out _, force: false);
+        var convert = () => Convert(inputCSharp, out _, out _, force: false, filePath: null);
         convert.Should().Throw<GracefulException>().WithMessage(expectedWildcardPattern);
     }
 

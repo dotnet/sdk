@@ -276,15 +276,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, targetFramework);
 
         //  Also download RID-specific package if needed
-        var ridSpecificPackage = ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory);
-        if (ridSpecificPackage != null)
+        if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory) is PackageId ridSpecificPackage)
         {
-            if (!IsPackageInstalled(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, packageDownloadDir.Value))
+            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
             {
-                DownloadAndExtractPackage(new PackageId(ridSpecificPackage.Id), nugetPackageDownloader, packageDownloadDir.Value, ridSpecificPackage.Version, packageSourceLocation, includeUnlisted: true);
+                DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true);
             }
 
-            CreateAssetFile(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
+            CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
         }
     }
 
@@ -301,15 +300,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
         CreateAssetFile(packageId, packageVersion, _localToolDownloadDir, Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, targetFramework);
 
-        var ridSpecificPackage = ResolveRidSpecificPackage(packageId, packageVersion, _localToolDownloadDir, _localToolAssetDir);
-        if (ridSpecificPackage != null)
+        if (ResolveRidSpecificPackage(packageId, packageVersion, _localToolDownloadDir, _localToolAssetDir) is PackageId ridSpecificPackage)
         {
-            if (!IsPackageInstalled(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, _localToolDownloadDir.Value))
+            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, _localToolDownloadDir.Value))
             {
                 toolPackage = null;
                 return false;
             }
-            CreateAssetFile(new PackageId(ridSpecificPackage.Id), ridSpecificPackage.Version, _localToolDownloadDir,
+            CreateAssetFile(ridSpecificPackage, packageVersion, _localToolDownloadDir,
                 Path.Combine(_localToolAssetDir.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, targetFramework);
         }
 
@@ -322,7 +320,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     }
 
-    private PackageIdentity? ResolveRidSpecificPackage(PackageId packageId,
+    private PackageId? ResolveRidSpecificPackage(PackageId packageId,
         NuGetVersion packageVersion,
         DirectoryPath packageDownloadDir,
         DirectoryPath assetFileDirectory)
@@ -341,7 +339,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
             var resolvedPackage = toolConfiguration.RidSpecificPackages[bestRuntimeIdentifier];
 
-            return resolvedPackage;
+            if (resolvedPackage is PackageIdentity p)
+            {
+                return new PackageId(p.Id);
+            }
+            return null;
         }
 
         return null;
