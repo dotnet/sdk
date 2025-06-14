@@ -36,7 +36,6 @@ sdk-options:
   --list-runtimes   {CliCommandStrings.SDKListRuntimesCommandDefinition}
   --list-sdks       {CliCommandStrings.SDKListSdksCommandDefinition}
   --version         {CliCommandStrings.SDKVersionCommandDefinition}
-  --cli-schema      {CliStrings.SDKSchemaCommandDefinition}
 
 {CliCommandStrings.Commands}:
   build             {CliCommandStrings.BuildDefinition}
