@@ -811,4 +811,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="YesOptionDescription" xml:space="preserve">
     <value>Accept all confirmation prompts using "yes."</value>
   </data>
+  <data name="SDKSchemaCommandDefinition" xml:space="preserve">
+    <value>Display the command schema as JSON.</value>
+  </data>
 </root>
