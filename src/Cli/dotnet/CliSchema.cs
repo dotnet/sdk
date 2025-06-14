@@ -109,8 +109,7 @@ internal static class CliSchema
         writer.WriteString(nameof(option.ValueType).ToCamelCase(), option.ValueType.ToCliTypeString());
 
         // GetArgument will only return null if System.CommandLine is changed to no longer contain an Argument property within Option.
-        var internalArgument = option.GetArgument() ?? new DynamicArgument<string>(string.Empty);
-        WriteDefaultValue(internalArgument, writer);
+        WriteDefaultValue(option, writer);
         WriteArity(option.Arity, writer);
 
         writer.WriteBoolean(nameof(option.Required).ToCamelCase(), option.Required);
@@ -131,6 +130,20 @@ internal static class CliSchema
 
         // Encode the value automatically based on the System.Type of the argument.
         JsonSerializer.Serialize(writer, argument.GetDefaultValue(), argument.ValueType, s_jsonSerializerOptions);
+        return;
+    }
+    private static void WriteDefaultValue(Option option, Utf8JsonWriter writer)
+    {
+        writer.WriteBoolean(nameof(option.HasDefaultValue).ToCamelCase(), option.HasDefaultValue);
+        writer.WritePropertyName("defaultValue");
+        if (!option.HasDefaultValue)
+        {
+            writer.WriteNullValue();
+            return;
+        }
+
+        // Encode the value automatically based on the System.Type of the argument.
+        JsonSerializer.Serialize(writer, option.GetDefaultValue(), option.ValueType, s_jsonSerializerOptions);
         return;
     }
 
