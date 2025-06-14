@@ -403,7 +403,7 @@ public static class Parser
         public override int Invoke(ParseResult parseResult)
         {
             CliSchema.PrintCliSchema(parseResult.CommandResult, Program.TelemetryClient);
-            return 1;
+            return 0;
         }
     }
 }
