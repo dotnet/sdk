@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Buffers;
 using System.CommandLine;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -17,157 +19,171 @@ internal static class CliSchema
     // Using UnsafeRelaxedJsonEscaping because this JSON is not transmitted over the web. Therefore, HTML-sensitive characters are not encoded.
     // See: https://learn.microsoft.com/dotnet/api/system.text.encodings.web.javascriptencoder.unsaferelaxedjsonescaping
     // Force the newline to be "\n" instead of the default "\r\n" for consistency across platforms (and for testing)
-    private static readonly JsonWriterOptions s_jsonWriterOptions = new() { Indented = true, NewLine = "\n", Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new() { WriteIndented = true, Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping };
-
-    public static void PrintCliSchema(CommandResult commandResult, ITelemetry telemetryClient)
+    private static readonly JsonSerializerOptions s_jsonSerializerOptions = new()
     {
-        using var writer = new Utf8JsonWriter(Console.OpenStandardOutput(), s_jsonWriterOptions);
-        writer.WriteStartObject();
+        WriteIndented = true,
+        NewLine = "\n",
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        RespectNullableAnnotations = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
+    public record ArgumentDetails(string? description, int order, bool hidden, string? helpName, string valueType, bool hasDefaultValue, object? defaultValue, ArityDetails arity);
+    public record ArityDetails(int minimum, int? maximum);
+    public record OptionDetails(
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        string? helpName,
+        string valueType,
+        bool hasDefaultValue,
+        object? defaultValue,
+        ArityDetails arity,
+        bool required,
+        bool recursive
+    );
+    public record CommandDetails(
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        Dictionary<string, ArgumentDetails>? arguments,
+        Dictionary<string, OptionDetails>? options,
+        Dictionary<string, CommandDetails>? subcommands);
+    public record RootCommandDetails(
+        string name,
+        string version,
+        string? description,
+        bool hidden,
+        string[]? aliases,
+        Dictionary<string, ArgumentDetails>? arguments,
+        Dictionary<string, OptionDetails>? options,
+        Dictionary<string, CommandDetails>? subcommands
+    ) : CommandDetails(description, hidden, aliases, arguments, options, subcommands);
+
+
+    public static void PrintCliSchema(CommandResult commandResult, TextWriter outputWriter, ITelemetry? telemetryClient)
+    {
         var command = commandResult.Command;
-        // Explicitly write "name" into the root JSON object as the name for any sub-commands are used as the key to the sub-command object.
-        writer.WriteString("name", command.Name);
-        writer.WriteString("version", Product.Version);
-        WriteCommand(command, writer);
-
-        writer.WriteEndObject();
-        writer.Flush();
-
+        RootCommandDetails transportStructure = CreateRootCommandDetails(command);
+        var result = JsonSerializer.Serialize(transportStructure, s_jsonSerializerOptions);
+        outputWriter.Write(result.AsSpan());
+        outputWriter.Flush();
         var commandString = CommandHierarchyAsString(commandResult);
         var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
-        telemetryClient.TrackEvent("schema", telemetryProperties, null);
+        telemetryClient?.TrackEvent("schema", telemetryProperties, null);
     }
 
-    private static void WriteCommand(Command command, Utf8JsonWriter writer)
+    private static ArityDetails CreateArityDetails(ArgumentArity arity)
     {
-        writer.WriteString(nameof(command.Description).ToCamelCase(), command.Description);
-        writer.WriteBoolean(nameof(command.Hidden).ToCamelCase(), command.Hidden);
-
-        writer.WriteStartArray(nameof(command.Aliases).ToCamelCase());
-        foreach (var alias in command.Aliases.Order())
-        {
-            writer.WriteStringValue(alias);
-        }
-        writer.WriteEndArray();
-
-        writer.WriteStartObject(nameof(command.Arguments).ToCamelCase());
-        // Leave default ordering for arguments. Do not order by name.
-        foreach ((var index, var argument) in command.Arguments.Index())
-        {
-            WriteArgument(index, argument, writer);
-        }
-        writer.WriteEndObject();
-
-        writer.WriteStartObject(nameof(command.Options).ToCamelCase());
-        foreach (var option in command.Options.OrderBy(o => o.Name))
-        {
-            WriteOption(option, writer);
-        }
-        writer.WriteEndObject();
-
-        writer.WriteStartObject(nameof(command.Subcommands).ToCamelCase());
-        foreach (var subCommand in command.Subcommands.OrderBy(sc => sc.Name))
-        {
-            writer.WriteStartObject(subCommand.Name);
-            WriteCommand(subCommand, writer);
-            writer.WriteEndObject();
-        }
-        writer.WriteEndObject();
+        return new ArityDetails(
+            minimum: arity.MinimumNumberOfValues,
+            maximum: arity.MaximumNumberOfValues == ArgumentArity.ZeroOrMore.MaximumNumberOfValues ? null : arity.MaximumNumberOfValues
+        );
     }
 
-    private static void WriteArgument(int index, Argument argument, Utf8JsonWriter writer)
+    private static RootCommandDetails CreateRootCommandDetails(Command command)
     {
-        writer.WriteStartObject(argument.Name);
+        var arguments = CreateArgumentsDictionary(command.Arguments);
+        var options = CreateOptionsDictionary(command.Options);
+        var subcommands = CreateSubcommandsDictionary(command.Subcommands);
 
-        writer.WriteString(nameof(argument.Description).ToCamelCase(), argument.Description);
-        writer.WriteNumber("order", index);
-        writer.WriteBoolean(nameof(argument.Hidden).ToCamelCase(), argument.Hidden);
-        writer.WriteString(nameof(argument.HelpName).ToCamelCase(), argument.HelpName);
-        writer.WriteString(nameof(argument.ValueType).ToCamelCase(), argument.ValueType.ToCliTypeString());
-
-        WriteDefaultValue(argument, writer);
-        WriteArity(argument.Arity, writer);
-
-        writer.WriteEndObject();
+        return new RootCommandDetails(
+            name: command.Name,
+            version: Product.Version,
+            description: command.Description,
+            hidden: command.Hidden,
+            aliases: DetermineAliases(command.Aliases),
+            arguments: arguments,
+            options: options,
+            subcommands: subcommands
+        );
     }
 
-    private static void WriteOption(Option option, Utf8JsonWriter writer)
+    private static Dictionary<string, ArgumentDetails>? CreateArgumentsDictionary(IList<Argument> arguments)
     {
-        writer.WriteStartObject(option.Name);
-
-        writer.WriteString(nameof(option.Description).ToCamelCase(), option.Description);
-        writer.WriteBoolean(nameof(option.Hidden).ToCamelCase(), option.Hidden);
-
-        writer.WriteStartArray(nameof(option.Aliases).ToCamelCase());
-        foreach (var alias in option.Aliases.Order())
+        if (arguments.Count == 0)
         {
-            writer.WriteStringValue(alias);
+            return null;
         }
-        writer.WriteEndArray();
-
-        writer.WriteString(nameof(option.HelpName).ToCamelCase(), option.HelpName);
-        writer.WriteString(nameof(option.ValueType).ToCamelCase(), option.ValueType.ToCliTypeString());
-
-        // GetArgument will only return null if System.CommandLine is changed to no longer contain an Argument property within Option.
-        WriteDefaultValue(option, writer);
-        WriteArity(option.Arity, writer);
-
-        writer.WriteBoolean(nameof(option.Required).ToCamelCase(), option.Required);
-        writer.WriteBoolean(nameof(option.Recursive).ToCamelCase(), option.Recursive);
-
-        writer.WriteEndObject();
+        var dict = new Dictionary<string, ArgumentDetails>();
+        foreach ((var index, var argument) in arguments.Index())
+        {
+            dict[argument.Name] = CreateArgumentDetails(index, argument);
+        }
+        return dict;
     }
 
-    private static void WriteDefaultValue(Argument argument, Utf8JsonWriter writer)
+    private static Dictionary<string, OptionDetails>? CreateOptionsDictionary(IList<Option> options)
     {
-        writer.WriteBoolean(nameof(argument.HasDefaultValue).ToCamelCase(), argument.HasDefaultValue);
-        writer.WritePropertyName("defaultValue");
-        if (!argument.HasDefaultValue)
+        if (options.Count == 0)
         {
-            writer.WriteNullValue();
-            return;
+            return null;
         }
-
-        // Encode the value automatically based on the System.Type of the argument.
-        JsonSerializer.Serialize(writer, argument.GetDefaultValue(), argument.ValueType, s_jsonSerializerOptions);
-        return;
+        var dict = new Dictionary<string, OptionDetails>();
+        foreach (var option in options.OrderBy(o => o.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            dict[option.Name] = CreateOptionDetails(option);
+        }
+        return dict;
     }
-    private static void WriteDefaultValue(Option option, Utf8JsonWriter writer)
+
+    private static Dictionary<string, CommandDetails>? CreateSubcommandsDictionary(IList<Command> subcommands)
     {
-        writer.WriteBoolean(nameof(option.HasDefaultValue).ToCamelCase(), option.HasDefaultValue);
-        writer.WritePropertyName("defaultValue");
-        if (!option.HasDefaultValue)
+        if (subcommands.Count == 0)
         {
-            writer.WriteNullValue();
-            return;
+            return null;
         }
-
-        // Encode the value automatically based on the System.Type of the argument.
-        JsonSerializer.Serialize(writer, option.GetDefaultValue(), option.ValueType, s_jsonSerializerOptions);
-        return;
+        var dict = new Dictionary<string, CommandDetails>();
+        foreach (var subcommand in subcommands.OrderBy(c => c.Name, StringComparer.OrdinalIgnoreCase))
+        {
+            dict[subcommand.Name] = CreateCommandDetails(subcommand);
+        }
+        return dict;
     }
 
-    private static void WriteArity(ArgumentArity arity, Utf8JsonWriter writer)
+    private static string[]? DetermineAliases(ICollection<string> aliases)
     {
-        writer.WriteStartObject(nameof(arity));
-
-        writer.WriteNumber("minimum", arity.MinimumNumberOfValues);
-        writer.WritePropertyName("maximum");
-        // ArgumentArity.ZeroOrMore.MaximumNumberOfValues is required as MaximumArity in ArgumentArity is a private field.
-        if (arity.MaximumNumberOfValues == ArgumentArity.ZeroOrMore.MaximumNumberOfValues)
+        if (aliases.Count == 0)
         {
-            // When the "OrMore" arity is present, write the maximum as null (thus unbounded).
-            // The literal max integer value is set to an arbitrary amount (ATTOW 100000), which is not necessary to know for an external consumer.
-            writer.WriteNullValue();
-        }
-        else
-        {
-            writer.WriteNumberValue(arity.MaximumNumberOfValues);
+            return null;
         }
 
-        writer.WriteEndObject();
+        // Order the aliases to ensure consistent output.
+        return aliases.Order().ToArray();
     }
+
+    private static CommandDetails CreateCommandDetails(Command subCommand) => new CommandDetails(
+                subCommand.Description,
+                subCommand.Hidden,
+                DetermineAliases(subCommand.Aliases),
+                CreateArgumentsDictionary(subCommand.Arguments),
+                CreateOptionsDictionary(subCommand.Options),
+                CreateSubcommandsDictionary(subCommand.Subcommands)
+            );
+
+    private static OptionDetails CreateOptionDetails(Option option) => new OptionDetails(
+                option.Description,
+                option.Hidden,
+                DetermineAliases(option.Aliases),
+                option.HelpName,
+                option.ValueType.ToCliTypeString(),
+                option.HasDefaultValue,
+                option.HasDefaultValue ? option.GetDefaultValue() : null,
+                CreateArityDetails(option.Arity),
+                option.Required,
+                option.Recursive
+            );
+
+    private static ArgumentDetails CreateArgumentDetails(int index, Argument argument) => new ArgumentDetails(
+                argument.Description,
+                index,
+                argument.Hidden,
+                argument.HelpName,
+                argument.ValueType.ToCliTypeString(),
+                argument.HasDefaultValue,
+                argument.HasDefaultValue ? argument.GetDefaultValue() : null,
+                CreateArityDetails(argument.Arity)
+            );
 
     // Produces a string that represents the command call.
     // For example, calling the workload install command produces `dotnet workload install`.

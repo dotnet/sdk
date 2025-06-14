@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests;
@@ -17,17 +18,12 @@ public class CliSchemaTests : SdkTest
   "version": "{{Product.Version}}",
   "description": "List all projects in a solution file.",
   "hidden": false,
-  "aliases": [],
-  "arguments": {},
   "options": {
     "--solution-folders": {
       "description": "Display solution folder paths.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -35,8 +31,7 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     }
-  },
-  "subcommands": {}
+  }
 }
 """;
 
@@ -46,18 +41,15 @@ public class CliSchemaTests : SdkTest
   "version": "{{Product.Version}}",
   "description": ".NET Clean Command",
   "hidden": false,
-  "aliases": [],
   "arguments": {
     "PROJECT | SOLUTION": {
       "description": "The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.",
+      "order": 0,
       "hidden": false,
-      "helpName": null,
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 0,
-        "maximum": null
+        "minimum": 0
       }
     }
   },
@@ -65,11 +57,9 @@ public class CliSchemaTests : SdkTest
     "--artifacts-path": {
       "description": "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.",
       "hidden": false,
-      "aliases": [],
       "helpName": "ARTIFACTS_DIR",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -86,7 +76,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "CONFIGURATION",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -97,11 +86,8 @@ public class CliSchemaTests : SdkTest
     "--disable-build-servers": {
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -118,7 +104,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "FRAMEWORK",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -129,8 +114,6 @@ public class CliSchemaTests : SdkTest
     "--interactive": {
       "description": "Allows the command to stop and wait for user input or action (for example to complete authentication).",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
       "defaultValue": false,
@@ -144,11 +127,8 @@ public class CliSchemaTests : SdkTest
     "--nologo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -165,7 +145,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "OUTPUT_DIR",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -174,7 +153,7 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--runtime": {
-      "description": null,
+      "description": "The target runtime to clean for.",
       "hidden": false,
       "aliases": [
         "-r"
@@ -182,7 +161,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "RUNTIME_IDENTIFIER",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -199,7 +177,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "LEVEL",
       "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -207,8 +184,7 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     }
-  },
-  "subcommands": {}
+  }
 }
 """;
 
@@ -218,17 +194,12 @@ public class CliSchemaTests : SdkTest
   "version": "{{Product.Version}}",
   "description": ".NET Remove Command",
   "hidden": false,
-  "aliases": [],
-  "arguments": {},
   "options": {
     "--project": {
       "description": "The project file to operate on. If a file is not specified, the command will search the current directory for one.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -241,18 +212,15 @@ public class CliSchemaTests : SdkTest
     "add": {
       "description": "Add a project-to-project reference to the project.",
       "hidden": false,
-      "aliases": [],
       "arguments": {
         "PROJECT_PATH": {
           "description": "The paths to the projects to add as references.",
+          "order": 0,
           "hidden": false,
-          "helpName": null,
           "valueType": "System.Collections.Generic.IEnumerable<System.String>",
           "hasDefaultValue": false,
-          "defaultValue": null,
           "arity": {
-            "minimum": 1,
-            "maximum": null
+            "minimum": 1
           }
         }
       },
@@ -266,7 +234,6 @@ public class CliSchemaTests : SdkTest
           "helpName": "FRAMEWORK",
           "valueType": "System.String",
           "hasDefaultValue": false,
-          "defaultValue": null,
           "arity": {
             "minimum": 1,
             "maximum": 1
@@ -277,8 +244,6 @@ public class CliSchemaTests : SdkTest
         "--interactive": {
           "description": "Allows the command to stop and wait for user input or action (for example to complete authentication).",
           "hidden": false,
-          "aliases": [],
-          "helpName": null,
           "valueType": "System.Boolean",
           "hasDefaultValue": true,
           "defaultValue": false,
@@ -289,32 +254,24 @@ public class CliSchemaTests : SdkTest
           "required": false,
           "recursive": false
         }
-      },
-      "subcommands": {}
+      }
     },
     "list": {
       "description": "List all project-to-project references of the project.",
-      "hidden": false,
-      "aliases": [],
-      "arguments": {},
-      "options": {},
-      "subcommands": {}
+      "hidden": false
     },
     "remove": {
       "description": "Remove a project-to-project reference from the project.",
       "hidden": false,
-      "aliases": [],
       "arguments": {
         "PROJECT_PATH": {
           "description": "The paths to the referenced projects to remove.",
+          "order": 0,
           "hidden": false,
-          "helpName": null,
           "valueType": "System.Collections.Generic.IEnumerable<System.String>",
           "hasDefaultValue": false,
-          "defaultValue": null,
           "arity": {
-            "minimum": 1,
-            "maximum": null
+            "minimum": 1
           }
         }
       },
@@ -328,7 +285,6 @@ public class CliSchemaTests : SdkTest
           "helpName": "FRAMEWORK",
           "valueType": "System.String",
           "hasDefaultValue": false,
-          "defaultValue": null,
           "arity": {
             "minimum": 1,
             "maximum": 1
@@ -336,8 +292,7 @@ public class CliSchemaTests : SdkTest
           "required": false,
           "recursive": false
         }
-      },
-      "subcommands": {}
+      }
     }
   }
 }
@@ -349,18 +304,16 @@ public class CliSchemaTests : SdkTest
   "version": "{{Product.Version}}",
   "description": "Install one or more workloads.",
   "hidden": false,
-  "aliases": [],
   "arguments": {
     "workloadId": {
       "description": "The NuGet package ID of the workload to install.",
+      "order": 0,
       "hidden": false,
       "helpName": "WORKLOAD_ID",
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 1,
-        "maximum": null
+        "minimum": 1
       }
     }
   },
@@ -368,11 +321,9 @@ public class CliSchemaTests : SdkTest
     "--configfile": {
       "description": "The NuGet configuration file to use.",
       "hidden": false,
-      "aliases": [],
       "helpName": "FILE",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -383,11 +334,8 @@ public class CliSchemaTests : SdkTest
     "--disable-parallel": {
       "description": "Prevent restoring multiple projects in parallel.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -398,11 +346,9 @@ public class CliSchemaTests : SdkTest
     "--download-to-cache": {
       "description": "Download packages needed to install a workload to a folder that can be used for offline installation.",
       "hidden": true,
-      "aliases": [],
       "helpName": "DIRECTORY",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -413,11 +359,9 @@ public class CliSchemaTests : SdkTest
     "--from-cache": {
       "description": "Complete the operation from cache (offline).",
       "hidden": true,
-      "aliases": [],
       "helpName": "DIRECTORY",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -428,11 +372,8 @@ public class CliSchemaTests : SdkTest
     "--from-rollback-file": {
       "description": "Update workloads based on specified rollback definition file.",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -443,11 +384,8 @@ public class CliSchemaTests : SdkTest
     "--ignore-failed-sources": {
       "description": "Treat package source failures as warnings.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -458,11 +396,8 @@ public class CliSchemaTests : SdkTest
     "--include-previews": {
       "description": "Allow prerelease workload manifests.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -473,8 +408,6 @@ public class CliSchemaTests : SdkTest
     "--interactive": {
       "description": "Allows the command to stop and wait for user input or action (for example to complete authentication).",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
       "defaultValue": false,
@@ -488,11 +421,8 @@ public class CliSchemaTests : SdkTest
     "--no-cache": {
       "description": "Do not cache packages and http requests.",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -503,11 +433,8 @@ public class CliSchemaTests : SdkTest
     "--no-http-cache": {
       "description": "Do not cache packages and http requests.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -518,11 +445,8 @@ public class CliSchemaTests : SdkTest
     "--print-download-link-only": {
       "description": "Only print the list of links to download without downloading.",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -533,11 +457,9 @@ public class CliSchemaTests : SdkTest
     "--sdk-version": {
       "description": "The version of the SDK.",
       "hidden": true,
-      "aliases": [],
       "helpName": "VERSION",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -548,11 +470,8 @@ public class CliSchemaTests : SdkTest
     "--skip-manifest-update": {
       "description": "Skip updating the workload manifests.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -563,11 +482,8 @@ public class CliSchemaTests : SdkTest
     "--skip-sign-check": {
       "description": "Skip signature verification of workload packages and installers.",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -584,10 +500,8 @@ public class CliSchemaTests : SdkTest
       "helpName": "SOURCE",
       "valueType": "System.String[]",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 1,
-        "maximum": null
+        "minimum": 1
       },
       "required": false,
       "recursive": false
@@ -595,11 +509,8 @@ public class CliSchemaTests : SdkTest
     "--temp-dir": {
       "description": "Specify a temporary directory for this command to download and extract NuGet packages (must be secure).",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -616,7 +527,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "LEVEL",
       "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -627,20 +537,15 @@ public class CliSchemaTests : SdkTest
     "--version": {
       "description": "A workload version to display or one or more workloads and their versions joined by the '@' character.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 1,
-        "maximum": null
+        "minimum": 1
       },
       "required": false,
       "recursive": false
     }
-  },
-  "subcommands": {}
+  }
 }
 """;
 
@@ -650,18 +555,15 @@ public class CliSchemaTests : SdkTest
   "version": "{{Product.Version}}",
   "description": ".NET Builder",
   "hidden": false,
-  "aliases": [],
   "arguments": {
     "PROJECT | SOLUTION | FILE": {
       "description": "The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.",
+      "order": 0,
       "hidden": false,
-      "helpName": null,
       "valueType": "System.String[]",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 0,
-        "maximum": null
+        "minimum": 0
       }
     }
   },
@@ -675,7 +577,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "ARCH",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -686,11 +587,9 @@ public class CliSchemaTests : SdkTest
     "--artifacts-path": {
       "description": "The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.",
       "hidden": false,
-      "aliases": [],
       "helpName": "ARTIFACTS_DIR",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -701,11 +600,9 @@ public class CliSchemaTests : SdkTest
     "--configfile": {
       "description": "",
       "hidden": true,
-      "aliases": [],
       "helpName": "FILE",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -722,7 +619,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "CONFIGURATION",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -731,13 +627,9 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--debug": {
-      "description": null,
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -748,11 +640,8 @@ public class CliSchemaTests : SdkTest
     "--disable-build-servers": {
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -763,11 +652,8 @@ public class CliSchemaTests : SdkTest
     "--disable-parallel": {
       "description": "",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -778,11 +664,8 @@ public class CliSchemaTests : SdkTest
     "--force": {
       "description": "Force all dependencies to be resolved even if the last restore was successful.\r\nThis is equivalent to deleting project.assets.json.",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -799,7 +682,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "FRAMEWORK",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -810,11 +692,8 @@ public class CliSchemaTests : SdkTest
     "--ignore-failed-sources": {
       "description": "",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -825,8 +704,6 @@ public class CliSchemaTests : SdkTest
     "--interactive": {
       "description": "Allows the command to stop and wait for user input or action (for example to complete authentication).",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
       "defaultValue": false,
@@ -840,11 +717,8 @@ public class CliSchemaTests : SdkTest
     "--no-cache": {
       "description": "",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -855,11 +729,8 @@ public class CliSchemaTests : SdkTest
     "--no-dependencies": {
       "description": "Do not build project-to-project references and only build the specified project.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -870,11 +741,8 @@ public class CliSchemaTests : SdkTest
     "--no-http-cache": {
       "description": "",
       "hidden": true,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -885,11 +753,8 @@ public class CliSchemaTests : SdkTest
     "--no-incremental": {
       "description": "Do not use incremental building.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -900,11 +765,8 @@ public class CliSchemaTests : SdkTest
     "--no-restore": {
       "description": "Do not restore the project before building.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -915,11 +777,8 @@ public class CliSchemaTests : SdkTest
     "--no-self-contained": {
       "description": "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -930,11 +789,8 @@ public class CliSchemaTests : SdkTest
     "--nologo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
-      "aliases": [],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -945,11 +801,9 @@ public class CliSchemaTests : SdkTest
     "--os": {
       "description": "The target operating system.",
       "hidden": false,
-      "aliases": [],
       "helpName": "OS",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -966,7 +820,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "OUTPUT_DIR",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -977,11 +830,9 @@ public class CliSchemaTests : SdkTest
     "--packages": {
       "description": "",
       "hidden": true,
-      "aliases": [],
       "helpName": "PACKAGES_DIR",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -990,7 +841,6 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--property": {
-      "description": null,
       "hidden": true,
       "aliases": [
         "--p",
@@ -999,19 +849,16 @@ public class CliSchemaTests : SdkTest
         "/p",
         "/property"
       ],
-      "helpName": null,
       "valueType": "System.String[]",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 1,
-        "maximum": null
+        "minimum": 1
       },
       "required": false,
       "recursive": false
     },
     "--runtime": {
-      "description": null,
+      "description": "The target runtime to build for.",
       "hidden": false,
       "aliases": [
         "-r"
@@ -1019,7 +866,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "RUNTIME_IDENTIFIER",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -1033,10 +879,8 @@ public class CliSchemaTests : SdkTest
       "aliases": [
         "--sc"
       ],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 1
@@ -1047,14 +891,11 @@ public class CliSchemaTests : SdkTest
     "--source": {
       "description": "",
       "hidden": true,
-      "aliases": [],
       "helpName": "SOURCE",
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
-        "minimum": 1,
-        "maximum": null
+        "minimum": 1
       },
       "required": false,
       "recursive": false
@@ -1065,10 +906,8 @@ public class CliSchemaTests : SdkTest
       "aliases": [
         "--ucr"
       ],
-      "helpName": null,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -1085,7 +924,6 @@ public class CliSchemaTests : SdkTest
       "helpName": "LEVEL",
       "valueType": "Microsoft.DotNet.Cli.VerbosityOptions",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -1096,11 +934,9 @@ public class CliSchemaTests : SdkTest
     "--version-suffix": {
       "description": "Set the value of the $(VersionSuffix) property to use when building the project.",
       "hidden": false,
-      "aliases": [],
       "helpName": "VERSION_SUFFIX",
       "valueType": "System.String",
       "hasDefaultValue": false,
-      "defaultValue": null,
       "arity": {
         "minimum": 1,
         "maximum": 1
@@ -1108,8 +944,7 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     }
-  },
-  "subcommands": {}
+  }
 }
 """;
 
@@ -1126,8 +961,13 @@ public class CliSchemaTests : SdkTest
     [MemberData(nameof(CommandsJson))]
     public void PrintCliSchema_WritesExpectedJson(string[] commandArgs, string json)
     {
-        var commandResult = new DotnetCommand(Log).Execute(commandArgs);
-        commandResult.Should().Pass();
-        commandResult.Should().HaveStdOut(json.ReplaceLineEndings("\n"));
+        var stream = new MemoryStream();
+        var writer = new StreamWriter(stream);
+        CliSchema.PrintCliSchema(Parser.Instance.Parse(commandArgs).CommandResult, writer, null);
+        stream.Position = 0;
+        var reader = new StreamReader(stream);
+        var output = reader.ReadToEnd();
+        output.Should().BeEquivalentTo(json.ReplaceLineEndings("\n"));
+
     }
 }
