@@ -276,6 +276,10 @@
         Condition="'$(BundleNativeAotCompiler)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
