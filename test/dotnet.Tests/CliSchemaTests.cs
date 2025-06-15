@@ -662,7 +662,7 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--force": {
-      "description": "Force all dependencies to be resolved even if the last restore was successful.\r\nThis is equivalent to deleting project.assets.json.",
+      "description": "Force all dependencies to be resolved even if the last restore was successful.\nThis is equivalent to deleting project.assets.json.",
       "hidden": true,
       "valueType": "System.Boolean",
       "hasDefaultValue": false,
@@ -874,7 +874,7 @@ public class CliSchemaTests : SdkTest
       "recursive": false
     },
     "--self-contained": {
-      "description": "Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.\r\nThe default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.",
+      "description": "Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.\nThe default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.",
       "hidden": false,
       "aliases": [
         "--sc"
