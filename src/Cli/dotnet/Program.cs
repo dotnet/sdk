@@ -55,7 +55,7 @@ public class Program
             {
                 r.AddService("dotnet-cli", serviceVersion: Product.Version);
             })
-            .AddMeter(Activities.s_source.Name)
+            .AddMeter(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter()
@@ -65,13 +65,13 @@ public class Program
             {
                 r.AddService("dotnet-cli", serviceVersion: Product.Version);
             })
-            .AddSource(Activities.s_source.Name)
+            .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
             .SetSampler(new AlwaysOnSampler())
             .Build();
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
-        s_mainActivity = Activities.s_source.CreateActivity("main", s_activityKind, s_parentActivityContext);
+        s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
         s_mainActivity?.Start();
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         TrackHostStartup(s_mainTimeStamp);
@@ -134,7 +134,7 @@ public class Program
         s_mainActivity?.Stop();
         tracerProvider?.ForceFlush();
         metricsProvider?.ForceFlush();
-        Activities.s_source.Dispose();
+        Activities.Source.Dispose();
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public class Program
 
     private static void TrackHostStartup(DateTime mainTimeStamp)
     {
-        var hostStartupActivity = Activities.s_source.StartActivity("host-startup");
+        var hostStartupActivity = Activities.Source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         hostStartupActivity?.SetEndTime(mainTimeStamp);
         hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -251,7 +251,7 @@ public class Program
 
     private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
     {
-        var _lookupExternalCommandActivity = Activities.s_source.StartActivity("lookup-external-command");
+        var _lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command");
         string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
         var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
             new DefaultCommandResolverPolicy(),
@@ -270,7 +270,7 @@ public class Program
             var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
             _lookupExternalCommandActivity?.Dispose();
             
-            using var _executionActivity = Activities.s_source.StartActivity("execute-extensible-command");
+            using var _executionActivity = Activities.Source.StartActivity("execute-extensible-command");
             var result = resolvedCommand.Execute();
             return result.ExitCode;
         }
@@ -279,7 +279,7 @@ public class Program
     static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
     {
         Debug.Assert(parseResult.CanBeInvoked());
-        using var _invocationActivity = Activities.s_source.StartActivity("invocation");
+        using var _invocationActivity = Activities.Source.StartActivity("invocation");
         try
         {
             exitCode = parseResult.Invoke();
@@ -333,7 +333,7 @@ public class Program
     private static ParseResult ParseArgs(string[] args)
     {
         ParseResult parseResult;
-        using (var _parseActivity = Activities.s_source.StartActivity("parse"))
+        using (var _parseActivity = Activities.Source.StartActivity("parse"))
         {
             parseResult = Parser.Instance.Parse(args);
 
@@ -350,7 +350,7 @@ public class Program
 
     private static void SetupDotnetFirstRun(ParseResult parseResult)
     {
-        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use"))
+        using (var _firstTimeUseActivity = Activities.Source.StartActivity("first-time-use"))
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
 
