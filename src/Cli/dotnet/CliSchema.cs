@@ -90,7 +90,7 @@ internal static class CliSchema
         return new RootCommandDetails(
             name: command.Name,
             version: Product.Version,
-            description: command.Description,
+            description: command.Description?.ReplaceLineEndings("\n"),
             hidden: command.Hidden,
             aliases: DetermineAliases(command.Aliases),
             arguments: arguments,
@@ -153,7 +153,7 @@ internal static class CliSchema
     }
 
     private static CommandDetails CreateCommandDetails(Command subCommand) => new CommandDetails(
-                subCommand.Description,
+                subCommand.Description?.ReplaceLineEndings("\n"),
                 subCommand.Hidden,
                 DetermineAliases(subCommand.Aliases),
                 CreateArgumentsDictionary(subCommand.Arguments),
@@ -162,7 +162,7 @@ internal static class CliSchema
             );
 
     private static OptionDetails CreateOptionDetails(Option option) => new OptionDetails(
-                option.Description,
+                option.Description?.ReplaceLineEndings("\n"),
                 option.Hidden,
                 DetermineAliases(option.Aliases),
                 option.HelpName,
@@ -175,7 +175,7 @@ internal static class CliSchema
             );
 
     private static ArgumentDetails CreateArgumentDetails(int index, Argument argument) => new ArgumentDetails(
-                argument.Description,
+                argument.Description?.ReplaceLineEndings("\n"),
                 index,
                 argument.Hidden,
                 argument.HelpName,
