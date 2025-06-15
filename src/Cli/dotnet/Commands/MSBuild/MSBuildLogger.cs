@@ -57,13 +57,7 @@ public sealed class MSBuildLogger : INodeLogger
 
             if (sessionId != null)
             {
-                // senderCount: 0 to disable sender.
-                // When senders in different process running at the same
-                // time they will read from the same global queue and cause
-                // sending duplicated events. Disable sender to reduce it.
-                _telemetry = new Telemetry.Telemetry(
-                    sessionId,
-                    senderCount: 0);
+                _telemetry = new Telemetry.Telemetry(sessionId);
             }
         }
         catch (Exception)
