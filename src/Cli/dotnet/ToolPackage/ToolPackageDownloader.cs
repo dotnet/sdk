@@ -93,7 +93,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 Reporter.Output.WriteLine($"Extracting package {packageId}@{packageVersion} to {packagePath}");
             }
             // Extract the package
-            var _extractActivity = Activities.s_source.StartActivity("extract-tool");
+            var _extractActivity = Activities.Source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
             _extractActivity?.Stop();

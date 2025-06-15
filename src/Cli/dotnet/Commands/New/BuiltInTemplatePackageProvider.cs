@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.TemplatePackage;
 using NuGet.Versioning;
@@ -44,7 +45,7 @@ internal sealed class BuiltInTemplatePackageProvider(BuiltInTemplatePackageProvi
     {
         var templateFoldersToInstall = new List<string>();
 
-        var sdksDirectory = new DirectoryInfo(environmentSettings.Environment.GetEnvironmentVariable("MSBuildSDKsPath"));
+        var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
         var sdkDirectory = sdksDirectory.Parent!;
         var sdkVersion = sdkDirectory.Name;
         var dotnetRootPath = sdkDirectory.Parent!.Parent!;
