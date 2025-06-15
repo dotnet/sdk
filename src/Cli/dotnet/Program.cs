@@ -131,7 +131,6 @@ public class Program
         s_sigIntRegistration.Dispose();
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
-        TelemetryClient?.Flush();
         s_mainActivity?.Stop();
         tracerProvider?.ForceFlush();
         metricsProvider?.ForceFlush();
