@@ -11,7 +11,7 @@ public static class TelemetryEventEntry
     public static ITelemetryFilter TelemetryFilter { get; set; } = new BlockFilter();
 
     public static void TrackEvent(
-        string? eventName = null,
+        string eventName,
         IDictionary<string, string?>? properties = null,
         IDictionary<string, double>? measurements = null)
     {
@@ -32,7 +32,7 @@ public static class TelemetryEventEntry
         }
     }
 
-    public static void Subscribe(Action<string?, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
+    public static void Subscribe(Action<string, IDictionary<string, string?>?, IDictionary<string, double>?> subscriber)
     {
         void Handler(object? sender, InstrumentationEventArgs eventArgs)
         {
@@ -47,10 +47,11 @@ public sealed class PerformanceMeasurement : IDisposable
 {
     private readonly Stopwatch? _timer;
     private readonly Dictionary<string, double>? _data;
-    private readonly string? _name;
+    private readonly string _name;
 
     public PerformanceMeasurement(Dictionary<string, double>? data, string name)
     {
+        _name = name;
         // Measurement is a no-op if we don't have a dictionary to store the entry.
         if (data == null)
         {
@@ -58,13 +59,12 @@ public sealed class PerformanceMeasurement : IDisposable
         }
 
         _data = data;
-        _name = name;
         _timer = Stopwatch.StartNew();
     }
 
     public void Dispose()
     {
-        if (_name is not null && _timer is not null)
+        if (_timer is not null)
         {
             _data?.Add(_name, _timer.Elapsed.TotalMilliseconds);
         }
@@ -82,7 +82,7 @@ public class BlockFilter : ITelemetryFilter
 public class InstrumentationEventArgs : EventArgs
 {
     internal InstrumentationEventArgs(
-        string? eventName,
+        string eventName,
         IDictionary<string, string?>? properties,
         IDictionary<string, double>? measurements)
     {
@@ -91,17 +91,17 @@ public class InstrumentationEventArgs : EventArgs
         Measurements = measurements;
     }
 
-    public string? EventName { get; }
+    public string EventName { get; }
     public IDictionary<string, string?>? Properties { get; }
     public IDictionary<string, double>? Measurements { get; }
 }
 
 public class ApplicationInsightsEntryFormat(
-    string? eventName = null,
+    string eventName,
     IDictionary<string, string?>? properties = null,
     IDictionary<string, double>? measurements = null)
 {
-    public string? EventName { get; } = eventName;
+    public string EventName { get; } = eventName;
     public IDictionary<string, string?>? Properties { get; } = properties;
     public IDictionary<string, double>? Measurements { get; } = measurements;
 

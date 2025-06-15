@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
@@ -12,14 +10,14 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TelemetryCommonProperties(
-    Func<string> getCurrentDirectory = null,
-    Func<string, string> hasher = null,
-    Func<string> getMACAddress = null,
-    Func<string> getDeviceId = null,
-    IDockerContainerDetector dockerContainerDetector = null,
-    IUserLevelCacheWriter userLevelCacheWriter = null,
-    ICIEnvironmentDetector ciEnvironmentDetector = null,
-    ILLMEnvironmentDetector llmEnvironmentDetector = null)
+    Func<string>? getCurrentDirectory = null,
+    Func<string, string>? hasher = null,
+    Func<string>? getMACAddress = null,
+    Func<string>? getDeviceId = null,
+    IDockerContainerDetector? dockerContainerDetector = null,
+    IUserLevelCacheWriter? userLevelCacheWriter = null,
+    ICIEnvironmentDetector? ciEnvironmentDetector = null,
+    ILLMEnvironmentDetector? llmEnvironmentDetector = null)
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
@@ -57,9 +55,9 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public FrozenDictionary<string, string> GetTelemetryCommonProperties(string currentSessionId)
+    public FrozenDictionary<string, object?> GetTelemetryCommonProperties(string currentSessionId)
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, object?>
         {
             {OSVersion, RuntimeEnvironment.OperatingSystemVersion},
             {OSPlatform, RuntimeEnvironment.OperatingSystemPlatform.ToString()},
