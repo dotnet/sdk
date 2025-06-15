@@ -968,6 +968,12 @@ public class CliSchemaTests : SdkTest
         var reader = new StreamReader(stream);
         var output = reader.ReadToEnd();
         output.Should().BeEquivalentTo(json.ReplaceLineEndings("\n"));
+    }
 
+    [Fact]
+    public void CanGenerateJsonSchemaForCLIOutput()
+    {
+        var schema = CliSchema.GetJsonSchema();
+        schema.Should().NotBeNull();
     }
 }
