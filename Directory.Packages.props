@@ -111,6 +111,7 @@
     <PackageVersion Include="System.Composition.Runtime" Version="$(SystemCompositionRuntimePackageVersion)" />
     <PackageVersion Include="System.Composition.TypedParts" Version="$(SystemCompositionTypedPartsPackageVersion)" />
     <PackageVersion Include="System.Configuration.ConfigurationManager" Version="$(SystemConfigurationConfigurationManagerPackageVersion)" />
+    <PackageVersion Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourcePackageVersion)" />
     <PackageVersion Include="System.Formats.Asn1" Version="$(SystemFormatsAsn1Version)" />
     <PackageVersion Include="System.IO.Hashing" Version="$(SystemIOHashingPackageVersion)" />
     <!-- System.Reflection.Metadata and System.Collections.Immutable cannot be pinned here because of hard dependencies within Roslyn on specific versions that have to work both here and in VS -->
