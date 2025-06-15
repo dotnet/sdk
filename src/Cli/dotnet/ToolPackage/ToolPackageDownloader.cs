@@ -84,7 +84,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
                 var packageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(reader.GetNuspec()));
                 var hashPath = versionFolderPathResolver.GetHashPath(packageId.ToString(), version);
 
-                Directory.CreateDirectory(Path.GetDirectoryName(hashPath));
+                Directory.CreateDirectory(Path.GetDirectoryName(hashPath)!);
                 File.WriteAllText(hashPath, packageHash);
             }
 
