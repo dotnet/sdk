@@ -1332,7 +1332,7 @@ _testhost_restore() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--disable-build-servers --source --packages --use-current-runtime --disable-parallel --configfile --no-http-cache --ignore-failed-sources --force --runtime --no-dependencies --verbosity --interactive --artifacts-path --use-lock-file --locked-mode --lock-file-path --force-evaluate --arch --help" 
+    opts="--disable-build-servers --source --packages --use-current-runtime --disable-parallel --configfile --no-http-cache --ignore-failed-sources --force --runtime --no-dependencies --verbosity --interactive --artifacts-path --use-lock-file --locked-mode --lock-file-path --force-evaluate --arch --os --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )

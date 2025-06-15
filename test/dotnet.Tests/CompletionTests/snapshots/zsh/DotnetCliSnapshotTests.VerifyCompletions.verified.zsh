@@ -821,6 +821,7 @@ _testhost() {
                         '--force-evaluate[Forces restore to reevaluate all dependencies even if a lock file already exists.]' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
+                        '--os=[The target operating system.]:OS: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \

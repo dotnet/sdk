@@ -795,6 +795,7 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
                 [CompletionResult]::new('--force-evaluate', '--force-evaluate', [CompletionResultType]::ParameterName, "Forces restore to reevaluate all dependencies even if a lock file already exists.")
                 [CompletionResult]::new('--arch', '--arch', [CompletionResultType]::ParameterName, "The target architecture.")
                 [CompletionResult]::new('--arch', '-a', [CompletionResultType]::ParameterName, "The target architecture.")
+                [CompletionResult]::new('--os', '--os', [CompletionResultType]::ParameterName, "The target operating system.")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )
