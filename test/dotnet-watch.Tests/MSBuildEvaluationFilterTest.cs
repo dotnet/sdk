@@ -7,16 +7,27 @@ namespace Microsoft.DotNet.Watch.UnitTests
     {
         private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
+        private static DotNetWatchContext CreateContext(bool suppressMSBuildIncrementalism = false)
+        {
+            var environmentOptions = TestOptions.GetEnvironmentOptions() with
+            {
+                SuppressMSBuildIncrementalism = suppressMSBuildIncrementalism
+            };
+
+            return new DotNetWatchContext()
+            {
+                Reporter = NullReporter.Singleton,
+                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None),
+                Options = new(),
+                RootProjectOptions = TestOptions.ProjectOptions,
+                EnvironmentOptions = environmentOptions
+            };
+        }
+
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                Options = new(),
-                RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = TestOptions.GetEnvironmentOptions()
-            };
+            var context = CreateContext();
 
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => s_emptyEvaluationResult };
             var evaluator = new BuildEvaluator(context, fileSetFactory);
@@ -33,13 +44,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProcessAsync_DoesNotEvaluateFileSetIfNonProjFileChanges()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                Options = new(),
-                RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = TestOptions.GetEnvironmentOptions()
-            };
+            var context = CreateContext();
 
             var counter = 0;
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
@@ -58,13 +63,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProcessAsync_EvaluateFileSetOnEveryChangeIfOptimizationIsSuppressed()
         {
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                Options = new(),
-                RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true }
-            };
+            var context = CreateContext(suppressMSBuildIncrementalism: true);
 
             var counter = 0;
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
@@ -97,13 +96,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => result };
 
-            var context = new DotNetWatchContext
-            {
-                Reporter = NullReporter.Singleton,
-                Options = new(),
-                RootProjectOptions = TestOptions.ProjectOptions,
-                EnvironmentOptions = TestOptions.GetEnvironmentOptions(),
-            };
+            var context = CreateContext();
 
             var evaluator = new TestableBuildEvaluator(context, fileSetFactory)
             {

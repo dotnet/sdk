@@ -8,14 +8,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
     public class NoRestoreTests
     {
         private const string InteractiveFlag = "--interactive";
+
         private static DotNetWatchContext CreateContext(string[] args = null, EnvironmentOptions environmentOptions = null)
-            => new()
+        {
+            environmentOptions ??= TestOptions.GetEnvironmentOptions();
+
+            return new()
             {
                 Reporter = NullReporter.Singleton,
+                ProcessRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None),
                 Options = new(),
                 RootProjectOptions = TestOptions.GetProjectOptions(args),
-                EnvironmentOptions = environmentOptions ?? TestOptions.GetEnvironmentOptions(),
+                EnvironmentOptions = environmentOptions,
             };
+        }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public void LeavesArgumentsUnchangedOnFirstRun()

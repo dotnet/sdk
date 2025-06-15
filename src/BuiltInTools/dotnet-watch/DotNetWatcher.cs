@@ -81,7 +81,7 @@ namespace Microsoft.DotNet.Watch
 
                 fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
-                var processTask = ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
+                var processTask = Context.ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
 
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
