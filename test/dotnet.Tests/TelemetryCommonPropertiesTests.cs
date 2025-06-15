@@ -41,26 +41,24 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(getDeviceId: () => "plaintext", userLevelCacheWriter: new NothingCache());
             unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"].Should().Be("plaintext");
         }
-
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddress()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["Machine ID"];
 
-            Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
-
         [Fact]
         public void TelemetryCommonPropertiesShouldEnsureDevDeviceIDIsCached()
         {
             var unitUnderTest = new TelemetryCommonProperties(userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
 
-            Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
             var secondAssignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["devdeviceid"];
 
-            Guid.TryParse(secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string)secondAssignedMachineId, out var _).Should().BeTrue("it should be a guid");
             secondAssignedMachineId.Should().Be(assignedMachineId, "it should match the previously assigned guid");
         }
 
@@ -70,14 +68,13 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => "plaintext", userLevelCacheWriter: new NothingCache());
             unitUnderTest.GetTelemetryCommonProperties()["Machine ID Old"].Should().NotBe("plaintext");
         }
-
         [Fact]
         public void TelemetryCommonPropertiesShouldReturnNewGuidWhenCannotGetMacAddressOld()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
             var assignedMachineId = unitUnderTest.GetTelemetryCommonProperties()["Machine ID Old"];
 
-            Guid.TryParse(assignedMachineId, out var _).Should().BeTrue("it should be a guid");
+            Guid.TryParse((string)assignedMachineId, out var _).Should().BeTrue("it should be a guid");
         }
 
         [Fact]
@@ -107,59 +104,52 @@ namespace Microsoft.DotNet.Tests
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
             unitUnderTest.GetTelemetryCommonProperties()["OS Architecture"].Should().Be(RuntimeInformation.OSArchitecture.ToString());
         }
-
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainWindowsInstallType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Installation Type"].Should().NotBeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Installation Type"]).Should().NotBeEmpty();
         }
-
         [UnixOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyWindowsInstallType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Installation Type"].Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Installation Type"]).Should().BeEmpty();
         }
-
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainWindowsProductType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Product Type"].Should().NotBeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Product Type"]).Should().NotBeEmpty();
         }
-
         [UnixOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyWindowsProductType()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Product Type"].Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Product Type"]).Should().BeEmpty();
         }
-
         [WindowsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().BeEmpty();
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Release"]).Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Version"]).Should().BeEmpty();
         }
-
         [MacOsOnlyFact]
         public void TelemetryCommonPropertiesShouldContainEmptyLibcReleaseAndVersion2()
         {
             var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().BeEmpty();
-            unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Release"]).Should().BeEmpty();
+            ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Version"]).Should().BeEmpty();
         }
-
         [LinuxOnlyFact]
         public void TelemetryCommonPropertiesShouldContainLibcReleaseAndVersion()
         {
             if (!RuntimeInformation.RuntimeIdentifier.Contains("alpine", StringComparison.OrdinalIgnoreCase))
             {
                 var unitUnderTest = new TelemetryCommonProperties(getMACAddress: () => null, userLevelCacheWriter: new NothingCache());
-                unitUnderTest.GetTelemetryCommonProperties()["Libc Release"].Should().NotBeEmpty();
-                unitUnderTest.GetTelemetryCommonProperties()["Libc Version"].Should().NotBeEmpty();
+                ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Release"]).Should().NotBeEmpty();
+                ((string)unitUnderTest.GetTelemetryCommonProperties()["Libc Version"]).Should().NotBeEmpty();
             }
         }
 

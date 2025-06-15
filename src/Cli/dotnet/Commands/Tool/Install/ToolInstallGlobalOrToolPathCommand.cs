@@ -144,7 +144,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
     private int ExecuteInstallCommand(PackageId packageId)
     {
-        using var _activity = Activities.s_source.StartActivity("install-tool");
+        using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
         _activity?.SetTag("toolId", packageId);
         ValidateArguments();
@@ -193,7 +193,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
 
             RunWithHandlingInstallError(() =>
             {
-                var toolPackageDownloaderActivity = Activities.s_source.StartActivity("download-tool-package");
+                var toolPackageDownloaderActivity = Activities.Source.StartActivity("download-tool-package");
                 IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
                 new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
@@ -222,7 +222,7 @@ internal class ToolInstallGlobalOrToolPathCommand : CommandBase
                         null :
                         NuGetFramework.Parse(_framework);
                 }
-                var shimActivity = Activities.s_source.StartActivity("create-shell-shim");
+                var shimActivity = Activities.Source.StartActivity("create-shell-shim");
                 string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architectureOption, framework, RuntimeInformation.ProcessArchitecture).Result;
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();

@@ -17,4 +17,17 @@ public static class Activities
     /// consumers to easily filter and trace CLI activities.
     /// </summary>
     public static ActivitySource Source { get; } = new("dotnet-cli", Product.Version);
+
+    /// <summary>
+    /// The environment variable used to transfer the chain of parent activity IDs.
+    /// This should be used when constructing new sub-processes in order to 
+    /// track spans across calls.
+    /// </summary>
+    public const string DOTNET_CLI_TRACEPARENT = nameof(DOTNET_CLI_TRACEPARENT);
+    /// <summary>
+    /// The environment variable used to transfer the trace state of the parent activities.
+    /// This should be used when constructing new sub-processes in order to 
+    /// track spans across calls.
+    /// </summary>
+    public const string DOTNET_CLI_TRACESTATE = nameof(DOTNET_CLI_TRACESTATE);
 }

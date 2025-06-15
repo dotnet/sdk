@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.TemplateEngine.Abstractions;
@@ -33,7 +34,7 @@ internal class OptionalWorkloadProvider : ITemplatePackageProvider
     {
         var list = new List<TemplatePackage>();
         var optionalWorkloadLocator = new TemplateLocator.TemplateLocator();
-        var sdksDirectory = new DirectoryInfo(_environmentSettings.Environment.GetEnvironmentVariable("MSBuildSDKsPath"));
+        var sdksDirectory = new DirectoryInfo(MSBuildForwardingAppWithoutLogging.GetMSBuildSDKsPath());
         var sdkDirectory = sdksDirectory.Parent!;
         var sdkVersion = sdkDirectory.Name;
         var dotnetRootPath = sdkDirectory.Parent!.Parent!;
