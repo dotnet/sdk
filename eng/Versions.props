@@ -124,6 +124,7 @@
     <SystemCompositionRuntimePackageVersion>10.0.0-preview.6.25313.102</SystemCompositionRuntimePackageVersion>
     <SystemCompositionTypedPartsPackageVersion>10.0.0-preview.6.25313.102</SystemCompositionTypedPartsPackageVersion>
     <SystemConfigurationConfigurationManagerPackageVersion>10.0.0-preview.6.25313.102</SystemConfigurationConfigurationManagerPackageVersion>
+    <SystemDiagnosticsDiagnosticSourcePackageVersion>10.0.0-preview.6.25313.106</SystemDiagnosticsDiagnosticSourcePackageVersion>
     <SystemReflectionMetadataLoadContextVersion>10.0.0-preview.6.25313.102</SystemReflectionMetadataLoadContextVersion>
     <SystemResourcesExtensionsPackageVersion>10.0.0-preview.6.25313.102</SystemResourcesExtensionsPackageVersion>
     <SystemSecurityCryptographyPkcsPackageVersion>10.0.0-preview.6.25313.102</SystemSecurityCryptographyPkcsPackageVersion>

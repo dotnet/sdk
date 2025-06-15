@@ -252,9 +252,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
 
             configurer.Configure();
 
-            return new Telemetry("test",
-                environmentProvider: _environmentProviderObject,
-                senderCount: 0);
+            return new Telemetry("test", environmentProvider: _environmentProviderObject);
         }
 
         private class MockBasicSentinel : IFileSentinel, IFirstTimeUseNoticeSentinel, IAspNetCertificateSentinel
