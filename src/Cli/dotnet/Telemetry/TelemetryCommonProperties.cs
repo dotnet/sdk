@@ -1,8 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using RuntimeEnvironment = Microsoft.DotNet.Cli.Utils.RuntimeEnvironment;
@@ -11,13 +10,13 @@ using RuntimeInformation = System.Runtime.InteropServices.RuntimeInformation;
 namespace Microsoft.DotNet.Cli.Telemetry;
 
 internal class TelemetryCommonProperties(
-    Func<string> getCurrentDirectory = null,
-    Func<string, string> hasher = null,
-    Func<string> getMACAddress = null,
-    Func<string> getDeviceId = null,
-    IDockerContainerDetector dockerContainerDetector = null,
-    IUserLevelCacheWriter userLevelCacheWriter = null,
-    ICIEnvironmentDetector ciEnvironmentDetector = null)
+    Func<string>? getCurrentDirectory = null,
+    Func<string, string>? hasher = null,
+    Func<string>? getMACAddress = null,
+    Func<string>? getDeviceId = null,
+    IDockerContainerDetector? dockerContainerDetector = null,
+    IUserLevelCacheWriter? userLevelCacheWriter = null,
+    ICIEnvironmentDetector? ciEnvironmentDetector = null)
 {
     private readonly IDockerContainerDetector _dockerContainerDetector = dockerContainerDetector ?? new DockerContainerDetectorForTelemetry();
     private readonly ICIEnvironmentDetector _ciEnvironmentDetector = ciEnvironmentDetector ?? new CIEnvironmentDetectorForTelemetry();
@@ -52,9 +51,9 @@ internal class TelemetryCommonProperties(
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
-    public Dictionary<string, string> GetTelemetryCommonProperties()
+    public FrozenDictionary<string, object?> GetTelemetryCommonProperties()
     {
-        return new Dictionary<string, string>
+        return new Dictionary<string, object?>
         {
             {OSVersion, RuntimeEnvironment.OperatingSystemVersion},
             {OSPlatform, RuntimeEnvironment.OperatingSystemPlatform.ToString()},
@@ -82,7 +81,7 @@ internal class TelemetryCommonProperties(
             {ProductType, ExternalTelemetryProperties.GetProductType()},
             {LibcRelease, ExternalTelemetryProperties.GetLibcRelease()},
             {LibcVersion, ExternalTelemetryProperties.GetLibcVersion()}
-        };
+        }.ToFrozenDictionary();
     }
 
     private string GetMachineId()

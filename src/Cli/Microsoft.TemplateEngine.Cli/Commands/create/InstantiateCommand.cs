@@ -74,6 +74,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HostSpecificDataLoader hostSpecificDataLoader,
             CancellationToken cancellationToken)
         {
+            using var createTemplateGroupsActivity = Activities.s_source.StartActivity("create-template-groups");
             IReadOnlyList<ITemplateInfo> templates = await templatePackageManager.GetTemplatesAsync(cancellationToken).ConfigureAwait(false);
             return TemplateGroup.FromTemplateList(CliTemplateInfo.FromTemplateInfo(templates, hostSpecificDataLoader));
         }
@@ -84,6 +85,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 TemplatePackageManager templatePackageManager,
                 TemplateGroup templateGroup)
         {
+            using var getTemplateActivity = Activities.s_source.StartActivity("get-template-command");
             //groups templates in the group by precedence
             foreach (IGrouping<int, CliTemplateInfo> templateGrouping in templateGroup.Templates.GroupBy(g => g.Precedence).OrderByDescending(g => g.Key))
             {
@@ -204,6 +206,8 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
                 return await templateListCoordinator.DisplayCommandDescriptionAsync(instantiateArgs, cancellationToken).ConfigureAwait(false);
             }
+            using var createActivity = Activities.s_source.StartActivity("instantiate-command");
+            createActivity?.DisplayName = $"Invoke '{instantiateArgs.ShortName}'";
 
             IEnumerable<TemplateGroup> allTemplateGroups = await GetTemplateGroupsAsync(
                 templatePackageManager,
@@ -273,10 +277,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             {
                 TemplateCommand templateCommandToRun = candidates.Single();
                 args.Command.Subcommands.Add(templateCommandToRun);
-
+                var templateParseActivity = Activities.s_source.StartActivity("reparse-for-template");
                 ParseResult updatedParseResult = args.ParseResult.RootCommandResult.Command.Parse(
                     args.ParseResult.Tokens.Select(t => t.Value).ToArray(),
                     args.ParseResult.Configuration);
+                templateParseActivity?.Stop();
                 return await candidates.Single().InvokeAsync(updatedParseResult, cancellationToken).ConfigureAwait(false);
             }
             else if (candidates.Any())

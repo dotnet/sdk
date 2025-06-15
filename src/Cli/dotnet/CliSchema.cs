@@ -74,7 +74,7 @@ internal static class CliSchema
         outputWriter.Write(result.AsSpan());
         outputWriter.Flush();
         var commandString = CommandHierarchyAsString(commandResult);
-        var telemetryProperties = new Dictionary<string, string> { { "command", commandString } };
+        var telemetryProperties = new Dictionary<string, string?> { { "command", commandString } };
         telemetryClient?.TrackEvent("schema", telemetryProperties, null);
     }
 
