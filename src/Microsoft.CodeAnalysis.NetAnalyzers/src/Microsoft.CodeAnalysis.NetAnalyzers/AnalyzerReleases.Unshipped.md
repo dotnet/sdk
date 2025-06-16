@@ -9,4 +9,4 @@ CA1874 | Performance | Info | UseRegexMembers, [Documentation](https://learn.mic
 CA1875 | Performance | Info | UseRegexMembers, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1875)
 CA2023 | Reliability | Warning | LoggerMessageDefineAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2023)
 CA2024 | Reliability | Warning | DoNotUseEndOfStreamInAsyncMethods, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2024)
-CA2025 | Reliability | Warning | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)
+CA2025 | Reliability | Disabled | DoNotPassDisposablesIntoUnawaitedTasksAnalyzer, [Documentation](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025)

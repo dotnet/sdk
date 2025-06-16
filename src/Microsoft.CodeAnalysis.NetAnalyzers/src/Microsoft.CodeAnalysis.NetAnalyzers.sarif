@@ -3819,7 +3819,7 @@
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2025",
           "properties": {
             "category": "Reliability",
-            "isEnabledByDefault": true,
+            "isEnabledByDefault": false,
             "typeName": "DoNotPassDisposablesIntoUnawaitedTasksAnalyzer",
             "languages": [
               "C#",

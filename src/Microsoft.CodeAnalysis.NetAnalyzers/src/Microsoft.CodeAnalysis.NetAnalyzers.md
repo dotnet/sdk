@@ -2137,7 +2137,7 @@ Unawaited tasks that use 'IDisposable' instances may use those instances long af
 |Item|Value|
 |-|-|
 |Category|Reliability|
-|Enabled|True|
+|Enabled|False|
 |Severity|Warning|
 |CodeFix|False|
 ---

@@ -27,7 +27,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             CreateLocalizableResourceString(nameof(DoNotPassDisposablesIntoUnawaitedTasksTitle)),
             CreateLocalizableResourceString(nameof(DoNotPassDisposablesIntoUnawaitedTasksMessage)),
             DiagnosticCategory.Reliability,
-            RuleLevel.BuildWarning,
+            RuleLevel.Disabled,
             description: CreateLocalizableResourceString(nameof(DoNotPassDisposablesIntoUnawaitedTasksDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false);
