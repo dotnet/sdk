@@ -928,6 +928,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="new">Display the command schema as JSON.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="new">The '--self-contained' and '--no-self-contained' options cannot be used together.</target>
