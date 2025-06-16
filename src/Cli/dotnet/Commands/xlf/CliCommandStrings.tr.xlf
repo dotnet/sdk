@@ -880,6 +880,11 @@ dotnet.config is a name don't translate.</note>
         <target state="new">The name of the launch profile (if any) to use when launching the application.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionLaunchProfileHelpName">
+        <source>LAUNCH_PROFILE</source>
+        <target state="new">LAUNCH_PROFILE</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
         <source>Do not build the project before running. Implies --no-restore.</source>
         <target state="new">Do not build the project before running. Implies --no-restore.</target>
@@ -903,6 +908,11 @@ dotnet.config is a name don't translate.</note>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="new">The path to the project file to run (defaults to the current directory if there is only one project).</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionProjectHelpName">
+        <source>PROJECT_PATH</source>
+        <target state="new">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
