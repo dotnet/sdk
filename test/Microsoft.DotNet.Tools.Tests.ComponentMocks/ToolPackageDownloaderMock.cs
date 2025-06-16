@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Versioning;
 
@@ -309,12 +310,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
         }
 
-        public NuGetVersion GetNuGetVersion(
+        public (NuGetVersion version, PackageSource source) GetNuGetVersion(
             PackageLocation packageLocation,
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange versionRange = null,
-            bool isGlobalTool = false,
             RestoreActionConfig restoreActionConfig = null)
         {
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
@@ -331,8 +331,10 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageLocation.RootConfigDirectory,
                 packageLocation.SourceFeedOverrides);
 
-            return NuGetVersion.Parse(feedPackage.Version);
+            return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
         }
+
+        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string targetFramework, out IToolPackage toolPackage) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {

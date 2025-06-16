@@ -99,7 +99,7 @@ public static class ParseResultExtensions
 
     public static bool IsTopLevelDotnetCommand(this ParseResult parseResult)
     {
-        return parseResult.CommandResult.Command.Equals(Microsoft.DotNet.Cli.Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
+        return parseResult.CommandResult.Command.Equals(Parser.RootCommand) && string.IsNullOrEmpty(parseResult.RootSubCommandResult());
     }
 
     public static bool CanBeInvoked(this ParseResult parseResult)

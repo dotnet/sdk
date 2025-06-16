@@ -15,7 +15,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-test" "1" "2025-05-30" "" ".NET Documentation"
+.TH "dotnet-test" "1" "2025-06-13" "" ".NET Documentation"
 .hy
 .SH dotnet test
 .SH NAME
@@ -30,20 +30,20 @@ Some examples of the \f[V]dotnet.config\f[R] file:
 .IP
 .nf
 \f[C]
-[dotnet.test:runner]
+[dotnet.test.runner]
 name = \[dq]Microsoft.Testing.Platform\[dq]
 \f[R]
 .fi
 .IP
 .nf
 \f[C]
-[dotnet.test:runner]
+[dotnet.test.runner]
 name = \[dq]VSTest\[dq]
 \f[R]
 .fi
 .RS
 .PP
-The format will change from \f[V]dotnet.test:runner\f[R] to \f[V]dotnet.test.runner\f[R] in .NET 10 SDK Preview 4.
+The \f[V]dotnet test\f[R] experience for MTP is only supported in \f[V]Microsoft.Testing.Platform\f[R] version 1.7 and later.
 .RE
 .RS
 .PP
@@ -751,6 +751,8 @@ dotnet test
     [--no-ansi]
     [--no-progress]
     [--output <VERBOSITY_LEVEL>]
+    [--no-launch-profile]
+    [--no-launch-profile-arguments]
     [<args>...]
 
 dotnet test -h|--help
@@ -904,6 +906,19 @@ Disables reporting progress to screen.
 Specifies the output verbosity when reporting tests.
 Valid values are \f[V]Normal\f[R] and \f[V]Detailed\f[R].
 The default is \f[V]Normal\f[R].
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-launch-profile\f[B]\f[R]
+.RS 2
+.PP
+Do not attempt to use launchSettings.json to configure the application.
+By default, \f[V]launchSettings.json\f[R] is used, which can apply environment variables and command-line arguments to the test executable.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--no-launch-profile-arguments\f[B]\f[R]
+.RS 2
+.PP
+Do not use arguments specified by \f[V]commandLineArgs\f[R] in launch profile to run the application.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--property:<NAME>=<VALUE>\f[B]\f[R]

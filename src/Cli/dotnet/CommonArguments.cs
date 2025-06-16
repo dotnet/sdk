@@ -11,14 +11,24 @@ namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
+        public static DynamicArgument<PackageIdentity?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
-                Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrOne,
             };
+
+        public static DynamicArgument<PackageIdentity> RequiredPackageIdentityArgument() =>
+            new("packageId")
+            {
+                HelpName = "PACKAGE_ID",
+                Description = CliStrings.PackageIdentityArgumentDescription,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
+                Arity = ArgumentArity.ExactlyOne,
+            };
+
 
         private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
