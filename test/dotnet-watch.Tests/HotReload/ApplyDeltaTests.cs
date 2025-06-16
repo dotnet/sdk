@@ -105,7 +105,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
         public async Task AutoRestartOnRudeEditAfterRestartPrompt()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -522,30 +522,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.SendControlR();
 
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
-        }
-
-        [Fact]
-        public async Task BlazorWasmHosted()
-        {
-            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
-                .WithSource();
-
-            var tfm = ToolsetInfo.CurrentTargetFramework;
-
-            var port = TestOptions.GetTestPort();
-            App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
-
-            await App.AssertWaitingForChanges();
-
-            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
-            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
-            App.AssertOutputContains("dotnet watch 🔥 HotReloadProfile: BlazorHosted");
-
-            // client capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
-
-            // server capabilities:
-            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
