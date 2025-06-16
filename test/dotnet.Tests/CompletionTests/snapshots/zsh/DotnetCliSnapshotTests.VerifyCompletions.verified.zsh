@@ -844,9 +844,9 @@ _testhost() {
                         '-f=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]:project: ' \
-                        '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:launch-profile: ' \
-                        '-lp=[The name of the launch profile (if any) to use when launching the application.]:launch-profile: ' \
+                        '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]: : ' \
+                        '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]: : ' \
+                        '-lp=[The name of the launch profile (if any) to use when launching the application.]: : ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json to configure the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
