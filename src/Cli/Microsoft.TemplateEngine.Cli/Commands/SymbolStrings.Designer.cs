@@ -381,6 +381,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to OUTPUT
+        /// </summary>
+        internal static string Option_Output_HelpName {
+            get {
+                return ResourceManager.GetString("Option_Output_HelpName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Filters the templates based on NuGet package ID..
         /// </summary>
         internal static string Option_PackageFilter {
@@ -395,6 +404,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         internal static string Option_ProjectPath {
             get {
                 return ResourceManager.GetString("Option_ProjectPath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PROJECT
+        /// </summary>
+        internal static string Option_ProjectPath_HelpName {
+            get {
+                return ResourceManager.GetString("Option_ProjectPath_HelpName", resourceCulture);
             }
         }
         
@@ -467,6 +485,15 @@ namespace Microsoft.TemplateEngine.Cli.Commands {
         internal static string TemplateCommand_Option_Name {
             get {
                 return ResourceManager.GetString("TemplateCommand_Option_Name", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NAME
+        /// </summary>
+        internal static string TemplateCommand_Option_Name_HelpName {
+            get {
+                return ResourceManager.GetString("TemplateCommand_Option_Name_HelpName", resourceCulture);
             }
         }
         

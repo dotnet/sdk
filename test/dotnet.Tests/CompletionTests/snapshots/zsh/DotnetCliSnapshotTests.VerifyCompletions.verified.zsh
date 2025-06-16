@@ -158,14 +158,14 @@ _testhost() {
                     ;;
                 (new)
                     _arguments "${_arguments_options[@]}" : \
-                        '--output=[Location to place the generated output.]: :_files' \
-                        '-o=[Location to place the generated output.]: :_files' \
-                        '--name=[The name for the output being created. If no name is specified, the name of the output directory is used.]: : ' \
-                        '-n=[The name for the output being created. If no name is specified, the name of the output directory is used.]: : ' \
+                        '--output=[Location to place the generated output.]:OUTPUT:_files' \
+                        '-o=[Location to place the generated output.]:OUTPUT:_files' \
+                        '--name=[The name for the output being created. If no name is specified, the name of the output directory is used.]:NAME: ' \
+                        '-n=[The name for the output being created. If no name is specified, the name of the output directory is used.]:NAME: ' \
                         '--dry-run=[Displays a summary of what would happen if the given command line were run if it would result in a template creation.]: :((False\:"False" True\:"True" ))' \
                         '--force=[Forces content to be generated even if it would change existing files.]: :((False\:"False" True\:"True" ))' \
                         '--no-update-check=[Disables checking for the template package updates when instantiating a template.]: :((False\:"False" True\:"True" ))' \
-                        '--project=[The project that should be used for context evaluation.]: :_files' \
+                        '--project=[The project that should be used for context evaluation.]:PROJECT:_files' \
                         '--verbosity=[Sets the verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '-v=[Sets the verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                         '--diagnostics[Enables diagnostic output.]' \
@@ -183,14 +183,14 @@ _testhost() {
                                 case $line[1] in
                                     (create)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--output=[Location to place the generated output.]: :_files' \
-                                            '-o=[Location to place the generated output.]: :_files' \
-                                            '--name=[The name for the output being created. If no name is specified, the name of the output directory is used.]: : ' \
-                                            '-n=[The name for the output being created. If no name is specified, the name of the output directory is used.]: : ' \
+                                            '--output=[Location to place the generated output.]:OUTPUT:_files' \
+                                            '-o=[Location to place the generated output.]:OUTPUT:_files' \
+                                            '--name=[The name for the output being created. If no name is specified, the name of the output directory is used.]:NAME: ' \
+                                            '-n=[The name for the output being created. If no name is specified, the name of the output directory is used.]:NAME: ' \
                                             '--dry-run=[Displays a summary of what would happen if the given command line were run if it would result in a template creation.]: :((False\:"False" True\:"True" ))' \
                                             '--force=[Forces content to be generated even if it would change existing files.]: :((False\:"False" True\:"True" ))' \
                                             '--no-update-check=[Disables checking for the template package updates when instantiating a template.]: :((False\:"False" True\:"True" ))' \
-                                            '--project=[The project that should be used for context evaluation.]: :_files' \
+                                            '--project=[The project that should be used for context evaluation.]:PROJECT:_files' \
                                             '--verbosity=[Sets the verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '-v=[Sets the verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
                                             '--diagnostics[Enables diagnostic output.]' \
@@ -269,9 +269,9 @@ _testhost() {
                                             '--type=[Filters templates based on available types. Predefined values are \"project\" and \"item\".]: : ' \
                                             '--tag=[Filters the templates based on the tag.]: : ' \
                                             '--ignore-constraints[Disables checking if the template meets the constraints to be run.]' \
-                                            '--output=[Location to place the generated output.]: :_files' \
-                                            '-o=[Location to place the generated output.]: :_files' \
-                                            '--project=[The project that should be used for context evaluation.]: :_files' \
+                                            '--output=[Location to place the generated output.]:OUTPUT:_files' \
+                                            '-o=[Location to place the generated output.]:OUTPUT:_files' \
+                                            '--project=[The project that should be used for context evaluation.]:PROJECT:_files' \
                                             '--columns-all[Displays all columns in the output.]' \
                                             '*--columns=[Specifies the columns to display in the output. ]: :((author\:"author" language\:"language" tags\:"tags" type\:"type" ))' \
                                             '--verbosity=[Sets the verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], and diag\[nostic\].]:LEVEL:((d\:"d" detailed\:"detailed" diag\:"diag" diagnostic\:"diagnostic" m\:"m" minimal\:"minimal" n\:"n" normal\:"normal" q\:"q" quiet\:"quiet" ))' \
@@ -304,8 +304,8 @@ _testhost() {
                 (nuget)
                     _arguments "${_arguments_options[@]}" : \
                         '--version[]' \
-                        '--verbosity=[]: : ' \
-                        '-v=[]: : ' \
+                        '--verbosity=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL: ' \
+                        '-v=[Set the MSBuild verbosity level. Allowed values are q\[uiet\], m\[inimal\], n\[ormal\], d\[etailed\], and diag\[nostic\].]:LEVEL: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         ":: :_testhost__nuget_commands" \
@@ -673,8 +673,8 @@ _testhost() {
                                 case $line[1] in
                                     (convert)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--output=[Location to place the generated output.]: :_files' \
-                                            '-o=[Location to place the generated output.]: :_files' \
+                                            '--output=[Location to place the generated output.]:OUTPUT:_files' \
+                                            '-o=[Location to place the generated output.]:OUTPUT:_files' \
                                             '--force[Force conversion even if there are malformed directives.]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
@@ -730,7 +730,7 @@ _testhost() {
                     ;;
                 (reference)
                     _arguments "${_arguments_options[@]}" : \
-                        '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                        '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]:PROJECT: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         ":: :_testhost__reference_commands" \
@@ -747,7 +747,7 @@ _testhost() {
                                             '--framework=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
                                             '-f=[Add the reference only when targeting a specific framework.]:FRAMEWORK:->dotnet_dynamic_complete' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
-                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]:PROJECT: ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT_PATH -- The paths to the projects to add as references.: ' \
@@ -765,7 +765,7 @@ _testhost() {
                                         ;;
                                     (list)
                                         _arguments "${_arguments_options[@]}" : \
-                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]:PROJECT: ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             && ret=0
@@ -774,7 +774,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--framework=[Remove the reference only when targeting a specific framework.]:FRAMEWORK: ' \
                                             '-f=[Remove the reference only when targeting a specific framework.]:FRAMEWORK: ' \
-                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]: : ' \
+                                            '--project=[The project file to operate on. If a file is not specified, the command will search the current directory for one.]:PROJECT: ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             '*::PROJECT_PATH -- The paths to the referenced projects to remove.:->dotnet_dynamic_complete' \
@@ -1205,9 +1205,9 @@ _testhost() {
                     ;;
                 (vstest)
                     _arguments "${_arguments_options[@]}" : \
-                        '--Platform=[]: : ' \
-                        '--Framework=[]: : ' \
-                        '*--logger=[]: : ' \
+                        '--Platform=[]:PLATFORM: ' \
+                        '--Framework=[]:FRAMEWORK: ' \
+                        '*--logger=[]:LOGGER: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         && ret=0

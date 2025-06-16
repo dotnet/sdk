@@ -187,6 +187,11 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
         <target state="translated">Percorso in cui inserire l'output generato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">Filtra i modelli basati sull'ID pacchetto NuGet. Si applica a--search.</target>
@@ -195,6 +200,11 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">Progetto da usare per la valutazione del contesto.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">Nome dell'output da creare. Se non viene specificato alcun nome, verrà usato il nome della directory di output.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">

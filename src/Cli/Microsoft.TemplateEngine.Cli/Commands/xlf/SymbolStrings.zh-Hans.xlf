@@ -187,6 +187,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">要放置生成的输出的位置。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">根据 NuGet 包 ID 筛选模板。</target>
@@ -195,6 +200,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">应用于上下文评估的项目。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">正在创建的输出名称。如未指定名称，则使用输出目录的名称。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">

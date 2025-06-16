@@ -18,6 +18,7 @@ internal static class ReferenceCommandParser
     public static readonly Option<string> ProjectOption = new Option<string>("--project")
     {
         Description = CliStrings.ProjectArgumentDescription,
+        HelpName = CliStrings.ProjectArgumentName,
         Recursive = true
     };
 

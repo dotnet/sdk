@@ -34,7 +34,11 @@ internal static class NuGetCommandParser
         {
             Arity = ArgumentArity.Zero
         });
-        command.Options.Add(new Option<string>("--verbosity", "-v"));
+        command.Options.Add(new Option<string>("--verbosity", "-v")
+        {
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName
+        });
 
         command.Subcommands.Add(GetDeleteCommand());
         command.Subcommands.Add(GetLocalsCommand());
