@@ -146,19 +146,23 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal async Task<NewCommandStatus> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken)
         {
+            using var templateInvocationActivity = Activities.s_source.StartActivity("invoke-template");
             TemplateCommandArgs args = new(this, _instantiateCommand, parseResult);
             TemplateInvoker invoker = new(_environmentSettings, () => Console.ReadLine() ?? string.Empty);
             TemplatePackageCoordinator packageCoordinator = new(_environmentSettings, _templatePackageManager);
-            TemplateConstraintManager constraintManager = new(_environmentSettings);
+            using TemplateConstraintManager constraintManager = new(_environmentSettings);
             TemplatePackageDisplay templatePackageDisplay = new(Reporter.Output, Reporter.Error);
 
             CancellationTokenSource cancellationTokenSource = new();
             cancellationTokenSource.CancelAfter(ConstraintEvaluationTimeout);
 
+#pragma warning disable CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
             Task<IReadOnlyList<TemplateConstraintResult>> constraintsEvaluation = ValidateConstraintsAsync(constraintManager, args.Template, args.IsForceFlagSpecified ? cancellationTokenSource.Token : cancellationToken);
+#pragma warning restore CA2025 // Do not pass 'IDisposable' instances into unawaited tasks
 
             if (!args.IsForceFlagSpecified)
             {
+                using var constraintResultsActivity = Activities.s_source.StartActivity("validate-constraints");
                 var constraintResults = await constraintsEvaluation.ConfigureAwait(false);
                 if (constraintResults.Any())
                 {
