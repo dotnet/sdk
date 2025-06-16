@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Tools.Test.Utilities;
+using Newtonsoft.Json.Linq;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.DotNet.Restore.Test
@@ -205,6 +206,22 @@ namespace Microsoft.DotNet.Restore.Test
             // Verify that assets file was created
             var assetsFilePath = Path.Combine(rootPath, "obj", "project.assets.json");
             File.Exists(assetsFilePath).Should().BeTrue();
+
+            // Verify that the assets file contains RID-specific targets when using RID options
+            if (ridOptions.Contains("-r") || ridOptions.Contains("--runtime") || 
+                ridOptions.Contains("--os") || ridOptions.Contains("-a") || ridOptions.Contains("--arch"))
+            {
+                var assetsContents = JObject.Parse(File.ReadAllText(assetsFilePath));
+                var targets = assetsContents["targets"];
+                targets.Should().NotBeNull("assets file should contain targets section");
+                
+                // Check for RID-specific targets (targets with RID have names containing "/")
+                var ridSpecificTargets = targets.Children<JProperty>()
+                    .Where(target => target.Name.Contains("/"))
+                    .ToList();
+                    
+                ridSpecificTargets.Should().NotBeEmpty("assets file should contain RID-specific targets when using RID options");
+            }
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
