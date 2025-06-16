@@ -45,10 +45,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     IReadOnlyList<ContentItem>? latestCompileAssets = options.Package.FindBestCompileAssetForFramework(baselineTargetFramework);
                     if (latestCompileAssets == null)
                     {
-                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
-                            DiagnosticIds.TargetFrameworkDropped,
-                            string.Format(Resources.MissingTargetFramework,
-                                baselineTargetFramework));
+                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped,
+                            string.Format(Resources.MissingTargetFramework, baselineTargetFramework),
+                            baselineTargetFramework.ToString()));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -69,10 +68,9 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                     IReadOnlyList<ContentItem>? latestRuntimeAssets = options.Package.FindBestRuntimeAssetForFramework(baselineTargetFramework);
                     if (latestRuntimeAssets == null)
                     {
-                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped) { Target = baselineTargetFramework.ToString() },
-                            DiagnosticIds.TargetFrameworkDropped,
-                            string.Format(Resources.MissingTargetFramework,
-                                baselineTargetFramework));
+                        log.LogError(new Suppression(DiagnosticIds.TargetFrameworkDropped,
+                            string.Format(Resources.MissingTargetFramework, baselineTargetFramework),
+                            baselineTargetFramework.ToString()));
                     }
                     else if (options.EnqueueApiCompatWorkItems)
                     {
@@ -98,11 +96,11 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                         IReadOnlyList<ContentItem>? latestRuntimeSpecificAssets = options.Package.FindBestRuntimeAssetForFrameworkAndRuntime(baselineTargetFramework, baselineRuntimeSpecificAssetsRidGroup.Key);
                         if (latestRuntimeSpecificAssets == null)
                         {
-                            log.LogError(new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped) { Target = baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key },
-                                DiagnosticIds.TargetFrameworkAndRidPairDropped,
+                            log.LogError(new Suppression(DiagnosticIds.TargetFrameworkAndRidPairDropped,
                                 string.Format(Resources.MissingTargetFrameworkAndRid,
                                     baselineTargetFramework,
-                                    baselineRuntimeSpecificAssetsRidGroup.Key));
+                                    baselineRuntimeSpecificAssetsRidGroup.Key),
+                                baselineTargetFramework.ToString() + "-" + baselineRuntimeSpecificAssetsRidGroup.Key));
                         }
                         else if (options.EnqueueApiCompatWorkItems)
                         {
@@ -134,10 +132,8 @@ namespace Microsoft.DotNet.PackageValidation.Validators
                 foreach (string baselineTargetFrameworkExcludedButPresentInCurrentPackage in baselineTargetFrameworksExcludedButPresentInCurrentPackage)
                 {
                     log.LogWarning(new Suppression(DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
-                        baselineTargetFrameworkExcludedButPresentInCurrentPackage),
-                        DiagnosticIds.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
-                        string.Format(Resources.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage,
-                            baselineTargetFrameworkExcludedButPresentInCurrentPackage));
+                        string.Format(Resources.BaselineTargetFrameworkIgnoredButPresentInCurrentPackage, baselineTargetFrameworkExcludedButPresentInCurrentPackage),
+                        baselineTargetFrameworkExcludedButPresentInCurrentPackage));
                 }
             }
 

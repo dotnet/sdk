@@ -7,31 +7,31 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
     {
         public static IEnumerable<object[]> GetEqualData()
         {
-            yield return new object[] { new Suppression(string.Empty), new Suppression(string.Empty) { Left = null, Right = null, Target = null } };
-            yield return new object[] { new Suppression(string.Empty), new Suppression(string.Empty) { Left = string.Empty, Right = string.Empty, Target = string.Empty } };
-            yield return new object[] { new Suppression("PK004"), new Suppression("pk004") };
-            yield return new object[] { new Suppression("PK004"), new Suppression(" pk004 ") };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B" }, new Suppression(" pk004 ") { Target = "A.b " } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll" }, new Suppression(" pk004 ") { Target = "A.B", Left = "ref/net6.0/mylib.dll" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true } };
+            yield return new object[] { new Suppression(string.Empty, string.Empty), new Suppression(string.Empty, string.Empty, target:null, left: null, right: null) };
+            yield return new object[] { new Suppression(string.Empty, string.Empty), new Suppression(string.Empty, string.Empty, target: string.Empty, left: string.Empty, right: string.Empty) };
+            yield return new object[] { new Suppression("PK004", string.Empty), new Suppression("pk004", string.Empty) };
+            yield return new object[] { new Suppression("PK004", string.Empty), new Suppression(" pk004 ", string.Empty) };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B"), new Suppression(" pk004 ", string.Empty, "A.b ") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll"), new Suppression(" pk004 ", string.Empty, "A.B", "ref/net6.0/mylib.dll") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false) };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false), new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false) };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true), new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true) };
         }
 
         public static IEnumerable<object[]> GetDifferentData()
         {
-            yield return new object[] { new Suppression(string.Empty), new Suppression("PK005") };
-            yield return new object[] { new Suppression("PK004"), new Suppression("PK005") };
-            yield return new object[] { new Suppression("PK004"), new Suppression("PK004") { Target = "A.B()" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B" }, new Suppression("PK004") { Target = "A.B()" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.C" }, new Suppression("PK004") { Target = "A.B()" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B()", Left = "ref/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B()" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B()", Left = "ref/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B()", Left = "lib/net6.0/myLib.dll" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B()", Right = "ref/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B()" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B()", Right = "ref/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B()", Right = "lib/net6.0/myLib.dll" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B()", Left = "ref/net6.0/mylib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B()", Left = "ref/netstandard2.0/mylib.dll", Right = "lib/net6.0/myLib.dll" } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = false } };
-            yield return new object[] { new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll" }, new Suppression("PK004") { Target = "A.B", Left = "ref/net6.0/myLib.dll", Right = "lib/net6.0/myLib.dll", IsBaselineSuppression = true } };
+            yield return new object[] { new Suppression(string.Empty, string.Empty), new Suppression("PK005", string.Empty) };
+            yield return new object[] { new Suppression("PK004", string.Empty), new Suppression("PK005", string.Empty) };
+            yield return new object[] { new Suppression("PK004", string.Empty), new Suppression("PK004", string.Empty, "A.B()") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B"), new Suppression("PK004", string.Empty, "A.B()") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.C"), new Suppression("PK004", string.Empty, "A.B()") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B()", "ref/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B()") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B()", "ref/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B()", "lib/net6.0/myLib.dll") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B()", "ref/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B()") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B()", "ref/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B()", "lib/net6.0/myLib.dll") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B()", "ref/net6.0/mylib.dll", "lib/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B()", "ref/netstandard2.0/mylib.dll", "lib/net6.0/myLib.dll") };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true), new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: false) };
+            yield return new object[] { new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll"), new Suppression("PK004", string.Empty, "A.B", "ref/net6.0/myLib.dll", "lib/net6.0/myLib.dll", isBaselineSuppression: true) };
         }
 
         [Theory]
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         [Fact]
         public void CheckSuppressionIsNotEqualWithNull()
         {
-            Assert.False(new Suppression("PK0004").Equals(null));
+            Assert.False(new Suppression("PK0004", string.Empty).Equals(null));
         }
     }
 }
