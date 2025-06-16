@@ -131,7 +131,7 @@ namespace Microsoft.NET.Build.Tests
             => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
 
         private void VerifyValidationsGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
-            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.AspNetCore.Http.ValidationsGenerator.dll");
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Validation.ValidationsGenerator.dll");
 
         private void VerifyInterceptorsFeatureProperties(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
         {
