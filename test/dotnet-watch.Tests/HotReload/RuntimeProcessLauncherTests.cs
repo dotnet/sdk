@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;

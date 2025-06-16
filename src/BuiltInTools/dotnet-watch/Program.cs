@@ -3,7 +3,6 @@
 
 using System.Runtime.Loader;
 using Microsoft.Build.Locator;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Watch
 {
