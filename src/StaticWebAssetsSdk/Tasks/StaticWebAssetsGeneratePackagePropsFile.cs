@@ -12,16 +12,21 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         [Required]
         public string PropsFileImport { get; set; }
 
+        public ITaskItem[] AdditionalImports { get; set; }
+
         [Required]
         public string BuildTargetPath { get; set; }
 
         public override bool Execute()
         {
             var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
-            var root = new XElement(
-                "Project",
-                new XElement("Import",
-                    new XAttribute("Project", PropsFileImport)));
+            var elements = (AdditionalImports ?? []).Select(e => e.ItemSpec).Prepend(PropsFileImport)
+                .OrderBy(id => id, StringComparer.Ordinal);
+            var root = new XElement("Project");
+            foreach (var element in elements)
+            {
+                root.Add(new XElement("Import", new XAttribute("Project", element)));
+            }
 
             document.Add(root);
 
@@ -76,6 +81,5 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
             var result = sha256.ComputeHash(data);
             return Convert.ToBase64String(result);
         }
-
     }
 }

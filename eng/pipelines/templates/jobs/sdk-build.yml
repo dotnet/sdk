@@ -1,0 +1,200 @@
+parameters:
+  ### GENERAL ###
+  variables: {}
+  oneESCompat:
+    templateFolderName: templates
+    publishTaskPrefix: ''
+  container: ''
+  helixTargetContainer: ''
+  categoryName: Build
+  runTests: true
+  testProjects: $(Build.SourcesDirectory)/test/UnitTests.proj
+  publishRetryConfig: false
+  publishXunitResults: false
+  enableSbom: true
+  timeoutInMinutes: 150
+  ### ENV VARS ###
+  testFullMSBuild: false
+  runAoTTests: false
+  ### MSBUILD ###
+  buildArchitecture: x64
+  publishArgument: ''
+  signArgument: ''
+  runTestsAsTool: false
+  pgoInstrument: false
+  enableDefaultArtifacts: false
+  runtimeIdentifier: linux-x64
+  osProperties: ''
+  runtimeSourceProperties: ''
+  officialBuildProperties: ''
+
+jobs:
+- template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
+  parameters:
+    ${{ if eq(parameters.container, '') }}:
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }})'
+    ${{ else }}:
+      name: ${{ parameters.categoryName }}_${{ parameters.pool.os }}_${{ parameters.buildArchitecture }}_${{ parameters.container }}
+      displayName: '${{ parameters.categoryName }}: ${{ parameters.pool.os }} (${{ parameters.buildArchitecture }}) [${{ parameters.container }}]'
+    pool: ${{ parameters.pool }}
+    container: ${{ parameters.container }}
+    strategy: ${{ parameters.strategy }}
+    helixRepo: dotnet/sdk
+    timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
+    enableMicrobuild: true
+    enablePublishBuildAssets: true
+    enableTelemetry: true
+    enablePublishUsingPipelines: true
+    enableSbom: ${{ parameters.enableSbom }}
+    variables:
+    - ${{ insert }}: ${{ parameters.variables }}
+
+    steps:
+    ############## PREP ###############
+    - ${{ if eq(parameters.publishRetryConfig, true) }}:
+      # Publishes the build-configuration.json to the artifacts which Arcade uses to allow all the jobs in the pipeline to retry automatically.
+      # See: https://github.com/dotnet/arcade/blob/main/Documentation/Projects/Build%20Analysis/BuildRetryOnboard.md
+      - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+        displayName: Publish build-configuration.json
+        inputs:
+          targetPath: $(Build.SourcesDirectory)/eng/BuildConfiguration
+          artifactName: BuildConfiguration
+
+    # Populate internal runtime variables.
+    - template: /eng/common/templates/steps/enable-internal-sources.yml
+      parameters:
+        legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
+    - template: /eng/common/templates/steps/enable-internal-runtimes.yml
+
+    ############### BUILDING ###############
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: eng/common/build.ps1
+          -restore -build -pack -ci -nativeToolsOnMachine
+          -configuration $(buildConfiguration)
+          ${{ parameters.publishArgument }}
+          ${{ parameters.signArgument }}
+          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
+          /p:Architecture=${{ parameters.buildArchitecture }}
+          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }}
+          /p:PgoInstrument=${{ parameters.pgoInstrument }}
+          ${{ parameters.runtimeSourceProperties }}
+          ${{ parameters.officialBuildProperties }}
+          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+        displayName: Build
+        env:
+          BuildConfig: $(buildConfiguration)
+          TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+    - ${{ else }}:
+      - script: |
+          source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
+          source $(Build.SourcesDirectory)/eng/common/native/init-distro-rid.sh
+          initDistroRidGlobal "$os" "$arch" ""
+
+          . $(Build.SourcesDirectory)/eng/common/build.sh \
+          -restore -build -pack -ci \
+          -configuration $(buildConfiguration) \
+          ${{ parameters.publishArgument }} \
+          ${{ parameters.signArgument }} \
+          /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
+          /p:Architecture=${{ parameters.buildArchitecture }} \
+          /p:RunTestsAsTool=${{ parameters.runTestsAsTool }} \
+          /p:PgoInstrument=${{ parameters.pgoInstrument }} \
+          /p:Rid=${{ parameters.runtimeIdentifier }} \
+          ${{ parameters.osProperties }} \
+          ${{ parameters.runtimeSourceProperties }} \
+          ${{ parameters.officialBuildProperties }} \
+          /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
+        displayName: Build
+        env:
+          BuildConfig: $(buildConfiguration)
+
+    ############### TESTING ###############
+    - ${{ if eq(parameters.runTests, true) }}:
+      - ${{ if eq(parameters.runAoTTests, true) }}:
+        # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
+        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
+          displayName: Install wasm-tools Workload
+      # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
+      - ${{ if eq(parameters.pool.os, 'windows') }}:
+        - powershell: eng/common/build.ps1
+            -restore -test -ci -prepareMachine -nativeToolsOnMachine
+            -configuration $(buildConfiguration)
+            /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
+            /p:Architecture=${{ parameters.buildArchitecture }}
+            ${{ parameters.runtimeSourceProperties }}
+            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+          displayName: Run ${{ parameters.categoryName }} Tests
+          condition: succeeded()
+          env:
+            # Required by Arcade for running in Helix.
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
+            TestFullMSBuild: ${{ parameters.testFullMSBuild }}
+      - ${{ else }}:
+        # For the /p:Projects syntax for Bash, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1690189034
+        # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
+        # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
+        - script: eng/common/build.sh
+            -restore -test -ci -prepareMachine
+            -configuration $(buildConfiguration)
+            '/p:Projects="${{ parameters.testProjects }}"'
+            /p:Architecture=${{ parameters.buildArchitecture }}
+            /p:Rid=${{ parameters.runtimeIdentifier }}
+            ${{ parameters.osProperties }}
+            ${{ parameters.runtimeSourceProperties }}
+            /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
+          displayName: Run ${{ parameters.categoryName }} Tests
+          condition: succeeded()
+          env:
+            # Required by Arcade for running in Helix.
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+            HelixAccessToken: $(HelixApiAccessToken)
+            RunAoTTests: ${{ parameters.runAoTTests }}
+
+    ############### POST ###############
+    - ${{ if eq(parameters.publishXunitResults, true) }}:
+      # This is only necessary for non-Helix tests.
+      - task: PublishTestResults@2
+        displayName: Publish xUnit Test Results
+        inputs:
+          testResultsFormat: xUnit
+          testResultsFiles: artifacts/TestResults/$(buildConfiguration)/*.xml
+          testRunTitle: $(System.PhaseName)
+          buildPlatform: ${{ parameters.buildArchitecture }}
+          buildConfiguration: $(buildConfiguration)
+        continueOnError: true
+        condition: always()
+
+    - task: CopyFiles@2
+      displayName: Copy Logs
+      inputs:
+        SourceFolder: $(Build.SourcesDirectory)/artifacts
+        ${{ if eq(parameters.runTests, false) }}:
+          Contents: |
+            log/$(buildConfiguration)/**/*
+            TestResults/$(buildConfiguration)/**/*
+            SymStore/$(buildConfiguration)/**/*
+            tmp/$(buildConfiguration)/**/*.binlog
+        ${{ else }}:
+          Contents: |
+            log/$(buildConfiguration)/**/*
+            TestResults/$(buildConfiguration)/**/*
+            tmp/$(buildConfiguration)/**/*.binlog
+        TargetFolder: $(Build.ArtifactStagingDirectory)
+      continueOnError: true
+      condition: always()
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
+      displayName: Publish Logs
+      inputs:
+        PathtoPublish: $(Build.ArtifactStagingDirectory)
+        # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
+        # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
+        ArtifactName: $(System.PhaseName)
+        publishLocation: Container
+      continueOnError: true
+      condition: always()
