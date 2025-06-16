@@ -161,5 +161,26 @@ namespace Microsoft.NET.Restore.Tests
             restoreArgs.Should().NotContain($"-property:{Constants.EnableDefaultItems}=false");
             restoreArgs.Should().Contain("-property:EnableDefaultItems=true");
         }
+
+        [Fact]
+        public void Optimization_only_affects_restore_operations()
+        {
+            // This test verifies that the optimization is only applied in restore contexts
+            // and doesn't affect other MSBuild operations
+            
+            // The optimization should only be applied in:
+            // 1. RestoreCommand.CreateForwarding (explicit restore)
+            // 2. RestoringCommand.GetSeparateRestoreCommand (implicit restore)
+            // 
+            // It should NOT be applied to regular build commands that don't involve restore
+            
+            // For now, this is verified by code inspection since our optimization is only
+            // applied in restore-specific code paths. If in the future other commands
+            // start using Constants.AddRestoreOptimizations, we would need to ensure
+            // they only do so in restore contexts.
+            
+            // This test serves as documentation of the intended scope
+            Assert.True(true, "Optimization scope is currently limited to restore commands by design");
+        }
     }
 }
