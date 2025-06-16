@@ -207,21 +207,76 @@ namespace Microsoft.DotNet.Restore.Test
             var assetsFilePath = Path.Combine(rootPath, "obj", "project.assets.json");
             File.Exists(assetsFilePath).Should().BeTrue();
 
-            // Verify that the assets file contains RID-specific targets when using RID options
-            if (ridOptions.Contains("-r") || ridOptions.Contains("--runtime") || 
-                ridOptions.Contains("--os") || ridOptions.Contains("-a") || ridOptions.Contains("--arch"))
+            // Verify that the assets file contains the expected RID-specific target
+            var assetsContents = JObject.Parse(File.ReadAllText(assetsFilePath));
+            var targets = assetsContents["targets"];
+            targets.Should().NotBeNull("assets file should contain targets section");
+            
+            // Determine the expected RID based on the options provided
+            string expectedRid = GetExpectedRid(ridOptions);
+            string expectedTarget = $"{ToolsetInfo.CurrentTargetFramework}/{expectedRid}";
+            
+            // Check that the specific target exists
+            var specificTarget = targets[expectedTarget];
+            specificTarget.Should().NotBeNull($"assets file should contain target '{expectedTarget}' when using RID options: {string.Join(" ", ridOptions)}");
+        }
+
+        private static string GetExpectedRid(string[] ridOptions)
+        {
+            // Check if explicit runtime is provided
+            for (int i = 0; i < ridOptions.Length; i++)
             {
-                var assetsContents = JObject.Parse(File.ReadAllText(assetsFilePath));
-                var targets = assetsContents["targets"];
-                targets.Should().NotBeNull("assets file should contain targets section");
-                
-                // Check for RID-specific targets (targets with RID have names containing "/")
-                var ridSpecificTargets = targets.Children<JProperty>()
-                    .Where(target => target.Name.Contains("/"))
-                    .ToList();
-                    
-                ridSpecificTargets.Should().NotBeEmpty("assets file should contain RID-specific targets when using RID options");
+                if ((ridOptions[i] == "-r" || ridOptions[i] == "--runtime") && i + 1 < ridOptions.Length)
+                {
+                    return ridOptions[i + 1];
+                }
             }
+
+            // Get current platform defaults
+            string currentOs = GetCurrentOsPart();
+            string currentArch = GetCurrentArchPart();
+
+            // Check for --os and --arch options to synthesize RID
+            string targetOs = currentOs;
+            string targetArch = currentArch;
+
+            for (int i = 0; i < ridOptions.Length; i++)
+            {
+                if (ridOptions[i] == "--os" && i + 1 < ridOptions.Length)
+                {
+                    targetOs = ridOptions[i + 1];
+                }
+                else if ((ridOptions[i] == "-a" || ridOptions[i] == "--arch") && i + 1 < ridOptions.Length)
+                {
+                    targetArch = ridOptions[i + 1];
+                }
+            }
+
+            return $"{targetOs}-{targetArch}";
+        }
+
+        private static string GetCurrentOsPart()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                return "win";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                return "linux";
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+                return "osx";
+            else
+                throw new PlatformNotSupportedException("Unsupported platform for RID determination");
+        }
+
+        private static string GetCurrentArchPart()
+        {
+            return RuntimeInformation.OSArchitecture switch
+            {
+                Architecture.X64 => "x64",
+                Architecture.X86 => "x86",
+                Architecture.Arm64 => "arm64",
+                Architecture.Arm => "arm",
+                _ => throw new PlatformNotSupportedException($"Unsupported architecture: {RuntimeInformation.OSArchitecture}")
+            };
         }
 
         private static string[] HandleStaticGraphEvaluation(bool useStaticGraphEvaluation, string[] args) =>
