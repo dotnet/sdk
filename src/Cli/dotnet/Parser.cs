@@ -354,38 +354,40 @@ public static class Parser
             {
                 new FsiForwardingApp(helpArgs).Execute();
             }
-
-            // argument/option cleanups specific to help
-            foreach (var option in command.Options)
+            else
             {
-                option.EnsureHelpName();
-            }
-
-            if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
-            {
-                Command listCommand = command.Parents.Single() as Command;
-
-                for (int i = 0; i < listCommand.Arguments.Count; i++)
+                // argument/option cleanups specific to help
+                foreach (var option in command.Options)
                 {
-                    if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                    option.EnsureHelpName();
+                }
+
+                if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
+                {
+                    Command listCommand = command.Parents.Single() as Command;
+
+                    for (int i = 0; i < listCommand.Arguments.Count; i++)
                     {
-                        // Name is immutable now, so we create a new Argument with the right name..
-                        listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                        if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
+                        {
+                            // Name is immutable now, so we create a new Argument with the right name..
+                            listCommand.Arguments[i] = ListCommandParser.CreateSlnOrProjectArgument(CliStrings.ProjectArgumentName, CliStrings.ProjectArgumentDescription);
+                        }
                     }
                 }
-            }
-            else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
-            {
-                // Don't show package completions in help
-                PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
-            }
-            else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
-            {
-                // Set shorter description for displaying parent command help.
-                WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
-            }
+                else if (command.Name.Equals(AddPackageCommandParser.GetCommand().Name) || command.Name.Equals(AddCommandParser.GetCommand().Name))
+                {
+                    // Don't show package completions in help
+                    PackageAddCommandParser.CmdPackageArgument.CompletionSources.Clear();
+                }
+                else if (command.Name.Equals(WorkloadSearchCommandParser.GetCommand().Name))
+                {
+                    // Set shorter description for displaying parent command help.
+                    WorkloadSearchVersionsCommandParser.GetCommand().Description = CliStrings.ShortWorkloadSearchVersionDescription;
+                }
 
-            base.Write(context);
+                base.Write(context);
+            }
         }
     }
 }
