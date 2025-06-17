@@ -40,6 +40,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     /// </summary>
     private void ThreadProc()
     {
+        OnProgressStartUpdate?.Invoke(this, EventArgs.Empty);
         try
         {
             throw new InvalidOperationException("My message");
