@@ -11,8 +11,8 @@
   <Font Id="DefaultFont" Height="-12" Weight="500" Foreground="windowtext" Background="window">Segoe UI</Font>
   <Font Id="WindowBannerFont" Height="-24" Weight="900" Foreground="FFFFFF" Background="D42B51">Segoe UI</Font>
   <Font Id="PageHeaderFont" Height="-20" Weight="500" Foreground="graytext" Background="window">Segoe UI</Font>
-  <!-- Do not change the foreground color to "red". While 0127E6 yields acceptable ratios, some contrast themes like
-       dusk drops the ratio below 4.5. -->
+  <!-- Do not change the foreground color to "red". While 0127E6 yields acceptable ratios for light/dark backgrounds, some
+       contrast themes like Dusk drops the ratio below 4.5. -->
   <Font Id="ErrorFont" Height="-12" Weight="900" Foreground="windowtext" Background="window">Segoe UI</Font>
 
   <!-- In v5, Window@Width and Window@Height refers to the client area, not the window area. wixstdba calls 
