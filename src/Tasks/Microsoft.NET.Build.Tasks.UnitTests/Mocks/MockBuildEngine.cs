@@ -48,17 +48,19 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             RegisteredTaskObjects.TryGetValue(key, out object ret);
             return ret;
         }
-        
+
         public void RegisterTaskObject(object key, object obj, RegisteredTaskObjectLifetime lifetime, bool allowEarlyCollection)
         {
             RegisteredTaskObjects.Add(key, obj);
         }
 
         public object UnregisterTaskObject(object key, RegisteredTaskObjectLifetime lifetime) => null;
-        public BuildEngineResult BuildProjectFilesInParallel(string[] projectFileNames, string[] targetNames, IDictionary[] globalProperties, IList<string>[] removeGlobalProperties, string[] toolsVersion, bool returnTargetOutputs) => new BuildEngineResult();
-        public void Yield() {
+        public BuildEngineResult BuildProjectFilesInParallel(string[] projectFileNames, string[] targetNames, IDictionary[] globalProperties, IList<string>[] removeGlobalProperties, string[] toolsVersion, bool returnTargetOutputs) => new();
+        public void Yield()
+        {
         }
-        public void Reacquire() {
+        public void Reacquire()
+        {
         }
         public bool BuildProjectFile(string projectFileName, string[] targetNames, IDictionary globalProperties, IDictionary targetOutputs, string toolsVersion) => false;
         public bool BuildProjectFilesInParallel(string[] projectFileNames, string[] targetNames, IDictionary[] globalProperties, IDictionary[] targetOutputsPerProject, string[] toolsVersion, bool useResultsCache, bool unloadProjectsOnCompletion) => false;

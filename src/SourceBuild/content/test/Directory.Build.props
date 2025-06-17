@@ -1,0 +1,15 @@
+<Project>
+
+  <!-- When building source-only, use a custom package cache for tests to make prebuilt detection work. -->
+  <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+    <RestorePackagesPath>$([MSBuild]::NormalizeDirectory('$(RestorePackagesPath)', 'tests'))</RestorePackagesPath>
+  </PropertyGroup>
+
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <VSTestResultsDirectory>$(ArtifactsTestResultsDir)</VSTestResultsDirectory>
+  </PropertyGroup>
+
+</Project>

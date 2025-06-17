@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <DefaultExcludesInProjectFolder>$(DefaultExcludesInProjectFolder);assets/**/*</DefaultExcludesInProjectFolder>
+    <UBTestsWarnOnContentDiffs>true</UBTestsWarnOnContentDiffs>
+    <VSTestLogger>console%3bverbosity=diagnostic;trx%3bverbosity=diagnostic%3bLogFileName=$(MSBuildProjectName).trx</VSTestLogger>
+    <VSTestCLIRunSettings>$(VSTestCLIRunSettings);RunConfiguration.DotNetHostPath=$(DotnetTool)</VSTestCLIRunSettings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="NuGet.Protocol" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)extract-sdk-archive.proj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="$(RepositoryEngineeringDir)merge-asset-manifests.proj" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\**" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <Target Name="SetRuntimeConfigOptions"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          BeforeTargets="_GenerateRuntimeConfigurationFilesInputCache">
+    <ItemGroup>
+      <_ProducedPackages Include="$(ArtifactsShippingPackagesDir)**/*.nupkg" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- General configs -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).LogsDirectory">
+        <Value>$(ArtifactsTestResultsDir)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).TargetRid">
+        <Value>$(TargetRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).PortableRid">
+        <Value>$(PortableRid)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).WarnOnContentDiffs">
+        <Value>$(UBTestsWarnOnContentDiffs)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).AssetManifestPath">
+        <Value>$(ArtifactsDir)VerticalManifest.xml</Value>
+      </RuntimeHostConfigurationOption>
+
+      <!-- SDK archive test configs -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).UbSdkArchivePath">
+        <Value>$(SdkTarballPath)</Value>
+      </RuntimeHostConfigurationOption>
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).UbSdkVersion">
+        <Value>$(SourceBuiltSdkVersion)</Value>
+      </RuntimeHostConfigurationOption>
+      <!-- Set for local testing to avoid downloading a new SDK each test -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).MsftSdkArchivePath">
+        <Value>$(UBTestsMsftSdkArchivePath)</Value>
+      </RuntimeHostConfigurationOption>
+
+      <!-- Nuget package test configs -->
+      <RuntimeHostConfigurationOption Include="$(MSBuildProjectName).Packages">
+        <Value>@(_ProducedPackages->'%(Identity)')</Value>
+      </RuntimeHostConfigurationOption>
+    </ItemGroup>
+  </Target>
+
+</Project>
