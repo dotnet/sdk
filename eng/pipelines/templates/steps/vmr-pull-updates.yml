@@ -57,7 +57,6 @@ steps:
     --repository "sdk:${{ parameters.targetRef }}"
     --recursive
     --remote "sdk:$(Agent.BuildDirectory)/sdk"
-    --component-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md
     --tpn-template $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
     --debug
     ||
@@ -78,9 +77,6 @@ steps:
     -branch ${{ parameters.vmrBranch }} `
     -repository "sdk:${{ parameters.targetRef }}" `
     -recursive `
-    # passing remote fails for some reason, but it is the default anyway
-    # -remote "sdk:$(Agent.BuildDirectory)/sdk"
-    -componentTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/Component.template.md `
     -tpnTemplate $(Agent.BuildDirectory)/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt `
     -debugOutput
 
