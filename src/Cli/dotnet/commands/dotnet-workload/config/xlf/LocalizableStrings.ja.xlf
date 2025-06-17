@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
+  <file datatype="xml" source-language="en" target-language="ja" original="../LocalizableStrings.resx">
+    <body>
+      <trans-unit id="CommandDescription">
+        <source>Modify or display workload configuration values.
+To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
+        <target state="translated">ワークロード構成値を変更または表示します。
+値を表示するには、値を指定せずに対応するコマンド ライン オプションを指定します。例: "dotnet workload config --update-mode"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="UpdateModeDescription">
+        <source>Controls whether updates should look for workload sets or the latest version of each individual manifest.</source>
+        <target state="translated">更新プログラムでワークロード セットを検索するか、各個別マニフェストの最新バージョンを検索するかを制御します。</target>
+        <note />
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
