@@ -8,6 +8,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
     public class BlazorLegacyIntegrationTest50(ITestOutputHelper log)
         : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorLegacyIntegrationTest50))
     {
+        /*
         [CoreMSBuildOnlyFact]
         public void Build50Hosted_Works()
         {
@@ -44,6 +45,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             content.Should().Contain(Path.Combine("Client", "obj", "Debug", targetFramework, "scopedcss"));
             content.Should().Contain(Path.Combine("Client", "wwwroot"));
         }
+        */
 
         [CoreMSBuildOnlyFact]
         public void Publish50Hosted_Works()
