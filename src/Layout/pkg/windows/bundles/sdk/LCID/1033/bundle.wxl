@@ -5,7 +5,7 @@
   <String Id="ExecuteUpgradeRelatedBundleMessage" Value="Previous version" />
   <String Id="HelpHeader" Value="Setup Help" />
   <!--_locComment_text="{Locked='/install'}{Locked='/repair'}{Locked='/uninstall'}{Locked='/passive'}{Locked='/quiet'}{Locked='/norestart'}{Locked='/log'}"-->
-  <String Id="HelpText" Value="/install | /repair | /uninstall | /layout [directory] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.&#xA;&#xA;/passive | /quiet -  displays minimal UI with no prompts or displays no UI and no prompts. By default, UI and all prompts are displayed.&#xA;&#xA;/norestart - suppress any attempts to restart. By default UI will prompt before restart.&#xA;/log log.txt - logs to a specific file. By default a log file is created in %TEMP%." />
+  <String Id="HelpText" Value="/instadll | /repair | /uninstall | /layout [directory] - installs, repairs, uninstalls or creates a complete local copy of the bundle in directory. Install is the default.&#xA;&#xA;/passive | /quiet -  displays minimal UI with no prompts or displays no UI and no prompts. By default, UI and all prompts are displayed.&#xA;&#xA;/norestart - suppress any attempts to restart. By default UI will prompt before restart.&#xA;&#xA;/log &lt;LOG_FILE&gt; - logs to the specified file. By default a log file is created in %TEMP%.&#xA;&#xA;/lang &lt;LCID&gt; - displays the UI using the specified numeric language code identifier." />
   <String Id="HelpCloseButton" Value="&amp;Close" />
   <String Id="InstallAcceptCheckbox" Value="I &amp;agree to the license terms and conditions" />
   <String Id="InstallOptionsButton" Value="&amp;Options" />
@@ -16,6 +16,7 @@
   <String Id="OverallProgressPackageText" Value="Initializing..." />
   <String Id="ProgressCancelButton" Value="&amp;Cancel" />
   <String Id="ModifyHeader" Value="Modify Setup" />
+  <String Id="ModifyText" Value="Select repair to reinstall the product, modify to install missing features or uninstall to remove it."/>
   <String Id="ModifyRepairButton" Value="&amp;Repair" />
   <String Id="ModifyUninstallButton" Value="&amp;Uninstall" />
   <String Id="ModifyCloseButton" Value="&amp;Close" />
@@ -54,17 +55,17 @@
     • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 This product collects usage data
-    • More information and opt-out https://aka.ms/dotnet-cli-telemetry
-
-Resources
-    • .NET Documentation https://aka.ms/dotnet-docs
-    • SDK Documentation https://aka.ms/dotnet-sdk-docs
-    • Release Notes https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Tutorials https://aka.ms/dotnet-tutorials" />
+    • &lt;A HREF=&quot;https://aka.ms/dotnet-cli-telemetry&quot;&gt;More information and opt-out&lt;/A&gt;"/>
+  <String Id="NetDocumentationLinkText" Value="Resources&#xA;    • &lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;" />
+  <String Id="SdkDocumentationLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-sdk-docs&quot;&gt;SDK Documentation&lt;/A&gt;" />
+  <String Id="ReleaseNotesLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Release Notes &lt;/A&gt;" />
+  <String Id="TutorialsLinkText" Value="    • &lt;A HREF=&quot;https://aka.ms/dotnet-tutorials&quot;&gt;Tutorials&lt;/A&gt;" />
   <!--_locComment="{Locked='.NET SDK'}"-->
-  <String Id="WelcomeHeaderMessage" Value=".NET SDK" />
+  <String Id="WelcomeHeader" Value=".NET SDK" Localizable="no"/>
   <!--_locComment="{Locked='.NET SDK'}"-->
-  <String Id="WelcomeDescription" Value="The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!" />
+  <String Id="WelcomeDescription" Value="The .NET SDK is used to build, run, and test .NET applications. You can choose from multiple languages, editors, and developer tools, and take advantage of a large ecosystem of libraries to build apps for web, mobile, desktop, gaming, and IoT. We hope you enjoy it!"/>
+  <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
+  <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
   <String Id="LearnMoreTitle" Value="Learn more about .NET" />
   <String Id="ResourcesHeader" Value="Resources" />
   <String Id="CoreDocumentationLink" Value="&lt;A HREF=&quot;https://aka.ms/dotnet-docs&quot;&gt;.NET Documentation&lt;/A&gt;" />
