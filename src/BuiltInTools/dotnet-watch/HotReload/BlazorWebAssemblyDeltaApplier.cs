@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Watch
             {
                 var targetFramework = project.GetTargetFrameworkVersion();
 
-                Reporter.Verbose($"Using capabilities based on target framework: '{targetFramework}'.");
+                Reporter.Verbose($"Using capabilities based on project '{project.GetDisplayName()}' target framework: '{targetFramework}'.");
 
                 capabilities = targetFramework?.Major switch
                 {
@@ -61,7 +61,7 @@ namespace Microsoft.DotNet.Watch
             }
             else
             {
-                Reporter.Verbose($"Project specifies capabilities.");
+                Reporter.Verbose($"Project '{project.GetDisplayName()}' specifies capabilities: '{string.Join(' ', capabilities)}'");
             }
 
             return Task.FromResult(capabilities);

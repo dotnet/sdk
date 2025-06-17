@@ -61,6 +61,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Default feature switch values for trimmed apps. -->
     <SignalRCustomAwaitableSupport Condition="'$(SignalRCustomAwaitableSupport)' == ''">false</SignalRCustomAwaitableSupport>
     <MvcEnhancedModelMetadataSupport Condition="'$(MvcEnhancedModelMetadataSupport)' == ''">false</MvcEnhancedModelMetadataSupport>
+    <BlazorDisableThrowNavigationException Condition="'$(BlazorDisableThrowNavigationException)' == ''">false</BlazorDisableThrowNavigationException>
   </PropertyGroup>
 
   <PropertyGroup>
