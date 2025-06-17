@@ -218,6 +218,60 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 }}");
         }
 
+        [Fact]
+        public void ItDoesNotOverwriteFileWithSameContent()
+        {
+            var task = new TestableGenerateRuntimeConfigurationFiles
+            {
+                BuildEngine = new MockNeverCacheBuildEngine4(),
+                TargetFrameworkMoniker = $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                RuntimeConfigPath = _runtimeConfigPath,
+                RuntimeFrameworks = new[]
+                {
+                    new MockTaskItem(
+                        "Microsoft.NETCore.App",
+                        new Dictionary<string, string>
+                        {
+                            {"FrameworkName", "Microsoft.NETCore.App"}, {"Version", $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0"}
+                        }
+                    )
+                },
+                RollForward = "LatestMinor"
+            };
+
+            // Execute task first time
+            task.PublicExecuteCore();
+            var firstWriteTime = File.GetLastWriteTimeUtc(_runtimeConfigPath);
+
+            // Wait a bit to ensure timestamp would change if file is rewritten
+            Thread.Sleep(100);
+
+            // Execute task again with same configuration
+            var task2 = new TestableGenerateRuntimeConfigurationFiles
+            {
+                BuildEngine = new MockNeverCacheBuildEngine4(),
+                TargetFrameworkMoniker = $".NETCoreApp,Version=v{ToolsetInfo.CurrentTargetFrameworkVersion}",
+                RuntimeConfigPath = _runtimeConfigPath,
+                RuntimeFrameworks = new[]
+                {
+                    new MockTaskItem(
+                        "Microsoft.NETCore.App",
+                        new Dictionary<string, string>
+                        {
+                            {"FrameworkName", "Microsoft.NETCore.App"}, {"Version", $"{ToolsetInfo.CurrentTargetFrameworkVersion}.0"}
+                        }
+                    )
+                },
+                RollForward = "LatestMinor"
+            };
+
+            task2.PublicExecuteCore();
+            var secondWriteTime = File.GetLastWriteTimeUtc(_runtimeConfigPath);
+
+            // File should not have been rewritten when content is the same
+            secondWriteTime.Should().Be(firstWriteTime, "file should not be rewritten when content is unchanged");
+        }
+
         private class TestableGenerateRuntimeConfigurationFiles : GenerateRuntimeConfigurationFiles
         {
             public void PublicExecuteCore()
