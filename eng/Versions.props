@@ -89,7 +89,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/arcade-services -->
-    <MicrosoftDotNetDarcLibVersion>1.1.0-beta.25312.2</MicrosoftDotNetDarcLibVersion>
+    <MicrosoftDotNetDarcLibVersion>1.1.0-beta.25317.2</MicrosoftDotNetDarcLibVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependency from https://github.com/dotnet/aspire -->
