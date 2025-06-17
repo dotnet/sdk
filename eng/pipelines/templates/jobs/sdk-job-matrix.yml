@@ -30,7 +30,7 @@ parameters:
     runTests: false
   - categoryName: ContainerBased
     container: azureLinux30Net10BuildAmd64
-    helixTargetContainer: $(helixTargetContainerPrefix)azurelinux-3.0-net10.0-build-amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-22.04-helix-amd64
     osProperties: /p:OSName=linux /p:BuildSdkDeb=true
     runTests: true
   - categoryName: TemplateEngine
