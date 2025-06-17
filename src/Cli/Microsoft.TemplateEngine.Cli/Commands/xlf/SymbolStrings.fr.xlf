@@ -187,6 +187,11 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
         <target state="translated">Emplacement pour la sortie générée.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">Filtre les modèles en fonction de l’ID de package NuGet.</target>
@@ -195,6 +200,11 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">Projet à utiliser pour l’évaluation du contexte</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">Le nom de la sortie est en cours de création. Si aucun nom n’est spécifié, le nom du répertoire de sortie est utilisé.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">

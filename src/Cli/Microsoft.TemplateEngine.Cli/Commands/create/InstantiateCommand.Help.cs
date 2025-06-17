@@ -320,11 +320,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
             }
 
-            foreach (Option cliOption in optionsToShow)
-            {
-                cliOption.EnsureHelpName();
-            }
-
             context.Output.WriteLine(LocalizationResources.HelpOptionsTitle());
             IEnumerable<TwoColumnHelpRow> optionsToWrite = optionsToShow.Select(o => context.HelpBuilder.GetTwoColumnRow(o, context));
             context.HelpBuilder.WriteColumns(optionsToWrite.ToArray(), context);

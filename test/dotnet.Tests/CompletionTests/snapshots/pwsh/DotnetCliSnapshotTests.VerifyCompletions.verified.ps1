@@ -314,8 +314,8 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
         'testhost;nuget' {
             $staticCompletions = @(
                 [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, "--version")
-                [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "--verbosity")
-                [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "--verbosity")
+                [CompletionResult]::new('--verbosity', '--verbosity', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
+                [CompletionResult]::new('--verbosity', '-v', [CompletionResultType]::ParameterName, "Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('delete', 'delete', [CompletionResultType]::ParameterValue, "delete")

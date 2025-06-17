@@ -319,11 +319,6 @@ public static class Parser
                 return;
             }
 
-            foreach (var option in command.Options)
-            {
-                option.EnsureHelpName();
-            }
-
             if (command.Equals(NuGetCommandParser.GetCommand()) || command.Parents.Any(parent => parent == NuGetCommandParser.GetCommand()))
             {
                 NuGetCommand.Run(context.ParseResult);

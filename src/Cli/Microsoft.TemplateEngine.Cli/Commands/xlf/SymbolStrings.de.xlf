@@ -187,6 +187,11 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
         <target state="translated">Speicherort für die generierte Ausgabe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">Filtert die Vorlagen basierend auf der NuGet-Paket-ID.</target>
@@ -195,6 +200,11 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">Das Projekt, das für die Kontextauswertung verwendet werden soll.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">Der Name für die erstellte Ausgabe. Wenn kein Name angegeben wird, wird der Name des Ausgabeverzeichnisses verwendet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">

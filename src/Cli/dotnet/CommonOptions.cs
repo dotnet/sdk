@@ -248,11 +248,11 @@ internal static class CommonOptions
         return result;
     }
 
-    public static readonly Option<string> TestPlatformOption = new("--Platform");
+    public static readonly Option<string> TestPlatformOption = new("--Platform") { HelpName = "PLATFORM" };
 
-    public static readonly Option<string> TestFrameworkOption = new("--Framework");
+    public static readonly Option<string> TestFrameworkOption = new("--Framework") { HelpName = "FRAMEWORK" };
 
-    public static readonly Option<string[]> TestLoggerOption = new("--logger");
+    public static readonly Option<string[]> TestLoggerOption = new("--logger") { HelpName = "LOGGER" };
 
     public static void ValidateSelfContainedOptions(bool hasSelfContainedOption, bool hasNoSelfContainedOption)
     {

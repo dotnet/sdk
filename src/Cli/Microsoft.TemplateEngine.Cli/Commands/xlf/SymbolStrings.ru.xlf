@@ -187,6 +187,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">Расположение для размещения созданных выходных данных.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">Фильтрация шаблонов по идентификатору пакета NuGet.</target>
@@ -195,6 +200,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">Проект, который следует использовать для оценки контекста.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">Имя создаваемых выходных данных. Если имя не указано, используется имя выходного каталога.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">

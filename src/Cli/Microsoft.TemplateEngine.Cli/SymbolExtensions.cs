@@ -8,7 +8,7 @@ namespace Microsoft.TemplateEngine.Cli
 {
     public static class SymbolExtensions
     {
-        public static void EnsureHelpName(this Option cliOption)
+        public static bool EnsureHelpName(this Option cliOption)
         {
             // System.CommandLine used to include the option's name without the prefix in the help output:
             // --name, --alias, -a <name> description
@@ -18,7 +18,10 @@ namespace Microsoft.TemplateEngine.Cli
                 && cliOption.CompletionSources.Count == 0) // and options that have completions
             {
                 cliOption.HelpName = cliOption.Name.RemovePrefix();
+                return true;
             }
+
+            return false;
         }
     }
 }

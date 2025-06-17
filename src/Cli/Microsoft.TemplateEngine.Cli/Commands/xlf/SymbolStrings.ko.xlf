@@ -187,6 +187,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">생성된 출력을 배치할 위치입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Output_HelpName">
+        <source>OUTPUT</source>
+        <target state="new">OUTPUT</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_PackageFilter">
         <source>Filters the templates based on NuGet package ID.</source>
         <target state="translated">NuGet 패키지 ID를 기준으로 템플릿을 필터링합니다.</target>
@@ -195,6 +200,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_ProjectPath">
         <source>The project that should be used for context evaluation.</source>
         <target state="translated">컨텍스트 평가에 사용해야 하는 프로젝트입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_ProjectPath_HelpName">
+        <source>PROJECT</source>
+        <target state="new">PROJECT</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_TagFilter">
@@ -235,6 +245,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="TemplateCommand_Option_Name">
         <source>The name for the output being created. If no name is specified, the name of the output directory is used.</source>
         <target state="translated">생성 중인 출력의 이름입니다. 이름을 지정하지 않으면 출력 디렉터리의 이름이 사용됩니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="TemplateCommand_Option_Name_HelpName">
+        <source>NAME</source>
+        <target state="new">NAME</target>
         <note />
       </trans-unit>
       <trans-unit id="TemplateCommand_Option_NoUpdateCheck">
