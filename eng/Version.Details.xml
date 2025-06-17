@@ -55,17 +55,17 @@
       <Uri>https://github.com/dotnet/emsdk</Uri>
       <Sha>976b101e5539557c20e2ac39885ac879531bcf82</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.10.29">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>27f9d42f6ea83c5aa7dddcab38a17806bfa50bc3</Sha>
+    <Dependency Name="Microsoft.Build" Version="17.10.32">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>bb7294f72e2779834a7898b8d7f1d8c54eac9845</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.10.29-servicing-25223-08">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>27f9d42f6ea83c5aa7dddcab38a17806bfa50bc3</Sha>
+    <Dependency Name="Microsoft.Build.Localization" Version="17.10.32-servicing-25313-10">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>bb7294f72e2779834a7898b8d7f1d8c54eac9845</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.29-servicing-25223-08">
-      <Uri>https://dev.azure.com/devdiv/DevDiv/_git/DotNet-msbuild-Trusted</Uri>
-      <Sha>27f9d42f6ea83c5aa7dddcab38a17806bfa50bc3</Sha>
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.10.32-servicing-25313-10">
+      <Uri>https://github.com/dotnet/msbuild</Uri>
+      <Sha>bb7294f72e2779834a7898b8d7f1d8c54eac9845</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="12.8.301-beta.24271.6">
@@ -354,9 +354,9 @@
       <Sha>16bcad1c13be082bd52ce178896d1119a73081a9</Sha>
       <SourceBuild RepoName="source-build-externals" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25269.2">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.source-build-reference-packages" Version="8.0.0-alpha.1.25316.2">
       <Uri>https://github.com/dotnet/source-build-reference-packages</Uri>
-      <Sha>cee2d057118e3ad3c58a72a23271ad88b87d4d4d</Sha>
+      <Sha>3827e68e002064268d4be4b2d1d96048f9794808</Sha>
       <SourceBuild RepoName="source-build-reference-packages" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.Deployment.DotNet.Releases" Version="2.0.0-rtm.1.25064.1">
