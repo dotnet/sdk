@@ -649,6 +649,9 @@ dotnet.config is a name don't translate.</comment>
   <data name="CommandOptionLaunchProfileDescription" xml:space="preserve">
     <value>The name of the launch profile (if any) to use when launching the application.</value>
   </data>
+  <data name="CommandOptionLaunchProfileHelpName" xml:space="preserve">
+    <value>LAUNCH_PROFILE</value>
+  </data>
   <data name="CommandOptionNoBuildDescription" xml:space="preserve">
     <value>Do not build the project before running. Implies --no-restore.</value>
     <comment>{Locked="--no-restore"}</comment>
@@ -664,6 +667,9 @@ dotnet.config is a name don't translate.</comment>
   </data>
   <data name="CommandOptionProjectDescription" xml:space="preserve">
     <value>The path to the project file to run (defaults to the current directory if there is only one project).</value>
+  </data>
+  <data name="CommandOptionProjectHelpName" xml:space="preserve">
+    <value>PROJECT_PATH</value>
   </data>
   <data name="Commands" xml:space="preserve">
     <value>SDK commands</value>

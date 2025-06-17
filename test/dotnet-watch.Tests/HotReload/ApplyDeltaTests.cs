@@ -420,7 +420,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -459,7 +459,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
-            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+            App.AssertOutputDoesNotContain("🕵️");
 
             var newSource = """
                 @page "/"
@@ -502,7 +502,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -858,7 +858,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
             App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
-            App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
+            App.AssertOutputContains("dotnet watch 🔥 Projects rebuilt");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
             // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.

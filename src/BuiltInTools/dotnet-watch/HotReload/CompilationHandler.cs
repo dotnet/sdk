@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Watch
         public readonly EnvironmentOptions EnvironmentOptions;
         private readonly IReporter _reporter;
         private readonly WatchHotReloadService _hotReloadService;
+        private readonly ProcessRunner _processRunner;
 
         /// <summary>
         /// Lock to synchronize:
@@ -36,17 +37,15 @@ namespace Microsoft.DotNet.Watch
         /// </summary>
         private ImmutableList<WatchHotReloadService.Update> _previousUpdates = [];
 
-        private readonly CancellationToken _shutdownCancellationToken;
-
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, EnvironmentOptions environmentOptions, CancellationToken shutdownCancellationToken)
+        public CompilationHandler(IReporter reporter, ProcessRunner processRunner, EnvironmentOptions environmentOptions)
         {
             _reporter = reporter;
+            _processRunner = processRunner;
             EnvironmentOptions = environmentOptions;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
-            _shutdownCancellationToken = shutdownCancellationToken;
         }
 
         public void Dispose()
@@ -88,7 +87,6 @@ namespace Microsoft.DotNet.Watch
         public void UpdateProjectBaselines(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
         {
             _hotReloadService.UpdateBaselines(Workspace.CurrentSolution, projectsToBeRebuilt.Keys.ToImmutableArray());
-            _reporter.Report(MessageDescriptor.ProjectBaselinesUpdated);
         }
 
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
@@ -138,7 +136,7 @@ namespace Microsoft.DotNet.Watch
             };
 
             var launchResult = new ProcessLaunchResult();
-            var runningProcess = ProcessRunner.RunAsync(processSpec, processReporter, isUserApplication: true, launchResult, processTerminationSource.Token);
+            var runningProcess = _processRunner.RunAsync(processSpec, processReporter, isUserApplication: true, launchResult, processTerminationSource.Token);
             if (launchResult.ProcessId == null)
             {
                 // error already reported
@@ -152,7 +150,6 @@ namespace Microsoft.DotNet.Watch
             var runningProject = new RunningProject(
                 projectNode,
                 projectOptions,
-                EnvironmentOptions,
                 deltaApplier,
                 processReporter,
                 browserRefreshServer,
@@ -659,7 +656,7 @@ namespace Microsoft.DotNet.Watch
         private async ValueTask<IReadOnlyList<int>> TerminateRunningProjects(IEnumerable<RunningProject> projects, CancellationToken cancellationToken)
         {
             // wait for all tasks to complete:
-            return await Task.WhenAll(projects.Select(p => p.TerminateAsync(_shutdownCancellationToken).AsTask())).WaitAsync(cancellationToken);
+            return await Task.WhenAll(projects.Select(p => p.TerminateAsync().AsTask())).WaitAsync(cancellationToken);
         }
 
         private static Task ForEachProjectAsync(ImmutableDictionary<string, ImmutableArray<RunningProject>> projects, Func<RunningProject, CancellationToken, Task> action, CancellationToken cancellationToken)

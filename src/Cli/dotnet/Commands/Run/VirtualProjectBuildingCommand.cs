@@ -112,23 +112,19 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
-        IReadOnlyList<string> msbuildArgs,
-        VerbosityOptions? verbosity,
-        bool interactive)
+        string[] msbuildArgs)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
         GlobalProperties = new(StringComparer.OrdinalIgnoreCase);
         CommonRunHelpers.AddUserPassedProperties(GlobalProperties, msbuildArgs);
-        BinaryLoggerArgs = msbuildArgs;
-        Verbosity = verbosity ?? RunCommand.GetDefaultVerbosity(interactive: interactive);
+        LoggerArgs = msbuildArgs;
     }
 
     public string EntryPointFileFullPath { get; }
     public Dictionary<string, string> GlobalProperties { get; }
-    public IReadOnlyList<string> BinaryLoggerArgs { get; }
-    public VerbosityOptions Verbosity { get; }
+    public string[] LoggerArgs { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
@@ -138,8 +134,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var consoleLogger = RunCommand.MakeTerminalLogger(Verbosity);
-        var binaryLogger = GetBinaryLogger(BinaryLoggerArgs);
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(LoggerArgs);
+        var binaryLogger = GetBinaryLogger(LoggerArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;
 
@@ -477,7 +473,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 _directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
-                artifactsPath: GetArtifactsPath());
+                artifactsPath: GetArtifactsPath(),
+                includeRuntimeConfigInformation: BuildTarget != "Publish");
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
@@ -511,7 +508,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         ImmutableArray<CSharpDirective> directives,
         bool isVirtualProject,
         string? targetFilePath = null,
-        string? artifactsPath = null)
+        string? artifactsPath = null,
+        bool includeRuntimeConfigInformation = true)
     {
         int processedDirectives = 0;
 
@@ -691,14 +689,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 """);
 
-            var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
-            writer.WriteLine($"""
+            if (includeRuntimeConfigInformation)
+            {
+                var targetDirectory = Path.GetDirectoryName(targetFilePath) ?? "";
+                writer.WriteLine($"""
                   <ItemGroup>
                     <RuntimeHostConfigurationOption Include="EntryPointFilePath" Value="{EscapeValue(targetFilePath)}" />
                     <RuntimeHostConfigurationOption Include="EntryPointFileDirectoryPath" Value="{EscapeValue(targetDirectory)}" />
                   </ItemGroup>
 
                 """);
+            }
 
             foreach (var sdk in sdkDirectives)
             {

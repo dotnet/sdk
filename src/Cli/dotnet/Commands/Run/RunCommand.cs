@@ -280,9 +280,7 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: RestoreArgs,
-            verbosity: Verbosity,
-            interactive: Interactive)
+            msbuildArgs: RestoreArgs)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -394,7 +392,7 @@ public class RunCommand
         }
     }
 
-    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 

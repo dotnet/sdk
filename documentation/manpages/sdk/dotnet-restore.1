@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2025-05-30" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2025-06-13" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
@@ -33,7 +33,7 @@ dotnet restore [<ROOT>] [--configfile <FILE>] [--disable-build-servers]
     [--no-cache] [--no-dependencies] [--packages <PACKAGES_DIRECTORY>]
     [-r|--runtime <RUNTIME_IDENTIFIER>] [-s|--source <SOURCE>]
     [--tl:[auto|on|off]] [--use-current-runtime, --ucr [true|false]]
-    [--use-lock-file] [-v|--verbosity <LEVEL>]
+    [--use-lock-file] [-a|--arch <ARCHITECTURE>] [--os <OS>] [-v|--verbosity <LEVEL>]
 
 dotnet restore -h|--help
 \f[R]
@@ -287,6 +287,24 @@ If the property is set to false, that implicit resolution will no longer occur.
 .RS 2
 .PP
 Enables project lock file to be generated and used with restore.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]-a|--arch\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target architecture.This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch arm64\f[R] sets the RID to \f[V]win-arm64\f[R].
+.PP
+Introduced in .NET SDK 8.0.100
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--os\f[B]\f[R]
+.RS 2
+.PP
+Specifies the target operating system (OS).This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
+For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
+.PP
+Introduced in .NET SDK 10.0.100
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]

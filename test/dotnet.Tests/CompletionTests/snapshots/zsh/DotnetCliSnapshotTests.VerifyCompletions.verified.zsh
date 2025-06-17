@@ -821,6 +821,7 @@ _testhost() {
                         '--force-evaluate[Forces restore to reevaluate all dependencies even if a lock file already exists.]' \
                         '--arch=[The target architecture.]:ARCH: ' \
                         '-a=[The target architecture.]:ARCH: ' \
+                        '--os=[The target operating system.]:OS: ' \
                         '--help[Show command line help.]' \
                         '-h[Show command line help.]' \
                         '*::PROJECT | SOLUTION | FILE -- The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.: ' \
@@ -844,9 +845,9 @@ _testhost() {
                         '-f=[The target framework to run for. The target framework must also be specified in the project file.]:FRAMEWORK:->dotnet_dynamic_complete' \
                         '--runtime=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
                         '-r=[The target runtime to run for.]:RUNTIME_IDENTIFIER:->dotnet_dynamic_complete' \
-                        '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]: : ' \
-                        '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]: : ' \
-                        '-lp=[The name of the launch profile (if any) to use when launching the application.]: : ' \
+                        '--project=[The path to the project file to run (defaults to the current directory if there is only one project).]:PROJECT_PATH: ' \
+                        '--launch-profile=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
+                        '-lp=[The name of the launch profile (if any) to use when launching the application.]:LAUNCH_PROFILE: ' \
                         '--no-launch-profile[Do not attempt to use launchSettings.json to configure the application.]' \
                         '--no-build[Do not build the project before running. Implies --no-restore.]' \
                         '--interactive=[Allows the command to stop and wait for user input or action (for example to complete authentication).]: :((False\:"False" True\:"True" ))' \
