@@ -40,32 +40,7 @@ internal sealed partial class TestProgressStateAwareTerminal(ITerminal terminal,
     /// </summary>
     private void ThreadProc()
     {
-        try
-        {
-            while (!_cts.Token.WaitHandle.WaitOne(_updateEvery))
-            {
-                lock (_lock)
-                {
-                    OnProgressStartUpdate?.Invoke(this, EventArgs.Empty);
-                    _terminal.StartUpdate();
-                    try
-                    {
-                        _terminal.RenderProgress(_progressItems);
-                    }
-                    finally
-                    {
-                        _terminal.StopUpdate();
-                        OnProgressStopUpdate?.Invoke(this, EventArgs.Empty);
-                    }
-                }
-            }
-        }
-        catch (ObjectDisposedException)
-        {
-            // When we dispose _cts too early this will throw.
-        }
-
-        _terminal.EraseProgress();
+        throw new InvalidOperationException("My message");
     }
 
     public int AddWorker(TestProgressState testWorker)
