@@ -1440,7 +1440,7 @@ _testhost_commands() {
         'format:' \
         'fsi:' \
         'msbuild:.NET Builder' \
-        'new:Templateiation Commands for .NET CLI.' \
+        'new:Template Instantiation Commands for .NET CLI.' \
         'nuget:' \
         'pack:.NET Core NuGet Package Packer' \
         'package:' \
