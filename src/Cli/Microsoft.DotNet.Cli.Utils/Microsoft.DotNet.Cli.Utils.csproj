@@ -25,7 +25,7 @@
     for Mac and other VS scenarios. During source-build, we only have access to
     the latest version, which targets NetCurrent. -->
     <PropertyGroup>
-      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net7.0\MSBuild.dll</MSBuildPathInPackage>
+      <MSBuildPathInPackage>$(PkgMicrosoft_Build_Runtime)\contentFiles\any\net8.0\MSBuild.dll</MSBuildPathInPackage>
       <MSBuildPathInPackage Condition="'$(DotNetBuildFromSource)' == 'true' and !Exists($(MSBuildPathInPackage))">$(PkgMicrosoft_Build_Runtime)\contentFiles\any\$(NetCurrent)\MSBuild.dll</MSBuildPathInPackage>
     </PropertyGroup>
     <Error Condition="!Exists('$(MSBuildPathInPackage)')" Text="Something moved around in Microsoft.Build.Runtime, adjust code here accordingly." />
@@ -48,8 +48,8 @@
     <PackageReference Include="NuGet.Packaging.Core" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="NuGet.ProjectModel" />
-    <PackageReference Include="Microsoft.Build" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="runtime" PrivateAssets="all" />
     <PackageReference Include="System.CommandLine" />
   </ItemGroup>
 

@@ -1,11 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using FluentAssertions;
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -16,12 +11,9 @@ using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using Xunit;
+using NuGet.Frameworks;
 using NuGet.Versioning;
 using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
-using Microsoft.NET.TestFramework.Utilities;
-using System.CommandLine.Parsing;
-using NuGet.Frameworks;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -39,6 +31,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _manifestFilePath;
         private readonly PackageId _packageIdA = new PackageId("local.tool.console.a");
         private readonly NuGetVersion _packageVersionA;
+        private readonly NuGetVersion _packageNewVersionA;
         private readonly ToolCommandName _toolCommandNameA = new ToolCommandName("a");
         private readonly ToolManifestFinder _toolManifestFinder;
         private readonly ToolManifestEditor _toolManifestEditor;
@@ -46,6 +39,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         public ToolInstallLocalCommandTests(ITestOutputHelper log):base(log) 
         {
             _packageVersionA = NuGetVersion.Parse("1.0.4");
+            _packageNewVersionA = NuGetVersion.Parse("2.0.0");
 
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -185,6 +179,46 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             installLocalCommand.Execute().Should().Be(0);
             _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
+        }
+
+        [Fact]
+        public void WhenRunWithRollForwardItShouldRollForwardToTrueInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()} --allow-roll-forward");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": true");
+        }
+
+        [Fact]
+        public void WhenRunWithoutRollForwardItShouldDefaultRollForwardToFalseInManifestFile()
+        {
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.ReadAllText(_manifestFilePath).Should()
+                .Contain("\"rollForward\": false");
         }
 
         [Fact]
