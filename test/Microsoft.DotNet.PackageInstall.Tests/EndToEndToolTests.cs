@@ -1,10 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Extensions.EnvironmentAbstractions;
+using System.IO.Compression;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -135,6 +132,43 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Execute()
                 .Should().Pass()
                 .And.HaveStdOutContaining("Hello Tool!");
+        }
+
+
+        [Fact]
+        public void PackagesMultipleToolsWithASingleInvocation()
+        {
+
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                SelfContained = true
+            };
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg");
+            var packageIdentifier = toolSettings.ToolPackageId;
+            var expectedRids = ToolsetInfo.LatestRuntimeIdentifiers.Split(';');
+
+            packages.Length.Should().Be(expectedRids.Length + 1, "There should be one package for the tool-wrapper and one for each RID");
+            foreach (string rid in expectedRids)
+            {
+                var packageName = $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}";
+                var package = packages.FirstOrDefault(p => p.EndsWith(packageName + ".nupkg"));
+                packages.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory");
+            }
+
+            // top-level package should declare all of the rids
+            var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            using var zipArchive = ZipFile.OpenRead(topLevelPackage);
+            var nuspecEntry = zipArchive.GetEntry($"tools/{ToolsetInfo.CurrentTargetFramework}/any/DotnetToolSettings.xml")!;
+            var stream = nuspecEntry.Open();
+            var xml = XDocument.Load(stream, LoadOptions.None);
+            var packageNodes =
+                (xml.Root!.Nodes()
+                    .First(n => n is XElement e && e.Name == "RuntimeIdentifierPackages") as XElement)!.Nodes()
+                    .Where(n => (n as XElement)!.Name == "RuntimeIdentifierPackage")
+                    .Select(e => (e as XElement)!.Attributes().First(a => a.Name == "RuntimeIdentifier").Value);
+            packageNodes.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
     }
 

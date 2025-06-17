@@ -20,14 +20,16 @@ internal static class RunCommandParser
 
     public static readonly Option<string> ProjectOption = new("--project")
     {
-        Description = CliCommandStrings.CommandOptionProjectDescription
+        Description = CliCommandStrings.CommandOptionProjectDescription,
+        HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
     public static readonly Option<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
-        Description = CliCommandStrings.CommandOptionLaunchProfileDescription
+        Description = CliCommandStrings.CommandOptionLaunchProfileDescription,
+        HelpName = CliCommandStrings.CommandOptionLaunchProfileHelpName
     };
 
     public static readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
