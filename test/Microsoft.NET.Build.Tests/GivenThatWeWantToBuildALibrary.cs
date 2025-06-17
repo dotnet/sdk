@@ -105,6 +105,24 @@ namespace Microsoft.NET.Build.Tests
             return itemValues;
         }
 
+        private string GetPropertyValue(string propertyName, string projectFolder, string targetFramework)
+        {
+            var getValuesCommand = new GetValuesCommand(Log, projectFolder,
+                targetFramework, propertyName, GetValuesCommand.ValueType.Property)
+            {
+                Configuration = "Debug"
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var values = getValuesCommand.GetValues();
+            values.Count.Should().Be(1);
+            return values[0];
+        }
+
         private TestAsset CreateDocumentationFileLibraryAsset(bool? generateDocumentationFile, string documentationFile, string language, [CallerMemberName] string callingMethod = "")
         {
             string genDocFileIdentifier = generateDocumentationFile == null ? "null" : generateDocumentationFile.Value.ToString();
@@ -1045,25 +1063,7 @@ namespace ProjectNameWithSpaces
                 .Should()
                 .Pass();
 
-            string GetPropertyValue(string propertyName)
-            {
-                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
-                {
-                    Configuration = "Debug"
-                };
-
-                getValuesCommand
-                    .Execute()
-                    .Should()
-                    .Pass();
-
-                var values = getValuesCommand.GetValues();
-                values.Count.Should().Be(1);
-                return values[0];
-            }
-
-            GetPropertyValue("RootNamespace").Should().Be("Project_Name_With_Spaces");
+            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("Project_Name_With_Spaces");
         }
 
         [Theory]
@@ -1102,25 +1102,7 @@ namespace MyProjectWithDashes
                 .Should()
                 .Pass();
 
-            string GetPropertyValue(string propertyName)
-            {
-                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
-                {
-                    Configuration = "Debug"
-                };
-
-                getValuesCommand
-                    .Execute()
-                    .Should()
-                    .Pass();
-
-                var values = getValuesCommand.GetValues();
-                values.Count.Should().Be(1);
-                return values[0];
-            }
-
-            GetPropertyValue("RootNamespace").Should().Be("my_project_with_dashes");
+            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("my_project_with_dashes");
         }
 
         [Theory]
@@ -1159,25 +1141,7 @@ namespace _13monkeys
                 .Should()
                 .Pass();
 
-            string GetPropertyValue(string propertyName)
-            {
-                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
-                {
-                    Configuration = "Debug"
-                };
-
-                getValuesCommand
-                    .Execute()
-                    .Should()
-                    .Pass();
-
-                var values = getValuesCommand.GetValues();
-                values.Count.Should().Be(1);
-                return values[0];
-            }
-
-            GetPropertyValue("RootNamespace").Should().Be("_13monkeys");
+            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13monkeys");
         }
 
         [Theory]
@@ -1216,25 +1180,7 @@ namespace _13_monkeys_project
                 .Should()
                 .Pass();
 
-            string GetPropertyValue(string propertyName)
-            {
-                var getValuesCommand = new GetValuesCommand(Log, projectFolder,
-                    testProject.TargetFrameworks, propertyName, GetValuesCommand.ValueType.Property)
-                {
-                    Configuration = "Debug"
-                };
-
-                getValuesCommand
-                    .Execute()
-                    .Should()
-                    .Pass();
-
-                var values = getValuesCommand.GetValues();
-                values.Count.Should().Be(1);
-                return values[0];
-            }
-
-            GetPropertyValue("RootNamespace").Should().Be("_13_monkeys_project");
+            GetPropertyValue("RootNamespace", projectFolder, testProject.TargetFrameworks).Should().Be("_13_monkeys_project");
         }
 
         [WindowsOnlyFact(Skip = "We need new SDK packages with different assembly versions to build this (.38 and .39 have the same assembly version)")]
