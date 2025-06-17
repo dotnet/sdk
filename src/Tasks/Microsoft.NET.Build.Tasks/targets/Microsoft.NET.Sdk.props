@@ -45,7 +45,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition=" '$(RootNamespace)' == '' ">
     <!-- Transform project name for RootNamespace: replace spaces and dashes with underscores, prefix with underscore if starts with digit -->
     <RootNamespace>$(MSBuildProjectName.Replace(" ", "_").Replace("-", "_"))</RootNamespace>
-    <RootNamespace Condition=" '$(RootNamespace.Substring(0,1))' == '0' OR '$(RootNamespace.Substring(0,1))' == '1' OR '$(RootNamespace.Substring(0,1))' == '2' OR '$(RootNamespace.Substring(0,1))' == '3' OR '$(RootNamespace.Substring(0,1))' == '4' OR '$(RootNamespace.Substring(0,1))' == '5' OR '$(RootNamespace.Substring(0,1))' == '6' OR '$(RootNamespace.Substring(0,1))' == '7' OR '$(RootNamespace.Substring(0,1))' == '8' OR '$(RootNamespace.Substring(0,1))' == '9' ">_$(RootNamespace)</RootNamespace>
+    <RootNamespace Condition=" '$([System.Char]::IsDigit($(RootNamespace.Substring(0,1))))' == 'true' ">_$(RootNamespace)</RootNamespace>
   </PropertyGroup>
 
   <!-- User-facing configuration-specific defaults -->
