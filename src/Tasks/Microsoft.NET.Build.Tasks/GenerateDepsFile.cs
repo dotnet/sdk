@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
+using System.IO.Hashing;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -254,9 +255,36 @@ namespace Microsoft.NET.Build.Tasks
             DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
 
             var writer = new DependencyContextWriter();
-            using (var fileStream = File.Create(depsFilePath))
+            
+            // Generate content in memory first
+            byte[] newContent;
+            using (var memoryStream = new MemoryStream())
             {
-                writer.Write(dependencyContext, fileStream);
+                writer.Write(dependencyContext, memoryStream);
+                newContent = memoryStream.ToArray();
+            }
+
+            bool shouldWriteFile = true;
+            // If file exists, check if content is different
+            if (File.Exists(depsFilePath))
+            {
+                byte[] existingContent = File.ReadAllBytes(depsFilePath);
+                
+                // Hash both contents using XxHash64 for fast comparison
+                var existingHash = XxHash64.Hash(existingContent);
+                var newHash = XxHash64.Hash(newContent);
+                
+                // If hashes are equal, content is the same - don't write
+                if (existingHash.SequenceEqual(newHash))
+                {
+                    shouldWriteFile = false;
+                }
+            }
+
+            if (shouldWriteFile)
+            {
+                // Write the new content to file
+                File.WriteAllBytes(depsFilePath, newContent);
             }
             _filesWritten.Add(new TaskItem(depsFilePath));
 

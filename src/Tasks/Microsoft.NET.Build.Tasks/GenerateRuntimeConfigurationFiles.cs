@@ -10,6 +10,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using System.IO.Hashing;
+using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -390,10 +392,33 @@ namespace Microsoft.NET.Build.Tasks
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
 
-            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
+            // Generate content in memory first
+            string newContent;
+            using (var stringWriter = new StringWriter())
+            using (var jsonWriter = new JsonTextWriter(stringWriter))
             {
-                serializer.Serialize(writer, value);
+                serializer.Serialize(jsonWriter, value);
+                newContent = stringWriter.ToString();
             }
+
+            // If file exists, check if content is different
+            if (File.Exists(fileName))
+            {
+                string existingContent = File.ReadAllText(fileName);
+                
+                // Hash both contents using XxHash64 for fast comparison
+                var existingHash = XxHash64.Hash(Encoding.UTF8.GetBytes(existingContent));
+                var newHash = XxHash64.Hash(Encoding.UTF8.GetBytes(newContent));
+                
+                // If hashes are equal, content is the same - don't write
+                if (existingHash.SequenceEqual(newHash))
+                {
+                    return;
+                }
+            }
+
+            // Write the new content to file
+            File.WriteAllText(fileName, newContent);
         }
     }
 }
