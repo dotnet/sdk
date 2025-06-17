@@ -315,6 +315,12 @@ public static class Parser
                 return;
             }
 
+            // argument/option cleanups specific to help
+            foreach (var option in command.Options)
+            {
+                option.EnsureHelpName();
+            }
+
             if (command.Equals(NuGetCommandParser.GetCommand()) || command.Parents.Any(parent => parent == NuGetCommandParser.GetCommand()))
             {
                 NuGetCommand.Run(context.ParseResult);
@@ -356,12 +362,6 @@ public static class Parser
             }
             else
             {
-                // argument/option cleanups specific to help
-                foreach (var option in command.Options)
-                {
-                    option.EnsureHelpName();
-                }
-
                 if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
                 {
                     Command listCommand = command.Parents.Single() as Command;
