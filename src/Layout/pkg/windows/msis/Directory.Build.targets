@@ -4,7 +4,7 @@
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
     <!-- This will only be passed through if project require harvesting files -->
     <DefineConstants Condition="'$(DotnetSrc)' != ''">$(DefineConstants);DotnetSrc=$(DotnetSrc)</DefineConstants>
-  </PropertyGroup>  
+  </PropertyGroup>
 
   <!-- The WiX SDK sets TargetPath based on the OutputName or defaults to the project name. If the compiler detects any .wxl files, the specified culture
        values are included as a subdirectory (e.g. en-us) in the final output. When the output depends on computed properties that set during the build, the

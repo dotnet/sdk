@@ -3,11 +3,14 @@
   <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.props', '$(MSBuildThisFileDirectory)../'))" />
 
   <PropertyGroup>
-    <!-- Currently, WiX only supports 'full' for the -pdbType option and affects both bundle and package projects. -->
+    <!-- Currently, WiX only supports 'full' for the -pdbType option. This affects both bundle and package projects. -->
     <DebugType>full</DebugType>
-    <Platform>$(TargetArchitecture)</Platform>
-    <PlatformName>$(TargetArchitecture)</PlatformName>
-    <InstallerPlatform>$(TargetArchitecture)</InstallerPlatform>
+
+    <!-- .wixproj defaults to AnyCPU which eventually defaults to x86. InstallerPlatform determines the bitness of
+         the installer and should always match for MSIs. For bundles, we have to remain on x86. -->
+    <InstallerPlatform Condition="'$(InstallerPlatform)' == ''">$(TargetArchitecture)</InstallerPlatform>
+    <Platform>$(InstallerPlatform)</Platform>
+    <PlatformName>$(InstallerPlatform)</PlatformName>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
@@ -16,6 +19,7 @@
     <DefineConstants>$(DefineConstants);Manufacturer=Microsoft Corporation</DefineConstants>
     <DefineConstants>$(DefineConstants);MajorVersion=$(VersionMajor)</DefineConstants>
     <DefineConstants>$(DefineConstants);MinorVersion=$(VersionMinor)</DefineConstants>
+    <DefineConstants>$(DefineConstants);TargetArchitecture=$(TargetArchitecture)</DefineConstants>
 
     <!-- Technically we don't support .NET on any version of Windows where the version of Windows Installer is less than 5.0. -->
     <DefineConstants Condition="'$(InstallerPlatform)' != 'arm64'">$(DefineConstants);InstallerVersion=200</DefineConstants>

@@ -291,8 +291,12 @@
                       WriteOnlyWhenDifferent="true"
                       Overwrite="true" />
 
+    <!-- The InstallerPlatform for bundles should always be x86. Changing this risks breaking existing code
+         used to detect .NET installations and will impacting authoring for Microsoft Update. -->
     <MSBuild Projects="$(RepoRoot)src\Layout\pkg\windows\bundles\sdk\bundle.wixproj"
              Properties="UpgradeCode=$(UpgradeCode);BundleVersion=$(BundleVersion);
+                         TargetArchitecture=$(TargetArchitecture);
+                         InstallerPlatform=x86;
                          InstallerPath=$(SdkBundleFile);
                          OutputPath=$([System.IO.Path]::GetDirectoryName($(SdkBundleFile)));
                          OutputName=$([System.IO.Path]::GetFileNameWithoutExtension($(SdkBundleFile)));

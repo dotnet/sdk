@@ -33,7 +33,7 @@
   <Target Name="SetInstallerInfo" BeforeTargets="CoreCompile">
     <PropertyGroup>
       <!-- Product and version related preprocessor definitions. -->
-      <DefineConstants>$(DefineConstants);ProductName=$(SdkBrandName) ($(InstallerPlatform))</DefineConstants>
+      <DefineConstants>$(DefineConstants);ProductName=$(SdkBrandName) ($(TargetArchitecture))</DefineConstants>
       <DefineConstants>$(DefineConstants);WinFormsAndWpfVersion=$(WinFormsAndWpfVersion)</DefineConstants>
       <DefineConstants>$(DefineConstants);DotNetRuntimeVersion=$(DotNetRuntimeVersion)</DefineConstants>
       <DefineConstants>$(DefineConstants);AspNetCoreVersion=$(AspNetCoreVersion)</DefineConstants>

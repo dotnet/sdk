@@ -6,7 +6,7 @@
     <!-- Example: Microsoft .NET SDK 10.0.100 -->
     <DefineConstants>$(DefineConstants);SdkBrandName=$(SdkBrandName)</DefineConstants>
     <!-- Example: Microsoft .NET SDK 10.0.100 (x64) -->
-    <DefineConstants>$(DefineConstants);SdkPlatformBrandName=$(SdkBrandName) ($(InstallerPlatform))</DefineConstants>
+    <DefineConstants>$(DefineConstants);SdkPlatformBrandName=$(SdkBrandName) ($(TargetArchitecture))</DefineConstants>
 
     <!-- NativeMachine values match the expected values for image file machine constants
          https://docs.microsoft.com/en-us/windows/win32/sysinfo/image-file-machine-constants -->
@@ -39,4 +39,11 @@
   <!-- This target does nothing. It's intended to allow ProjectReference items to specify a target that has
        no build impact, but allow projects to participate in restore operations.  -->
   <Target Name="Idle" />
+
+  <!-- This target is intended to catch changes that require someone to investigate. -->
+  <Target Name="ValidateBuild" BeforeTargets="CoreCompile">
+    <!-- Bundles must target x86 for back compat. -->
+    <Error Condition="'$(OutputType)' == 'Bundle' AND '$(InstallerPlatform)' != 'x86'"
+           Text="Bundles must target x86. InstallerPlatform=$(InstallerPlatform)" />
+  </Target>
 </Project>

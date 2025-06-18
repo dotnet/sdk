@@ -35,8 +35,7 @@
     <util:RegistrySearchRef Id="RemoveSpecificPreviousVersionRegistryKeySearch"/>
 
     <!-- MSI installers always write search keys to the 32-bit hive. -->
-    <util:RegistrySearch Bitness="always32"
-                         Id="CheckDotnetInstallLocation_x86"
+    <util:RegistrySearch Id="CheckDotnetInstallLocation_x86"
                          Key="SOFTWARE\dotnet\Setup\InstalledVersions\x86"
                          Result="exists"
                          Root="HKLM"
@@ -44,7 +43,6 @@
                          Variable="DotnetInstallLocationExists_x86" />
 
     <util:RegistrySearch After="CheckDotnetInstallLocation_x86"
-                         Bitness="always32"
                          Condition="DotnetInstallLocationExists_x86"
                          Id="DotnetInstallLocation_x86"
                          Variable="DOTNETHOME_X86"
@@ -54,18 +52,18 @@
                          Value="InstallLocation" />
 
     <util:FileSearch Id="DotnetExeSearch_x86"
-              After="DotnetInstallLocation_x86"
-              Variable="DotnetExeExists_x86"
-              Condition="NOT DotnetInstallLocationExists_x86"
-              Result="exists"
-              Path="[ProgramFilesFolder]dotnet\dotnet.exe"/>
+                     After="DotnetInstallLocation_x86"
+                     Variable="DotnetExeExists_x86"
+                     Condition="NOT DotnetInstallLocationExists_x86"
+                     Result="exists"
+                     Path="[ProgramFilesFolder]dotnet\dotnet.exe"/>
     <util:DirectorySearch Id="DotnetExeLocation_x86"
                           After="DotnetExeSearch_x86"
                           Condition="DotnetExeExists_x86"
                           Variable="DOTNETHOME_X86"
                           Path="[ProgramFilesFolder]dotnet"/>
 
-    <?if $(InstallerPlatform)!=x86?>
+    <?if $(TargetArchitecture)!=x86?>
     <util:RegistrySearch Id="CheckDotnetInstallLocation_x64"
               Variable="DotnetInstallLocationExists_x64"
               Result="exists"
@@ -107,7 +105,7 @@
               Variable="DOTNETHOME_X64"
               Path="[ProgramFiles64Folder]dotnet\x64"/>
     <?endif?>
-    <?if $(InstallerPlatform)=arm64?>
+    <?if $(TargetArchitecture)=arm64?>
     <util:RegistrySearch Id="CheckDotnetInstallLocation_arm64"
               Variable="DotnetInstallLocationExists_arm64"
               Result="exists"
@@ -185,7 +183,7 @@
                   DetectCondition="WixBundleInstalled"
                   Id="Finalizer"
                   InstallCondition="WixBundleAction >= 4"
-                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(Platform)"
+                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture)"
                   Vital="no" />
 
       <!-- .NET Runtime has to be installed before the CLI because of a custom action that depends on dotnet.exe. -->
