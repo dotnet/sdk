@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
         <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
-        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <target state="translated">NETSDK1224: ASP.NET Core altyapı varlıkları hedef alyapı için desteklenmiyor.</target>
         <note>{StrBegins="NETSDK1224: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
@@ -648,7 +648,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NativeCompilationRequiresPublishing">
         <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
-        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <target state="translated">NETSDK1225: Yayımlama hedefi doğrudan çağrıldığında yerel derleme desteklenmez. dotnet publish komutunu çalıştırmayı deneyin.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
@@ -793,7 +793,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PrunePackageDataNotFound">
         <source>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</source>
-        <target state="new">NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</target>
+        <target state="translated">NETSDK1226: Ayıklama Paket verileri bulunamadı {0} {1} {2}.  Bu hatayı yok saymak için, AllowMissingPrunePackageData öğesini true değerine ayarlayın.</target>
         <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
@@ -1015,7 +1015,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnsupportedToolCommandRunner">
         <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
-        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <target state="translated">NETSDK1227: Desteklenmeyen ToolCommandRunner değeri: {0}</target>
         <note>{StrBegins="NETSDK1227: "}</note>
       </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
