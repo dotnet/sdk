@@ -261,7 +261,7 @@ namespace Microsoft.NET.Build.Tasks
             if (File.Exists(depsFilePath))
             {
                 // Hash existing file content using streaming approach
-                Span<byte> existingHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                Span<byte> existingHashBuffer = stackalloc byte[XxHash64.HashSizeInBytes];
                 var existingHasher = new XxHash64();
                 using (var existingStream = File.OpenRead(depsFilePath))
                 {
@@ -270,7 +270,7 @@ namespace Microsoft.NET.Build.Tasks
                 existingHasher.GetCurrentHash(existingHashBuffer);
 
                 // Hash new content using streaming approach
-                Span<byte> newHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                Span<byte> newHashBuffer = stackalloc byte[XxHash64.HashSizeInBytes];
                 var newHasher = new XxHash64();
                 using (var memoryStream = new MemoryStream())
                 {
