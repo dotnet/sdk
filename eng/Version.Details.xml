@@ -67,7 +67,10 @@
     <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.6.25315.102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>be8cb623e031f933b5b62e82d37094b4981dce30</Sha>
-      <SourceBuild RepoName="emsdk" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.3.1.56.Cache.win-x64" Version="10.0.0-preview.6.25315.102">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>be8cb623e031f933b5b62e82d37094b4981dce30</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25315-102">
       <Uri>https://github.com/dotnet/dotnet</Uri>
