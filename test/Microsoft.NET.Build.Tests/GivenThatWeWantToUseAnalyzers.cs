@@ -85,7 +85,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             VerifyValidationsGeneratorIsUsed(asset, expectEnabled);
-            VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.AspNetCore.Http.Validation.Generated");
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.Extensions.Validation.Generated");
         }
 
         [Fact]
