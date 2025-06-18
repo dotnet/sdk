@@ -69,18 +69,18 @@
       <Sha>b567cdb6b8b461de79f2a2536a22ca3a67f2f33e</Sha>
       <SourceBuild RepoName="emsdk" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="Microsoft.Build" Version="17.14.12">
+    <Dependency Name="Microsoft.Build" Version="17.14.13">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>c95bb4f600d1a6e1afa99869f302820d4c114053</Sha>
+      <Sha>65391c53b2d0d47b01039648ea788fe5c6c5eec1</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.Localization" Version="17.14.12-servicing-25278-08">
+    <Dependency Name="Microsoft.Build.Localization" Version="17.14.13-servicing-25313-14">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>c95bb4f600d1a6e1afa99869f302820d4c114053</Sha>
+      <Sha>65391c53b2d0d47b01039648ea788fe5c6c5eec1</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.12-servicing-25278-08">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.msbuild" Version="17.14.13-servicing-25313-14">
       <Uri>https://github.com/dotnet/msbuild</Uri>
-      <Sha>c95bb4f600d1a6e1afa99869f302820d4c114053</Sha>
+      <Sha>65391c53b2d0d47b01039648ea788fe5c6c5eec1</Sha>
       <SourceBuild RepoName="msbuild" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="Microsoft.FSharp.Compiler" Version="13.9.300-beta.25228.3">
@@ -589,22 +589,22 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>3c298d9f00936d651cc47d221762474e25277672</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.24367.3">
+    <Dependency Name="Microsoft.DotNet.Darc" Version="1.1.0-beta.25317.4">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
+      <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.24367.3">
+    <Dependency Name="Microsoft.DotNet.DarcLib" Version="1.1.0-beta.25317.4">
       <Uri>https://github.com/dotnet/arcade-services</Uri>
-      <Sha>47e3672c762970073e4282bd563233da86bcca3e</Sha>
+      <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25269.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.25316.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>5c769be3733c4ffa543fc7e7ec5fadd4fa8f8c9e</Sha>
+      <Sha>45390d82e9b9686adeee65e046b8232f6814bea0</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25269.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.25316.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>5c769be3733c4ffa543fc7e7ec5fadd4fa8f8c9e</Sha>
+      <Sha>45390d82e9b9686adeee65e046b8232f6814bea0</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
