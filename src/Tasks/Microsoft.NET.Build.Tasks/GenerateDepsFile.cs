@@ -256,26 +256,32 @@ namespace Microsoft.NET.Build.Tasks
 
             var writer = new DependencyContextWriter();
             
-            // Generate content in memory first
-            byte[] newContent;
-            using (var memoryStream = new MemoryStream())
-            {
-                writer.Write(dependencyContext, memoryStream);
-                newContent = memoryStream.ToArray();
-            }
-
             bool shouldWriteFile = true;
-            // If file exists, check if content is different
+            // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(depsFilePath))
             {
-                byte[] existingContent = File.ReadAllBytes(depsFilePath);
-                
-                // Hash both contents using XxHash64 for fast comparison
-                var existingHash = XxHash64.Hash(existingContent);
-                var newHash = XxHash64.Hash(newContent);
+                // Hash existing file content using streaming approach
+                Span<byte> existingHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                var existingHasher = new XxHash64();
+                using (var existingStream = File.OpenRead(depsFilePath))
+                {
+                    existingHasher.Append(existingStream);
+                }
+                existingHasher.GetCurrentHash(existingHashBuffer);
+
+                // Hash new content using streaming approach
+                Span<byte> newHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                var newHasher = new XxHash64();
+                using (var memoryStream = new MemoryStream())
+                {
+                    writer.Write(dependencyContext, memoryStream);
+                    memoryStream.Position = 0;
+                    newHasher.Append(memoryStream);
+                }
+                newHasher.GetCurrentHash(newHashBuffer);
                 
                 // If hashes are equal, content is the same - don't write
-                if (existingHash.SequenceEqual(newHash))
+                if (existingHashBuffer.SequenceEqual(newHashBuffer))
                 {
                     shouldWriteFile = false;
                 }
@@ -284,7 +290,10 @@ namespace Microsoft.NET.Build.Tasks
             if (shouldWriteFile)
             {
                 // Write the new content to file
-                File.WriteAllBytes(depsFilePath, newContent);
+                using (var fileStream = File.Create(depsFilePath))
+                {
+                    writer.Write(dependencyContext, fileStream);
+                }
             }
             _filesWritten.Add(new TaskItem(depsFilePath));
 

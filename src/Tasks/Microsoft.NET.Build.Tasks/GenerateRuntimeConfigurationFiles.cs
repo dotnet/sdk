@@ -392,33 +392,47 @@ namespace Microsoft.NET.Build.Tasks
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
 
-            // Generate content in memory first
-            string newContent;
-            using (var stringWriter = new StringWriter())
-            using (var jsonWriter = new JsonTextWriter(stringWriter))
-            {
-                serializer.Serialize(jsonWriter, value);
-                newContent = stringWriter.ToString();
-            }
-
-            // If file exists, check if content is different
+            bool shouldWriteFile = true;
+            // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(fileName))
             {
-                string existingContent = File.ReadAllText(fileName);
-                
-                // Hash both contents using XxHash64 for fast comparison
-                var existingHash = XxHash64.Hash(Encoding.UTF8.GetBytes(existingContent));
-                var newHash = XxHash64.Hash(Encoding.UTF8.GetBytes(newContent));
+                // Hash existing file content using streaming approach
+                Span<byte> existingHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                var existingHasher = new XxHash64();
+                using (var existingStream = File.OpenRead(fileName))
+                {
+                    existingHasher.Append(existingStream);
+                }
+                existingHasher.GetCurrentHash(existingHashBuffer);
+
+                // Hash new content using streaming approach
+                Span<byte> newHashBuffer = stackalloc byte[8]; // XxHash64 produces 8-byte hash
+                var newHasher = new XxHash64();
+                using (var memoryStream = new MemoryStream())
+                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, leaveOpen: true))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    serializer.Serialize(jsonWriter, value);
+                    jsonWriter.Flush();
+                    streamWriter.Flush();
+                    memoryStream.Position = 0;
+                    newHasher.Append(memoryStream);
+                }
+                newHasher.GetCurrentHash(newHashBuffer);
                 
                 // If hashes are equal, content is the same - don't write
-                if (existingHash.SequenceEqual(newHash))
+                if (existingHashBuffer.SequenceEqual(newHashBuffer))
                 {
                     return;
                 }
             }
 
             // Write the new content to file
-            File.WriteAllText(fileName, newContent);
+            using (var fileWriter = new StreamWriter(fileName, false, Encoding.UTF8))
+            using (var jsonWriter = new JsonTextWriter(fileWriter))
+            {
+                serializer.Serialize(jsonWriter, value);
+            }
         }
     }
 }
