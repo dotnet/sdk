@@ -1,4 +1,5 @@
-name: PR Analysis
+name: Label Check
+# This workflow checks for specific labels on pull requests and prevents merging if certain labels are present.
 on:
   pull_request_target:
     types: [opened, synchronize, labeled, unlabeled]
