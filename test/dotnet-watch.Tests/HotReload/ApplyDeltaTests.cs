@@ -918,36 +918,29 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertWaitingForChanges();
 
-            // wait until after DCP session started:
-            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
+            // wait until after DCP sessions have been started for all projects:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            App.Process.ClearOutput();
 
             // no-effect edit:
             UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
 
-            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled", _ => false);
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
 
-            App.AssertOutputContains("Using Aspire process launcher.");
-            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.AppHost ({tfm})");
-            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.ApiService ({tfm})");
-            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.Web ({tfm})");
+            App.AssertOutputContains("dotnet watch 🔥 Projects restarted (1)");
+            App.AssertOutputDoesNotContain("⚠");
+
             App.Process.ClearOutput();
 
             // lambda body edit:
             UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
-
-            // We don't have means to gracefully terminate process on Windows, see https://github.com/dotnet/runtime/issues/109432
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                App.AssertOutputContains($"dotnet watch ❌ [WatchAspire.ApiService ({tfm})] Exited with error code -1");
-            }
-            else
-            {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
-                App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
-            }
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Deltas applied.");
+            App.AssertOutputDoesNotContain("Projects rebuilt");
+            App.AssertOutputDoesNotContain("Projects restarted");
+            App.AssertOutputDoesNotContain("⚠");
         }
     }
 }
