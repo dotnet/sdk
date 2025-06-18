@@ -397,7 +397,7 @@ namespace Microsoft.NET.Build.Tasks
             
             // Generate new content
             contentStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, leaveOpen: true))
+            using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, 1024, true))
             using (var jsonWriter = new JsonTextWriter(streamWriter))
             {
                 serializer.Serialize(jsonWriter, value);
@@ -430,16 +430,18 @@ namespace Microsoft.NET.Build.Tasks
                 // If hashes are equal, content is the same - don't write
                 if (existingHashBuffer.SequenceEqual(newHashBuffer))
                 {
-                    contentStream?.Dispose();
-                    return;
+                    shouldWriteFile = false;
                 }
             }
 
-            // Write the new content to file using CopyTo
-            using (var fileStream = File.Create(fileName))
+            if (shouldWriteFile)
             {
-                contentStream.Position = 0;
-                contentStream.CopyTo(fileStream);
+                // Write the new content to file using CopyTo
+                using (var fileStream = File.Create(fileName))
+                {
+                    contentStream.Position = 0;
+                    contentStream.CopyTo(fileStream);
+                }
             }
             
             contentStream?.Dispose();
