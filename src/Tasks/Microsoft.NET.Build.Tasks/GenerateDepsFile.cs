@@ -257,6 +257,12 @@ namespace Microsoft.NET.Build.Tasks
             var writer = new DependencyContextWriter();
             
             bool shouldWriteFile = true;
+            MemoryStream contentStream = null;
+            
+            // Generate new content
+            contentStream = new MemoryStream();
+            writer.Write(dependencyContext, contentStream);
+            
             // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(depsFilePath))
             {
@@ -272,12 +278,8 @@ namespace Microsoft.NET.Build.Tasks
                 // Hash new content using streaming approach
                 Span<byte> newHashBuffer = stackalloc byte[XxHash64.HashSizeInBytes];
                 var newHasher = new XxHash64();
-                using (var memoryStream = new MemoryStream())
-                {
-                    writer.Write(dependencyContext, memoryStream);
-                    memoryStream.Position = 0;
-                    newHasher.Append(memoryStream);
-                }
+                contentStream.Position = 0;
+                newHasher.Append(contentStream);
                 newHasher.GetCurrentHash(newHashBuffer);
                 
                 // If hashes are equal, content is the same - don't write
@@ -289,12 +291,15 @@ namespace Microsoft.NET.Build.Tasks
 
             if (shouldWriteFile)
             {
-                // Write the new content to file
+                // Write the new content to file using CopyTo
                 using (var fileStream = File.Create(depsFilePath))
                 {
-                    writer.Write(dependencyContext, fileStream);
+                    contentStream.Position = 0;
+                    contentStream.CopyTo(fileStream);
                 }
             }
+            
+            contentStream?.Dispose();
             _filesWritten.Add(new TaskItem(depsFilePath));
 
             if (ValidRuntimeIdentifierPlatformsForAssets != null)

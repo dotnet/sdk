@@ -393,6 +393,18 @@ namespace Microsoft.NET.Build.Tasks
             };
 
             bool shouldWriteFile = true;
+            MemoryStream contentStream = null;
+            
+            // Generate new content
+            contentStream = new MemoryStream();
+            using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, leaveOpen: true))
+            using (var jsonWriter = new JsonTextWriter(streamWriter))
+            {
+                serializer.Serialize(jsonWriter, value);
+                jsonWriter.Flush();
+                streamWriter.Flush();
+            }
+            
             // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(fileName))
             {
@@ -408,31 +420,26 @@ namespace Microsoft.NET.Build.Tasks
                 // Hash new content using streaming approach
                 Span<byte> newHashBuffer = stackalloc byte[XxHash64.HashSizeInBytes];
                 var newHasher = new XxHash64();
-                using (var memoryStream = new MemoryStream())
-                using (var streamWriter = new StreamWriter(memoryStream, Encoding.UTF8, leaveOpen: true))
-                using (var jsonWriter = new JsonTextWriter(streamWriter))
-                {
-                    serializer.Serialize(jsonWriter, value);
-                    jsonWriter.Flush();
-                    streamWriter.Flush();
-                    memoryStream.Position = 0;
-                    newHasher.Append(memoryStream);
-                }
+                contentStream.Position = 0;
+                newHasher.Append(contentStream);
                 newHasher.GetCurrentHash(newHashBuffer);
                 
                 // If hashes are equal, content is the same - don't write
                 if (existingHashBuffer.SequenceEqual(newHashBuffer))
                 {
+                    contentStream?.Dispose();
                     return;
                 }
             }
 
-            // Write the new content to file
-            using (var fileWriter = new StreamWriter(fileName, false, Encoding.UTF8))
-            using (var jsonWriter = new JsonTextWriter(fileWriter))
+            // Write the new content to file using CopyTo
+            using (var fileStream = File.Create(fileName))
             {
-                serializer.Serialize(jsonWriter, value);
+                contentStream.Position = 0;
+                contentStream.CopyTo(fileStream);
             }
+            
+            contentStream?.Dispose();
         }
     }
 }
