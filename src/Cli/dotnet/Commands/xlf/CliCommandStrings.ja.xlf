@@ -1451,6 +1451,11 @@ Make the profile names distinct.</target>
         <target state="new">Cannot combine option '{0}' and '{1}'.</target>
         <note>{0} and {1} are option names like '--no-build'.</note>
       </trans-unit>
+      <trans-unit id="InvalidOptionForStdin">
+        <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
+        <target state="new">Cannot specify option '{0}' when also using '-' to read the file from standard input.</target>
+        <note>{0} is an option name like '--no-build'.</note>
+      </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive at '{0}' is invalid: {1}</source>
         <target state="new">The '#:project' directive at '{0}' is invalid: {1}</target>

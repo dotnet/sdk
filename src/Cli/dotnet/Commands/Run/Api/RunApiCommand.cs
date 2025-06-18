@@ -95,7 +95,8 @@ internal abstract class RunApiInput
 
             var runCommand = new RunCommand(
                 noBuild: false,
-                projectFileOrDirectory: null,
+                projectFileFullPath: null,
+                entryPointFileFullPath: EntryPointFileFullPath,
                 launchProfile: null,
                 noLaunchProfile: false,
                 noLaunchProfileArguments: false,
@@ -104,7 +105,8 @@ internal abstract class RunApiInput
                 interactive: false,
                 verbosity: VerbosityOptions.quiet,
                 restoreArgs: [],
-                args: [EntryPointFileFullPath],
+                args: [],
+                readCodeFromStdin: false,
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
             runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
