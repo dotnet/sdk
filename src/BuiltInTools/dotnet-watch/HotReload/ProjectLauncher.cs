@@ -42,11 +42,7 @@ internal sealed class ProjectLauncher(
             return null;
         }
 
-        var profile = HotReloadProfileReader.InferHotReloadProfile(projectNode, Reporter);
-
-        // Blazor WASM does not need dotnet applier as all changes are applied in the browser,
-        // the process being launched is a dev server.
-        var injectDeltaApplier = profile != HotReloadProfile.BlazorWebAssembly;
+        var appModel = HotReloadAppModel.InferFromProject(projectNode, Reporter);
 
         var processSpec = new ProcessSpec
         {
@@ -81,7 +77,7 @@ internal sealed class ProjectLauncher(
         // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
         environmentBuilder.SetVariable(EnvironmentVariables.Names.DotNetModifiableAssemblies, "debug");
 
-        if (injectDeltaApplier)
+        if (appModel.InjectDeltaApplier)
         {
             // HotReload startup hook should be loaded before any other startup hooks:
             environmentBuilder.DotNetStartupHooks.Insert(0, DeltaApplier.StartupHookPath);
@@ -94,7 +90,7 @@ internal sealed class ProjectLauncher(
             }
         }
 
-        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, profile, cancellationToken);
+        var browserRefreshServer = await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectNode, processSpec, environmentBuilder, projectOptions, appModel, cancellationToken);
 
         var arguments = new List<string>()
         {
@@ -117,7 +113,7 @@ internal sealed class ProjectLauncher(
         return await compilationHandler.TrackRunningProjectAsync(
             projectNode,
             projectOptions,
-            profile,
+            appModel,
             namedPipeName,
             browserRefreshServer,
             processSpec,

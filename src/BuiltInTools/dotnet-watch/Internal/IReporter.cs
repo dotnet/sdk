@@ -63,11 +63,11 @@ namespace Microsoft.DotNet.Watch
         // predefined messages used for testing:
         public static readonly MessageDescriptor HotReloadSessionStarting = new(Format: null, Emoji: null, MessageSeverity.None, s_id++);
         public static readonly MessageDescriptor HotReloadSessionStarted = new("Hot reload session started.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor ProjectBaselinesUpdated = new("Project baselines updated.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ProjectsRebuilt = new("Projects rebuilt ({0})", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ProjectsRestarted = new("Projects restarted ({0})", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FixBuildError = new("Fix the error to continue or press Ctrl+C to exit.", WatchEmoji, MessageSeverity.Warning, s_id++);
         public static readonly MessageDescriptor WaitingForChanges = new("Waiting for changes", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor LaunchedProcess = new("Launched '{0}' with arguments '{1}': process id {2}", LaunchEmoji, MessageSeverity.Verbose, s_id++);
-        public static readonly MessageDescriptor KillingProcess = new("Killing process {0}", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor HotReloadChangeHandled = new("Hot reload change handled in {0}ms.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor HotReloadSucceeded = new("Hot reload succeeded.", HotReloadEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor UpdatesApplied = new("Updates applied: {0} out of {1}.", HotReloadEmoji, MessageSeverity.Verbose, s_id++);
@@ -86,6 +86,7 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", WatchEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ReEvaluationCompleted = new("Re-evaluation completed.", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor NoCSharpChangesToApply = new("No C# changes to apply.", WatchEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor Exited = new("Exited", WatchEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor ExitedWithUnknownErrorCode = new("Exited with unknown error code", ErrorEmoji, MessageSeverity.Error, s_id++);

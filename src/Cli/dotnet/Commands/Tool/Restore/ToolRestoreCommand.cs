@@ -43,8 +43,7 @@ internal class ToolRestoreCommand : CommandBase
             (IToolPackageStore,
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndInstaller
-                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: result.OptionValuesToBeForwarded(ToolRestoreCommandParser.GetCommand()));
+                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader();
             _toolPackageDownloader = toolPackageStoresAndInstaller.downloader;
         }
         else
@@ -103,80 +102,30 @@ internal class ToolRestoreCommand : CommandBase
             return 0;
         }
 
+        var toolPackageRestorer = new ToolPackageRestorer(
+            _toolPackageDownloader,
+            _sources,
+            overrideSources: [],
+            _verbosity,
+            _restoreActionConfig,
+            _localToolsResolverCache,
+            _fileSystem);
+
         ToolRestoreResult[] toolRestoreResults =
             [.. packagesFromManifest
                 .AsEnumerable()
-                .Select(package => InstallPackages(package, configFile))];
+                .Select(package => toolPackageRestorer.InstallPackage(package, configFile))];
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
-            toolRestoreResults.SelectMany(result => result.SaveToCache)
-                .ToDictionary(pair => pair.Item1, pair => pair.Item2);
+            toolRestoreResults.Select(result => result.SaveToCache)
+                .Where(item => item is not null)
+                .ToDictionary(pair => pair.Value.restoredCommandIdentifier, pair => pair.Value.toolCommand);
 
         EnsureNoCommandNameCollision(downloaded);
 
         _localToolsResolverCache.Save(downloaded);
 
         return PrintConclusionAndReturn(toolRestoreResults);
-    }
-
-    private ToolRestoreResult InstallPackages(
-        ToolManifestPackage package,
-        FilePath? configFile)
-    {
-        string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
-
-        if (PackageHasBeenRestored(package, targetFramework))
-        {
-            return ToolRestoreResult.Success(
-                saveToCache: [],
-                message: string.Format(
-                    CliCommandStrings.RestoreSuccessful, package.PackageId,
-                    package.Version.ToNormalizedString(), string.Join(", ", package.CommandNames)));
-        }
-
-        try
-        {
-            IToolPackage toolPackage =
-                _toolPackageDownloader.InstallPackage(
-                    new PackageLocation(
-                        nugetConfig: configFile,
-                        additionalFeeds: _sources,
-                        rootConfigDirectory: package.FirstEffectDirectory),
-                    package.PackageId,
-                    verbosity: _verbosity,
-                    ToVersionRangeWithOnlyOneVersion(package.Version),
-                    targetFramework,
-                    restoreActionConfig: _restoreActionConfig
-                    );
-
-            if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
-            {
-                return ToolRestoreResult.Failure(
-                    string.Format(CliCommandStrings.CommandsMismatch,
-                        JoinBySpaceWithQuote(package.CommandNames.Select(c => c.Value.ToString())),
-                        package.PackageId,
-                        toolPackage.Command.Name));
-            }
-
-            return ToolRestoreResult.Success(
-                saveToCache: 
-                    [(new RestoredCommandIdentifier(
-                        toolPackage.Id,
-                        toolPackage.Version,
-                        NuGetFramework.Parse(targetFramework),
-                        Constants.AnyRid,
-                        toolPackage.Command.Name),
-                    toolPackage.Command)],
-                message: string.Format(
-                    CliCommandStrings.RestoreSuccessful,
-                    package.PackageId,
-                    package.Version.ToNormalizedString(),
-                    string.Join(" ", package.CommandNames)));
-        }
-        catch (ToolPackageException e)
-        {
-            return ToolRestoreResult.Failure(package.PackageId, e);
-        }
     }
 
     private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)
@@ -212,47 +161,6 @@ internal class ToolRestoreCommand : CommandBase
 
             return 0;
         }
-    }
-
-    private static bool ManifestCommandMatchesActualInPackage(
-        ToolCommandName[] commandsFromManifest,
-        IReadOnlyList<ToolCommand> toolPackageCommands)
-    {
-        ToolCommandName[] commandsFromPackage = [.. toolPackageCommands.Select(t => t.Name)];
-        foreach (var command in commandsFromManifest)
-        {
-            if (!commandsFromPackage.Contains(command))
-            {
-                return false;
-            }
-        }
-
-        foreach (var command in commandsFromPackage)
-        {
-            if (!commandsFromManifest.Contains(command))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    private bool PackageHasBeenRestored(
-        ToolManifestPackage package,
-        string targetFramework)
-    {
-        var sampleRestoredCommandIdentifierOfThePackage = new RestoredCommandIdentifier(
-            package.PackageId,
-            package.Version,
-            NuGetFramework.Parse(targetFramework),
-            Constants.AnyRid,
-            package.CommandNames.First());
-
-        return _localToolsResolverCache.TryLoad(
-                   sampleRestoredCommandIdentifierOfThePackage,
-                   out var toolCommand)
-               && _fileSystem.File.Exists(toolCommand.Executable.Value);
     }
 
     private FilePath? GetCustomManifestFileLocation()
@@ -292,28 +200,14 @@ internal class ToolRestoreCommand : CommandBase
         }
     }
 
-    private static string JoinBySpaceWithQuote(IEnumerable<object> objects)
+    public struct ToolRestoreResult
     {
-        return string.Join(" ", objects.Select(o => $"\"{o.ToString()}\""));
-    }
-
-    private static VersionRange ToVersionRangeWithOnlyOneVersion(NuGetVersion version)
-    {
-        return new VersionRange(
-            version,
-            includeMinVersion: true,
-            maxVersion: version,
-            includeMaxVersion: true);
-    }
-
-    private struct ToolRestoreResult
-    {
-        public (RestoredCommandIdentifier, ToolCommand)[] SaveToCache { get; }
+        public (RestoredCommandIdentifier restoredCommandIdentifier, ToolCommand toolCommand)? SaveToCache { get; }
         public bool IsSuccess { get; }
         public string Message { get; }
 
         private ToolRestoreResult(
-            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)? saveToCache,
             bool isSuccess, string message)
         {
             if (string.IsNullOrWhiteSpace(message))
@@ -321,13 +215,13 @@ internal class ToolRestoreCommand : CommandBase
                 throw new ArgumentException("message", nameof(message));
             }
 
-            SaveToCache = saveToCache ?? [];
+            SaveToCache = saveToCache;
             IsSuccess = isSuccess;
             Message = message;
         }
 
         public static ToolRestoreResult Success(
-            (RestoredCommandIdentifier, ToolCommand)[] saveToCache,
+            (RestoredCommandIdentifier, ToolCommand)? saveToCache,
             string message)
         {
             return new ToolRestoreResult(saveToCache, true, message);

@@ -94,14 +94,13 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
     {
         var console = new TestConsole(Logger);
         var reporter = new TestReporter(Logger);
+        var environmentOptions = TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset);
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
 
         var program = Program.TryCreate(
            TestOptions.GetCommandLineOptions(["--verbose", ..args, "--project", projectPath]),
            console,
-           TestOptions.GetEnvironmentOptions(workingDirectory, TestContext.Current.ToolsetUnderTest.DotNetHostPath, testAsset) with
-           {
-               ProcessCleanupTimeout = TimeSpan.FromSeconds(0),
-           },
+           environmentOptions,
            reporter,
            out var errorCode);
 
@@ -114,7 +113,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(factory));
+        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(processRunner, factory));
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>
@@ -134,7 +133,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -188,7 +187,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var sessionStarted = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadSessionStarted);
-        var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectBaselinesUpdated);
+        var projectBaselinesUpdated = w.Reporter.RegisterSemaphore(MessageDescriptor.ProjectsRebuilt);
         await launchCompletionA.Task;
         await launchCompletionB.Task;
 
@@ -295,7 +294,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -394,7 +393,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory]
+    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -485,7 +484,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -540,7 +539,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [Theory]
+    [PlatformSpecificTheory(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
@@ -596,6 +595,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
         var ignoringChangeInOutputDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInOutputDirectory);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
+        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
 
         Log("Waiting for changes...");
@@ -618,6 +618,8 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             case (isExisting: false, isIncluded: _, directoryKind: DirectoryKind.Ordinary):
                 Log("Waiting for file addition re-evalutation ...");
                 await fileAdditionTriggeredReEvaluation.WaitAsync(w.ShutdownSource.Token);
+                Log("Waiting for re-evalutation to complete ...");
+                await reEvaluationCompleted.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Hidden):

@@ -614,14 +614,23 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             return versionRange.MinVersion;
         }
 
+        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)
+            .ConfigureAwait(false))
+            .version;
+    }
+
+    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
+        VersionRange versionRange,
+         PackageSourceLocation packageSourceLocation = null)
+    {
         CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
-        (_, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
+        (var source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
                 versionRange, cancellationToken).ConfigureAwait(false);
 
-        return packageMetadata.Identity.Version;
+        return (packageMetadata.Identity.Version, source);
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,
