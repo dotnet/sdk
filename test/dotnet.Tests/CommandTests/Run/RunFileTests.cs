@@ -221,6 +221,50 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// <c>dotnet run -</c> reads the C# code from stdin.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin()
+    {
+        new DotnetCommand(Log, "run", "-")
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                Console.WriteLine("Read: " + (Console.ReadLine() ?? "null"));
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                Hello from stdin
+                Read: null
+                """);
+    }
+
+    [Fact]
+    public void ReadFromStdin_NoBuild()
+    {
+        new DotnetCommand(Log, "run", "-", "--no-build")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name));
+    }
+
+    /// <summary>
+    /// <c>dotnet run -- -</c> should NOT read the C# file from stdin,
+    /// the hyphen should be considred an app argument instead since it's after <c>--</c>.
+    /// </summary>
+    [Fact]
+    public void ReadFromStdin_AfterDoubleDash()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        new DotnetCommand(Log, "run", "--", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""Console.WriteLine("stdin code");""")
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionNoProjects, testInstance.Path, RunCommandParser.ProjectOption.Name));
+    }
+
+    /// <summary>
     /// <c>dotnet run folder</c> without a project file is not supported.
     /// </summary>
     [Theory]
