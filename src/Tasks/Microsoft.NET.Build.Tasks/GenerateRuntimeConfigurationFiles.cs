@@ -408,8 +408,11 @@ namespace Microsoft.NET.Build.Tasks
             // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(fileName))
             {
+                // Get hash length from instance
+                var hashLength = new XxHash64().HashLengthInBytes;
+                
                 // Hash existing file content using streaming approach
-                Span<byte> existingHashBuffer = stackalloc byte[XxHash64.HashLengthInBytes];
+                Span<byte> existingHashBuffer = stackalloc byte[hashLength];
                 var existingHasher = new XxHash64();
                 using (var existingStream = File.OpenRead(fileName))
                 {
@@ -418,7 +421,7 @@ namespace Microsoft.NET.Build.Tasks
                 existingHasher.GetCurrentHash(existingHashBuffer);
 
                 // Hash new content using streaming approach
-                Span<byte> newHashBuffer = stackalloc byte[XxHash64.HashLengthInBytes];
+                Span<byte> newHashBuffer = stackalloc byte[hashLength];
                 var newHasher = new XxHash64();
                 contentStream.Position = 0;
                 newHasher.Append(contentStream);
