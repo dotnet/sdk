@@ -94,7 +94,7 @@
 
       <!-- Only display the welcome message when an installation was performed. Message is broken up to
            ensure tab order is correct. -->
-      <Hypertext HexStyle="00800000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="124" Width="-12" Height="128" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Hypertext>
+      <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="124" Width="-12" Height="128" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.FirstTimeWelcomeMessage)</Hypertext>
       <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="252" Width="-12" Height="32" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.NetDocumentationLinkText)</Hypertext>
       <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="284" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.SdkDocumentationLinkText)</Hypertext>
       <Hypertext HexStyle="00000000" EnableCondition="WixBundleAction = 6" Name="SuccessInstallHeader" X="148" Y="300" Width="-12" Height="16" FontId="DefaultFont" HideWhenDisabled="yes">#(loc.ReleaseNotesLinkText)</Hypertext>
