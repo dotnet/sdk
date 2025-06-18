@@ -131,7 +131,6 @@ public class Program
         s_sigIntRegistration.Dispose();
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
-        TelemetryClient?.Flush();
         s_mainActivity?.Stop();
         tracerProvider?.ForceFlush();
         metricsProvider?.ForceFlush();
@@ -199,6 +198,17 @@ public class Program
 
     private static string GetCommandName(ParseResult r)
     {
+        if (r.Action is Parser.PrintVersionAction)
+        {
+            // If the action is PrintVersionAction, we return the command name as "dotnet --version"
+            return "dotnet --version";
+        }
+        else if (r.Action is Parser.PrintInfoAction)
+        {
+            // If the action is PrintHelpAction, we return the command name as "dotnet --help"
+            return "dotnet --info";
+        }
+
         // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
         List<string> parentNames = [r.CommandResult.Command.Name];
         var current = r.CommandResult.Parent;
