@@ -1,0 +1,22 @@
+name: Copilot Setup Steps
+
+# This workflow configures the environment for GitHub Copilot
+# to allow access to necessary URLs for .NET SDK operations
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Allow Copilot to access Visual Studio assets URLs needed for NuGet restore
+  COPILOT_AGENT_FIREWALL_ALLOW_LIST_ADDITIONS: "vsblob.vsassets.io"
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure environment for Copilot
+        run: |
+          echo "Copilot firewall allowlist configured for: $COPILOT_AGENT_FIREWALL_ALLOW_LIST_ADDITIONS"
+          echo "This allows access to Visual Studio assets URLs needed for NuGet package restore operations."
