@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
@@ -12,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal static class ToolUpdateCommandParser
 {
-    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.PackageIdentityArgument(requireArgument: false);
+    public static readonly Argument<PackageIdentity?> PackageIdentityArgument = CommonArguments.OptionalPackageIdentityArgument();
 
     public static readonly Option<bool> UpdateAllOption = ToolAppliedOption.UpdateAllOption;
 

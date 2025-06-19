@@ -86,22 +86,6 @@ public static class OptionForwardingExtensions
         return option;
     }
 
-    internal static Dictionary<Option, Dictionary<Command, string>> HelpDescriptionCustomizations = [];
-
-    public static Option<T> WithHelpDescription<T>(this Option<T> option, Command command, string helpText)
-    {
-        if (HelpDescriptionCustomizations.ContainsKey(option))
-        {
-            HelpDescriptionCustomizations[option].Add(command, helpText);
-        }
-        else
-        {
-            HelpDescriptionCustomizations.Add(option, new Dictionary<Command, string>() { { command, helpText } });
-        }
-
-        return option;
-    }
-
     private static IEnumerable<string> ForwardedArguments(string alias, IEnumerable<string>? arguments)
     {
         foreach (string arg in arguments ?? [])

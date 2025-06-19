@@ -16,18 +16,20 @@ internal static class RunCommandParser
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.RunFrameworkOptionDescription);
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.RunRuntimeOptionDescription);
 
     public static readonly Option<string> ProjectOption = new("--project")
     {
-        Description = CliCommandStrings.CommandOptionProjectDescription
+        Description = CliCommandStrings.CommandOptionProjectDescription,
+        HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
     public static readonly Option<string[]> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
-        Description = CliCommandStrings.CommandOptionLaunchProfileDescription
+        Description = CliCommandStrings.CommandOptionLaunchProfileDescription,
+        HelpName = CliCommandStrings.CommandOptionLaunchProfileHelpName
     };
 
     public static readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
@@ -80,7 +82,7 @@ internal static class RunCommandParser
 
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.RunRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(ProjectOption);
         command.Options.Add(PropertyOption);
         command.Options.Add(LaunchProfileOption);

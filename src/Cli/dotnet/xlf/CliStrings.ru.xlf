@@ -63,10 +63,10 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotFindAManifestFile">
-        <source>Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</source>
-        <target state="new">Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</target>
+        <source>Cannot find a manifest file. The list of searched paths:
+{0}</source>
+        <target state="new">Cannot find a manifest file. The list of searched paths:
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindPackageIdInManifest">
@@ -369,6 +369,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">{0}: failed to find commandPath {1}</target>
         <note />
       </trans-unit>
+      <trans-unit id="FailedToFindLibraryInAssetsFile">
+        <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to find library in NuGet assets file for tool package '{0}': {1}</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
         <source>Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</source>
         <target state="new">Package Source Mapping is enabled, but no source found under the specified package ID: {0}. See the documentation for Package Source Mapping at https://aka.ms/nuget-package-source-mapping for more details.</target>
@@ -395,8 +400,8 @@ setx PATH "%PATH%;{0}"
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadNuGetLockFile">
-        <source>Failed to read NuGet LockFile for tool package '{0}': {1}</source>
-        <target state="new">Failed to read NuGet LockFile for tool package '{0}': {1}</target>
+        <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
+        <target state="new">Failed to read NuGet assets file for tool package '{0}': {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadPidFile">
@@ -573,13 +578,6 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="List">
         <source>List</source>
         <target state="new">List</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ListOfSearched">
-        <source>The list of searched paths:
-{0}</source>
-        <target state="new">The list of searched paths:
-{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="LookingForPreferCliRuntimeFile">
@@ -930,6 +928,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="new">Display the command schema as JSON.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="new">The '--self-contained' and '--no-self-contained' options cannot be used together.</target>
@@ -1037,6 +1040,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="new">Tool '{0}' (version '{1}') is already installed.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolPackageNotATool">
+        <source>Package {0} is not a .NET tool.</source>
+        <target state="new">Package {0} is not a .NET tool.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSettingsInvalidCommandName">
         <source>Command '{0}' contains one or more of the following invalid characters: {1}.</source>
         <target state="new">Command '{0}' contains one or more of the following invalid characters: {1}.</target>
@@ -1068,8 +1076,13 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsUnsupportedRunner">
-        <source>Command '{0}' uses unsupported runner '{1}'."</source>
-        <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="new">Tool '{0}' uses unsupported runner '{1}'."</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolUnsupportedRuntimeIdentifier">
+        <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
+        <target state="new">The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Type">
@@ -1156,6 +1169,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="new">An issue was encountered verifying workloads. For more information, run "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="new">Accept all confirmation prompts using "yes."</target>
+        <note />
       </trans-unit>
     </body>
   </file>

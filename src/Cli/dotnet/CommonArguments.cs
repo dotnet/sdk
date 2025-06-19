@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable warnings
-
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
@@ -13,16 +11,26 @@ namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentity?> PackageIdentityArgument(bool requireArgument = true) =>
+        public static DynamicArgument<PackageIdentity?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
                 CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
-                Arity = requireArgument ? ArgumentArity.ExactlyOne : ArgumentArity.ZeroOrOne,
+                Arity = ArgumentArity.ZeroOrOne,
             };
 
-        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string packageIdentity, char versionSeparator = '@')
+        public static DynamicArgument<PackageIdentity> RequiredPackageIdentityArgument() =>
+            new("packageId")
+            {
+                HelpName = "PACKAGE_ID",
+                Description = CliStrings.PackageIdentityArgumentDescription,
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
+                Arity = ArgumentArity.ExactlyOne,
+            };
+
+
+        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
             {

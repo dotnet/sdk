@@ -31,8 +31,8 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
     public override int Execute()
     {
-        var global = _parseResult.GetValue(ToolAppliedOption.GlobalOption);
-        var toolPath = _parseResult.GetValue(ToolAppliedOption.ToolPathOption);
+        var global = _parseResult.GetValue(ToolUninstallCommandParser.GlobalOption);
+        var toolPath = _parseResult.GetValue(ToolUninstallCommandParser.ToolPathOption);
 
         DirectoryPath? toolDirectoryPath = null;
         if (!string.IsNullOrWhiteSpace(toolPath))
@@ -70,16 +70,12 @@ internal class ToolUninstallGlobalOrToolPathCommand(
 
         try
         {
-            using (var scope = new TransactionScope(
-                TransactionScopeOption.Required,
-                TimeSpan.Zero))
+            TransactionalAction.Run(() =>
             {
-                shellShimRepository.RemoveShim(package.Command.Name);
+                shellShimRepository.RemoveShim(package.Command);
              
                 toolPackageUninstaller.Uninstall(package.PackageDirectory);
-
-                scope.Complete();
-            }
+            });
 
             _reporter.WriteLine(
                 string.Format(

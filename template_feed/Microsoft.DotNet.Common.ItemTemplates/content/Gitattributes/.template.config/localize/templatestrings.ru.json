@@ -1,5 +1,5 @@
 ﻿{
-  "author": "Майкрософт",
-  "name": "файл gitattributes dotnet",
-  "description": "Создает файл gitattributes для проекта dotnet."
+  "author": "Microsoft",
+  "name": "dotnet gitattributes file",
+  "description": "Creates a gitattributes file for a dotnet project."
 }

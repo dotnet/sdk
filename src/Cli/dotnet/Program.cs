@@ -6,6 +6,7 @@
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ShellShim;
@@ -23,6 +24,7 @@ public class Program
 {
     private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
+    public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
         using AutomaticEncodingRestorer _ = new();
@@ -112,12 +114,12 @@ public class Program
         }
     }
 
-    internal static int ProcessArgs(string[] args, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args)
     {
-        return ProcessArgs(args, new TimeSpan(0), telemetryClient);
+        return ProcessArgs(args, new TimeSpan(0));
     }
 
-    internal static int ProcessArgs(string[] args, TimeSpan startupTime, ITelemetry telemetryClient = null)
+    internal static int ProcessArgs(string[] args, TimeSpan startupTime)
     {
         Dictionary<string, double> performanceData = [];
 
@@ -125,7 +127,10 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            parseResult = Parser.Instance.Parse(args);
+            // If we get C# file path as the first argument, parse as `dotnet run file.cs`.
+            parseResult = args is [{ } filePath, ..] && VirtualProjectBuildingCommand.IsValidEntryPointPath(filePath)
+                ? Parser.Instance.Parse(["run", .. args])
+                : Parser.Instance.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -134,16 +139,20 @@ public class Program
         }
         PerformanceLogEventSource.Log.BuiltInCommandParserStop();
 
-        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel =
-            new FirstTimeUseNoticeSentinel())
+        using (IFirstTimeUseNoticeSentinel disposableFirstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel())
         {
             IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = disposableFirstTimeUseNoticeSentinel;
             IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-            IFileSentinel toolPathSentinel = new FileSentinel(
-                new FilePath(
-                    Path.Combine(
-                        CliFolderPathCalculator.DotnetUserProfileFolderPath,
-                        ToolPathSentinelFileName)));
+            IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, ToolPathSentinelFileName)));
+
+            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
+
+            TelemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
+            TelemetryEventEntry.Subscribe(TelemetryClient.TrackEvent);
+            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
+
+            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
+
             if (parseResult.GetValue(Parser.DiagOption) && parseResult.IsDotnetBuiltInCommand())
             {
                 // We found --diagnostic or -d, but we still need to determine whether the option should
@@ -214,19 +223,11 @@ public class Program
                     skipFirstTimeUseCheck: getStarOptionPassed);
                 PerformanceLogEventSource.Log.FirstTimeConfigurationStop();
             }
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStart();
-
-            telemetryClient ??= new Telemetry.Telemetry(firstTimeUseNoticeSentinel);
-            TelemetryEventEntry.Subscribe(telemetryClient.TrackEvent);
-            TelemetryEventEntry.TelemetryFilter = new TelemetryFilter(Sha256Hasher.HashWithNormalizedCasing);
-
-            PerformanceLogEventSource.Log.TelemetryRegistrationStop();
         }
 
         if (CommandLoggingContext.IsVerbose)
         {
-            Console.WriteLine($"Telemetry is: {(telemetryClient.Enabled ? "Enabled" : "Disabled")}");
+            Console.WriteLine($"Telemetry is: {(TelemetryClient.Enabled ? "Enabled" : "Disabled")}");
         }
         PerformanceLogEventSource.Log.TelemetrySaveIfEnabledStart();
         performanceData.Add("Startup Time", startupTime.TotalMilliseconds);
@@ -276,10 +277,10 @@ public class Program
         }
 
         PerformanceLogEventSource.Log.TelemetryClientFlushStart();
-        telemetryClient.Flush();
+        TelemetryClient.Flush();
         PerformanceLogEventSource.Log.TelemetryClientFlushStop();
 
-        telemetryClient.Dispose();
+        TelemetryClient.Dispose();
 
         return exitCode;
     }

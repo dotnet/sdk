@@ -39,7 +39,7 @@ internal class ToolInstallLocalInstaller
             IToolPackageStoreQuery,
             IToolPackageDownloader downloader) toolPackageStoresAndDownloader
                 = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                    additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolInstallCommandParser.GetCommand()), runtimeJsonPathForTests: runtimeJsonPathForTests);
+                    runtimeJsonPathForTests: runtimeJsonPathForTests);
         _toolPackageDownloader = toolPackageDownloader ?? toolPackageStoresAndDownloader.downloader;
         _restoreActionConfig = restoreActionConfig;
 
@@ -66,11 +66,17 @@ internal class ToolInstallLocalInstaller
 
         try
         {
+            //  NOTE: The manifest file may or may not be under a .config folder.  If it is, we will use
+            //  that directory as the root config directory.  This should be OK, as usually there won't be
+            //  a NuGet.config in the .config folder, and if there is it's better to use it than to go one
+            //  more level up and miss the root repo folder if the manifest file is not under a .config folder.
+            var rootConfigDirectory = manifestFile.GetDirectoryPath();
+
             IToolPackage toolDownloadedPackage = _toolPackageDownloader.InstallPackage(
                     new PackageLocation(
                         nugetConfig: configFile,
                         additionalFeeds: _sources,
-                        rootConfigDirectory: manifestFile.GetDirectoryPath().GetParentPath()),
+                        rootConfigDirectory: rootConfigDirectory),
                     packageId,
                     verbosity: _verbosity,
                     versionRange,

@@ -20,6 +20,7 @@ namespace Microsoft.DotNet.Watch
         string rootProjectFile,
         IEnumerable<string> buildArguments,
         EnvironmentOptions environmentOptions,
+        ProcessRunner processRunner,
         IReporter reporter)
     {
         private const string TargetName = "GenerateWatchList";
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.Watch
 
                 reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
 
-                var exitCode = await ProcessRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 

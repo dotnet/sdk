@@ -73,6 +73,21 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
+        [Theory]
+        [InlineData("net10.0", true)]
+        [InlineData("net9.0", false)]
+        [InlineData("net8.0", false)]
+        public void It_enables_validationsgenerator_correctly_for_TargetFramework(string targetFramework, bool expectEnabled)
+        {
+            var asset = _testAssetsManager
+                .CopyTestAsset("WebApp")
+                .WithSource()
+                .WithTargetFramework(targetFramework);
+
+            VerifyValidationsGeneratorIsUsed(asset, expectEnabled);
+            VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.Extensions.Validation.Generated");
+        }
+
         [Fact]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
@@ -114,6 +129,9 @@ namespace Microsoft.NET.Build.Tests
 
         private void VerifyConfigBindingGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
             => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration.dll");
+
+        private void VerifyValidationsGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
+            => VerifyGeneratorIsUsed(asset, expectEnabled, "Microsoft.Extensions.Validation.ValidationsGenerator.dll");
 
         private void VerifyInterceptorsFeatureProperties(TestAsset asset, bool? expectEnabled, params string[] expectedNamespaces)
         {

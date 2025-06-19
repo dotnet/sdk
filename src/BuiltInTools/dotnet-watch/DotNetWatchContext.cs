@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Watch
         public required GlobalOptions Options { get; init; }
         public required EnvironmentOptions EnvironmentOptions { get; init; }
         public required IReporter Reporter { get; init; }
+        public required ProcessRunner ProcessRunner { get; init; }
 
         public required ProjectOptions RootProjectOptions { get; init; }
     }
