@@ -393,58 +393,58 @@ namespace Microsoft.NET.Build.Tasks
             };
 
             bool shouldWriteFile = true;
-            MemoryStream contentStream = null;
             
             // Generate new content
-            contentStream = new MemoryStream();
-            using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, 1024, true))
-            using (var jsonWriter = new JsonTextWriter(streamWriter))
+            using (var contentStream = new MemoryStream())
             {
-                serializer.Serialize(jsonWriter, value);
-                jsonWriter.Flush();
-                streamWriter.Flush();
-            }
-            
-            // If file exists, check if content is different using streaming hash comparison
-            if (File.Exists(fileName))
-            {
-                // Get hash length from instance
-                var hashLength = new XxHash64().HashLengthInBytes;
-                
-                // Hash existing file content using streaming approach
-                Span<byte> existingHashBuffer = stackalloc byte[hashLength];
-                var existingHasher = new XxHash64();
-                using (var existingStream = File.OpenRead(fileName))
+                using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, 1024, true))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
-                    existingHasher.Append(existingStream);
+                    serializer.Serialize(jsonWriter, value);
+                    jsonWriter.Flush();
+                    streamWriter.Flush();
                 }
-                existingHasher.GetCurrentHash(existingHashBuffer);
-
-                // Hash new content using streaming approach
-                Span<byte> newHashBuffer = stackalloc byte[hashLength];
-                var newHasher = new XxHash64();
-                contentStream.Position = 0;
-                newHasher.Append(contentStream);
-                newHasher.GetCurrentHash(newHashBuffer);
                 
-                // If hashes are equal, content is the same - don't write
-                if (existingHashBuffer.SequenceEqual(newHashBuffer))
+                // If file exists, check if content is different using streaming hash comparison
+                if (File.Exists(fileName))
                 {
-                    shouldWriteFile = false;
-                }
-            }
+                    // Get hash length from a single instance to avoid unnecessary allocations
+                    using var hasher = new XxHash64();
+                    var hashLength = hasher.HashLengthInBytes;
+                    
+                    // Hash existing file content using streaming approach
+                    Span<byte> existingHashBuffer = stackalloc byte[hashLength];
+                    var existingHasher = new XxHash64();
+                    using (var existingStream = File.OpenRead(fileName))
+                    {
+                        existingHasher.Append(existingStream);
+                    }
+                    existingHasher.GetCurrentHash(existingHashBuffer);
 
-            if (shouldWriteFile)
-            {
-                // Write the new content to file using CopyTo
-                using (var fileStream = File.Create(fileName))
-                {
+                    // Hash new content using streaming approach
+                    Span<byte> newHashBuffer = stackalloc byte[hashLength];
+                    var newHasher = new XxHash64();
                     contentStream.Position = 0;
-                    contentStream.CopyTo(fileStream);
+                    newHasher.Append(contentStream);
+                    newHasher.GetCurrentHash(newHashBuffer);
+                    
+                    // If hashes are equal, content is the same - don't write
+                    if (existingHashBuffer.SequenceEqual(newHashBuffer))
+                    {
+                        shouldWriteFile = false;
+                    }
+                }
+
+                if (shouldWriteFile)
+                {
+                    // Write the new content to file using CopyTo
+                    using (var fileStream = File.Create(fileName))
+                    {
+                        contentStream.Position = 0;
+                        contentStream.CopyTo(fileStream);
+                    }
                 }
             }
-            
-            contentStream?.Dispose();
         }
     }
 }
