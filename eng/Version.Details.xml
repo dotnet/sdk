@@ -67,7 +67,10 @@
     <Dependency Name="Microsoft.NET.Runtime.Emscripten.Sdk.Internal" Version="10.0.0-preview.6.25316.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>20343176cfd35b56036dc4ca9d9ddd2a201a4e92</Sha>
-      <SourceBuild RepoName="emsdk" ManagedOnly="true" />
+    </Dependency>
+    <Dependency Name="Microsoft.NET.Runtime.Emscripten.3.1.56.Cache.win-x64" Version="10.0.0-preview.6.25316.103">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>20343176cfd35b56036dc4ca9d9ddd2a201a4e92</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Build" Version="17.15.0-preview-25316-103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -546,13 +549,13 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>ae710fac68a8b1eb7ddf3f3579b0c372e2e01feb</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25316.7">
+    <Dependency Name="Microsoft.Testing.Platform" Version="1.8.0-preview.25317.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>256bc4dd4a1a1e1358c66295f959cc266652d82c</Sha>
+      <Sha>7bf53d17d85a1e99a61130febeacc1581aff8a4c</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="3.10.0-preview.25316.7">
+    <Dependency Name="MSTest" Version="3.10.0-preview.25317.2">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>256bc4dd4a1a1e1358c66295f959cc266652d82c</Sha>
+      <Sha>7bf53d17d85a1e99a61130febeacc1581aff8a4c</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="10.0.0-preview.6.25316.103">
       <Uri>https://github.com/dotnet/dotnet</Uri>
