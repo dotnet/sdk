@@ -43,11 +43,6 @@ public partial class HelpBuilder
             throw new ArgumentNullException(nameof(context));
         }
 
-        if (context.Command.Hidden)
-        {
-            return;
-        }
-
         foreach (var writeSection in GetLayout(context))
         {
             if (writeSection(context))
