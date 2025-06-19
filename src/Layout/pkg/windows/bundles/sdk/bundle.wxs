@@ -159,31 +159,27 @@
     <Chain DisableSystemRestore="yes" ParallelCache="yes">
 
       <!--
-        The finalizer is not an actual installation package. We "detect" the EXE
-        based on the action the bundle is performing to ensure it runs the uninstall
-        command only when the bundle is being removed. The package is always installable because the bundle
-        will remove the package (execute its UninstallCommand) if it is not installable when then bundle is 
-        being installed.
-
-        See https://github.com/orgs/wixtoolset/discussions/9017. We cannot rely on the bundle action since it isn't finalized
-        until the detect phase completes and therefore not available in a detect condition. We'll need to add explicit install/uninstall commands
-        to the finalizer.
-
-        The finalizer is first in the chain to ensure it executes last during an uninstall. When the 
-        SDK is upgraded, the old SDK will be removed before the finalizer executes. This ensures that the
-        finalizer detects the new SDK and does nothing because the feature band matches.
-
-        For an install+uninstall scenario, because the SDK MSI is removed prior to the finalizer, it will
-        detect that there are no matching feature bands and then clean up workloads associated with
-        the feature band.
-      -->
+        The finalizer is not an installation package. It's detected based on the bundle's installation state (WixBundleInstalled).
+        
+        User action        | Install | Repair  | Modify  | Uninstall | Uninstall (Upgrade)
+        WixBundleInstalled | FALSE   | TRUE    | TRUE    | TRUE      | TRUE 
+        WixBundleAction    | 6       | 8       | 7       | 4         | 4
+        Finalizer (Plan)   | None    | Execute | Execute | Execute   | Execute
+        
+        Setting an InstallCondition will cause Burn to remove the package if it evaluates to FALSE and
+        the bundle is being installed, repaired, or modified. This breaks upgrades. We cannot use
+        WixBundleAction in the DetectCondition because it's not finalized until the planning phase completes (after
+        the detect phase). See https://github.com/orgs/wixtoolset/discussions/9017 for more detail.
+        
+        The finalizer also takes the bundle action as a parameter to ensure it no-ops, but logs the action. -->
       <ExePackage SourceFile="$(FinalizerExeSourceFile)"
                   Bundle="no"
                   Cache="keep"
-                  DetectCondition="WixBundleInstalled"
+                  DetectCondition="1=1"
                   Id="Finalizer"
-                  InstallCondition="WixBundleAction >= 4"
-                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture)"
+                  InstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
+                  UninstallArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
+                  RepairArguments="&quot;[WixBundleLog_Finalizer]&quot; $(Version) $(TargetArchitecture) [WixBundleAction]"
                   Vital="no" />
 
       <!-- .NET Runtime has to be installed before the CLI because of a custom action that depends on dotnet.exe. -->
