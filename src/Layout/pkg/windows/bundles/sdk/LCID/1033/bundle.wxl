@@ -16,7 +16,7 @@
   <String Id="OverallProgressPackageText" Value="Initializing..." />
   <String Id="ProgressCancelButton" Value="&amp;Cancel" />
   <String Id="ModifyHeader" Value="Modify Setup" />
-  <String Id="ModifyText" Value="Select repair to reinstall the product, modify to install missing features or uninstall to remove it."/>
+  <String Id="ModifyText" Value="Select repair to reinstall the product or uninstall to remove it."/>
   <String Id="ModifyRepairButton" Value="&amp;Repair" />
   <String Id="ModifyUninstallButton" Value="&amp;Uninstall" />
   <String Id="ModifyCloseButton" Value="&amp;Close" />
