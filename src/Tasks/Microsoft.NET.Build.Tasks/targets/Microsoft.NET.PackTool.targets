@@ -42,13 +42,15 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <IncludeBuildOutput>false</IncludeBuildOutput>
 
     <!-- the publish* properties _can_ be set, but only for the 'inner' RID-specific builds. We need to make sure that for the outer, agnostic build they are unset  -->
-    <PublishSelfContained Condition="'$(RuntimeIdentifier)' == ''">false</PublishSelfContained>
+    <!-- RID information is also stripped during Restore, so we need to make sure user
+         decisions are preserved when Restoring, so that publishing-related packages are implicitly included.  -->
+    <PublishSelfContained Condition="'$(RuntimeIdentifier)' == '' and '$(MSBuildIsRestoring)' != 'true'">false</PublishSelfContained>
     <!-- Have to set SelfContained similarly because PackTool targets are imported _after_ RuntimeIdentifierInference targets, where the Publish* properties are
          forwarded to the 'base' properties. -->
-    <SelfContained Condition="'$(RuntimeIdentifier)' == ''">false</SelfContained>
-    <PublishTrimmed Condition="'$(RuntimeIdentifier)' == ''">false</PublishTrimmed>
-    <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == ''">false</PublishReadyToRun>
-    <PublishSingleFile Condition="'$(RuntimeIdentifier)' == ''">false</PublishSingleFile>
+    <SelfContained Condition="'$(RuntimeIdentifier)' == '' and '$(MSBuildIsRestoring)' != 'true'">false</SelfContained>
+    <PublishTrimmed Condition="'$(RuntimeIdentifier)' == '' and '$(MSBuildIsRestoring)' != 'true'">false</PublishTrimmed>
+    <PublishReadyToRun Condition="'$(RuntimeIdentifier)' == '' and '$(MSBuildIsRestoring)' != 'true'">false</PublishReadyToRun>
+    <PublishSingleFile Condition="'$(RuntimeIdentifier)' == '' and '$(MSBuildIsRestoring)' != 'true'">false</PublishSingleFile>
 
     <!-- We need to know if the inner builds are _intended_ to be AOT even if we then explicitly disable AOT for the outer builds.
          Knowing this lets us correctly decide to create the RID-specific inner tools or not when packaging the outer tool. -->
