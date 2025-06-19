@@ -113,7 +113,7 @@ public partial class DefineStaticWebAssets : Task
 
         internal void WriteCacheManifest()
         {
-            if (_manifestPath != null)
+            if (_manifestPath != null && !_cacheUpToDate && InputHashes.Count > 0)
             {
                 using var manifestFile = File.OpenWrite(_manifestPath);
                 manifestFile.SetLength(0);
@@ -165,13 +165,21 @@ public partial class DefineStaticWebAssets : Task
             GlobalPropertiesHash = propertiesHash;
             FingerprintPatternsHash = fingerprintPatternsHash;
             PropertyOverridesHash = propertyOverridesHash;
+            CachedAssets.Clear();
+            CachedCopyCandidates.Clear();
             InputHashes = [.. inputsByHash.Keys];
             _inputByHash = inputsByHash;
         }
 
         private void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
         {
-            var newHashes = new HashSet<string>(inputHashes.Keys);
+            var newHashes = new HashSet<string>(inputHashes.Count);
+            foreach (var kvp in inputHashes)
+            {
+                var hash = kvp.Key;
+                newHashes.Add(hash);
+            }
+
             var oldHashes = InputHashes;
 
             if (newHashes.SetEquals(oldHashes))

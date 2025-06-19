@@ -140,7 +140,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         _packageVersionA,
                         NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                         Constants.AnyRid,
-                        _toolCommandNameA), out RestoredCommand restoredCommand)
+                        _toolCommandNameA), out ToolCommand restoredCommand)
                 .Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value)
@@ -452,7 +452,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Should()
                 .Contain(l =>
-                    l.Contains(CliStrings.CannotFindAManifestFile));
+                    l.Contains(string.Format(CliStrings.CannotFindAManifestFile, "")));
         }
 
         [Fact]

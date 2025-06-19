@@ -1,5 +1,7 @@
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
+#nullable disable
+
 using System;
 using global::NuGet.Frameworks;
 

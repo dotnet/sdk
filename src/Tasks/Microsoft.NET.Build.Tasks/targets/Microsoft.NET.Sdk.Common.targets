@@ -42,30 +42,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <DotnetCliToolTargetFramework>netcoreapp2.2</DotnetCliToolTargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(PackAsTool)' == 'true' ">
-    <IncludeBuildOutput>false</IncludeBuildOutput>
-    <!--
-    PackageType is semicolon-delimited, case-insensitive, with an optional version.
-
-    DotnetTool should be added to the set of package types if the PackAsTool property is set to true.
-
-    Examples:
-       PackageType = ''                     -> 'DotnetTool'
-       PackageType = 'MyCustomType'         -> 'DotnetTool;MyCustomType'
-       PackageType = 'MyCustomType, 1.0'    -> 'DotnetTool;MyCustomType, 1.0'
-       PackageType = 'dotnettool'           -> 'dotnettool'
-       PackageType = 'DotnetTool, 1.0.0.0'  -> 'DotnetTool, 1.0.0.0'
-       PackageType = 'DotnetTool , 1.0.0.0' -> 'DotnetTool , 1.0.0.0'
-       PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
-
-    _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
-    -->
-    <_PaddedPackageType>;$(PackageType.Replace(' ', '').Trim().ToLowerInvariant());</_PaddedPackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' != ';;' and !$(_PaddedPackageType.Contains(';dotnettool;')) and !$(_PaddedPackageType.Contains(';dotnettool,')) ">DotnetTool;$(PackageType)</PackageType>
-    <PackageType Condition=" '$(_PaddedPackageType)' == ';;' ">DotnetTool</PackageType>
-    <RuntimeIdentifiers>$(RuntimeIdentifiers);$(PackAsToolShimRuntimeIdentifiers)</RuntimeIdentifiers>
-  </PropertyGroup>
-
   <PropertyGroup Condition="'$(EnablePreviewFeatures)' == 'true' And '$(IsNetCoreAppTargetingLatestTFM)' == 'true'">
     <LangVersion>Preview</LangVersion>
   </PropertyGroup>
@@ -75,18 +51,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NETSdkInformation" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="ShowPreviewMessage" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Full'">
-    <!-- Automatically opt users into using the toolset package if they are running an MSBuild other than what this SDK was built against.
-          This is to reduce 'tearing'/dependency mismatch, but as always users can override this behavior by disabling the hosted compiler flag.
-          This is done in Common.targets so that it applies to ApiCompat which uses RoslynTargetsPath in the outer build. -->
-    <BuildWithNetFrameworkHostedCompiler Condition="'$(BuildWithNetFrameworkHostedCompiler)' == ''
-                                                    and '$(_IsDisjointMSBuildVersion)' == 'true'
-                                                    and ('$(Language)' == 'C#'
-                                                    or '$(Language)' == 'VB')">true</BuildWithNetFrameworkHostedCompiler>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(BuildWithNetFrameworkHostedCompiler)' == 'true' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
+  <PropertyGroup Condition="'$(RoslynCompilerType)' == 'FrameworkPackage' and '$(OS)' == 'Windows_NT' and '$(MSBuildRuntimeType)' == 'Full'">
     <RoslynTargetsPath>$(NuGetPackageRoot)\microsoft.net.sdk.compilers.toolset\$(NETCoreSdkVersion)</RoslynTargetsPath>
+    <RoslynTasksAssembly>$(RoslynTargetsPath)\Microsoft.Build.Tasks.CodeAnalysis.dll</RoslynTasksAssembly>
     <_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>true</_NeedToDownloadMicrosoftNetSdkCompilersToolsetPackage>
     <_MicrosoftNetSdkCompilersToolsetPackageRootEmpty Condition="'$(NuGetPackageRoot)' == ''">true</_MicrosoftNetSdkCompilersToolsetPackageRootEmpty>
   </PropertyGroup>

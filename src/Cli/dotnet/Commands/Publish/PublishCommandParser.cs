@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
@@ -11,9 +13,9 @@ internal static class PublishCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-publish";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -48,7 +50,7 @@ internal static class PublishCommandParser
 
     public static readonly Option<bool> NoSelfContainedOption = CommonOptions.NoSelfContainedOption;
 
-    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption;
+    public static readonly Option<string> RuntimeOption = CommonOptions.RuntimeOption(CliCommandStrings.PublishRuntimeOptionDescription);
 
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
@@ -65,7 +67,7 @@ internal static class PublishCommandParser
     {
         var command = new DocumentedCommand("publish", DocsLink, CliCommandStrings.PublishAppDescription);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
 
         command.Options.Add(OutputOption);
@@ -76,7 +78,7 @@ internal static class PublishCommandParser
         command.Options.Add(NoSelfContainedOption);
         command.Options.Add(NoLogoOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(RuntimeOption.WithHelpDescription(command, CliCommandStrings.PublishRuntimeOptionDescription));
+        command.Options.Add(RuntimeOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);

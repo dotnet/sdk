@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -45,7 +47,7 @@ internal static class CleanCommandParser
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.CleanRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.CleanRuntimeOptionDescription));
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(CommonOptions.VerbosityOption);

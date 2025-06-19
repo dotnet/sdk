@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -8,8 +10,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal static class ToolPackageFactory
 {
-    public static (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader) CreateToolPackageStoresAndDownloader(
-        DirectoryPath? nonGlobalLocation = null, IEnumerable<string> additionalRestoreArguments = null, string runtimeJsonPathForTests = null)
+    public static (IToolPackageStore packageStore, IToolPackageStoreQuery packageStoreQuery, IToolPackageDownloader downloader) CreateToolPackageStoresAndDownloader(
+        DirectoryPath? nonGlobalLocation = null, string runtimeJsonPathForTests = null)
     {
         ToolPackageStoreAndQuery toolPackageStore = CreateConcreteToolPackageStore(nonGlobalLocation);
         var toolPackageDownloader = new ToolPackageDownloader(toolPackageStore, runtimeJsonPathForTests);

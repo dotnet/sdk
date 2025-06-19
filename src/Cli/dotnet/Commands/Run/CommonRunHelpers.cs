@@ -11,7 +11,7 @@ internal static class CommonRunHelpers
     /// <param name="globalProperties">
     /// Should have <see cref="StringComparer.OrdinalIgnoreCase"/>.
     /// </param>
-    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, string[]? args)
+    public static void AddUserPassedProperties(Dictionary<string, string> globalProperties, IReadOnlyList<string> args)
     {
         Debug.Assert(globalProperties.Comparer == StringComparer.OrdinalIgnoreCase);
 
@@ -34,7 +34,7 @@ internal static class CommonRunHelpers
         }
     }
 
-    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[]? args)
+    public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[] args)
     {
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {

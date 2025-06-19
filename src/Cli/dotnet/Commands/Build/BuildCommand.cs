@@ -1,29 +1,27 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
-public class BuildCommand(
-    IEnumerable<string> msbuildArgs,
-    bool noRestore,
-    string msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
+public static class BuildCommand
 {
-    public static BuildCommand FromArgs(string[] args, string msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string msbuildPath = null)
     {
         var parser = Parser.Instance;
         var parseResult = parser.ParseFrom("dotnet build", args);
         return FromParseResult(parseResult, msbuildPath);
     }
 
-    public static BuildCommand FromParseResult(ParseResult parseResult, string msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string msbuildPath = null)
     {
         PerformanceLogEventSource.Log.CreateBuildCommandStart();
-
-        var msbuildArgs = new List<string>();
 
         parseResult.ShowHelpOrErrorIfAppropriate();
 
@@ -31,24 +29,49 @@ public class BuildCommand(
             parseResult.GetResult(BuildCommandParser.SelfContainedOption) is not null,
             parseResult.GetResult(BuildCommandParser.NoSelfContainedOption) is not null);
 
-        msbuildArgs.Add($"-consoleloggerparameters:Summary");
+        string[] args = parseResult.GetValue(BuildCommandParser.SlnOrProjectOrFileArgument) ?? [];
 
-        if (parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null)
-        {
-            msbuildArgs.Add("-target:Rebuild");
-        }
-        var arguments = parseResult.GetValue(BuildCommandParser.SlnOrProjectArgument) ?? [];
+        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
-        msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()));
-
-        msbuildArgs.AddRange(arguments);
+        string[] forwardedOptions = parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()).ToArray();
 
         bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
-        BuildCommand command = new(
-            msbuildArgs,
-            noRestore,
-            msbuildPath);
+        bool noIncremental = parseResult.GetResult(BuildCommandParser.NoIncrementalOption) is not null;
+
+        CommandBase command;
+
+        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+        {
+            command = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: Path.GetFullPath(arg),
+                msbuildArgs: [.. forwardedOptions, .. binLogArgs])
+            {
+                NoRestore = noRestore,
+                NoCache = true,
+                BuildTarget = noIncremental ? "Rebuild" : "Build",
+            };
+        }
+        else
+        {
+            var msbuildArgs = new List<string>();
+
+            msbuildArgs.Add($"-consoleloggerparameters:Summary");
+
+            if (noIncremental)
+            {
+                msbuildArgs.Add("-target:Rebuild");
+            }
+
+            msbuildArgs.AddRange(forwardedOptions);
+
+            msbuildArgs.AddRange(args);
+
+            command = new RestoringCommand(
+                msbuildArgs: msbuildArgs,
+                noRestore: noRestore,
+                msbuildPath: msbuildPath);
+        }
 
         PerformanceLogEventSource.Log.CreateBuildCommandStop();
 

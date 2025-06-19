@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -84,7 +86,7 @@ internal static class StoreCommandParser
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
         command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);

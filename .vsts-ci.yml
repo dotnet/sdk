@@ -21,7 +21,7 @@ parameters:
 - name: runTestBuild
   displayName: Run A Test Build
   type: boolean
-  default: false
+  default: true
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
@@ -64,12 +64,12 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     containers:
-      alpine319WithNode:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.19-WithNode
+      alpine322Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:alpine-3.22-amd64
       centosStream9:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:centos-stream9
       debian12Amd64:
-        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc14-amd64
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:debian-12-gcc15-amd64
       fedora39:
         image: mcr.microsoft.com/dotnet-buildtools/prereqs:fedora-39
       mariner20CrossArm:
@@ -107,7 +107,7 @@ extends:
             templateFolderName: templates-official
             publishTaskPrefix: 1ES.
           runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
-          locBranch: release/9.0.3xx
+          locBranch: main
           # WORKAROUND: BinSkim requires the folder exist prior to scanning.
           preSteps:
           - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
@@ -145,33 +145,6 @@ extends:
                 _SignType: real
               dependsOn: Official_windows_x64
               downloadManifestMsiPackages: true
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: x86
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: arm64
-              publishArgument: $(_publishArgument)
-              signArgument: $(_signArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              runTests: false
-              variables:
-                _SignType: real
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
@@ -242,7 +215,7 @@ extends:
               runTests: false
             ### MUSL ###
             - categoryName: Musl
-              container: alpine319WithNode
+              container: alpine322Amd64
               runtimeIdentifier: linux-musl-x64
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
@@ -265,21 +238,6 @@ extends:
               publishArgument: $(_publishArgument)
               officialBuildProperties: $(_officialBuildProperties)
               osProperties: /p:OSName=linux-musl
-              runTests: false
-            ### PGO ###
-            - categoryName: PGO
-              pgoInstrument: true
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
-              runTests: false
-            - categoryName: PGO
-              pgoInstrument: true
-              targetArchitecture: arm64
-              runtimeIdentifier: linux-arm64
-              publishArgument: $(_publishArgument)
-              officialBuildProperties: $(_officialBuildProperties)
-              osProperties: $(linuxOsPortableProperties)
               runTests: false
 
       ############### MACOS ###############
@@ -332,16 +290,21 @@ extends:
             runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
 
     ############### PUBLISH STAGE ###############
-    - ${{ if and(eq(parameters.runTestBuild, false), ne(variables['Build.Reason'], 'PullRequest')) }}:
+    - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
       - stage: publish
         displayName: Publish
-        dependsOn: build
+        dependsOn: []
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
             publishUsingPipelines: true
             publishAssetsImmediately: true
+            isAssetlessBuild: true
             pool:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+        - template: /eng/pipelines/templates/jobs/promote-nuget-client.yml@self
+          parameters:
+            assetName: NuGet.Protocol

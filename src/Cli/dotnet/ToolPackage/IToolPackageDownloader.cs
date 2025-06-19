@@ -1,7 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using NuGet.Configuration;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.ToolPackage;
@@ -19,12 +22,17 @@ internal interface IToolPackageDownloader
         RestoreActionConfig restoreActionConfig = null
     );
 
-    NuGetVersion GetNuGetVersion(
+    (NuGetVersion version, PackageSource source) GetNuGetVersion(
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
         VersionRange versionRange = null,
-        bool isGlobalTool = false,
         RestoreActionConfig restoreActionConfig = null
     );
+
+    bool TryGetDownloadedTool(
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        string targetFramework,
+        out IToolPackage toolPackage);
 }

@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class FileWatcherTests(ITestOutputHelper output)
@@ -15,15 +17,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             string dir,
             ChangedPath[] expectedChanges,
             bool usePolling,
+            bool watchSubdirectories,
             Action operation)
         {
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
+            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: watchSubdirectories);
             if (watcher is EventBasedDirectoryWatcher dotnetWatcher)
             {
                 dotnetWatcher.Logger = m => output.WriteLine(m);
             }
 
-            var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var operationCompletionSource = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var filesChanged = new HashSet<ChangedPath>();
 
             EventHandler<ChangedPath> handler = null;
@@ -42,7 +45,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 {
                     watcher.EnableRaisingEvents = false;
                     watcher.OnFileChange -= handler;
-                    changedEv.TrySetResult();
+                    operationCompletionSource.TrySetResult();
                 }
             };
 
@@ -59,90 +62,105 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             operation();
 
-            await changedEv.Task.TimeoutAfter(DefaultTimeout);
-            AssertEx.SequenceEqual(expectedChanges, filesChanged.Order(Comparer<ChangedPath>.Create((x, y) => (x.Path, x.Kind).CompareTo((y.Path, y.Kind)))));
-        }
+            var task = operationCompletionSource.Task;
+            await (Debugger.IsAttached ? task : task.TimeoutAfter(DefaultTimeout));
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task NewFile(bool usePolling)
-        {
-            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
-
-            var testFileFullPath = Path.Combine(dir, "foo");
-
-            await TestOperation(
-                dir,
-                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !usePolling
-                ?
-                [
-                    new(testFileFullPath, ChangeKind.Update),
-                    new(testFileFullPath, ChangeKind.Add),
-                ]
-                :
-                [
-                    new(testFileFullPath, ChangeKind.Add),
-                ],
-                usePolling,
-                () => File.WriteAllText(testFileFullPath, string.Empty));
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task NewFileInNewDirectory(bool usePolling)
-        {
-            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
-
-            var newDir = Path.Combine(dir, "Dir");
-            var newFile = Path.Combine(newDir, "foo");
-
-            await TestOperation(
-                dir,
-                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling
-                ?
-                [
-                    new(newDir, ChangeKind.Add),
-                    new(newFile, ChangeKind.Update),
-                    new(newFile, ChangeKind.Add),
-                ]
-                :
-                [
-                    new(newDir, ChangeKind.Add),
-                ],
-                usePolling,
-                () =>
-                {
-                    Directory.CreateDirectory(newDir);
-                    File.WriteAllText(newFile, string.Empty);
-                });
-        }
-
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public async Task ChangeFile(bool usePolling)
-        {
-            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
-
-            var testFileFullPath = Path.Combine(dir, "foo");
-            File.WriteAllText(testFileFullPath, string.Empty);
-
-            await TestOperation(
-                dir,
-                expectedChanges: [new(testFileFullPath, ChangeKind.Update)],
-                usePolling,
-                () => File.WriteAllText(testFileFullPath, string.Empty));
+            AssertEx.SequenceEqual(expectedChanges, filesChanged.OrderBy(x => x.Path));
         }
 
         [Theory]
         [CombinatorialData]
+        public async Task NewFile(bool usePolling)
+        {
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+
+            var file = Path.Combine(dir, "file");
+
+            await TestOperation(
+                dir,
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
+                ?
+                [
+                    new(file, ChangeKind.Add),
+                ]
+                :
+                [
+                    new(file, ChangeKind.Update),
+                    new(file, ChangeKind.Add),
+                ],
+                usePolling,
+                watchSubdirectories: true,
+                () => File.WriteAllText(file, string.Empty));
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task NewFileInNewDirectory(bool usePolling, bool nested)
+        {
+            if (!usePolling && !(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
+            {
+                // Skip test on Unix:
+                // https://github.com/dotnet/runtime/issues/116351
+                return;
+            }
+
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+
+            var dir1 = Path.Combine(dir, "dir1");
+            var dir2 = nested ? Path.Combine(dir1, "dir2") : dir1;
+            var fileInSubdir = Path.Combine(dir2, "file_in_subdir");
+
+            await TestOperation(
+                dir,
+                expectedChanges: !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling
+                ?
+                [
+                    new(fileInSubdir, ChangeKind.Add),
+                ]
+                :
+                [
+                    new(fileInSubdir, ChangeKind.Update),
+                    new(fileInSubdir, ChangeKind.Add),
+                ],
+                usePolling,
+                watchSubdirectories: true,
+                () =>
+                {
+                    Directory.CreateDirectory(dir1);
+
+                    if (nested)
+                    {
+                        Directory.CreateDirectory(dir2);
+                    }
+
+                    File.WriteAllText(fileInSubdir, string.Empty);
+                });
+        }
+
+        [Theory]
+        [CombinatorialData]
+        public async Task ChangeFile(bool usePolling)
+        {
+            var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
+
+            var file = Path.Combine(dir, "file");
+            File.WriteAllText(file, string.Empty);
+
+            await TestOperation(
+                dir,
+                expectedChanges: [new(file, ChangeKind.Update)],
+                usePolling,
+                watchSubdirectories: true,
+                () => File.WriteAllText(file, string.Empty));
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [CombinatorialData]
         public async Task MoveFile(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
-            var srcFile = Path.Combine(dir, "foo");
-            var dstFile = Path.Combine(dir, "foo2");
+            var srcFile = Path.Combine(dir, "file");
+            var dstFile = Path.Combine(dir, "file2");
 
             File.WriteAllText(srcFile, string.Empty);
 
@@ -162,40 +180,69 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     new(dstFile, ChangeKind.Add),
                 ],
                 usePolling,
+                watchSubdirectories: true,
                 () => File.Move(srcFile, dstFile));
-
         }
 
-        [Fact]
-        public async Task FileInSubdirectory()
+        [Theory]
+        [CombinatorialData]
+        public async Task FileInSubdirectory(bool usePolling, bool watchSubdirectories)
         {
-            var dir = _testAssetManager.CreateTestDirectory().Path;
+            var dir = _testAssetManager.CreateTestDirectory(identifier: $"{usePolling}{watchSubdirectories}").Path;
 
             var subdir = Path.Combine(dir, "subdir");
             Directory.CreateDirectory(subdir);
 
-            var testFileFullPath = Path.Combine(subdir, "foo");
-            File.WriteAllText(testFileFullPath, string.Empty);
+            var fileInDir = Path.Combine(dir, "file_in_dir");
+            File.WriteAllText(fileInDir, string.Empty);
+
+            var fileInSubdir = Path.Combine(subdir, "file_in_subdir");
+            File.WriteAllText(fileInSubdir, string.Empty);
+
+            ChangedPath[] expectedChanges;
+
+            if (watchSubdirectories)
+            {
+                expectedChanges = !RuntimeInformation.IsOSPlatform(OSPlatform.OSX) || usePolling ?
+                [
+                    new(fileInDir, ChangeKind.Update),
+                    new(fileInSubdir, ChangeKind.Update)
+                ]
+                :
+                [
+                    new(fileInDir, ChangeKind.Update),
+                    new(fileInDir, ChangeKind.Add),
+                    new(fileInSubdir, ChangeKind.Update),
+                    new(fileInSubdir, ChangeKind.Add),
+                ];
+            }
+            else
+            {
+                expectedChanges =
+                [
+                    new(fileInDir, ChangeKind.Update),
+                ];
+            }
 
             await TestOperation(
                 dir,
-                expectedChanges:
-                [
-                    new(subdir, ChangeKind.Update),
-                    new(testFileFullPath, ChangeKind.Update)
-                ],
-                usePolling: true,
-                () => File.WriteAllText(testFileFullPath, string.Empty));
+                expectedChanges,
+                usePolling,
+                watchSubdirectories,
+                () =>
+                {
+                    File.WriteAllText(fileInSubdir, string.Empty);
+                    File.WriteAllText(fileInDir, string.Empty);
+                });
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task NoNotificationIfDisabled(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
+            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true);
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             watcher.OnFileChange += (_, f) => changedEv.TrySetResult(0);
@@ -218,19 +265,18 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task DisposedNoEvents(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling))
+            using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true))
             {
                 watcher.OnFileChange += (_, f) => changedEv.TrySetResult();
                 watcher.EnableRaisingEvents = true;
             }
 
-            var testFileFullPath = Path.Combine(dir, "foo");
+            var file = Path.Combine(dir, "file");
 
             if (usePolling)
             {
@@ -239,47 +285,39 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 // watcher will not detect the change
                 await Task.Delay(1000);
             }
-            File.WriteAllText(testFileFullPath, string.Empty);
+            File.WriteAllText(file, string.Empty);
 
             await Assert.ThrowsAsync<TimeoutException>(() => changedEv.Task.TimeoutAfter(NegativeTimeout));
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task MultipleFiles(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            File.WriteAllText(Path.Combine(dir, "foo1"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "foo2"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "foo3"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "foo4"), string.Empty);
+            File.WriteAllText(Path.Combine(dir, "file1"), string.Empty);
+            File.WriteAllText(Path.Combine(dir, "file2"), string.Empty);
+            File.WriteAllText(Path.Combine(dir, "file3"), string.Empty);
+            File.WriteAllText(Path.Combine(dir, "file4"), string.Empty);
 
-            // On Unix the native file watcher may surface events from
-            // the recent past. Delay to avoid those.
-            // On Unix the file write time is in 1s increments;
-            // if we don't wait, there's a chance that the polling
-            // watcher will not detect the change
-            await Task.Delay(1250);
-
-            var testFileFullPath = Path.Combine(dir, "foo3");
+            var file3 = Path.Combine(dir, "file3");
 
             await TestOperation(
                 dir,
-                expectedChanges: [new(testFileFullPath, ChangeKind.Update)],
-                usePolling: true,
-                () => File.WriteAllText(testFileFullPath, string.Empty));
+                expectedChanges: [new(file3, ChangeKind.Update)],
+                usePolling,
+                watchSubdirectories: true,
+                () => File.WriteAllText(file3, string.Empty));
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task MultipleTriggers(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling);
+            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true);
 
             watcher.EnableRaisingEvents = true;
 
@@ -333,8 +371,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [CombinatorialData]
         public async Task DeleteSubfolder(bool usePolling)
         {
             var dir = _testAssetManager.CreateTestDirectory(usePolling.ToString()).Path;
@@ -352,17 +389,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await TestOperation(
                 dir,
-                expectedChanges: usePolling ?
+                expectedChanges: RuntimeInformation.IsOSPlatform(OSPlatform.OSX) && !usePolling ?
                 [
-                    new(subdir, ChangeKind.Delete),
-                    new(f1, ChangeKind.Delete),
-                    new(f2, ChangeKind.Delete),
-                    new(f3, ChangeKind.Delete),
-                ]
-                : RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ?
-                [
-                    new(subdir, ChangeKind.Add),
-                    new(subdir, ChangeKind.Delete),
                     new(f1, ChangeKind.Update),
                     new(f1, ChangeKind.Add),
                     new(f1, ChangeKind.Delete),
@@ -373,22 +401,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
                     new(f3, ChangeKind.Add),
                     new(f3, ChangeKind.Delete),
                 ]
-                : RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ?
-                [
-                    new(subdir, ChangeKind.Update),
-                    new(subdir, ChangeKind.Delete),
-                    new(f1, ChangeKind.Delete),
-                    new(f2, ChangeKind.Delete),
-                    new(f3, ChangeKind.Delete),
-                ]
                 :
                 [
-                    new(subdir, ChangeKind.Delete),
                     new(f1, ChangeKind.Delete),
                     new(f2, ChangeKind.Delete),
                     new(f3, ChangeKind.Delete),
                 ],
                 usePolling,
+                watchSubdirectories: true,
                 () => Directory.Delete(subdir, recursive: true));
         }
     }

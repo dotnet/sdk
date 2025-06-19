@@ -97,7 +97,11 @@ namespace Microsoft.Extensions.DependencyModel.Tests
             public bool TryGetNodeParent(string path, out DirectoryNode current)
             {
                 PathModel pathModel = CreateFullPathModel(path);
-                current = Files.Volume[pathModel.Volume];
+                if (!Files.Volume.TryGetValue(pathModel.Volume, out current!))
+                {
+                    current = new DirectoryNode();
+                    current = Files.Volume.GetOrAdd(pathModel.Volume, current);
+                }
 
                 if (!Files.Volume.ContainsKey(pathModel.Volume))
                 {

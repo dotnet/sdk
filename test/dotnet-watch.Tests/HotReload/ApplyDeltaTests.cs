@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
     {
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task AddSourceFile()
         {
             Logger.WriteLine("AddSourceFile started");
@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ChangeFileInDependency()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -67,10 +67,128 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Changed!");
         }
 
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [CombinatorialData]
+        public async Task AutoRestartOnRudeEdit(bool nonInteractive)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            if (!nonInteractive)
+            {
+                testAsset = testAsset
+                    .WithProjectChanges(project =>
+                    {
+                        project.Root.Descendants()
+                            .First(e => e.Name.LocalName == "PropertyGroup")
+                            .Add(XElement.Parse("""
+                                <HotReloadAutoRestart>true</HotReloadAutoRestart>
+                                """));
+                    });
+            }
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
+
+            await App.AssertWaitingForChanges();
+            App.Process.ClearOutput();
+
+            // rude edit: adding virtual method
+            UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+        }
+
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+        public async Task AutoRestartOnRudeEditAfterRestartPrompt()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, [], testFlags: TestFlags.ReadKeyFromStdin);
+
+            await App.AssertWaitingForChanges();
+            App.Process.ClearOutput();
+
+            // rude edit: adding virtual method
+            UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public virtual void F() {}"));
+
+            await App.AssertOutputLineStartsWith("  ❔ Do you want to restart your app? Yes (y) / No (n) / Always (a) / Never (v)", failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes.");
+            App.AssertOutputContains($"❌ {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
+            App.Process.ClearOutput();
+
+            App.SendKey('a');
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            App.Process.ClearOutput();
+
+            // rude edit: deleting virtual method
+            UpdateSourceFile(programPath, src => src.Replace("public virtual void F() {}", ""));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,1): error ENC0033: Deleting method 'F()' requires restarting the application.");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+        }
+
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [CombinatorialData]
+        public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            if (!nonInteractive)
+            {
+                testAsset = testAsset
+                    .WithProjectChanges(project =>
+                    {
+                        project.Root.Descendants()
+                            .First(e => e.Name.LocalName == "PropertyGroup")
+                            .Add(XElement.Parse("""
+                                <HotReloadAutoRestart>true</HotReloadAutoRestart>
+                                """));
+                    });
+            }
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+            App.Start(testAsset, nonInteractive ? ["--non-interactive"] : []);
+
+            await App.AssertWaitingForChanges();
+            App.Process.ClearOutput();
+
+            // rude edit: adding virtual method
+            UpdateSourceFile(programPath, src => src.Replace("Started", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
+
+            App.AssertOutputContains("⌚ Restart is needed to apply the changes");
+            App.AssertOutputContains($"⌚ [auto-restart] {programPath}(16,19): warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted.");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
+            App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            App.AssertOutputContains("<Updated>");
+        }
+
         /// <summary>
         /// Unchanged project doesn't build. Wait for source change and rebuild.
         /// </summary>
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BaselineCompilationError()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -97,7 +215,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         /// We currently do not support applying project changes.
         /// The workaround is to restart via Ctrl+R.
         /// </summary>
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectChangeAndRestart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
@@ -136,7 +254,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ChangeFileInFSharpProject()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -151,7 +269,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("<Updated>");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ChangeFileInFSharpProjectWithLoop()
         {
             var testAsset = TestAssets.CopyTestAsset("FSharpTestAppSimple")
@@ -221,7 +339,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MetadataUpdateHandler_NoActions()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -253,7 +371,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 $"dotnet watch ⚠ [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Expected to find a static method 'ClearCache', 'UpdateApplication' or 'UpdateContent' on type 'AppUpdateHandler, WatchHotReloadApp, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null' but neither exists.");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task MetadataUpdateHandler_Exception(bool verbose)
         {
@@ -302,7 +420,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Theory(Skip = "https://github.com/dotnet/sdk/issues/45299")]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task BlazorWasm(bool projectSpecifiesCapabilities)
         {
@@ -341,7 +459,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
             // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
-            AssertEx.DoesNotContain("🕵️", App.Process.Output);
+            App.AssertOutputDoesNotContain("🕵️");
 
             var newSource = """
                 @page "/"
@@ -362,7 +480,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BlazorWasm_MSBuildWarning()
         {
             var testAsset = TestAssets
@@ -384,7 +502,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task BlazorWasm_Restart()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm")
@@ -406,7 +524,31 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Reloading browser.");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        public async Task BlazorWasmHosted()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasmHosted")
+                .WithSource();
+
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+
+            var port = TestOptions.GetTestPort();
+            App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
+
+            await App.AssertWaitingForChanges();
+
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToUseBrowserRefresh);
+            App.AssertOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
+            App.AssertOutputContains("dotnet watch 🔥 HotReloadProfile: BlazorHosted");
+
+            // client capabilities:
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Project 'blazorwasm ({tfm})' specifies capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType NewTypeDefinition ChangeCustomAttributes AddInstanceFieldToExistingType GenericAddMethodToExistingType GenericUpdateMethod UpdateParameters GenericAddFieldToExistingType'");
+
+            // server capabilities:
+            App.AssertOutputContains($"dotnet watch ⌚ [blazorhosted ({tfm})] Capabilities: 'Baseline AddMethodToExistingType AddStaticFieldToExistingType AddInstanceFieldToExistingType NewTypeDefinition ChangeCustomAttributes UpdateParameters GenericUpdateMethod GenericAddMethodToExistingType GenericAddFieldToExistingType AddFieldRva'");
+        }
+
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Razor_Component_ScopedCssAndStaticAssets()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchRazorWithDeps")
@@ -532,7 +674,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("Updated types: Printer");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
@@ -584,7 +726,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
 
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [InlineData(true, Skip = "https://github.com/dotnet/sdk/issues/43320")]
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
@@ -639,7 +781,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task Aspire()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -682,8 +824,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
-            App.AssertOutputContains("dotnet watch ⌚ Unable to apply hot reload, restart is needed to apply the changes.");
-            App.AssertOutputContains("error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
+            App.AssertOutputContains("dotnet watch ⌚ Restart is needed to apply the changes.");
+            App.AssertOutputContains($"dotnet watch ❌ {serviceSourcePath}(36,1): error ENC0020: Renaming record 'WeatherForecast' requires restarting the application.");
             App.AssertOutputContains("dotnet watch ⌚ Affected projects:");
             App.AssertOutputContains("dotnet watch ⌚   WatchAspire.ApiService");
             App.Process.ClearOutput();
@@ -716,7 +858,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
             App.AssertOutputContains($"dotnet watch 🔨 Build succeeded: {serviceProjectPath}");
-            App.AssertOutputContains("dotnet watch 🔥 Project baselines updated.");
+            App.AssertOutputContains("dotnet watch 🔥 Projects rebuilt");
             App.AssertOutputContains($"dotnet watch ⭐ Starting project: {serviceProjectPath}");
 
             // Note: sending Ctrl+C via standard input is not the same as sending real Ctrl+C.

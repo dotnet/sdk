@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 
@@ -10,9 +12,9 @@ internal static class RestoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-restore";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
-        Description = CliStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
@@ -62,7 +64,7 @@ internal static class RestoreCommandParser
     {
         var command = new DocumentedCommand("restore", DocsLink, CliCommandStrings.RestoreAppFullName);
 
-        command.Arguments.Add(SlnOrProjectArgument);
+        command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
         foreach (var option in FullRestoreOptions())
@@ -71,6 +73,7 @@ internal static class RestoreCommandParser
         }
 
         command.Options.Add(CommonOptions.ArchitectureOption);
+        command.Options.Add(CommonOptions.OperatingSystemOption);
         command.SetAction(RestoreCommand.Run);
 
         return command;

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
@@ -37,4 +39,8 @@ internal interface INuGetPackageDownloader
     Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
          PackageSourceLocation packageSourceLocation = null);
+
+    Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
+        VersionRange versionRange,
+        PackageSourceLocation packageSourceLocation = null);
 } 

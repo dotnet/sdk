@@ -85,8 +85,8 @@ namespace Microsoft.DotNet.GenAPI.Tests
                 }
                 """,
                 expected: $@"
-                {CSharpFileBuilder.DefaultFileHeader}
-                namespace A.C.D {{ public partial struct Bar {{}} }}
+{CSharpFileBuilder.DefaultFileHeader}
+namespace A.C.D {{ public partial struct Bar {{}} }}
                 ",
                 header: null);
         }

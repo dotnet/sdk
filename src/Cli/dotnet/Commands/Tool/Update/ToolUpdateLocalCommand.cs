@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;
@@ -36,8 +38,7 @@ internal class ToolUpdateLocalCommand : CommandBase
             (IToolPackageStore,
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
-                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()));
+                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader();
             _toolPackageDownloader = toolPackageStoresAndDownloader.downloader;
         }
         else

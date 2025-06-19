@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
@@ -82,7 +84,10 @@ internal static class PackCommandParser
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
-        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
+
+        // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
+        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
 
         command.SetAction(PackCommand.Run);
 

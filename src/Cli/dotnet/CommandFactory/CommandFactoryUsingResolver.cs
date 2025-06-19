@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Utils;
@@ -111,6 +113,6 @@ public static class CommandFactoryUsingResolver
             StartInfo = psi
         };
 
-        return new Command(_process);
+        return new Command(_process, customEnvironmentVariables: commandSpec.EnvironmentVariables);
     }
 }
