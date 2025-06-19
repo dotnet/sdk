@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -127,10 +128,23 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            // If we get C# file path as the first argument, parse as `dotnet run file.cs`.
-            parseResult = args is [{ } filePath, ..] && VirtualProjectBuildingCommand.IsValidEntryPointPath(filePath)
-                ? Parser.Instance.Parse(["run", .. args])
-                : Parser.Instance.Parse(args);
+            parseResult = Parser.Instance.Parse(args);
+            // If we get didn't match any built-in commands, and a C# file path is the first argument,
+            // parse as `dotnet run file.cs ..rest_of_args` instead.
+            if (parseResult.CommandResult.Command is RootCommand
+                && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
+                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            {
+                List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+                foreach (var token in parseResult.Tokens)
+                {
+                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    {
+                        otherTokens.Add(token.Value);
+                    }
+                }
+                parseResult = Parser.Instance.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+            }
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
