@@ -65,7 +65,11 @@ For example, the remaining command-line arguments after the first argument (the 
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
 and working directory is not changed (e.g., `cd /x/ && dotnet run /y/file.cs` runs the program in directory `/x/`).
 
-`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path).
+If a dash (`-`) is given instead of the target path (i.e., `dotnet run -`), the C# file to be executed is read from the standard input.
+In this case, the current working directory is not used to search for other files (launch profiles, other sources in case of multi-file apps);
+the compilation consists solely of the single file read from the standard input.
+
+`dotnet path.cs` is a shortcut for `dotnet run path.cs` provided that `path.cs` is a valid [target path](#target-path) (`dotnet -` is currently not supported).
 
 ### Other commands
 
@@ -246,10 +250,6 @@ This section outlines potential future enhancements and alternatives considered.
 ### Target path extensions
 
 We could allow folders as the target path in the future (e.g., `dotnet run ./my-app/`).
-
-An option like `dotnet run --cs-from-stdin` could read the C# file from standard input.
-In this case, the current working directory would not be used to search for project or other C# files;
-the compilation would consist solely of the single file read from standard input.
 
 Similarly, it could be possible to specify the whole C# source text in a command-line argument
 like `dotnet run --cs-code 'Console.WriteLine("Hi")'`.
