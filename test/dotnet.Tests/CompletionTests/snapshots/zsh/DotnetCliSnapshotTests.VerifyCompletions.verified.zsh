@@ -651,7 +651,7 @@ _testhost() {
                                             '--project=[Path to a project or solution file, or a directory.]: : ' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
-                                            '*::packages: ' \
+                                            '*::packages -- Package reference in the form of a package identifier like '\''Newtonsoft.Json'\'' or package identifier and version separated by '\''@'\'' like '\''Newtonsoft.Json@13.0.3'\''.: ' \
                                             && ret=0
                                         ;;
                                 esac
