@@ -129,7 +129,7 @@ public class Program
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
             parseResult = Parser.Instance.Parse(args);
-            // If we get didn't match any built-in commands, and a C# file path is the first argument,
+            // If we didn't match any built-in commands, and a C# file path is the first argument,
             // parse as `dotnet run file.cs ..rest_of_args` instead.
             if (parseResult.CommandResult.Command is RootCommand
                 && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
