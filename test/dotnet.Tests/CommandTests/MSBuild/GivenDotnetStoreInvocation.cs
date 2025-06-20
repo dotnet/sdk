@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             var msbuildPath = "<msbuildpath>";
             StoreCommand.FromArgs(args, msbuildPath)
-                .GetArgumentsToMSBuild().Should().Be($"{ExpectedPrefix} -property:ComposeDir={Path.GetFullPath(path)} -property:_CommandLineDefinedOutputPath=true");
+                .GetArgumentsToMSBuild().Should().Be($"{ExpectedPrefix} -property:ComposeDir={Path.GetFullPath(path)}{Path.DirectorySeparatorChar} -property:_CommandLineDefinedOutputPath=true");
         }
     }
 }
