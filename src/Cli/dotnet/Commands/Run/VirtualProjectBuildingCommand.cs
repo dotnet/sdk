@@ -594,6 +594,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                   <PropertyGroup>
                     <EnableDefaultItems>false</EnableDefaultItems>
+                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                   </PropertyGroup>
                 """);
         }

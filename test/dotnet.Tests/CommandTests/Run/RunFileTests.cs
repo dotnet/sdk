@@ -985,12 +985,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
         new DotnetCommand(Log, "publish", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(artifactsDir).Sub("publish/release")
+        new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
             .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
     }
@@ -1005,12 +1008,15 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
         new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false", "-bl")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(artifactsDir).Sub("publish/debug")
+        new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
             .And.HaveFile("Program.deps.json");
 
