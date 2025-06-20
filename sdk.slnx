@@ -138,6 +138,9 @@
   <Folder Name="/src/StaticWebAssetsSdk/">
     <File Path="src/StaticWebAssetsSdk/.editorconfig" />
   </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/benchmarks/">
+    <Project Path="src/StaticWebAssetsSdk/benchmarks/Microsoft.NET.Sdk.StaticWebAssets.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/src/StaticWebAssetsSdk/Sdk/">
     <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.props" />
     <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.StaticWebAssets.StaticAssets.ProjectSystem.props" />
