@@ -35,8 +35,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public bool NativeAOT { get; set; } = false;
             public bool SelfContained { get; set; } = false;
             public bool Trimmed { get; set; } = false;
+            public bool IncludeAnyRid { get; set; } = false;
 
-            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}";
+            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}{(IncludeAnyRid ? "-anyrid" : "")}";
         }
 
 
@@ -55,22 +56,25 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["Version"] = toolSettings.ToolPackageVersion;
 
+            var singleRid = RuntimeInformation.RuntimeIdentifier;
+            var multiRid = toolSettings.IncludeAnyRid ? $"{ToolsetInfo.LatestRuntimeIdentifiers};any" : ToolsetInfo.LatestRuntimeIdentifiers;
+
             if (toolSettings.NativeAOT)
             {
                 testProject.AdditionalProperties["PublishAot"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = RuntimeInformation.RuntimeIdentifier;
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = singleRid;
             }
 
             if (toolSettings.SelfContained)
             {
                 testProject.AdditionalProperties["SelfContained"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = ToolsetInfo.LatestRuntimeIdentifiers;
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = multiRid;
             }
 
             if (toolSettings.Trimmed)
             {
                 testProject.AdditionalProperties["PublishTrimmed"] = "true";
-                testProject.AdditionalProperties["RuntimeIdentifiers"] = ToolsetInfo.LatestRuntimeIdentifiers;
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = multiRid;
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
