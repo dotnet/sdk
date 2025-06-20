@@ -6,8 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.9" />
-    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
+    <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
     <PackageVersion Include="AwesomeAssertions.Json" Version="$(AwesomeAssertionsJsonVersion)" />
     <PackageVersion Include="MicroBuild.Plugins.SwixBuild.Dotnet" Version="1.1.87-gba258badda" />
     <PackageVersion Include="Microsoft.ApplicationInsights" Version="$(MicrosoftApplicationInsightsPackageVersion)" />
