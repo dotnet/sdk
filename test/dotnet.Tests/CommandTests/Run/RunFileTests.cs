@@ -1023,6 +1023,73 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
     }
 
+    [Fact]
+    public void Publish_PublishDir_IncludesFileName()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "MyCustomProgram.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "MyCustomProgram.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(publishDir).Sub("MyCustomProgram")
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_PublishDir_CommandLine()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var customPublishDir = Path.Join(testInstance.Path, "custom-publish");
+        if (Directory.Exists(customPublishDir)) Directory.Delete(customPublishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs", $"/p:PublishDir={customPublishDir}")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(customPublishDir)
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_PublishDir_PropertyDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        var publishDir = Path.Join(testInstance.Path, "directive-publish");
+        File.WriteAllText(programFile, $"""
+            #:property PublishDir={publishDir}
+            {s_program}
+            """);
+
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(publishDir)
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
+
+
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()
     {
