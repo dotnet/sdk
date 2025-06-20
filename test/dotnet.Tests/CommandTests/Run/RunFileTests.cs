@@ -1017,6 +1017,32 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
     }
 
+    [Fact]
+    public void Clean()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        var dllFile = new FileInfo(Path.Join(artifactsDir, "bin", "debug", "Program.dll"));
+        dllFile.Should().Exist();
+
+        new DotnetCommand(Log, "clean", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        dllFile.Refresh();
+        dllFile.Should().NotExist();
+    }
+
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()
     {
