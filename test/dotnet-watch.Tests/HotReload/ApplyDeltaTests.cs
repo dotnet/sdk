@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task AddSourceFile()
         {
-            Logger.WriteLine("AddSourceFile started");
+            Log("AddSourceFile started");
 
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
@@ -103,6 +103,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"⌚ [auto-restart] {programPath}(33,11): error ENC0023: Adding an abstract method or overriding an inherited method requires restarting the application.");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
+            App.Process.ClearOutput();
+
+            // valid edit:
+            UpdateSourceFile(programPath, src => src.Replace("public virtual void F() {}", "public virtual void F() { Console.WriteLine(1); }"));
+
+            await App.AssertOutputLineStartsWith($"dotnet watch 🔥 [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
         }
 
         [Fact(Skip = "https://github.com/dotnet/sdk/issues/49307")]
@@ -173,7 +179,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertWaitingForChanges();
             App.Process.ClearOutput();
 
-            // rude edit: adding virtual method
+            // top-level code change:
             UpdateSourceFile(programPath, src => src.Replace("Started", "<Updated>"));
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges, failure: _ => false);
@@ -183,6 +189,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Exited");
             App.AssertOutputContains($"[WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Launched");
             App.AssertOutputContains("<Updated>");
+            App.Process.ClearOutput();
+
+            // valid edit:
+            UpdateSourceFile(programPath, src => src.Replace("/* member placeholder */", "public void F() {}"));
+
+            await App.AssertOutputLineStartsWith($"dotnet watch 🔥 [WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
         }
 
         /// <summary>
@@ -679,7 +691,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(false)]
         public async Task RenameSourceFile(bool useMove)
         {
-            Logger.WriteLine("RenameSourceFile started");
+            Log("RenameSourceFile started");
 
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
@@ -721,7 +733,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 File.WriteAllText(newFilePath, source);
             }
 
-            Logger.WriteLine($"Renamed '{oldFilePath}' to '{newFilePath}'.");
+            Log($"Renamed '{oldFilePath}' to '{newFilePath}'.");
 
             await App.AssertOutputLineStartsWith("> Renamed.cs");
         }
@@ -731,7 +743,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [InlineData(false)]
         public async Task RenameDirectory(bool useMove)
         {
-            Logger.WriteLine("RenameSourceFile started");
+            Log("RenameSourceFile started");
 
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
                 .WithSource();
@@ -776,13 +788,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 File.WriteAllText(Path.Combine(newSubdir, "Foo.cs"), source);
             }
 
-            Logger.WriteLine($"Renamed '{oldSubdir}' to '{newSubdir}'.");
+            Log($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
-        public async Task Aspire()
+        public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
             var testAsset = TestAssets.CopyTestAsset("WatchAspire")
@@ -790,7 +802,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var serviceSourcePath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "Program.cs");
             var serviceProjectPath = Path.Combine(testAsset.Path, "WatchAspire.ApiService", "WatchAspire.ApiService.csproj");
-            var originalSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+            var serviceSource = File.ReadAllText(serviceSourcePath, Encoding.UTF8);
+
+            var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
+            var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
 
             App.Start(testAsset, ["-lp", "http"], relativeProjectDirectory: "WatchAspire.AppHost", testFlags: TestFlags.ReadKeyFromStdin);
 
@@ -802,16 +817,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // wait until after DCP session started:
             await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #1");
 
-            // valid code change:
+            // Service -- valid code change:
             UpdateSourceFile(
                 serviceSourcePath,
-                originalSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
+                serviceSource.Replace("Enumerable.Range(1, 5)", "Enumerable.Range(1, 10)"));
 
             await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
 
             App.AssertOutputContains("Using Aspire process launcher.");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.AppHost ({tfm})");
             App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.ApiService ({tfm})");
+            App.AssertOutputContains(MessageDescriptor.HotReloadSucceeded, $"WatchAspire.Web ({tfm})");
 
             // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
             Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
@@ -820,7 +836,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // rude edit with build error:
             UpdateSourceFile(
                 serviceSourcePath,
-                originalSource.Replace("record WeatherForecast", "record WeatherForecast2"));
+                serviceSource.Replace("record WeatherForecast", "record WeatherForecast2"));
 
             await App.AssertOutputLineStartsWith("  ❔ Do you want to restart these projects? Yes (y) / No (n) / Always (a) / Never (v)");
 
@@ -853,7 +869,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // fix build error:
             UpdateSourceFile(
                 serviceSourcePath,
-                originalSource.Replace("WeatherForecast", "WeatherForecast2"));
+                serviceSource.Replace("WeatherForecast", "WeatherForecast2"));
 
             await App.AssertOutputLineStartsWith($"dotnet watch ⌚ [WatchAspire.ApiService ({tfm})] Capabilities");
 
@@ -885,6 +901,46 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             App.AssertOutputContains("dotnet watch ⭐ Stop session #1");
             App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
+        }
+
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        public async Task Aspire_NoEffect_AutoRestart()
+        {
+            var tfm = ToolsetInfo.CurrentTargetFramework;
+            var testAsset = TestAssets.CopyTestAsset("WatchAspire")
+                .WithSource();
+
+            var webSourcePath = Path.Combine(testAsset.Path, "WatchAspire.Web", "Program.cs");
+            var webProjectPath = Path.Combine(testAsset.Path, "WatchAspire.Web", "WatchAspire.Web.csproj");
+            var webSource = File.ReadAllText(webSourcePath, Encoding.UTF8);
+
+            App.Start(testAsset, ["-lp", "http", "--non-interactive"], relativeProjectDirectory: "WatchAspire.AppHost");
+
+            await App.AssertWaitingForChanges();
+
+            // wait until after DCP sessions have been started for all projects:
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+            App.Process.ClearOutput();
+
+            // no-effect edit:
+            UpdateSourceFile(webSourcePath, src => src.Replace("/* top-level placeholder */", "builder.Services.AddRazorComponents();"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled", _ => false);
+            await App.WaitUntilOutputContains("dotnet watch ⭐ Session started: #2");
+
+            App.AssertOutputContains("dotnet watch 🔥 Projects restarted (1)");
+            App.AssertOutputDoesNotContain("⚠");
+
+            App.Process.ClearOutput();
+
+            // lambda body edit:
+            UpdateSourceFile(webSourcePath, src => src.Replace("Hello world!", "<Updated>"));
+
+            await App.AssertOutputLineStartsWith("dotnet watch 🔥 Hot reload change handled");
+            App.AssertOutputContains($"dotnet watch 🕵️ [WatchAspire.Web ({tfm})] Deltas applied.");
+            App.AssertOutputDoesNotContain("Projects rebuilt");
+            App.AssertOutputDoesNotContain("Projects restarted");
+            App.AssertOutputDoesNotContain("⚠");
         }
     }
 }
