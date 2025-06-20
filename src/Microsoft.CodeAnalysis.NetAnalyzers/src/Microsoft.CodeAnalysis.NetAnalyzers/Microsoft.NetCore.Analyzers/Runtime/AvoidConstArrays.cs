@@ -154,37 +154,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static bool IsInitializingStaticOrReadOnlyFieldOrProperty(IOperation operation)
         {
-            var ancestor = operation;
+            IOperation? highestInitializerOrAssignment = null;
+            IOperation? ancestor = operation;
             do
             {
-                ancestor = ancestor!.Parent;
-            } while (ancestor != null && !(ancestor.Kind == OperationKind.FieldInitializer || ancestor.Kind == OperationKind.PropertyInitializer ||
-                        ancestor.Kind == OperationKind.CoalesceAssignment || ancestor.Kind == OperationKind.SimpleAssignment));
-
-            if (ancestor != null)
-            {
-                switch (ancestor)
+                if (ancestor?.Kind is OperationKind.FieldInitializer or OperationKind.PropertyInitializer or
+                        OperationKind.CoalesceAssignment or OperationKind.SimpleAssignment)
                 {
-                    case IFieldInitializerOperation fieldInitializer:
-                        return fieldInitializer.InitializedFields.Any(x => x.IsStatic || x.IsReadOnly);
-                    case IPropertyInitializerOperation propertyInitializer:
-                        return propertyInitializer.InitializedProperties.Any(x => x.IsStatic || x.IsReadOnly);
-                    case IAssignmentOperation assignmentOperation:
-                        if (assignmentOperation.Target is IFieldReferenceOperation fieldReference && fieldReference.Field.IsStatic)
-                        {
-                            return true;
-                        }
-
-                        if (assignmentOperation.Target is IPropertyReferenceOperation propertyReference && propertyReference.Property.IsStatic)
-                        {
-                            return true;
-                        }
-
-                        break;
+                    highestInitializerOrAssignment = ancestor;
                 }
-            }
 
-            return false;
+                ancestor = ancestor!.Parent;
+            } while (ancestor != null);
+
+            return highestInitializerOrAssignment switch
+            {
+                IFieldInitializerOperation fieldInitializer =>
+                    fieldInitializer.InitializedFields.Any(x => x.IsStatic || x.IsReadOnly),
+                IPropertyInitializerOperation propertyInitializer =>
+                    propertyInitializer.InitializedProperties.Any(x => x.IsStatic || x.IsReadOnly),
+                IAssignmentOperation assignment =>
+                    assignment.Target is IMemberReferenceOperation memberReference && memberReference.Member.IsStatic,
+                _ => false
+            };
         }
     }
 }

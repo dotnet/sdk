@@ -1086,5 +1086,24 @@ public class MyClass
 
             return VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
+
+        [Fact, WorkItem(7365, "https://github.com/dotnet/roslyn-analyzers/issues/7365")]
+        public Task InlineStaticProperties_NoDiagnostic()
+        {
+            const string code = """
+                                using System.Collections.Generic;
+
+                                public class Class1
+                                {
+                                    public static Class2 c2 = new Class2 { ListEntry = new List<IList<string>> { new[] { "test" } } };
+                                }
+
+                                public class Class2
+                                {
+                                    public List<IList<string>> ListEntry { get; set; }
+                                }
+                                """;
+            return VerifyCS.VerifyAnalyzerAsync(code);
+        }
     }
 }
