@@ -74,7 +74,7 @@
       </trans-unit>
       <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
         <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
-        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <target state="translated">NETSDK1224: ASP.NET Core 프레임워크 자산은 대상 프레임워크에서 지원되지 않습니다.</target>
         <note>{StrBegins="NETSDK1224: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
@@ -648,7 +648,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NativeCompilationRequiresPublishing">
         <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
-        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <target state="translated">NETSDK1225: 게시 대상을 직접 호출할 때는 네이티브 컴파일이 지원되지 않습니다. dotnet publish를 실행해 보세요.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
@@ -793,7 +793,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PrunePackageDataNotFound">
         <source>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</source>
-        <target state="new">NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</target>
+        <target state="translated">NETSDK1226: 패키지 정리 데이터를 찾을 수 없습니다 {0} {1} {2}.  이 오류를 무시하려면 AllowMissingPrunePackageData를 true로 설정하세요.</target>
         <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
@@ -1015,7 +1015,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnsupportedToolCommandRunner">
         <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
-        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <target state="translated">NETSDK1227: 지원되지 않는 ToolCommandRunner 값: {0}</target>
         <note>{StrBegins="NETSDK1227: "}</note>
       </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">
