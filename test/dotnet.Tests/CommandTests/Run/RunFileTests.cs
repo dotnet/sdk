@@ -1030,14 +1030,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Should().Pass()
             .And.HaveStdOut("Hello from Program");
 
-        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
-        var dllFile = new FileInfo(Path.Join(artifactsDir, "bin", "debug", "Program.dll"));
+        var artifactsDir = new DirectoryInfo(VirtualProjectBuildingCommand.GetArtifactsPath(programFile));
+        artifactsDir.Should().HaveFiles(["build-start.cache", "build-success.cache"]);
+
+        var dllFile = artifactsDir.File("bin/debug/Program.dll");
         dllFile.Should().Exist();
 
         new DotnetCommand(Log, "clean", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
+
+        artifactsDir.EnumerateFiles().Should().BeEmpty();
 
         dllFile.Refresh();
         dllFile.Should().NotExist();
@@ -1517,6 +1521,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                       </PropertyGroup>
 
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
+
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
@@ -1591,6 +1599,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                       </PropertyGroup>
 
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
+
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -1657,6 +1669,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                       </PropertyGroup>
+
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

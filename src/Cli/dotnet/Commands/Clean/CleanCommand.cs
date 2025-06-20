@@ -45,6 +45,7 @@ public class CleanCommand(IEnumerable<string> msbuildArgs, string? msbuildPath =
                 NoRestore = true,
                 NoCache = true,
                 BuildTarget = "Clean",
+                NoBuildMarkers = true,
             };
         }
 
