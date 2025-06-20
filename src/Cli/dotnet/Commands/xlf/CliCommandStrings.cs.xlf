@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="ActiveTestsRunning_FullTestsCount">
         <source>{0} tests running</source>
-        <target state="new">{0} tests running</target>
+        <target state="translated">Spuštěné testy: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="ActiveTestsRunning_MoreTestsCount">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
-        <target state="new">.NET Builder</target>
+        <target state="translated">.NET Builder</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildCmdNoLogo">
@@ -155,8 +155,8 @@
       <trans-unit id="CannotAnalyzeVSWorkloadBand">
         <source>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</source>
-        <target state="new">Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
-Paths searched: '{1}', '{2}'.</target>
+        <target state="translated">Úlohy spravované Visual Studio se musí odinstalovat pomocí Instalačního programu pro Visual Studio. U verze Visual Studio správy sady SDK „{0}“ se nám nepovedlo zobrazit úlohy k odinstalaci. Je to pravděpodobně proto, že „{0}“ používá jinou kořenovou cestu dotnet nebo vlastní adresář profilu uživatele z aktuální spuštěné sady SDK.
+Prohledané cesty: „{1}“, „{2}“.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotCombineOptions">
@@ -166,7 +166,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CannotCombineSearchStringAndVersion">
         <source>Cannot specify both the {0} and {1} arguments.</source>
-        <target state="new">Cannot specify both the {0} and {1} arguments.</target>
+        <target state="translated">Argumenty {0} a {1} není možné zadat zároveň.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotCombineSkipManifestAndRollback">
@@ -181,7 +181,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
         <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <target state="translated">Některé direktivy nelze převést: První chyba je tady: {0}. Spuštěním souboru zobrazíte všechny chyby kompilace. Zadejte '--force', pokud chcete přesto provést převod.</target>
         <note>{Locked="--force"}. {0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
@@ -191,12 +191,12 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CannotMigrateSlnx">
         <source>Only .sln files can be migrated to .slnx format.</source>
-        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <target state="translated">Do formátu .slnx lze migrovat pouze soubory .sln.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">Nelze zadat verzi úlohy pomocí parametru --version a současně zadat verze k instalaci pomocí syntaxe workload@version.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -226,7 +226,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
-        <target state="new">.NET Clean Command</target>
+        <target state="translated">Příkaz rozhraní .NET pro vyčištění</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdNoLogo">
@@ -236,7 +236,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDirDescription">
@@ -281,17 +281,17 @@ The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downlo
 To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
 
 Implies --blame.</source>
-        <target state="new">Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+        <target state="translated">Spustí testy v režimu blame a shromáždí výpis stavu systému, když se hostitel testů neočekávaně ukončí. Tento parametr závisí na verzi použitého rozhraní .NET, typu chyby a operačním systému.
 
-For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+Pro výjimky ve spravovaném kódu se výpis automaticky shromáždí v rozhraní .NET 5.0 a novějších verzích. Vygeneruje výpis pro hostitele testu nebo jakýkoli podřízený proces, který také běžel v rozhraní .NET 5.0 a došlo k chybovému ukončení. Chybová ukončení v nativním kódu nevygenerují výpis paměti. Tento parametr funguje ve Windows, macOS a Linuxu.
 
-Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+Výpisy stavu systému v nativním kódu nebo při cílení na .NET Framework nebo .NET Core 3.1 a starší verze se dají shromažďovat jenom ve Windows pomocí Procdumpu. Adresář obsahující procdump.exe a procdump64.exe musí být v proměnné prostředí PATH nebo PROCDUMP_PATH.
 
-The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+Nástroje si můžete stáhnout odsud: https://docs.microsoft.com/sysinternals/downloads/procdump
 
-To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+Pokud chcete shromáždit výpis stavu systému z nativní aplikace spuštěné na rozhraní .NET 5.0 nebo novějším, je možné použití procdumpu vynutit nastavením proměnné prostředí VSTEST_DUMP_FORCEPROCDUMP na hodnotu 1.
 
-Implies --blame.</target>
+Implikuje --blame.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashDumpTypeDescription">
@@ -314,25 +314,25 @@ Example:
   Timeout the test run when a test takes more than 20 minutes and collect hang dump.
   dotnet test --blame-hang-timeout 20min
 </source>
-        <target state="new">Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
+        <target state="translated">Spustí testy v režimu blame. Tento parametr se hodí pro izolaci problematických testů, které způsobují chybové ukončení nebo zablokování testovacího hostitele, ale ve výchozím nastavení nevytváří výpis paměti.
 
-When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+Při zjištění chybového ukončení vytvoří soubor sekvence v souboru TestResults/guid/guid_Sequence.xml, který zachycuje pořadí testů, které byly spuštěny před chybou.
 
-Based on the additional settings, hang dump or crash dump can also be collected.
+Na základě dalších nastavení je také možné shromáždit výpis stavu systému nebo výpis stavu systému.
 
-Example:
-  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.
-  (Crash dumps require additional setup, see below.)
+Příklad:
+  Vypršení časového limitu testovacího běhu, když test trvá déle než výchozí časový limit 1 hodina, a shromážděte výpis stavu systému, když se hostitel testu neočekávaně ukončí.
+  (výpisy stavu systému vyžadují další nastavení, viz níže).
   dotnet test --blame-hang --blame-crash
-Example:
-  Timeout the test run when a test takes more than 20 minutes and collect hang dump.
-  dotnet test --blame-hang-timeout 20min
+Příklad:
+  Vypršení časového limitu testovacího běhu, když test trvá více než 20 minut, a shromáždění výpisu stavu systému.
+  dotnet test --blame-hang-timeout 20 minut
 </target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDescription">
         <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
-        <target state="new">Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</target>
+        <target state="translated">Spustí testy v režimu blame a umožní shromažďování výpisů stavu systému při zablokování, když test překročí stanovený časový limit.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDumpTypeDescription">
@@ -345,10 +345,10 @@ Example:
 The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
 When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
 For MSTest before 2.2.4, the timeout is used for all testcases.</source>
-        <target state="new">Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
-The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
-When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
-For MSTest before 2.2.4, the timeout is used for all testcases.</target>
+        <target state="translated">Časový limit pro jednotlivé testy, po kterém se aktivuje výpis stavu systému a proces testhost se ukončí. Výchozí hodnota je 1h.
+Hodnota časového limitu je zadána v následujícím formátu: 1,5 h / 90m / 5400 s / 5400000 ms. Pokud se nepoužije žádná jednotka (např. 5400000), předpokládá se, že hodnota je v milisekundách.
+Při použití společně s testy řízenými daty závisí chování časového limitu na použitém testovacím adaptéru. Pro xUnit, NUnit a MSTest 2.2.4+ se časový limit prodlouží po každém testovacím případu
+Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací případy.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -393,12 +393,12 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</target>
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
         <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definuje cestu k adresáři pro spuštění. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryPathName">
         <source>DIRECTORY_PATH</source>
-        <target state="new">DIRECTORY_PATH</target>
+        <target state="translated">DIRECTORY_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -408,12 +408,12 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</target>
       </trans-unit>
       <trans-unit id="CmdExpressionName">
         <source>EXPRESSION</source>
-        <target state="new">EXPRESSION</target>
+        <target state="translated">EXPRESSION</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFileDescription">
         <source>Path to the file-based program.</source>
-        <target state="new">Path to the file-based program.</target>
+        <target state="translated">Cesta k programu na základě souboru</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdForceRestoreOptionDescription">
@@ -430,7 +430,7 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdHelpUsageTitle">
         <source>Usage:</source>
-        <target state="new">Usage:</target>
+        <target state="translated">Využití:</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdHighestMinorDescription">
@@ -460,12 +460,12 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
         <source>The provided project file has an invalid extension: {0}.</source>
-        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <target state="translated">Zadaný soubor projektu má neplatnou příponu: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
         <source>The provided solution file has an invalid extension: {0}.</source>
-        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <target state="translated">Poskytnutý soubor řešení má neplatnou příponu: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
@@ -508,27 +508,27 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <target state="translated">Získání vlastností projektů pomocí nástroje MSBuild nebylo správně spuštěno s ukončovacím kódem: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
         <source>The max number of test modules that can run in parallel.</source>
-        <target state="new">The max number of test modules that can run in parallel.</target>
+        <target state="translated">Maximální počet testovacích modulů, které je možné spustit paralelně.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
-        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
+        <target state="translated">Zadejte parametr projektu, řešení, adresáře nebo testovacích modulů.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
         <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
-        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
+        <target state="translated">Určete, který soubor projektu nebo řešení se má použít, protože tato složka obsahuje více než jeden soubor projektu nebo řešení.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
-        <target state="new">Disable ANSI output.</target>
+        <target state="translated">Zakáže výstup ANSI.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -553,57 +553,57 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdNoHttpCacheOptionDescription">
         <source>Disable Http Caching for packages.</source>
-        <target state="new">Disable Http Caching for packages.</target>
+        <target state="translated">Zakázat ukládání do mezipaměti HTTP pro balíčky.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProgressDescription">
         <source>Disable progress reporting.</source>
-        <target state="new">Disable progress reporting.</target>
+        <target state="translated">Umožňuje zakázat hlášení o průběhu.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
-        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <target state="translated">Určete soubor projektu nebo řešení. Aktuální pracovní adresář neobsahuje soubor projektu ani řešení.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not restore before running the command.</source>
-        <target state="new">Do not restore before running the command.</target>
+        <target state="translated">Před spuštěním příkazu neprovádějte obnovu.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
         <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
-        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <target state="translated">Pro daný vzor testovacího modulu se nenašly žádné testovací moduly: {0} s kořenovým adresářem: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentDirectoryErrorDescription">
         <source>The provided directory path does not exist: {0}.</source>
-        <target state="new">The provided directory path does not exist: {0}.</target>
+        <target state="translated">Zadaná cesta k adresáři neexistuje: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentFileErrorDescription">
         <source>The provided file path does not exist: {0}.</source>
-        <target state="new">The provided file path does not exist: {0}.</target>
+        <target state="translated">Zadaná cesta k souboru neexistuje: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
         <source>The provided root directory does not exist: {0}.</source>
-        <target state="new">The provided root directory does not exist: {0}.</target>
+        <target state="translated">Zadaný kořenový adresář neexistuje: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNumberName">
         <source>NUMBER</source>
-        <target state="new">NUMBER</target>
+        <target state="translated">ČÍSLO</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
+        <target state="translated">Architekturu parametrů, konfiguraci, architekturu, operační systém a modul runtime nejde použít s parametrem --test-modules.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
         <source>Force conversion even if there are malformed directives.</source>
-        <target state="new">Force conversion even if there are malformed directives.</target>
+        <target state="translated">Vynuťte převod i v případě, že existují chybné direktivy.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
@@ -628,7 +628,7 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdPackageDescription">
         <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="new">The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</target>
+        <target state="translated">Odkaz na balíček, který se má přidat Může mít podobu buď pouze identifikátoru balíčku, například Newtonsoft.Json, nebo identifikátoru balíčku a verze, které jsou odděleny znakem @, například Newtonsoft.Json@13.0.3.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -673,12 +673,12 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definuje cestu k souboru projektu, který se má spustit (název složky nebo úplná cesta). Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -695,7 +695,7 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="CmdRootPathName">
         <source>ROOT_PATH</source>
-        <target state="new">ROOT_PATH</target>
+        <target state="translated">ROOT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOption">
@@ -725,12 +725,12 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Definuje cestu k souboru řešení, který se má spustit. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
-        <target state="new">SOLUTION_PATH</target>
+        <target state="translated">SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOption">
@@ -761,12 +761,12 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
                                         Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
                                         See https://aka.ms/vstest-filtering for more information on filtering support.
                                         </source>
-        <target state="new">Run tests that match the given expression.
-                                        Examples:
-                                        Run tests with priority set to 1: --filter "Priority = 1"
-                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
-                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
-                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+        <target state="translated">Spustí testy, které odpovídají danému výrazu.
+                                        Příklady:
+                                        Spustí testy s prioritou nastavenou na 1: --filter "Priority = 1"
+                                        Spustí test se zadaným úplným názvem: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Spustí testy, které obsahují zadaný název: --filter "FullyQualifiedName~007E;Namespace.Class"
+                                        Další informace o podpoře filtrování: https://aka.ms/vstest-filtering
                                         </target>
         <note />
       </trans-unit>
@@ -777,17 +777,17 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
         <source>Run tests for the specified test modules.</source>
-        <target state="new">Run tests for the specified test modules.</target>
+        <target state="translated">Spusťte testy pro zadané testovací moduly.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesRootDirectoryDescription">
         <source>The test modules have the specified root directory.</source>
-        <target state="new">The test modules have the specified root directory.</target>
+        <target state="translated">Testovací moduly mají zadaný kořenový adresář.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
-        <target state="new">Verbosity of test output.</target>
+        <target state="translated">Podrobnosti výstupu testu</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -797,12 +797,12 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
         <source>Message Request type '{0}' is unsupported.</source>
-        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <target state="translated">Typ žádosti o zprávu {0} není podporovaný.</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
         <source>Test runner '{0}' is not supported.</source>
-        <target state="new">Test runner '{0}' is not supported.</target>
+        <target state="translated">Spouštěč testů {0} není podporován.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
@@ -811,11 +811,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">Soubor dotnet.config definuje, že spouštěč testů bude Microsoft.Testing.Platform. Tento spouštěč testů musí používat všechny projekty.
+Následující testovací projekty používají spouštěč testů VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Další informace najdete na https://aka.ms/dotnet-test/mtp.</target>
         <note>{0} is one or more project names.
 Microsoft.Testing.Platform is a name, don't translate.
 dotnet.config is a name don't translate.</note>
@@ -882,7 +882,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileHelpName">
         <source>LAUNCH_PROFILE</source>
-        <target state="new">LAUNCH_PROFILE</target>
+        <target state="translated">LAUNCH_PROFILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -892,12 +892,12 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoCacheDescription">
         <source>Skip up to date checks and always build the program before running.</source>
-        <target state="new">Skip up to date checks and always build the program before running.</target>
+        <target state="translated">Přeskočit aktuální kontroly a před spuštěním vždy sestavit program</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
-        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <target state="translated">Ke spuštění aplikace nepoužívat argumenty zadané v profilu spuštění.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
@@ -912,7 +912,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
@@ -937,17 +937,17 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
+        <target state="translated">Zadejte prosím {0} pro yes (ano) nebo {1} pro no (ne).</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="new">n</target>
+        <target state="translated">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="new">y</target>
+        <target state="translated">y</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -1007,7 +1007,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DeletingWorkloadSet">
         <source>Deleting workload version {0}.</source>
-        <target state="new">Deleting workload version {0}.</target>
+        <target state="translated">Odstraňuje se verze úlohy {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
@@ -1049,7 +1049,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
-        <target state="new">The target directory already exists: '{0}'</target>
+        <target state="translated">Cílový adresář již existuje: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
@@ -1074,7 +1074,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommand">
         <source>.NET Test Command</source>
-        <target state="new">.NET Test Command</target>
+        <target state="translated">Testovací příkaz .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1101,19 +1101,19 @@ dotnet.config is a name don't translate.</note>
         <source>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
 Make the profile names distinct.</source>
-        <target state="new">There are several launch profiles with case-sensitive names, which isn't permitted:
+        <target state="translated">Existuje několik spouštěcích profilů s názvy rozlišujícími malá a velká písmena, což není povoleno:
 {0}
-Make the profile names distinct.</target>
+Nastavte odlišné názvy profilů.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="new">Duplicate directives are not supported: {0} at {1}</target>
+        <target state="translated">Duplicitní direktivy nejsou podporovány: {0} v {1}</target>
         <note>{0} is the directive type and name. {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
-        <target state="new">Restore failed. Run `dotnet restore` for more details on the issue.</target>
+        <target state="translated">Obnovení neproběhlo úspěšně. Další podrobnosti o problému získáte spuštěním příkazu dotnet restore.</target>
         <note>{Locked="dotnet restore"}</note>
       </trans-unit>
       <trans-unit id="ExactMatchDescription">
@@ -1223,7 +1223,7 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="FormatOptionDescription">
         <source>Changes the format of outputted workload versions. Can take 'json' or 'list'</source>
-        <target state="new">Changes the format of outputted workload versions. Can take 'json' or 'list'</target>
+        <target state="translated">Změní formát výstupních verzí úloh. Může přijmout json nebo list.</target>
         <note />
       </trans-unit>
       <trans-unit id="FrameworkVersionOption">
@@ -1253,7 +1253,7 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="FromHistoryOptionDescription">
         <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
-        <target state="new">Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</target>
+        <target state="translated">Aktualizujte úlohy na předchozí verzi určenou argumentem. K zobrazení dostupných záznamů historie úloh použijte příkaz dotnet workload history.</target>
         <note />
       </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
@@ -1308,32 +1308,32 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
-        <target state="new">Opens the reference page in a browser for the specified command.</target>
+        <target state="translated">Otevře v prohlížeči referenční stránku pro zadaný příkaz.</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpExtensionOptions">
         <source>Extension Options:</source>
-        <target state="new">Extension Options:</target>
+        <target state="translated">Parametry rozšíření:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpModuleIsMissingTheOptionBelow">
         <source>{0} is missing the option below</source>
-        <target state="new">{0} is missing the option below</target>
+        <target state="translated">V názvu {0} chybí níže uvedený parametr.</target>
         <note>0 is name of the module, this string is followed by lined that list the option</note>
       </trans-unit>
       <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
         <source>{0} is missing the options below</source>
-        <target state="new">{0} is missing the options below</target>
+        <target state="translated">V názvu {0} chybí níže uvedený parametr.</target>
         <note>0 is name of the module, this string is followed by lined that list the options</note>
       </trans-unit>
       <trans-unit id="HelpModulesAreMissingTheOptionBelow">
         <source>{0} are missing the option below</source>
-        <target state="new">{0} are missing the option below</target>
+        <target state="translated">V názvu {0} chybí níže uvedený parametr.</target>
         <note>0 is name of the module, this string is followed by lined that list the option</note>
       </trans-unit>
       <trans-unit id="HelpModulesAreMissingTheOptionsBelow">
         <source>{0} are missing the options below</source>
-        <target state="new">{0} are missing the options below</target>
+        <target state="translated">V názvu {0} chybí níže uvedené parametry.</target>
         <note>0 is name of the module, this string is followed by lined that list the options</note>
       </trans-unit>
       <trans-unit id="HelpOptions">
@@ -1343,27 +1343,27 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="HelpPlatformOptions">
         <source>Platform Options:</source>
-        <target state="new">Platform Options:</target>
+        <target state="translated">Parametry platformy:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpUnavailableExtensionOptions">
         <source>Unavailable extension options:</source>
-        <target state="new">Unavailable extension options:</target>
+        <target state="translated">Nedostupné parametry rozšíření:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpUnavailableOptions">
         <source>Unavailable options:</source>
-        <target state="new">Unavailable options:</target>
+        <target state="translated">Nedostupné parametry:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpWaitingForOptionsAndExtensions">
         <source>Waiting for options and extensions...</source>
-        <target state="new">Waiting for options and extensions...</target>
+        <target state="translated">Čeká se na parametry a rozšíření...</target>
         <note />
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
         <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
-        <target state="new">Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</target>
+        <target state="translated">Aktualizovat na verze úloh zadané v historii, aniž by se změnilo, které úlohy jsou nainstalovány. Aktuálně nainstalované úlohy budou aktualizovány tak, aby odpovídaly zadané verzi historie.</target>
         <note />
       </trans-unit>
       <trans-unit id="HostFxrCouldNotBeLoaded">
@@ -1438,17 +1438,17 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</target>
+        <target state="translated">Direktiva v {2} by měla obsahovat název bez speciálních znaků a volitelnou verzi oddělenou oddělovačem {1}, například #:{0} Abc{1}Xyz.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
-        <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
+        <target state="translated">Zadaný soubor musí existovat a musí mít příponu souboru .cs:{0}</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
       <trans-unit id="InvalidOptionCombination">
         <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="new">Cannot combine option '{0}' and '{1}'.</target>
+        <target state="translated">Parametr {0} nelze kombinovat s parametrem {1}.</target>
         <note>{0} and {1} are option names like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
@@ -1458,12 +1458,12 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="new">The '#:project' directive at '{0}' is invalid: {1}</target>
+        <target state="translated">Direktiva #:project v {0} je neplatná: {1}.</target>
         <note>{0} is the file path and line number. {1} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="new">Failed to parse "{0}" as a semantic version.</target>
+        <target state="translated">Nepovedlo se analyzovat {0} jako sémantickou verzi.</target>
         <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
@@ -1585,7 +1585,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="MigrateAppFullName">
         <source>Generate a .slnx file from a .sln file.</source>
-        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <target state="translated">Vygenerujte soubor .slnx ze souboru .sln.</target>
         <note />
       </trans-unit>
       <trans-unit id="MinimumExpectedTestsPolicyViolation">
@@ -1595,7 +1595,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}' at {1}.</source>
-        <target state="new">Missing name of '{0}' at {1}.</target>
+        <target state="translated">Chybí název pro {0} v {1}.</target>
         <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1632,8 +1632,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
-        <target state="new">The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
-    This can be done with this command:
+        <target state="translated">Příkaz dotnet tool search nepodmíněně přistupuje k nuget.org k vyhledání nástrojů, ale ve vašem souboru nuget.config se nenachází. Pokud chcete tento příkaz spustit, přidejte ho.
+    Můžete to provést pomocí tohoto příkazu:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
         <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
       </trans-unit>
@@ -1674,7 +1674,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</target>
+        <target state="translated">Upozornění: Byl zadán parametr binárního protokolu, ale sestavení bude přeskočeno, protože výstup je aktuální. Chcete-li vynutit sestavení, zadejte --no-cache.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -1739,7 +1739,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoWorkloadHistoryRecords">
         <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
-        <target state="new">Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</target>
+        <target state="translated">Záznamy historie úloh se vytvářejí při spuštění operace, která mění úlohy, jako je aktualizace nebo instalace. Není možné aktualizovat z historie, dokud neexistují záznamy historie úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -1749,7 +1749,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="NoWorkloadVersionsFound">
         <source>No workload versions found for SDK feature band {0}.</source>
-        <target state="new">No workload versions found for SDK feature band {0}.</target>
+        <target state="translated">Nenašly se žádné verze úloh pro pásmo funkcí sady SDK {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsInstalledInfoWarning">
@@ -1814,7 +1814,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDirDescription">
@@ -1839,7 +1839,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageAddCmdFramework">
         <source>FRAMEWORK</source>
-        <target state="new">FRAMEWORK</target>
+        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAddCmdFrameworkDescription">
@@ -1854,7 +1854,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageAddCmdSource">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ZDROJ</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAddCmdSourceDescription">
@@ -1864,7 +1864,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
-        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <target state="translated">Umožňuje vyhledat, přidat, odebrat nebo vypsat PackageReferences pro projekt .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFailedToRestore">
@@ -1894,7 +1894,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageListCmdSource">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ZDROJ</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageListCmdSourceDescription">
@@ -1929,12 +1929,12 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageSearchPrereleaseDescription">
         <source>Include prerelease packages.</source>
-        <target state="new">Include prerelease packages.</target>
+        <target state="translated">Zahrnout předběžné verze balíčků.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermArgumentName">
         <source>SearchTerm</source>
-        <target state="new">SearchTerm</target>
+        <target state="translated">SearchTerm</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermDescription">
@@ -1944,7 +1944,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageSearchSkipArgumentName">
         <source>Skip</source>
-        <target state="new">Skip</target>
+        <target state="translated">Přeskočit</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSkipDescription">
@@ -1954,7 +1954,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PackageSearchTakeArgumentName">
         <source>Take</source>
-        <target state="new">Take</target>
+        <target state="translated">Převzít</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchTakeDescription">
@@ -1997,8 +1997,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       <trans-unit id="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified">
         <source>Add project reference to solution action is not configured correctly in the template.
     The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</source>
-        <target state="new">Add project reference to solution action is not configured correctly in the template.
-    The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</target>
+        <target state="translated">Akce přidání odkazu na projekt do řešení není v šabloně správně nakonfigurovaná.
+    SolutionFolder a inRoot se nedají použít společně; použijte jen jednu z těchto možností.</target>
         <note>do not translate: 'solutionFolder', 'inRoot'</note>
       </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Error_NoProjectsToAdd">
@@ -2025,9 +2025,9 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
         <source>Adding
     project(s): {0}
     in the root of solution file: {1}</source>
-        <target state="new">Adding
-    project(s): {0}
-    in the root of solution file: {1}</target>
+        <target state="translated">Přidávání
+    projektu/ů: {0}
+    do kořenového adresáře souboru řešení: {1}</target>
         <note>{0} - list of file paths to projects to add,
 {1} - the path to target solution file</note>
       </trans-unit>
@@ -2036,10 +2036,10 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
     project(s): {0}
     to solution file: {1}
     solution folder: {2}</source>
-        <target state="new">Adding
-    project(s): {0}
-    to solution file: {1}
-    solution folder: {2}</target>
+        <target state="translated">Přidávání
+    projektu/ů: {0}
+    do souboru řešení: {1}
+    složka řešení: {2}</target>
         <note>{0} - list of file paths to projects to add,
 {1} - the path to target solution file,
 {2} - the solution folder inside solution to add the projects to.</note>
@@ -2180,15 +2180,15 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">dotnet workload search version má tři funkce v závislosti na argumentu:
+      1. Pokud není zadán žádný argument, vypíše seznam nejnovějších vydaných verzí úloh z tohoto pásma funkcí. Pomocí parametru --take určíte, kolik jich má být poskytnuto, a pomocí parametru --format změníte formát.
+         Příklad:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. Pokud je jako argument zadána verze úlohy, je výstupem tabulka různých úloh a jejich verzí pro zadanou verzi úlohy. Provede změnu výstupního formátu pomocí parametru --format.
+         Příklad:
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           ID manifestu úlohy                               Pásmo funkcí manifestu      Verze manifestu
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2205,8 +2205,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. Pokud jsou zadány úlohy spolu s jejich verzemi (spojených znakem @), budou výstupem verze úloh, které odpovídají zadaným verzím. Pomocí parametru --take určíte, kolik jich má být poskytnuto, a pomocí parametru --format změníte formát.
+         Příklad:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2224,7 +2224,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_DisplayName">
         <source>Project capabilities</source>
-        <target state="new">Project capabilities</target>
+        <target state="translated">Možnosti projektu</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_Error_ArgumentShouldBeString">
@@ -2284,7 +2284,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
-        <target state="new">Convert a file-based program to a project-based program.</target>
+        <target state="translated">Umožňuje převést program na bázi souboru na program na bázi projektu.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2304,12 +2304,12 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
         <source>Invalid property name at {0}. {1}</source>
-        <target state="new">Invalid property name at {0}. {1}</target>
+        <target state="translated">Neplatný název vlastnosti v {0}. {1}</target>
         <note>{0} is the file path and line number. {1} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</target>
+        <target state="translated">Direktiva property musí mít dvě části oddělené znakem =, například #:property PropertyName=PropertyValue: {0}</target>
         <note>{0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -2339,7 +2339,7 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
       </trans-unit>
       <trans-unit id="PublishOutputOption">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishOutputOptionDescription">
@@ -2376,12 +2376,12 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceDefinition">
         <source>Add, remove, or list ProjectReferences for a .NET project.</source>
-        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <target state="translated">Umožňuje přidat, odebrat nebo vypsat ProjectReferences pro projekt .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -2406,7 +2406,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="ReferenceRemoveProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ReleasesLibraryFailed">
@@ -2421,7 +2421,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="RemoveProjectPathArgumentDescription">
         <source>The project paths or names to remove from the solution.</source>
-        <target state="new">The project paths or names to remove from the solution.</target>
+        <target state="translated">Cesty nebo názvy projektů, které se mají z řešení odebrat</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveProjectPathArgumentName">
@@ -2451,7 +2451,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="RestoreAppFullName">
         <source>.NET dependency restorer</source>
-        <target state="new">.NET dependency restorer</target>
+        <target state="translated">Nástroj .NET pro obnovení závislostí</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreDefinition">
@@ -2501,7 +2501,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="RunAppFullName">
         <source>.NET Run Command</source>
-        <target state="new">.NET Run Command</target>
+        <target state="translated">Příkaz rozhraní .NET pro spuštění</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2511,7 +2511,7 @@ Ve výchozím nastavení je publikována aplikace závislá na architektuře.</t
       </trans-unit>
       <trans-unit id="RunCommandEvaluationExceptionBuildFailed">
         <source>Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</source>
-        <target state="new">Running the {0} target to discover run commands failed for this project. Fix the errors and warnings and run again.</target>
+        <target state="translated">Spuštění cíle {0} ke zjištění příkazů spuštění pro tento projekt se nezdařilo. Opravte chyby a upozornění a spusťte je znovu.</target>
         <note>{0} is the name of an MSBuild target</note>
       </trans-unit>
       <trans-unit id="RunCommandException">
@@ -2653,7 +2653,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="SdkAppFullName">
         <source>.NET SDK Command</source>
-        <target state="new">.NET SDK Command</target>
+        <target state="translated">Příkaz sady .NET SDK</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkCheckAppFullName">
@@ -3072,7 +3072,7 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">

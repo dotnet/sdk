@@ -4,7 +4,7 @@
     <body>
       <trans-unit id="BashShellProvider.HelpDescription">
         <source>Generates a completion script for the Bourne Again SHell (bash).</source>
-        <target state="new">Generates a completion script for the Bourne Again SHell (bash).</target>
+        <target state="translated">產生 Bourne Again SHell (bash) 的完成指令碼。</target>
         <note>{Locked="Bourne Again SHell (bash)"}</note>
       </trans-unit>
       <trans-unit id="CompletionsCommand.Description">

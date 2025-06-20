@@ -65,7 +65,7 @@
       <trans-unit id="CannotFindAManifestFile">
         <source>Cannot find a manifest file. The list of searched paths:
 {0}</source>
-        <target state="new">Cannot find a manifest file. The list of searched paths:
+        <target state="translated">Nie można odnaleźć pliku manifestu. Lista przeszukanych ścieżek:
 {0}</target>
         <note />
       </trans-unit>
@@ -151,7 +151,7 @@ Przykłady:
       </trans-unit>
       <trans-unit id="CommonCmdFramework">
         <source>FRAMEWORK</source>
-        <target state="new">FRAMEWORK</target>
+        <target state="translated">FRAMEWORK</target>
         <note />
       </trans-unit>
       <trans-unit id="CommonFileNotFound">
@@ -242,15 +242,15 @@ You can add it to the current session by running the following command:
 
 export PATH="$PATH:{0}"
 </source>
-        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using bash, you can add it to your profile by running the following command:
+        <target state="translated">Katalog narzędzi „{0}” nie znajduje się obecnie w zmiennej środowiskowej PATH.
+Jeśli używasz powłoki Bash, możesz dodać ją do swojego profilu, uruchamiając następujące polecenie:
 
 cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
-# Add .NET Core SDK tools
+# Dodaj zestaw .NET Core SDK Tools
 export PATH="$PATH:{0}"
 EOF
 
-You can add it to the current session by running the following command:
+Aby dodać go na potrzeby bieżącej sesji, uruchom następujące polecenie:
 
 export PATH="$PATH:{0}"
 </target>
@@ -274,15 +274,15 @@ You can add it to the current session by running the following command:
 
 export PATH="$PATH:{0}"
 </source>
-        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using bash, you can add it to your profile by running the following command:
+        <target state="translated">Katalog narzędzi „{0}” nie znajduje się obecnie w zmiennej środowiskowej PATH.
+Jeśli używasz powłoki Bash, możesz dodać ją do swojego profilu, uruchamiając następujące polecenie:
 
 cat &lt;&lt; \EOF &gt;&gt; ~/.bash_profile
-# Add .NET Core SDK tools
+# Dodaj zestaw .NET Core SDK Tools
 export PATH="$PATH:{0}"
 EOF
 
-You can add it to the current session by running the following command:
+Aby dodać go na potrzeby bieżącej sesji, uruchom następujące polecenie:
 
 export PATH="$PATH:{0}"
 </target>
@@ -308,17 +308,17 @@ You can only add it to the current session by running the following command:
 
 export PATH="$PATH:{0}"
 </source>
-        <target state="new">Tools directory '{0}' is not currently on the PATH environment variable.
-If you are using zsh, you can add it to your profile by running the following command:
+        <target state="translated">Katalog narzędzi „{0}” nie znajduje się obecnie w zmiennej środowiskowej PATH.
+Jeśli używasz powłoki zsh, możesz ją dodać do swojego profilu, uruchamiając następujące polecenie:
 
 cat &lt;&lt; \EOF &gt;&gt; ~/.zprofile
-# Add .NET Core SDK tools
+# Dodaj zestaw .NET Core SDK Tools
 export PATH="$PATH:{0}"
 EOF
 
-And run `zsh -l` to make it available for current session.
+Aby udostępnić ją w bieżącej sesji, uruchom polecenie `zsh -l`.
 
-You can only add it to the current session by running the following command:
+Możesz ją dodać tylko do bieżącej sesji, uruchamiając następujące polecenie:
 
 export PATH="$PATH:{0}"
 </target>
@@ -371,7 +371,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="FailedToFindLibraryInAssetsFile">
         <source>Failed to find library in NuGet assets file for tool package '{0}': {1}</source>
-        <target state="new">Failed to find library in NuGet assets file for tool package '{0}': {1}</target>
+        <target state="translated">Nie można odnaleźć biblioteki w pliku zasobów NuGet dla pakietu narzędzi „{0}”: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToFindSourceUnderPackageSourceMapping">
@@ -401,7 +401,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="FailedToReadNuGetLockFile">
         <source>Failed to read NuGet assets file for tool package '{0}': {1}</source>
-        <target state="new">Failed to read NuGet assets file for tool package '{0}': {1}</target>
+        <target state="translated">Nie można odczytać pliku zasobów NuGet dla pakietu narzędzi „{0}”: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="FailedToReadPidFile">
@@ -437,7 +437,7 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="FailedToValidatePackageSigning">
         <source>Failed to validate package signing.
 {0}</source>
-        <target state="new">Failed to validate package signing.
+        <target state="translated">Nie można zweryfikować podpisywania pakietu.
 {0}</target>
         <note />
       </trans-unit>
@@ -505,7 +505,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="IncorrectlyFormattedEnvironmentVariables">
         <source>Incorrectly formatted environment variables: {0}</source>
-        <target state="new">Incorrectly formatted environment variables: {0}</target>
+        <target state="translated">Niepoprawnie sformatowane zmienne środowiskowe: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidCommandResolverArguments">
@@ -547,7 +547,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="InvalidVersion">
         <source>Invalid version string: {0}</source>
-        <target state="new">Invalid version string: {0}</target>
+        <target state="translated">Nieprawidłowy ciąg wersji: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="IsNotFoundInNuGetFeeds">
@@ -746,17 +746,17 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentDescription">
         <source>Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</source>
-        <target state="new">Package reference in the form of a package identifier like 'Newtonsoft.Json' or package identifier and version separated by '@' like 'Newtonsoft.Json@13.0.3'.</target>
+        <target state="translated">Odwołanie do pakietu w postaci identyfikatora pakietu, takiego jak „Newtonsoft.Json” lub identyfikator pakietu i wersja rozdzielone znakiem „@”, na przykład „Newtonsoft.Json@13.0.3”.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentIdOrVersionIsNull">
         <source>Package reference id and version must not be null.</source>
-        <target state="new">Package reference id and version must not be null.</target>
+        <target state="translated">Identyfikator odwołania i wersja pakietu nie mogą mieć wartości null.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageIdentityArgumentVersionOptionConflict">
         <source>Cannot specify --version when the package argument already contains a version.</source>
-        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <target state="translated">Nie można określić parametru --version, jeśli argument pakietu zawiera już wersję.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="PackageReference">
@@ -930,7 +930,7 @@ setx PATH "%PATH%;{0}"
       </trans-unit>
       <trans-unit id="SDKSchemaCommandDefinition">
         <source>Display the command schema as JSON.</source>
-        <target state="new">Display the command schema as JSON.</target>
+        <target state="translated">Wyświetl schemat polecenia jako kod JSON.</target>
         <note />
       </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
@@ -941,8 +941,8 @@ setx PATH "%PATH%;{0}"
       <trans-unit id="SelfContainedOptionDescription">
         <source>Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
 The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</source>
-        <target state="new">Publish the .NET runtime with your application so the runtime doesn't need to be installed on the target machine.
-The default is 'false.' However, when targeting .NET 7 or lower, the default is 'true' if a runtime identifier is specified.</target>
+        <target state="translated">Opublikuj środowisko uruchomieniowe platformy .NET z aplikacją, aby nie trzeba było instalować środowiska uruchomieniowego na maszynie docelowej.
+Wartość domyślna to „false”. Jednak w przypadku określania wartości docelowej platformy .NET 7 lub niższej wartość domyślna to „true”, jeśli określono identyfikator środowiska uruchomieniowego.</target>
         <note />
       </trans-unit>
       <trans-unit id="ShellShimConflict">
@@ -952,7 +952,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="ShortWorkloadSearchVersionDescription">
         <source>Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</source>
-        <target state="new">Search for available workload versions or what comprises a workload version. Use 'dotnet workload search version --help' for more information.</target>
+        <target state="translated">Wyszukaj dostępne wersje obciążeń lub elementy składowe poszczególnych wersji obciążeń. Aby uzyskać więcej informacji, użyj polecenia „dotnet workload search version --help”.</target>
         <note>{Locked="dotnet workload search version --help"}</note>
       </trans-unit>
       <trans-unit id="ShowHelpDescription">
@@ -997,12 +997,12 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
         <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
-        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
+        <target state="translated">Projekt lub rozwiązanie albo plik C# (program oparty na plikach), na którym ma być wykonana operacja. Jeśli plik nie zostanie określony, polecenie wyszuka bieżący katalog w poszukiwaniu projektu lub rozwiązania.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionOrProjectOrFileArgumentName">
         <source>PROJECT | SOLUTION | FILE</source>
-        <target state="new">PROJECT | SOLUTION | FILE</target>
+        <target state="translated">PROJEKT | ROZWIĄZANIE | PLIK</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyAtLeastOne">
@@ -1077,12 +1077,12 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="ToolSettingsUnsupportedRunner">
         <source>Tool '{0}' uses unsupported runner '{1}'."</source>
-        <target state="new">Tool '{0}' uses unsupported runner '{1}'."</target>
+        <target state="translated">Narzędzie „{0}” używa nieobsługiwanego modułu uruchamiającego „{1}”.”</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUnsupportedRuntimeIdentifier">
         <source>The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</source>
-        <target state="new">The tool does not support the current architecture or operating system ({0}). Supported runtimes: {1}</target>
+        <target state="translated">Narzędzie nie obsługuje bieżącej architektury ani systemu operacyjnego ({0}). Obsługiwane środowiska uruchomieniowe: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="Type">
@@ -1172,7 +1172,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       </trans-unit>
       <trans-unit id="YesOptionDescription">
         <source>Accept all confirmation prompts using "yes."</source>
-        <target state="new">Accept all confirmation prompts using "yes."</target>
+        <target state="translated">Zaakceptuj wszystkie monity o potwierdzenie, używając słowa „tak”.</target>
         <note />
       </trans-unit>
     </body>
