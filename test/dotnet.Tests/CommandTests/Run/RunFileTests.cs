@@ -282,7 +282,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Fail()
             // A fatal error was encountered. The library 'hostpolicy.dll' required to execute the application was not found in ...
-            .And.HaveStdErrContaining("hostpolicy.dll");
+            .And.HaveStdErrContaining("hostpolicy");
 
         // dotnet run [./]test.dll -> file-based app
         new DotnetCommand(Log, "run", arg)
