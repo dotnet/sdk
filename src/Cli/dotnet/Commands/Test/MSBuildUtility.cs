@@ -15,8 +15,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    private const string dotnetTestVerb = "dotnet-test";
-
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
