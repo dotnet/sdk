@@ -9,7 +9,7 @@
       </trans-unit>
       <trans-unit id="ActiveTestsRunning_FullTestsCount">
         <source>{0} tests running</source>
-        <target state="new">{0} tests running</target>
+        <target state="translated">{0} pruebas en ejecución</target>
         <note />
       </trans-unit>
       <trans-unit id="ActiveTestsRunning_MoreTestsCount">
@@ -84,7 +84,7 @@
       </trans-unit>
       <trans-unit id="BuildAppFullName">
         <source>.NET Builder</source>
-        <target state="new">.NET Builder</target>
+        <target state="translated">Generador para .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="BuildCmdNoLogo">
@@ -155,8 +155,8 @@
       <trans-unit id="CannotAnalyzeVSWorkloadBand">
         <source>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</source>
-        <target state="new">Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
-Paths searched: '{1}', '{2}'.</target>
+        <target state="translated">Las cargas de trabajo administradas por Visual Studio deben desinstalarse mediante el Instalador Visual Studio. Para la versión de Visual Studio que gestiona el SDK "{0}", no pudimos mostrar cargas de trabajo para desinstalar. Esto se debe probablemente a que "{0}" usa una ruta de acceso raíz de dotnet diferente o un directorio de perfil de usuario personalizado del SDK en ejecución actual.
+Rutas de acceso buscadas: "{1}", "{2}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotCombineOptions">
@@ -181,7 +181,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CannotConvertDirective">
         <source>Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</source>
-        <target state="new">Some directives cannot be converted: the first error is at {0}. Run the file to see all compilation errors. Specify '--force' to convert anyway.</target>
+        <target state="translated">Algunas directivas no se pueden convertir: el primer error está en {0}. Ejecute el archivo para ver todos los errores de compilación. Especifique "--force" para convertir de todos modos.</target>
         <note>{Locked="--force"}. {0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="CannotFindCommandName">
@@ -191,12 +191,12 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CannotMigrateSlnx">
         <source>Only .sln files can be migrated to .slnx format.</source>
-        <target state="new">Only .sln files can be migrated to .slnx format.</target>
+        <target state="translated">Solo los archivos .sln se pueden migrar al formato .slnx.</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionAndWorkloadIdsByComponent">
         <source>Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</source>
-        <target state="new">Cannot specify a workload version using the --version option while also specifying versions to install using workload@version syntax.</target>
+        <target state="translated">No se puede especificar una versión de carga de trabajo utilizando la opción --version al mismo tiempo que se especifican versiones para instalar utilizando la sintaxis workload@version.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="CannotSpecifyVersionOnCommandLineAndInGlobalJson">
@@ -226,7 +226,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanAppFullName">
         <source>.NET Clean Command</source>
-        <target state="new">.NET Clean Command</target>
+        <target state="translated">Comando Clean de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdNoLogo">
@@ -236,7 +236,7 @@ Paths searched: '{1}', '{2}'.</target>
       </trans-unit>
       <trans-unit id="CleanCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="CleanCmdOutputDirDescription">
@@ -281,17 +281,17 @@ The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downlo
 To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
 
 Implies --blame.</source>
-        <target state="new">Runs the tests in blame mode and collects a crash dump when the test host exits unexpectedly. This option depends on the version of .NET used, the type of error, and the operating system.
+        <target state="translated">Ejecuta las pruebas en modo de culpa y recopila un volcado de memoria cuando el host de prueba se cierra inesperadamente. Esta opción depende de la versión de .NET usada, el tipo de error y el sistema operativo.
 
-For exceptions in managed code, a dump will be automatically collected on .NET 5.0 and later versions. It will generate a dump for testhost or any child process that also ran on .NET 5.0 and crashed. Crashes in native code will not generate a dump. This option works on Windows, macOS, and Linux.
+Para las excepciones en código administrado, se recopilará automáticamente un volcado en .NET 5.0 y versiones posteriores. Se generará un volcado para testhost o cualquier proceso secundario que también se ejecutó en .NET 5.0 y se bloqueó. Los bloqueos en código nativo no generarán un volcado. Esta opción funciona en Windows, macOS y Linux.
 
-Crash dumps in native code, or when targetting .NET Framework, or .NET Core 3.1 and earlier versions, can only be collected on Windows, by using Procdump. A directory that contains procdump.exe and procdump64.exe must be in the PATH or PROCDUMP_PATH environment variable.
+Los volcados de memoria en código nativo, o al establecer como destino .NET Framework, o .NET Core 3.1 y versiones anteriores, solo se pueden recopilar en Windows, mediante Procdump. Un directorio que contenga procdump.exe y procdump64.exe debe estar en la variable de entorno PATH o PROCDUMP_PATH.
 
-The tools can be downloaded here: https://docs.microsoft.com/sysinternals/downloads/procdump
+Las herramientas se pueden descargar aquí: https://docs.microsoft.com/sysinternals/downloads/procdump
 
-To collect a crash dump from a native application running on .NET 5.0 or later, the usage of Procdump can be forced by setting the VSTEST_DUMP_FORCEPROCDUMP environment variable to 1.
+Para recopilar un volcado de memoria de una aplicación nativa que se ejecuta en .NET 5.0 o posterior, se puede forzar el uso de Procdump estableciendo la variable de entorno VSTEST_DUMP_FORCEPROCDUMP en 1.
 
-Implies --blame.</target>
+Implica --blame.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameCrashDumpTypeDescription">
@@ -314,25 +314,25 @@ Example:
   Timeout the test run when a test takes more than 20 minutes and collect hang dump.
   dotnet test --blame-hang-timeout 20min
 </source>
-        <target state="new">Runs the tests in blame mode. This option is helpful in isolating problematic tests that cause the test host to crash or hang, but it does not create a memory dump by default.
+        <target state="translated">Ejecuta las pruebas en modo de culpa. Esta opción es útil para aislar las pruebas problemáticas que hacen que el host de prueba se bloquee o se bloquee, pero no crea un volcado de memoria de forma predeterminada.
 
-When a crash is detected, it creates an sequence file in TestResults/guid/guid_Sequence.xml that captures the order of tests that were run before the crash.
+Cuando se detecta un bloqueo, crea un archivo de secuencia en TestResults/guid/guid_Sequence.xml que captura el orden de las pruebas que se ejecutaron antes del bloqueo.
 
-Based on the additional settings, hang dump or crash dump can also be collected.
+En función de la configuración adicional, también se pueden recopilar volcados de bloqueo o volcados de memoria.
 
-Example:
-  Timeout the test run when test takes more than the default timeout of 1 hour, and collect crash dump when the test host exits unexpectedly.
-  (Crash dumps require additional setup, see below.)
-  dotnet test --blame-hang --blame-crash
-Example:
-  Timeout the test run when a test takes more than 20 minutes and collect hang dump.
-  dotnet test --blame-hang-timeout 20min
+Ejemplo:
+  Se agotó la ejecución de la prueba cuando esta dura más de 1 hora como tiempo de espera predeterminado, y recopila el volcado de memoria cuando el host de prueba se cierra inesperadamente.
+  (Los volcados de memoria requieren una configuración adicional, consulte a continuación).
+  prueba de dotnet --blame-hang --blame-crash
+Ejemplo:
+  Se agotó el tiempo de espera de la serie de pruebas cuando una prueba tarda más de 20 minutos y se recopila el volcado de memoria.
+  prueba de dotnet --blame-hang-timeout 20min
 </target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDescription">
         <source>Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</source>
-        <target state="new">Run the tests in blame mode and enables collecting hang dump when test exceeds the given timeout.</target>
+        <target state="translated">Ejecuta las pruebas en el modo de culpa y habilita la recopilación del volcado de bloqueo cuando la prueba supera el tiempo de espera especificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdBlameHangDumpTypeDescription">
@@ -345,10 +345,10 @@ Example:
 The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
 When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
 For MSTest before 2.2.4, the timeout is used for all testcases.</source>
-        <target state="new">Per-test timeout, after which hang dump is triggered and the testhost process is terminated. Default is 1h.
-The timeout value is specified in the following format: 1.5h / 90m / 5400s / 5400000ms. When no unit is used (e.g. 5400000), the value is assumed to be in milliseconds.
-When used together with data driven tests, the timeout behavior depends on the test adapter used. For xUnit, NUnit and MSTest 2.2.4+ the timeout is renewed after every test case,
-For MSTest before 2.2.4, the timeout is used for all testcases.</target>
+        <target state="translated">Tiempo de espera por prueba, después del cual se desencadena el volcado de bloqueo de memoria y se termina el proceso testhost. El valor predeterminado es 1 h.
+El valor de tiempo de espera se especifica en el siguiente formato: 1,5 h / 90 m / 5400 s / 5 400 000 ms. Cuando no se usa ninguna unidad (por ejemplo, 5 400 000), se supone que el valor está en milisegundos.
+Cuando se usa junto con pruebas basadas en datos, el comportamiento del tiempo de espera depende del adaptador de pruebas utilizado. Para xUnit, NUnit y MSTest 2.2.4+ el tiempo de espera se renueva después de cada caso de prueba,
+Para MSTest antes de 2.2.4, el tiempo de espera se usa para todos los casos de prueba.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -393,12 +393,12 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</target>
       </trans-unit>
       <trans-unit id="CmdDirectoryDescription">
         <source>Defines the path of directory to run. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of directory to run. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Define la ruta de acceso del directorio que se va a ejecutar. Si no se especifica, el valor predeterminado es el directorio actual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDirectoryPathName">
         <source>DIRECTORY_PATH</source>
-        <target state="new">DIRECTORY_PATH</target>
+        <target state="translated">DIRECTORY_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdDisableParallelOptionDescription">
@@ -408,12 +408,12 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</target>
       </trans-unit>
       <trans-unit id="CmdExpressionName">
         <source>EXPRESSION</source>
-        <target state="new">EXPRESSION</target>
+        <target state="translated">EXPRESIÓN</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdFileDescription">
         <source>Path to the file-based program.</source>
-        <target state="new">Path to the file-based program.</target>
+        <target state="translated">Ruta de acceso al programa basado en archivos.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdForceRestoreOptionDescription">
@@ -430,7 +430,7 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdHelpUsageTitle">
         <source>Usage:</source>
-        <target state="new">Usage:</target>
+        <target state="translated">Uso:</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdHighestMinorDescription">
@@ -460,12 +460,12 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdInvalidProjectFileExtensionErrorDescription">
         <source>The provided project file has an invalid extension: {0}.</source>
-        <target state="new">The provided project file has an invalid extension: {0}.</target>
+        <target state="translated">El archivo de proyecto proporcionado tiene una extensión no válida: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdInvalidSolutionFileExtensionErrorDescription">
         <source>The provided solution file has an invalid extension: {0}.</source>
-        <target state="new">The provided solution file has an invalid extension: {0}.</target>
+        <target state="translated">El archivo de solución proporcionado tiene una extensión no válida: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
@@ -508,7 +508,7 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMSBuildProjectsPropertiesErrorDescription">
         <source>Get projects properties with MSBuild didn't execute properly with exit code: {0}.</source>
-        <target state="new">Get projects properties with MSBuild didn't execute properly with exit code: {0}.</target>
+        <target state="translated">La obtención de propiedades de proyectos con MSBuild no se ejecutó correctamente con el código de salida: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMaxParallelTestModulesDescription">
@@ -518,17 +518,17 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdMultipleBuildPathOptionsErrorDescription">
         <source>Specify either the project, solution, directory, or test modules option.</source>
-        <target state="new">Specify either the project, solution, directory, or test modules option.</target>
+        <target state="translated">Especifique la opción de módulos de proyecto, solución, directorio o prueba.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdMultipleProjectOrSolutionFilesErrorDescription">
         <source>Specify which project or solution file to use because this folder contains more than one project or solution file.</source>
-        <target state="new">Specify which project or solution file to use because this folder contains more than one project or solution file.</target>
+        <target state="translated">Especifique el archivo de proyecto o solución que se va a usar porque esta carpeta contiene más de un proyecto o archivo de solución.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
-        <target state="new">Disable ANSI output.</target>
+        <target state="translated">Deshabilite la salida ANSI.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -558,52 +558,52 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdNoProgressDescription">
         <source>Disable progress reporting.</source>
-        <target state="new">Disable progress reporting.</target>
+        <target state="translated">Deshabilite los informes de progreso.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoProjectOrSolutionFileErrorDescription">
         <source>Specify a project or solution file. The current working directory does not contain a project or solution file.</source>
-        <target state="new">Specify a project or solution file. The current working directory does not contain a project or solution file.</target>
+        <target state="translated">Especifique un archivo de proyecto o solución. El directorio de trabajo actual no contiene uno de estos archivos.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoRestoreDescription">
         <source>Do not restore before running the command.</source>
-        <target state="new">Do not restore before running the command.</target>
+        <target state="translated">No restaure antes de ejecutar el comando.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoTestModulesErrorDescription">
         <source>No test modules found for the given test module pattern: {0} with root directory: {1}</source>
-        <target state="new">No test modules found for the given test module pattern: {0} with root directory: {1}</target>
+        <target state="translated">No se encontraron módulos de prueba para el patrón de módulo de prueba dado: {0} con el directorio raíz: {1}</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentDirectoryErrorDescription">
         <source>The provided directory path does not exist: {0}.</source>
-        <target state="new">The provided directory path does not exist: {0}.</target>
+        <target state="translated">La ruta de acceso al directorio proporcionada no existe: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentFileErrorDescription">
         <source>The provided file path does not exist: {0}.</source>
-        <target state="new">The provided file path does not exist: {0}.</target>
+        <target state="translated">La ruta de acceso al archivo proporcionada no existe: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNonExistentRootDirectoryErrorDescription">
         <source>The provided root directory does not exist: {0}.</source>
-        <target state="new">The provided root directory does not exist: {0}.</target>
+        <target state="translated">El directorio raíz proporcionado no existe: {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNumberName">
         <source>NUMBER</source>
-        <target state="new">NUMBER</target>
+        <target state="translated">NUMBER</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionCannotBeUsedWithTestModulesDescription">
         <source>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</source>
-        <target state="new">The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</target>
+        <target state="translated">La arquitectura de opciones, la configuración, el marco, el sistema operativo y el tiempo de ejecución no se pueden usar con la opción "--test-modules".</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOptionForceDescription">
         <source>Force conversion even if there are malformed directives.</source>
-        <target state="new">Force conversion even if there are malformed directives.</target>
+        <target state="translated">Forzar la conversión incluso si hay directivas con formato incorrecto.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
@@ -628,7 +628,7 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdPackageDescription">
         <source>The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</source>
-        <target state="new">The package reference to add. This can be in the form of just the package identifier, for example 'Newtonsoft.Json', or a package identifier and version separated by '@', for example 'Newtonsoft.Json@13.0.3'</target>
+        <target state="translated">La referencia de paquete para agregar. Puede tener el formato del identificador del paquete, por ejemplo, "Newtonsoft.Json", o un identificador de paquete y una versión separados por "@", por ejemplo, "Newtonsoft.Json@13.0.3"</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdPackageDirectory">
@@ -673,12 +673,12 @@ Esta acción es equivalente a eliminar project.assets.json.</target>
       </trans-unit>
       <trans-unit id="CmdProjectDescription">
         <source>Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the project file to run (folder name or full path). If not specified, it defaults to the current directory.</target>
+        <target state="translated">Define la ruta de acceso del archivo de proyecto que se va a ejecutar (nombre de carpeta o ruta de acceso completa). Si no se especifica, el valor predeterminado es el directorio actual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectPathName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdReevaluateOptionDescription">
@@ -695,7 +695,7 @@ Si no existe, se creará el directorio especificado.</target>
       </trans-unit>
       <trans-unit id="CmdRootPathName">
         <source>ROOT_PATH</source>
-        <target state="new">ROOT_PATH</target>
+        <target state="translated">ROOT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRuntimeOption">
@@ -725,12 +725,12 @@ Si no existe, se creará el directorio especificado.</target>
       </trans-unit>
       <trans-unit id="CmdSolutionDescription">
         <source>Defines the path of the solution file to run. If not specified, it defaults to the current directory.</source>
-        <target state="new">Defines the path of the solution file to run. If not specified, it defaults to the current directory.</target>
+        <target state="translated">Define la ruta de acceso del archivo de solución que se va a ejecutar. Si no se especifica, el valor predeterminado es el directorio actual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSolutionPathName">
         <source>SOLUTION_PATH</source>
-        <target state="new">SOLUTION_PATH</target>
+        <target state="translated">SOLUTION_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdSourceOption">
@@ -761,12 +761,12 @@ Si no existe, se creará el directorio especificado.</target>
                                         Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
                                         See https://aka.ms/vstest-filtering for more information on filtering support.
                                         </source>
-        <target state="new">Run tests that match the given expression.
-                                        Examples:
-                                        Run tests with priority set to 1: --filter "Priority = 1"
-                                        Run a test with the specified full name: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
-                                        Run tests that contain the specified name: --filter "FullyQualifiedName~Namespace.Class"
-                                        See https://aka.ms/vstest-filtering for more information on filtering support.
+        <target state="translated">Ejecuta las pruebas que coinciden con una expresión dada.
+                                        Ejemplos:
+                                        Ejecuta las pruebas con una prioridad establecida en 1: --filter "Priority = 1"
+                                        Ejecuta una prueba con el nombre completo especificado: --filter "FullyQualifiedName=Namespace.ClassName.MethodName"
+                                        Ejecuta las pruebas que contienen el nombre especificado: --filter "FullyQualifiedName~Namespace.Class"
+                                        Consulte https://aka.ms/vstest-filtering para obtener más información sobre la compatibilidad con el filtrado.
                                         </target>
         <note />
       </trans-unit>
@@ -777,17 +777,17 @@ Si no existe, se creará el directorio especificado.</target>
       </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
         <source>Run tests for the specified test modules.</source>
-        <target state="new">Run tests for the specified test modules.</target>
+        <target state="translated">Ejecute pruebas para los módulos de prueba especificados.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestModulesRootDirectoryDescription">
         <source>The test modules have the specified root directory.</source>
-        <target state="new">The test modules have the specified root directory.</target>
+        <target state="translated">Los módulos de prueba tienen el directorio raíz especificado.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
-        <target state="new">Verbosity of test output.</target>
+        <target state="translated">Nivel de detalle de la salida de la prueba.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -797,12 +797,12 @@ Si no existe, se creará el directorio especificado.</target>
       </trans-unit>
       <trans-unit id="CmdUnsupportedMessageRequestTypeException">
         <source>Message Request type '{0}' is unsupported.</source>
-        <target state="new">Message Request type '{0}' is unsupported.</target>
+        <target state="translated">No se admite el tipo de solicitud de mensaje "{0}".</target>
         <note>{0} - message request type</note>
       </trans-unit>
       <trans-unit id="CmdUnsupportedTestRunnerDescription">
         <source>Test runner '{0}' is not supported.</source>
-        <target state="new">Test runner '{0}' is not supported.</target>
+        <target state="translated">No se admite el ejecutor de pruebas "{0}".</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdUnsupportedVSTestTestApplicationsDescription">
@@ -811,11 +811,11 @@ The following test projects are using VSTest test runner:
 {0}
 
 See https://aka.ms/dotnet-test/mtp for more information.</source>
-        <target state="new">dotnet.config defines test runner to be Microsoft.Testing.Platform. All projects must use that test runner.
-The following test projects are using VSTest test runner:
+        <target state="translated">dotnet.config define que el ejecutor de pruebas sea Microsoft.Testing.Platform. Todos los proyectos deben usar ese ejecutor de pruebas.
+Los siguientes proyectos de prueba usan el ejecutor de pruebas de VSTest:
 {0}
 
-See https://aka.ms/dotnet-test/mtp for more information.</target>
+Consulte https://aka.ms/dotnet-test/mtp para obtener más información.</target>
         <note>{0} is one or more project names.
 Microsoft.Testing.Platform is a name, don't translate.
 dotnet.config is a name don't translate.</note>
@@ -882,7 +882,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionLaunchProfileHelpName">
         <source>LAUNCH_PROFILE</source>
-        <target state="new">LAUNCH_PROFILE</target>
+        <target state="translated">LAUNCH_PROFILE</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -892,12 +892,12 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionNoCacheDescription">
         <source>Skip up to date checks and always build the program before running.</source>
-        <target state="new">Skip up to date checks and always build the program before running.</target>
+        <target state="translated">Omite las comprobaciones actualizadas y compile siempre el programa antes de ejecutarlo.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
         <source>Do not use arguments specified in launch profile to run the application.</source>
-        <target state="new">Do not use arguments specified in launch profile to run the application.</target>
+        <target state="translated">No use los argumentos especificados en el perfil de inicio para ejecutar la aplicación.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoLaunchProfileDescription">
@@ -912,7 +912,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="CommandOptionProjectHelpName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="Commands">
@@ -937,17 +937,17 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptInvalidChoiceMessage">
         <source>Please type '{0}' for yes or '{1}' for no.</source>
-        <target state="new">Please type '{0}' for yes or '{1}' for no.</target>
+        <target state="translated">Escriba "{0}" para sí o "{1}" para no.</target>
         <note />
       </trans-unit>
       <trans-unit id="ConfirmationPromptNoValue">
         <source>n</source>
-        <target state="new">n</target>
+        <target state="translated">n</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "no", ie to cancel the operation.</note>
       </trans-unit>
       <trans-unit id="ConfirmationPromptYesValue">
         <source>y</source>
-        <target state="new">y</target>
+        <target state="translated">s</target>
         <note>For a command line connfirmation prompt, this is the key that should be pressed for "yes", ie to agree.</note>
       </trans-unit>
       <trans-unit id="ConsoleIsAlreadyInBatchingMode">
@@ -1012,7 +1012,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
+        <target state="translated">Ruta de acceso al archivo &lt;application&gt;.deps.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="Description">
@@ -1049,7 +1049,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DirectoryAlreadyExists">
         <source>The target directory already exists: '{0}'</source>
-        <target state="new">The target directory already exists: '{0}'</target>
+        <target state="translated">El directorio de destino ya existe: "{0}"</target>
         <note />
       </trans-unit>
       <trans-unit id="DisableProjectContextEval_OptionDescription">
@@ -1074,7 +1074,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DotnetTestCommand">
         <source>.NET Test Command</source>
-        <target state="new">.NET Test Command</target>
+        <target state="translated">Comando de prueba de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="DownloadToCacheOptionArgumentName">
@@ -1101,19 +1101,19 @@ dotnet.config is a name don't translate.</note>
         <source>There are several launch profiles with case-sensitive names, which isn't permitted:
 {0}
 Make the profile names distinct.</source>
-        <target state="new">There are several launch profiles with case-sensitive names, which isn't permitted:
+        <target state="translated">Hay varios perfiles de inicio con nombres que distinguen mayúsculas de minúsculas, lo que no está permitido:
 {0}
-Make the profile names distinct.</target>
+Defina nombres de perfiles distintos.</target>
         <note />
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0} at {1}</source>
-        <target state="new">Duplicate directives are not supported: {0} at {1}</target>
+        <target state="translated">No se admiten directivas duplicadas: {0} en {1}</target>
         <note>{0} is the directive type and name. {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="Error_restore">
         <source>Restore failed. Run `dotnet restore` for more details on the issue.</source>
-        <target state="new">Restore failed. Run `dotnet restore` for more details on the issue.</target>
+        <target state="translated">Error en la restauración. Ejecute "dotnet restore" para obtener más detalles sobre el problema.</target>
         <note>{Locked="dotnet restore"}</note>
       </trans-unit>
       <trans-unit id="ExactMatchDescription">
@@ -1313,27 +1313,27 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="HelpExtensionOptions">
         <source>Extension Options:</source>
-        <target state="new">Extension Options:</target>
+        <target state="translated">Opciones de extensión:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpModuleIsMissingTheOptionBelow">
         <source>{0} is missing the option below</source>
-        <target state="new">{0} is missing the option below</target>
+        <target state="translated">{0} le falta la siguiente opción</target>
         <note>0 is name of the module, this string is followed by lined that list the option</note>
       </trans-unit>
       <trans-unit id="HelpModuleIsMissingTheOptionsBelow">
         <source>{0} is missing the options below</source>
-        <target state="new">{0} is missing the options below</target>
+        <target state="translated">{0} le falta la opción siguiente</target>
         <note>0 is name of the module, this string is followed by lined that list the options</note>
       </trans-unit>
       <trans-unit id="HelpModulesAreMissingTheOptionBelow">
         <source>{0} are missing the option below</source>
-        <target state="new">{0} are missing the option below</target>
+        <target state="translated">{0} le faltan las siguientes opciones</target>
         <note>0 is name of the module, this string is followed by lined that list the option</note>
       </trans-unit>
       <trans-unit id="HelpModulesAreMissingTheOptionsBelow">
         <source>{0} are missing the options below</source>
-        <target state="new">{0} are missing the options below</target>
+        <target state="translated">{0} le faltan las opciones siguientes</target>
         <note>0 is name of the module, this string is followed by lined that list the options</note>
       </trans-unit>
       <trans-unit id="HelpOptions">
@@ -1343,22 +1343,22 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="HelpPlatformOptions">
         <source>Platform Options:</source>
-        <target state="new">Platform Options:</target>
+        <target state="translated">Opciones de plataforma:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpUnavailableExtensionOptions">
         <source>Unavailable extension options:</source>
-        <target state="new">Unavailable extension options:</target>
+        <target state="translated">Opciones de extensión no disponibles:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpUnavailableOptions">
         <source>Unavailable options:</source>
-        <target state="new">Unavailable options:</target>
+        <target state="translated">Opciones no disponibles:</target>
         <note />
       </trans-unit>
       <trans-unit id="HelpWaitingForOptionsAndExtensions">
         <source>Waiting for options and extensions...</source>
-        <target state="new">Waiting for options and extensions...</target>
+        <target state="translated">Esperando opciones y extensiones...</target>
         <note />
       </trans-unit>
       <trans-unit id="HistoryManifestOnlyOptionDescription">
@@ -1438,17 +1438,17 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</target>
+        <target state="translated">La directiva "{2}'" debe contener un nombre sin caracteres especiales y una versión opcional separada por "{1}" como "#:{0} Abc{1}Xyz".</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
         <source>The specified file must exist and have '.cs' file extension: '{0}'</source>
-        <target state="new">The specified file must exist and have '.cs' file extension: '{0}'</target>
+        <target state="translated">El archivo especificado debe existir y tener la extensión de archivo ".cs": "{0}"</target>
         <note>{Locked=".cs"}</note>
       </trans-unit>
       <trans-unit id="InvalidOptionCombination">
         <source>Cannot combine option '{0}' and '{1}'.</source>
-        <target state="new">Cannot combine option '{0}' and '{1}'.</target>
+        <target state="translated">No se puede combinar la opción "{0}" y "{1}".</target>
         <note>{0} and {1} are option names like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
@@ -1458,12 +1458,12 @@ Make the profile names distinct.</target>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
         <source>The '#:project' directive at '{0}' is invalid: {1}</source>
-        <target state="new">The '#:project' directive at '{0}' is invalid: {1}</target>
+        <target state="translated">La directiva "#:project" en "{0}" no es válida: {1}</target>
         <note>{0} is the file path and line number. {1} is the inner error message.</note>
       </trans-unit>
       <trans-unit id="InvalidSemVerVersionString">
         <source>Failed to parse "{0}" as a semantic version.</source>
-        <target state="new">Failed to parse "{0}" as a semantic version.</target>
+        <target state="translated">Error al analizar "{0}" como una versión semántica.</target>
         <note>{0} is a version string that the user entered that was not parsed as a Semantic Version</note>
       </trans-unit>
       <trans-unit id="InvalidToolConfiguration">
@@ -1585,7 +1585,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="MigrateAppFullName">
         <source>Generate a .slnx file from a .sln file.</source>
-        <target state="new">Generate a .slnx file from a .sln file.</target>
+        <target state="translated">Generar un archivo .slnx a partir de un archivo .sln.</target>
         <note />
       </trans-unit>
       <trans-unit id="MinimumExpectedTestsPolicyViolation">
@@ -1595,7 +1595,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="MissingDirectiveName">
         <source>Missing name of '{0}' at {1}.</source>
-        <target state="new">Missing name of '{0}' at {1}.</target>
+        <target state="translated">Falta el nombre de "{0}" en {1}.</target>
         <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="MsBuildDefinition">
@@ -1632,8 +1632,8 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <source>The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
     This can be done with this command:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</source>
-        <target state="new">The 'dotnet tool search' command unconditionally accesses nuget.org to find tools, but it is not present in your nuget.config. Add it to run this command.
-    This can be done with this command:
+        <target state="translated">El comando “dotnet tool search” accede incondicionalmente a nuget.org para encontrar herramientas, pero no está presente en su nuget.config. Agréguelo para ejecutar este comando.
+    Esto se puede hacer con este comando:
   dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org</target>
         <note>Do not translate 'dotnet tool search' or 'nuget.config'. Do not localize the last line at all.</note>
       </trans-unit>
@@ -1674,7 +1674,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="NoBinaryLogBecauseUpToDate">
         <source>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</source>
-        <target state="new">Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</target>
+        <target state="translated">Advertencia: Se especificó la opción de registro binario, pero se omitirá la compilación porque la salida está actualizada, especifique “--no-cache” para forzar la compilación.</target>
         <note>{Locked="--no-cache"}</note>
       </trans-unit>
       <trans-unit id="NoBuildOptionDescription">
@@ -1814,7 +1814,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="PackCmdOutputDirDescription">
@@ -1839,7 +1839,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageAddCmdFramework">
         <source>FRAMEWORK</source>
-        <target state="new">FRAMEWORK</target>
+        <target state="translated">MARCO</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAddCmdFrameworkDescription">
@@ -1854,7 +1854,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageAddCmdSource">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ORIGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageAddCmdSourceDescription">
@@ -1864,7 +1864,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageDefinition">
         <source>Search for, add, remove, or list PackageReferences for a .NET project.</source>
-        <target state="new">Search for, add, remove, or list PackageReferences for a .NET project.</target>
+        <target state="translated">Busque, agregue, quite o enumere PackageReferences para un proyecto de .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageFailedToRestore">
@@ -1894,7 +1894,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageListCmdSource">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ORIGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageListCmdSourceDescription">
@@ -1929,12 +1929,12 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageSearchPrereleaseDescription">
         <source>Include prerelease packages.</source>
-        <target state="new">Include prerelease packages.</target>
+        <target state="translated">Incluir paquetes de versión preliminar.</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermArgumentName">
         <source>SearchTerm</source>
-        <target state="new">SearchTerm</target>
+        <target state="translated">SearchTerm</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSearchTermDescription">
@@ -1944,7 +1944,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageSearchSkipArgumentName">
         <source>Skip</source>
-        <target state="new">Skip</target>
+        <target state="translated">Omitir</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchSkipDescription">
@@ -1954,7 +1954,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PackageSearchTakeArgumentName">
         <source>Take</source>
-        <target state="new">Take</target>
+        <target state="translated">Take</target>
         <note />
       </trans-unit>
       <trans-unit id="PackageSearchTakeDescription">
@@ -1997,8 +1997,8 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       <trans-unit id="PostAction_AddProjToSln_Error_BothInRootAndSolutionFolderSpecified">
         <source>Add project reference to solution action is not configured correctly in the template.
     The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</source>
-        <target state="new">Add project reference to solution action is not configured correctly in the template.
-    The 'solutionFolder' and 'inRoot' cannot be used together; use only one of the options.</target>
+        <target state="translated">La acción Agregar referencia del proyecto a la solución no está configurada correctamente en la plantilla.
+    "solutionFolder" e "inRoot" no se pueden usar juntos; use solo una de las opciones.</target>
         <note>do not translate: 'solutionFolder', 'inRoot'</note>
       </trans-unit>
       <trans-unit id="PostAction_AddProjToSln_Error_NoProjectsToAdd">
@@ -2025,9 +2025,9 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <source>Adding
     project(s): {0}
     in the root of solution file: {1}</source>
-        <target state="new">Adding
-    project(s): {0}
-    in the root of solution file: {1}</target>
+        <target state="translated">Agregando
+    proyecto(s): {0}
+    en la raíz del archivo de solución: {1}</target>
         <note>{0} - list of file paths to projects to add,
 {1} - the path to target solution file</note>
       </trans-unit>
@@ -2036,10 +2036,10 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
     project(s): {0}
     to solution file: {1}
     solution folder: {2}</source>
-        <target state="new">Adding
-    project(s): {0}
-    to solution file: {1}
-    solution folder: {2}</target>
+        <target state="translated">Agregando
+    proyecto(s): {0}
+    al archivo de solución: {1}
+    carpeta de la solución: {2}</target>
         <note>{0} - list of file paths to projects to add,
 {1} - the path to target solution file,
 {2} - the solution folder inside solution to add the projects to.</note>
@@ -2180,15 +2180,15 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="new">'dotnet workload search version' has three functions depending on its argument:
-      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+        <target state="translated">"dotnet workload search version" tiene tres funciones en función de su argumento:
+      1. Si no se especifica ningún argumento, genera una lista de las últimas versiones de carga de trabajo publicadas de esta banda de características. Toma la opción --take para especificar cuántos proporcionar y --format para modificar el formato.
+         Ejemplo:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
-         Example:
+      2. Si se proporciona una versión de carga de trabajo como argumento, genera una tabla de varias cargas de trabajo y sus versiones para la versión de carga de trabajo especificada. Toma la opción --format para modificar el formato de salida.
+         Ejemplo:
            dotnet workload search version 9.0.201
-           Workload manifest ID                               Manifest feature band      Manifest Version
+           Id. del manifiesto de carga de trabajo                               Banda de características del manifiesto      Versión del manifiesto
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2205,8 +2205,8 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
-         Example:
+      3. Si se proporcionan una o más cargas de trabajo junto con sus versiones (uniéndolas con el carácter "@"), se obtienen las versiones de las cargas de trabajo que coinciden con las versiones proporcionadas. Toma la opción --take para especificar cuántos proporcionar y --format para modificar el formato.
+         Ejemplo:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
@@ -2224,7 +2224,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_DisplayName">
         <source>Project capabilities</source>
-        <target state="new">Project capabilities</target>
+        <target state="translated">Capacidades del proyecto</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectCapabilityConstraint_Error_ArgumentShouldBeString">
@@ -2284,7 +2284,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="ProjectConvertAppFullName">
         <source>Convert a file-based program to a project-based program.</source>
-        <target state="new">Convert a file-based program to a project-based program.</target>
+        <target state="translated">Convertir un programa basado en archivos en un programa basado en proyecto.</target>
         <note />
       </trans-unit>
       <trans-unit id="ProjectManifest">
@@ -2304,12 +2304,12 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PropertyDirectiveInvalidName">
         <source>Invalid property name at {0}. {1}</source>
-        <target state="new">Invalid property name at {0}. {1}</target>
+        <target state="translated">Nombre de propiedad no válido en {0}. {1}</target>
         <note>{0} is the file path and line number. {1} is an inner exception message.</note>
       </trans-unit>
       <trans-unit id="PropertyDirectiveMissingParts">
         <source>The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</source>
-        <target state="new">The property directive needs to have two parts separated by '=' like '#:property PropertyName=PropertyValue': {0}</target>
+        <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "like '#:property PropertyName=PropertyValue": {0}</target>
         <note>{0} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="PublishAppDescription">
@@ -2339,7 +2339,7 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
       </trans-unit>
       <trans-unit id="PublishOutputOption">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="PublishOutputOptionDescription">
@@ -2376,12 +2376,12 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="ReferenceAddProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceDefinition">
         <source>Add, remove, or list ProjectReferences for a .NET project.</source>
-        <target state="new">Add, remove, or list ProjectReferences for a .NET project.</target>
+        <target state="translated">Agregue, quite o enumere ProjectReferences para un proyecto de .NET.</target>
         <note />
       </trans-unit>
       <trans-unit id="ReferenceListAppFullName">
@@ -2406,7 +2406,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="ReferenceRemoveProjectPathArgumentName">
         <source>PROJECT_PATH</source>
-        <target state="new">PROJECT_PATH</target>
+        <target state="translated">PROJECT_PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ReleasesLibraryFailed">
@@ -2421,7 +2421,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="RemoveProjectPathArgumentDescription">
         <source>The project paths or names to remove from the solution.</source>
-        <target state="new">The project paths or names to remove from the solution.</target>
+        <target state="translated">Las rutas o nombres de los proyectos que hay que eliminar de la solución.</target>
         <note />
       </trans-unit>
       <trans-unit id="RemoveProjectPathArgumentName">
@@ -2451,7 +2451,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="RestoreAppFullName">
         <source>.NET dependency restorer</source>
-        <target state="new">.NET dependency restorer</target>
+        <target state="translated">Restaurador de dependencia de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="RestoreDefinition">
@@ -2501,7 +2501,7 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
       </trans-unit>
       <trans-unit id="RunAppFullName">
         <source>.NET Run Command</source>
-        <target state="new">.NET Run Command</target>
+        <target state="translated">Ejecutar comando de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="RunCommandBuilding">
@@ -2601,7 +2601,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
+        <target state="translated">Ruta de acceso al archivo &lt;application&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
@@ -2653,7 +2653,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="SdkAppFullName">
         <source>.NET SDK Command</source>
-        <target state="new">.NET SDK Command</target>
+        <target state="translated">Comando del SDK de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="SdkCheckAppFullName">
@@ -2763,12 +2763,12 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="SlnxGenerated">
         <source>.slnx file {0} generated.</source>
-        <target state="new">.slnx file {0} generated.</target>
+        <target state="translated">Archivo .slnx {0} generado.</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
         <source>Recursively add projects' ReferencedProjects to solution</source>
-        <target state="new">Recursively add projects' ReferencedProjects to solution</target>
+        <target state="translated">Agregar recursivamente ReferencedProjects de los proyectos a la solución</target>
         <note />
       </trans-unit>
       <trans-unit id="SolutionAppFullName">
@@ -2808,12 +2808,12 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion">
         <source>'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</source>
-        <target state="new">'useWorkloadVersions' specified to not use a workload version. This is not compatible with updating or installing with a specified workload version from the command line, global.json, or from a history record with a workload version.</target>
+        <target state="translated">"useWorkloadVersions" especificado para no usar una versión de carga de trabajo. Esto no es compatible con la actualización o instalación con una versión de carga de trabajo especificada desde la línea de comandos, global.json o desde un registro de historial con una versión de carga de trabajo.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifiedWorkloadVersionAndSpecificNonWorkloadVersion">
         <source>'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</source>
-        <target state="new">'useWorkloadVersions' specified to use a workload version. This option is not compatible with updating from a rollback file or from history using a set of manifests.</target>
+        <target state="translated">"useWorkloadVersions" especificado para usar una versión de carga de trabajo. Esta opción no es compatible con la actualización desde un archivo de reversión o desde el historial mediante un conjunto de manifiestos.</target>
         <note />
       </trans-unit>
       <trans-unit id="SpecifyManifests">
@@ -2863,7 +2863,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="StoreOutputOption">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="StoreOutputOptionDescription">
@@ -2893,7 +2893,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestAppFullName">
         <source>.NET Test Driver</source>
-        <target state="new">.NET Test Driver</target>
+        <target state="translated">Controlador de pruebas de .NET</target>
         <note />
       </trans-unit>
       <trans-unit id="TestCmdNoLogo">
@@ -2903,7 +2903,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestCmdOutputDir">
         <source>OUTPUT_DIR</source>
-        <target state="new">OUTPUT_DIR</target>
+        <target state="translated">OUTPUT_DIR</target>
         <note />
       </trans-unit>
       <trans-unit id="TestConfigurationOptionDescription">
@@ -2918,7 +2918,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestDiscoveryExitCode">
         <source>Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="new">Test discovery completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <target state="translated">Detección de pruebas completada con código de salida no correcto: {0} (vea: https://aka.ms/testingplatform/exitcodes)</target>
         <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestDiscoverySummary">
@@ -2938,7 +2938,7 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="TestRunExitCode">
         <source>Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</source>
-        <target state="new">Test run completed with non-success exit code: {0} (see: https://aka.ms/testingplatform/exitcodes)</target>
+        <target state="translated">Serie de pruebas completada con código de salida incorrecto: {0} (consulte: https://aka.ms/testingplatform/exitcodes)</target>
         <note>0 is whole number, the value of exit code</note>
       </trans-unit>
       <trans-unit id="TestRunSummary">
@@ -2973,24 +2973,24 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
       </trans-unit>
       <trans-unit id="ToolDownloadCanceled">
         <source>Tool package download canceled</source>
-        <target state="new">Tool package download canceled</target>
+        <target state="translated">Descarga del paquete de herramientas cancelada</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolDownloadConfirmationPrompt">
         <source>Tool package {0}@{1} will be downloaded from source {2}.
 Proceed?</source>
-        <target state="new">Tool package {0}@{1} will be downloaded from source {2}.
-Proceed?</target>
+        <target state="translated">El paquete de herramientas {0}@{1} se descargará desde el origen {2}.
+¿Quiere continuar?</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolDownloadNeedsConfirmation">
         <source>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</source>
-        <target state="new">Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</target>
+        <target state="translated">La descarga del paquete de herramientas necesita confirmación. Ejecute en modo interactivo o use la opción de línea de comandos "--yes" para confirmar.</target>
         <note>{Locked="--yes"}</note>
       </trans-unit>
       <trans-unit id="ToolExecuteCommandDescription">
         <source>Executes a tool from source without permanently installing it.</source>
-        <target state="new">Executes a tool from source without permanently installing it.</target>
+        <target state="translated">Ejecuta una herramienta desde el origen sin instalarla permanentemente.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallAddSourceOptionDescription">
@@ -3000,7 +3000,7 @@ Proceed?</target>
       </trans-unit>
       <trans-unit id="ToolInstallAddSourceOptionName">
         <source>ADDSOURCE</source>
-        <target state="new">ADDSOURCE</target>
+        <target state="translated">ADDSOURCE</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallCommandDescription">
@@ -3015,7 +3015,7 @@ Proceed?</target>
       </trans-unit>
       <trans-unit id="ToolInstallConfigFileOptionName">
         <source>FILE</source>
-        <target state="new">FILE</target>
+        <target state="translated">ARCHIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallFrameworkOptionDescription">
@@ -3025,7 +3025,7 @@ Proceed?</target>
       </trans-unit>
       <trans-unit id="ToolInstallFrameworkOptionName">
         <source>FRAMEWORK</source>
-        <target state="new">FRAMEWORK</target>
+        <target state="translated">MARCO</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallGlobalOptionDescription">
@@ -3057,7 +3057,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolInstallManifestPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
@@ -3072,7 +3072,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolInstallPackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
@@ -3082,7 +3082,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolInstallSourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ORIGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallToolPathOptionDescription">
@@ -3092,7 +3092,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolInstallToolPathOptionName">
         <source>PATH</source>
-        <target state="new">PATH</target>
+        <target state="translated">PATH</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallVersionOptionDescription">
@@ -3102,7 +3102,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolInstallVersionOptionName">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">VERSIÓN</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolInstallationFailed">
@@ -3127,7 +3127,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolListCommandsColumn">
         <source>Commands</source>
-        <target state="new">Commands</target>
+        <target state="translated">Comandos</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolListFormatOptionDescription">
@@ -3164,12 +3164,12 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolListPackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolListPackageIdColumn">
         <source>Package Id</source>
-        <target state="new">Package Id</target>
+        <target state="translated">Id. del paquete</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolListToolPathOptionDescription">
@@ -3179,7 +3179,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolListVersionColumn">
         <source>Version</source>
-        <target state="new">Version</target>
+        <target state="translated">Versión</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRestoreCommandDescription">
@@ -3194,7 +3194,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolRunArgumentsDescription">
         <source>Arguments forwarded to the tool</source>
-        <target state="new">Arguments forwarded to the tool</target>
+        <target state="translated">Argumentos reenviados a la herramienta</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolRunCommandDescription">
@@ -3209,12 +3209,12 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
         <source>Include pre-release packages.</source>
-        <target state="new">Include pre-release packages.</target>
+        <target state="translated">Incluir paquetes de versión preliminar.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchSearchTermArgumentName">
         <source>SEARCH_TERM</source>
-        <target state="new">SEARCH_TERM</target>
+        <target state="translated">SEARCH_TERM</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchSearchTermDescription">
@@ -3224,7 +3224,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolSearchSkipArgumentName">
         <source>Skip</source>
-        <target state="new">Skip</target>
+        <target state="translated">Omitir</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchSkipDescription">
@@ -3234,7 +3234,7 @@ La herramienta "{1}" (versión '{2}') se instaló correctamente.</target>
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">
         <source>Take</source>
-        <target state="new">Take</target>
+        <target state="translated">Take</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeDescription">
@@ -3279,12 +3279,12 @@ Tools are uninstalled using their package Id which may be different
 from the tool name you use when calling the tool. You can find the tool names
 and the corresponding package Ids for installed tools using the command
 'dotnet tool list'.</source>
-        <target state="new">A tool with the package Id '{0}' could not be found.
+        <target state="translated">No se encontró ninguna herramienta con el id. de paquete "{0}".
 
-Tools are uninstalled using their package Id which may be different
-from the tool name you use when calling the tool. You can find the tool names
-and the corresponding package Ids for installed tools using the command
-'dotnet tool list'.</target>
+Las herramientas se desinstalan utilizando su idd de paquete, que puede ser distinto
+del nombre de herramienta que se usa al llamarla. Puede buscar los nombres de herramientas
+y los identificadores de los paquetes correspondientes a las herramientas instaladas mediante el comando
+"dotnet tool list".</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUninstallToolPathOptionDescription">
@@ -3309,7 +3309,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="ToolUpdatePackageIdArgumentName">
         <source>PACKAGE_ID</source>
-        <target state="new">PACKAGE_ID</target>
+        <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUpdateToolHasMultipleVersionsInstalled">
@@ -3324,7 +3324,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="Try">
         <source>try {0}</source>
-        <target state="new">try {0}</target>
+        <target state="translated">intento {0}</target>
         <note>number or tries of the current test assembly when test assembly is being retried. {0} is number that starts at 1</note>
       </trans-unit>
       <trans-unit id="UninstallLocalToolSucceeded">
@@ -3344,7 +3344,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}' at {1}.</source>
-        <target state="new">Unrecognized directive '{0}' at {1}.</target>
+        <target state="translated">Directiva no reconocida "{0}" en {1}.</target>
         <note>{0} is the directive name like 'package' or 'sdk', {1} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="UpdateAllOptionDescription">
@@ -3379,7 +3379,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="UpdateModeDoesNotMatchGlobalJson">
         <source>Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</source>
-        <target state="new">Specified to update workloads using {0} from the command line, but global.json file at {1} specified to use {2}.</target>
+        <target state="translated">Se especifica para actualizar las cargas de trabajo mediante {0} desde la línea de comandos, pero el archivo global.json {1} especificado para usar {2}.</target>
         <note />
       </trans-unit>
       <trans-unit id="UpdateSucceededPreVersionNoChange">
@@ -3464,7 +3464,7 @@ and the corresponding package Ids for installed tools using the command
       </trans-unit>
       <trans-unit id="ValidationFailedDuplicateVersion">
         <source>Cannot specify --version when the package argument already contains a version.</source>
-        <target state="new">Cannot specify --version when the package argument already contains a version.</target>
+        <target state="translated">No se puede especificar --version cuando el argumento del paquete ya contiene una versión.</target>
         <note>{Locked="--version"}</note>
       </trans-unit>
       <trans-unit id="ValueMustBeAnObject">
@@ -3540,8 +3540,8 @@ and the corresponding package Ids for installed tools using the command
       <trans-unit id="WorkloadConfigCommandDescription">
         <source>Modify or display workload configuration values.
 To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</source>
-        <target state="new">Modify or display workload configuration values.
-To display a value, specify the corresponding command-line option without providing a value.  For example: "dotnet workload config --update-mode"</target>
+        <target state="translated">Modificar o mostrar los valores de configuración de la carga de trabajo.
+Para mostrar un valor, especifique la opción de línea de comandos correspondiente sin proporcionar un valor.  Por ejemplo: "dotnet workload config --update-mode"</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadDefinition">
@@ -3566,7 +3566,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadHistoryWorkloadSetVersion">
         <source>Workload Version</source>
-        <target state="new">Workload Version</target>
+        <target state="translated">Versión de carga de trabajo</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadIdArgumentDescription">
@@ -3621,7 +3621,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadInstallConfigFileOptionName">
         <source>FILE</source>
-        <target state="new">FILE</target>
+        <target state="translated">ARCHIVO</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallInstallationSucceeded">
@@ -3646,7 +3646,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadInstallSourceOptionName">
         <source>SOURCE</source>
-        <target state="new">SOURCE</target>
+        <target state="translated">ORIGEN</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallTypeColumn">
@@ -3661,7 +3661,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadInstallVersionOptionName">
         <source>VERSION</source>
-        <target state="new">VERSION</target>
+        <target state="translated">VERSIÓN</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadInstallWorkloadCacheDownloadFailed">
@@ -3686,7 +3686,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadListCommandDescription">
         <source>List workloads available.</source>
-        <target state="new">List workloads available.</target>
+        <target state="translated">Enumera las cargas de trabajo disponibles.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadListFooter">
@@ -3696,7 +3696,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadListWorkloadSetVersion">
         <source>Workload version: {0}</source>
-        <target state="new">Workload version: {0}</target>
+        <target state="translated">Versión de carga de trabajo: {0}</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadListWorkloadUpdatesAvailable">
@@ -3751,7 +3751,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadRepairCommandDescription">
         <source>Repair workload installations.</source>
-        <target state="new">Repair workload installations.</target>
+        <target state="translated">Repara las instalaciones de cargas de trabajo.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadRepairFailed">
@@ -3781,7 +3781,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
-        <target state="new">A workload version to display or one or more workloads and their versions joined by the '@' character.</target>
+        <target state="translated">Una versión de carga de trabajo para mostrar o una o varias cargas de trabajo y sus versiones unidas por el carácter "@".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadSourceColumn">
@@ -3866,7 +3866,7 @@ To display a value, specify the corresponding command-line option without provid
       </trans-unit>
       <trans-unit id="WorkloadVersionWithSpecifiedManifestNotFound">
         <source>No workload version matching {0} was found.</source>
-        <target state="new">No workload version matching {0} was found.</target>
+        <target state="translated">No se encontró ninguna versión de carga de trabajo que coincidiera con {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="Workloads">
