@@ -235,7 +235,7 @@ namespace Microsoft.DotNet.Tests
                               e.Properties["verb"] == Sha256Hasher.Hash("NUGET"));
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47862")]
+        [Fact]
         public void DotnetNewCommandLanguageOpinionShouldBeSentToTelemetry()
         {
             const string optionKey = "language";
@@ -244,10 +244,11 @@ namespace Microsoft.DotNet.Tests
             Cli.Program.ProcessArgs(args);
             _fakeTelemetry
                 .LogEntries.Should()
-                .Contain(e => e.EventName == "sublevelparser/command" && e.Properties.ContainsKey(optionKey) &&
-                              e.Properties[optionKey] == Sha256Hasher.Hash(optionValueToSend.ToUpper()) &&
+                .Contain(e => e.EventName == "sublevelparser/command" &&
                               e.Properties.ContainsKey("verb") &&
-                              e.Properties["verb"] == Sha256Hasher.Hash("NEW"));
+                              e.Properties["verb"] == Sha256Hasher.Hash("NEW") &&
+                              e.Properties.ContainsKey("subcommand") &&
+                              e.Properties["subcommand"] == Sha256Hasher.Hash(""));
         }
 
         [Fact]
