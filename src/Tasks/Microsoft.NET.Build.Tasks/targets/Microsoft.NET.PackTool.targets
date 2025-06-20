@@ -77,7 +77,9 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <!-- Tool implementation files are not included in the primary package when the tool has RID-specific packages.  So only pack the tool implementation
        (and only depend on publish) if there are no RID-specific packages, or if the RuntimeIdentifier is set. -->
     <_ToolPackageShouldIncludeImplementation Condition=" '$(PackAsTool)' == 'true' And
-                                                  ('$(_UserSpecifiedToolPackageRids)' == '' Or '$(RuntimeIdentifier)' != '')">true</_ToolPackageShouldIncludeImplementation>
+                                                  ( '$(_UserSpecifiedToolPackageRids)' == ''
+                                                     or '$(RuntimeIdentifier)' != ''
+                                                     or '$(_IsPackagingSeparateAgnosticTool)' == 'true' )">true</_ToolPackageShouldIncludeImplementation>
     <_ToolPackageShouldIncludeImplementation Condition="'$(_ToolPackageShouldIncludeImplementation)' == ''">false</_ToolPackageShouldIncludeImplementation>
 
     <!-- inner builds and non-RID-specific outer builds need publish content-->
@@ -137,6 +139,10 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       <PackageId>$(PackageId).$(RuntimeIdentifier)</PackageId>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(_HasRIDSpecificTools)' != '' And '$(_IsPackagingSeparateAgnosticTool)' == 'true'">
+      <PackageId>$(PackageId).any</PackageId>
+    </PropertyGroup>
+
   </Target>
 
   <Target Name="PackToolImplementation">
@@ -184,6 +190,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <PropertyGroup>
     <ToolCommandName Condition=" '$(ToolCommandName)' == '' ">$(TargetName)</ToolCommandName>
     <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == ''">$(RuntimeIdentifier)</ToolRuntimeIdentifier>
+    <ToolRuntimeIdentifier Condition=" '$(ToolRuntimeIdentifier)' == '' and '$(_IsPackagingSeparateAgnosticTool)' == 'true' ">any</ToolRuntimeIdentifier>
     <_GenerateToolsSettingsFileCacheFile Condition="'$(_GenerateToolsSettingsFileCacheFile)' == ''">$(IntermediateOutputPath)$(MSBuildProjectName).toolssettingsinput.cache</_GenerateToolsSettingsFileCacheFile>
     <_GenerateToolsSettingsFileCacheFile>$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(_GenerateToolsSettingsFileCacheFile)))</_GenerateToolsSettingsFileCacheFile>
   </PropertyGroup>
@@ -357,6 +364,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
     <PropertyGroup>
       <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
+      <_ToolPackageType Condition="'$(_IsPackagingSeparateAgnosticTool)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
       <_ToolPackageType Condition="'$(_ToolPackageType)' == ''">DotnetTool</_ToolPackageType>
     </PropertyGroup>
 
@@ -385,7 +393,11 @@ NOTE: This file is imported from the following contexts, so be aware when writin
 
   <!-- Orchestrator for making the N RID-specific tool packages if this Tool supports that mode.
        We can't call this for AOT'd tools because we can't AOT cross-architecture and cross-platform in .NET today. -->
-  <Target Name="_CreateRIDSpecificToolPackages" Condition="'$(RuntimeIdentifier)' == '' and $(_HasRIDSpecificTools) and !$(_InnerToolsPublishAot) and !$(_ToolPackageShouldIncludeImplementation)">
+  <Target Name="_CreateRIDSpecificToolPackages"
+    Condition="('$(RuntimeIdentifier)' == '' and '$(_IsPackagingSeparateAgnosticTool)' != 'true')
+      and $(_HasRIDSpecificTools)
+      and !$(_InnerToolsPublishAot)
+      and !$(_ToolPackageShouldIncludeImplementation)">
     <PropertyGroup>
         <_PackageRids>$(ToolPackageRuntimeIdentifiers)</_PackageRids>
         <_PackageRids Condition="'$(_PackageRids)' == ''">$(RuntimeIdentifiers)</_PackageRids>
@@ -394,7 +406,23 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     <ItemGroup>
         <!-- Build the RID-specific packages.-->
         <_rids Include="$(_PackageRids)" />
-        <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <_ridsHasAny>false</_ridsHasAny>
+      <_ridsHasAny Condition="@(_rids->AnyHaveMetadataValue('Identity', 'any'))">true</_ridsHasAny>
+    </PropertyGroup>
+
+    <ItemGroup Condition=" $(_ridsHasAny) == true ">
+      <_rids Remove="any" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="RuntimeIdentifier=%(_rids.Identity);" />
+      <!-- This part is really really gross. The 'any' RID needs its own storage location apart from the default RID-agnostic project, because
+           the RID-agnostic project is actually our outer wrapper. So we make it _look_ like a RID in terms of output path.
+           What I'd love to do instead is to pass `RuntimeIdentifier=any`, but several Restore-related Tasks blow up when I do that. -->
+      <_RidSpecificToolPackageProject Include="$(MSBuildProjectFullPath)" AdditionalProperties="_IsPackagingSeparateAgnosticTool=true;IntermediateOutputPath=$(IntermediateOutputPath.TrimEnd('\'))_any\;NuspecOutputPath=$(IntermediateOutputPath.TrimEnd('\'))_any\;OutputPath=$(OutputPath.TrimEnd('\'))_any\;"/>
     </ItemGroup>
 
     <MSBuild BuildInParallel="true" Projects="@(_RidSpecificToolPackageProject)" Targets="Pack">
