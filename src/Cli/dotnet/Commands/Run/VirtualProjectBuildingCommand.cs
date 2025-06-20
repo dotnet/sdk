@@ -536,6 +536,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                   <PropertyGroup>
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                   </PropertyGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
@@ -594,7 +595,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                   <PropertyGroup>
                     <EnableDefaultItems>false</EnableDefaultItems>
-                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                   </PropertyGroup>
                 """);
         }

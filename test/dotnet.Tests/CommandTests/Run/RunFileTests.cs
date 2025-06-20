@@ -1562,6 +1562,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
@@ -1636,6 +1637,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
@@ -1703,6 +1705,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
