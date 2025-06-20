@@ -365,15 +365,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     {
                         var value = analysisResult[platformSpecificOperation.Key.Kind, platformSpecificOperation.Key.Syntax];
                         var csAttributes = pair.csAttributes != null ? CopyAttributes(pair.csAttributes) : null;
+                        var symbol = platformSpecificOperation.Value is IMethodSymbol method && method.IsConstructor() ?
+                                        platformSpecificOperation.Value.ContainingType : platformSpecificOperation.Value;
+                        var originalAttributes = platformSpecificMembers[symbol].Platforms ?? pair.attributes;
 
-                        if ((value.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(pair.attributes, ref csAttributes, value, pair.csAttributes)) ||
+                        if ((value.Kind == GlobalFlowStateAnalysisValueSetKind.Known && IsKnownValueGuarded(pair.attributes, ref csAttributes, value, pair.csAttributes, originalAttributes)) ||
                            (value.Kind == GlobalFlowStateAnalysisValueSetKind.Unknown && HasGuardedLambdaOrLocalFunctionResult(platformSpecificOperation.Key,
-                           pair.attributes, ref csAttributes, analysisResult, pair.csAttributes)))
+                           pair.attributes, ref csAttributes, analysisResult, pair.csAttributes, originalAttributes)))
                         {
                             continue;
                         }
 
-                        ReportDiagnostics(platformSpecificOperation, pair.attributes, csAttributes, context, platformSpecificMembers);
+                        ReportDiagnostics(platformSpecificOperation.Key, pair.attributes, csAttributes, context, symbol, originalAttributes);
                     }
                 }
                 finally
@@ -406,7 +409,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool HasGuardedLambdaOrLocalFunctionResult(IOperation platformSpecificOperation, SmallDictionary<string, Versions> attributes,
             ref SmallDictionary<string, Versions>? csAttributes, DataFlowAnalysisResult<GlobalFlowStateBlockAnalysisResult,
-                GlobalFlowStateAnalysisValueSet> analysisResult, SmallDictionary<string, Versions>? originalCsAttributes)
+                GlobalFlowStateAnalysisValueSet> analysisResult, SmallDictionary<string, Versions>? originalCsAttributes, SmallDictionary<string, Versions> originalAttributes)
         {
             if (!platformSpecificOperation.IsWithinLambdaOrLocalFunction(out var containingLambdaOrLocalFunctionOperation))
             {
@@ -426,7 +429,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 // NOTE: IsKnownValueGuarded mutates the input values, so we pass in cloned values
                 // to ensure that evaluation of each result is independent of evaluation of other parts.
                 if (localValue.Kind != GlobalFlowStateAnalysisValueSetKind.Known ||
-                    !IsKnownValueGuarded(CopyAttributes(attributes), ref csAttributes, localValue, originalCsAttributes))
+                    !IsKnownValueGuarded(CopyAttributes(attributes), ref csAttributes, localValue, originalCsAttributes, originalAttributes))
                 {
                     return false;
                 }
@@ -474,17 +477,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         }
 
         private static bool IsKnownValueGuarded(SmallDictionary<string, Versions> attributes,
-                ref SmallDictionary<string, Versions>? csAttributes, GlobalFlowStateAnalysisValueSet value, SmallDictionary<string, Versions>? originalCsAttributes)
+                ref SmallDictionary<string, Versions>? csAttributes, GlobalFlowStateAnalysisValueSet value,
+                SmallDictionary<string, Versions>? originalCsAttributes, SmallDictionary<string, Versions> originalAttributes)
         {
             using var capturedVersions = PooledDictionary<string, Version>.GetInstance(StringComparer.OrdinalIgnoreCase);
-            return IsKnownValueGuarded(attributes, ref csAttributes, value, capturedVersions, originalCsAttributes);
+            return IsKnownValueGuarded(attributes, ref csAttributes, value, capturedVersions, originalCsAttributes, originalAttributes);
 
             static bool IsKnownValueGuarded(
                 SmallDictionary<string, Versions> attributes,
                 ref SmallDictionary<string, Versions>? csAttributes,
                 GlobalFlowStateAnalysisValueSet value,
                 PooledDictionary<string, Version> capturedVersions,
-                SmallDictionary<string, Versions>? originalCsAttributes)
+                SmallDictionary<string, Versions>? originalCsAttributes,
+                SmallDictionary<string, Versions> originalAttributes)
             {
                 // 'GlobalFlowStateAnalysisValueSet.AnalysisValues' represent the && of values.
                 foreach (var analysisValue in value.AnalysisValues)
@@ -630,9 +635,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             {
                                 continue;
                             }
+
+                            // Skip the platform check that was originally in the list and suppressed by callsite attributes
+                            if (parent.AnalysisValues.Count == 1 &&
+                                IsPlatformSupportWasSuppresed((PlatformMethodValue)parent.AnalysisValues.First(), attributes, originalAttributes))
+                            {
+                                continue;
+                            }
                         }
 
-                        if (!IsKnownValueGuarded(parentAttributes, ref parentCsAttributes, parent, parentCapturedVersions, originalCsAttributes))
+                        if (!IsKnownValueGuarded(parentAttributes, ref parentCsAttributes, parent, parentCapturedVersions, originalCsAttributes, originalAttributes))
                         {
                             csAttributes = parentCsAttributes;
                             return false;
@@ -642,6 +654,11 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return true;
             }
+
+            static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
+                => !parentValue.Negated && !attributes.ContainsKey(parentValue.PlatformName) &&
+                    originalAttributes.TryGetValue(parentValue.PlatformName, out Versions? version) &&
+                    parentValue.Version.IsGreaterThanOrEqualTo(version.SupportedFirst);
 
             static bool IsOnlySupportNeedsGuard(string platformName, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> csAttributes)
                  => csAttributes.TryGetValue(platformName, out var versions) &&
@@ -791,24 +808,21 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool IsEmptyVersion(Version version) => version.Major == 0 && version.Minor == 0;
 
-        private static void ReportDiagnostics(KeyValuePair<IOperation, ISymbol> operationToSymbol, SmallDictionary<string, Versions> attributes,
+        private static void ReportDiagnostics(IOperation operation, SmallDictionary<string, Versions> attributes,
             SmallDictionary<string, Versions>? csAttributes, OperationBlockAnalysisContext context,
-            ConcurrentDictionary<ISymbol, PlatformAttributes> platformSpecificMembers)
+            ISymbol symbol, SmallDictionary<string, Versions> originalAttributes)
         {
-            var symbol = operationToSymbol.Value is IMethodSymbol method && method.IsConstructor() ? operationToSymbol.Value.ContainingType : operationToSymbol.Value;
-            var operationName = symbol.ToDisplayString(GetLanguageSpecificFormat(operationToSymbol.Key));
-
-            var originalAttributes = platformSpecificMembers[symbol].Platforms ?? attributes;
+            var operationName = symbol.ToDisplayString(GetLanguageSpecificFormat(operation));
 
             foreach (var attribute in originalAttributes.Values)
             {
                 if (AllowList(attribute))
                 {
-                    ReportSupportedDiagnostic(operationToSymbol.Key, context, operationName, attributes, csAttributes);
+                    ReportSupportedDiagnostic(operation, context, operationName, attributes, csAttributes);
                 }
                 else
                 {
-                    ReportUnsupportedDiagnostic(operationToSymbol.Key, context, operationName, attributes, csAttributes);
+                    ReportUnsupportedDiagnostic(operation, context, operationName, attributes, csAttributes);
                 }
 
                 break;
