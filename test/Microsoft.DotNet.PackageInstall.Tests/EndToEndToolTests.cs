@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 var packageName = $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}";
                 var package = packages.FirstOrDefault(p => p.EndsWith(packageName + ".nupkg"));
-                packages.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory");
+                package.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory");
             }
 
             // top-level package should declare all of the rids
@@ -169,6 +169,130 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     .Where(n => (n as XElement)!.Name == "RuntimeIdentifierPackage")
                     .Select(e => (e as XElement)!.Attributes().First(a => a.Name == "RuntimeIdentifier").Value);
             packageNodes.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
+        }
+
+        [Fact]
+        public void PackagesMultipleTrimmedToolsWithASingleInvocation()
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                Trimmed = true
+            };
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg");
+            var packageIdentifier = toolSettings.ToolPackageId;
+            var expectedRids = ToolsetInfo.LatestRuntimeIdentifiers.Split(';');
+
+            packages.Length.Should().Be(expectedRids.Length + 1, "There should be one package for the tool-wrapper and one for each RID");
+            foreach (string rid in expectedRids)
+            {
+                var packageName = $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}";
+                var package = packages.FirstOrDefault(p => p.EndsWith(packageName + ".nupkg"));
+                package.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory");
+                EnsurePackageLacksTrimmedDependency(package!, "System.Xml.dll");
+            }
+
+            // top-level package should declare all of the rids
+            var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            using var zipArchive = ZipFile.OpenRead(topLevelPackage);
+            var nuspecEntry = zipArchive.GetEntry($"tools/{ToolsetInfo.CurrentTargetFramework}/any/DotnetToolSettings.xml")!;
+            var stream = nuspecEntry.Open();
+            var xml = XDocument.Load(stream, LoadOptions.None);
+            var packageNodes =
+                (xml.Root!.Nodes()
+                    .First(n => n is XElement e && e.Name == "RuntimeIdentifierPackages") as XElement)!.Nodes()
+                    .Where(n => (n as XElement)!.Name == "RuntimeIdentifierPackage")
+                    .Select(e => (e as XElement)!.Attributes().First(a => a.Name == "RuntimeIdentifier").Value);
+            packageNodes.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
+        }
+
+        [Fact]
+        public void PackageToolWithAnyRid()
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                SelfContained = true,
+                IncludeAnyRid = true
+            };
+
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg");
+            var packageIdentifier = toolSettings.ToolPackageId;
+            var expectedRids = ToolsetInfo.LatestRuntimeIdentifiers.Split(';');
+
+            packages.Length.Should().Be(expectedRids.Length + 1, "There should be one package for the tool-wrapper and one for each RID");
+            foreach (string rid in expectedRids)
+            {
+                var packageName = $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}";
+                var package = packages.FirstOrDefault(p => p.EndsWith(packageName + ".nupkg"));
+                package.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory");
+                EnsurePackageIsAnExecutable(package!, "System.Xml.dll");
+            }
+
+            // Ensure that the package with the "any" RID is present
+            var anyRidPackage = packages.FirstOrDefault(p => p.EndsWith($"{packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg"));
+            anyRidPackage.Should().NotBeNull($"Package {packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory");
+            EnsurePackageIsFdd(anyRidPackage!);
+
+            // top-level package should declare all of the rids
+            var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            var settingsXml = GetToolSettingsFile(topLevelPackage);
+            var packageNodes = GetRidsInSettingsFile(settingsXml);
+
+            packageNodes.Should().BeEquivalentTo([.. expectedRids, "any"], "The top-level package should declare all of the RIDs for the tools it contains");
+        }
+
+        private void EnsurePackageIsFdd(string packagePath)
+        {
+            var settingsXml = GetToolSettingsFile(packagePath);
+            var runner = GetRunnerFromSettingsFile(settingsXml);
+            runner.Should().Be("dotnet", "The tool should be packaged as a framework-dependent executable (FDD) with a 'dotnet' runner.");
+        }
+
+        private void EnsurePackageIsAnExecutable(string packagePath, string dll)
+        {
+            var settingsXml = GetToolSettingsFile(packagePath);
+            var runner = GetRunnerFromSettingsFile(settingsXml);
+            runner.Should().Be("executable", "The tool should be packaged as a self-contained executable with an 'executable' runner.");
+        }
+
+        private object GetRunnerFromSettingsFile(XElement settingsXml)
+        {
+            return settingsXml.Elements("Commands").First().Elements("Command").First().Attribute("Runner")?.Value
+                   ?? throw new InvalidOperationException("The tool settings file does not contain a 'Runner' attribute.");
+        }
+
+        private string[] GetRidsInSettingsFile(XElement settingsXml)
+        {
+            var nodes = (settingsXml.Nodes()
+                    .First(n => n is XElement e && e.Name == "RuntimeIdentifierPackages") as XElement)!.Nodes()
+                    .Where(n => (n as XElement)!.Name == "RuntimeIdentifierPackage")
+                    .Select(e => (e as XElement)!.Attributes().First(a => a.Name == "RuntimeIdentifier").Value)
+                    .ToArray();
+            return nodes;
+        }
+
+        private XElement GetToolSettingsFile(string packagePath)
+        {
+            using var zipArchive = ZipFile.OpenRead(packagePath);
+            var nuspecEntry = zipArchive.Entries.First(e => e.Name == "DotnetToolSettings.xml")!;
+            var stream = nuspecEntry.Open();
+            var xml = XDocument.Load(stream, LoadOptions.None);
+            return xml.Root!;
+
+        }
+
+        /// <summary>
+        /// Opens the nupkg and verifies that it does not contain a dependency on the given dll.
+        /// </summary>
+        private void EnsurePackageLacksTrimmedDependency(string packagePath, string dll)
+        {
+            using var zipArchive = ZipFile.OpenRead(packagePath);
+            zipArchive.Entries.Should().NotContain(
+                e => e.FullName.EndsWith(dll, StringComparison.OrdinalIgnoreCase),
+                $"The package {Path.GetFileName(packagePath)} should not contain a dependency on {dll}.");
         }
     }
 
