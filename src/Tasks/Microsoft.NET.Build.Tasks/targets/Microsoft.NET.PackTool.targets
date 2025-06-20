@@ -33,9 +33,9 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GenerateShims"
             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetEmbeddedApphostPaths"
-      AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
-  <UsingTask TaskName="Microsoft.NET.Build.Tasks.GetNuGetShortFolderName"
-             AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
+  <UsingTask TaskName="AddPackageType"
+            AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <PropertyGroup>
     <!-- tools are specially-formatted packages, so we tell nuget Pack to not even try to include build output -->
@@ -350,8 +350,6 @@ NOTE: This file is imported from the following contexts, so be aware when writin
       <FileWrites Include="$(_ShimInputCacheFile)" />
     </ItemGroup>
   </Target>
-
-  <UsingTask TaskName="AddPackageType" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="SetDotnetToolPackageType">
 

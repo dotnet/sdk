@@ -1535,6 +1535,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Cannot combine option '{0}' and '{1}'.</value>
     <comment>{0} and {1} are option names like '--no-build'.</comment>
   </data>
+  <data name="InvalidOptionForStdin" xml:space="preserve">
+    <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
+    <comment>{0} is an option name like '--no-build'.</comment>
+  </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
     <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>
     <comment>{Locked="--no-cache"}</comment>
