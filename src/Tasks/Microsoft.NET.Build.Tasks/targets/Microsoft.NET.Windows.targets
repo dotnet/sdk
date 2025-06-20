@@ -180,6 +180,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Name="_RunCsWinRTGenerator"
     DependsOnTargets="CoreCompile;$(GetTargetPathDependsOn);$(GetTargetPathWithTargetPlatformMonikerDependsOn)"
     BeforeTargets="GetTargetPath;GetTargetPathWithTargetPlatformMoniker;GenerateBuildDependencyFile;GeneratePublishDependencyFile"
+    Inputs="@(ReferencePath);@(IntermediateAssembly)"
     Condition="'$(CsWinRTGenerateInteropAssembly)' == 'true'">
     
     <!-- Default property values for 'cswinrtgen' -->
