@@ -73,6 +73,7 @@ internal static class RestoreCommandParser
         }
 
         command.Options.Add(CommonOptions.ArchitectureOption);
+        command.Options.Add(CommonOptions.OperatingSystemOption);
         command.SetAction(RestoreCommand.Run);
 
         return command;

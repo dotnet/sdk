@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [Fact]
+    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
@@ -20,14 +20,17 @@ public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTest
 
         var environmentOptions = TestOptions.GetEnvironmentOptions(Environment.CurrentDirectory, "dotnet");
 
+        var processRunner = new ProcessRunner(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
+
         var factory = new MSBuildFileSetFactory(
             rootProjectFile: options.ProjectPath,
             buildArguments: [],
             environmentOptions: environmentOptions,
+            processRunner,
             reporter);
 
         var projectGraph = factory.TryLoadProjectGraph(projectGraphRequired: false);
-        var handler = new CompilationHandler(reporter, environmentOptions, CancellationToken.None);
+        var handler = new CompilationHandler(reporter, processRunner, environmentOptions);
 
         await handler.Workspace.UpdateProjectConeAsync(hostProject, CancellationToken.None);
 

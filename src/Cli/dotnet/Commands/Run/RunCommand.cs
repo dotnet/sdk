@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -23,11 +24,6 @@ public class RunCommand
     public bool NoBuild { get; }
 
     /// <summary>
-    /// Value of the <c>--project</c> option.
-    /// </summary>
-    public string? ProjectFileOrDirectory { get; }
-
-    /// <summary>
     /// Full path to a project file to run.
     /// <see langword="null"/> if running without a project file
     /// (then <see cref="EntryPointFileFullPath"/> is not <see langword="null"/>).
@@ -38,6 +34,13 @@ public class RunCommand
     /// Full path to an entry-point <c>.cs</c> file to run without a project file.
     /// </summary>
     public string? EntryPointFileFullPath { get; }
+
+    /// <summary>
+    /// Whether <c>dotnet run -</c> is being executed.
+    /// In that case, <see cref="EntryPointFileFullPath"/> points to a temporary file
+    /// containing all text read from the standard input.
+    /// </summary>
+    public bool ReadCodeFromStdin { get; }
 
     public string[] Args { get; set; }
     public bool NoRestore { get; }
@@ -53,7 +56,7 @@ public class RunCommand
 
     private bool ShouldBuild => !NoBuild;
 
-    public string LaunchProfile { get; }
+    public string? LaunchProfile { get; }
     public bool NoLaunchProfile { get; }
 
     /// <summary>
@@ -63,8 +66,9 @@ public class RunCommand
 
     public RunCommand(
         bool noBuild,
-        string? projectFileOrDirectory,
-        string launchProfile,
+        string? projectFileFullPath,
+        string? entryPointFileFullPath,
+        string? launchProfile,
         bool noLaunchProfile,
         bool noLaunchProfileArguments,
         bool noRestore,
@@ -73,12 +77,16 @@ public class RunCommand
         VerbosityOptions? verbosity,
         string[] restoreArgs,
         string[] args,
+        bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables)
     {
+        Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
+        Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
+
         NoBuild = noBuild;
-        ProjectFileOrDirectory = projectFileOrDirectory;
-        ProjectFileFullPath = DiscoverProjectFilePath(projectFileOrDirectory, ref args, out string? entryPointFileFullPath);
+        ProjectFileFullPath = projectFileFullPath;
         EntryPointFileFullPath = entryPointFileFullPath;
+        ReadCodeFromStdin = readCodeFromStdin;
         LaunchProfile = launchProfile;
         NoLaunchProfile = noLaunchProfile;
         NoLaunchProfileArguments = noLaunchProfileArguments;
@@ -110,14 +118,15 @@ public class RunCommand
         }
         else
         {
-            if (EntryPointFileFullPath is not null)
-            {
-                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
-            }
-
             if (NoCache)
             {
                 throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+            }
+
+            if (EntryPointFileFullPath is not null)
+            {
+                Debug.Assert(!ReadCodeFromStdin);
+                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
             }
         }
 
@@ -145,7 +154,7 @@ public class RunCommand
         }
     }
 
-    private void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
+    internal void ApplyLaunchSettingsProfileToCommand(ICommand targetCommand, ProjectLaunchSettingsModel? launchSettings)
     {
         if (launchSettings == null)
         {
@@ -172,7 +181,7 @@ public class RunCommand
         }
     }
 
-    private bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
+    internal bool TryGetLaunchProfileSettingsIfNeeded(out ProjectLaunchSettingsModel? launchSettingsModel)
     {
         launchSettingsModel = default;
         if (NoLaunchProfile)
@@ -180,7 +189,7 @@ public class RunCommand
             return true;
         }
 
-        var launchSettingsPath = TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
+        var launchSettingsPath = ReadCodeFromStdin ? null : TryFindLaunchSettings(ProjectFileFullPath ?? EntryPointFileFullPath!);
         if (!File.Exists(launchSettingsPath))
         {
             if (!string.IsNullOrEmpty(LaunchProfile))
@@ -280,9 +289,7 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: RestoreArgs,
-            verbosity: Verbosity,
-            interactive: Interactive)
+            msbuildArgs: RestoreArgs)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -310,7 +317,7 @@ public class RunCommand
         return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
-    private ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
+    internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
@@ -394,7 +401,7 @@ public class RunCommand
         }
     }
 
-    internal static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
     {
         var msbuildVerbosity = ToLoggerVerbosity(verbosity);
 
@@ -439,7 +446,7 @@ public class RunCommand
                     project.GetPropertyValue("OutputType")));
     }
 
-    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, ref string[] args, out string? entryPointFilePath)
+    private static string? DiscoverProjectFilePath(string? projectFileOrDirectoryPath, bool readCodeFromStdin, ref string[] args, out string? entryPointFilePath)
     {
         bool emptyProjectOption = false;
         if (string.IsNullOrWhiteSpace(projectFileOrDirectoryPath))
@@ -455,7 +462,7 @@ public class RunCommand
         // If no project exists in the directory and no --project was given,
         // try to resolve an entry-point file instead.
         entryPointFilePath = projectFilePath is null && emptyProjectOption
-            ? TryFindEntryPointFilePath(ref args)
+            ? TryFindEntryPointFilePath(readCodeFromStdin, ref args)
             : null;
 
         if (entryPointFilePath is null && projectFilePath is null)
@@ -482,16 +489,27 @@ public class RunCommand
             return projectFiles[0];
         }
 
-        static string? TryFindEntryPointFilePath(ref string[] args)
+        static string? TryFindEntryPointFilePath(bool readCodeFromStdin, ref string[] args)
         {
-            if (args is not [{ } arg, ..] ||
-                !VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+            if (args is not [{ } arg, ..])
             {
                 return null;
             }
 
+            if (!readCodeFromStdin)
+            {
+                if (VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
+                {
+                    arg = Path.GetFullPath(arg);
+                }
+                else
+                {
+                    return null;
+                }
+            }
+
             args = args[1..];
-            return Path.GetFullPath(arg);
+            return arg;
         }
     }
 
@@ -515,29 +533,52 @@ public class RunCommand
         // bl information to synchronize the restore and build logger configurations
         var applicationArguments = parseResult.GetValue(RunCommandParser.ApplicationArguments)?.ToList();
 
-        var binlogArgs = new List<string>();
-        var nonBinLogArgs = new List<string>();
-        foreach (var arg in applicationArguments ?? [])
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binlogArgs.Add(arg);
-            }
-            else
-            {
-                nonBinLogArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
         var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
-        if (binlogArgs.Count > 0)
+        if (binLogArgs.Count > 0)
         {
-            restoreArgs.AddRange(binlogArgs);
+            restoreArgs.AddRange(binLogArgs);
+        }
+
+        // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
+        // (otherwise it should be fowarded to the target application as its command-line argument).
+        bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
+            parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
+                .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
+
+        string? projectOption = parseResult.GetValue(RunCommandParser.ProjectOption);
+
+        string[] args = [.. nonBinLogArgs];
+        string? projectFilePath = DiscoverProjectFilePath(projectOption, readCodeFromStdin, ref args, out string? entryPointFilePath);
+
+        bool noBuild = parseResult.HasOption(RunCommandParser.NoBuildOption);
+
+        if (readCodeFromStdin && entryPointFilePath != null)
+        {
+            Debug.Assert(projectFilePath is null && entryPointFilePath is "-");
+
+            if (noBuild)
+            {
+                throw new GracefulException(CliCommandStrings.InvalidOptionForStdin, RunCommandParser.NoBuildOption.Name);
+            }
+
+            // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
+            entryPointFilePath = Path.GetTempFileName();
+            using (var stdinStream = Console.OpenStandardInput())
+            using (var fileStream = File.OpenWrite(entryPointFilePath))
+            {
+                stdinStream.CopyTo(fileStream);
+            }
+
+            Debug.Assert(nonBinLogArgs[0] == "-");
+            nonBinLogArgs[0] = entryPointFilePath;
         }
 
         var command = new RunCommand(
-            noBuild: parseResult.HasOption(RunCommandParser.NoBuildOption),
-            projectFileOrDirectory: parseResult.GetValue(RunCommandParser.ProjectOption),
+            noBuild: noBuild,
+            projectFileFullPath: projectFilePath,
+            entryPointFileFullPath: entryPointFilePath,
             launchProfile: parseResult.GetValue(RunCommandParser.LaunchProfileOption) ?? string.Empty,
             noLaunchProfile: parseResult.HasOption(RunCommandParser.NoLaunchProfileOption),
             noLaunchProfileArguments: parseResult.HasOption(RunCommandParser.NoLaunchProfileArgumentsOption),
@@ -546,7 +587,8 @@ public class RunCommand
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
             verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
             restoreArgs: [.. restoreArgs],
-            args: [.. nonBinLogArgs],
+            args: args,
+            readCodeFromStdin: readCodeFromStdin,
             environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty
         );
 

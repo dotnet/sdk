@@ -1,5 +1,5 @@
 ﻿{
   "author": "Microsoft",
-  "name": "dotnet gitattributes 檔案",
-  "description": "為 dotnet 專案建立 gitattributes 檔案。"
+  "name": "dotnet gitattributes file",
+  "description": "Creates a gitattributes file for a dotnet project."
 }

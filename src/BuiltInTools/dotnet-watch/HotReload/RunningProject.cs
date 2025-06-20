@@ -12,7 +12,6 @@ namespace Microsoft.DotNet.Watch
     internal sealed class RunningProject(
         ProjectGraphNode projectNode,
         ProjectOptions options,
-        EnvironmentOptions environmentOptions,
         DeltaApplier deltaApplier,
         IReporter reporter,
         BrowserRefreshServer? browserRefreshServer,
@@ -70,21 +69,8 @@ namespace Microsoft.DotNet.Watch
             await DeltaApplier.WaitForProcessRunningAsync(cancellationToken);
         }
 
-        public async ValueTask<int> TerminateAsync(CancellationToken shutdownCancellationToken)
+        public async ValueTask<int> TerminateAsync()
         {
-            if (shutdownCancellationToken.IsCancellationRequested)
-            {
-                // Ctrl+C sent, wait for the process to exit
-                try
-                {
-                    _ = await RunningProcess.WaitAsync(environmentOptions.ProcessCleanupTimeout, CancellationToken.None);
-                }
-                catch (TimeoutException)
-                {
-                    // nop
-                }
-            }
-
             ProcessTerminationSource.Cancel();
             return await RunningProcess;
         }

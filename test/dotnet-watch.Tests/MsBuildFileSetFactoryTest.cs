@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             .OrderBy(entry => entry.Key)
             .Select(entry => $"{InspectPath(entry.Key, rootDir)}: [{string.Join(", ", entry.Value.ContainingProjectPaths.Select(p => InspectPath(p, rootDir)))}]");
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task FindsCustomWatchItems()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task SingleTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MultiTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -154,7 +154,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task IncludesContentFiles()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -187,7 +187,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task IncludesContentFilesFromRCL()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -239,7 +239,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectReferences_OneLevel()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
@@ -268,7 +268,7 @@ $@"<ItemGroup>
             );
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task TransitiveProjectReferences_TwoLevels()
         {
             var project3 = _testAssets.CreateTestProject(new TestProject("Project3")
@@ -307,7 +307,7 @@ $@"<ItemGroup>
             Assert.All(result.Files.Values, f => Assert.False(f.IsStaticFile, $"File {f.FilePath} should not be a static file."));
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task ProjectReferences_Graph()
         {
             // A->B,F,W(Watch=False)
@@ -324,8 +324,9 @@ $@"<ItemGroup>
             var projectA = Path.Combine(testDirectory, "A", "A.csproj");
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory, muxerPath: MuxerPath);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
 
-            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, _reporter);
+            var filesetFactory = new MSBuildFileSetFactory(projectA, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], options, processRunner, _reporter);
 
             var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
@@ -363,7 +364,7 @@ $@"<ItemGroup>
                 _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
         }
 
-        [Fact]
+        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
         public async Task MsbuildOutput()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
@@ -380,8 +381,9 @@ $@"<ItemGroup>
             var project1Path = GetTestProjectPath(project1);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
 
-            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, _reporter);
+            var factory = new MSBuildFileSetFactory(project1Path, buildArguments: [], options, processRunner, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.Null(result);
 
@@ -397,7 +399,8 @@ $@"<ItemGroup>
         private async Task<EvaluationResult> Evaluate(string projectPath)
         {
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(projectPath)!, muxerPath: MuxerPath);
-            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, _reporter);
+            var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
+            var factory = new MSBuildFileSetFactory(projectPath, buildArguments: [], options, processRunner, _reporter);
             var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.NotNull(result);
             return result;

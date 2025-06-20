@@ -553,9 +553,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         TerminalColor color = outcome switch
         {
-            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.Red,
-            TestOutcome.Skipped => TerminalColor.Yellow,
-            TestOutcome.Passed => TerminalColor.Green,
+            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.DarkRed,
+            TestOutcome.Skipped => TerminalColor.DarkYellow,
+            TestOutcome.Passed => TerminalColor.DarkGreen,
             _ => throw new NotSupportedException(),
         };
         string outcomeText = outcome switch

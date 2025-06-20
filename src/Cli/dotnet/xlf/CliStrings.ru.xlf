@@ -63,10 +63,10 @@
         <note />
       </trans-unit>
       <trans-unit id="CannotFindAManifestFile">
-        <source>Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</source>
-        <target state="new">Cannot find a manifest file.
-For a list of locations searched, specify the "-d" option before the tool name.</target>
+        <source>Cannot find a manifest file. The list of searched paths:
+{0}</source>
+        <target state="new">Cannot find a manifest file. The list of searched paths:
+{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="CannotFindPackageIdInManifest">
@@ -580,13 +580,6 @@ setx PATH "%PATH%;{0}"
         <target state="new">List</target>
         <note />
       </trans-unit>
-      <trans-unit id="ListOfSearched">
-        <source>The list of searched paths:
-{0}</source>
-        <target state="new">The list of searched paths:
-{0}</target>
-        <note />
-      </trans-unit>
       <trans-unit id="LookingForPreferCliRuntimeFile">
         <source>{0}: Looking for prefercliruntime file at `{1}`</source>
         <target state="new">{0}: Looking for prefercliruntime file at `{1}`</target>
@@ -935,6 +928,11 @@ setx PATH "%PATH%;{0}"
         <target state="new">Enable diagnostic output.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SDKSchemaCommandDefinition">
+        <source>Display the command schema as JSON.</source>
+        <target state="new">Display the command schema as JSON.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="SelfContainAndNoSelfContainedConflict">
         <source>The '--self-contained' and '--no-self-contained' options cannot be used together.</source>
         <target state="new">The '--self-contained' and '--no-self-contained' options cannot be used together.</target>
@@ -1078,8 +1076,8 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <note />
       </trans-unit>
       <trans-unit id="ToolSettingsUnsupportedRunner">
-        <source>Command '{0}' uses unsupported runner '{1}'."</source>
-        <target state="new">Command '{0}' uses unsupported runner '{1}'."</target>
+        <source>Tool '{0}' uses unsupported runner '{1}'."</source>
+        <target state="new">Tool '{0}' uses unsupported runner '{1}'."</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolUnsupportedRuntimeIdentifier">
@@ -1171,6 +1169,11 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <source>An issue was encountered verifying workloads. For more information, run "dotnet workload update".</source>
         <target state="new">An issue was encountered verifying workloads. For more information, run "dotnet workload update".</target>
         <note>{Locked="dotnet workload update"}</note>
+      </trans-unit>
+      <trans-unit id="YesOptionDescription">
+        <source>Accept all confirmation prompts using "yes."</source>
+        <target state="new">Accept all confirmation prompts using "yes."</target>
+        <note />
       </trans-unit>
     </body>
   </file>
