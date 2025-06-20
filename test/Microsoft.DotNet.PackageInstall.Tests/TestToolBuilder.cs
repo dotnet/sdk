@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
     [CollectionDefinition(nameof(TestToolBuilderCollection))]
@@ -105,7 +101,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 new DotnetPackCommand(log)
                     .WithWorkingDirectory(targetDirectory)
-                    .Execute()
+                    .Execute($"/bl:{toolSettings.GetIdentifier()}-{{}}")
                     .Should().Pass();
 
                 if (toolSettings.NativeAOT)
@@ -113,7 +109,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     //  For Native AOT tools, we need to repack the tool to include the runtime-specific files that were generated during publish
                     new DotnetPackCommand(log, "-r", RuntimeInformation.RuntimeIdentifier)
                         .WithWorkingDirectory(targetDirectory)
-                        .Execute()
+                        .Execute($"/bl:{toolSettings.GetIdentifier()}-{RuntimeInformation.RuntimeIdentifier}-{{}}")
                         .Should().Pass();
                 }
 
