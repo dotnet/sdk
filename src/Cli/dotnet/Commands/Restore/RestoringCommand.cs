@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -64,6 +65,9 @@ public class RestoringCommand : MSBuildForwardingApp
         IEnumerable<string> restoreArguments = ["-target:Restore"];
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
         restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
+
+        // Add restore performance optimizations
+        restoreArguments = Constants.AddRestoreOptimizations(restoreArguments);
 
         return RestoreCommand.CreateForwarding(restoreArguments, msbuildPath);
     }

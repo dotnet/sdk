@@ -46,7 +46,8 @@ public static class RestoreCommand
 
     public static MSBuildForwardingApp CreateForwarding(IEnumerable<string> msbuildArgs, string? msbuildPath = null)
     {
-        var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
+        var argsWithOptimizations = Constants.AddRestoreOptimizations(msbuildArgs);
+        var forwardingApp = new MSBuildForwardingApp(argsWithOptimizations, msbuildPath);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);
         return forwardingApp;
     }
