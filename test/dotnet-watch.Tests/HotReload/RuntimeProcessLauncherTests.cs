@@ -393,7 +393,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+    [Theory]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
