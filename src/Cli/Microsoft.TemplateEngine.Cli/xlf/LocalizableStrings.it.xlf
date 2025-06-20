@@ -230,7 +230,7 @@ Eseguire 'dotnet {1}--show-alias ' senza argomenti per mostrare tutti gli alias.
       </trans-unit>
       <trans-unit id="Colon_Separator_Deprecated">
         <source>The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</source>
-        <target state="new">The colon separator "::" has been deprecated in favor of the at symbol "@" for separating the package from the version in dotnet new install. In your case, this means {0}@{1} instead of {0}::{1}.</target>
+        <target state="translated">Il separatore dei due punti '::' è stato deprecato a favore del simbolo '@' per separare il pacchetto dalla versione nel comando dotnet new install. In questo caso, significa {0}@{1} invece di {0}::{1}.</target>
         <note />
       </trans-unit>
       <trans-unit id="ColumnNameAuthor">
