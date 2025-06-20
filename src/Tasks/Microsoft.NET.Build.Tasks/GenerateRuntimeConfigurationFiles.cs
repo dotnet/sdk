@@ -10,6 +10,8 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
+using System.IO.Hashing;
+using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -390,9 +392,41 @@ namespace Microsoft.NET.Build.Tasks
                 DefaultValueHandling = DefaultValueHandling.Ignore
             };
 
-            using (JsonTextWriter writer = new(new StreamWriter(File.Create(fileName))))
+            bool shouldWriteFile = true;
+
+            // Generate new content
+            using (var contentStream = new MemoryStream())
             {
-                serializer.Serialize(writer, value);
+                using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, 1024, true))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    serializer.Serialize(jsonWriter, value);
+                    jsonWriter.Flush();
+                    streamWriter.Flush();
+                }
+
+                // If file exists, check if content is different using streaming hash comparison
+                if (File.Exists(fileName))
+                {
+                    // stream positions are reset as part of these utility calls
+                    var existingContentHash = HashingUtils.ComputeXXHash64(File.OpenRead(fileName));
+                    var newContentHash = HashingUtils.ComputeXXHash64(contentStream);
+                    // If hashes are equal, content is the same - don't write
+                    if (existingContentHash.SequenceEqual(newContentHash))
+                    {
+                        shouldWriteFile = false;
+                    }
+
+                }
+
+                if (shouldWriteFile)
+                {
+                    // Write the new content to file using CopyTo
+                    using (var fileStream = File.Create(fileName))
+                    {
+                        contentStream.CopyTo(fileStream);
+                    }
+                }
             }
         }
     }
