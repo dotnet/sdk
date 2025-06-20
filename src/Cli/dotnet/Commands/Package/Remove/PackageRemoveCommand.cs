@@ -25,7 +25,7 @@ internal class PackageRemoveCommand : CommandBase
         _arguments = parseResult.GetValue(PackageRemoveCommandParser.CmdPackageArgument).ToList().AsReadOnly();
         if (_fileOrDirectory == null)
         {
-            throw new ArgumentNullException(nameof(_fileOrDirectory));
+            _fileOrDirectory = Environment.CurrentDirectory;
         }
         if (_arguments.Count != 1)
         {
