@@ -78,6 +78,8 @@
     <SystemSecurityPermissionsPackageVersion>8.0.0</SystemSecurityPermissionsPackageVersion>
     <SystemServiceProcessServiceControllerVersion>8.0.1</SystemServiceProcessServiceControllerVersion>
     <SystemTextJsonPackageVersion>8.0.6</SystemTextJsonPackageVersion>
+    <!-- Match the version used by Microsoft.Extensions.DependencyModel which is higher than what MSBuild in VS 17.10 unifies to -->
+    <PinnedSystemTextJsonPackageVersion>8.0.5</PinnedSystemTextJsonPackageVersion>
     <SystemWindowsExtensionsPackageVersion>8.0.0</SystemWindowsExtensionsPackageVersion>
     <SystemFormatsAsn1Version>8.0.2</SystemFormatsAsn1Version>
   </PropertyGroup>
