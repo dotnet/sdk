@@ -223,6 +223,94 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
         }
 
+        [Fact]
+        public void PackageToolWithAnyRid()
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                RidSpecific = true,
+                IncludeAnyRid = true
+            };
+
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg");
+            var packageIdentifier = toolSettings.ToolPackageId;
+            var expectedRids = ToolsetInfo.LatestRuntimeIdentifiers.Split(';');
+
+            packages.Length.Should().Be(expectedRids.Length + 1 + 1, "There should be one package for the tool-wrapper, one for the top-level manifest, and one for each RID");
+            foreach (string rid in expectedRids)
+            {
+                var packageName = $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}";
+                var package = packages.FirstOrDefault(p => p.EndsWith(packageName + ".nupkg"));
+                package.Should().NotBeNull($"Package {packageName} should be present in the tool packages directory")
+                        .And.Satisfy<string>(EnsurePackageIsAnExecutable);
+            }
+
+            // Ensure that the package with the "any" RID is present
+            var anyRidPackage = packages.FirstOrDefault(p => p.EndsWith($"{packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg"));
+            anyRidPackage.Should().NotBeNull($"Package {packageIdentifier}.any.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
+                .And.Satisfy<string>(EnsurePackageIsFdd);
+
+            // top-level package should declare all of the rids
+            var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
+            var settingsXml = GetToolSettingsFile(topLevelPackage);
+            var packageNodes = GetRidsInSettingsFile(settingsXml);
+
+            packageNodes.Should().BeEquivalentTo([.. expectedRids, "any"], "The top-level package should declare all of the RIDs for the tools it contains");
+        }
+
+        [Fact]
+        public void InstallAndRunToolFromAnyRid()
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                IncludeAnyRid = true // will make one package with the "any" RID
+            };
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg").Select(p => Path.GetFileName(p)).ToArray();
+            packages.Should().BeEquivalentTo([
+                $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
+                $"{toolSettings.ToolPackageId}.any.{toolSettings.ToolPackageVersion}.nupkg"
+                ], "There should be two packages: one for the tool-wrapper and one for the 'any' RID");
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--yes", "--add-source", toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+        }
+
+        [Fact]
+        public void InstallAndRunToolFromAnyRidWhenOtherRidsArePresentButIncompatible()
+        {
+            var toolSettings = new TestToolBuilder.TestToolSettings()
+            {
+                IncludeCurrentRid = false,
+                RidSpecific = true, // will make one package for each RID except the current RID
+                IncludeAnyRid = true // will make one package with the "any" RID
+            };
+            List<string> expectedRids = [ .. ToolsetInfo.LatestRuntimeIdentifiers.Split(';').Where(rid => rid != RuntimeInformation.RuntimeIdentifier), "any"];
+
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg").Select(p => Path.GetFileName(p)).ToArray();
+            packages.Should().BeEquivalentTo([
+                $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
+                .. expectedRids.Select(rid => $"{toolSettings.ToolPackageId}.{rid}.{toolSettings.ToolPackageVersion}.nupkg"),
+                ], $"There should be { 1 + expectedRids.Count } packages: one for the tool-wrapper and one for each RID except the current RID");
+            var testDirectory = _testAssetsManager.CreateTestDirectory();
+            var homeFolder = Path.Combine(testDirectory.Path, "home");
+
+            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--yes", "--add-source", toolPackagesPath)
+                .WithEnvironmentVariables(homeFolder)
+                .WithWorkingDirectory(testDirectory.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Hello Tool!");
+        }
 
         private void EnsurePackageIsFdd(string packagePath)
         {
