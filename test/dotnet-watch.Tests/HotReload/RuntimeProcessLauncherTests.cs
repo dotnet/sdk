@@ -636,4 +636,96 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
                 throw new InvalidOperationException();
         }
     }
+
+    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    public async Task ProjectChange_AddProjectReference()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
+            .WithSource()
+            .WithProjectChanges(project =>
+            {
+                foreach (var r in project.Root!.Descendants().Where(e => e.Name.LocalName == "ProjectReference").ToArray())
+                {
+                    r.Remove();
+                }
+            });
+
+        var appProjDir = Path.Combine(testAsset.Path, "AppWithDeps");
+        var appProjFile = Path.Combine(appProjDir, "App.WithDeps.csproj");
+        var appFile = Path.Combine(appProjDir, "Program.cs");
+
+        UpdateSourceFile(appFile, code => code.Replace("Lib.Print();", "// Lib.Print();"));
+
+        await using var w = StartWatcher(testAsset, ["--no-exit"], appProjDir, appProjDir);
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
+
+        var hasUpdate = new SemaphoreSlim(initialCount: 0);
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("<Lib>"))
+            {
+                hasUpdate.Release();
+            }
+        };
+
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        UpdateSourceFile(appProjFile, src => src.Replace("""
+            <ItemGroup />
+            """, """
+            <ItemGroup>
+                <ProjectReference Include="..\Dependency\Dependency.csproj" />
+            </ItemGroup>
+            """));
+
+        UpdateSourceFile(appFile, code => code.Replace("// Lib.Print();", "Lib.Print();"));
+
+        Log("Waiting for re-evaluation completed...");
+        await reEvaluationCompleted.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for output '<Lib>'...");
+        await hasUpdate.WaitAsync(w.ShutdownSource.Token);
+    }
+
+    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    public async Task ProjectChange_AddPackageReference()
+    {
+        var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+            .WithSource();
+
+        var projFilePath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programFilePath = Path.Combine(testAsset.Path, "Program.cs");
+
+        await using var w = StartWatcher(testAsset, ["--no-exit"], testAsset.Path, testAsset.Path);
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+        var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
+
+        var hasUpdate = new SemaphoreSlim(initialCount: 0);
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("JToken"))
+            {
+                hasUpdate.Release();
+            }
+        };
+
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        UpdateSourceFile(projFilePath, source => source.Replace("<!-- items placeholder -->", """
+            <PackageReference Include="Newtonsoft.Json" Version="13.0.3"/>
+            """));
+
+        UpdateSourceFile(programFilePath, source => source.Replace("Console.WriteLine(\".\");", "Console.WriteLine(typeof(Newtonsoft.Json.Linq.JToken));"));
+
+        Log("Waiting for re-evaluation completed...");
+        await reEvaluationCompleted.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for output 'JToken'...");
+        await hasUpdate.WaitAsync(w.ShutdownSource.Token);
+    }
 }
