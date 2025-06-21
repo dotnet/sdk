@@ -133,6 +133,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             // 0 timeout for process cleanup in tests. We can't send Ctrl+C, so process termination must be forced.
             commandSpec.WithEnvironmentVariable("DOTNET_WATCH_PROCESS_CLEANUP_TIMEOUT_MS", "0");
 
+            commandSpec.WithEnvironmentVariable("ASPIRE_ALLOW_UNSECURED_TRANSPORT", "1");
+
             foreach (var env in EnvironmentVariables)
             {
                 commandSpec.WithEnvironmentVariable(env.Key, env.Value);
