@@ -72,7 +72,7 @@
     <Copy SourceFiles="$(DnxScriptSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
 
     <!-- Mark script as executable -->
-    <Exec Command="chmod 644 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
+    <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
   </Target>
 
   <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->

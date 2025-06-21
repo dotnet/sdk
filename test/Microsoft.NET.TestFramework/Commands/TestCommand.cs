@@ -166,7 +166,7 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 command.StandardOutputEncoding(StandardOutputEncoding);
             }
-            
+
             string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
                 "dotnet" :
                 spec.FileName!;
@@ -175,6 +175,15 @@ namespace Microsoft.NET.TestFramework.Commands
             Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
             Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
+            }
 
             return result;
         }

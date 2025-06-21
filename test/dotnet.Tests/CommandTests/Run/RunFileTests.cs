@@ -221,6 +221,119 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
+    /// </summary>
+    [Theory]
+    // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
+    [InlineData("build", "MSB1003")]
+    // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
+    [InlineData("watch", "--project")]
+    public void Precedence_BuiltInCommand(string cmd, string error)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, cmd), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello 1");
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, $"dotnet-{cmd}"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello 2");
+            """);
+
+        // dotnet build -> built-in command
+        new DotnetCommand(Log, cmd)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining(error);
+
+        // dotnet ./build -> file-based app
+        new DotnetCommand(Log, $"./{cmd}")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello 1");
+
+        // dotnet run build -> file-based app
+        new DotnetCommand(Log, "run", cmd)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello 1");
+    }
+
+    /// <summary>
+    /// Even if there is a file-based app <c>./test.dll</c>, <c>dotnet test.dll</c> should not execute that.
+    /// </summary>
+    [Theory]
+    [InlineData("test.dll")]
+    [InlineData("./test.dll")]
+    public void Precedence_Dll(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "test.dll"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        // dotnet [./]test.dll -> exec the dll
+        new DotnetCommand(Log, arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // A fatal error was encountered. The library 'hostpolicy.dll' required to execute the application was not found in ...
+            .And.HaveStdErrContaining("hostpolicy");
+
+        // dotnet run [./]test.dll -> file-based app
+        new DotnetCommand(Log, "run", arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+    }
+
+    [Fact]
+    public void Precedence_NuGetTool()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "complog"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        new DotnetCommand(Log, "new", "tool-manifest")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "tool", "install", "complog@0.7.0")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // dotnet complog -> NuGet tool
+        new DotnetCommand(Log, "complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("complog");
+
+        // dotnet ./complog -> file-based app
+        new DotnetCommand(Log, "./complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+
+        // dotnet run complog -> file-based app
+        new DotnetCommand(Log, "run", "complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+    }
+
+    /// <summary>
     /// <c>dotnet run -</c> reads the C# code from stdin.
     /// </summary>
     [Fact]
