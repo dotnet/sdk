@@ -42,7 +42,7 @@ namespace Microsoft.DotNet.Watch
 
         public override Task<ImmutableArray<string>> GetApplyUpdateCapabilitiesAsync(CancellationToken cancellationToken)
         {
-            var capabilities = project.GetWebAssemblyCapabilities();
+            var capabilities = project.GetWebAssemblyCapabilities().ToImmutableArray();
 
             if (capabilities.IsEmpty)
             {

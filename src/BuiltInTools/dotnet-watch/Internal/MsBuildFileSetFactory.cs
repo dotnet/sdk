@@ -1,8 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Text.Json;
+using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
+using Microsoft.Build.FileSystem;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
@@ -121,7 +125,7 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value);
+                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -194,7 +198,11 @@ namespace Microsoft.DotNet.Watch
         }
 
         // internal for testing
-        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired)
+
+        /// <summary>
+        /// Tries to create a project graph by running the build evaluation phase on the <see cref="rootProjectFile"/>.
+        /// </summary>
+        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
         {
             var globalOptions = new Dictionary<string, string>();
 
@@ -203,9 +211,11 @@ namespace Microsoft.DotNet.Watch
                 globalOptions[name] = value;
             }
 
+            var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
+
             try
             {
-                return new ProjectGraph(rootProjectFile, globalOptions);
+                return new ProjectGraph([entryPoint], ProjectCollection.GlobalProjectCollection, projectInstanceFactory: null, cancellationToken);
             }
             catch (Exception e)
             {

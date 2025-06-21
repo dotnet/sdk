@@ -85,8 +85,10 @@ namespace Microsoft.DotNet.Watch
         public static readonly MessageDescriptor ConfiguredToUseBrowserRefresh = new("Configuring the app to use browser-refresh middleware", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor IgnoringChangeInHiddenDirectory = new("Ignoring change in hidden directory '{0}': {1} '{2}'", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor IgnoringChangeInOutputDirectory = new("Ignoring change in output directory: {0} '{1}'", WatchEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor IgnoringChangeInExcludedFile = new("Ignoring change in excluded file '{0}': {1}. Path matches {2} glob '{3}' set in '{4}'.", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor FileAdditionTriggeredReEvaluation = new("File addition triggered re-evaluation.", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor ReEvaluationCompleted = new("Re-evaluation completed.", WatchEmoji, MessageSeverity.Verbose, s_id++);
+        public static readonly MessageDescriptor ProjectChangeTriggeredReEvaluation = new("Project change triggered re-evaluation.", WatchEmoji, MessageSeverity.Verbose, s_id++);
         public static readonly MessageDescriptor NoCSharpChangesToApply = new("No C# changes to apply.", WatchEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor Exited = new("Exited", WatchEmoji, MessageSeverity.Output, s_id++);
         public static readonly MessageDescriptor ExitedWithUnknownErrorCode = new("Exited with unknown error code", ErrorEmoji, MessageSeverity.Error, s_id++);

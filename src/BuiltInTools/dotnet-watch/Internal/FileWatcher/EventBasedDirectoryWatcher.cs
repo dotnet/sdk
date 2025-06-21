@@ -1,32 +1,26 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.ComponentModel;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class EventBasedDirectoryWatcher : IDirectoryWatcher
+    internal sealed class EventBasedDirectoryWatcher : DirectoryWatcher
     {
-        public event EventHandler<ChangedPath>? OnFileChange;
-        public event EventHandler<Exception>? OnError;
-
-        public string WatchedDirectory { get; }
-        public bool IncludeSubdirectories { get; }
         public Action<string>? Logger { get; set; }
 
         private volatile bool _disposed;
         private FileSystemWatcher? _fileSystemWatcher;
         private readonly Lock _createLock = new();
 
-        internal EventBasedDirectoryWatcher(string watchedDirectory, bool includeSubdirectories)
+        internal EventBasedDirectoryWatcher(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories)
+            : base(watchedDirectory, watchedFileNames, includeSubdirectories)
         {
-            WatchedDirectory = watchedDirectory;
-            IncludeSubdirectories = includeSubdirectories;
-
             CreateFileSystemWatcher();
         }
 
-        public void Dispose()
+        public override void Dispose()
         {
             _disposed = true;
             DisposeInnerWatcher();
@@ -54,7 +48,7 @@ namespace Microsoft.DotNet.Watch
                 CreateFileSystemWatcher();
             }
 
-            OnError?.Invoke(this, exception);
+            NotifyError(exception);
         }
 
         private void WatcherRenameHandler(object sender, RenamedEventArgs e)
@@ -142,12 +136,6 @@ namespace Microsoft.DotNet.Watch
             NotifyChange(e.FullPath, ChangeKind.Add);
         }
 
-        private void NotifyChange(string fullPath, ChangeKind kind)
-        {
-            // Only report file changes
-            OnFileChange?.Invoke(this, new ChangedPath(fullPath, kind));
-        }
-
         private void CreateFileSystemWatcher()
         {
             lock (_createLock)
@@ -192,7 +180,7 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public bool EnableRaisingEvents
+        public override bool EnableRaisingEvents
         {
             get => _fileSystemWatcher!.EnableRaisingEvents;
             set => _fileSystemWatcher!.EnableRaisingEvents = value;
