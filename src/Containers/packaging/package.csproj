@@ -67,15 +67,13 @@
       <MSBuild Projects="../containerize/containerize.csproj" Targets="ResolveAssemblyReferences" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
             <Output TaskParameter="TargetOutputs" ItemName="_AllContainerExeDependencies" />
       </MSBuild>
+      <MSBuild Projects="../containerize/containerize.csproj" Targets="GetCopyToOutputDirectoryItems" Condition="'$(DotNetBuildSourceOnly)' != 'true'">
+            <Output TaskParameter="TargetOutputs" ItemName="ContainerizeBinaryOutput" />
+      </MSBuild>
       <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
-        <NecessaryContainerizeBinaryDependencies Include="@(_AllContainerExeDependencies)" Condition="(
-                              $([MSBuild]::ValueOrDefault('%(_AllContainerExeDependencies.NuGetPackageId)', '').Contains('NuGet')) or
-                              $([MSBuild]::ValueOrDefault('%(_AllContainerExeDependencies.NuGetPackageId)', '').Contains('Newtonsoft')) or
-                              $([MSBuild]::ValueOrDefault('%(_AllContainerExeDependencies.NuGetPackageId)', '').Contains('Microsoft.Extensions'))
-                          ) and
-                          %(_AllContainerExeDependencies.NuGetIsFrameworkReference) != true" />
+        <NecessaryContainerizeBinaryDependencies Include="@(_AllContainerExeDependencies)"
+                                                 Condition="'%(_AllContainerExeDependencies.FrameworkReferenceName)' == ''" />
         <_ContainerizeBinaryDependency Include="@(NecessaryContainerizeBinaryDependencies)" />
-        <_ContainerizeBinaryDependency Include="@(ContainerLibraryOutput)" />
         <_ContainerizeBinaryDependency Include="@(ContainerizeBinaryOutput)" />
         <TfmSpecificPackageFile Include="@(_ContainerizeBinaryDependency)" PackagePath="containerize/" />
       </ItemGroup>
