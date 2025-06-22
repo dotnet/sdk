@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch;
 
-internal static partial class BuildUtilities
+internal static partial class BuildOutput
 {
     private const string BuildEmoji = "🔨";
     private static readonly Regex s_buildDiagnosticRegex = GetBuildDiagnosticRegex();

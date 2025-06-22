@@ -113,7 +113,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(processRunner, factory));
+        var watcher = new HotReloadDotNetWatcher(program.CreateContext(processRunner), console, runtimeProcessLauncherFactory: factory);
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>

@@ -3,7 +3,7 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
-    public class MSBuildEvaluationFilterTest
+    public partial class BuildEvaluatorTests
     {
         private static readonly EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
 
@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var context = CreateContext();
 
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => s_emptyEvaluationResult };
-            var evaluator = new BuildEvaluator(context, fileSetFactory);
+            var evaluator = new TestBuildEvaluator(context, fileSetFactory);
 
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var counter = 0;
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
-            var evaluator = new BuildEvaluator(context, fileSetFactory);
+            var evaluator = new TestBuildEvaluator(context, fileSetFactory);
 
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var counter = 0;
             var fileSetFactory = new MockFileSetFactory() { TryCreateImpl = () => { counter++; return s_emptyEvaluationResult; } };
 
-            var evaluator = new BuildEvaluator(context, fileSetFactory);
+            var evaluator = new TestBuildEvaluator(context, fileSetFactory);
 
             await evaluator.EvaluateAsync(changedFile: null, CancellationToken.None);
 
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var context = CreateContext();
 
-            var evaluator = new TestableBuildEvaluator(context, fileSetFactory)
+            var evaluator = new TestBuildEvaluator(context, fileSetFactory)
             {
                 Timestamps =
                 {
@@ -114,13 +114,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
             Assert.True(evaluator.RequiresRevaluation);
-        }
-
-        private class TestableBuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory factory)
-            : BuildEvaluator(context, factory)
-        {
-            public Dictionary<string, DateTime> Timestamps { get; } = [];
-            private protected override DateTime GetLastWriteTimeUtcSafely(string file) => Timestamps[file];
         }
     }
 }

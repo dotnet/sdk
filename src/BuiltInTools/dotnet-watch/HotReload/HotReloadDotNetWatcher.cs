@@ -3,20 +3,24 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
-using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed partial class HotReloadDotNetWatcher : Watcher
+    internal sealed class HotReloadDotNetWatcher
     {
         private readonly IConsole _console;
         private readonly IRuntimeProcessLauncherFactory? _runtimeProcessLauncherFactory;
         private readonly RestartPrompt? _rudeEditRestartPrompt;
 
-        public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, MSBuildFileSetFactory fileSetFactory, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
-            : base(context, fileSetFactory)
+        private readonly DotNetWatchContext _context;
+        private readonly MSBuildFileSetFactory _fileSetFactory;
+
+        public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
         {
+            _context = context;
+            _fileSetFactory = context.CreateMSBuildFileSetFactory();
+
             _console = console;
             _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
             if (!context.Options.NonInteractive)
@@ -33,32 +37,32 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        public override async Task WatchAsync(CancellationToken shutdownCancellationToken)
+        public async Task WatchAsync(CancellationToken shutdownCancellationToken)
         {
             CancellationTokenSource? forceRestartCancellationSource = null;
             var hotReloadEnabledMessage = "Hot reload enabled. For a list of supported edits, see https://aka.ms/dotnet/hot-reload.";
 
-            if (!Context.Options.NonInteractive)
+            if (!_context.Options.NonInteractive)
             {
-                Context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(Context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
+                _context.Reporter.Output($"{hotReloadEnabledMessage}{Environment.NewLine}  {(_context.EnvironmentOptions.SuppressEmojis ? string.Empty : "💡")} Press \"Ctrl + R\" to restart.", emoji: "🔥");
 
                 _console.KeyPressed += (key) =>
                 {
                     if (key.Modifiers.HasFlag(ConsoleModifiers.Control) && key.Key == ConsoleKey.R && forceRestartCancellationSource is { } source)
                     {
                         // provide immediate feedback to the user:
-                        Context.Reporter.Report(source.IsCancellationRequested ? MessageDescriptor.RestartInProgress : MessageDescriptor.RestartRequested);
+                        _context.Reporter.Report(source.IsCancellationRequested ? MessageDescriptor.RestartInProgress : MessageDescriptor.RestartRequested);
                         source.Cancel();
                     }
                 };
             }
             else
             {
-                Context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
+                _context.Reporter.Output(hotReloadEnabledMessage, emoji: "🔥");
             }
 
-            await using var browserConnector = new BrowserConnector(Context);
-            using var fileWatcher = new FileWatcher(Context.Reporter);
+            await using var browserConnector = new BrowserConnector(_context);
+            using var fileWatcher = new FileWatcher(_context.Reporter);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
             {
@@ -79,7 +83,7 @@ namespace Microsoft.DotNet.Watch
 
                 try
                 {
-                    var rootProjectOptions = Context.RootProjectOptions;
+                    var rootProjectOptions = _context.RootProjectOptions;
                     var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
 
                     // Evaluate the target to find out the set of files to watch.
@@ -96,14 +100,14 @@ namespace Microsoft.DotNet.Watch
                     if (rootProjectCapabilities.Contains(AspireServiceFactory.AppHostProjectCapability))
                     {
                         runtimeProcessLauncherFactory ??= AspireServiceFactory.Instance;
-                        Context.Reporter.Verbose("Using Aspire process launcher.");
+                        _context.Reporter.Verbose("Using Aspire process launcher.");
                     }
 
-                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter, Context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
-                    var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
-                    evaluationResult.ItemExclusions.Report(Context.Reporter);
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Reporter);
+                    compilationHandler = new CompilationHandler(_context.Reporter, _context.ProcessRunner);
+                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Reporter, projectMap, browserConnector);
+                    var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
+                    evaluationResult.ItemExclusions.Report(_context.Reporter);
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
@@ -118,7 +122,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
-                    BuildUtilities.ReportBuildOutput(Context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
+                    BuildOutput.ReportBuildOutput(_context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
                     if (!buildSucceeded)
                     {
                         continue;
@@ -165,7 +169,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
+                    await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
                     // when the EnC session captures content of the file after the changes has already been made.
@@ -186,7 +190,7 @@ namespace Microsoft.DotNet.Watch
                     {
                         if (AcceptChange(change, evaluationResult))
                         {
-                            Context.Reporter.Verbose($"File change: {change.Kind} '{change.Path}'.");
+                            _context.Reporter.Verbose($"File change: {change.Kind} '{change.Path}'.");
                             ImmutableInterlocked.Update(ref changedFilesAccumulator, changedPaths => changedPaths.Add(change));
                         }
                     }
@@ -242,7 +246,7 @@ namespace Microsoft.DotNet.Watch
 
                         if (!rootProjectCapabilities.Contains("SupportsHotReload"))
                         {
-                            Context.Reporter.Warn($"Project '{rootProject.GetDisplayName()}' does not support Hot Reload and must be rebuilt.");
+                            _context.Reporter.Warn($"Project '{rootProject.GetDisplayName()}' does not support Hot Reload and must be rebuilt.");
 
                             // file change already detected
                             waitForFileChangeBeforeRestarting = false;
@@ -264,7 +268,7 @@ namespace Microsoft.DotNet.Watch
                         HotReloadEventSource.Log.HotReloadStart(HotReloadEventSource.StartType.CompilationHandler);
 
                         var (projectsToRebuild, projectsToRestart) = await compilationHandler.HandleManagedCodeChangesAsync(
-                            autoRestart: Context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
+                            autoRestart: _context.Options.NonInteractive || _rudeEditRestartPrompt?.AutoRestartPreference is true,
                             restartPrompt: async (projectNames, cancellationToken) =>
                             {
                                 if (_rudeEditRestartPrompt != null)
@@ -279,11 +283,11 @@ namespace Microsoft.DotNet.Watch
                                     }
                                     else
                                     {
-                                        Context.Reporter.Output("Affected projects:");
+                                        _context.Reporter.Output("Affected projects:");
 
                                         foreach (var projectName in projectNames.OrderBy(n => n))
                                         {
-                                            Context.Reporter.Output("  " + projectName);
+                                            _context.Reporter.Output("  " + projectName);
                                         }
 
                                         question = "Do you want to restart these projects?";
@@ -292,11 +296,11 @@ namespace Microsoft.DotNet.Watch
                                     return await _rudeEditRestartPrompt.WaitForRestartConfirmationAsync(question, cancellationToken);
                                 }
 
-                                Context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+                                _context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
 
                                 foreach (var projectName in projectNames)
                                 {
-                                    Context.Reporter.Verbose($"  Project to restart: '{projectName}'");
+                                    _context.Reporter.Verbose($"  Project to restart: '{projectName}'");
                                 }
 
                                 return true;
@@ -332,7 +336,7 @@ namespace Microsoft.DotNet.Watch
 
                                     foreach (var (success, output, projectPath) in buildResults)
                                     {
-                                        BuildUtilities.ReportBuildOutput(Context.Reporter, output, success, projectPath);
+                                        BuildOutput.ReportBuildOutput(_context.Reporter, output, success, projectPath);
                                     }
 
                                     if (buildResults.All(result => result.success))
@@ -349,7 +353,7 @@ namespace Microsoft.DotNet.Watch
 
                                 _ = await fileWatcher.WaitForFileChangeAsync(
                                     change => AcceptChange(change, evaluationResult),
-                                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
+                                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                                     shutdownCancellationToken);
                             }
 
@@ -357,7 +361,7 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            Context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
+                            _context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
                         }
 
                         if (!projectsToRestart.IsEmpty)
@@ -382,10 +386,10 @@ namespace Microsoft.DotNet.Watch
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
 
-                            Context.Reporter.Report(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
+                            _context.Reporter.Report(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
                         }
 
-                        Context.Reporter.Report(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
+                        _context.Reporter.Report(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
                         async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)
                         {
@@ -434,7 +438,7 @@ namespace Microsoft.DotNet.Watch
 
                             if (evaluationRequired)
                             {
-                                Context.Reporter.Report(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
+                                _context.Reporter.Report(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
 
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
@@ -442,7 +446,7 @@ namespace Microsoft.DotNet.Watch
                                 // additional directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
-                                await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
+                                await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
 
                                 if (shutdownCancellationToken.IsCancellationRequested)
                                 {
@@ -454,7 +458,7 @@ namespace Microsoft.DotNet.Watch
                                 changedFiles = [.. changedFiles
                                     .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)];
 
-                                Context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
+                                _context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
 
                             if (rebuiltProjects != null)
@@ -558,17 +562,17 @@ namespace Microsoft.DotNet.Watch
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
                     evaluationResult.Files,
-                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }
             else
             {
                 // evaluation cancelled - watch for any changes in the directory tree containing the root project:
-                fileWatcher.WatchContainingDirectories([RootFileSetFactory.RootProjectFile], includeSubdirectories: true);
+                fileWatcher.WatchContainingDirectories([_fileSetFactory.RootProjectFile], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
                     acceptChange: change => AcceptChange(change),
-                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                     cancellationToken);
             }
         }
@@ -608,7 +612,7 @@ namespace Microsoft.DotNet.Watch
             //
             // On the other hand, changes to source files produced by source generators will be registered
             // since the changes to additional file will trigger workspace update, which will trigger the source generator.
-            return !evaluationResult.ItemExclusions.IsExcluded(path, kind, Context.Reporter);
+            return !evaluationResult.ItemExclusions.IsExcluded(path, kind, _context.Reporter);
         }
 
         private bool AcceptChange(ChangedPath change)
@@ -617,7 +621,7 @@ namespace Microsoft.DotNet.Watch
 
             if (PathUtilities.GetContainingDirectories(path).FirstOrDefault(IsHiddenDirectory) is { } containingHiddenDir)
             {
-                Context.Reporter.Report(MessageDescriptor.IgnoringChangeInHiddenDirectory, containingHiddenDir, kind, path);
+                _context.Reporter.Report(MessageDescriptor.IgnoringChangeInHiddenDirectory, containingHiddenDir, kind, path);
                 return false;
             }
 
@@ -703,12 +707,12 @@ namespace Microsoft.DotNet.Watch
         private void ReportWatchingForChanges()
         {
             var waitingForChanges = MessageDescriptor.WaitingForChanges;
-            if (Context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
+            if (_context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.ElevateWaitingForChangesMessageSeverity))
             {
                 waitingForChanges = waitingForChanges with { Severity = MessageSeverity.Output };
             }
 
-            Context.Reporter.Report(waitingForChanges);
+            _context.Reporter.Report(waitingForChanges);
         }
 
         private void ReportFileChanges(IReadOnlyList<ChangedFile> changedFiles)
@@ -722,7 +726,7 @@ namespace Microsoft.DotNet.Watch
                 var items = changedFiles.Where(item => item.Kind == kind).ToArray();
                 if (items is not [])
                 {
-                    Context.Reporter.Output(GetMessage(items, kind));
+                    _context.Reporter.Output(GetMessage(items, kind));
                 }
             }
 
@@ -756,7 +760,7 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await RootFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
+                var result = await _fileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     Debug.Assert(result.ProjectGraph != null);
@@ -764,9 +768,9 @@ namespace Microsoft.DotNet.Watch
                 }
 
                 await FileWatcher.WaitForFileChangeAsync(
-                    RootFileSetFactory.RootProjectFile,
-                    Context.Reporter,
-                    startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
+                    _fileSetFactory.RootProjectFile,
+                    _context.Reporter,
+                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
         }
@@ -778,7 +782,7 @@ namespace Microsoft.DotNet.Watch
 
             var processSpec = new ProcessSpec
             {
-                Executable = Context.EnvironmentOptions.MuxerPath,
+                Executable = _context.EnvironmentOptions.MuxerPath,
                 WorkingDirectory = Path.GetDirectoryName(projectPath)!,
                 OnOutput = line =>
                 {
@@ -791,16 +795,16 @@ namespace Microsoft.DotNet.Watch
                 Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
             };
 
-            Context.Reporter.Output($"Building {projectPath} ...");
+            _context.Reporter.Output($"Building {projectPath} ...");
 
-            var exitCode = await Context.ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+            var exitCode = await _context.ProcessRunner.RunAsync(processSpec, _context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
             return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 
         private string GetRelativeFilePath(string path)
         {
             var relativePath = path;
-            var workingDirectory = Context.EnvironmentOptions.WorkingDirectory;
+            var workingDirectory = _context.EnvironmentOptions.WorkingDirectory;
             if (path.StartsWith(workingDirectory, StringComparison.Ordinal) && path.Length > workingDirectory.Length)
             {
                 relativePath = path.Substring(workingDirectory.Length);

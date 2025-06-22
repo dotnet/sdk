@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal class BuildEvaluator(DotNetWatchContext context, MSBuildFileSetFactory rootProjectFileSetFactory)
+    internal class BuildEvaluator
     {
         // File types that require an MSBuild re-evaluation
         private static readonly string[] s_msBuildFileExtensions = new[]
@@ -18,6 +18,9 @@ namespace Microsoft.DotNet.Watch
             .Select(e => e.GetHashCode(StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
+        private readonly MSBuildFileSetFactory _fileSetFactory;
+        private readonly DotNetWatchContext _context;
+
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
         // result of the last evaluation, or null if no evaluation has been performed yet.
@@ -25,29 +28,38 @@ namespace Microsoft.DotNet.Watch
 
         public bool RequiresRevaluation { get; set; }
 
+        public BuildEvaluator(DotNetWatchContext context)
+        {
+            _context = context;
+            _fileSetFactory = CreateMSBuildFileSetFactory();
+        }
+
+        protected virtual MSBuildFileSetFactory CreateMSBuildFileSetFactory()
+            => _context.CreateMSBuildFileSetFactory();
+
         public IReadOnlyList<string> GetProcessArguments(int iteration)
         {
-            if (!context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
+            if (!_context.EnvironmentOptions.SuppressMSBuildIncrementalism &&
                 iteration > 0 &&
-                CommandLineOptions.IsCodeExecutionCommand(context.RootProjectOptions.Command))
+                CommandLineOptions.IsCodeExecutionCommand(_context.RootProjectOptions.Command))
             {
                 if (RequiresRevaluation)
                 {
-                    context.Reporter.Verbose("Cannot use --no-restore since msbuild project files have changed.");
+                    _context.Reporter.Verbose("Cannot use --no-restore since msbuild project files have changed.");
                 }
                 else
                 {
-                    context.Reporter.Verbose("Modifying command to use --no-restore");
-                    return [context.RootProjectOptions.Command, "--no-restore", .. context.RootProjectOptions.CommandArguments];
+                    _context.Reporter.Verbose("Modifying command to use --no-restore");
+                    return [_context.RootProjectOptions.Command, "--no-restore", .. _context.RootProjectOptions.CommandArguments];
                 }
             }
 
-            return [context.RootProjectOptions.Command, .. context.RootProjectOptions.CommandArguments];
+            return [_context.RootProjectOptions.Command, .. _context.RootProjectOptions.CommandArguments];
         }
 
         public async ValueTask<EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
         {
-            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
+            if (_context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
                 RequiresRevaluation = true;
                 return _evaluationResult = await CreateEvaluationResult(cancellationToken);
@@ -60,7 +72,7 @@ namespace Microsoft.DotNet.Watch
 
             if (RequiresRevaluation)
             {
-                context.Reporter.Verbose("Evaluating dotnet-watch file set.");
+                _context.Reporter.Verbose("Evaluating dotnet-watch file set.");
 
                 var result = await CreateEvaluationResult(cancellationToken);
                 _msbuildFileTimestamps = GetMSBuildFileTimeStamps(result);
@@ -77,16 +89,16 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await rootProjectFileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
+                var result = await _fileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
                 if (result != null)
                 {
                     return result;
                 }
 
                 await FileWatcher.WaitForFileChangeAsync(
-                    rootProjectFileSetFactory.RootProjectFile,
-                    context.Reporter,
-                    startedWatching: () => context.Reporter.Report(MessageDescriptor.FixBuildError),
+                    _fileSetFactory.RootProjectFile,
+                    _context.Reporter,
+                    startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
         }
@@ -110,7 +122,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (GetLastWriteTimeUtcSafely(file) != lastWriteTimeUtc)
                 {
-                    context.Reporter.Verbose($"Re-evaluation needed due to changes in {file}.");
+                    _context.Reporter.Verbose($"Re-evaluation needed due to changes in {file}.");
 
                     return true;
                 }
@@ -133,7 +145,7 @@ namespace Microsoft.DotNet.Watch
             return msbuildFiles;
         }
 
-        private protected virtual DateTime GetLastWriteTimeUtcSafely(string file)
+        protected virtual DateTime GetLastWriteTimeUtcSafely(string file)
         {
             try
             {
@@ -145,7 +157,7 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        static bool IsMsBuildFileExtension(string fileName)
+        private static bool IsMsBuildFileExtension(string fileName)
         {
             var extension = Path.GetExtension(fileName.AsSpan());
             var hashCode = string.GetHashCode(extension, StringComparison.OrdinalIgnoreCase);
