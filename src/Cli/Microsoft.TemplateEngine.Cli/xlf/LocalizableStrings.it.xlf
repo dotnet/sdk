@@ -907,7 +907,7 @@ The header is followed by the list of parameters and their errors (might be seve
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Error">
         <source>Failed to instantiate template '{0}', the following constraints are not met:</source>
-        <target state="new">Failed to instantiate template '{0}', the following constraints are not met:</target>
+        <target state="translated">Non è stato possibile creare un'istanza del modello '{0}'. I vincoli seguenti non sono soddisfatti:</target>
         <note>{0} - template name (user friendly)</note>
       </trans-unit>
       <trans-unit id="TemplateCommand_DisplayConstraintResults_Hint">
