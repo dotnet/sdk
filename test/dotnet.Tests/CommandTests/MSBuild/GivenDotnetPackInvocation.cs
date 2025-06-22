@@ -42,12 +42,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 var msbuildPath = "<msbuildpath>";
                 var command = PackCommand.FromArgs(args, msbuildPath);
-                var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : ExpectedPrefix;
+                var expectedPrefix = args.FirstOrDefault() == "--no-build" ? ExpectedNoBuildPrefix : [.. ExpectedPrefix, .. GivenDotnetBuildInvocation.RestoreExpectedPrefix];
 
                 command.SeparateRestoreCommand.Should().BeNull();
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. expectedPrefix, .. ExpectedProperties, .. expectedAdditionalArgs]);
+                    .BeEquivalentTo([.. expectedPrefix, .. ExpectedProperties, .. expectedAdditionalArgs, ]);
             });
         }
     }

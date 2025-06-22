@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
-        string[] RestoreExpectedPrefix = [..RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
+        public static string[] RestoreExpectedPrefix = [..RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
 
         const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var commandArgs = command.GetArgumentTokensToMSBuild();
                 commandArgs[0..6].Should().BeEquivalentTo([.. ExpectedPrefix, "-restore", "-consoleloggerparameters:Summary"]);
                 commandArgs[6..].Should()
-                    .BeEquivalentTo([NugetInteractiveProperty, .. expectedAdditionalArgs]);
+                    .BeEquivalentTo([NugetInteractiveProperty, .. expectedAdditionalArgs, ..RestoreExpectedPrefix]);
             });
         }
 
