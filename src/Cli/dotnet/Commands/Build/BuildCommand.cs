@@ -33,6 +33,8 @@ public static class BuildCommand
 
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
+        var restoreOnlyProperties = parseResult.GetValue(CommonOptions.RestorePropertiesOption);
+
         string[] forwardedOptions = parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()).ToArray();
 
         bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
@@ -45,7 +47,9 @@ public static class BuildCommand
         {
             command = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, .. binLogArgs])
+                msbuildArgs: [.. forwardedOptions, .. binLogArgs],
+                restoreProperties: restoreOnlyProperties
+            )
             {
                 NoRestore = noRestore,
                 NoCache = true,
@@ -70,7 +74,8 @@ public static class BuildCommand
             command = new RestoringCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
-                msbuildPath: msbuildPath);
+                msbuildPath: msbuildPath,
+                restoreProperties: restoreOnlyProperties);
         }
 
         PerformanceLogEventSource.Log.CreateBuildCommandStop();

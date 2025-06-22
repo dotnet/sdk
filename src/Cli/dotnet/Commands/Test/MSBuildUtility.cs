@@ -94,7 +94,7 @@ internal static class MSBuildUtility
         msbuildArgs.Add(filePath);
         msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
 
-        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore).Execute();
+        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore, restoreProperties: null).Execute();
 
         return result == (int)BuildResultCode.Success;
     }

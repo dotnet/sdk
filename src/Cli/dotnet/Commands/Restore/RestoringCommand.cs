@@ -1,31 +1,48 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
 public class RestoringCommand : MSBuildForwardingApp
 {
-    public MSBuildForwardingApp SeparateRestoreCommand { get; }
+
+    /// <summary>
+    /// This dictionary contains properties that are set to disable the default items
+    /// that are added to the project by default. These Item types are not needed
+    /// during Restore, and can often cause performance issues by globbing across the
+    /// entire workspace.
+    /// </summary>
+    public static FrozenDictionary<string, string> RestoreOptimizationProperties =>
+        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            { Constants.EnableDefaultItems, "false" },
+            { Constants.EnableDefaultEmbeddedResourceItems, "false" },
+            { Constants.EnableDefaultNoneItems, "false" },
+        }.ToFrozenDictionary();
+
+    public MSBuildForwardingApp? SeparateRestoreCommand { get; }
 
     private readonly bool AdvertiseWorkloadUpdates;
 
     public RestoringCommand(
         IEnumerable<string> msbuildArgs,
         bool noRestore,
-        string msbuildPath = null,
-        string userProfileDir = null,
+        FrozenDictionary<string, string>? restoreProperties,
+        string? msbuildPath = null,
+        string? userProfileDir = null,
         bool? advertiseWorkloadUpdates = null)
-        : base(GetCommandArguments(msbuildArgs, noRestore), msbuildPath)
+        : base(GetCommandArguments(msbuildArgs, noRestore, restoreProperties), msbuildPath)
     {
         userProfileDir = CliFolderPathCalculator.DotnetUserProfileFolderPath;
         Task.Run(() => WorkloadManifestUpdater.BackgroundUpdateAdvertisingManifestsAsync(userProfileDir));
-        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath);
+        SeparateRestoreCommand = GetSeparateRestoreCommand(msbuildArgs, noRestore, msbuildPath, restoreProperties);
         AdvertiseWorkloadUpdates = advertiseWorkloadUpdates ?? msbuildArgs.All(arg => FlagsThatTriggerSilentRestore.All(f => !arg.Contains(f, StringComparison.OrdinalIgnoreCase)));
 
         if (!noRestore)
@@ -36,7 +53,8 @@ public class RestoringCommand : MSBuildForwardingApp
 
     private static IEnumerable<string> GetCommandArguments(
         IEnumerable<string> arguments,
-        bool noRestore)
+        bool noRestore,
+        FrozenDictionary<string, string>? restoreProperties)
     {
         if (noRestore)
         {
@@ -45,44 +63,51 @@ public class RestoringCommand : MSBuildForwardingApp
 
         if (HasArgumentToExcludeFromRestore(arguments))
         {
-            return Prepend("-nologo", arguments);
+            return ["-nologo", ..arguments];
         }
 
-        return Prepend("-restore", arguments);
+        return ["-restore", .. arguments, ..MapRestoreProperties(restoreProperties)];
     }
 
-    private static MSBuildForwardingApp GetSeparateRestoreCommand(
+    private static List<string> MapRestoreProperties(FrozenDictionary<string, string>? restoreProperties) => [
+            ..RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}"),
+            // putting the user properties at the end so that they can override the defaults
+            ..restoreProperties is null ? [] : restoreProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")
+        ];
+
+    private static MSBuildForwardingApp? GetSeparateRestoreCommand(
         IEnumerable<string> arguments,
         bool noRestore,
-        string msbuildPath)
+        string? msbuildPath,
+        FrozenDictionary<string, string>? restoreProperties)
     {
         if (noRestore || !HasArgumentToExcludeFromRestore(arguments))
         {
             return null;
         }
 
-        IEnumerable<string> restoreArguments = ["-target:Restore"];
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(arguments);
-        restoreArguments = [.. restoreArguments, .. newArgumentsToAdd, .. existingArgumentsToForward];
+        string[] restoreArguments = ["--target:Restore", .. newArgumentsToAdd, .. existingArgumentsToForward, ..MapRestoreProperties(restoreProperties)];
 
         return RestoreCommand.CreateForwarding(restoreArguments, msbuildPath);
     }
-
-    private static IEnumerable<string> Prepend(string argument, IEnumerable<string> arguments)
-        => new[] { argument }.Concat(arguments);
 
     private static bool HasArgumentToExcludeFromRestore(IEnumerable<string> arguments)
         => arguments.Any(a => IsExcludedFromRestore(a));
 
     private static readonly string[] switchPrefixes = ["-", "/", "--"];
 
-    // these properties trigger a separate restore
+    /// <summary>
+    /// these properties trigger a separate restore
+    /// </summary>
     private static readonly string[] PropertiesToExcludeFromRestore =
     [
         "TargetFramework"
     ];
 
-    //  These arguments should lead to absolutely no output from the restore command
+    /// <summary>
+    ///  These arguments should lead to absolutely no output from the restore command
+    /// </summary>
     private static readonly string[] FlagsThatTriggerSilentRestore =
     [
         "getProperty",
@@ -90,8 +115,10 @@ public class RestoringCommand : MSBuildForwardingApp
         "getTargetResult"
     ];
 
-    //  These arguments don't by themselves require that restore be run in a separate process,
-    //  but if there is a separate restore process they shouldn't be passed to it
+    /// <summary>
+    ///  These arguments don't by themselves require that restore be run in a separate process,
+    ///  but if there is a separate restore process they shouldn't be passed to it
+    /// </summary>
     private static readonly string[] FlagsToExcludeFromRestore =
     [
         ..FlagsThatTriggerSilentRestore,
@@ -107,9 +134,13 @@ public class RestoringCommand : MSBuildForwardingApp
 
     private static readonly List<string> PropertiesToExcludeFromSeparateRestore = [.. ComputePropertySwitches(PropertiesToExcludeFromRestore)];
 
-    // We investigate the arguments we're about to send to a separate restore call and filter out
-    // arguments that negatively influence the restore. In addition, some flags signal different modes of execution
-    // that we need to compensate for, so we might yield new arguments that should be included in the overall restore call.
+    /// <summary>
+    /// We investigate the arguments we're about to send to a separate restore call and filter out
+    /// arguments that negatively influence the restore. In addition, some flags signal different modes of execution
+    /// that we need to compensate for, so we might yield new arguments that should be included in the overall restore call.
+    /// </summary>
+    /// <param name="forwardedArguments"></param>
+    /// <returns></returns>
     private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(IEnumerable<string> forwardedArguments)
     {
         // Separate restore should be silent in terminal logger - regardless of actual scenario

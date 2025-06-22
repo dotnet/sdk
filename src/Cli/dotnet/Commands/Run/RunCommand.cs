@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
@@ -42,12 +43,21 @@ public class RunCommand
     /// </summary>
     public bool ReadCodeFromStdin { get; }
 
+    public FrozenDictionary<string, string>? RestoreProperties { get; }
+
+    /// <summary>
+    /// unparsed/arbitrary CLI tokens to be passed to the running application
+    /// </summary>
     public string[] Args { get; set; }
     public bool NoRestore { get; }
     public bool NoCache { get; }
     public VerbosityOptions? Verbosity { get; }
     public bool Interactive { get; }
-    public string[] RestoreArgs { get; }
+
+    /// <summary>
+    /// All forwarded and explicit <c>--property</c> options for this command
+    /// </summary>
+    public string[] AmbientMSBuildProperties { get; }
 
     /// <summary>
     /// Environment variables specified on command line via -e option.
@@ -64,6 +74,20 @@ public class RunCommand
     /// </summary>
     public bool NoLaunchProfileArguments { get; }
 
+    /// <param name="noBuild"></param>
+    /// <param name="projectFileFullPath"></param>
+    /// <param name="entryPointFileFullPath"></param>
+    /// <param name="launchProfile"></param>
+    /// <param name="noLaunchProfile"></param>
+    /// <param name="noLaunchProfileArguments"></param>
+    /// <param name="noRestore"></param>
+    /// <param name="noCache"></param>
+    /// <param name="interactive"></param>
+    /// <param name="verbosity"></param>
+    /// <param name="ambientMSBuildProperties">All forwarded and explicit <c>--property</c> options for this command</param>
+    /// <param name="args">unparsed/arbitrary CLI tokens to be passed to the running application</param>
+    /// <param name="readCodeFromStdin"></param>
+    /// <param name="environmentVariables"></param>
     public RunCommand(
         bool noBuild,
         string? projectFileFullPath,
@@ -75,10 +99,11 @@ public class RunCommand
         bool noCache,
         bool interactive,
         VerbosityOptions? verbosity,
-        string[] restoreArgs,
+        string[] ambientMSBuildProperties,
         string[] args,
         bool readCodeFromStdin,
-        IReadOnlyDictionary<string, string> environmentVariables)
+        IReadOnlyDictionary<string, string> environmentVariables,
+        FrozenDictionary<string, string>? msbuildRestoreProperties)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
@@ -95,8 +120,9 @@ public class RunCommand
         NoRestore = noRestore;
         NoCache = noCache;
         Verbosity = verbosity;
-        RestoreArgs = GetRestoreArguments(restoreArgs);
+        AmbientMSBuildProperties = GetBuildArguments(ambientMSBuildProperties);
         EnvironmentVariables = environmentVariables;
+        RestoreProperties = msbuildRestoreProperties;
     }
 
     public int Execute()
@@ -270,9 +296,10 @@ public class RunCommand
 
             projectFactory = null;
             buildResult = new RestoringCommand(
-                RestoreArgs.Prepend(ProjectFileFullPath),
+                AmbientMSBuildProperties.Prepend(ProjectFileFullPath),
                 NoRestore,
-                advertiseWorkloadUpdates: false
+                advertiseWorkloadUpdates: false,
+                restoreProperties: RestoreProperties
             ).Execute();
         }
 
@@ -289,50 +316,61 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: RestoreArgs)
+            msbuildArgs: AmbientMSBuildProperties,
+            restoreProperties: RestoreProperties)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
         };
     }
 
-    private string[] GetRestoreArguments(IEnumerable<string> cliRestoreArgs)
+    /// <summary>
+    /// Applies run-specific customization to the MSBuild arguments
+    /// that will be used to build the project. `run` wants to operate silently if possible,
+    /// so we disable as much MSBuild output as possible, unless we're forced to be interactive.
+    /// </summary>
+    /// <returns></returns>
+    private string[] GetBuildArguments(IEnumerable<string> ambientMSBuildPropertiesForBuild)
     {
         List<string> args = ["-nologo"];
 
-        if (Verbosity is null)
+        if (Verbosity is null) // only do this if null because otherwise the property will already be 'forwarded'
         {
             args.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
         }
 
-        args.AddRange(cliRestoreArgs);
+        args.AddRange(ambientMSBuildPropertiesForBuild);
 
         return [.. args];
     }
 
+    /// <summary>
+    /// Ensures that if we are in an interactive session, we use a verbosity that is appropriate for it.
+    /// Since NuGet credential providers log via Messages, we need to ensure that
+    /// we use a verbosity that will allow those messages to be written.
+    /// </summary>
     internal static VerbosityOptions GetDefaultVerbosity(bool interactive)
     {
-        // --interactive need to output guide for auth. It cannot be
-        // completely "quiet"
+
         return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger(RestoreArgs, "dotnet-run");
-        var project = EvaluateProject(ProjectFileFullPath, projectFactory, RestoreArgs, logger);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger(AmbientMSBuildProperties, "dotnet-run");
+        var project = EvaluateProject(ProjectFileFullPath, projectFactory, AmbientMSBuildProperties, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, RestoreArgs, Verbosity, logger);
+        InvokeRunArgumentsTarget(project, AmbientMSBuildProperties, Verbosity, logger);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, Args);
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] restoreArgs, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] msbuildProperties, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
-            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(restoreArgs);
+            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildProperties);
 
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
@@ -535,10 +573,10 @@ public class RunCommand
 
         LoggerUtility.SeparateBinLogArguments(applicationArguments, out var binLogArgs, out var nonBinLogArgs);
 
-        var restoreArgs = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
+        var msbuildProperties = parseResult.OptionValuesToBeForwarded(RunCommandParser.GetCommand()).ToList();
         if (binLogArgs.Count > 0)
         {
-            restoreArgs.AddRange(binLogArgs);
+            msbuildProperties.AddRange(binLogArgs);
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
@@ -586,10 +624,11 @@ public class RunCommand
             noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
             verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
-            restoreArgs: [.. restoreArgs],
+            ambientMSBuildProperties: [.. msbuildProperties],
             args: args,
             readCodeFromStdin: readCodeFromStdin,
-            environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty
+            environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
+            msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption)
         );
 
         return command;
@@ -608,7 +647,7 @@ public class RunCommand
         //   -p:project
         //   -p project
         // so try to find those and filter them out of the arguments array
-        var possibleProject = parseResult.GetRunCommandShorthandProjectValues().FirstOrDefault()!;
+        var possibleProject = parseResult.GetRunCommandShorthandProjectValues()!.FirstOrDefault()!; // ! are ok because of precondition check in method called before this.
         var tokensMinusProject = new List<string>();
         var nextTokenMayBeProject = false;
         foreach (var token in parseResult.Tokens)

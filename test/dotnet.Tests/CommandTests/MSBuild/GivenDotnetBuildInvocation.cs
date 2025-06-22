@@ -10,6 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetBuildInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo"];
+        string[] RestoreExpectedPrefix = [..RestoringCommand.RestoreOptimizationProperties.Select(kvp => $"--restoreProperty:{kvp.Key}={kvp.Value}")];
 
         const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
 
@@ -58,25 +59,25 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
         [Theory]
         [InlineData(new string[] { "-f", "tfm" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "-property:TargetFramework=tfm" })]
         [InlineData(new string[] { "-p:TargetFramework=tfm" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
         [InlineData(new string[] { "/p:TargetFramework=tfm" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "--property:TargetFramework=tfm" })]
         [InlineData(new string[] { "-t:Run", "-f", "tfm" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "-property:TargetFramework=tfm", "-t:Run" })]
         [InlineData(new string[] { "/t:Run", "-f", "tfm" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
             new string[] { "-property:TargetFramework=tfm", "/t:Run" })]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
             new string[] { "-property:TargetFramework=tfm", "-verbosity:diag", "-property:OutputPath=<cwd>myoutput", "-property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
         [InlineData(new string[] { "-f", "tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" },
-            new string[] { "-target:Restore", "-tlp:verbosity=quiet", "-nologo", "-verbosity:quiet" },
+            new string[] { "--target:Restore", "-tlp:verbosity=quiet", "-nologo", "-verbosity:quiet" },
             new string[] { "-property:TargetFramework=tfm", "-getItem:Compile", "-getProperty:TargetFramework", "-getTargetResult:Build" })]
         public void MsbuildInvocationIsCorrectForSeparateRestore(
             string[] args,
@@ -96,9 +97,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var msbuildPath = "<msbuildpath>";
                 var command = (RestoringCommand)BuildCommand.FromArgs(args, msbuildPath);
 
-                command.SeparateRestoreCommand.GetArgumentTokensToMSBuild()
+                command.SeparateRestoreCommand!.GetArgumentTokensToMSBuild() // for this scenario, we expect a separate restore command
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgsForRestore, NugetInteractiveProperty]);
+                    .BeEquivalentTo([.. ExpectedPrefix, NugetInteractiveProperty, .. expectedAdditionalArgsForRestore, ..RestoreExpectedPrefix]);
 
                 command.GetArgumentTokensToMSBuild()
                     .Should()

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
@@ -86,6 +87,7 @@ internal abstract class RunApiInput
         {
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: EntryPointFileFullPath,
+                restoreProperties: FrozenDictionary<string, string>.Empty,
                 msbuildArgs: ["-verbosity:quiet"])
             {
                 CustomArtifactsPath = ArtifactsPath,
@@ -104,10 +106,11 @@ internal abstract class RunApiInput
                 noCache: false,
                 interactive: false,
                 verbosity: VerbosityOptions.quiet,
-                restoreArgs: [],
+                ambientMSBuildProperties: [],
                 args: [],
                 readCodeFromStdin: false,
-                environmentVariables: ReadOnlyDictionary<string, string>.Empty);
+                environmentVariables: ReadOnlyDictionary<string, string>.Empty,
+                msbuildRestoreProperties: FrozenDictionary<string, string>.Empty);
 
             runCommand.TryGetLaunchProfileSettingsIfNeeded(out var launchSettings);
             var targetCommand = (Utils.Command)runCommand.GetTargetCommand(buildCommand.CreateProjectInstance);

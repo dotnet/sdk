@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -24,8 +25,45 @@ internal static class CommonOptions
         new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")
         {
             Hidden = true
-        }.ForwardAsProperty()
+        }.ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
+
+    /// <summary>
+    /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
+    /// </summary>
+    /// <remarks>
+    /// This isn't 'forwarded' like the other options because we need to more accurately control how and when values are parsed and forwarded to MSBuild.
+    /// <c>-p</c>-style properties are always safe to flow, but these are used in more specific scenarios.
+    /// </remarks>
+    public static Option<FrozenDictionary<string, string>?> RestorePropertiesOption =
+        // these are all of the forms that the property switch can be understood by in MSBuild
+        new ForwardedOption<FrozenDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "-rp", "--rp")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            DefaultValueFactory = _ => FrozenDictionary<string, string>.Empty,
+            CustomParser = ParseMSBuildTokensIntoDictionary
+        }
+        .AllowSingleArgPerToken();
+
+    private static FrozenDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
+        {
+            return null;
+        }
+        var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var token in result.Tokens)
+        {
+            foreach (var kvp in MSBuildPropertyParser.ParseProperties(token.Value))
+            {
+                // msbuild properties explicitly have the semantic of being 'overwrite' so we do not check for duplicates
+                // and just overwrite the value if it already exists.
+                dictionary[kvp.key] = kvp.value;
+            }
+        }
+        return dictionary.ToFrozenDictionary();
+    }
 
     public static Option<VerbosityOptions> VerbosityOption =
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")

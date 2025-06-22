@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(newWorkingDir, () =>
                 {
                     var command = RunCommand.FromArgs(args);
-                    command.RestoreArgs
+                    command.AmbientMSBuildProperties
                         .Should()
                         .BeEquivalentTo([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty]);
                 });
