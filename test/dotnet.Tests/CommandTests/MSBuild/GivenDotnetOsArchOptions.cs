@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}"]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
             });
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch"]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
             });
         }
 
@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "arch", "--os", "os"], msbuildPath);
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-arch"]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-arch", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
             });
         }
 
@@ -83,7 +83,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .. DefaultArgs,
                     "-property:SelfContained=True",
                     "-property:_CommandLineDefinedSelfContained=true",
-                    "-property:RuntimeIdentifier=os-arch"
+                    "-property:RuntimeIdentifier=os-arch",
+                    .. GivenDotnetBuildInvocation.RestoreExpectedPrefix
                 ];
                 command.GetArgumentTokensToMSBuild()
                     .Should()
@@ -156,7 +157,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var command = (RestoringCommand)BuildCommand.FromArgs(["--arch", "amd64", "--os", "os"], msbuildPath);
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-x64"]);
+                    .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, "-property:RuntimeIdentifier=os-x64", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
             });
         }
 
@@ -174,7 +175,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     var expectedArch = RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86";
                     command.GetArgumentTokensToMSBuild()
                         .Should()
-                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}"]);
+                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier=os-{expectedArch}", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
@@ -202,7 +203,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     }
                     command.GetArgumentTokensToMSBuild()
                         .Should()
-                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch"]);
+                        .BeEquivalentTo([.. ExpectedPrefix, .. DefaultArgs, $"-property:RuntimeIdentifier={expectedOs}-arch", .. GivenDotnetBuildInvocation.RestoreExpectedPrefix]);
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
