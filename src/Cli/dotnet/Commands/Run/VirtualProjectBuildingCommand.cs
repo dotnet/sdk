@@ -2,7 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Buffers;
+using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Security;
 using System.Text.Json;
@@ -19,6 +21,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
@@ -100,7 +103,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Projects="@(_GenerateRestoreGraphProjectEntryInput)"
                 Targets="_GenerateProjectRestoreGraph"
                 Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-        
+
               <Output
                   TaskParameter="TargetOutputs"
                   ItemName="_RestoreGraphEntry" />
@@ -112,7 +115,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
-        string[] msbuildArgs)
+        string[] msbuildArgs,
+        FrozenDictionary<string, string>? restoreProperties)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
@@ -120,11 +124,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         GlobalProperties = new(StringComparer.OrdinalIgnoreCase);
         CommonRunHelpers.AddUserPassedProperties(GlobalProperties, msbuildArgs);
         LoggerArgs = msbuildArgs;
+        RestoreProperties = restoreProperties;
     }
 
     public string EntryPointFileFullPath { get; }
     public Dictionary<string, string> GlobalProperties { get; }
     public string[] LoggerArgs { get; }
+    public FrozenDictionary<string, string>? RestoreProperties { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
@@ -197,11 +203,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, addGlobalProperties: static (globalProperties) =>
-                    {
-                        globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
-                        globalProperties["MSBuildIsRestoring"] = bool.TrueString;
-                    }),
+                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(RestoreProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
@@ -256,6 +258,30 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             binaryLogger?.Shutdown();
             consoleLogger.Shutdown();
+        }
+
+        static Action<IDictionary<string, string>> AddRestoreGlobalProperties(FrozenDictionary<string, string>? restoreProperties)
+        {
+            return globalProperties =>
+            {
+                globalProperties["MSBuildRestoreSessionId"] = Guid.NewGuid().ToString("D");
+                globalProperties["MSBuildIsRestoring"] = bool.TrueString;
+                foreach (var (key, value) in RestoringCommand.RestoreOptimizationProperties)
+                {
+                    globalProperties[key] = value;
+                }
+                if (restoreProperties is null)
+                    {
+                        return;
+                    }
+                foreach (var (key, value) in restoreProperties)
+                {
+                    if (value is not null)
+                    {
+                        globalProperties[key] = value;
+                    }
+                }
+            };
         }
 
         static ILogger? GetBinaryLogger(IReadOnlyList<string> args)

@@ -34,6 +34,13 @@ internal static class CommonRunHelpers
         }
     }
 
+    /// <summary>
+    /// Creates a dictionary of global properties for MSBuild from the command line arguments.
+    /// This includes properties that are passed via the command line, as well as some
+    /// properties that are set to improve performance at the cost of correctness -
+    /// specifically Compile, None, and EmbeddedResource items are not globbed by default.
+    /// See <see cref="Commands.Restore.RestoringCommand.RestoreOptimizationProperties"/> for more details.
+    /// </summary>
     public static Dictionary<string, string> GetGlobalPropertiesFromArgs(string[] args)
     {
         var globalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

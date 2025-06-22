@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -13,8 +14,9 @@ public class PublishCommand : RestoringCommand
     private PublishCommand(
         IEnumerable<string> msbuildArgs,
         bool noRestore,
+        FrozenDictionary<string, string>? restoreProperties,
         string? msbuildPath = null)
-        : base(msbuildArgs, noRestore, msbuildPath)
+        : base(msbuildArgs, noRestore, restoreProperties, msbuildPath)
     {
     }
 
@@ -48,6 +50,8 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(PublishCommandParser.NoRestoreOption);
 
+        var restoreProperties = parseResult.GetValue(CommonOptions.RestorePropertiesOption);
+
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             if (!parseResult.HasOption(PublishCommandParser.ConfigurationOption))
@@ -59,7 +63,8 @@ public class PublishCommand : RestoringCommand
 
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. msbuildArgs])
+                msbuildArgs: [.. msbuildArgs],
+                restoreProperties: restoreProperties)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
@@ -84,6 +89,7 @@ public class PublishCommand : RestoringCommand
         return new PublishCommand(
             msbuildArgs,
             noRestore,
+            restoreProperties,
             msbuildPath);
     }
 

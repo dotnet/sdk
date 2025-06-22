@@ -24,8 +24,8 @@ internal class ReleasePropertyProjectLocator
         public string? FrameworkOption;
         public string? ConfigurationOption;
 
-        public DependentCommandOptions(IEnumerable<string> slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
-        => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs, configOption, frameworkOption);
+        public DependentCommandOptions(IEnumerable<string>? slnOrProjectArgs, string? configOption = null, string? frameworkOption = null)
+        => (SlnOrProjectArgs, ConfigurationOption, FrameworkOption) = (slnOrProjectArgs ?? [], configOption, frameworkOption);
     }
 
     private readonly ParseResult _parseResult;

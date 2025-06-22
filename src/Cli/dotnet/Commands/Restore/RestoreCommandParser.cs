@@ -186,6 +186,7 @@ internal static class RestoreCommandParser
         yield return forceOption;
 
         yield return CommonOptions.PropertiesOption;
+        yield return CommonOptions.RestorePropertiesOption;
 
         if (includeRuntimeOption)
         {

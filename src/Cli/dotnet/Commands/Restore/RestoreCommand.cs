@@ -29,12 +29,14 @@ public static class RestoreCommand
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
+        var restoreProperties = result.GetValue(CommonOptions.RestorePropertiesOption);
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, ..binLogArgs])
+                msbuildArgs: [.. forwardedOptions, .. binLogArgs],
+                restoreProperties)
             {
                 NoCache = true,
                 NoBuild = true,

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
@@ -47,7 +49,14 @@ public static class OptionForwardingExtensions
         });
     }
 
-    public static ForwardedOption<string[]> ForwardAsProperty(this ForwardedOption<string[]> option) => option
+    /// <summary>
+    /// Set up an option to be forwarded as an MSBuild property
+    /// This will parse the values as MSBuild properties and forward them in the format <c>optionName:key=value</c>.
+    /// For example, if the option is named "--property", and the values are "A=B" and "C=D", it will be forwarded as:
+    /// <c>--property:A=B --property:C=D</c>.
+    /// This is useful for options that can take multiple key-value pairs, such as --property.
+    /// </summary>
+    public static ForwardedOption<string[]> ForwardAsMSBuildProperty(this ForwardedOption<string[]> option) => option
         .SetForwardingFunction((optionVals) =>
             (optionVals ?? [])
                 .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
