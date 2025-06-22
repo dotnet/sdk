@@ -1012,7 +1012,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
+        <target state="translated">Cesta k souboru &lt;aplikace&gt;.deps.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="Description">
@@ -2601,7 +2601,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
+        <target state="translated">Cesta k souboru &lt;aplikace&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
