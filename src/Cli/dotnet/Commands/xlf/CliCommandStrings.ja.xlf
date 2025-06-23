@@ -1453,7 +1453,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
-        <target state="new">Cannot specify option '{0}' when also using '-' to read the file from standard input.</target>
+        <target state="translated">標準入力からファイルを読み取るために '-' も使用している場合は、オプション '{0}' を指定できません。</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">

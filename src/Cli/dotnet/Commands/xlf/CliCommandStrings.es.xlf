@@ -1453,7 +1453,7 @@ Defina nombres de perfiles distintos.</target>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
-        <target state="new">Cannot specify option '{0}' when also using '-' to read the file from standard input.</target>
+        <target state="translated">No se puede especificar la opción "{0}" cuando también se utiliza "-" para leer el archivo desde la entrada estándar.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
