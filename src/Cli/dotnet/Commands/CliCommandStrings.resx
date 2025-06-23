@@ -1520,7 +1520,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path and line number.</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</value>
+    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
     <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
@@ -1534,6 +1534,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="InvalidOptionCombination" xml:space="preserve">
     <value>Cannot combine option '{0}' and '{1}'.</value>
     <comment>{0} and {1} are option names like '--no-build'.</comment>
+  </data>
+  <data name="InvalidOptionForStdin" xml:space="preserve">
+    <value>Cannot specify option '{0}' when also using '-' to read the file from standard input.</value>
+    <comment>{0} is an option name like '--no-build'.</comment>
   </data>
   <data name="NoBinaryLogBecauseUpToDate" xml:space="preserve">
     <value>Warning: Binary log option was specified but build will be skipped because output is up to date, specify '--no-cache' to force build.</value>

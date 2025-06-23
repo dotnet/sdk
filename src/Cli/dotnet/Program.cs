@@ -4,8 +4,10 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.Parsing;
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
+using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
@@ -127,10 +129,7 @@ public class Program
         ParseResult parseResult;
         using (new PerformanceMeasurement(performanceData, "Parse Time"))
         {
-            // If we get C# file path as the first argument, parse as `dotnet run file.cs`.
-            parseResult = args is [{ } filePath, ..] && VirtualProjectBuildingCommand.IsValidEntryPointPath(filePath)
-                ? Parser.Instance.Parse(["run", .. args])
-                : Parser.Instance.Parse(args);
+            parseResult = Parser.Instance.Parse(args);
 
             // Avoid create temp directory with root permission and later prevent access in non sudo
             // This method need to be run very early before temp folder get created
@@ -237,36 +236,35 @@ public class Program
         int exitCode;
         if (parseResult.CanBeInvoked())
         {
-            PerformanceLogEventSource.Log.BuiltInCommandStart();
-
-            try
-            {
-                exitCode = parseResult.Invoke();
-                exitCode = AdjustExitCode(parseResult, exitCode);
-            }
-            catch (Exception exception)
-            {
-                exitCode = Parser.ExceptionHandler(exception, parseResult);
-            }
-
-            PerformanceLogEventSource.Log.BuiltInCommandStop();
+            InvokeBuiltInCommand(parseResult, out exitCode);
         }
         else
         {
             PerformanceLogEventSource.Log.ExtensibleCommandResolverStart();
             try
             {
-                var resolvedCommand = CommandFactoryUsingResolver.Create(
-                        "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand),
-                        args.GetSubArguments(),
-                        FrameworkConstants.CommonFrameworks.NetStandardApp15);
-                PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
+                string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
+                var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
+                    new DefaultCommandResolverPolicy(),
+                    commandName,
+                    args.GetSubArguments(),
+                    FrameworkConstants.CommonFrameworks.NetStandardApp15);
 
-                PerformanceLogEventSource.Log.ExtensibleCommandStart();
-                var result = resolvedCommand.Execute();
-                PerformanceLogEventSource.Log.ExtensibleCommandStop();
+                if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
+                {
+                    exitCode = fileBasedAppExitCode;
+                }
+                else
+                {
+                    var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
+                    PerformanceLogEventSource.Log.ExtensibleCommandResolverStop();
 
-                exitCode = result.ExitCode;
+                    PerformanceLogEventSource.Log.ExtensibleCommandStart();
+                    var result = resolvedCommand.Execute();
+                    PerformanceLogEventSource.Log.ExtensibleCommandStop();
+
+                    exitCode = result.ExitCode;
+                }
             }
             catch (CommandUnknownException e)
             {
@@ -283,6 +281,50 @@ public class Program
         TelemetryClient.Dispose();
 
         return exitCode;
+
+        static int? TryRunFileBasedApp(ParseResult parseResult)
+        {
+            // If we didn't match any built-in commands, and a C# file path is the first argument,
+            // parse as `dotnet run file.cs ..rest_of_args` instead.
+            if (parseResult.CommandResult.Command is RootCommand
+                && parseResult.GetValue(Parser.DotnetSubCommand) is { } unmatchedCommandOrFile
+                && VirtualProjectBuildingCommand.IsValidEntryPointPath(unmatchedCommandOrFile))
+            {
+                List<string> otherTokens = new(parseResult.Tokens.Count - 1);
+                foreach (var token in parseResult.Tokens)
+                {
+                    if (token.Type != TokenType.Argument || token.Value != unmatchedCommandOrFile)
+                    {
+                        otherTokens.Add(token.Value);
+                    }
+                }
+                parseResult = Parser.Instance.Parse(["run", unmatchedCommandOrFile, .. otherTokens]);
+
+                InvokeBuiltInCommand(parseResult, out var exitCode);
+                return exitCode;
+            }
+
+            return null;
+        }
+
+        static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
+        {
+            Debug.Assert(parseResult.CanBeInvoked());
+
+            PerformanceLogEventSource.Log.BuiltInCommandStart();
+
+            try
+            {
+                exitCode = parseResult.Invoke();
+                exitCode = AdjustExitCode(parseResult, exitCode);
+            }
+            catch (Exception exception)
+            {
+                exitCode = Parser.ExceptionHandler(exception, parseResult);
+            }
+
+            PerformanceLogEventSource.Log.BuiltInCommandStop();
+        }
     }
 
     private static int AdjustExitCode(ParseResult parseResult, int exitCode)

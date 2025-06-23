@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Watch
                     }
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    compilationHandler = new CompilationHandler(Context.Reporter, Context.EnvironmentOptions, shutdownCancellationToken);
+                    compilationHandler = new CompilationHandler(Context.Reporter, Context.ProcessRunner);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
@@ -291,28 +291,23 @@ namespace Microsoft.DotNet.Watch
                                         question = "Do you want to restart these projects?";
                                     }
 
-                                    if (!await _rudeEditRestartPrompt.WaitForRestartConfirmationAsync(question, cancellationToken))
-                                    {
-                                        Context.Reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
-                                        await Task.Delay(-1, cancellationToken);
-                                    }
+                                    return await _rudeEditRestartPrompt.WaitForRestartConfirmationAsync(question, cancellationToken);
                                 }
-                                else
-                                {
-                                    Context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
 
-                                    foreach (var projectName in projectNames)
-                                    {
-                                        Context.Reporter.Verbose($"  Project to restart: '{projectName}'");
-                                    }
+                                Context.Reporter.Verbose("Restarting without prompt since dotnet-watch is running in non-interactive mode.");
+
+                                foreach (var projectName in projectNames)
+                                {
+                                    Context.Reporter.Verbose($"  Project to restart: '{projectName}'");
                                 }
+
+                                return true;
                             },
                             iterationCancellationToken);
 
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.CompilationHandler);
 
                         stopwatch.Stop();
-                        Context.Reporter.Report(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
                         HotReloadEventSource.Log.HotReloadEnd(HotReloadEventSource.StartType.Main);
 
@@ -324,11 +319,8 @@ namespace Microsoft.DotNet.Watch
                             break;
                         }
 
-                        if (projectsToRebuild.Count > 0)
+                        if (!projectsToRebuild.IsEmpty)
                         {
-                            // Discard baselines before build.
-                            compilationHandler.DiscardProjectBaselines(projectsToRebuild, iterationCancellationToken);
-
                             while (true)
                             {
                                 iterationCancellationToken.ThrowIfCancellationRequested();
@@ -367,11 +359,10 @@ namespace Microsoft.DotNet.Watch
                             // Apply them to the workspace.
                             _ = await CaptureChangedFilesSnapshot(projectsToRebuild);
 
-                            // Update project baselines to reflect changes to the restarted projects.
-                            compilationHandler.UpdateProjectBaselines(projectsToRebuild, iterationCancellationToken);
+                            Context.Reporter.Report(MessageDescriptor.ProjectsRebuilt, projectsToRebuild.Count);
                         }
 
-                        if (projectsToRestart is not [])
+                        if (!projectsToRestart.IsEmpty)
                         {
                             await Task.WhenAll(
                                 projectsToRestart.Select(async runningProject =>
@@ -392,7 +383,11 @@ namespace Microsoft.DotNet.Watch
                                     }
                                 }))
                                 .WaitAsync(shutdownCancellationToken);
+
+                            Context.Reporter.Report(MessageDescriptor.ProjectsRestarted, projectsToRestart.Length);
                         }
+
+                        Context.Reporter.Report(MessageDescriptor.HotReloadChangeHandled, stopwatch.ElapsedMilliseconds);
 
                         async Task<ImmutableList<ChangedFile>> CaptureChangedFilesSnapshot(ImmutableDictionary<ProjectId, string>? rebuiltProjects)
                         {
@@ -455,6 +450,8 @@ namespace Microsoft.DotNet.Watch
                                 changedFiles = changedFiles
                                     .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
                                     .ToImmutableList();
+
+                                Context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
 
                             if (rebuiltProjects != null)
@@ -527,7 +524,7 @@ namespace Microsoft.DotNet.Watch
 
                     if (rootRunningProject != null)
                     {
-                        await rootRunningProject.TerminateAsync(shutdownCancellationToken);
+                        await rootRunningProject.TerminateAsync();
                     }
 
                     if (runtimeProcessLauncher != null)
@@ -831,7 +828,7 @@ namespace Microsoft.DotNet.Watch
 
             Context.Reporter.Output($"Building {projectPath} ...");
 
-            var exitCode = await ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
+            var exitCode = await Context.ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: false, launchResult: null, cancellationToken);
             return (exitCode == 0, buildOutput.ToImmutableArray(), projectPath);
         }
 
