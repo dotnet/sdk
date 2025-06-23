@@ -206,7 +206,7 @@ and any leading and trailing white space is not considered part of the name and 
 
 The directives are processed as follows:
 
-- The name and value of the first `#:sdk` is injected into `<Project Sdk="{0}/{1}">` (or just `<Project Sdk="{0}">` if it has is no value),
+- The name and value of the first `#:sdk` is injected into `<Project Sdk="{0}/{1}">` (or just `<Project Sdk="{0}">` if it has no value),
   and the subsequent `#:sdk` directive names and values are injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if it has no value).
   It is an error if the name is empty (the version is allowed to be empty, but that results in empty `Version=""`).
 
@@ -264,7 +264,7 @@ The build is performed using MSBuild APIs on in-memory project files.
 
 If an up-to-date check detects that inputs didn't change in subsequent `dotnet run file.cs` invocations,
 building is skipped (as if `--no-build` option has been passed).
-The up-to-date check is not 100% precise (e.g., files imported though an implicit build file are not considered).
+The up-to-date check is not 100% precise (e.g., files imported through an implicit build file are not considered).
 It is possible to enforce a full build using `--no-cache` flag or `dotnet build file.cs`.
 Environment variable [`DOTNET_CLI_CONTEXT_VERBOSE=true`][verbose-env] can be used to get more details about caching decisions made by `dotnet run file.cs`.
 
