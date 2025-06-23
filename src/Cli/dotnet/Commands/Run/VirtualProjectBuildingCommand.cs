@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Security;
@@ -41,22 +40,42 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private const string BuildSuccessCacheFileName = "build-success.cache";
 
-    private static readonly ImmutableArray<string> s_implicitBuildFileNames =
+    /// <summary>
+    /// <c>MSBuildFile</c> is <see langword="true"/> if the presence of the implicit build file (even if there are no <see cref="CSharpDirective"/>s)
+    /// implies that CSC is not enough and MSBuild is needed to build the project, i.e., the file alone can affect MSBuild props or targets.
+    /// </summary>
+    /// <remarks>
+    /// For example, the simple programs our CSC optimized path handles do not need NuGet restore, hence we can ignore NuGet config files.
+    /// </remarks>
+    private static readonly ImmutableArray<(string Name, bool MSBuildFile)> s_implicitBuildFiles =
     [
-        "global.json",
+        ("global.json", false),
 
         // All these casings are recognized on case-sensitive platforms:
         // https://github.com/NuGet/NuGet.Client/blob/ab6b96fd9ba07ed3bf629ee389799ca4fb9a20fb/src/NuGet.Core/NuGet.Configuration/Settings/Settings.cs#L32-L37
-        "nuget.config",
-        "NuGet.config",
-        "NuGet.Config",
+        ("nuget.config", false),
+        ("NuGet.config", false),
+        ("NuGet.Config", false),
 
-        "Directory.Build.props",
-        "Directory.Build.targets",
-        "Directory.Packages.props",
-        "Directory.Build.rsp",
-        "MSBuild.rsp",
+        ("Directory.Build.props", true),
+        ("Directory.Build.targets", true),
+        ("Directory.Packages.props", true),
+        ("Directory.Build.rsp", true),
+        ("MSBuild.rsp", true),
     ];
+
+    /// <summary>
+    /// For purposes of determining whether CSC is enough to build as opposed to full MSBuild,
+    /// we can ignore properties that do not affect the build on their own.
+    /// See also the <c>MSBuildFile</c> flag in <see cref="s_implicitBuildFiles"/>.
+    /// </summary>
+    private static readonly IEnumerable<string> s_ignorableProperties =
+    [
+        // This is set by default by `dotnet run`, so it must be ignored otherwise the CSC optimization would not kick in by default.
+        "NuGetInteractive",
+    ];
+
+    public const string TargetFrameworkVersion = "10.0";
 
     internal static readonly string TargetOverrides = """
           <!--
@@ -126,10 +145,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public Dictionary<string, string> GlobalProperties { get; }
     public string[] LoggerArgs { get; }
     public string? CustomArtifactsPath { get; init; }
+    public string ArtifactsPath => field ??= CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
     public string BuildTarget { get; init; } = "Build";
+    public BuildLevel LastBuildLevel { get; private set; } = BuildLevel.None;
 
     public override int Execute()
     {
@@ -137,27 +158,72 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(LoggerArgs);
         var binaryLogger = GetBinaryLogger(LoggerArgs);
 
-        RunFileBuildCacheEntry? cacheEntry = null;
+        CacheInfo? cache = null;
 
         if (!NoBuild)
         {
             if (NoCache)
             {
-                cacheEntry = ComputeCacheEntry(out _);
-            }
-            else if (!NeedsToBuild(out cacheEntry))
-            {
-                if (binaryLogger is not null)
-                {
-                    Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
-                }
-
                 PrepareProjectInstance();
 
-                return 0;
+                cache = ComputeCacheEntry();
+                LastBuildLevel = BuildLevel.All;
+            }
+            else
+            {
+                PrepareProjectInstance();
+
+                var buildLevel = GetBuildLevel(out cache);
+                LastBuildLevel = buildLevel;
+
+                if (buildLevel is BuildLevel.None)
+                {
+                    if (binaryLogger is not null)
+                    {
+                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                    }
+
+                    return 0;
+                }
+
+                if (buildLevel is BuildLevel.Csc)
+                {
+                    if (binaryLogger is not null)
+                    {
+                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
+                    }
+
+                    MarkBuildStart();
+
+                    // Execute CSC.
+                    int result = new CSharpCompilerCommand
+                    {
+                        EntryPointFileFullPath = EntryPointFileFullPath,
+                        ArtifactsPath = ArtifactsPath,
+                        // We can reuse auxiliary files if we previously built using csc.
+                        CanReuseAuxiliaryFiles = cache.CanReuseAuxiliaryFiles && cache.PreviousEntry?.BuildLevel is BuildLevel.Csc,
+                    }
+                    .Execute(out bool fallbackToNormalBuild);
+
+                    if (result == 0)
+                    {
+                        Debug.Assert(!fallbackToNormalBuild);
+                        MarkBuildSuccess(cache);
+                    }
+
+                    if (!fallbackToNormalBuild)
+                    {
+                        return result;
+                    }
+                }
             }
 
             MarkBuildStart();
+        }
+        else
+        {
+            PrepareProjectInstance();
+            LastBuildLevel = BuildLevel.None;
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
@@ -182,8 +248,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
-
-            PrepareProjectInstance();
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
@@ -218,8 +282,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     return 1;
                 }
 
-                Debug.Assert(cacheEntry != null);
-                MarkBuildSuccess(cacheEntry);
+                Debug.Assert(cache != null);
+                MarkBuildSuccess(cache);
             }
 
             BuildManager.DefaultBuildManager.EndBuild();
@@ -264,44 +328,72 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     /// <summary>
+    /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
+    /// </summary>
+    private sealed class CacheInfo
+    {
+        public required FileInfo EntryPointFile { get; init; }
+        public RunFileBuildCacheEntry? PreviousEntry { get; set; }
+        public required RunFileBuildCacheEntry CurrentEntry { get; init; }
+
+        /// <summary>
+        /// We cannot reuse auxiliary files like <c>csc.rsp</c> for example when SDK version changes.
+        /// </summary>
+        public bool CanReuseAuxiliaryFiles { get; set; } = true;
+    }
+
+    /// <summary>
     /// Compute current cache entry - we need to do this always:
     /// <list type="bullet">
     /// <item>if we can skip build, we still need to check everything in the cache entry (e.g., implicit build files)</item>
     /// <item>if we have to build, we need to have the cache entry to write it to the success cache file</item>
     /// </list>
     /// </summary>
-    private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
+    private CacheInfo ComputeCacheEntry()
     {
-        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties);
-        entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
+        Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
+
+        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties)
+        {
+            AnyDirectives = _directives.Any(static d => d is not CSharpDirective.Shebang),
+            SdkVersion = Product.Version,
+            RuntimeVersion = CSharpCompilerCommand.RuntimeVersion,
+        };
+
+        var entryPointFile = new FileInfo(EntryPointFileFullPath);
 
         // Collect current implicit build files.
-        DirectoryInfo? directory = entryPointFileInfo.Directory;
-        while (directory != null)
+        for (DirectoryInfo? directory = entryPointFile.Directory; directory != null; directory = directory.Parent)
         {
-            foreach (var implicitBuildFileName in s_implicitBuildFileNames)
+            foreach (var implicitBuildFile in s_implicitBuildFiles)
             {
-                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFileName);
-                var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
-                if (implicitBuildFileInfo.Exists)
+                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFile.Name);
+                if (File.Exists(implicitBuildFilePath))
                 {
-                    cacheEntry.ImplicitBuildFiles.Add(implicitBuildFilePath, implicitBuildFileInfo.LastWriteTimeUtc);
+                    cacheEntry.ImplicitBuildFiles.Add(implicitBuildFilePath);
+
+                    if (implicitBuildFile.MSBuildFile && cacheEntry.ExampleMSBuildFile is null)
+                    {
+                        cacheEntry.ExampleMSBuildFile = implicitBuildFilePath;
+                    }
                 }
             }
-
-            directory = directory.Parent;
         }
 
-        return cacheEntry;
+        return new CacheInfo
+        {
+            EntryPointFile = entryPointFile,
+            CurrentEntry = cacheEntry,
+        };
     }
 
-    private bool NeedsToBuild(out RunFileBuildCacheEntry cacheEntry)
+    private bool NeedsToBuild(out CacheInfo cache)
     {
-        cacheEntry = ComputeCacheEntry(out FileInfo entryPointFileInfo);
+        cache = ComputeCacheEntry();
 
         // Check cache files.
 
-        string artifactsDirectory = GetArtifactsPath();
+        string artifactsDirectory = ArtifactsPath;
         var successCacheFile = new FileInfo(Path.Join(artifactsDirectory, BuildSuccessCacheFileName));
 
         if (!successCacheFile.Exists)
@@ -317,7 +409,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
-        if (startCacheFile.LastWriteTimeUtc > successCacheFile.LastWriteTimeUtc)
+        DateTime buildTimeUtc = successCacheFile.LastWriteTimeUtc;
+
+        if (startCacheFile.LastWriteTimeUtc > buildTimeUtc)
         {
             Reporter.Verbose.WriteLine("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
             return true;
@@ -326,7 +420,31 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var previousCacheEntry = DeserializeCacheEntry(successCacheFile);
         if (previousCacheEntry is null)
         {
+            cache.CanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
+            return true;
+        }
+
+        cache.PreviousEntry = previousCacheEntry;
+        var cacheEntry = cache.CurrentEntry;
+
+        // Check that versions match.
+
+        if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
+        {
+            cache.CanReuseAuxiliaryFiles = false;
+            Reporter.Verbose.WriteLine($"""
+                Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}
+                """);
+            return true;
+        }
+
+        if (previousCacheEntry.RuntimeVersion != cacheEntry.RuntimeVersion)
+        {
+            cache.CanReuseAuxiliaryFiles = false;
+            Reporter.Verbose.WriteLine($"""
+                Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}
+                """);
             return true;
         }
 
@@ -352,18 +470,24 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
-        DateTime buildTimeUtc = successCacheFile.LastWriteTimeUtc;
+        var entryPointFile = cache.EntryPointFile;
 
-        // Check that the source file is up to date.
-        // If it does not exist, we also want to build.
-        if (!entryPointFileInfo.Exists || entryPointFileInfo.LastWriteTimeUtc > buildTimeUtc)
+        // If the source file does not exist, we want to build so proper errors are reported.
+        if (!entryPointFile.Exists)
         {
-            Reporter.Verbose.WriteLine("Building because entry point file is missing or modified: " + entryPointFileInfo.FullName);
+            Reporter.Verbose.WriteLine("Building because entry point file is missing: " + entryPointFile.FullName);
             return true;
         }
 
-        // Check that implicit build files are up to date.
-        foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles.Keys)
+        // Check that the source file is not modified.
+        if (entryPointFile.LastWriteTimeUtc > buildTimeUtc)
+        {
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + entryPointFile.FullName);
+            return true;
+        }
+
+        // Check that implicit build files are not modified.
+        foreach (var implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
             var implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
@@ -374,9 +498,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         // Check that no new implicit build files are present.
-        foreach (var implicitBuildFilePath in cacheEntry.ImplicitBuildFiles.Keys)
+        foreach (var implicitBuildFilePath in cacheEntry.ImplicitBuildFiles)
         {
-            if (!previousCacheEntry.ImplicitBuildFiles.ContainsKey(implicitBuildFilePath))
+            if (!previousCacheEntry.ImplicitBuildFiles.Contains(implicitBuildFilePath))
             {
                 Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
                 return true;
@@ -400,9 +524,51 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+    private BuildLevel GetBuildLevel(out CacheInfo cache)
+    {
+        if (!NeedsToBuild(out cache))
+        {
+            return BuildLevel.None;
+        }
+
+        // Determine whether we can use CSC only or need to use MSBuild.
+        var cacheEntry = cache.CurrentEntry;
+
+        if (cacheEntry.AnyDirectives)
+        {
+            Reporter.Verbose.WriteLine("Using MSBuild because there are directives in the source file.");
+            return BuildLevel.All;
+        }
+
+        if (cacheEntry.GlobalProperties.Keys.Except(s_ignorableProperties, cacheEntry.GlobalProperties.Comparer).Any())
+        {
+            var example = cacheEntry.GlobalProperties.First();
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{example.Key}={example.Value}'.");
+            return BuildLevel.All;
+        }
+
+        if (cacheEntry.ExampleMSBuildFile is { } exampleMSBuildFile)
+        {
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
+            return BuildLevel.All;
+        }
+
+        foreach (var filePath in CSharpCompilerCommand.GetNuGetPackageFilePaths())
+        {
+            if (!File.Exists(filePath))
+            {
+                Reporter.Verbose.WriteLine($"Using MSBuild because NuGet package file does not exist: {filePath}");
+                return BuildLevel.All;
+            }
+        }
+
+        Reporter.Verbose.WriteLine("Skipping MSBuild and using CSC only.");
+        return BuildLevel.Csc;
+    }
+
     private void MarkBuildStart()
     {
-        string directory = GetArtifactsPath();
+        string directory = ArtifactsPath;
 
         if (OperatingSystem.IsWindows())
         {
@@ -419,11 +585,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
 
-    private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
+    private void MarkBuildSuccess(CacheInfo cache)
     {
-        string successCacheFile = Path.Join(GetArtifactsPath(), BuildSuccessCacheFileName);
+        Debug.Assert(LastBuildLevel != BuildLevel.None);
+        cache.CurrentEntry.BuildLevel = LastBuildLevel;
+
+        string successCacheFile = Path.Join(ArtifactsPath, BuildSuccessCacheFileName);
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
-        JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
+        JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
     /// <summary>
@@ -473,7 +642,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 _directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
-                artifactsPath: GetArtifactsPath(),
+                artifactsPath: ArtifactsPath,
                 includeRuntimeConfigInformation: BuildTarget != "Publish");
             var projectFileText = projectFileWriter.ToString();
 
@@ -484,8 +653,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return projectRoot;
         }
     }
-
-    private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
     // internal for testing
     internal static string GetArtifactsPath(string entryPointFileFullPath)
@@ -581,7 +748,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         writer.WriteLine($"""
               <PropertyGroup>
                 <OutputType>Exe</OutputType>
-                <TargetFramework>net10.0</TargetFramework>
+                <TargetFramework>net{TargetFrameworkVersion}</TargetFramework>
                 <ImplicitUsings>enable</ImplicitUsings>
                 <Nullable>enable</Nullable>
                 <PublishAot>true</PublishAot>
@@ -1229,31 +1396,69 @@ internal sealed class SimpleDiagnostic
 internal sealed class RunFileBuildCacheEntry
 {
     private static StringComparer GlobalPropertiesComparer => StringComparer.OrdinalIgnoreCase;
-    private static StringComparer ImplicitBuildFilesComparer => StringComparer.Ordinal;
+
+    /// <summary>
+    /// We can't know which parts of the path are case insensitive, so we are conservative
+    /// to avoid false positives in the cache (saying we are up to date even if we are not).
+    /// </summary>
+    private static StringComparer FilePathComparer => StringComparer.Ordinal;
 
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     public Dictionary<string, string> GlobalProperties { get; }
 
     /// <summary>
-    /// Maps full path to <see cref="FileSystemInfo.LastWriteTimeUtc"/>.
+    /// Full paths.
     /// </summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public Dictionary<string, DateTime> ImplicitBuildFiles { get; }
+    public HashSet<string> ImplicitBuildFiles { get; }
+
+    /// <summary>
+    /// Whether there are any <see cref="CSharpDirective"/>s recognized by the SDK (i.e., except shebang).
+    /// </summary>
+    public bool AnyDirectives { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
+
+    public BuildLevel BuildLevel { get; set; }
+
+    public string? SdkVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
+
+    public string? RuntimeVersion { get; set; } // should be required and init-only but https://github.com/dotnet/runtime/issues/92877
+
+    [JsonIgnore]
+    public string? ExampleMSBuildFile { get; set; }
 
     [JsonConstructor]
     public RunFileBuildCacheEntry()
     {
         GlobalProperties = new(GlobalPropertiesComparer);
-        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
+        ImplicitBuildFiles = new(FilePathComparer);
     }
 
     public RunFileBuildCacheEntry(Dictionary<string, string> globalProperties)
     {
         Debug.Assert(globalProperties.Comparer == GlobalPropertiesComparer);
         GlobalProperties = globalProperties;
-        ImplicitBuildFiles = new(ImplicitBuildFilesComparer);
+        ImplicitBuildFiles = new(FilePathComparer);
     }
 }
 
 [JsonSerializable(typeof(RunFileBuildCacheEntry))]
 internal partial class RunFileJsonSerializerContext : JsonSerializerContext;
+
+internal enum BuildLevel
+{
+    /// <summary>
+    /// No build is necessary, build outputs are up to date wrt. inputs.
+    /// </summary>
+    None,
+
+    /// <summary>
+    /// Only C# files are modified and there are no SDK-recognized <see cref="CSharpDirective"/>s.
+    /// We can invoke just the C# compiler to get up to date.
+    /// </summary>
+    Csc,
+
+    /// <summary>
+    /// We need to invoke MSBuild to get up to date.
+    /// </summary>
+    All,
+}
