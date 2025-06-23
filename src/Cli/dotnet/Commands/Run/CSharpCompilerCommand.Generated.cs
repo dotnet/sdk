@@ -21,7 +21,6 @@ partial class CSharpCompilerCommand
             "/errorreport:prompt",
             "/warn:10",
             "/define:TRACE;DEBUG;NET;NET10_0;NETCOREAPP;NET5_0_OR_GREATER;NET6_0_OR_GREATER;NET7_0_OR_GREATER;NET8_0_OR_GREATER;NET9_0_OR_GREATER;NET10_0_OR_GREATER;NETCOREAPP1_0_OR_GREATER;NETCOREAPP1_1_OR_GREATER;NETCOREAPP2_0_OR_GREATER;NETCOREAPP2_1_OR_GREATER;NETCOREAPP2_2_OR_GREATER;NETCOREAPP3_0_OR_GREATER;NETCOREAPP3_1_OR_GREATER",
-            "/preferreduilang:en-US",
             "/highentropyva+",
             "/nullable:enable",
             $"/reference:{DotNetRootPath}/packs/Microsoft.NETCore.App.Ref/{RuntimeVersion}/ref/net10.0/Microsoft.CSharp.dll",

@@ -1375,13 +1375,19 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             }
 
             // We don't need to generate a ref assembly.
-            if (arg.StartsWith("/refout", StringComparison.Ordinal))
+            if (arg.StartsWith("/refout:", StringComparison.Ordinal))
             {
                 continue;
             }
 
             // Ignore source link.
-            if (arg.StartsWith("/sourcelink", StringComparison.Ordinal))
+            if (arg.StartsWith("/sourcelink:", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            // PreferredUILang is normally not set by default but can be in builds, so ignore it.
+            if (arg.StartsWith("/preferreduilang:", StringComparison.Ordinal))
             {
                 continue;
             }
