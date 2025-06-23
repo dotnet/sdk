@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.Cli.Package.Remove.Tests
                 .Execute("package", "remove", packageName);
 
             remove.Should().Pass();
-            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project 'TestAppSimple.csproj'.");
+            remove.StdOut.Should().Contain($"Removing PackageReference for package '{packageName}' from project '{projectDirectory + Path.DirectorySeparatorChar}TestAppSimple.csproj'.");
             remove.StdErr.Should().BeEmpty();
         }
 
