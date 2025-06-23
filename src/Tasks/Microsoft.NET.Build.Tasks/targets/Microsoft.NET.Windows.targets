@@ -195,7 +195,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- Invoke 'cswinrtgen' -->
-    <CsWinRTGenerator
+    <RunCsWinRTGenerator
       ReferenceAssemblyPaths="@(ReferencePath)"
       OutputAssemblyPath="@(IntermediateAssembly)"
       InteropAssemblyDirectory="$(CsWinRTGeneratorInteropAssemblyDirectory)"
@@ -210,7 +210,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       StandardErrorImportance="$(CsWinRTGeneratorStandardErrorImportance)"
       LogStandardErrorAsError="$(CsWinRTGeneratorLogStandardErrorAsError)">
       <Output ItemName="CsWinRTGeneratorInteropAssemblyPath" TaskParameter="InteropAssemblyPath" />
-    </CsWinRTGenerator>
+    </RunCsWinRTGenerator>
 
     <!-- Set the metadata for the interop .dll item -->
     <ItemGroup>
