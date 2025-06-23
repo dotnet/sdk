@@ -26,6 +26,12 @@ namespace Microsoft.NET.Build.Tests
                 return;
             }
 
+            // Some netcoreapp2.0 Linux tests are no longer working on ubuntu 2404
+            if (targetFramework == "netcoreapp2.0" && OperatingSystem.IsLinux())
+            {
+                return;
+            }
+
             var runtimeIdentifier = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)

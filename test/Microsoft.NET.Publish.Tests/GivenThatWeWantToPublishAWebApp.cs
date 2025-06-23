@@ -49,7 +49,8 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        // This test is for netcoreapp2 and no longer working on ubuntu 2404
+        [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.OSX)]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";
@@ -109,6 +110,8 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)
         {
+
+
             var tfm = "netcoreapp2.2";
 
             var testProject = new TestProject()
