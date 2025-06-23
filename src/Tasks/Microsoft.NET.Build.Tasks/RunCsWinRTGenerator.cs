@@ -18,11 +18,6 @@ namespace Microsoft.NET.Build.Tasks;
 public sealed class RunCsWinRTGenerator : ToolTask
 {
     /// <summary>
-    /// The name of the generated interop assembly.
-    /// </summary>
-    private const string InteropAssemblyName = "WinRT.Interop.dll";
-
-    /// <summary>
     /// Gets or sets the paths to assembly files that are reference assemblies, representing
     /// the entire surface area for compilation. These assemblies are the full set of assemblies
     /// that will contribute to the interop .dll being generated.
@@ -42,7 +37,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
     /// <summary>
     /// Gets or sets the directory where the generated interop assembly will be placed.
     /// </summary>
-    /// <remarks>If not set, the same directory as <see cref="OutputAssemblyPath"/> will be used.</remarks>
+    [Required]
     public string? InteropAssemblyDirectory { get; set; }
 
     /// <summary>
@@ -84,12 +79,6 @@ public sealed class RunCsWinRTGenerator : ToolTask
     /// </summary>
     public ITaskItem[]? AdditionalArguments { get; set; }
 
-    /// <summary>
-    /// Gets the resulting generated interop .dll item.
-    /// </summary>
-    [Output]
-    public ITaskItem? InteropAssemblyPath { get; private set; }
-
     /// <inheritdoc/>
     protected override string ToolName => "cswinrtgen.exe";
 
@@ -97,33 +86,6 @@ public sealed class RunCsWinRTGenerator : ToolTask
     /// Gets the effective item spec for the output assembly.
     /// </summary>
     private string EffectiveOutputAssemblyItemSpec => OutputAssemblyPath![0].ItemSpec;
-
-    /// <summary>
-    /// Gets the effective directory where the generated interop assembly will be placed.
-    /// </summary>
-    private string EffectiveGeneratedAssemblyDirectory => InteropAssemblyDirectory ?? Path.GetDirectoryName(EffectiveOutputAssemblyItemSpec)!;
-
-    /// <summary>
-    /// Gets the effective path of the produced interop assembly.
-    /// </summary>
-    private string EffectiveGeneratedAssemblyPath => Path.Combine(EffectiveGeneratedAssemblyDirectory, InteropAssemblyName);
-
-    /// <inheritdoc/>
-    public override bool Execute()
-    {
-        // If the tool execution fails, we will not have a generated interop .dll path
-        if (!base.Execute())
-        {
-            InteropAssemblyPath = null;
-
-            return false;
-        }
-
-        // Return the generated interop assembly path as an output item
-        InteropAssemblyPath = new TaskItem(EffectiveGeneratedAssemblyPath);
-
-        return true;
-    }
 
     /// <inheritdoc/>
     protected override bool ValidateParameters()
@@ -203,7 +165,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
 
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
         AppendResponseFileCommand(args, "--output-assembly-path", EffectiveOutputAssemblyItemSpec);
-        AppendResponseFileCommand(args, "--generated-assembly-directory", EffectiveGeneratedAssemblyDirectory);
+        AppendResponseFileCommand(args, "--generated-assembly-directory", InteropAssemblyDirectory);
 
         // The debug repro directory is optional, and might not be set
         if (DebugReproDirectory is not null)

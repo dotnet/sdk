@@ -168,6 +168,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
 
+  <!-- Setup common properties for '_RunCsWinRTGenerator' below -->
+  <PropertyGroup>
+
+    <!--
+      Running 'cswinrtgen' is required for CsWinRT 3.0, and it is currently in preview.
+      So the switch for it is currently opt-in. It can be changed to opt-out in the future.
+    -->
+    <CsWinRTGenerateInteropAssembly Condition="'$(CsWinRTGenerateInteropAssembly)' == ''">false</CsWinRTGenerateInteropAssembly>
+  </PropertyGroup>
+
   <!--
     ============================================================
                         _RunCsWinRTGenerator
@@ -208,9 +218,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       AdditionalArguments="@(CsWinRTGeneratorAdditionalArgument)"
       StandardOutputImportance="$(CsWinRTGeneratorStandardOutputImportance)"
       StandardErrorImportance="$(CsWinRTGeneratorStandardErrorImportance)"
-      LogStandardErrorAsError="$(CsWinRTGeneratorLogStandardErrorAsError)">
-      <Output ItemName="CsWinRTGeneratorInteropAssemblyPath" TaskParameter="InteropAssemblyPath" />
-    </RunCsWinRTGenerator>
+      LogStandardErrorAsError="$(CsWinRTGeneratorLogStandardErrorAsError)" />
 
     <!-- Set the metadata for the interop .dll item -->
     <ItemGroup>
