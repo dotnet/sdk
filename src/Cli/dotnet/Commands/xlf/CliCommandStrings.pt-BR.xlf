@@ -2174,13 +2174,12 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="translated">"dotnet workload search version" possui três funções dependendo de seu argumento:
+        <target state="needs-review-translation">"dotnet workload search version" possui três funções dependendo de seu argumento:
       1. Se nenhum argumento for especificado, ele exibe uma lista das versões mais recentes dos workloads lançados a partir desta faixa de recursos. Aceita a opção --take para especificar quantos fornecer e --format para alterar o formato.
          Exemplo:
            dotnet workload search version --take 2 --format json
