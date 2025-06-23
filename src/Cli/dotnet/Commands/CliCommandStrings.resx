@@ -1520,7 +1520,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path and line number.</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</value>
+    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
     <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
