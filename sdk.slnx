@@ -325,11 +325,7 @@
     <Project Path="test/System.CommandLine.StaticCompletions.Tests/System.CommandLine.StaticCompletions.Tests.csproj" />
     <Project Path="test/TelemetryStdOutLogger/TelemetryStdOutLogger.csproj" />
     <Project Path="test/trustedroots.Tests/trustedroots.Tests.csproj" />
-  </Folder>
-  <Folder Name="/test/benchmarks/">
-    <Folder Name="/test/benchmarks/StaticWebAssetsSdk/">
-      <Project Path="test/benchmarks/StaticWebAssetsSdk/Microsoft.NET.Sdk.StaticWebAssets.Benchmarks.csproj" />
-    </Folder>
+    <Project Path="test/benchmarks/StaticWebAssetsSdk/Microsoft.NET.Sdk.StaticWebAssets.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/test/Assets/" />
   <Folder Name="/test/Assets/dotnet-new/">
