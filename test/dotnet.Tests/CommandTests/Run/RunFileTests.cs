@@ -1043,7 +1043,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(publishDir).Sub("MyCustomProgram")
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFile("MyCustomProgram.deps.json"); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1089,6 +1089,30 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
     }
 
+    [Fact]
+    public void Publish_In_SubDir()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subDir = Directory.CreateDirectory(Path.Combine(testInstance.Path, "subdir"));
+
+        var programFile = Path.Join(subDir.FullName, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var publishDir = Path.Join(subDir.FullName, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "./subdir/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Sub("subDir").Sub("artifacts").Sub("Program")
+            .Should().Exist()
+            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+    }
 
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()
