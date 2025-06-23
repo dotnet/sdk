@@ -1547,10 +1547,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         // Check that csc args between MSBuild run and CSC-only run are equivalent.
         var normalizedCscOnlyArgs = cscOnlyCallArgs
             .Select(static a => NormalizePath(RemoveQuotes(a)));
-        Log.WriteLine("CSC-only vs MSBuild args:" + Environment.NewLine +
-            string.Join(Environment.NewLine, normalizedCscOnlyArgs
-                .Zip(msbuildArgsToVerify)
-                .Select(p => $"{p.First}\t{p.Second}")));
+        Log.WriteLine("CSC-only args:");
+        Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
+        Log.WriteLine("MSBuild args:");
+        Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
         normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify);
 
         static CompilerCall findCompilerCall(string binaryLogPath)
