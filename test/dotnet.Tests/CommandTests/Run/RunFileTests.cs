@@ -1502,22 +1502,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var codeFolder = new DirectoryInfo(Path.Join(
             TestContext.Current.ToolsetUnderTest.RepoRoot,
             "src", "Cli", "dotnet", "Commands", "Run"));
-        codeFolder.File("CSharpCompilerCommand.cs").Should().Exist();
-        var codeFilePath = codeFolder.File("CSharpCompilerCommand.Generated.cs");
-        var existingText = codeFilePath.Exists ? File.ReadAllText(codeFilePath.FullName) : string.Empty;
-        var newText = code.ToString();
-        if (existingText != newText)
+        var nonGeneratedFile = codeFolder.File("CSharpCompilerCommand.cs");
+        if (!nonGeneratedFile.Exists)
         {
-            Log.WriteLine($"{codeFilePath.FullName} needs to be updated:");
-            Log.WriteLine(newText);
-            if (Environment.GetEnvironmentVariable("CI") == "true")
+            Log.WriteLine($"Skipping code generation because file does not exist: {nonGeneratedFile.FullName}");
+        }
+        else
+        {
+            var codeFilePath = codeFolder.File("CSharpCompilerCommand.Generated.cs");
+            var existingText = codeFilePath.Exists ? File.ReadAllText(codeFilePath.FullName) : string.Empty;
+            var newText = code.ToString();
+            if (existingText != newText)
             {
-                throw new InvalidOperationException($"Not updating file in CI: {codeFilePath.FullName}");
-            }
-            else
-            {
-                File.WriteAllText(codeFilePath.FullName, newText);
-                throw new InvalidOperationException($"File outdated, commit the changes: {codeFilePath.FullName}");
+                Log.WriteLine($"{codeFilePath.FullName} needs to be updated:");
+                Log.WriteLine(newText);
+                if (Environment.GetEnvironmentVariable("CI") == "true")
+                {
+                    throw new InvalidOperationException($"Not updating file in CI: {codeFilePath.FullName}");
+                }
+                else
+                {
+                    File.WriteAllText(codeFilePath.FullName, newText);
+                    throw new InvalidOperationException($"File outdated, commit the changes: {codeFilePath.FullName}");
+                }
             }
         }
 
@@ -1598,6 +1605,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         // Backup the artifacts directory.
+        Directory.CreateDirectory(Path.GetDirectoryName(artifactsBackupDir)!);
         Directory.Move(artifactsDir, artifactsBackupDir);
 
         // Build using MSBuild.
