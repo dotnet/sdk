@@ -1109,7 +1109,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(testInstance.Path).Sub("subDir").Sub("artifacts").Sub("Program")
+        new DirectoryInfo(testInstance.Path).Sub("subdir").Sub("artifacts").Sub("Program")
             .Should().Exist()
             .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
     }
