@@ -78,7 +78,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// Used when we need an out-of-tree base test directory to avoid having implicit build files
     /// like Directory.Build.props in scope and negating the optimizations we want to test.
     /// </summary>
-    private static readonly string s_outOfTreeBaseDirectory = Path.Join(Path.GetTempPath(), "dotnetSdkTests");
+    private static readonly string s_outOfTreeBaseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.Join(Path.GetTempPath(), "dotnetSdkTests"));
 
     private static bool HasCaseInsensitiveFileSystem
     {
@@ -1335,7 +1335,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .And.HaveStdOut($"Hello from {programName}");
 
         // Find the csc args used by the build.
-        var msbuildCall = findCompilerCall(Path.Join(testInstance.Path, "msbuild.binlog"));
+        var msbuildCall = FindCompilerCall(Path.Join(testInstance.Path, "msbuild.binlog"));
         var msbuildCallArgs = msbuildCall.GetArguments();
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
@@ -1396,7 +1396,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             bool fromNuGetPackage = false;
 
             // Normalize slashes in paths.
-            string rewritten = NormalizePath(arg);
+            string rewritten = NormalizePathArg(arg);
 
             // Remove quotes.
             rewritten = RemoveQuotes(rewritten);
@@ -1552,22 +1552,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         // Check that csc args between MSBuild run and CSC-only run are equivalent.
         var normalizedCscOnlyArgs = cscOnlyCallArgs
-            .Select(static a => NormalizePath(RemoveQuotes(a)));
+            .Select(static a => NormalizePathArg(RemoveQuotes(a)));
         Log.WriteLine("CSC-only args:");
         Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
         Log.WriteLine("MSBuild args:");
         Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
         normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify);
 
-        static CompilerCall findCompilerCall(string binaryLogPath)
+        static CompilerCall FindCompilerCall(string binaryLogPath)
         {
             using var reader = BinaryLogReader.Create(binaryLogPath);
             return reader.ReadAllCompilerCalls().Should().ContainSingle().Subject;
         }
 
+        static string NormalizePathArg(string arg)
+        {
+            return CSharpCompilerCommand.IsPathOption(arg, out int colonIndex)
+                ? string.Concat(arg.AsSpan(0, colonIndex + 1), NormalizePath(arg.Substring(colonIndex + 1)))
+                : NormalizePath(arg);
+        }
+
         static string NormalizePath(string path)
         {
-            return PathUtility.GetPathWithForwardSlashes(path);
+            return PathUtility.GetPathWithForwardSlashes(TestPathUtility.ResolveTempPrefixLink(path));
         }
 
         static string RemoveQuotes(string arg)
@@ -1611,7 +1618,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 """);
 
         // Backup the artifacts directory.
-        Directory.CreateDirectory(Path.GetDirectoryName(artifactsBackupDir)!);
         Directory.Move(artifactsDir, artifactsBackupDir);
 
         // Build using MSBuild.
