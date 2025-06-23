@@ -22,6 +22,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
     private bool _skipManifestUpdate;
     private readonly IReadOnlyCollection<string> _workloadIds;
     private readonly bool _shouldShutdownInstaller;
+    private bool _aspireDeprecationMessageShown = false;
 
     public bool IsRunningRestore { get; set; }
 
@@ -68,10 +69,38 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             _workloadInstaller.GetWorkloadInstallationRecordRepository(), _workloadInstaller, _packageSourceLocation, displayManifestUpdates: Verbosity.IsDetailedOrDiagnostic());
     }
 
+    private IReadOnlyCollection<string> GetValidWorkloadIds()
+    {
+        bool hasAspireWorkload = false;
+        var validWorkloadIds = new List<string>();
+
+        foreach (var workloadId in _workloadIds)
+        {
+            // Special handling for deprecated Aspire workload
+            if (string.Equals(workloadId, "aspire", StringComparison.OrdinalIgnoreCase))
+            {
+                hasAspireWorkload = true;
+                continue; // Skip this workload
+            }
+
+            validWorkloadIds.Add(workloadId);
+        }
+
+        if (hasAspireWorkload && !_aspireDeprecationMessageShown)
+        {
+            Reporter.WriteLine(CliCommandStrings.AspireWorkloadDeprecated.Yellow());
+            _aspireDeprecationMessageShown = true;
+        }
+
+        return validWorkloadIds.AsReadOnly();
+    }
+
     private void ValidateWorkloadIdsInput()
     {
+        var filteredWorkloadIds = GetValidWorkloadIds();
         var availableWorkloads = _workloadResolver.GetAvailableWorkloads();
-        foreach (var workloadId in _workloadIds)
+
+        foreach (var workloadId in filteredWorkloadIds)
         {
             if (!availableWorkloads.Select(workload => workload.Id.ToString()).Contains(workloadId))
             {
@@ -103,7 +132,8 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             //  which require new packs for currently installed workloads, those packs will be downloaded.
             //  If the packs are already installed, they won't be included in the results
             var existingWorkloads = GetInstalledWorkloads(false);
-            var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+            var filteredWorkloadIds = GetValidWorkloadIds();
+            var workloadsToDownload = existingWorkloads.Union(filteredWorkloadIds.Select(id => new WorkloadId(id))).ToList();
 
             var packageUrls = GetPackageDownloadUrlsAsync(workloadsToDownload, _skipManifestUpdate, _includePreviews, NullReporter.Instance, packageDownloader).GetAwaiter().GetResult();
 
@@ -119,7 +149,8 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
                 //  which require new packs for currently installed workloads, those packs will be downloaded.
                 //  If the packs are already installed, they won't be included in the results
                 var existingWorkloads = GetInstalledWorkloads(false);
-                var workloadsToDownload = existingWorkloads.Union(_workloadIds.Select(id => new WorkloadId(id))).ToList();
+                var filteredWorkloadIds = GetValidWorkloadIds();
+                var workloadsToDownload = existingWorkloads.Union(filteredWorkloadIds.Select(id => new WorkloadId(id))).ToList();
 
                 DownloadToOfflineCacheAsync(workloadsToDownload, new DirectoryPath(_downloadToCacheOption), _skipManifestUpdate, _includePreviews).Wait();
             }
@@ -180,7 +211,7 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
         {
             _workloadInstaller.Shutdown();
         }
-        
+
         return _workloadInstaller.ExitCode;
     }
 
@@ -225,7 +256,15 @@ internal class WorkloadInstallCommand : InstallingWorkloadCommand
             }
 
             // Add workload Ids that already exist to our collection to later trigger an update in those installed workloads
-            var workloadIds = _workloadIds.Select(id => new WorkloadId(id));
+            var filteredWorkloadIds = GetValidWorkloadIds();
+
+            // Exit early if no valid workloads to install (e.g., only aspire was requested)
+            if (!filteredWorkloadIds.Any())
+            {
+                return;
+            }
+
+            var workloadIds = filteredWorkloadIds.Select(id => new WorkloadId(id));
             var installedWorkloads = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(_sdkFeatureBand);
             var previouslyInstalledWorkloads = installedWorkloads.Intersect(workloadIds);
             if (previouslyInstalledWorkloads.Any())
