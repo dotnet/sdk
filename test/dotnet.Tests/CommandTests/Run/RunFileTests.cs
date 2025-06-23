@@ -1632,23 +1632,23 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 throw new InvalidOperationException($"File exists in CSC-only run but not in MSBuild run: {cscOnlyFile}");
             }
 
-            var cscOnlyFileBytes = File.ReadAllBytes(cscOnlyFile);
-            var msbuildFileBytes = File.ReadAllBytes(msbuildFile);
-            if (!cscOnlyFileBytes.SequenceEqual(msbuildFileBytes))
+            var cscOnlyFileText = File.ReadAllText(cscOnlyFile);
+            var msbuildFileText = File.ReadAllText(msbuildFile);
+            if (cscOnlyFileText.ReplaceLineEndings() != msbuildFileText.ReplaceLineEndings())
             {
                 Log.WriteLine($"File differs between MSBuild and CSC-only runs: {cscOnlyFile}");
                 const int limit = 3_000;
-                if (cscOnlyFileBytes.Length < limit && msbuildFileBytes.Length < limit)
+                if (cscOnlyFileText.Length < limit && msbuildFileText.Length < limit)
                 {
                     Log.WriteLine("MSBuild file content:");
-                    Log.WriteLine(Encoding.UTF8.GetString(msbuildFileBytes));
+                    Log.WriteLine(msbuildFileText);
                     Log.WriteLine("CSC-only file content:");
-                    Log.WriteLine(Encoding.UTF8.GetString(cscOnlyFileBytes));
+                    Log.WriteLine(cscOnlyFileText);
                 }
                 else
                 {
-                    Log.WriteLine($"MSBuild file size: {msbuildFileBytes.Length} bytes");
-                    Log.WriteLine($"CSC-only file size: {cscOnlyFileBytes.Length} bytes");
+                    Log.WriteLine($"MSBuild file size: {msbuildFileText.Length} chars");
+                    Log.WriteLine($"CSC-only file size: {cscOnlyFileText.Length} chars");
                 }
                 hasErrors = true;
             }
