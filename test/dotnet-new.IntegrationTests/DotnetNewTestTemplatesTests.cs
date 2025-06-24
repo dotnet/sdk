@@ -220,9 +220,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private void RecordPackages(string projectDirectory)
         {
-            var projectFiles = Directory.GetFiles(projectDirectory, "*.csproj")
-                .Concat(Directory.GetFiles(projectDirectory, "*.fsproj"))
-                .Concat(Directory.GetFiles(projectDirectory, "*.vbproj"));
+            // Get all project files with a single directory search, then filter to specific types
+            var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
+                .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase));
 
             Dictionary<string, string> packageVersions =
                 [];
