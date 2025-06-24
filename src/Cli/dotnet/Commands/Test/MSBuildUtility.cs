@@ -83,18 +83,16 @@ internal static class MSBuildUtility
         {
             return true;
         }
-
-        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath, $"-target:{CliConstants.MTPTarget}"];
 
         if (buildOptions.Verbosity is null)
         {
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        msbuildArgs.Add(filePath);
-        msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
 
-        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore, restoreProperties: null).Execute();
+        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 
         return result == (int)BuildResultCode.Success;
     }

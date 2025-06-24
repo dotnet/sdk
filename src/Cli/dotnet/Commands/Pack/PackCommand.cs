@@ -1,19 +1,18 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
 public class PackCommand(
-    IEnumerable<string> msbuildArgs,
+    MSBuildArgs msbuildArgs,
     bool noRestore,
-    FrozenDictionary<string, string>? restoreProperties,
     string? msbuildPath = null
-    ) : RestoringCommand(msbuildArgs, noRestore, restoreProperties, msbuildPath: msbuildPath)
+    ) : RestoringCommand(msbuildArgs, noRestore, msbuildPath: msbuildPath)
 {
     public static PackCommand FromArgs(string[] args, string? msbuildPath = null)
     {
@@ -46,14 +45,14 @@ public class PackCommand(
 
         msbuildArgs.AddRange(slnOrProjectArgs ?? []);
 
-        var restoreOnlyProperties = parseResult.GetValue(CommonOptions.RestorePropertiesOption);
-
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
-
-        return new PackCommand(
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
+            CommonOptions.PropertiesOption,
+            CommonOptions.RestorePropertiesOption);
+        return new PackCommand(
+            parsedMSBuildArgs,
             noRestore,
-            restoreProperties: restoreOnlyProperties,
             msbuildPath);
     }
 

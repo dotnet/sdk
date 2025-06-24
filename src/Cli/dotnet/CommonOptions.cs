@@ -87,7 +87,7 @@ internal static class CommonOptions
             HelpName = CliStrings.FrameworkArgumentName
         }
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
-        .ForwardAsSingle(o => $"-property:TargetFramework={o}");
+        .ForwardAsSingle(o => $"--property:TargetFramework={o}");
 
     public static Option<string> ArtifactsPathOption =
         new ForwardedOption<string>(
@@ -96,7 +96,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.ArtifactsPathOptionDescription,
             HelpName = CliStrings.ArtifactsPathArgumentName
-        }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
     private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
@@ -105,7 +105,7 @@ internal static class CommonOptions
         {
             rid = GetOsFromRid(rid) + "-x64";
         }
-        return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
+        return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
     public const string RuntimeOptionName = "--runtime";
@@ -130,14 +130,14 @@ internal static class CommonOptions
         {
             Description = description,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
+        }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
     public static Option<string> ConfigurationOption(string description) =>
         new DynamicForwardedOption<string>("--configuration", "-c")
         {
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName
-        }.ForwardAsSingle(o => $"-property:Configuration={o}")
+        }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
     public static Option<string> VersionSuffixOption =
@@ -145,7 +145,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.CmdVersionSuffixDescription,
             HelpName = CliStrings.VersionSuffixArgumentName
-        }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
+        }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
@@ -162,6 +162,14 @@ internal static class CommonOptions
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
+
+
+    public static Option<bool> RestoreOption = new ForwardedOption<bool>("--restore", "-restore")
+    {
+        Description = "Restore the project before building it. This is the default behavior.",
+        Arity = ArgumentArity.Zero,
+        Hidden = true
+    }.ForwardAs("-restore");
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
@@ -184,7 +192,7 @@ internal static class CommonOptions
              DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
          };
 
-    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
     public static Option<bool> DisableBuildServersOption =
         new ForwardedOption<bool>("--disable-build-servers")
@@ -328,7 +336,7 @@ internal static class CommonOptions
     }
 
     private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
-        [$"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
+        [$"--property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
 
     internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
     {
@@ -367,7 +375,7 @@ internal static class CommonOptions
 
     private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
     {
-        IEnumerable<string> selfContainedProperties = [$"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true"];
+        IEnumerable<string> selfContainedProperties = [$"--property:SelfContained={isSelfContained}", "--property:_CommandLineDefinedSelfContained=true"];
         return selfContainedProperties;
     }
 

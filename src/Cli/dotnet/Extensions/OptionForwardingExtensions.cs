@@ -16,7 +16,7 @@ public static class OptionForwardingExtensions
 
     public static ForwardedOption<T> ForwardAs<T>(this ForwardedOption<T> option, string value) => option.SetForwardingFunction((T? o) => [value]);
 
-    public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T?, string> format) => option.SetForwardingFunction(format);
+    public static ForwardedOption<T> ForwardAsSingle<T>(this ForwardedOption<T> option, Func<T, string> format) => option.SetForwardingFunction(format);
 
     public static ForwardedOption<bool> ForwardIfEnabled(this ForwardedOption<bool> option, string value) => option.SetForwardingFunction((bool o) => o == true ? [value] : []);
 
@@ -133,7 +133,7 @@ public class ForwardedOption<T> : Option<T>, IForwardedOption
         return this;
     }
 
-    public ForwardedOption<T> SetForwardingFunction(Func<T?, string> format)
+    public ForwardedOption<T> SetForwardingFunction(Func<T, string> format)
     {
         ForwardingFunction = GetForwardingFunction((o) => [format(o)]);
         return this;
@@ -155,9 +155,23 @@ public class ForwardedOption<T> : Option<T>, IForwardedOption
         return this;
     }
 
-    public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T?, IEnumerable<string>> func)
+    public Func<ParseResult, IEnumerable<string>> GetForwardingFunction(Func<T, IEnumerable<string>> func)
     {
-        return (ParseResult parseResult) => parseResult.GetResult(this) is not null ? func(parseResult.GetValue(this)) : [];
+        return (ParseResult parseResult) =>
+        {
+            if (parseResult.GetResult(this) is OptionResult r)
+            {
+                if (r.GetValueOrDefault<T>() is T value)
+                {
+                    return func(value);
+                }
+                else
+                {
+                    return [];
+                }
+            }
+            return [];
+        };
     }
 
     public Func<ParseResult, IEnumerable<string>> GetForwardingFunction()

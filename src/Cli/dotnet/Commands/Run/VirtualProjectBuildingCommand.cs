@@ -115,22 +115,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
-        string[] msbuildArgs,
-        FrozenDictionary<string, string>? restoreProperties)
+        MSBuildArgs msbuildArgs)
     {
         Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
 
         EntryPointFileFullPath = entryPointFileFullPath;
-        GlobalProperties = new(StringComparer.OrdinalIgnoreCase);
-        CommonRunHelpers.AddUserPassedProperties(GlobalProperties, msbuildArgs);
-        LoggerArgs = msbuildArgs;
-        RestoreProperties = restoreProperties;
+        MSBuildArgs = msbuildArgs;
     }
 
     public string EntryPointFileFullPath { get; }
-    public Dictionary<string, string> GlobalProperties { get; }
-    public string[] LoggerArgs { get; }
-    public FrozenDictionary<string, string>? RestoreProperties { get; }
+    public MSBuildArgs MSBuildArgs { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
@@ -140,8 +134,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(LoggerArgs);
-        var binaryLogger = GetBinaryLogger(LoggerArgs);
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(MSBuildArgs.OtherMSBuildArgs.ToArray());
+        var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;
 
@@ -179,7 +173,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
             var projectCollection = new ProjectCollection(
-                GlobalProperties,
+                MSBuildArgs.GlobalProperties,
                 [.. binaryLoggers, consoleLogger],
                 ToolsetDefinitionLocations.Default);
             var parameters = new BuildParameters(projectCollection)
@@ -197,7 +191,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             if (!NoRestore)
             {
                 var restoreRequest = new BuildRequestData(
-                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(RestoreProperties)),
+                    CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
@@ -255,9 +249,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     globalProperties[key] = value;
                 }
                 if (restoreProperties is null)
-                    {
-                        return;
-                    }
+                {
+                    return;
+                }
                 foreach (var (key, value) in restoreProperties)
                 {
                     if (value is not null)
@@ -268,8 +262,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             };
         }
 
-        static ILogger? GetBinaryLogger(IReadOnlyList<string> args)
+        static ILogger? GetBinaryLogger(IReadOnlyList<string>? args)
         {
+            if (args is null) return null;
             // Like in MSBuild, only the last binary logger is used.
             for (int i = args.Count - 1; i >= 0; i--)
             {
@@ -298,7 +293,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
     {
-        var cacheEntry = new RunFileBuildCacheEntry(GlobalProperties);
+        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary()
+            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
         entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
 
         // Collect current implicit build files.

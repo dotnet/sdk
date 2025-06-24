@@ -48,16 +48,16 @@ public class RunCommand
     /// <summary>
     /// unparsed/arbitrary CLI tokens to be passed to the running application
     /// </summary>
-    public string[] Args { get; set; }
+    public string[] ApplicationArgs { get; set; }
     public bool NoRestore { get; }
     public bool NoCache { get; }
     public VerbosityOptions? Verbosity { get; }
-    public bool Interactive { get; }
 
     /// <summary>
-    /// All forwarded and explicit <c>--property</c> options for this command
+    /// Parsed structure representing the MSBuild arguments that will be used to build the project.
     /// </summary>
-    public string[] AmbientMSBuildProperties { get; }
+    public MSBuildArgs MSBuildArgs { get; }
+    public bool Interactive { get; }
 
     /// <summary>
     /// Environment variables specified on command line via -e option.
@@ -84,8 +84,7 @@ public class RunCommand
     /// <param name="noCache"></param>
     /// <param name="interactive"></param>
     /// <param name="verbosity"></param>
-    /// <param name="ambientMSBuildProperties">All forwarded and explicit <c>--property</c> options for this command</param>
-    /// <param name="args">unparsed/arbitrary CLI tokens to be passed to the running application</param>
+    /// <param name="applicationArgs">unparsed/arbitrary CLI tokens to be passed to the running application</param>
     /// <param name="readCodeFromStdin"></param>
     /// <param name="environmentVariables"></param>
     public RunCommand(
@@ -99,8 +98,8 @@ public class RunCommand
         bool noCache,
         bool interactive,
         VerbosityOptions? verbosity,
-        string[] ambientMSBuildProperties,
-        string[] args,
+        MSBuildArgs msbuildArgs,
+        string[] applicationArgs,
         bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables,
         FrozenDictionary<string, string>? msbuildRestoreProperties)
@@ -115,12 +114,12 @@ public class RunCommand
         LaunchProfile = launchProfile;
         NoLaunchProfile = noLaunchProfile;
         NoLaunchProfileArguments = noLaunchProfileArguments;
-        Args = args;
+        ApplicationArgs = applicationArgs;
         Interactive = interactive;
         NoRestore = noRestore;
         NoCache = noCache;
         Verbosity = verbosity;
-        AmbientMSBuildProperties = GetBuildArguments(ambientMSBuildProperties);
+        MSBuildArgs = GetBuildArguments(msbuildArgs);
         EnvironmentVariables = environmentVariables;
         RestoreProperties = msbuildRestoreProperties;
     }
@@ -296,10 +295,9 @@ public class RunCommand
 
             projectFactory = null;
             buildResult = new RestoringCommand(
-                AmbientMSBuildProperties.Prepend(ProjectFileFullPath),
+                MSBuildArgs.CloneWithExplicitArgs([ProjectFileFullPath, ..MSBuildArgs.OtherMSBuildArgs]),
                 NoRestore,
-                advertiseWorkloadUpdates: false,
-                restoreProperties: RestoreProperties
+                advertiseWorkloadUpdates: false
             ).Execute();
         }
 
@@ -316,8 +314,7 @@ public class RunCommand
 
         return new(
             entryPointFileFullPath: EntryPointFileFullPath,
-            msbuildArgs: AmbientMSBuildProperties,
-            restoreProperties: RestoreProperties)
+            msbuildArgs: MSBuildArgs)
         {
             NoRestore = NoRestore,
             NoCache = NoCache,
@@ -330,18 +327,15 @@ public class RunCommand
     /// so we disable as much MSBuild output as possible, unless we're forced to be interactive.
     /// </summary>
     /// <returns></returns>
-    private string[] GetBuildArguments(IEnumerable<string> ambientMSBuildPropertiesForBuild)
+    private MSBuildArgs GetBuildArguments(MSBuildArgs msbuildArgs)
     {
-        List<string> args = ["-nologo"];
+        msbuildArgs.OtherMSBuildArgs.Add("-nologo");
 
         if (Verbosity is null) // only do this if null because otherwise the property will already be 'forwarded'
         {
-            args.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
+            msbuildArgs.OtherMSBuildArgs.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
         }
-
-        args.AddRange(ambientMSBuildPropertiesForBuild);
-
-        return [.. args];
+        return msbuildArgs;
     }
 
     /// <summary>
@@ -357,20 +351,22 @@ public class RunCommand
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
     {
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger(AmbientMSBuildProperties, "dotnet-run");
-        var project = EvaluateProject(ProjectFileFullPath, projectFactory, AmbientMSBuildProperties, logger);
+        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
+        var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, AmbientMSBuildProperties, Verbosity, logger);
+        InvokeRunArgumentsTarget(project, Verbosity, logger);
         logger?.ReallyShutdown();
-        var runProperties = ReadRunPropertiesFromProject(project, Args);
+        var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
         var command = CreateCommandFromRunProperties(project, runProperties);
         return command;
 
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, string[] msbuildProperties, ILogger? binaryLogger)
+        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
         {
             Debug.Assert(projectFilePath is not null || projectFactory is not null);
 
-            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildProperties);
+            var globalProperties = msbuildArgs.GlobalProperties?.ToDictionary() ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+            globalProperties[Constants.EnableDefaultItems] = "false"; // Disable default item globbing to improve performance
+            globalProperties[Constants.MSBuildExtensionsPath] = AppContext.BaseDirectory;
 
             var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
@@ -421,7 +417,7 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, string[] restoreArgs, VerbosityOptions? verbosity, FacadeLogger? binaryLogger)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, VerbosityOptions? verbosity, FacadeLogger? binaryLogger)
         {
             // if the restoreArgs contain a `-bl` then let's probe it
             List<ILogger> loggersForBuild = [
@@ -613,6 +609,8 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+
         var command = new RunCommand(
             noBuild: noBuild,
             projectFileFullPath: projectFilePath,
@@ -624,8 +622,8 @@ public class RunCommand
             noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
             verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
-            ambientMSBuildProperties: [.. msbuildProperties],
-            args: args,
+            msbuildArgs: msbuildArgs,
+            applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
             environmentVariables: parseResult.GetValue(CommonOptions.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
             msbuildRestoreProperties: parseResult.GetValue(CommonOptions.RestorePropertiesOption)
