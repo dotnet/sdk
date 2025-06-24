@@ -260,7 +260,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             // Ensure directory exists
-            // Fix for CS8604: Ensure that Path.GetDirectoryName(CgPackagesJsonPath) is not null before calling Directory.CreateDirectory.
             if (Path.GetDirectoryName(CgPackagesJsonPath) is string directoryPath)
             {
                 Directory.CreateDirectory(directoryPath);
