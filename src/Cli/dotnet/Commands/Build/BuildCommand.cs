@@ -1,25 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Build;
 
 public static class BuildCommand
 {
-    public static CommandBase FromArgs(string[] args, string msbuildPath = null)
+    public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
         var parser = Parser.Instance;
         var parseResult = parser.ParseFrom("dotnet build", args);
         return FromParseResult(parseResult, msbuildPath);
     }
 
-    public static CommandBase FromParseResult(ParseResult parseResult, string msbuildPath = null)
+    public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         PerformanceLogEventSource.Log.CreateBuildCommandStart();
 
@@ -33,9 +32,9 @@ public static class BuildCommand
 
         LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
-        var restoreOnlyProperties = parseResult.GetValue(CommonOptions.RestorePropertiesOption);
-
         string[] forwardedOptions = parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()).ToArray();
+
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
 
         bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
@@ -47,8 +46,7 @@ public static class BuildCommand
         {
             command = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, .. binLogArgs],
-                restoreProperties: restoreOnlyProperties
+                msbuildArgs: msbuildArgs
             )
             {
                 NoRestore = noRestore,
@@ -58,24 +56,16 @@ public static class BuildCommand
         }
         else
         {
-            var msbuildArgs = new List<string>();
-
-            msbuildArgs.Add($"-consoleloggerparameters:Summary");
-
+            msbuildArgs.OtherMSBuildArgs.AddRange(["-consoleloggerparameters:Summary", .. nonBinLogArgs]);
             if (noIncremental)
             {
-                msbuildArgs.Add("-target:Rebuild");
+                msbuildArgs.OtherMSBuildArgs.Add("-target:Rebuild");
             }
-
-            msbuildArgs.AddRange(forwardedOptions);
-
-            msbuildArgs.AddRange(args);
 
             command = new RestoringCommand(
                 msbuildArgs: msbuildArgs,
                 noRestore: noRestore,
-                msbuildPath: msbuildPath,
-                restoreProperties: restoreOnlyProperties);
+                msbuildPath: msbuildPath);
         }
 
         PerformanceLogEventSource.Log.CreateBuildCommandStop();

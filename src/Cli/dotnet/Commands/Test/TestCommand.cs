@@ -14,10 +14,9 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
 public class TestCommand(
-    IEnumerable<string> msbuildArgs,
+    MSBuildArgs msbuildArgs,
     bool noRestore,
-    FrozenDictionary<string, string>? restoreProperties,
-    string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, restoreProperties, msbuildPath)
+    string? msbuildPath = null) : RestoringCommand(msbuildArgs, noRestore, msbuildPath)
 {
     public static int Run(ParseResult parseResult)
     {
@@ -221,12 +220,15 @@ public class TestCommand(
         }
 
         bool noRestore = (result.GetResult(TestCommandParser.NoRestoreOption) ?? result.GetResult(TestCommandParser.NoBuildOption)) is not null;
-        var restoreProperties = result.GetValue(CommonOptions.RestorePropertiesOption);
+
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
+            msbuildArgs,
+            CommonOptions.PropertiesOption,
+            CommonOptions.RestorePropertiesOption);
 
         TestCommand testCommand = new(
-            msbuildArgs,
+            parsedMSBuildArgs,
             noRestore,
-            restoreProperties,
             msbuildPath);
 
         // Apply environment variables provided by the user via --environment (-e) option, if present

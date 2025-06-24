@@ -442,7 +442,8 @@ namespace EndToEnd.Tests
                     .. selfContained ? ["-r", RuntimeInformation.RuntimeIdentifier] : Array.Empty<string>(),
                     .. !string.IsNullOrWhiteSpace(framework) ? ["--framework", framework] : Array.Empty<string>(),
                     // Remove this (or formalize it) after https://github.com/dotnet/installer/issues/12479 is resolved.
-                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>()
+                    .. language == "F#" ? ["/p:_NETCoreSdkIsPreview=true"] : Array.Empty<string>(),
+                    $"/bl:{templateName}-{(selfContained ? "selfcontained" : "fdd")}-{language}-{framework}-{{}}.binlog"
                 ];
 
                 string dotnetRoot = Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath);

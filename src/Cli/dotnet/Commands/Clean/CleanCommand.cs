@@ -5,10 +5,11 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
 
-public class CleanCommand(IEnumerable<string> msbuildArgs, string? msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
+public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) : MSBuildForwardingApp(msbuildArgs, msbuildPath)
 {
     public static CommandBase FromArgs(string[] args, string? msbuildPath = null)
     {
@@ -19,11 +20,6 @@ public class CleanCommand(IEnumerable<string> msbuildArgs, string? msbuildPath =
 
     public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
-        var msbuildArgs = new List<string>
-        {
-            "-verbosity:normal"
-        };
-
         result.ShowHelpOrErrorIfAppropriate();
 
         var args = result.GetValue(CleanCommandParser.SlnOrProjectOrFileArgument) ?? [];
@@ -34,12 +30,11 @@ public class CleanCommand(IEnumerable<string> msbuildArgs, string? msbuildPath =
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            msbuildArgs.AddRange(binLogArgs);
-            msbuildArgs.AddRange(forwardedArgs);
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. binLogArgs, "-target:Clean", "-verbosity:normal", .. forwardedArgs,], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
 
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. msbuildArgs])
+                msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,
@@ -48,20 +43,16 @@ public class CleanCommand(IEnumerable<string> msbuildArgs, string? msbuildPath =
                 NoBuildMarkers = true,
             };
         }
-
-        msbuildArgs.AddRange(args);
-
-        msbuildArgs.Add("-target:Clean");
-
-        msbuildArgs.AddRange(forwardedArgs);
-
-        return new CleanCommand(msbuildArgs, msbuildPath);
+        else
+        {
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. args, "-target:Clean", "-verbosity:normal", .. forwardedArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+            return new CleanCommand(msbuildArgs, msbuildPath);
+        }
     }
 
     public static int Run(ParseResult parseResult)
     {
         parseResult.HandleDebugSwitch();
-
         return FromParseResult(parseResult).Execute();
     }
 }

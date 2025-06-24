@@ -7,6 +7,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -85,10 +86,10 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(["-verbosity:quiet"], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: EntryPointFileFullPath,
-                restoreProperties: FrozenDictionary<string, string>.Empty,
-                msbuildArgs: ["-verbosity:quiet"])
+                msbuildArgs: msbuildArgs)
             {
                 CustomArtifactsPath = ArtifactsPath,
             };
@@ -106,8 +107,8 @@ internal abstract class RunApiInput
                 noCache: false,
                 interactive: false,
                 verbosity: VerbosityOptions.quiet,
-                ambientMSBuildProperties: [],
-                args: [],
+                msbuildArgs: msbuildArgs,
+                applicationArgs: [],
                 readCodeFromStdin: false,
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty,
                 msbuildRestoreProperties: FrozenDictionary<string, string>.Empty);
