@@ -189,8 +189,8 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(ToolCommandRunner)' == ''">
-    <ToolCommandRunner>dotnet</ToolCommandRunner>
-    <ToolCommandRunner Condition="'$(SelfContained)' == 'true'">executable</ToolCommandRunner>
+    <ToolCommandRunner Condition="!$(UseAppHost)">dotnet</ToolCommandRunner>
+    <ToolCommandRunner Condition="$(UseAppHost)">executable</ToolCommandRunner>
   </PropertyGroup>
 
   <Target Name="_GenerateToolsSettingsFileInputCache">
