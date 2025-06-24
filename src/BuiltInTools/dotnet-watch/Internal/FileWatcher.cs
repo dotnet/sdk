@@ -1,17 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Diagnostics;
+
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class FileWatcher(IReporter reporter) : IDisposable
+    internal class FileWatcher(IReporter reporter) : IDisposable
     {
         // Directory watcher for each watched directory tree.
         // Keyed by full path to the root directory with a trailing directory separator.
-        private readonly Dictionary<string, IDirectoryWatcher> _directoryTreeWatchers = new(PathUtilities.OSSpecificPathComparer);
+        protected readonly Dictionary<string, DirectoryWatcher> _directoryTreeWatchers = new(PathUtilities.OSSpecificPathComparer);
 
         // Directory watcher for each watched directory (non-recursive).
         // Keyed by full path to the root directory with a trailing directory separator.
-        private readonly Dictionary<string, IDirectoryWatcher> _directoryWatchers = new(PathUtilities.OSSpecificPathComparer);
+        protected readonly Dictionary<string, DirectoryWatcher> _directoryWatchers = new(PathUtilities.OSSpecificPathComparer);
 
         private bool _disposed;
         public event Action<ChangedPath>? OnFileChange;
@@ -35,23 +38,67 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
+        protected virtual DirectoryWatcher CreateDirectoryWatcher(string directory, ImmutableHashSet<string> fileNames, bool includeSubdirectories)
+        {
+            var watcher = DirectoryWatcher.Create(directory, fileNames, includeSubdirectories);
+            if (watcher is EventBasedDirectoryWatcher eventBasedWatcher)
+            {
+                eventBasedWatcher.Logger = message => reporter.Verbose(message);
+            }
+
+            return watcher;
+        }
+
         public bool WatchingDirectories
             => _directoryTreeWatchers.Count > 0 || _directoryWatchers.Count > 0;
 
-        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories)
-            => WatchDirectories(filePaths.Select(path => Path.GetDirectoryName(path)!), includeSubdirectories);
+        /// <summary>
+        /// Watches individual files.
+        /// </summary>
+        public void WatchFiles(IEnumerable<string> filePaths)
+            => Watch(filePaths, containingDirectories: false, includeSubdirectories: false);
 
-        public void WatchDirectories(IEnumerable<string> directories, bool includeSubdirectories)
+        /// <summary>
+        /// Watches an entire directory or directory tree.
+        /// </summary>
+        public void WatchContainingDirectories(IEnumerable<string> filePaths, bool includeSubdirectories)
+            => Watch(filePaths, containingDirectories: true, includeSubdirectories);
+
+        private void Watch(IEnumerable<string> filePaths, bool containingDirectories, bool includeSubdirectories)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            Debug.Assert(containingDirectories || !includeSubdirectories);
 
-            foreach (var dir in directories.Distinct())
+            var filesByDirectory =
+                from path in filePaths
+                group path by PathUtilities.EnsureTrailingSlash(PathUtilities.NormalizeDirectorySeparators(Path.GetDirectoryName(path)!))
+                into g
+                select (g.Key, containingDirectories ? [] : g.Select(path => Path.GetFileName(path)).ToImmutableHashSet(PathUtilities.OSSpecificPathComparer));
+
+            foreach (var (directory, fileNames) in filesByDirectory)
             {
-                var directory = PathUtilities.EnsureTrailingSlash(PathUtilities.NormalizeDirectorySeparators(dir));
-
                 // the directory is watched by active directory watcher:
-                if (!includeSubdirectories && _directoryWatchers.ContainsKey(directory))
+                if (!includeSubdirectories && _directoryWatchers.TryGetValue(directory, out var existingDirectoryWatcher))
                 {
+                    if (existingDirectoryWatcher.WatchedFileNames.IsEmpty)
+                    {
+                        // already watching all files in the directory
+                        continue;
+                    }
+
+                    if (fileNames.IsEmpty)
+                    {
+                        // watch all files:
+                        existingDirectoryWatcher.WatchedFileNames = fileNames;
+                        continue;
+                    }
+
+                    // merge sets of watched files:
+                    foreach (var fileName in fileNames)
+                    {
+                        existingDirectoryWatcher.WatchedFileNames = existingDirectoryWatcher.WatchedFileNames.Add(fileName);
+                    }
+
                     continue;
                 }
 
@@ -62,12 +109,7 @@ namespace Microsoft.DotNet.Watch
                     continue;
                 }
 
-                var newWatcher = FileWatcherFactory.CreateWatcher(directory, includeSubdirectories);
-                if (newWatcher is EventBasedDirectoryWatcher eventBasedWatcher)
-                {
-                    eventBasedWatcher.Logger = message => reporter.Verbose(message);
-                }
-
+                var newWatcher = CreateDirectoryWatcher(directory, fileNames, includeSubdirectories);
                 newWatcher.OnFileChange += WatcherChangedHandler;
                 newWatcher.OnError += WatcherErrorHandler;
                 newWatcher.EnableRaisingEvents = true;
@@ -75,19 +117,27 @@ namespace Microsoft.DotNet.Watch
                 // watchers that are now redundant (covered by the new directory watcher):
                 if (includeSubdirectories)
                 {
-                    var watchersToRemove = _directoryTreeWatchers
-                        .Where(d => d.Key.StartsWith(directory, PathUtilities.OSSpecificPathComparison))
-                        .ToList();
+                    Debug.Assert(fileNames.IsEmpty);
 
-                    foreach (var (watchedDirectory, watcher) in watchersToRemove)
+                    RemoveRedundantWatchers(_directoryTreeWatchers);
+                    RemoveRedundantWatchers(_directoryWatchers);
+
+                    void RemoveRedundantWatchers(Dictionary<string, DirectoryWatcher> watchers)
                     {
-                        _directoryTreeWatchers.Remove(watchedDirectory);
+                        var watchersToRemove = watchers
+                            .Where(d => d.Key.StartsWith(directory, PathUtilities.OSSpecificPathComparison))
+                            .ToList();
 
-                        watcher.EnableRaisingEvents = false;
-                        watcher.OnFileChange -= WatcherChangedHandler;
-                        watcher.OnError -= WatcherErrorHandler;
+                        foreach (var (watchedDirectory, watcher) in watchersToRemove)
+                        {
+                            watchers.Remove(watchedDirectory);
 
-                        watcher.Dispose();
+                            watcher.EnableRaisingEvents = false;
+                            watcher.OnFileChange -= WatcherChangedHandler;
+                            watcher.OnError -= WatcherErrorHandler;
+
+                            watcher.Dispose();
+                        }
                     }
 
                     _directoryTreeWatchers.Add(directory, newWatcher);
@@ -101,7 +151,7 @@ namespace Microsoft.DotNet.Watch
 
         private void WatcherErrorHandler(object? sender, Exception error)
         {
-            if (sender is IDirectoryWatcher watcher)
+            if (sender is DirectoryWatcher watcher)
             {
                 reporter.Warn($"The file watcher observing '{watcher.WatchedDirectory}' encountered an error: {error.Message}");
             }

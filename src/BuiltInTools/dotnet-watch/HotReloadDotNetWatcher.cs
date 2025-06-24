@@ -103,9 +103,7 @@ namespace Microsoft.DotNet.Watch
                     compilationHandler = new CompilationHandler(Context.Reporter, Context.ProcessRunner);
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
-                    var outputDirectories = GetProjectOutputDirectories(evaluationResult.ProjectGraph);
-                    ReportOutputDirectories(outputDirectories);
-                    var changeFilter = new Predicate<ChangedPath>(change => AcceptChange(change, evaluationResult, outputDirectories));
+                    evaluationResult.ItemExclusions.Report(Context.Reporter);
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
@@ -180,13 +178,13 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
+                    evaluationResult.WatchFiles(fileWatcher);
 
                     var changedFilesAccumulator = ImmutableList<ChangedPath>.Empty;
 
                     void FileChangedCallback(ChangedPath change)
                     {
-                        if (changeFilter(change))
+                        if (AcceptChange(change, evaluationResult))
                         {
                             Context.Reporter.Verbose($"File change: {change.Kind} '{change.Path}'.");
                             ImmutableInterlocked.Update(ref changedFilesAccumulator, changedPaths => changedPaths.Add(change));
@@ -350,7 +348,7 @@ namespace Microsoft.DotNet.Watch
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
                                 _ = await fileWatcher.WaitForFileChangeAsync(
-                                    changeFilter,
+                                    change => AcceptChange(change, evaluationResult),
                                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
                                     shutdownCancellationToken);
                             }
@@ -424,19 +422,25 @@ namespace Microsoft.DotNet.Watch
                                 })
                                 .ToImmutableList();
 
+                            ReportFileChanges(changedFiles);
+
                             // When a new file is added we need to run design-time build to find out
                             // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
+                            // We also need to re-evaluate the project if any project files have been modified.
                             // We don't need to rebuild and restart the application though.
-                            var hasAddedFile = changedFiles.Any(f => f.Kind is ChangeKind.Add);
+                            var fileAdded = changedFiles.Any(f => f.Kind is ChangeKind.Add);
+                            var projectChanged = !fileAdded && changedFiles.Any(f => evaluationResult.BuildFiles.Contains(f.Item.FilePath));
+                            var evaluationRequired = fileAdded || projectChanged;
 
-                            if (hasAddedFile)
+                            if (evaluationRequired)
                             {
-                                Context.Reporter.Report(MessageDescriptor.FileAdditionTriggeredReEvaluation);
+                                Context.Reporter.Report(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
 
+                                // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
 
                                 // additional directories may have been added:
-                                fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
+                                evaluationResult.WatchFiles(fileWatcher);
 
                                 await compilationHandler.Workspace.UpdateProjectConeAsync(RootFileSetFactory.RootProjectFile, iterationCancellationToken);
 
@@ -447,9 +451,8 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 // Update files in the change set with new evaluation info.
-                                changedFiles = changedFiles
-                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
-                                    .ToImmutableList();
+                                changedFiles = [.. changedFiles
+                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)];
 
                                 Context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -477,12 +480,11 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 changedFiles = newChangedFiles;
+
                                 ImmutableInterlocked.Update(ref changedFilesAccumulator, accumulator => accumulator.AddRange(newAccumulator));
                             }
 
-                            ReportFileChanges(changedFiles);
-
-                            if (!hasAddedFile)
+                            if (!evaluationRequired)
                             {
                                 // update the workspace to reflect changes in the file content:
                                 await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
@@ -551,7 +553,7 @@ namespace Microsoft.DotNet.Watch
             {
                 if (!fileWatcher.WatchingDirectories)
                 {
-                    fileWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
+                    evaluationResult.WatchFiles(fileWatcher);
                 }
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
@@ -571,17 +573,34 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
-        private bool AcceptChange(ChangedPath change, EvaluationResult evaluationResult, IReadOnlySet<string> outputDirectories)
+        private Predicate<ChangedPath> CreateChangeFilter(EvaluationResult evaluationResult)
+            => new(change => AcceptChange(change, evaluationResult));
+
+        private bool AcceptChange(ChangedPath change, EvaluationResult evaluationResult)
         {
             var (path, kind) = change;
 
             // Handle changes to files that are known to be project build inputs from its evaluation.
+            // Compile items might be explicitly added by targets to directories that are excluded by default
+            // (e.g. global usings in obj directory). Changes to these files should not be ignored.
             if (evaluationResult.Files.ContainsKey(path))
             {
                 return true;
             }
 
-            // Ignore other changes to output and intermediate output directories.
+            if (!AcceptChange(change))
+            {
+                return false;
+            }
+
+            // changes in *.*proj, *.props, *.targets:
+            if (evaluationResult.BuildFiles.Contains(path))
+            {
+                return true;
+            }
+
+            // Ignore other changes that match DefaultItemExcludes glob if EnableDefaultItems is true,
+            // otherwise changes under output and intermediate output directories.
             //
             // Unsupported scenario:
             // - msbuild target adds source files to intermediate output directory and Compile items
@@ -589,13 +608,7 @@ namespace Microsoft.DotNet.Watch
             //
             // On the other hand, changes to source files produced by source generators will be registered
             // since the changes to additional file will trigger workspace update, which will trigger the source generator.
-            if (PathUtilities.ContainsPath(outputDirectories, path))
-            {
-                Context.Reporter.Report(MessageDescriptor.IgnoringChangeInOutputDirectory, kind, path);
-                return false;
-            }
-
-            return AcceptChange(change);
+            return !evaluationResult.ItemExclusions.IsExcluded(path, kind, Context.Reporter);
         }
 
         private bool AcceptChange(ChangedPath change)
@@ -617,54 +630,6 @@ namespace Microsoft.DotNet.Watch
         // https://github.com/dotnet/sdk/blob/124be385f90f2c305dde2b817cb470e4d11d2d6b/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Sdk.DefaultItems.targets#L42
         private static bool IsHiddenDirectory(string dir)
             => Path.GetFileName(dir).StartsWith('.');
-
-        private static IReadOnlySet<string> GetProjectOutputDirectories(ProjectGraph projectGraph)
-        {
-            // TODO: https://github.com/dotnet/sdk/issues/45539
-            // Consider evaluating DefaultItemExcludes and DefaultExcludesInProjectFolder msbuild properties using
-            // https://github.com/dotnet/msbuild/blob/37eb419ad2c986ac5530292e6ee08e962390249e/src/Build/Globbing/MSBuildGlob.cs
-            // to determine which directories should be excluded.
-
-            var projectOutputDirectories = new HashSet<string>(PathUtilities.OSSpecificPathComparer);
-
-            foreach (var projectNode in projectGraph.ProjectNodes)
-            {
-                TryAdd(projectNode.GetOutputDirectory());
-                TryAdd(projectNode.GetIntermediateOutputDirectory());
-            }
-
-            return projectOutputDirectories;
-
-            void TryAdd(string? dir)
-            {
-                try
-                {
-                    if (dir != null)
-                    {
-                        // msbuild properties may use '\' as a directory separator even on Unix.
-                        // GetFullPath does not normalize '\' to '/' on Unix.
-                        if (Path.DirectorySeparatorChar == '/')
-                        {
-                            dir = dir.Replace('\\', '/');
-                        }
-
-                        projectOutputDirectories.Add(Path.TrimEndingDirectorySeparator(Path.GetFullPath(dir)));
-                    }
-                }
-                catch
-                {
-                    // ignore
-                }
-            }
-        }
-
-        private void ReportOutputDirectories(IReadOnlySet<string> directories)
-        {
-            foreach (var dir in directories)
-            {
-                Context.Reporter.Verbose($"Output directory: '{dir}'");
-            }
-        }
 
         internal static IEnumerable<ChangedPath> NormalizePathChanges(IEnumerable<ChangedPath> changes)
             => changes
