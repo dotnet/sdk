@@ -88,6 +88,12 @@ public sealed class RunCsWinRTGenerator : ToolTask
     private string EffectiveOutputAssemblyItemSpec => OutputAssemblyPath![0].ItemSpec;
 
     /// <inheritdoc/>
+#if NET10_0_OR_GREATER
+    [MemberNotNullWhen(true, nameof(ReferenceAssemblyPaths))]
+    [MemberNotNullWhen(true, nameof(OutputAssemblyPath))]
+    [MemberNotNullWhen(true, nameof(InteropAssemblyDirectory))]
+    [MemberNotNullWhen(true, nameof(CsWinRTToolsDirectory))]
+#endif
     protected override bool ValidateParameters()
     {
         if (!base.ValidateParameters())
@@ -109,23 +115,23 @@ public sealed class RunCsWinRTGenerator : ToolTask
             return false;
         }
 
-        if (InteropAssemblyDirectory is not null && !Directory.Exists(InteropAssemblyDirectory))
+        if (InteropAssemblyDirectory is null || !Directory.Exists(InteropAssemblyDirectory))
         {
-            Log.LogWarning("Generated assembly directory '{0}' does not exist.", InteropAssemblyDirectory);
+            Log.LogWarning("Generated assembly directory '{0}' is invalid or does not exist.", InteropAssemblyDirectory);
 
             return false;
         }
 
         if (DebugReproDirectory is not null && !Directory.Exists(DebugReproDirectory))
         {
-            Log.LogWarning("Debug repro directory '{0}' does not exist.", DebugReproDirectory);
+            Log.LogWarning("Debug repro directory '{0}' is invalid or does not exist.", DebugReproDirectory);
 
             return false;
         }
 
         if (CsWinRTToolsDirectory is null || !Directory.Exists(CsWinRTToolsDirectory))
         {
-            Log.LogWarning("Tools directory '{0}' does not exist.", CsWinRTToolsDirectory);
+            Log.LogWarning("Tools directory '{0}' is invalid or does not exist.", CsWinRTToolsDirectory);
 
             return false;
         }
@@ -165,7 +171,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
 
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
         AppendResponseFileCommand(args, "--output-assembly-path", EffectiveOutputAssemblyItemSpec);
-        AppendResponseFileCommand(args, "--generated-assembly-directory", InteropAssemblyDirectory);
+        AppendResponseFileCommand(args, "--generated-assembly-directory", InteropAssemblyDirectory!);
 
         // The debug repro directory is optional, and might not be set
         if (DebugReproDirectory is not null)
