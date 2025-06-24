@@ -83,6 +83,11 @@ namespace Microsoft.DotNet.ApiCompat.Task
         public bool EnableRuleCannotChangeParameterName { get; set; }
 
         /// <summary>
+        /// The culture to use in suppressions when <see cref="GenerateSuppressionFile"/> is true. Defaults to en-US.
+        /// </summary>
+        public string SuppressionCulture { get; set; } = "en-US";
+
+        /// <summary>
         /// Performs api comparison checks in strict mode.
         /// </summary>
         public bool EnableStrictMode { get; set; }
@@ -144,6 +149,7 @@ namespace Microsoft.DotNet.ApiCompat.Task
                 EnableRuleAttributesMustMatch,
                 ExcludeAttributesFiles,
                 EnableRuleCannotChangeParameterName,
+                SuppressionCulture,
                 LeftAssemblies!,
                 RightAssemblies!,
                 EnableStrictMode,

@@ -16,21 +16,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging
         bool HasLoggedErrorSuppressions { get; }
 
         /// <summary>
-        /// Log an error based on a passed in suppression, code and message.
+        /// Log an error based on a passed in suppression.
         /// </summary>
         /// <param name="suppression">The suppression object which contains the rule information.</param>
-        /// <param name="code">The suppression code</param>
-        /// <param name="message">The message</param>
         /// <returns>Returns true if the error is logged and not suppressed.</returns>
-        bool LogError(Suppression suppression, string code, string message);
+        bool LogError(Suppression suppression);
 
         /// <summary>
-        /// Log a warning based on the passed in suppression, code and message.
+        /// Log a warning based on the passed in suppression.
         /// </summary>
         /// <param name="suppression">The suppression object which contains the rule information.</param>
-        /// <param name="code">The suppression code</param>
-        /// <param name="message">The message</param>
         /// <returns>Returns true if the warning is logged and not suppressed.</returns>
-        bool LogWarning(Suppression suppression, string code, string message);
+        bool LogWarning(Suppression suppression);
     }
 }

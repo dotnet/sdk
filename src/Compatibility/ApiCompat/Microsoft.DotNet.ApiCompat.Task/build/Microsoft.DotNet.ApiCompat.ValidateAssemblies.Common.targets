@@ -27,6 +27,7 @@
       EnableRuleAttributesMustMatch="$(ApiCompatEnableRuleAttributesMustMatch)"
       ExcludeAttributesFiles="@(ApiCompatExcludeAttributesFile)"
       EnableRuleCannotChangeParameterName="$(ApiCompatEnableRuleCannotChangeParameterName)"
+      SuppressionCulture="$(ApiCompatSuppressionCulture)"
       EnableStrictMode="$(ApiCompatStrictMode)"
       LeftAssembliesReferences="@(ApiCompatLeftAssembliesReferences)"
       RightAssembliesReferences="@(ApiCompatRightAssembliesReferences)"
