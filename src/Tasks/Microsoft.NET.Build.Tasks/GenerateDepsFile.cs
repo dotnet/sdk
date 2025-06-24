@@ -279,6 +279,7 @@ namespace Microsoft.NET.Build.Tasks
                 if (shouldWriteFile)
                 {
                     // Write the new content to file using CopyTo
+                    contentStream.Position = 0;
                     using (var fileStream = File.Create(depsFilePath))
                     {
                         contentStream.CopyTo(fileStream);
