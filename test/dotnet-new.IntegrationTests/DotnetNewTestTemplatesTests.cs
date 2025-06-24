@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string CgPackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "component-governance", "packages.json");
+        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "component-governance", "packages.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -228,12 +228,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 [];
 
             // Load existing package versions if file exists
-            if (File.Exists(CgPackagesJsonPath))
+            if (File.Exists(PackagesJsonPath))
             {
                 try
                 {
                     packageVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(
-                        File.ReadAllText(CgPackagesJsonPath)) ??
+                        File.ReadAllText(PackagesJsonPath)) ??
                         [];
                 }
                 catch (Exception ex)
@@ -274,18 +274,18 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
 
             // Ensure directory exists
-            if (Path.GetDirectoryName(CgPackagesJsonPath) is string directoryPath)
+            if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
             {
                 Directory.CreateDirectory(directoryPath);
             }
             else
             {
-                _log.WriteLine($"Warning: Could not determine directory path for '{CgPackagesJsonPath}'.");
+                _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
             }
 
             // Write updated packages.json
             File.WriteAllText(
-                CgPackagesJsonPath,
+                PackagesJsonPath,
                 JsonSerializer.Serialize(packageVersions, new JsonSerializerOptions { WriteIndented = true }));
         }
 
