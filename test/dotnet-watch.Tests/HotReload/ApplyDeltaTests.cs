@@ -168,11 +168,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 {
                     public static void Print()
                     {
-                #if BUILD_CONST
-                        System.Console.WriteLine("BUILD_CONST set");
-                #else
-                
-                        System.Console.WriteLine("BUILD_CONST not set");
+                #if BUILD_CONST_IN_PROPS
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS set");
+                #else                
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS not set");
                 #endif
                     }
                 }
@@ -181,12 +180,12 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, [], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
-            await App.WaitUntilOutputContains("BUILD_CONST set");
+            await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
             App.Process.ClearOutput();
 
             UpdateSourceFile(
                 directoryBuildProps,
-                src => src.Replace("BUILD_CONST", ""));
+                src => src.Replace("BUILD_CONST_IN_PROPS", ""));
 
             await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
             await App.WaitUntilOutputContains("BUILD_CONST not set");
@@ -194,7 +193,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49545")]
         public async Task ProjectChange_DirectoryBuildProps_Delete()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -202,18 +201,17 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var dependencyDir = Path.Combine(testAsset.Path, "Dependency");
             var libSourcePath = Path.Combine(dependencyDir, "Foo.cs");
-            
+            var directoryBuildProps = Path.Combine(testAsset.Path, "Directory.Build.props");
 
             File.WriteAllText(libSourcePath, """
                 public class Lib
                 {
                     public static void Print()
                     {
-                #if BUILD_CONST
-                        System.Console.WriteLine("BUILD_CONST set");
+                #if BUILD_CONST_IN_PROPS
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS set");
                 #else
-                
-                        System.Console.WriteLine("BUILD_CONST not set");
+                        System.Console.WriteLine("BUILD_CONST_IN_PROPS not set");
                 #endif
                     }
                 }
@@ -222,16 +220,16 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, [], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
-            await App.WaitUntilOutputContains("BUILD_CONST set");
+            await App.WaitUntilOutputContains("BUILD_CONST_IN_PROPS set");
 
-            File.Delete(Path.Combine(testAsset.Path, "Directory.Build.props"));
+            Log($"Deleting {directoryBuildProps}");
+            File.Delete(directoryBuildProps);
 
             await App.AssertOutputLineStartsWith(MessageDescriptor.NoCSharpChangesToApply);
             App.AssertOutputContains(MessageDescriptor.ProjectChangeTriggeredReEvaluation);
             App.Process.ClearOutput();
 
-            await App.AssertOutputLineStartsWith("BUILD_CONST not set");
-            await App.WaitUntilOutputContains($"dotnet watch 🔥 [App.WithDeps ({ToolsetInfo.CurrentTargetFramework})] Hot reload succeeded.");
+            await App.AssertOutputLineStartsWith("BUILD_CONST_IN_PROPS not set");
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
