@@ -104,7 +104,6 @@ namespace Microsoft.DotNet.Watch
                     var scopedCssFileHandler = new ScopedCssFileHandler(Context.Reporter, projectMap, browserConnector);
                     var projectLauncher = new ProjectLauncher(Context, projectMap, browserConnector, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(Context.Reporter);
-                    var changeFilter = new Predicate<ChangedPath>(change => AcceptChange(change, evaluationResult));
 
                     var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
 
@@ -185,7 +184,7 @@ namespace Microsoft.DotNet.Watch
 
                     void FileChangedCallback(ChangedPath change)
                     {
-                        if (changeFilter(change))
+                        if (AcceptChange(change, evaluationResult))
                         {
                             Context.Reporter.Verbose($"File change: {change.Kind} '{change.Path}'.");
                             ImmutableInterlocked.Update(ref changedFilesAccumulator, changedPaths => changedPaths.Add(change));
@@ -349,7 +348,7 @@ namespace Microsoft.DotNet.Watch
                                 iterationCancellationToken.ThrowIfCancellationRequested();
 
                                 _ = await fileWatcher.WaitForFileChangeAsync(
-                                    changeFilter,
+                                    change => AcceptChange(change, evaluationResult),
                                     startedWatching: () => Context.Reporter.Report(MessageDescriptor.FixBuildError),
                                     shutdownCancellationToken);
                             }
@@ -423,6 +422,8 @@ namespace Microsoft.DotNet.Watch
                                 })
                                 .ToImmutableList();
 
+                            ReportFileChanges(changedFiles);
+
                             // When a new file is added we need to run design-time build to find out
                             // what kind of the file it is and which project(s) does it belong to (can be linked, web asset, etc.).
                             // We also need to re-evaluate the project if any project files have been modified.
@@ -450,9 +451,8 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 // Update files in the change set with new evaluation info.
-                                changedFiles = changedFiles
-                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
-                                    .ToImmutableList();
+                                changedFiles = [.. changedFiles
+                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)];
 
                                 Context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -480,10 +480,9 @@ namespace Microsoft.DotNet.Watch
                                 }
 
                                 changedFiles = newChangedFiles;
+
                                 ImmutableInterlocked.Update(ref changedFilesAccumulator, accumulator => accumulator.AddRange(newAccumulator));
                             }
-
-                            ReportFileChanges(changedFiles);
 
                             if (!evaluationRequired)
                             {
@@ -574,11 +573,16 @@ namespace Microsoft.DotNet.Watch
             }
         }
 
+        private Predicate<ChangedPath> CreateChangeFilter(EvaluationResult evaluationResult)
+            => new(change => AcceptChange(change, evaluationResult));
+
         private bool AcceptChange(ChangedPath change, EvaluationResult evaluationResult)
         {
             var (path, kind) = change;
 
             // Handle changes to files that are known to be project build inputs from its evaluation.
+            // Compile items might be explicitly added by targets to directories that are excluded by default
+            // (e.g. global usings in obj directory). Changes to these files should not be ignored.
             if (evaluationResult.Files.ContainsKey(path))
             {
                 return true;

@@ -308,6 +308,43 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
+        [PlatformSpecificFact(TestPlatforms.Windows, Skip = "https://github.com/dotnet/sdk/issues/49542")] // "https://github.com/dotnet/sdk/issues/49307")
+        public async Task ProjectChange_GlobalUsings()
+        {
+            var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
+                .WithSource();
+
+            var programPath = Path.Combine(testAsset.Path, "Program.cs");
+            var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+
+            App.Start(testAsset, []);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
+
+            // missing System.Linq import:
+            UpdateSourceFile(programPath, content => content.Replace("""
+                Console.WriteLine(".");
+                """,
+                """
+                Console.WriteLine($">>> {typeof(XDocument)}");
+                """));
+
+            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
+
+            UpdateSourceFile(projectPath, content => content.Replace("""
+                <!-- items placeholder -->
+                """,
+                """
+                <Using Include="System.Xml.Linq" />
+                """));
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchNoDepsApp ({ToolsetInfo.CurrentTargetFramework})");
+
+            await App.WaitUntilOutputContains(">>> System.Linq.Enumerable");
+
+            App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
+        }
+
         [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
         [CombinatorialData]
         public async Task AutoRestartOnRudeEdit(bool nonInteractive)
@@ -462,49 +499,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 """);
 
             await App.AssertOutputLineStartsWith("<Updated>", failure: _ => false);
-        }
-
-        /// <summary>
-        /// We currently do not support applying project changes.
-        /// The workaround is to restart via Ctrl+R.
-        /// </summary>
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
-        public async Task ProjectChangeAndRestart()
-        {
-            var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
-                .WithSource();
-
-            var programPath = Path.Combine(testAsset.Path, "Program.cs");
-            var projectPath = Path.Combine(testAsset.Path, "WatchNoDepsApp.csproj");
-
-            App.Start(testAsset, ["--no-exit"], testFlags: TestFlags.ReadKeyFromStdin);
-
-            await App.AssertOutputLineStartsWith(MessageDescriptor.WaitingForChanges);
-
-            // missing System.Linq import:
-            UpdateSourceFile(programPath, content => content.Replace("""
-                Console.WriteLine("Started");
-                """,
-                """
-                Console.WriteLine($">>> {typeof(Enumerable)}");
-                """));
-
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
-
-            UpdateSourceFile(projectPath, content => content.Replace("""
-                <!-- add item -->
-                """,
-                """
-                <Using Include="System.Linq" />
-                """));
-
-            // project change not applied:
-            await App.AssertOutputLineStartsWith("dotnet watch ⌚ Unable to apply hot reload due to compilation errors.", failure: _ => false);
-
-            // Ctlr+R rebuilds and restarts:
-            App.SendControlR();
-
-            await App.AssertOutputLineStartsWith(">>> System.Linq.Enumerable", failure: _ => false);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
