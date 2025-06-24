@@ -5,6 +5,7 @@
     <NoWarn>$(NoWarn);NU1507</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageVersion Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.4.0" />
     <PackageVersion Include="Basic.CompilerLog.Util" Version="0.9.9" />
     <PackageVersion Include="AwesomeAssertions" Version="$(AwesomeAssertionsVersion)" />
     <PackageVersion Include="BenchmarkDotNet" Version="$(BenchmarkDotNetPackageVersion)" />
