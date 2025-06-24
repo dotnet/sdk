@@ -857,6 +857,23 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--restoreProperty": {
+      "hidden": true,
+      "aliases": [
+        "--rp",
+        "-restoreProperty",
+        "-rp",
+        "/restoreProperty"
+      ],
+      "valueType": "System.Collections.Frozen.FrozenDictionary<System.String, System.String>",
+      "hasDefaultValue": true,
+      "defaultValue": {},
+      "arity": {
+        "minimum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--runtime": {
       "description": "The target runtime to build for.",
       "hidden": false,

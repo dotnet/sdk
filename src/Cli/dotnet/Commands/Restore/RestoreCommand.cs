@@ -30,7 +30,7 @@ public static class RestoreCommand
 
         string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {

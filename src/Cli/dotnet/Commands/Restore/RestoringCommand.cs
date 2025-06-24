@@ -24,7 +24,7 @@ public class RestoringCommand : MSBuildForwardingApp
             { Constants.EnableDefaultItems, "false" },
             { Constants.EnableDefaultEmbeddedResourceItems, "false" },
             { Constants.EnableDefaultNoneItems, "false" },
-        }.ToFrozenDictionary();
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     public MSBuildForwardingApp? SeparateRestoreCommand { get; }
 
@@ -94,7 +94,12 @@ public class RestoringCommand : MSBuildForwardingApp
         // we are running a separate restore command - it can just use 'properties' instead.
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(msbuildArgs);
         string[] restoreArguments = ["--target:Restore", .. newArgumentsToAdd, .. existingArgumentsToForward];
-        var restoreMSBuildArgs = MSBuildArgs.FromProperties(RestoreOptimizationProperties).CloneWithExplicitArgs(restoreArguments).CloneWithAdditionalProperties(msbuildArgs.GlobalProperties);
+        // we need to strip the properties from GlobalProperties that are excluded from restore
+        // and create a new MSBuildArgs instance that will be used for the separate restore command
+        var restoreProperties = msbuildArgs.GlobalProperties?
+            .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))
+            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        var restoreMSBuildArgs = MSBuildArgs.FromProperties(RestoreOptimizationProperties).CloneWithExplicitArgs(restoreArguments).CloneWithAdditionalProperties(restoreProperties);
         return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 

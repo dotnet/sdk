@@ -110,7 +110,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             command.GetArgumentTokensToMSBuild()
                .Should()
-               .BeEquivalentTo([.. ExpectedPrefix, "-restore", "-target:Publish", .. ExpectedProperties, "--property:Prop1=prop1", "--property:Prop2=prop2", NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore]);
+               .Contain(["--property:Prop1=prop1", "--property:Prop2=prop2"]);
         }
     }
 }

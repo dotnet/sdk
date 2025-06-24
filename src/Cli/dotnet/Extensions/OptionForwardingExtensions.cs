@@ -67,8 +67,14 @@ public static class OptionForwardingExtensions
 
     public static Option<IEnumerable<string>> ForwardAsManyArgumentsEachPrefixedByOption(this ForwardedOption<IEnumerable<string>> option, string alias) => option.ForwardAsMany(o => ForwardedArguments(alias, o));
 
-    public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, Command command) =>
-        command.Options
+    /// <summary>
+    /// Calls the forwarding functions for all options that implement <see cref="IForwardedOption"/> in the provided <see cref="ParseResult"/>.
+    /// </summary>
+    /// <param name="parseResult"></param>
+    /// <param name="command">If not provided, uses the <see cref="ParseResult.CommandResult" />'s <see cref="CommandResult.Command"/>.</param>
+    /// <returns></returns>
+    public static IEnumerable<string> OptionValuesToBeForwarded(this ParseResult parseResult, Command? command = null) =>
+        (command ?? parseResult.CommandResult.Command).Options
             .OfType<IForwardedOption>()
             .Select(o => o.GetForwardingFunction())
             .SelectMany(f => f is not null ? f(parseResult) : []);

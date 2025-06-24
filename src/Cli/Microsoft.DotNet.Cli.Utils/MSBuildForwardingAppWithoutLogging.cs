@@ -47,8 +47,11 @@ internal class MSBuildForwardingAppWithoutLogging
     {
         string defaultMSBuildPath = GetMSBuildExePath();
         _msbuildArgs = msbuildArgs;
-        if (!includeLogo)
+        if (!includeLogo && !msbuildArgs.OtherMSBuildArgs.Contains("-nologo", StringComparer.OrdinalIgnoreCase))
         {
+            // If the user didn't explicitly ask for -nologo, we add it to avoid the MSBuild logo.
+            // This is useful for scenarios like restore where we don't want to print the logo.
+            // Note that this is different from the default behavior of MSBuild, which prints the logo.
             msbuildArgs.OtherMSBuildArgs.Add("-nologo");
         }
         string? tlpDefault = TerminalLoggerDefault;
@@ -217,7 +220,7 @@ internal class MSBuildForwardingAppWithoutLogging
     {
         return new()
         {
-            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? AppContext.BaseDirectory },
+            { "MSBuildExtensionsPath", MSBuildExtensionsPathTestHook ?? Environment.GetEnvironmentVariable("MSBuildExtensionsPath") ?? AppContext.BaseDirectory },
             { "MSBuildSDKsPath", GetMSBuildSDKsPath() },
             { "DOTNET_HOST_PATH", GetDotnetPath() },
         };

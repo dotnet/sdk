@@ -309,7 +309,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
     {
-        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary()
+        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary(MSBuildArgs.GlobalProperties.Comparer)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
         entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
 
