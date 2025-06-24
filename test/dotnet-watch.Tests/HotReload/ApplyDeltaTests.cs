@@ -1030,7 +1030,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertOutputLineStartsWith("> NewSubdir");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task Aspire_BuildError_ManualRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -1094,8 +1094,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
             else
             {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
                 App.AssertOutputContains($"[WatchAspire.ApiService ({tfm})] Exited");
             }
 
@@ -1128,8 +1126,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
             else
             {
-                // Unix process may return exit code = 128 + SIGTERM
-                // Exited with error code 143
                 await App.AssertOutputLine(line => line.Contains($"[WatchAspire.ApiService ({tfm})] Exited"));
                 await App.AssertOutputLine(line => line.Contains($"[WatchAspire.AppHost ({tfm})] Exited"));
             }
@@ -1140,7 +1136,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.AssertOutputContains("dotnet watch ⭐ [#1] Sending 'sessionTerminated'");
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task Aspire_NoEffect_AutoRestart()
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
