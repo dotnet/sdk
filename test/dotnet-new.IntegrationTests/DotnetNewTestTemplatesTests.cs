@@ -248,7 +248,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 string content = File.ReadAllText(projectFile);
                 var packageRefMatches = Regex.Matches(
                     content,
-                    @"<PackageReference\s+Include=""([^""]+)""\s+Version=""([^""]+)""",
+                    @"<PackageReference\s+(?:Include=""([^""]+)""\s+Version=""([^""]+)""|Version=""([^""]+)""\s+Include=""([^""]+)"")",
                     RegexOptions.IgnoreCase);
 
                 foreach (Match match in packageRefMatches)
