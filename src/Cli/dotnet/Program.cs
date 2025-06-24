@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Azure.Monitor.OpenTelemetry.Exporter;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
@@ -61,6 +62,7 @@ public class Program
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter()
+            .AddAzureMonitorMetricExporter(o => o.ConnectionString = Telemetry.Telemetry.ConnectionString)
             .Build();
         tracerProvider = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r =>
@@ -70,6 +72,10 @@ public class Program
             .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
+            .AddAzureMonitorTraceExporter(o => {
+                o.ConnectionString = Telemetry.Telemetry.ConnectionString;
+                o.EnableLiveMetrics = false;
+            })
             .SetSampler(new AlwaysOnSampler())
             .Build();
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
@@ -156,8 +162,8 @@ public class Program
     /// <returns></returns>
     private static (ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
     {
-        var traceParent = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACEPARENT);
-        var traceState = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACESTATE);
+        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
         static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key)
         {
             return carrier.TryGetValue(key, out var value) ? value : null;
