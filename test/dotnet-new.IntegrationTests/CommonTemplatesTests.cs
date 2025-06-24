@@ -386,6 +386,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string finalProjectName = Path.Combine(projectDir, $"{projName}.{extension}");
 
             Dictionary<string, string> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
+            environmentUnderTest["CheckEolTargetFramework"] = false.ToString();
             TestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
