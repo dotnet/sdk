@@ -209,9 +209,35 @@ Copyright (c) .NET Foundation. All rights reserved.
     hash of all input properties, to support incremental builds.
     ============================================================
   -->
-  <Target Name="_ComputeRunCsWinRTGeneratorCache">
+  <Target Name="_ComputeRunCsWinRTGeneratorCache" DependsOnTargets="ResolveAssemblyReferences">
+
+    <!--
+      If the user hasn't specified the 'CsWinRTToolsDirectory' property, we need to resolve the correct
+      tools path to use to find the 'cswinrtgen' binary that matches the 'WinRT.Runtime.dll' assembly in
+      use. To do so, we can leverage the assembly resolution logic that the .NET SDK is already doing.
+      We know that the right 'cswinrtgen' binary will always be in the '\tools' directory of whatever
+      package contains the 'WinRT.Runtime.dll' assembly (i.e. either 'Microsoft.Windows.SDK.NET.Ref' or
+      'Microsoft.Windows.CsWinRT'). So we can get the resolved assembly and compute the tools directory
+      path relative to it. We can use this value whenever 'CsWinRTToolsDirectory' isn't set.
+    -->
     <ItemGroup>
-      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTToolsDirectory)" />
+      <_WinRTRuntimeDllReferencePath
+        Include="@(ReferencePath)"
+        Condition="'%(Filename)%(Extension)' == 'WinRT.Runtime.dll'" />
+    </ItemGroup>
+    
+    <!-- Compute the implicit '\tools' path, and use that if 'CsWinRTToolsDirectory' isn't set -->
+    <PropertyGroup>
+      <_WinRTRuntimeDllDirectory>$([System.IO.Path]::GetDirectoryName('%(_WinRTRuntimeDllReferencePath.FullPath)'))</_WinRTRuntimeDllDirectory>
+      <_CsWinRTOrTargetingPathRootDirectory>$([System.IO.Path]::GetDirectoryName('$(_WinRTRuntimeDllDirectory)'))</_CsWinRTOrTargetingPathRootDirectory>
+      <_CsWinRTOrTargetingPathToolsDirectory>$([System.IO.Path]::Combine('$(_CsWinRTOrTargetingPathRootDirectory)', 'tools'))</_CsWinRTOrTargetingPathToolsDirectory>
+
+      <CsWinRTEffectiveToolsDirectory>$(CsWinRTToolsDirectory)</CsWinRTEffectiveToolsDirectory>
+      <CsWinRTEffectiveToolsDirectory Condition="'$(CsWinRTEffectiveToolsDirectory)' == ''">$(_CsWinRTOrTargetingPathToolsDirectory)</CsWinRTEffectiveToolsDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTEffectiveToolsDirectory)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTToolsArchitecture)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorInteropAssemblyDirectory)" />
       <_RunCsWinRTGeneratorInputsCacheToHash Include="$(CsWinRTGeneratorDebugReproDirectory)" />
@@ -258,7 +284,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       OutputAssemblyPath="@(IntermediateAssembly)"
       InteropAssemblyDirectory="$(CsWinRTGeneratorInteropAssemblyDirectory)"
       DebugReproDirectory="$(CsWinRTGeneratorDebugReproDirectory)"
-      CsWinRTToolsDirectory="$(CsWinRTToolsDirectory)"
+      CsWinRTToolsDirectory="$(CsWinRTEffectiveToolsDirectory)"
       CsWinRTToolsArchitecture="$(CsWinRTToolsArchitecture)"
       UseWindowsUIXamlProjections="$(CsWinRTUseWindowsUIXamlProjections)"
       ValidateWinRTRuntimeAssemblyVersion="$(CsWinRTGeneratorValidateWinRTRuntimeAssemblyVersion)"
