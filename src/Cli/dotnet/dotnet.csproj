@@ -95,4 +95,15 @@
     <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
   </ItemGroup>
 
+  <!-- NOTE: only works for fast-path code changes -->
+  <Target Name="CopyToRedistFastPath" AfterTargets="AfterBuild">
+    <PropertyGroup>
+      <DestinationPath>$([System.IO.Path]::Combine($(TestHostDotNetRoot), "sdk", $(Version)))</DestinationPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(DestinationPath)"
+          SkipUnchangedFiles="true"
+          OverwriteReadOnlyFiles="true" />
+  </Target>
+
 </Project>

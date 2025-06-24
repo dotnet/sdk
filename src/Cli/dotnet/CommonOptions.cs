@@ -41,7 +41,6 @@ internal static class CommonOptions
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
-            DefaultValueFactory = _ => FrozenDictionary<string, string>.Empty,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }
         .AllowSingleArgPerToken();
@@ -62,7 +61,7 @@ internal static class CommonOptions
                 dictionary[kvp.key] = kvp.value;
             }
         }
-        return dictionary.ToFrozenDictionary();
+        return dictionary.ToFrozenDictionary(dictionary.Comparer);
     }
 
     public static Option<VerbosityOptions> VerbosityOption =

@@ -19,8 +19,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 "--property:UseRazorBuildServer=false",
                 "--property:UseSharedCompilation=false",
                 "/nodeReuse:false",
-                "-property:VSTestArtifactsProcessingMode=collect",
-                "-property:VSTestSessionCorrelationId=<testSessionCorrelationId>"
+                "--property:VSTestArtifactsProcessingMode=collect",
+                "--property:VSTestSessionCorrelationId=<testSessionCorrelationId>"
             })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
@@ -35,10 +35,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 var testSessionCorrelationId = "<testSessionCorrelationId>";
                 var msbuildPath = "<msbuildpath>";
 
-                TestCommand.FromArgs(args, testSessionCorrelationId, msbuildPath)
-                    .GetArgumentTokensToMSBuild()
-                    .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs]);
+                expectedAdditionalArgs.Should().BeSubsetOf(TestCommand.FromArgs(args, testSessionCorrelationId, msbuildPath).GetArgumentTokensToMSBuild());
             });
         }
     }

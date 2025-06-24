@@ -89,7 +89,7 @@ public class MSBuildArgs
         {
             newRestoreProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(GlobalProperties, newRestoreProperties.ToFrozenDictionary(), OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, newRestoreProperties.ToFrozenDictionary(newRestoreProperties.Comparer), OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalProperties(FrozenDictionary<string, string>? additionalProperties)
@@ -109,7 +109,7 @@ public class MSBuildArgs
         {
             newProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(newProperties.ToFrozenDictionary(), RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(newProperties.ToFrozenDictionary(newProperties.Comparer), RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
     }
 
     public void ApplyPropertiesToRestore()
@@ -128,7 +128,7 @@ public class MSBuildArgs
             {
                 newdict[restoreKvp.Key] = restoreKvp.Value;
             }
-            RestoreGlobalProperties = newdict.ToFrozenDictionary();
+            RestoreGlobalProperties = newdict.ToFrozenDictionary(newdict.Comparer);
         }
     }
 
@@ -150,6 +150,6 @@ public class MSBuildArgs
                 dictionary[kvp.key] = kvp.value;
             }
         }
-        return dictionary.ToFrozenDictionary();
+        return dictionary.ToFrozenDictionary(dictionary.Comparer);
     }
 }
