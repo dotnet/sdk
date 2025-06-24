@@ -1438,7 +1438,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="needs-review-translation">'{2}'의 지시문에는 특수 문자가 없는 이름과 '#:{0}Abc{1} Xyz'와 같이 '{1}'(으)로 구분된 선택적 버전이 포함되어야 합니다.</target>
+        <target state="new">The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
