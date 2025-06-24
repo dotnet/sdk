@@ -248,11 +248,6 @@ internal static class ContainerBuilder
             logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
             return 1;
         }
-        catch (UnableToAccessRepositoryException)
-        {
-            logger.LogError(Resource.FormatString(nameof(Strings.UnableToAccessRepository), destinationImageReference.Repository, destinationImageReference.RemoteRegistry!.RegistryName));
-            return 1;
-        }
         catch (Exception e)
         {
             logger.LogError(Resource.FormatString(nameof(Strings.RegistryOutputPushFailed), e.Message));
