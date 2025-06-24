@@ -866,7 +866,7 @@ public class CliSchemaTests : SdkTest
         "/restoreProperty"
       ],
       "valueType": "System.Collections.Frozen.FrozenDictionary<System.String, System.String>",
-      "hasDefaultValue": true,
+      "hasDefaultValue": false,
       "defaultValue": {},
       "arity": {
         "minimum": 0
