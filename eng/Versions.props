@@ -329,8 +329,6 @@
     <BenchmarkDotNetPackageVersion>0.14.0</BenchmarkDotNetPackageVersion>
   </PropertyGroup>
   <PropertyGroup Label="Workload manifest package versions">
-    <AspireFeatureBand>8.0.100</AspireFeatureBand>
-    <MicrosoftNETSdkAspireManifest80100PackageVersion>8.2.2</MicrosoftNETSdkAspireManifest80100PackageVersion>
     <MauiFeatureBand>10.0.100-preview.5</MauiFeatureBand>
     <MauiWorkloadManifestVersion>10.0.0-preview.5.25306.5</MauiWorkloadManifestVersion>
     <XamarinAndroidWorkloadManifestVersion>36.0.0-preview.5.116</XamarinAndroidWorkloadManifestVersion>

@@ -77,6 +77,11 @@
         <target state="translated">Consente il downgrade del pacchetto durante l'installazione di un pacchetto di strumenti .NET.</target>
         <note />
       </trans-unit>
+      <trans-unit id="AspireWorkloadDeprecated">
+        <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
+        <target state="new">The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Authors">
         <source>Authors</source>
         <target state="translated">Autori</target>
@@ -2174,13 +2179,12 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="translated">'dotnet workload search version' ha tre funzioni a seconda dal relativo argomento:
+        <target state="needs-review-translation">'dotnet workload search version' ha tre funzioni a seconda dal relativo argomento:
       1. Se non viene specificato alcun argomento, restituisce un elenco delle versioni di carico di lavoro più recenti rilasciate da questa banda di funzionalità. Accetta l'opzione --take per specificare quanti fornirne e --format per modificare il formato.
          Esempio:
            dotnet workload search version --take 2 --format json
