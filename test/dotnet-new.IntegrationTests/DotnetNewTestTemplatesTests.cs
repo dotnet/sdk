@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -26,6 +28,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("xunit", Languages.All, true, false),
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
+
+        private static readonly string CgPackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "component-governance", "packages.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -119,8 +123,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Therefore, in total we would have 2.
             result.StdOut.Should().MatchRegex(@"Passed:\s*2");
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
+
         }
 
         [Theory]
@@ -151,6 +159,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
 
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
@@ -191,6 +202,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
         }
@@ -202,6 +216,64 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             lines.Insert(lines.IndexOf("  <ItemGroup>") + 1, $@"    <Compile Include=""{itemName}.fs""/>");
             File.WriteAllLines(fsproj, lines);
+        }
+
+        private void RecordPackages(string projectDirectory)
+        {
+            var projectFiles = Directory.GetFiles(projectDirectory, "*.csproj")
+                .Concat(Directory.GetFiles(projectDirectory, "*.fsproj"))
+                .Concat(Directory.GetFiles(projectDirectory, "*.vbproj"));
+
+            Dictionary<string, string> packageVersions =
+                [];
+
+            // Load existing package versions if file exists
+            if (File.Exists(CgPackagesJsonPath))
+            {
+                try
+                {
+                    packageVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        File.ReadAllText(CgPackagesJsonPath)) ??
+                        [];
+                }
+                catch (Exception ex)
+                {
+                    _log.WriteLine($"Warning: Could not parse existing packages.json: {ex.Message}");
+                }
+            }
+
+            // Extract package references from project files
+            foreach (var projectFile in projectFiles)
+            {
+                string content = File.ReadAllText(projectFile);
+                var packageRefMatches = Regex.Matches(
+                    content,
+                    @"<PackageReference\s+Include=""([^""]+)""\s+Version=""([^""]+)""",
+                    RegexOptions.IgnoreCase);
+
+                foreach (Match match in packageRefMatches)
+                {
+                    string packageId = match.Groups[1].Value;
+                    string version = match.Groups[2].Value;
+                    packageVersions[packageId] = version;
+                }
+            }
+
+            // Ensure directory exists
+            // Fix for CS8604: Ensure that Path.GetDirectoryName(CgPackagesJsonPath) is not null before calling Directory.CreateDirectory.
+            if (Path.GetDirectoryName(CgPackagesJsonPath) is string directoryPath)
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            else
+            {
+                _log.WriteLine($"Warning: Could not determine directory path for '{CgPackagesJsonPath}'.");
+            }
+
+            // Write updated packages.json
+            File.WriteAllText(
+                CgPackagesJsonPath,
+                JsonSerializer.Serialize(packageVersions, new JsonSerializerOptions { WriteIndented = true }));
         }
 
         private static string GenerateTestProjectName()
