@@ -229,11 +229,12 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Compute the implicit '\tools' path, and use that if 'CsWinRTToolsDirectory' isn't set -->
     <PropertyGroup>
       <_WinRTRuntimeDllDirectory>$([System.IO.Path]::GetDirectoryName('%(_WinRTRuntimeDllReferencePath.FullPath)'))</_WinRTRuntimeDllDirectory>
-      <_CsWinRTOrTargetingPathRootDirectory>$([System.IO.Path]::GetDirectoryName('$(_WinRTRuntimeDllDirectory)'))</_CsWinRTOrTargetingPathRootDirectory>
-      <_CsWinRTOrTargetingPathToolsDirectory>$([System.IO.Path]::Combine('$(_CsWinRTOrTargetingPathRootDirectory)', 'tools'))</_CsWinRTOrTargetingPathToolsDirectory>
+      <_CsWinRTOrTargetingPackLibDirectory>$([System.IO.Path]::GetDirectoryName('$(_WinRTRuntimeDllDirectory)'))</_CsWinRTOrTargetingPackLibDirectory>
+      <_CsWinRTOrTargetingPackRootDirectory>$([System.IO.Path]::GetDirectoryName('$(_CsWinRTOrTargetingPackLibDirectory)'))</_CsWinRTOrTargetingPackRootDirectory>
+      <_CsWinRTOrTargetingPackToolsDirectory>$([System.IO.Path]::Combine('$(_CsWinRTOrTargetingPackRootDirectory)', 'tools'))</_CsWinRTOrTargetingPackToolsDirectory>
 
       <CsWinRTEffectiveToolsDirectory>$(CsWinRTToolsDirectory)</CsWinRTEffectiveToolsDirectory>
-      <CsWinRTEffectiveToolsDirectory Condition="'$(CsWinRTEffectiveToolsDirectory)' == ''">$(_CsWinRTOrTargetingPathToolsDirectory)</CsWinRTEffectiveToolsDirectory>
+      <CsWinRTEffectiveToolsDirectory Condition="'$(CsWinRTEffectiveToolsDirectory)' == ''">$(_CsWinRTOrTargetingPackToolsDirectory)</CsWinRTEffectiveToolsDirectory>
     </PropertyGroup>
 
     <ItemGroup>
