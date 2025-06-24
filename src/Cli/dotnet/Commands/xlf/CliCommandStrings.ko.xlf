@@ -1437,8 +1437,8 @@ Make the profile names distinct.</source>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
-        <target state="translated">'{2}'의 지시문에는 특수 문자가 없는 이름과 '#:{0}Abc{1} Xyz'와 같이 '{1}'(으)로 구분된 선택적 버전이 포함되어야 합니다.</target>
+        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="needs-review-translation">'{2}'의 지시문에는 특수 문자가 없는 이름과 '#:{0}Abc{1} Xyz'와 같이 '{1}'(으)로 구분된 선택적 버전이 포함되어야 합니다.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -1453,7 +1453,7 @@ Make the profile names distinct.</source>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
-        <target state="new">Cannot specify option '{0}' when also using '-' to read the file from standard input.</target>
+        <target state="translated">'-'를 사용하여 표준 입력에서 파일을 읽는 경우에도 '{0}' 옵션을 지정할 수 없습니다.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">

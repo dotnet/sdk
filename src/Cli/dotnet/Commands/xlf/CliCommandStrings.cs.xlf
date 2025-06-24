@@ -1012,7 +1012,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
+        <target state="translated">Cesta k souboru &lt;aplikace&gt;.deps.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="Description">
@@ -1437,8 +1437,8 @@ Nastavte odlišné názvy profilů.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
-        <target state="translated">Direktiva v {2} by měla obsahovat název bez speciálních znaků a volitelnou verzi oddělenou oddělovačem {1}, například #:{0} Abc{1}Xyz.</target>
+        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="needs-review-translation">Direktiva v {2} by měla obsahovat název bez speciálních znaků a volitelnou verzi oddělenou oddělovačem {1}, například #:{0} Abc{1}Xyz.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -2601,7 +2601,7 @@ Cílem projektu je více architektur. Pomocí parametru {0} určete, která arch
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
+        <target state="translated">Cesta k souboru &lt;aplikace&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">

@@ -1012,7 +1012,7 @@ dotnet.config is a name don't translate.</note>
       </trans-unit>
       <trans-unit id="DepsFileDefinition">
         <source>Path to &lt;application&gt;.deps.json file.</source>
-        <target state="new">Path to &lt;application&gt;.deps.json file.</target>
+        <target state="translated">Ścieżka do pliku &lt;aplikacja&gt;.deps.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="Description">
@@ -1437,8 +1437,8 @@ Rozróżnij nazwy profilów.</target>
         <note />
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
-        <source>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</source>
-        <target state="translated">Dyrektywa w „{2}” powinna zawierać nazwę bez znaków specjalnych i opcjonalną wersję rozdzieloną znakiem „{1}”, na przykład „#:{0} Abc{1}Xyz”.</target>
+        <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
+        <target state="needs-review-translation">Dyrektywa w „{2}” powinna zawierać nazwę bez znaków specjalnych i opcjonalną wersję rozdzieloną znakiem „{1}”, na przykład „#:{0} Abc{1}Xyz”.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
@@ -1453,7 +1453,7 @@ Rozróżnij nazwy profilów.</target>
       </trans-unit>
       <trans-unit id="InvalidOptionForStdin">
         <source>Cannot specify option '{0}' when also using '-' to read the file from standard input.</source>
-        <target state="new">Cannot specify option '{0}' when also using '-' to read the file from standard input.</target>
+        <target state="translated">Nie można określić opcji „{0}” przy jednoczesnym używaniu znaku „-” do odczytu pliku ze standardowych danych wejściowych.</target>
         <note>{0} is an option name like '--no-build'.</note>
       </trans-unit>
       <trans-unit id="InvalidProjectDirective">
@@ -2601,7 +2601,7 @@ Projekt ma wiele platform docelowych. Określ platformę do uruchomienia przy u�
       </trans-unit>
       <trans-unit id="RuntimeConfigDefinition">
         <source>Path to &lt;application&gt;.runtimeconfig.json file.</source>
-        <target state="new">Path to &lt;application&gt;.runtimeconfig.json file.</target>
+        <target state="translated">Ścieżka do pliku &lt;aplikacja&gt;.runtimeconfig.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="RuntimePropertyNotFound">
