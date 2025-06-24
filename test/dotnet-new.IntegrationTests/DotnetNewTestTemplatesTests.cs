@@ -253,8 +253,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
                 foreach (Match match in packageRefMatches)
                 {
-                    string packageId = match.Groups[1].Value;
-                    string version = match.Groups[2].Value;
+                    string packageId;
+                    string version;
+
+                    if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                    {
+                        // Include first, then Version
+                        packageId = match.Groups[1].Value;
+                        version = match.Groups[2].Value;
+                    }
+                    else
+                    {
+                        // Version first, then Include
+                        packageId = match.Groups[4].Value;
+                        version = match.Groups[3].Value;
+                    }
+
                     packageVersions[packageId] = version;
                 }
             }
