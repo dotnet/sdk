@@ -749,6 +749,7 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFrameworks
             };
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
+            testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 

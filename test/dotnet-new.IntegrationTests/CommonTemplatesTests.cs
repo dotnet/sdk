@@ -420,7 +420,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 new DotnetBuildCommand(_log, "MyProject")
                     .WithWorkingDirectory(workingDir)
-                    .Execute()
+                    .Execute("/p:CheckEolTargetFramework=false")
                     .Should()
                     .Pass()
                     .And.NotHaveStdErr();
