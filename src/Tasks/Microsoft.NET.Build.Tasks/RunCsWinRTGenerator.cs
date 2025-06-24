@@ -53,6 +53,14 @@ public sealed class RunCsWinRTGenerator : ToolTask
     public string? CsWinRTToolsDirectory { get; set; }
 
     /// <summary>
+    /// Gets or sets the architecture of 'cswinrtgen' to use.
+    /// </summary>
+    /// <remarks>
+    /// If not set, the architecture will be determined based on the current process architecture.
+    /// </remarks>
+    public string? CsWinRTToolsArchitecture { get; set; }
+
+    /// <summary>
     /// Gets or sets whether to use <c>Windows.UI.Xaml</c> projections.
     /// </summary>
     /// <remarks>If not set, it will default to <see langword="false"/> (i.e. using <c>Microsoft.UI.Xaml</c> projections).</remarks>
@@ -136,6 +144,16 @@ public sealed class RunCsWinRTGenerator : ToolTask
             return false;
         }
 
+        if (CsWinRTToolsArchitecture is not null &&
+            !CsWinRTToolsArchitecture.Equals("x86", StringComparison.OrdinalIgnoreCase) &&
+            !CsWinRTToolsArchitecture.Equals("x64", StringComparison.OrdinalIgnoreCase) &&
+            !CsWinRTToolsArchitecture.Equals("arm64", StringComparison.OrdinalIgnoreCase))
+        {
+            Log.LogWarning("Tools architecture '{0}' is invalid (it must be 'x86', 'x64', or 'arm64').", CsWinRTToolsArchitecture);
+
+            return false;
+        }
+
         if (MaxDegreesOfParallelism is 0 or < -1)
         {
             Log.LogWarning("Invalid 'MaxDegreesOfParallelism' value. It must be '-1' or greater than '0' (but was '{0}').", MaxDegreesOfParallelism);
@@ -150,13 +168,18 @@ public sealed class RunCsWinRTGenerator : ToolTask
     [SuppressMessage("Style", "IDE0072", Justification = "We always use 'x86' as a fallback for all other CPU architectures.")]
     protected override string GenerateFullPathToTool()
     {
-        // The tool is inside an architecture-specific subfolder, as it's a native binary
-        string architectureDirectory = RuntimeInformation.ProcessArchitecture switch
+        string? effectiveArchitecture = CsWinRTToolsArchitecture;
+
+        // If the architecture is not specified, determine it based on the current process architecture
+        effectiveArchitecture ??= RuntimeInformation.ProcessArchitecture switch
         {
-            Architecture.X64 => "win-x64",
-            Architecture.Arm64 => "win-arm64",
-            _ => "win-x86"
+            Architecture.X64 => "x64",
+            Architecture.Arm64 => "arm64",
+            _ => "x86"
         };
+
+        // The tool is inside an architecture-specific subfolder, as it's a native binary
+        string architectureDirectory = $"win-{effectiveArchitecture}";
 
         return Path.Combine(CsWinRTToolsDirectory!, architectureDirectory, ToolName);
     }
