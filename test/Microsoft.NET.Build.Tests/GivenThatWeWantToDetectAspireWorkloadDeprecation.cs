@@ -77,7 +77,7 @@ namespace Microsoft.NET.Build.Tests
 
             // Set the properties with a new SDK version
             testProject.AdditionalProperties["IsAspireHost"] = "true";
-            testProject.AdditionalProperties["AspireHostingSDKVersion"] = "8.2.0"; // At 8.2.0 or above
+            testProject.AdditionalProperties["AspireHostingSDKVersion"] = "9.0.0"; // At 9.0.0 or above
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
