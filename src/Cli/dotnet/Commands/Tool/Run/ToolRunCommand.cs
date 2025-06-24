@@ -32,6 +32,7 @@ internal class ToolRunCommand(
     }
     public static int ExecuteCommand(LocalToolsCommandResolver commandResolver, string toolCommandName, IEnumerable<string> argumentsToForward, bool allowRollForward)
     {
+        using var _ = Activities.s_source.StartActivity("execute-local-tool");
         CommandSpec commandSpec = commandResolver.ResolveStrict(new CommandResolverArguments()
         {
             // since LocalToolsCommandResolver is a resolver, and all resolver input have dotnet-
