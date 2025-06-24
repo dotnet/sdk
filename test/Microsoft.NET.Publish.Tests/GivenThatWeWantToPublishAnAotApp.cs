@@ -649,6 +649,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
+            testAsset.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
 
             var buildCommand = new BuildCommand(testAsset);
             var resultAssertion = buildCommand.Execute()
