@@ -180,7 +180,7 @@ namespace Microsoft.DotNet.Watch
 
                 var context = CreateContext(processRunner);
 
-                if (IsHotReoadEnabled())
+                if (IsHotReloadEnabled())
                 {
                     var watcher = new HotReloadDotNetWatcher(context, console, runtimeProcessLauncherFactory: null);
                     await watcher.WatchAsync(shutdownCancellationToken);
@@ -221,7 +221,7 @@ namespace Microsoft.DotNet.Watch
                 RootProjectOptions = rootProjectOptions,
             };
 
-        private bool IsHotReoadEnabled()
+        private bool IsHotReloadEnabled()
         {
             if (rootProjectOptions.Command != "run")
             {
