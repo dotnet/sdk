@@ -139,7 +139,7 @@ internal sealed partial class CSharpCompilerCommand
         string binDir = Path.Join(ArtifactsPath, "bin", "debug");
         Directory.CreateDirectory(binDir);
 
-        string assemblyAttributes = Path.Join(objDir, ".NETCoreApp,Version=v10.0.AssemblyAttributes.cs");
+        string assemblyAttributes = Path.Join(objDir, $".NETCoreApp,Version=v{TargetFrameworkVersion}.AssemblyAttributes.cs");
         if (ShouldEmit(assemblyAttributes))
         {
             File.WriteAllText(assemblyAttributes, /* lang=C#-test */ $"""
@@ -243,7 +243,7 @@ internal sealed partial class CSharpCompilerCommand
             File.WriteAllText(runtimeConfig, $$"""
                 {
                   "runtimeOptions": {
-                    "tfm": "net10.0",
+                    "tfm": "net{{TargetFrameworkVersion}}",
                     "framework": {
                       "name": "Microsoft.NETCore.App",
                       "version": {{JsonSerializer.Serialize(RuntimeVersion)}}
