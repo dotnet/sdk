@@ -15,7 +15,7 @@ public class Telemetry : ITelemetry
     private Task? _trackEventTask;
 
     public static string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-
+    public static string DefaultStorageFolderName = "TelemetryStorageService";
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
