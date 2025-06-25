@@ -17,8 +17,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            var runCommand = RunCommand.FromArgs(new[] { "--project", "foo.csproj", "--", "foo" });
-            runCommand.Args.Single().Should().Be("foo");
+            // Create a temporary project file to ensure file validation passes
+            var tempDir = Path.GetTempPath();
+            var projectPath = Path.Combine(tempDir, "foo.csproj");
+            File.WriteAllText(projectPath, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>");
+            
+            try
+            {
+                var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
+                runCommand.Args.Single().Should().Be("foo");
+            }
+            finally
+            {
+                if (File.Exists(projectPath))
+                {
+                    File.Delete(projectPath);
+                }
+            }
         }
     }
 }
