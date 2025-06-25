@@ -18,7 +18,7 @@
   <String Id="InstallInstallButton">安裝(&amp;I)</String>
   <String Id="InstallCloseButton">關閉(&amp;C)</String>
   <String Id="ProgressHeader">安裝進度</String>
-  <String Id="ProgressLabel">處理中: </String>
+  <String Id="ProgressLabel">正在處理:</String>
   <String Id="OverallProgressPackageText">正在初始化...</String>
   <String Id="ProgressCancelButton">取消(&amp;C)</String>
   <String Id="ModifyHeader">修改安裝</String>

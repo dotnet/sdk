@@ -237,12 +237,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(_manifestFilePath);
             Action a = () => _defaultToolUpdateLocalCommand.Execute().Should().Be(0);
 
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
+            a.Should().Throw<ToolManifestCannotBeFoundException>().And.Message.Should()
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -423,7 +419,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     updatedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value).Should().BeTrue();

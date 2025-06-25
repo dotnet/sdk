@@ -128,34 +128,47 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [Fact]
-        public void GivenNoManifestFileItShouldThrow()
+        public void GivenCreateManifestIfNeededWithoutArgumentTheDefaultIsTrueForLegacyBehavior()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            ParseResult parseResult =
+            Parser.Instance.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
 
-            Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            toolInstallLocalCommand.Execute().Should().Be(0);
         }
 
         [Fact]
         public void GivenNoManifestFileItShouldThrowAndContainNoManifestGuide()
         {
             _fileSystem.File.Delete(_manifestFilePath);
-            var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
+            ParseResult parseResult =
+            Parser.Instance.Parse(
+               $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed false");
+
+            var toolInstallLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
 
             Action a = () => toolInstallLocalCommand.Execute();
-            a.Should().Throw<GracefulException>()
-                .And.Message.Should()
-                .Contain(CliCommandStrings.ToolInstallNoManifestGuide);
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
-                .Contain(CliStrings.CannotFindAManifestFile);
-
-            a.Should().Throw<GracefulException>()
-                .And.VerboseMessage.Should().Contain(string.Format(CliStrings.ListOfSearched, ""));
+                .Contain(string.Format(CliStrings.CannotFindAManifestFile, ""));
         }
 
         [Fact]
@@ -297,7 +310,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     _toolCommandNameA),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeFalse("it should not add to cache if add to manifest failed. " +
                                "But restore do not need to 'revert' since it just set in nuget global directory");
         }
@@ -377,7 +390,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);
@@ -394,6 +407,28 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             ParseResult parseResult =
                 Parser.Instance.Parse(
                     $"dotnet tool install {_packageIdA.ToString()} --create-manifest-if-needed");
+
+            var installLocalCommand = new ToolInstallLocalCommand(
+                parseResult,
+                _packageIdA,
+                _toolPackageDownloaderMock,
+                _toolManifestFinder,
+                _toolManifestEditor,
+                _localToolsResolverCache,
+                _reporter);
+
+            installLocalCommand.Execute().Should().Be(0);
+            _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, ".config", "dotnet-tools.json")).Should().BeTrue();
+        }
+
+        [Fact]
+        public void GivenNoManifestFileItUsesCreateManifestIfNeededByDefault()
+        {
+            _fileSystem.File.Delete(_manifestFilePath);
+
+            ParseResult parseResult =
+                Parser.Instance.Parse(
+                    $"dotnet tool install {_packageIdA.ToString()}");
 
             var installLocalCommand = new ToolInstallLocalCommand(
                 parseResult,
@@ -500,7 +535,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     NuGetFramework.Parse(BundledTargetFramework.GetTargetFrameworkMoniker()),
                     Constants.AnyRid,
                     addedPackage.CommandNames.Single()),
-                out RestoredCommand restoredCommand
+                out ToolCommand restoredCommand
             ).Should().BeTrue();
 
             _fileSystem.File.Exists(restoredCommand.Executable.Value);

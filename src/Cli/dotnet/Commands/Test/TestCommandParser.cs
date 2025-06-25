@@ -236,15 +236,15 @@ internal static class TestCommandParser
         command.Options.Add(TestingPlatformOptions.ConfigurationOption);
         command.Options.Add(TestingPlatformOptions.FrameworkOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(CommonOptions.VerbosityOption);
         command.Options.Add(CommonOptions.NoRestoreOption);
         command.Options.Add(TestingPlatformOptions.NoBuildOption);
         command.Options.Add(TestingPlatformOptions.NoAnsiOption);
-        command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
-        command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
         command.Options.Add(TestingPlatformOptions.NoProgressOption);
         command.Options.Add(TestingPlatformOptions.OutputOption);
+        command.Options.Add(TestingPlatformOptions.NoLaunchProfileOption);
+        command.Options.Add(TestingPlatformOptions.NoLaunchProfileArgumentsOption);
 
         return command;
     }
@@ -281,7 +281,7 @@ internal static class TestCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(FrameworkOption);
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, CliCommandStrings.TestRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.TestRuntimeOptionDescription));
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(CommonOptions.VerbosityOption);

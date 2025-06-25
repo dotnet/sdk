@@ -1,11 +1,11 @@
 ﻿// Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System.Collections.Concurrent;
-using System.CommandLine.Help;
-using System.Diagnostics;
+using Microsoft.TemplateEngine.Cli.Help;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
+using Microsoft.Testing.Platform.OutputDevice.Terminal;
 
 namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
@@ -139,12 +139,21 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
         else
         {
-            // Autodetect.
-            (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
-            _originalConsoleMode = originalConsoleMode;
-            terminalWithProgress = consoleAcceptsAnsiCodes || _options.ForceAnsi is true
-                ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
-                : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            if (_options.UseCIAnsi)
+            {
+                // We are told externally that we are in CI, use simplified ANSI mode.
+                terminalWithProgress = new TestProgressStateAwareTerminal(new SimpleAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: nonAnsiUpdateCadenceInMs);
+            }
+            else
+            {
+                // We are not in CI, or in CI non-compatible with simple ANSI, autodetect terminal capabilities
+                // Autodetect.
+                (bool consoleAcceptsAnsiCodes, bool _, uint? originalConsoleMode) = NativeMethods.QueryIsScreenAndTryEnableAnsiColorCodes();
+                _originalConsoleMode = originalConsoleMode;
+                terminalWithProgress = consoleAcceptsAnsiCodes || _options.ForceAnsi is true
+                    ? new TestProgressStateAwareTerminal(new AnsiTerminal(console, _options.BaseDirectory), showProgress, writeProgressImmediatelyAfterOutput: true, updateEvery: ansiUpdateCadenceInMs)
+                    : new TestProgressStateAwareTerminal(new NonAnsiTerminal(console), showProgress, writeProgressImmediatelyAfterOutput: false, updateEvery: nonAnsiUpdateCadenceInMs);
+            }
         }
 
         _terminalWithProgress = terminalWithProgress;
@@ -273,7 +282,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         bool anyTestFailed = totalFailedTests > 0;
         bool anyAssemblyFailed = _assemblies.Values.Any(a => !a.Success);
         bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
-        terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
+        terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
         terminal.Append(' ');
@@ -344,7 +353,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (error > 0)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             terminal.AppendLine(errorText);
             terminal.ResetColor();
             terminal.AppendLine();
@@ -362,7 +371,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizeFailed)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
         }
 
         terminal.AppendLine(failedText);
@@ -374,7 +383,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizePassed)
         {
-            terminal.SetColor(TerminalColor.Green);
+            terminal.SetColor(TerminalColor.DarkGreen);
         }
 
         terminal.AppendLine(passedText);
@@ -386,7 +395,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         if (colorizeSkipped)
         {
-            terminal.SetColor(TerminalColor.Yellow);
+            terminal.SetColor(TerminalColor.DarkYellow);
         }
 
         terminal.AppendLine(skippedText);
@@ -422,7 +431,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
     {
         if (!succeeded)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             // If the build failed, we print one of three red strings.
             string text = (countErrors > 0, countWarnings > 0) switch
             {
@@ -436,13 +445,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
         else if (countWarnings > 0)
         {
-            terminal.SetColor(TerminalColor.Yellow);
+            terminal.SetColor(TerminalColor.DarkYellow);
             terminal.Append($"succeeded with {countWarnings} warning(s)");
             terminal.ResetColor();
         }
         else
         {
-            terminal.SetColor(TerminalColor.Green);
+            terminal.SetColor(TerminalColor.DarkGreen);
             terminal.Append(CliCommandStrings.PassedLowercase);
             terminal.ResetColor();
         }
@@ -544,9 +553,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         TerminalColor color = outcome switch
         {
-            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.Red,
-            TestOutcome.Skipped => TerminalColor.Yellow,
-            TestOutcome.Passed => TerminalColor.Green,
+            TestOutcome.Error or TestOutcome.Fail or TestOutcome.Canceled or TestOutcome.Timeout => TerminalColor.DarkRed,
+            TestOutcome.Skipped => TerminalColor.DarkYellow,
+            TestOutcome.Passed => TerminalColor.DarkGreen,
             _ => throw new NotSupportedException(),
         };
         string outcomeText = outcome switch
@@ -598,7 +607,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         for (int i = 1; i < exceptions.Length; i++)
         {
-            terminal.SetColor(TerminalColor.Red);
+            terminal.SetColor(TerminalColor.DarkRed);
             terminal.Append(SingleIndentation);
             terminal.Append("--->");
             FormatErrorMessage(terminal, exceptions, TestOutcome.Error, i);
@@ -616,7 +625,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        terminal.SetColor(TerminalColor.Red);
+        terminal.SetColor(TerminalColor.DarkRed);
 
         if (firstStackTrace is null)
         {
@@ -645,7 +654,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             return;
         }
 
-        terminal.SetColor(TerminalColor.Red);
+        terminal.SetColor(TerminalColor.DarkRed);
         terminal.Append(SingleIndentation);
         terminal.AppendLine(CliCommandStrings.Expected);
         AppendIndentedLine(terminal, expected, DoubleIndentation);
@@ -963,7 +972,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.AppendLine();
         }
 
-        terminal.SetColor(runFailed ? TerminalColor.Red : TerminalColor.Green);
+        terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
         if (assemblies.Count <= 1)
         {
             terminal.AppendLine(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.TestDiscoverySummarySingular, totalTests));

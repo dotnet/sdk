@@ -17,7 +17,7 @@
   <String Id="InstallOptionsButton">&amp;Options</String>
   <String Id="InstallInstallButton">&amp;Installer</String>
   <String Id="InstallCloseButton">&amp;Fermer</String>
-  <String Id="ProgressHeader">Avancement de l'installation</String>
+  <String Id="ProgressHeader">Progression de l’opération</String>
   <String Id="ProgressLabel">En cours :</String>
   <String Id="OverallProgressPackageText">Initialisation...</String>
   <String Id="ProgressCancelButton">&amp;Annuler</String>
@@ -32,7 +32,7 @@
   <String Id="SuccessRestartText">Vous devez redémarrer l'ordinateur pour achever l'installation du logiciel.</String>
   <String Id="SuccessRestartButton">&amp;Redémarrer</String>
   <String Id="SuccessCloseButton">&amp;Fermer</String>
-  <String Id="FailureHeader">Échec de l'installation</String>
+  <String Id="FailureHeader">Échec de l’opération</String>
   <String Id="FailureInstallHeader">Échec de l'installation</String>
   <String Id="FailureUninstallHeader">Échec de la désinstallation</String>
   <String Id="FailureRepairHeader">Échec de la réparation</String>
@@ -46,22 +46,22 @@
   <String Id="FilesInUseDontCloseRadioButton">&amp;Ne pas fermer les applications. Un redémarrage sera nécessaire.</String>
   <String Id="FilesInUseOkButton">&amp;OK</String>
   <String Id="FilesInUseCancelButton">&amp;Annuler</String>
-  <String Id="FirstTimeWelcomeMessage">L’installation a réussi.
+  <String Id="FirstTimeWelcomeMessage">L'installation a réussi.
 
-Les éléments suivants ont été installés :
-    • Kit SDK .NET [DOTNETSDKVERSION]
+Les produits suivants ont été installés :
+    • SDK .NET [DOTNETSDKVERSION]
     • Runtime .NET [DOTNETRUNTIMEVERSION]
     • Runtime ASP.NET Core [ASPNETCOREVERSION]
-    • Runtime .NET Windows Desktop [WINFORMSANDWPFVERSION]
+    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
 Ce produit collecte des données d’utilisation
-    • Plus informations et refus d’adhésion sur https://aka.ms/dotnet-cli-telemetry
+    • Plus d’informations et refus https://aka.ms/dotnet-cli-telemetry
 
 Ressources
-    • Documentation .NET sur https://aka.ms/dotnet-docs
-    • Documentation de kit SDK sur https://aka.ms/dotnet-sdk-docs
-    • Notes de publication sur https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Tutoriels sur https://aka.ms/dotnet-tutorials</String>
+    • Documentation .NET https://aka.ms/dotnet-docs
+    • Documentation utilisateur du Kit de développement logiciel (SDK) https://aka.ms/dotnet-sdk-docs
+    • Notes de publication https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Tutoriels https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">Kit de développement logiciel (SDK) .NET</String>
   <String Id="WelcomeDescription">
     Le Kit de développement logiciel (SDK) .NET est utilisé pour générer, exécuter et tester des applications .NET. Vous pouvez choisir parmi plusieurs langages, éditeurs et outils de développement, et tirer parti d’un vaste écosystème de bibliothèques pour créer des applications pour le web, les appareils mobiles, les ordinateurs de bureau, les jeux et l’IoT. Nous espérons que vous l’apprécierez !</String>
@@ -75,7 +75,7 @@ Ressources
   <String Id="InstallationNoteTitle">Note d’installation</String>
   <String Id="InstallationNote">Une commande va être exécutée pendant le processus d'installation, ce qui va améliorer la vitesse de restauration du projet et permettre l'accès hors connexion. L'opération va prendre environ une minute.
   </String>
-  <String Id="VisualStudioWarning">Si vous envisagez d’utiliser .NET [VERSIONMAJOR].[VERSIONMINOR] avec Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;En savoir plus&lt;/A&gt;.
+  <String Id="VisualStudioWarning">Si vous envisagez d’utiliser .NET [VERSIONMAJOR].[VERSIONMINOR] avec Visual Studio, Visual Studio 2022 [MINIMUMVSVERSION] ou une version ultérieure est nécessaire. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;En savoir plus&lt;/A&gt;.
   </String>
   <String Id="LicenseAssent">En cliquant sur Installer, vous acceptez les conditions suivantes :</String>
   <String Id="InstallPathx64x86">Le chemin d’installation des installations du Kit de développement logiciel (SDK) x64 : « [DOTNETHOME_X64] » ne peut pas être identique à celui des installations du Kit de développement logiciel (SDK) x86 : « [DOTNETHOME_X86] »</String>

@@ -15,8 +15,6 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    private const string dotnetTestVerb = "dotnet-test";
-
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, bool IsBuiltOrRestored) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
     {
         SolutionModel solutionModel = SlnFileFactory.CreateFromFileOrDirectory(solutionFilePath, includeSolutionFilterFiles: true, includeSolutionXmlFiles: true);
@@ -32,11 +30,9 @@ internal static class MSBuildUtility
                 Path.GetDirectoryName(solutionModel.Description)! :
                 SolutionAndProjectUtility.GetRootDirectory(solutionFilePath);
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), null, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = GetProjectsProperties(collection, solutionModel.SolutionProjects.Select(p => Path.Combine(rootDirectory, p.FilePath)), buildOptions);
-        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
@@ -50,31 +46,16 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), isBuiltOrRestored);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs([.. buildOptions.MSBuildArgs]), null, toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
 
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, buildOptions.NoLaunchProfile);
-        logger?.ReallyShutdown();
 
         return (projects, isBuiltOrRestored);
     }
 
     public static BuildOptions GetBuildOptions(ParseResult parseResult, int degreeOfParallelism)
     {
-        var binLogArgs = new List<string>();
-        var otherArgs = new List<string>();
-
-        foreach (var arg in parseResult.UnmatchedTokens)
-        {
-            if (LoggerUtility.IsBinLogArgument(arg))
-            {
-                binLogArgs.Add(arg);
-            }
-            else
-            {
-                otherArgs.Add(arg);
-            }
-        }
+        LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(TestCommandParser.GetCommand())
             .Concat(binLogArgs);

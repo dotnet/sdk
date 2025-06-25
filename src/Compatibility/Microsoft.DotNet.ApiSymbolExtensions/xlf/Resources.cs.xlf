@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="AssemblyLoaded">
         <source>Assembly '{0}' loaded.</source>
-        <target state="new">Assembly '{0}' loaded.</target>
+        <target state="translated">Sestavení {0} bylo načteno.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyReferenceLoaded">
         <source>Assembly '{0}' referenced by '{1}' loaded.</source>
-        <target state="new">Assembly '{0}' referenced by '{1}' loaded.</target>
+        <target state="translated">Sestavení {0}, na které odkazuje {1}, bylo načteno.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">
         <source>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</source>
-        <target state="new">Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</target>
+        <target state="translated">Nepodařilo se přeložit odkaz {0}, na který přímo nebo přechodně odkazuje {1}, v žádném ze zadaných vyhledávacích adresářů.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblies">
         <source>Loading assemblies '{0}'.</source>
-        <target state="new">Loading assemblies '{0}'.</target>
+        <target state="translated">Načítají se sestavení {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembliesFromArchive">
         <source>Loading assemblies '{0}' ({1}).</source>
-        <target state="new">Loading assemblies '{0}' ({1}).</target>
+        <target state="translated">Načítají se sestavení {0} ({1}).</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembly">
         <source>Loading assembly '{0}'.</source>
-        <target state="new">Loading assembly '{0}'.</target>
+        <target state="translated">Načítá se sestavení {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblyFromStream">
         <source>Loading assembly '{0}' from stream.</source>
-        <target state="new">Loading assembly '{0}' from stream.</target>
+        <target state="translated">Načítá se sestavení {0} ze streamu.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="RootAssemblyDisplayString">
         <source>'{0}'</source>
-        <target state="new">'{0}'</target>
+        <target state="translated">{0}</target>
         <note />
       </trans-unit>
       <trans-unit id="RootAssemblyFromPackageDisplayString">
         <source>'{0}' ({1})</source>
-        <target state="new">'{0}' ({1})</target>
+        <target state="translated">{0} ({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">

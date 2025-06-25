@@ -262,7 +262,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.RuntimeOption.Name, runtime,
+                                    .Execute(CommonOptions.RuntimeOptionName, runtime,
                                              TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Passed, true, configuration, runtime: runtime), result.StdOut);
@@ -282,7 +282,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .Execute(CommonOptions.RuntimeOption.Name, runtime,
+                                    .Execute(CommonOptions.RuntimeOptionName, runtime,
                                             CommonOptions.ArchitectureOption.Name, arch,
                                             TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
@@ -368,7 +368,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
-            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, "msbuild-dotnet-test.binlog")));
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }

@@ -14,13 +14,13 @@
 /log [\[]"log.txt"[\]] – Zapíše protokol do konkrétního souboru. Ve výchozím nastavení se soubor protokolu vytvoří ve složce %TEMP%.</String>
   <String Id="HelpCloseButton">&amp;Zavřít</String>
   <String Id="InstallAcceptCheckbox">Souhl&amp;asím s licenčními podmínkami.</String>
-  <String Id="InstallOptionsButton">M&amp;ožnosti</String>
+  <String Id="InstallOptionsButton">&amp;Možnosti</String>
   <String Id="InstallInstallButton">&amp;Instalovat</String>
   <String Id="InstallCloseButton">&amp;Zavřít</String>
   <String Id="ProgressHeader">Průběh instalace</String>
-  <String Id="ProgressLabel">Probíhá zpracování:</String>
+  <String Id="ProgressLabel">Zpracování:</String>
   <String Id="OverallProgressPackageText">Inicializování...</String>
-  <String Id="ProgressCancelButton">&amp;Storno</String>
+  <String Id="ProgressCancelButton">&amp;Zrušit</String>
   <String Id="ModifyHeader">Změnit instalaci</String>
   <String Id="ModifyRepairButton">Op&amp;ravit</String>
   <String Id="ModifyUninstallButton">O&amp;dinstalovat</String>
@@ -54,7 +54,7 @@ Byly nainstalovány následující produkty:
     • ASP.NET Core Runtime [ASPNETCOREVERSION]
     • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
 
-Tento produkt shromažďuje data o využití.
+Tento produkt shromažďuje data o využití
     • Další informace a možnosti vyjádřit nesouhlas: https://aka.ms/dotnet-cli-telemetry
 
 Zdroje informací

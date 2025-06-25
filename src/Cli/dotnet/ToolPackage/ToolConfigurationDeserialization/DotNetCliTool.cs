@@ -15,6 +15,9 @@ public class DotNetCliTool
     [XmlArrayItem("Command", IsNullable = false)]
     public DotNetCliToolCommand[] Commands { get; set; }
 
+    [XmlArrayItem("RuntimeIdentifierPackage", IsNullable = false)]
+    public DotNetCliToolRuntimeIdentifierPackage[] RuntimeIdentifierPackages { get; set; }
+
     [XmlAttribute(AttributeName = "Version")]
     public string Version { get; set; }
 }

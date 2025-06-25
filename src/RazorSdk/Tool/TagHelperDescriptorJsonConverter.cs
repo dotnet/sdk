@@ -170,9 +170,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
     {
         writer.WriteStartObject();
 
-        writer.WritePropertyName(nameof(BoundAttributeDescriptor.Kind));
-        writer.WriteValue(boundAttribute.Kind);
-
         writer.WritePropertyName(nameof(BoundAttributeDescriptor.Name));
         writer.WriteValue(boundAttribute.Name);
 

@@ -987,4 +987,12 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</value>
     <comment>{StrBegins="NETSDK1226: "}</comment>
   </data>
+  <data name="UnsupportedToolCommandRunner" xml:space="preserve">
+    <value>NETSDK1227: Unsupported ToolCommandRunner value: {0}</value>
+    <comment>{StrBegins="NETSDK1227: "}</comment>
+  </data>
+  <data name="AspireWorkloadIsDeprecated" xml:space="preserve">
+    <value>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</value>
+    <comment>{StrBegins="NETSDK1228: "}</comment>
+  </data>
 </root>
