@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Text.RegularExpressions;
+
 namespace Microsoft.DotNet.Watch.UnitTests
 {
     public class ApplyDeltaTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
@@ -29,6 +31,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                         => System.Console.WriteLine("Changed!");
                 }
                 """);
+
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ReEvaluationCompleted);
 
             // update existing file:
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
@@ -254,7 +258,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             App.Start(testAsset, []);
 
             await App.AssertWaitingForChanges();
-            App.AssertOutputContains(@"dotnet watch ⌚ Exclusion glob: 'AppData/**/*.*;bin\Debug\/**;obj\Debug\/**;bin\/**;obj\/**");
+            App.AssertOutputContains(new Regex(@"dotnet watch ⌚ Exclusion glob: 'AppData/[*][*]/[*][.][*];bin[/\\]+Debug[/\\]+[*][*];obj[/\\]+Debug[/\\]+[*][*];bin[/\\]+[*][*];obj[/\\]+[*][*]"));
             App.Process.ClearOutput();
 
             UpdateSourceFile(appDataFilePath, """

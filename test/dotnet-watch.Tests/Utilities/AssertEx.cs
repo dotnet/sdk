@@ -6,6 +6,7 @@
 
 using System.Collections;
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watch.UnitTests
@@ -243,6 +244,27 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var message = new StringBuilder();
             message.AppendLine($"Expected output not found:");
             message.AppendLine(expected);
+            message.AppendLine();
+            message.AppendLine("Actual output:");
+
+            foreach (var item in items)
+            {
+                message.AppendLine($"'{item}'");
+            }
+
+            Fail(message.ToString());
+        }
+
+        public static void ContainsPattern(Regex expected, IEnumerable<string> items)
+        {
+            if (items.Any(item => expected.IsMatch(item)))
+            {
+                return;
+            }
+
+            var message = new StringBuilder();
+            message.AppendLine($"Expected pattern not found in the output:");
+            message.AppendLine(expected.ToString());
             message.AppendLine();
             message.AppendLine("Actual output:");
 
