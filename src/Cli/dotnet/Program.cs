@@ -60,7 +60,6 @@ public class Program
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter()
-            .AddAzureMonitorMetricExporter(o => o.ConnectionString = Telemetry.Telemetry.ConnectionString)
             .Build();
         tracerProvider = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r =>
@@ -73,6 +72,7 @@ public class Program
             .AddAzureMonitorTraceExporter(o => {
                 o.ConnectionString = Telemetry.Telemetry.ConnectionString;
                 o.EnableLiveMetrics = false;
+                o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
             })
             .SetSampler(new AlwaysOnSampler())
             .Build();
