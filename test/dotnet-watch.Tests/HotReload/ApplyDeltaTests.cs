@@ -32,6 +32,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
                 """);
 
+            await App.AssertOutputLineStartsWith(MessageDescriptor.ReEvaluationCompleted);
+
             // update existing file:
             UpdateSourceFile(Path.Combine(dependencyDir, "Foo.cs"), """
                 public class Lib

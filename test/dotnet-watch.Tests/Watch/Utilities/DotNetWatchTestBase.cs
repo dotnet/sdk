@@ -30,8 +30,9 @@ public abstract class DotNetWatchTestBase : IDisposable
 
     public void UpdateSourceFile(string path, string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
     {
+        var existed = File.Exists(path);
         WriteAllText(path, text);
-        Log($"File '{path}' updated", testPath, testLine);
+        Log($"File '{path}' " + (existed ? "updated" : "added"), testPath, testLine);
     }
 
     public void UpdateSourceFile(string path, Func<string, string> contentTransform, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
