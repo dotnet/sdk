@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -38,6 +39,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void AssertOutputDoesNotContain(string message)
             => Assert.DoesNotContain(Process.Output, line => line.Contains(message));
+
+        public void AssertOutputContains(Regex pattern)
+            => AssertEx.ContainsPattern(pattern, Process.Output);
 
         public void AssertOutputContains(MessageDescriptor descriptor, string projectDisplay = null)
             => AssertOutputContains(GetLinePrefix(descriptor, projectDisplay));
