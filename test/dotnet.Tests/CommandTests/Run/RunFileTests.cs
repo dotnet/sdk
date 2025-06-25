@@ -995,7 +995,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1043,7 +1043,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(publishDir).Sub("MyCustomProgram")
             .Should().Exist()
-            .And.NotHaveFile("MyCustomProgram.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1063,7 +1063,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(customPublishDir)
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1086,7 +1086,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(publishDir)
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1111,7 +1111,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         new DirectoryInfo(testInstance.Path).Sub("subdir").Sub("artifacts").Sub("Program")
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
