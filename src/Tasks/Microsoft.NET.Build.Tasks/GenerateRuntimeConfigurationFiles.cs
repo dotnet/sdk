@@ -409,7 +409,8 @@ namespace Microsoft.NET.Build.Tasks
                 if (File.Exists(fileName))
                 {
                     // stream positions are reset as part of these utility calls
-                    var existingContentHash = HashingUtils.ComputeXXHash64(File.OpenRead(fileName));
+                    using var existingContentStream = File.OpenRead(fileName);
+                    var existingContentHash = HashingUtils.ComputeXXHash64(existingContentStream);
                     var newContentHash = HashingUtils.ComputeXXHash64(contentStream);
                     // If hashes are equal, content is the same - don't write
                     if (existingContentHash.SequenceEqual(newContentHash))

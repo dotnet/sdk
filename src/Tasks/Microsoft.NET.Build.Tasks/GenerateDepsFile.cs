@@ -266,8 +266,8 @@ namespace Microsoft.NET.Build.Tasks
                 // If file exists, check if content is different using streaming hash comparison
                 if (File.Exists(depsFilePath))
                 {
-                    // stream positions are reset as part of these utility calls
-                    var existingContentHash = HashingUtils.ComputeXXHash64(File.OpenRead(depsFilePath));
+                    using var existingFileContentStream = File.OpenRead(depsFilePath);
+                    var existingContentHash = HashingUtils.ComputeXXHash64(existingFileContentStream);
                     var newContentHash = HashingUtils.ComputeXXHash64(contentStream);
                     // If hashes are equal, content is the same - don't write
                     if (existingContentHash.SequenceEqual(newContentHash))
