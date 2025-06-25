@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 
 namespace Microsoft.DotNet.Watch.UnitTests
@@ -18,9 +19,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             ChangedPath[] expectedChanges,
             bool usePolling,
             bool watchSubdirectories,
-            Action operation)
+            Action operation,
+            ImmutableHashSet<string> watchedFileNames = null)
         {
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: watchSubdirectories);
+            using var watcher = DirectoryWatcher.Create(dir, watchedFileNames ?? [], usePolling, includeSubdirectories: watchSubdirectories);
             if (watcher is EventBasedDirectoryWatcher dotnetWatcher)
             {
                 dotnetWatcher.Logger = m => output.WriteLine(m);
@@ -66,6 +68,78 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await (Debugger.IsAttached ? task : task.TimeoutAfter(DefaultTimeout));
 
             AssertEx.SequenceEqual(expectedChanges, filesChanged.OrderBy(x => x.Path));
+        }
+
+        private sealed class TestFileWatcher(IReporter reporter) : FileWatcher(reporter)
+        {
+            public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryTreeWatchers => _directoryTreeWatchers;
+            public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryWatchers => _directoryWatchers;
+
+            protected override DirectoryWatcher CreateDirectoryWatcher(string directory, ImmutableHashSet<string> fileNames, bool includeSubdirectories)
+                => new TestDirectoryWatcher(directory, fileNames, includeSubdirectories);
+        }
+
+        private sealed class TestDirectoryWatcher(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories)
+            : DirectoryWatcher(watchedDirectory, watchedFileNames, includeSubdirectories)
+        {
+            public override bool EnableRaisingEvents { get; set; }
+            public override void Dispose() { }
+        }
+
+        private static IEnumerable<string> Inspect(IReadOnlyDictionary<string, DirectoryWatcher> watchers)
+            => watchers.OrderBy(w => w.Key).Select(w => $"{w.Key.TrimEnd('\\', '/')}: [{string.Join(',', w.Value.WatchedFileNames.Order())}]");
+
+        [Fact]
+        public void DirectoryWatcherMerging()
+        {
+            var watcher = new TestFileWatcher(NullReporter.Singleton);
+            string root = TestContext.Current.TestExecutionDirectory;
+
+            var dirA = Path.Combine(root, "A");
+            var dirB = Path.Combine(root, "B");
+            var dirBC = Path.Combine(dirB, "C");
+            var a1 = Path.Combine(dirA, "a1");
+            var a2 = Path.Combine(dirA, "a2");
+            var a3 = Path.Combine(dirA, "a3");
+            var a4 = Path.Combine(dirA, "a4");
+            var b1 = Path.Combine(dirB, "b1");
+            var b2 = Path.Combine(dirB, "b2");
+            var bc1 = Path.Combine(dirBC, "bc1");
+
+            watcher.WatchFiles([a1, a2]);
+
+            AssertEx.Empty(watcher.DirectoryTreeWatchers);
+            AssertEx.SequenceEqual([$"{dirA}: [a1,a2]"], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchFiles([a1, a2, a3]);
+            AssertEx.Empty(watcher.DirectoryTreeWatchers);
+            AssertEx.SequenceEqual([$"{dirA}: [a1,a2,a3]"], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchContainingDirectories([a1, a2], includeSubdirectories: false);
+            AssertEx.Empty(watcher.DirectoryTreeWatchers);
+            AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchFiles([a4]);
+            AssertEx.Empty(watcher.DirectoryTreeWatchers);
+            AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchFiles([b1, bc1]);
+            AssertEx.Empty(watcher.DirectoryTreeWatchers);
+            AssertEx.SequenceEqual(
+            [
+                $"{dirA}: []",
+                $"{dirB}: [b1]",
+                $"{dirBC}: [bc1]",
+            ], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchContainingDirectories([b2], includeSubdirectories: true);
+            AssertEx.SequenceEqual([$"{dirB}: []"], Inspect(watcher.DirectoryTreeWatchers));
+            AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
+
+            watcher.WatchFiles([a1, b1, bc1]);
+            watcher.WatchContainingDirectories([bc1], includeSubdirectories: true);
+            AssertEx.SequenceEqual([$"{dirB}: []"], Inspect(watcher.DirectoryTreeWatchers));
+            AssertEx.SequenceEqual([$"{dirA}: []"], Inspect(watcher.DirectoryWatchers));
         }
 
         [Theory]
@@ -242,7 +316,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true);
+            using var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true);
 
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             watcher.OnFileChange += (_, f) => changedEv.TrySetResult(0);
@@ -270,7 +344,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
             var changedEv = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            using (var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true))
+            using (var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true))
             {
                 watcher.OnFileChange += (_, f) => changedEv.TrySetResult();
                 watcher.EnableRaisingEvents = true;
@@ -296,19 +370,27 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            File.WriteAllText(Path.Combine(dir, "file1"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "file2"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "file3"), string.Empty);
-            File.WriteAllText(Path.Combine(dir, "file4"), string.Empty);
+            var file1 = Path.Combine(dir, "a1");
+            var file2 = Path.Combine(dir, "a2");
+            var file3 = Path.Combine(dir, "a3");
+            var file4 = Path.Combine(dir, "a4");
 
-            var file3 = Path.Combine(dir, "file3");
+            File.WriteAllText(file1, string.Empty);
+            File.WriteAllText(file2, string.Empty);
+            File.WriteAllText(file3, string.Empty);
+            File.WriteAllText(file4, string.Empty);
 
             await TestOperation(
                 dir,
                 expectedChanges: [new(file3, ChangeKind.Update)],
                 usePolling,
                 watchSubdirectories: true,
-                () => File.WriteAllText(file3, string.Empty));
+                () =>
+                {
+                    File.WriteAllText(file2, string.Empty);
+                    File.WriteAllText(file3, string.Empty);
+                },
+                watchedFileNames: ["a3"]);
         }
 
         [Theory]
@@ -317,7 +399,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var dir = _testAssetManager.CreateTestDirectory(identifier: usePolling.ToString()).Path;
 
-            using var watcher = FileWatcherFactory.CreateWatcher(dir, usePolling, includeSubdirectories: true);
+            using var watcher = DirectoryWatcher.Create(dir, watchedFileNames: [], usePolling, includeSubdirectories: true);
 
             watcher.EnableRaisingEvents = true;
 
@@ -329,7 +411,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             watcher.EnableRaisingEvents = false;
         }
 
-        private async Task AssertFileChangeRaisesEvent(string directory, IDirectoryWatcher watcher)
+        private async Task AssertFileChangeRaisesEvent(string directory, DirectoryWatcher watcher)
         {
             var changedEv = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             var expectedPath = Path.Combine(directory, Path.GetRandomFileName());

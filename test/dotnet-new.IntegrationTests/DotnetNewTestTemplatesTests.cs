@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -26,6 +28,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("xunit", Languages.All, true, false),
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
+
+        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "component-governance", "packages.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -119,8 +123,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Therefore, in total we would have 2.
             result.StdOut.Should().MatchRegex(@"Passed:\s*2");
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
+
         }
 
         [Theory]
@@ -151,6 +159,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
 
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
@@ -191,6 +202,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
         }
@@ -202,6 +216,79 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             lines.Insert(lines.IndexOf("  <ItemGroup>") + 1, $@"    <Compile Include=""{itemName}.fs""/>");
             File.WriteAllLines(fsproj, lines);
+        }
+
+        private void RecordPackages(string projectDirectory)
+        {
+            // Get all project files with a single directory search, then filter to specific types
+            var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
+                .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase));
+
+            Dictionary<string, string> packageVersions =
+                [];
+
+            // Load existing package versions if file exists
+            if (File.Exists(PackagesJsonPath))
+            {
+                try
+                {
+                    packageVersions = JsonSerializer.Deserialize<Dictionary<string, string>>(
+                        File.ReadAllText(PackagesJsonPath)) ??
+                        [];
+                }
+                catch (Exception ex)
+                {
+                    _log.WriteLine($"Warning: Could not parse existing packages.json: {ex.Message}");
+                }
+            }
+
+            // Extract package references from project files
+            foreach (var projectFile in projectFiles)
+            {
+                string content = File.ReadAllText(projectFile);
+                var packageRefMatches = Regex.Matches(
+                    content,
+                    @"<PackageReference\s+(?:Include=""([^""]+)""\s+Version=""([^""]+)""|Version=""([^""]+)""\s+Include=""([^""]+)"")",
+                    RegexOptions.IgnoreCase);
+
+                foreach (Match match in packageRefMatches)
+                {
+                    string packageId;
+                    string version;
+
+                    if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                    {
+                        // Include first, then Version
+                        packageId = match.Groups[1].Value;
+                        version = match.Groups[2].Value;
+                    }
+                    else
+                    {
+                        // Version first, then Include
+                        packageId = match.Groups[4].Value;
+                        version = match.Groups[3].Value;
+                    }
+
+                    packageVersions[packageId] = version;
+                }
+            }
+
+            // Ensure directory exists
+            if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
+            {
+                Directory.CreateDirectory(directoryPath);
+            }
+            else
+            {
+                _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
+            }
+
+            // Write updated packages.json
+            File.WriteAllText(
+                PackagesJsonPath,
+                JsonSerializer.Serialize(packageVersions, new JsonSerializerOptions { WriteIndented = true }));
         }
 
         private static string GenerateTestProjectName()
