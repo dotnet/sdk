@@ -16,11 +16,7 @@ internal sealed class StartupHook
     private static readonly string? s_namedPipeName = Environment.GetEnvironmentVariable(AgentEnvironmentVariables.DotNetWatchHotReloadNamedPipeName);
 
 #if NET10_0_OR_GREATER
-    private const string TargetFramework = "net10.0";
-
     private static PosixSignalRegistration? s_signalRegistration;
-#else
-    private const string TargetFramework = "netstandard2.1";
 #endif
 
     /// <summary>
@@ -30,7 +26,7 @@ internal sealed class StartupHook
     {
         var processPath = Environment.GetCommandLineArgs().FirstOrDefault();
 
-        Log($"Loaded into process: {processPath} ({TargetFramework})");
+        Log($"Loaded into process: {processPath} ({typeof(StartupHook).Assembly.Location})");
 
         HotReloadAgent.ClearHotReloadEnvironmentVariables(typeof(StartupHook));
 

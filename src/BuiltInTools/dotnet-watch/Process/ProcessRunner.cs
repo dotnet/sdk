@@ -249,12 +249,12 @@ namespace Microsoft.DotNet.Watch
 
             var task = process.WaitForExitAsync(cancellationToken);
 
-            if (timeout.HasValue)
+            if (timeout is { } timeoutValue)
             {
                 try
                 {
-                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit within {timeout.Value.TotalSeconds}s.");
-                    await task.WaitAsync(timeout.Value, cancellationToken);
+                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit within {timeoutValue.TotalSeconds}s.");
+                    await task.WaitAsync(timeoutValue, cancellationToken);
                 }
                 catch (TimeoutException)
                 {
