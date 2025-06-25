@@ -2184,15 +2184,15 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="needs-review-translation">dotnet workload search version má tři funkce v závislosti na argumentu:
-      1. Pokud není zadán žádný argument, vypíše seznam nejnovějších vydaných verzí úloh z tohoto pásma funkcí. Pomocí parametru --take určíte, kolik jich má být poskytnuto, a pomocí parametru --format změníte formát.
-         Příklad:
+        <target state="new">'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. Pokud je jako argument zadána verze úlohy, je výstupem tabulka různých úloh a jejich verzí pro zadanou verzi úlohy. Provede změnu výstupního formátu pomocí parametru --format.
-         Příklad:
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
            dotnet workload search version 9.0.201
-           ID manifestu úlohy                               Pásmo funkcí manifestu      Verze manifestu
+           Workload manifest ID                               Manifest feature band      Manifest Version
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2208,9 +2208,8 @@ Nástroj {1} (verze {2}) se úspěšně nainstaloval. Do souboru manifestu {3} s
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. Pokud jsou zadány úlohy spolu s jejich verzemi (spojených znakem @), budou výstupem verze úloh, které odpovídají zadaným verzím. Pomocí parametru --take určíte, kolik jich má být poskytnuto, a pomocí parametru --format změníte formát.
-         Příklad:
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
