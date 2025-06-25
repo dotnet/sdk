@@ -195,13 +195,7 @@ public sealed class RunCsWinRTGenerator : ToolTask
         AppendResponseFileCommand(args, "--reference-assembly-paths", referenceAssemblyPathsArg);
         AppendResponseFileCommand(args, "--output-assembly-path", EffectiveOutputAssemblyItemSpec);
         AppendResponseFileCommand(args, "--generated-assembly-directory", InteropAssemblyDirectory!);
-
-        // The debug repro directory is optional, and might not be set
-        if (DebugReproDirectory is not null)
-        {
-            AppendResponseFileCommand(args, "--debug-repro-directory", DebugReproDirectory);
-        }
-
+        AppendResponseFileOptionalCommand(args, "--debug-repro-directory", DebugReproDirectory);
         AppendResponseFileCommand(args, "--use-windows-ui-xaml-projections", UseWindowsUIXamlProjections.ToString());
         AppendResponseFileCommand(args, "--validate-winrt-runtime-assembly-version", ValidateWinRTRuntimeAssemblyVersion.ToString());
         AppendResponseFileCommand(args, "--treat-warnings-as-errors", TreatWarningsAsErrors.ToString());
@@ -225,5 +219,20 @@ public sealed class RunCsWinRTGenerator : ToolTask
     private static void AppendResponseFileCommand(StringBuilder args, string commandName, string commandValue)
     {
         _ = args.Append($"{commandName} ").AppendLine(commandValue);
+    }
+
+    /// <summary>
+    /// Appends an optional command line argument to the response file arguments, with the right format.
+    /// </summary>
+    /// <param name="args">The command line arguments being built.</param>
+    /// <param name="commandName">The command name to append.</param>
+    /// <param name="commandValue">The optional command value to append.</param>
+    /// <remarks>This method will not append the command if <paramref name="commandValue"/> is <see langword="null"/>.</remarks>
+    private static void AppendResponseFileOptionalCommand(StringBuilder args, string commandName, string? commandValue)
+    {
+        if (commandValue is not null)
+        {
+            AppendResponseFileCommand(args, commandName, commandValue);
+        }
     }
 }
