@@ -46,7 +46,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         {
             verboseLogger = new NuGetConsoleLogger();
         }
-        
+
         return new NuGetPackageDownloader.NuGetPackageDownloader(
             new DirectoryPath(),
             verboseLogger: verboseLogger,
@@ -71,9 +71,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string folderToDeleteOnFailure = null;
         return TransactionalAction.Run<NuGetVersion>(() =>
         {
+            var _downloadActivity = Activities.s_source.StartActivity("download-tool");
+            _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
-
+            _downloadActivity?.Stop();
             folderToDeleteOnFailure = Path.GetDirectoryName(packagePath);
 
             // look for package on disk and read the version
@@ -92,8 +94,10 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             }
 
             // Extract the package
+            var _extractActivity = Activities.s_source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
+            _extractActivity?.Stop();
 
             return version;
         }, rollback: () =>

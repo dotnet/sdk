@@ -101,13 +101,42 @@ public static class Parser
 
     public static readonly Option<bool> VersionOption = new("--version")
     {
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Action = new PrintVersionAction()
     };
+
+    internal class PrintVersionAction : System.CommandLine.Invocation.SynchronousCommandLineAction
+    {
+        public PrintVersionAction()
+        {
+            Terminating = true;
+        }
+        public override int Invoke(ParseResult parseResult)
+        {
+            CommandLineInfo.PrintVersion();
+            return 0;
+        }
+    }
 
     public static readonly Option<bool> InfoOption = new("--info")
     {
-        Arity = ArgumentArity.Zero
+        Arity = ArgumentArity.Zero,
+        Action = new PrintInfoAction()
     };
+
+    internal class PrintInfoAction : System.CommandLine.Invocation.SynchronousCommandLineAction
+    {
+        public PrintInfoAction()
+        {
+            Terminating = true;
+        }
+
+        public override int Invoke(ParseResult parseResult)
+        {
+            CommandLineInfo.PrintInfo();
+            return 0;
+        }
+    }
 
     public static readonly Option<bool> ListSdksOption = new("--list-sdks")
     {

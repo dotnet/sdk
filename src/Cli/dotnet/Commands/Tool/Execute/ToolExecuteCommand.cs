@@ -129,6 +129,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
+        using var _ = Activities.s_source.StartActivity("execute-inline-tool");
         var result = command.Execute();
         return result.ExitCode;
     }

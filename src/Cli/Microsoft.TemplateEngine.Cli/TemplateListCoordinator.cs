@@ -30,6 +30,7 @@ namespace Microsoft.TemplateEngine.Cli
             _templatePackageManager = templatePackageManager ?? throw new ArgumentNullException(nameof(templatePackageManager));
             _hostSpecificDataLoader = hostSpecificDataLoader ?? throw new ArgumentNullException(nameof(hostSpecificDataLoader));
             _defaultLanguage = engineEnvironmentSettings.GetDefaultLanguage();
+            using var constraintManagerActivity = Activities.s_source.StartActivity("create-constraints");
             _constraintManager = new TemplateConstraintManager(_engineEnvironmentSettings);
         }
 
