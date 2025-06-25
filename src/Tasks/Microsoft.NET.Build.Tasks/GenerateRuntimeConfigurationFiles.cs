@@ -397,12 +397,12 @@ namespace Microsoft.NET.Build.Tasks
             // Generate new content
             using (var contentStream = new MemoryStream())
             {
-                using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, 1024, true))
+                // the explicit buffersize is because on .NET Framework this is the default value,
+                // and .NET Framework's constructor requires all parameters to be specified.
+                using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, bufferSize: 1024, leaveOpen: true))
                 using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
                     serializer.Serialize(jsonWriter, value);
-                    jsonWriter.Flush();
-                    streamWriter.Flush();
                 }
 
                 // If file exists, check if content is different using streaming hash comparison
