@@ -2184,15 +2184,15 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </source>
-        <target state="needs-review-translation">'dotnet workload search version', şu bağımsız değişkene bağlı olarak üç işleve sahiptir:
-      1. Eğer bağımsız değişken belirtilmezse, bu özellik bandındaki en son yayınlanan iş yükü sürümlerinin bir listesini döndürür. Sağlanacak sayıyı belirtmek için --take seçeneğini, biçimi değiştirmek için ise --format seçeneğini alır.
-         Örnek:
+        <target state="new">'dotnet workload search version' has three functions depending on its argument:
+      1. If no argument is specified, it outputs a list of the latest released workload versions from this feature band. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
            dotnet workload search version --take 2 --format json
            [{"workloadVersion":"9.0.201"},{"workloadVersion":"9.0.200.1"}]
-      2. Bağımsız değişken olarak bir iş yükü sürümü verilirse, belirtilen iş yükü sürümü için çeşitli iş yüklerinin ve sürümlerinin bir tablosunu çıkarır. Çıktı biçimini değiştirmek için --format seçeneğini alır.
-         Örnek:
+      2. If a workload version is provided as an argument, it outputs a table of various workloads and their versions for the specified workload version. Takes the --format option to alter the output format.
+         Example:
            dotnet workload search version 9.0.201
-           İş yükü bildirimi kimliği                               Bildirim özellik bandı      Bildirim Sürümü
+           Workload manifest ID                               Manifest feature band      Manifest Version
            ------------------------------------------------------------------------------------------------
            microsoft.net.workload.emscripten.current          9.0.100-rc.1               9.0.0-rc.1.24430.3
            microsoft.net.workload.emscripten.net6             9.0.100-rc.1               9.0.0-rc.1.24430.3
@@ -2208,9 +2208,8 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
-      3. Eğer bir veya daha fazla iş yükü ve bunların sürümleri ('@' karakteri ile birleştirilerek) sağlanırsa, sağlanan sürümlerle eşleşen iş yükü sürümlerini döndürür. Sağlanacak sayıyı belirtmek için --take seçeneğini, biçimi değiştirmek için ise --format seçeneğini alır.
-         Örnek:
+      3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
+         Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
            9.0.201
     </target>
