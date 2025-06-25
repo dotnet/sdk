@@ -103,28 +103,6 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Assert.NotSame(fileChanged, finished);
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
-        public async Task ListsFiles()
-        {
-            var testAsset = TestAssets.CopyTestAsset(AppName)
-               .WithSource();
-
-            App.DotnetWatchArgs.Clear();
-            App.Start(testAsset, ["--list"]);
-            var lines = await App.Process.GetAllOutputLinesAsync(CancellationToken.None);
-            var files = lines.Where(l => !l.StartsWith("dotnet watch ⌚") && l.Trim() != "");
-
-            AssertEx.EqualFileList(
-                testAsset.Path,
-                new[]
-                {
-                    "Program.cs",
-                    "include/Foo.cs",
-                    "WatchGlobbingApp.csproj",
-                },
-                files);
-        }
-
         private async Task AssertCompiledAppDefinedTypes(int expected)
         {
             var prefix = "Defined types = ";

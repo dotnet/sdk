@@ -12,5 +12,13 @@ namespace Microsoft.DotNet.Watch
         public required ProcessRunner ProcessRunner { get; init; }
 
         public required ProjectOptions RootProjectOptions { get; init; }
+
+        public MSBuildFileSetFactory CreateMSBuildFileSetFactory()
+            => new(
+                RootProjectOptions.ProjectPath,
+                RootProjectOptions.BuildArguments,
+                EnvironmentOptions,
+                ProcessRunner,
+                Reporter);
     }
 }

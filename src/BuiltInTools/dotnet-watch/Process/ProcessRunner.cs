@@ -25,8 +25,6 @@ namespace Microsoft.DotNet.Watch
         /// <param name="isUserApplication">True if the process is a user application, false if it is a helper process (e.g. msbuild).</param>
         public async Task<int> RunAsync(ProcessSpec processSpec, IReporter reporter, bool isUserApplication, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
         {
-            Ensure.NotNull(processSpec, nameof(processSpec));
-
             var state = new ProcessState();
             var stopwatch = new Stopwatch();
 

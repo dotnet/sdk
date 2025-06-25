@@ -7,30 +7,30 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
 {
-    internal sealed class DotNetWatcher(DotNetWatchContext context, MSBuildFileSetFactory fileSetFactory) : Watcher(context, fileSetFactory)
+    internal static class DotNetWatcher
     {
-        public override async Task WatchAsync(CancellationToken shutdownCancellationToken)
+        public static async Task WatchAsync(DotNetWatchContext context, CancellationToken shutdownCancellationToken)
         {
             var cancelledTaskSource = new TaskCompletionSource();
             shutdownCancellationToken.Register(state => ((TaskCompletionSource)state!).TrySetResult(),
                 cancelledTaskSource);
 
-            if (Context.EnvironmentOptions.SuppressMSBuildIncrementalism)
+            if (context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
-                Context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
+                context.Reporter.Verbose("MSBuild incremental optimizations suppressed.");
             }
 
             var environmentBuilder = EnvironmentVariablesBuilder.FromCurrentEnvironment();
 
             ChangedFile? changedFile = null;
-            var buildEvaluator = new BuildEvaluator(Context, RootFileSetFactory);
-            await using var browserConnector = new BrowserConnector(Context);
+            var buildEvaluator = new BuildEvaluator(context);
+            await using var browserConnector = new BrowserConnector(context);
 
             for (var iteration = 0;;iteration++)
             {
                 if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
                 {
-                    Context.Reporter.Error("Failed to find a list of files to watch");
+                    context.Reporter.Error("Failed to find a list of files to watch");
                     return;
                 }
 
@@ -39,20 +39,20 @@ namespace Microsoft.DotNet.Watch
                 if (evaluationResult.ProjectGraph != null)
                 {
                     projectRootNode = evaluationResult.ProjectGraph.GraphRoots.Single();
-                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, Context.Reporter);
-                    staticFileHandler = new StaticFileHandler(Context.Reporter, projectMap, browserConnector);
+                    var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, context.Reporter);
+                    staticFileHandler = new StaticFileHandler(context.Reporter, projectMap, browserConnector);
                 }
                 else
                 {
-                    Context.Reporter.Verbose("Unable to determine if this project is a webapp.");
+                    context.Reporter.Verbose("Unable to determine if this project is a webapp.");
                     projectRootNode = null;
                     staticFileHandler = null;
                 }
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = Context.EnvironmentOptions.MuxerPath,
-                    WorkingDirectory = Context.EnvironmentOptions.WorkingDirectory,
+                    Executable = context.EnvironmentOptions.MuxerPath,
+                    WorkingDirectory = context.EnvironmentOptions.WorkingDirectory,
                     Arguments = buildEvaluator.GetProcessArguments(iteration),
                     EnvironmentVariables =
                     {
@@ -62,7 +62,7 @@ namespace Microsoft.DotNet.Watch
                 };
 
                 var browserRefreshServer = (projectRootNode != null)
-                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, Context.RootProjectOptions, DefaultAppModel.Instance, shutdownCancellationToken)
+                    ? await browserConnector.GetOrCreateBrowserRefreshServerAsync(projectRootNode, processSpec, environmentBuilder, context.RootProjectOptions, DefaultAppModel.Instance, shutdownCancellationToken)
                     : null;
 
                 environmentBuilder.SetProcessEnvironmentVariables(processSpec);
@@ -77,11 +77,11 @@ namespace Microsoft.DotNet.Watch
 
                 using var currentRunCancellationSource = new CancellationTokenSource();
                 using var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(shutdownCancellationToken, currentRunCancellationSource.Token);
-                using var fileSetWatcher = new FileWatcher(Context.Reporter);
+                using var fileSetWatcher = new FileWatcher(context.Reporter);
 
                 fileSetWatcher.WatchContainingDirectories(evaluationResult.Files.Keys, includeSubdirectories: true);
 
-                var processTask = Context.ProcessRunner.RunAsync(processSpec, Context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
+                var processTask = context.ProcessRunner.RunAsync(processSpec, context.Reporter, isUserApplication: true, launchResult: null, combinedCancellationSource.Token);
 
                 Task<ChangedFile?> fileSetTask;
                 Task finishedTask;
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Watch
                     // Now wait for a file to change before restarting process
                     changedFile = await fileSetWatcher.WaitForFileChangeAsync(
                         evaluationResult.Files,
-                        startedWatching: () => Context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
+                        startedWatching: () => context.Reporter.Report(MessageDescriptor.WaitingForFileChangeBeforeRestarting),
                         shutdownCancellationToken);
                 }
                 else
@@ -130,7 +130,7 @@ namespace Microsoft.DotNet.Watch
                     Debug.Assert(finishedTask == fileSetTask);
                     changedFile = fileSetTask.Result;
                     Debug.Assert(changedFile != null, "ChangedFile should only be null when cancelled");
-                    Context.Reporter.Output($"File changed: {changedFile.Value.Item.FilePath}");
+                    context.Reporter.Output($"File changed: {changedFile.Value.Item.FilePath}");
                 }
             }
         }

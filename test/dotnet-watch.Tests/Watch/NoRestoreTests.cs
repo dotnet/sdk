@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedOnFirstRun()
         {
             var context = CreateContext();
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
         }
@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedIfMsBuildRevaluationIsRequired()
         {
             var context = CreateContext();
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
 
@@ -49,7 +49,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedIfOptimizationIsSuppressed()
         {
             var context = CreateContext([], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent()
         {
             var context = CreateContext(["--no-restore"], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
@@ -69,7 +69,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash1()
         {
             var context = CreateContext(["--", "--no-restore"]);
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag, "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag, "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
@@ -79,7 +79,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void LeavesArgumentsUnchangedIfNoRestoreAlreadyPresent_UnlessAfterDashDash2()
         {
             var context = CreateContext(["--", "--", "--no-restore"]);
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag, "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag, "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
@@ -89,7 +89,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void AddsNoRestoreSwitch()
         {
             var context = CreateContext();
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", "--no-restore", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void AddsNoRestoreSwitch_WithAdditionalArguments()
         {
             var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["run", "-f", ToolsetInfo.CurrentTargetFramework, InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["run", "--no-restore", "-f", ToolsetInfo.CurrentTargetFramework, InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void AddsNoRestoreSwitch_ForTestCommand()
         {
             var context = CreateContext(["test", "--filter SomeFilter"]);
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["test", InteractiveFlag, "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["test", "--no-restore", InteractiveFlag, "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
@@ -119,7 +119,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         public void DoesNotModifyArgumentsForUnknownCommands()
         {
             var context = CreateContext(["pack"]);
-            var evaluator = new BuildEvaluator(context, new MockFileSetFactory());
+            var evaluator = new BuildEvaluator(context);
 
             AssertEx.SequenceEqual(["pack", InteractiveFlag], evaluator.GetProcessArguments(iteration: 0));
             AssertEx.SequenceEqual(["pack", InteractiveFlag], evaluator.GetProcessArguments(iteration: 1));
