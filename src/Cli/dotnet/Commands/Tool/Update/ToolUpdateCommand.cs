@@ -82,7 +82,7 @@ internal class ToolUpdateCommand : CommandBase
 
     internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
     {
-        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Version?.ToString()) &&
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.VersionRange?.OriginalString) &&
             !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
         {
             throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
