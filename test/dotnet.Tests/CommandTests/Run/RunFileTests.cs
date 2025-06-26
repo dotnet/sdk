@@ -1682,7 +1682,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         Log.WriteLine(string.Join(Environment.NewLine, normalizedCscOnlyArgs));
         Log.WriteLine("MSBuild args:");
         Log.WriteLine(string.Join(Environment.NewLine, msbuildArgsToVerify));
-        normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify);
+        normalizedCscOnlyArgs.Should().Equal(msbuildArgsToVerify,
+            "the generated file might be outdated, run this test locally to regenerate it");
 
         static CompilerCall FindCompilerCall(string binaryLogPath)
         {
