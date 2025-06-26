@@ -315,7 +315,7 @@
     <MicrosoftSourceLinkBitbucketGitVersion>10.0.0-beta.25316.103</MicrosoftSourceLinkBitbucketGitVersion>
   </PropertyGroup>
   <PropertyGroup>
-    <MicrosoftWixToolsetVersion>5.0.2-dotnet.2729052</MicrosoftWixToolsetVersion>
+    <MicrosoftWixToolsetVersion>5.0.2-dotnet.2737382</MicrosoftWixToolsetVersion>
   </PropertyGroup>
   <!-- Get .NET Framework reference assemblies from NuGet packages -->
   <PropertyGroup>
