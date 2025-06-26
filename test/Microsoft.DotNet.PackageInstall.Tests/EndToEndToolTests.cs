@@ -267,7 +267,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 IncludeAnyRid = true // will make one package with the "any" RID
             };
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
             var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg").Select(p => Path.GetFileName(p)).ToArray();
             packages.Should().BeEquivalentTo([
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
             List<string> expectedRids = [ .. ToolsetInfo.LatestRuntimeIdentifiers.Split(';').Where(rid => rid != RuntimeInformation.RuntimeIdentifier), "any"];
 
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
             var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg").Select(p => Path.GetFileName(p)).ToArray();
             packages.Should().BeEquivalentTo([
                 $"{toolSettings.ToolPackageId}.{toolSettings.ToolPackageVersion}.nupkg",
