@@ -104,6 +104,12 @@
       <Output TaskParameter="ResolvedDependencyFiles" ItemName="ResolvedDependencies" />
     </ResolveAssemblyReference>
 
+    <!-- Define the expected dependencies of the output assembly.
+         IMPORTANT: When modifying this list, coordinate with the MSBuild team to ensure:
+         1. Each dependency has a corresponding binding redirect in MSBuild.exe.
+         2. Dependency version fall within the ranges specified in MSBuild.exe binding redirects.
+         Note: Verify versions against the binding redirects of the minimum supported MSBuild version, located at: src/Layout/redist/minimumMSBuildVersion
+         You can find the MSBuild.exe binding redirects here: https://github.com/dotnet/msbuild/blob/<msbuild version branch>/src/MSBuild/app.amd64.config  -->
     <ItemGroup>
       <ExpectedDependencies Include="Microsoft.Deployment.DotNet.Releases, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
       <ExpectedDependencies Include="System.Text.Json, Version=8.0.0.5, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51" />
