@@ -207,6 +207,27 @@ Commands:
             cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
         }
 
+        [Fact]
+        public void ItPrintsReferenceWithMSBuildPropertyInPath()
+        {
+            var testDir = _testAssetsManager.CreateTestDirectory().Path;
+            string OutputText = CliStrings.ProjectReferenceOneOrMore;
+            OutputText += $@"
+{new string('-', OutputText.Length)}
+{testDir}..\ref1\ref1.csproj";
+
+            var lib = NewLib(testDir, "lib");
+            string ref1Name = NewLib(testDir, "ref1").CsProjName;
+
+            AddValidRef($"$(MSBuildThisFileDirectory)..\\ref1\\{ref1Name}", lib);
+
+            var cmd = new ListReferenceCommand(Log)
+                .WithProject(lib.CsProjPath)
+                .Execute();
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(OutputText);
+        }
+
         private TestSetup Setup([System.Runtime.CompilerServices.CallerMemberName] string callingMethod = nameof(Setup), string identifier = "")
         {
             return new TestSetup(
