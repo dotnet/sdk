@@ -74,13 +74,18 @@
       </trans-unit>
       <trans-unit id="AspNetCorePackUnsupportedTargetFramework">
         <source>NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</source>
-        <target state="new">NETSDK1224: ASP.NET Core framework assets are not supported for the target framework.</target>
+        <target state="translated">NETSDK1224: ASP.NET Core-Frameworkressourcen werden für das Zielframework nicht unterstützt.</target>
         <note>{StrBegins="NETSDK1224: "}</note>
       </trans-unit>
       <trans-unit id="AspNetCoreUsesFrameworkReference">
         <source>NETSDK1080: A PackageReference to Microsoft.AspNetCore.App is not necessary when targeting .NET Core 3.0 or higher. If Microsoft.NET.Sdk.Web is used, the shared framework will be referenced automatically. Otherwise, the PackageReference should be replaced with a FrameworkReference.</source>
         <target state="translated">NETSDK1080: Eine PackageReference auf Microsoft.AspNetCore.App ist nicht erforderlich, wenn .NET Core 3.0 oder höher als Ziel verwendet wird. Bei Verwendung von Microsoft.NET.Sdk.Web wird das freigegebene Framework automatisch referenziert. Andernfalls muss die PackageReference durch eine FrameworkReference ersetzt werden.</target>
         <note>{StrBegins="NETSDK1080: "}</note>
+      </trans-unit>
+      <trans-unit id="AspireWorkloadIsDeprecated">
+        <source>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</source>
+        <target state="new">NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</target>
+        <note>{StrBegins="NETSDK1228: "}</note>
       </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>NETSDK1017: Asset preprocessor must be configured before assets are processed.</source>
@@ -648,7 +653,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="NativeCompilationRequiresPublishing">
         <source>NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</source>
-        <target state="new">NETSDK1225: Native compilation is not supported when invoking the Publish target directly. Try running dotnet publish.</target>
+        <target state="translated">NETSDK1225: Die native Kompilierung wird beim direkten Aufrufen des Veröffentlichungsziels nicht unterstützt. Versuchen Sie, dotnet publish auszuführen.</target>
         <note>{StrBegins="NETSDK1225: "}</note>
       </trans-unit>
       <trans-unit id="Net9NotCompatibleWithDev1711">
@@ -793,7 +798,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="PrunePackageDataNotFound">
         <source>NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</source>
-        <target state="new">NETSDK1226: Prune Package data not found {0} {1} {2}.  To ignore this error, set the AllowMissingPrunePackageData to true.</target>
+        <target state="translated">NETSDK1226: Daten zum Löschen von Paketen wurden nicht gefunden {0} {1} {2}.  Um diesen Fehler zu ignorieren, setzen Sie „AllowMissingPrunePackageData“ auf TRUE</target>
         <note>{StrBegins="NETSDK1226: "}</note>
       </trans-unit>
       <trans-unit id="PublishProfileNotPresent">
@@ -1015,7 +1020,7 @@ The following are names of parameters or literal values and should not be transl
       </trans-unit>
       <trans-unit id="UnsupportedToolCommandRunner">
         <source>NETSDK1227: Unsupported ToolCommandRunner value: {0}</source>
-        <target state="new">NETSDK1227: Unsupported ToolCommandRunner value: {0}</target>
+        <target state="translated">NETSDK1227: Nicht unterstützter ToolCommandRunner-Wert: {0}</target>
         <note>{StrBegins="NETSDK1227: "}</note>
       </trans-unit>
       <trans-unit id="UseArtifactsOutputRequiresDirectoryBuildProps">

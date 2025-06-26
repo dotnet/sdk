@@ -6,7 +6,6 @@ using System.Diagnostics;
 using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.EditAndContinue;
 using Microsoft.CodeAnalysis.ExternalAccess.Watch.Api;
 
 namespace Microsoft.DotNet.Watch
@@ -14,7 +13,6 @@ namespace Microsoft.DotNet.Watch
     internal sealed class CompilationHandler : IDisposable
     {
         public readonly IncrementalMSBuildWorkspace Workspace;
-        public readonly EnvironmentOptions EnvironmentOptions;
         private readonly IReporter _reporter;
         private readonly WatchHotReloadService _hotReloadService;
         private readonly ProcessRunner _processRunner;
@@ -39,11 +37,15 @@ namespace Microsoft.DotNet.Watch
 
         private bool _isDisposed;
 
-        public CompilationHandler(IReporter reporter, ProcessRunner processRunner, EnvironmentOptions environmentOptions)
+        static CompilationHandler()
+        {
+            WatchHotReloadService.RequireCommit = true;
+        }
+
+        public CompilationHandler(IReporter reporter, ProcessRunner processRunner)
         {
             _reporter = reporter;
             _processRunner = processRunner;
-            EnvironmentOptions = environmentOptions;
             Workspace = new IncrementalMSBuildWorkspace(reporter);
             _hotReloadService = new WatchHotReloadService(Workspace.CurrentSolution.Services, () => ValueTask.FromResult(GetAggregateCapabilities()));
         }
@@ -68,7 +70,7 @@ namespace Microsoft.DotNet.Watch
             Dispose();
         }
 
-        public void DiscardProjectBaselines(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
+        private void DiscardPreviousUpdates(ImmutableArray<ProjectId> projectsToBeRebuilt)
         {
             // Remove previous updates to all modules that were affected by rude edits.
             // All running projects that statically reference these modules have been terminated.
@@ -78,17 +80,9 @@ namespace Microsoft.DotNet.Watch
 
             lock (_runningProjectsAndUpdatesGuard)
             {
-                _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.ContainsKey(update.ProjectId));
+                _previousUpdates = _previousUpdates.RemoveAll(update => projectsToBeRebuilt.Contains(update.ProjectId));
             }
-
-            _hotReloadService.UpdateBaselines(Workspace.CurrentSolution, projectsToBeRebuilt.Keys.ToImmutableArray());
         }
-
-        public void UpdateProjectBaselines(ImmutableDictionary<ProjectId, string> projectsToBeRebuilt, CancellationToken cancellationToken)
-        {
-            _hotReloadService.UpdateBaselines(Workspace.CurrentSolution, projectsToBeRebuilt.Keys.ToImmutableArray());
-        }
-
         public async ValueTask StartSessionAsync(CancellationToken cancellationToken)
         {
             _reporter.Report(MessageDescriptor.HotReloadSessionStarting);
@@ -245,7 +239,7 @@ namespace Microsoft.DotNet.Watch
 
         public async ValueTask<(ImmutableDictionary<ProjectId, string> projectsToRebuild, ImmutableArray<RunningProject> terminatedProjects)> HandleManagedCodeChangesAsync(
             bool autoRestart,
-            Func<IEnumerable<string>, CancellationToken, Task> restartPrompt,
+            Func<IEnumerable<string>, CancellationToken, Task<bool>> restartPrompt,
             CancellationToken cancellationToken)
         {
             var currentSolution = Workspace.CurrentSolution;
@@ -267,10 +261,28 @@ namespace Microsoft.DotNet.Watch
             {
                 // If Hot Reload is blocked (due to compilation error) we ignore the current
                 // changes and await the next file change.
-                return (ImmutableDictionary<ProjectId, string>.Empty, []);
+
+                // Note: CommitUpdate/DiscardUpdate is not expected to be called.
+                return ([], []);
             }
 
-            if (updates.ProjectUpdates.Any())
+            var projectsToPromptForRestart =
+                (from projectId in updates.ProjectsToRestart.Keys
+                 where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivallent to auto-restart
+                 select currentSolution.GetProject(projectId)!.Name).ToList();
+
+            if (projectsToPromptForRestart.Any() &&
+                !await restartPrompt.Invoke(projectsToPromptForRestart, cancellationToken))
+            {
+                _hotReloadService.DiscardUpdate();
+
+                _reporter.Output("Hot reload suspended. To continue hot reload, press \"Ctrl + R\".", emoji: "🔥");
+                await Task.Delay(-1, cancellationToken);
+
+                return ([], []);
+            }
+
+            if (!updates.ProjectUpdates.IsEmpty)
             {
                 ImmutableDictionary<string, ImmutableArray<RunningProject>> projectsToUpdate;
                 lock (_runningProjectsAndUpdatesGuard)
@@ -308,27 +320,18 @@ namespace Microsoft.DotNet.Watch
                 }, cancellationToken);
             }
 
-            if (updates.ProjectsToRestart.IsEmpty)
-            {
-                return (ImmutableDictionary<ProjectId, string>.Empty, []);
-            }
+            // Note: Releases locked project baseline readers, so we can rebuild any projects that need rebuilding.
+            _hotReloadService.CommitUpdate();
 
-            // Terminate projects that need restarting.
+            DiscardPreviousUpdates(updates.ProjectsToRebuild);
 
-            var projectsToPromptForRestart =
-                (from projectId in updates.ProjectsToRestart.Keys
-                 where !runningProjectInfos[projectId].RestartWhenChangesHaveNoEffect // equivallent to auto-restart
-                 select currentSolution.GetProject(projectId)!.Name).ToList();
-
-            if (projectsToPromptForRestart is not [])
-            {
-                await restartPrompt.Invoke(projectsToPromptForRestart, cancellationToken);
-            }
+            var projectsToRebuild = updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!);
 
             // Terminate all tracked processes that need to be restarted,
             // except for the root process, which will terminate later on.
-            var terminatedProjects = await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken);
-            var projectsToRebuild = updates.ProjectsToRebuild.ToImmutableDictionary(keySelector: id => id, elementSelector: id => currentSolution.GetProject(id)!.FilePath!);
+            var terminatedProjects = updates.ProjectsToRestart.IsEmpty
+                ? []
+                : await TerminateNonRootProcessesAsync(updates.ProjectsToRestart.Select(e => currentSolution.GetProject(e.Key)!.FilePath!), cancellationToken);
 
             return (projectsToRebuild, terminatedProjects);
         }
@@ -395,6 +398,14 @@ namespace Microsoft.DotNet.Watch
                     {
                         // TODO: This is not a useful warning. Compiler shouldn't be reporting this on .NET/
                         // Referenced assembly '...' does not have a strong name"
+                        continue;
+                    }
+
+                    // TODO: https://github.com/dotnet/roslyn/pull/79018
+                    // shouldn't be included in compilation diagnostics
+                    if (diagnostic.Id == "ENC0118")
+                    {
+                        // warning ENC0118: Changing 'top-level code' might not have any effect until the application is restarted
                         continue;
                     }
 

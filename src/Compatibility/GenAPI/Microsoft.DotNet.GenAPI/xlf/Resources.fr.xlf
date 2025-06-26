@@ -14,7 +14,7 @@
       </trans-unit>
       <trans-unit id="SyntaxNodeNotFound">
         <source>Syntax node not found.</source>
-        <target state="new">Syntax node not found.</target>
+        <target state="translated">Le nœud syntaxique est introuvable.</target>
         <note />
       </trans-unit>
     </body>

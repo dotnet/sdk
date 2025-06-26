@@ -2,6 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
@@ -26,6 +29,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("xunit", Languages.All, true, false),
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
+
+        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
 
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
@@ -119,8 +124,12 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Therefore, in total we would have 2.
             result.StdOut.Should().MatchRegex(@"Passed:\s*2");
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
+
         }
 
         [Theory]
@@ -151,6 +160,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().Contain("Passed!");
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
+
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
 
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
@@ -191,6 +203,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 result.StdOut.Should().MatchRegex(@"Passed:\s*1");
             }
 
+            // After executing dotnet new and before cleaning up
+            RecordPackages(outputDirectory);
+
             Directory.Delete(outputDirectory, true);
             Directory.Delete(workingDirectory, true);
         }
@@ -202,6 +217,168 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             lines.Insert(lines.IndexOf("  <ItemGroup>") + 1, $@"    <Compile Include=""{itemName}.fs""/>");
             File.WriteAllLines(fsproj, lines);
+        }
+
+        private void RecordPackages(string projectDirectory)
+        {
+            // Get all project files with a single directory search, then filter to specific types
+            var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
+                .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase) ||
+                              file.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase));
+
+            // Load existing component detection manifest or create new one
+            ComponentDetectionManifest manifest;
+
+            if (File.Exists(PackagesJsonPath))
+            {
+                try
+                {
+                    string jsonContent = File.ReadAllText(PackagesJsonPath);
+                    manifest = JsonSerializer.Deserialize<ComponentDetectionManifest>(jsonContent) ??
+                        CreateNewManifest();
+                }
+                catch (Exception ex)
+                {
+                    _log.WriteLine($"Warning: Could not parse existing component detection manifest: {ex.Message}");
+                    // Don't create a new manifest when we can't parse the existing one
+                    // This prevents overwriting the existing file with an empty manifest
+                    return;
+                }
+            }
+            else
+            {
+                manifest = CreateNewManifest();
+            }
+
+            // Keep track of whether we added anything new
+            bool updatedManifest = false;
+
+            // Extract package references from project files
+            foreach (var projectFile in projectFiles)
+            {
+                string content = File.ReadAllText(projectFile);
+                var packageRefMatches = Regex.Matches(
+                    content,
+                    @"<PackageReference\s+(?:Include=""([^""]+)""\s+Version=""([^""]+)""|Version=""([^""]+)""\s+Include=""([^""]+)"")",
+                    RegexOptions.IgnoreCase);
+
+                foreach (Match match in packageRefMatches)
+                {
+                    string packageId;
+                    string version;
+
+                    if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                    {
+                        // Include first, then Version
+                        packageId = match.Groups[1].Value;
+                        version = match.Groups[2].Value;
+                    }
+                    else
+                    {
+                        // Version first, then Include
+                        packageId = match.Groups[4].Value;
+                        version = match.Groups[3].Value;
+                    }
+
+                    // Find existing registration for this package with the SAME VERSION
+                    var existingRegistration = manifest.Registrations?.FirstOrDefault(r =>
+                        r.Component != null &&
+                        r.Component.Nuget != null &&
+                        string.Equals(r.Component.Nuget.Name, packageId, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(r.Component.Nuget.Version, version, StringComparison.OrdinalIgnoreCase));
+
+                    if (existingRegistration == null)
+                    {
+                        // Add new package if it doesn't exist with this version
+                        manifest.Registrations?.Add(new Registration
+                        {
+                            Component = new Component
+                            {
+                                Type = "nuget",
+                                Nuget = new NugetComponent
+                                {
+                                    Name = packageId,
+                                    Version = version
+                                }
+                            }
+                        });
+                        updatedManifest = true;
+                    }
+                }
+            }
+
+            // Only write the file if we actually added something new
+            if (updatedManifest)
+            {
+                // Ensure directory exists
+                if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
+                {
+                    Directory.CreateDirectory(directoryPath);
+                }
+                else
+                {
+                    _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
+                    return;
+                }
+
+                // Write updated manifest
+                File.WriteAllText(
+                    PackagesJsonPath,
+                    JsonSerializer.Serialize(manifest, new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                    }));
+            }
+        }
+
+        private ComponentDetectionManifest CreateNewManifest()
+        {
+            return new ComponentDetectionManifest
+            {
+                Schema = "https://json.schemastore.org/component-detection-manifest.json",
+                Version = 1,
+                Registrations =
+                []
+            };
+        }
+
+        // Classes to model the component detection manifest
+        private class ComponentDetectionManifest
+        {
+            [JsonPropertyName("$schema")]
+            public string? Schema { get; set; }
+
+            [JsonPropertyName("version")]
+            public int Version { get; set; }
+
+            [JsonPropertyName("registrations")]
+            public List<Registration>? Registrations { get; set; }
+        }
+
+        private class Registration
+        {
+            [JsonPropertyName("component")]
+            public Component? Component { get; set; }
+        }
+
+        private class Component
+        {
+            [JsonPropertyName("type")]
+            public string? Type { get; set; }
+
+            [JsonPropertyName("nuget")]
+            public NugetComponent? Nuget { get; set; }
+        }
+
+        private class NugetComponent
+        {
+            [JsonPropertyName("name")]
+            public string? Name { get; set; }
+
+            [JsonPropertyName("version")]
+            public string? Version { get; set; }
         }
 
         private static string GenerateTestProjectName()

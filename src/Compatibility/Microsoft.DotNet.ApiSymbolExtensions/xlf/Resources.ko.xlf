@@ -4,37 +4,37 @@
     <body>
       <trans-unit id="AssemblyLoaded">
         <source>Assembly '{0}' loaded.</source>
-        <target state="new">Assembly '{0}' loaded.</target>
+        <target state="translated">어셈블리 '{0}'을(를) 로드했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="AssemblyReferenceLoaded">
         <source>Assembly '{0}' referenced by '{1}' loaded.</source>
-        <target state="new">Assembly '{0}' referenced by '{1}' loaded.</target>
+        <target state="translated">'{0}'에 의해 참조된 어셈블리 '{1}'을(를) 로드했습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CouldNotResolveReference">
         <source>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</source>
-        <target state="new">Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</target>
+        <target state="translated">제공된 검색 디렉터리에서 {1}에 의해 직접 또는 전이적으로 참조된 '{0}'을(를) 확인할 수 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblies">
         <source>Loading assemblies '{0}'.</source>
-        <target state="new">Loading assemblies '{0}'.</target>
+        <target state="translated">어셈블리 '{0}'을(를) 로드하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembliesFromArchive">
         <source>Loading assemblies '{0}' ({1}).</source>
-        <target state="new">Loading assemblies '{0}' ({1}).</target>
+        <target state="translated">어셈블리 '{0}'({1})을(를) 로드하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssembly">
         <source>Loading assembly '{0}'.</source>
-        <target state="new">Loading assembly '{0}'.</target>
+        <target state="translated">어셈블리 ‘{0}’을(를) 로드하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="LoadingAssemblyFromStream">
         <source>Loading assembly '{0}' from stream.</source>
-        <target state="new">Loading assembly '{0}' from stream.</target>
+        <target state="translated">스트림에서 어셈블리 '{0}'을(를) 로드하는 중입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="MatchingAssemblyNotFound">
@@ -54,12 +54,12 @@
       </trans-unit>
       <trans-unit id="RootAssemblyDisplayString">
         <source>'{0}'</source>
-        <target state="new">'{0}'</target>
+        <target state="translated">'{0}'</target>
         <note />
       </trans-unit>
       <trans-unit id="RootAssemblyFromPackageDisplayString">
         <source>'{0}' ({1})</source>
-        <target state="new">'{0}' ({1})</target>
+        <target state="translated">'{0}'({1})</target>
         <note />
       </trans-unit>
       <trans-unit id="ShouldNotBeNullAndContainAtLeastOneElement">
