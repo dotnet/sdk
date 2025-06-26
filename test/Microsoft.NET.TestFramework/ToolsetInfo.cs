@@ -10,6 +10,7 @@ namespace Microsoft.NET.TestFramework
     {
         public const string CurrentTargetFramework = "net10.0";
         public const string CurrentTargetFrameworkVersion = "10.0";
+        public const string CurrentTargetFrameworkMoniker = ".NETCoreApp,Version=v" + CurrentTargetFrameworkVersion;
         public const string NextTargetFramework = "net11.0";
         public const string NextTargetFrameworkVersion = "11.0";
 

@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Watch
         private List<(string fileName, DateTime lastWriteTimeUtc)>? _msbuildFileTimestamps;
 
         // result of the last evaluation, or null if no evaluation has been performed yet.
-        private EvaluationResult? _evaluationResult;
+        private MSBuildFileSetFactory.EvaluationResult? _evaluationResult;
 
         public bool RequiresRevaluation { get; set; }
 
@@ -57,7 +57,7 @@ namespace Microsoft.DotNet.Watch
             return [_context.RootProjectOptions.Command, .. _context.RootProjectOptions.CommandArguments];
         }
 
-        public async ValueTask<EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
+        public async ValueTask<MSBuildFileSetFactory.EvaluationResult> EvaluateAsync(ChangedFile? changedFile, CancellationToken cancellationToken)
         {
             if (_context.EnvironmentOptions.SuppressMSBuildIncrementalism)
             {
@@ -83,7 +83,7 @@ namespace Microsoft.DotNet.Watch
             return _evaluationResult;
         }
 
-        private async ValueTask<EvaluationResult> CreateEvaluationResult(CancellationToken cancellationToken)
+        private async ValueTask<MSBuildFileSetFactory.EvaluationResult> CreateEvaluationResult(CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -131,7 +131,7 @@ namespace Microsoft.DotNet.Watch
             return false;
         }
 
-        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(EvaluationResult result)
+        private List<(string fileName, DateTime lastModifiedUtc)> GetMSBuildFileTimeStamps(MSBuildFileSetFactory.EvaluationResult result)
         {
             var msbuildFiles = new List<(string fileName, DateTime lastModifiedUtc)>();
             foreach (var (filePath, _) in result.Files)

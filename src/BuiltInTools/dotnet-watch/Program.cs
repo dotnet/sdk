@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.Loader;
+using Microsoft.Build.Graph;
 using Microsoft.Build.Locator;
 
 namespace Microsoft.DotNet.Watch
