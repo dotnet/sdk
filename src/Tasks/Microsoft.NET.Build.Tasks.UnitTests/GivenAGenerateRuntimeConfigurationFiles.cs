@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Build.Utilities;
 using Microsoft.NET.TestFramework;
 using Xunit;
 
@@ -236,6 +237,29 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             // File should not have been rewritten when content is the same
             secondWriteTime.Should().Be(firstWriteTime, "file should not be rewritten when content is unchanged");
+        }
+
+        [Fact]
+        public void GivenDifferentRuntimeHostOptionsItWritesNewConfig()
+        {
+            // Execute task first time
+            var task = CreateBasicTestTask();
+            task.PublicExecuteCore();
+            var firstWriteTime = File.GetLastWriteTimeUtc(_runtimeConfigPath);
+
+            // Wait a bit to ensure timestamp would change if file is rewritten
+            Thread.Sleep(100);
+
+            // Execute task again with different host options
+            var task2 = CreateBasicTestTask();
+            task2.HostConfigurationOptions = [
+                new TaskItem("System.Runtime.TieredCompilation", new Dictionary<string, string>{{"Value", "false"}}),
+                new TaskItem("System.GC.Concurrent", new Dictionary<string, string>{{"Value", "false"}}),
+            ];
+            task2.PublicExecuteCore();
+            var secondWriteTime = File.GetLastWriteTimeUtc(_runtimeConfigPath);
+            // File should have been rewritten when content is different
+            secondWriteTime.Should().BeAfter(firstWriteTime, "file should be rewritten when content is different");
         }
 
         private TestableGenerateRuntimeConfigurationFiles CreateBasicTestTask()

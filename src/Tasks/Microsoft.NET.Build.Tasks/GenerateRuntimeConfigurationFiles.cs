@@ -10,8 +10,6 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
-using System.IO.Hashing;
-using System.Text;
 
 namespace Microsoft.NET.Build.Tasks
 {
@@ -393,47 +391,53 @@ namespace Microsoft.NET.Build.Tasks
             };
 
             bool shouldWriteFile = true;
+            var tempFilePath = filePath + ".tmp";
 
             // Generate new content
-            using (var contentStream = new MemoryStream())
+            using (JsonTextWriter writer = new(new StreamWriter(File.Create(tempFilePath))))
             {
-                // the explicit buffersize is because on .NET Framework this is the default value,
-                // and .NET Framework's constructor requires all parameters to be specified.
-                using (var streamWriter = new StreamWriter(contentStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), bufferSize: 1024, leaveOpen: true))
-                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                serializer.Serialize(writer, value);
+            }
+
+            // If file exists, check if content is different using streaming hash comparison
+            if (File.Exists(filePath))
+            {
+                log.LogMessage("File {0} already exists, checking hash.", filePath);
+                // stream positions are reset as part of these utility calls
+                using var existingContentStream = File.OpenRead(filePath);
+                var existingContentHash = HashingUtils.ComputeXXHash64(existingContentStream);
+                var existingContentHashRendered = BitConverter.ToString(existingContentHash).Replace("-", "");
+                log.LogMessage("Existing file hash: {0}", existingContentHashRendered);
+                using var newContentStream = File.OpenRead(tempFilePath);
+                var newContentHash = HashingUtils.ComputeXXHash64(newContentStream);
+                var newContentHashRendered = BitConverter.ToString(newContentHash).Replace("-", "");
+                log.LogMessage("New content hash: {0}", existingContentHashRendered);
+                // If hashes are equal, content is the same - don't write
+                if (existingContentHash.SequenceEqual(newContentHash))
                 {
-                    serializer.Serialize(jsonWriter, value);
+                    log.LogMessage("File {0} is unchanged, skipping write.", filePath);
+                    shouldWriteFile = false;
                 }
 
-                // If file exists, check if content is different using streaming hash comparison
-                if (File.Exists(filePath))
-                {
-                    log.LogMessage("File {0} already exists, checking hash.", filePath);
-                    // stream positions are reset as part of these utility calls
-                    using var existingContentRawStream = File.OpenRead(filePath);
-                    var existingContentHash = HashingUtils.ComputeXXHash64(existingContentRawStream);
-                    var existingContentHashRendered = BitConverter.ToString(existingContentHash).Replace("-", "");
-                    log.LogMessage("Existing file hash: {0}", existingContentHashRendered);
-                    var newContentHash = HashingUtils.ComputeXXHash64(existingContentRawStream);
-                    var newContentHashRendered = BitConverter.ToString(newContentHash).Replace("-", "");
-                    log.LogMessage("New content hash: {0}", existingContentHashRendered);
-                    // If hashes are equal, content is the same - don't write
-                    if (existingContentHash.SequenceEqual(newContentHash))
-                    {
-                        log.LogMessage("File {0} is unchanged, skipping write.", filePath);
-                        shouldWriteFile = false;
-                    }
+            }
 
-                }
-
-                if (shouldWriteFile)
-                {
-                    log.LogMessage("Writing file {0}.", filePath);
-                    // Write the new content to file using CopyTo
-                    contentStream.Position = 0;
-                    using var fileStream = File.Create(filePath);
-                    contentStream.CopyTo(fileStream);
-                }
+            if (shouldWriteFile)
+            {
+                log.LogMessage("Writing file {0}.", filePath);
+#if NET
+                File.Move(tempFilePath, filePath, overwrite: true);
+#else
+                // For .NET Framework, we can't use File.Move because it doesn't overwrite the existing file
+                // so we delete the existing file first.
+                File.Delete(filePath);
+                File.Move(tempFilePath, filePath);
+#endif
+            }
+            else
+            {
+                // If we didn't write the file, delete the temporary file
+                log.LogMessage("Deleting temporary file {0}.", tempFilePath);
+                File.Delete(tempFilePath);
             }
         }
     }

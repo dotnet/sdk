@@ -10,7 +10,6 @@ using Newtonsoft.Json;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
-using System.IO.Hashing;
 
 namespace Microsoft.NET.Build.Tasks
 {
