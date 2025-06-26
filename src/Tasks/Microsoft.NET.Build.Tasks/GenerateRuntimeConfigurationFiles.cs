@@ -399,7 +399,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 // the explicit buffersize is because on .NET Framework this is the default value,
                 // and .NET Framework's constructor requires all parameters to be specified.
-                using (var streamWriter = new StreamWriter(contentStream, Encoding.UTF8, bufferSize: 1024, leaveOpen: true))
+                using (var streamWriter = new StreamWriter(contentStream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false), bufferSize: 1024, leaveOpen: true))
                 using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
                     serializer.Serialize(jsonWriter, value);
