@@ -41,12 +41,14 @@
   <String Id="FailureRestartText" Value="You must restart your computer to complete the rollback of the software." />
   <String Id="FailureRestartButton" Value="&amp;Restart" />
   <String Id="FailureCloseButton" Value="&amp;Close" />
-  <String Id="FilesInUseHeader" Value="Files In Use" />
+  <String Id="FilesInUseTitle" Value="Files In Use" />
   <String Id="FilesInUseLabel" Value="The following applications are using files that need to be updated:" />
+  <String Id="FilesInUseNetfxCloseRadioButton" Value="Close the &amp;applications." />
   <String Id="FilesInUseCloseRadioButton" Value="Close the &amp;applications and attempt to restart them." />
   <String Id="FilesInUseDontCloseRadioButton" Value="&amp;Do not close applications. A reboot will be required." />
-  <String Id="FilesInUseOkButton" Value="&amp;OK" />
-  <String Id="FilesInUseCancelButton" Value="&amp;Cancel" />
+  <String Id="FilesInUseRetryButton" Value="&amp;Retry" />
+  <String Id="FilesInUseIgnoreButton" Value="&amp;Ignore" />
+  <String Id="FilesInUseExitButton" Value="E&amp;xit" />
   <!--_locComment="{Locked='.NET SDK'}{Locked='.NET Runtime'}{Locked='ASP.NET Core Runtime'}{Locked='.NET Windows Desktop Runtime'}" -->
   <String Id="FirstTimeWelcomeMessage" Value="The following products were installed:
     • .NET SDK [DOTNETSDKVERSION]
