@@ -178,7 +178,7 @@ namespace Microsoft.NET.Build.Tasks
                 AddAdditionalProbingPaths(config.RuntimeOptions, packageFolders);
             }
 
-            WriteToJsonFile(RuntimeConfigPath, config);
+            WriteToJsonFile(Log, RuntimeConfigPath, config);
             _filesWritten.Add(new TaskItem(RuntimeConfigPath));
         }
 
@@ -342,7 +342,7 @@ namespace Microsoft.NET.Build.Tasks
 
             AddAdditionalProbingPaths(devConfig.RuntimeOptions, packageFolders);
 
-            WriteToJsonFile(RuntimeConfigDevPath, devConfig);
+            WriteToJsonFile(Log, RuntimeConfigDevPath, devConfig);
             _filesWritten.Add(new TaskItem(RuntimeConfigDevPath));
         }
 
@@ -383,7 +383,7 @@ namespace Microsoft.NET.Build.Tasks
             return path;
         }
 
-        private static void WriteToJsonFile(string fileName, object value)
+        private static void WriteToJsonFile(Logger log, string filePath, object value)
         {
             JsonSerializer serializer = new()
             {
@@ -406,15 +406,21 @@ namespace Microsoft.NET.Build.Tasks
                 }
 
                 // If file exists, check if content is different using streaming hash comparison
-                if (File.Exists(fileName))
+                if (File.Exists(filePath))
                 {
+                    log.LogMessage("File {0} already exists, checking hash.", filePath);
                     // stream positions are reset as part of these utility calls
-                    using var existingContentStream = File.OpenRead(fileName);
-                    var existingContentHash = HashingUtils.ComputeXXHash64(existingContentStream);
-                    var newContentHash = HashingUtils.ComputeXXHash64(contentStream);
+                    using var existingContentRawStream = File.OpenRead(filePath);
+                    var existingContentHash = HashingUtils.ComputeXXHash64(existingContentRawStream);
+                    var existingContentHashRendered = BitConverter.ToString(existingContentHash).Replace("-", "");
+                    log.LogMessage("Existing file hash: {0}", existingContentHashRendered);
+                    var newContentHash = HashingUtils.ComputeXXHash64(existingContentRawStream);
+                    var newContentHashRendered = BitConverter.ToString(newContentHash).Replace("-", "");
+                    log.LogMessage("New content hash: {0}", existingContentHashRendered);
                     // If hashes are equal, content is the same - don't write
                     if (existingContentHash.SequenceEqual(newContentHash))
                     {
+                        log.LogMessage("File {0} is unchanged, skipping write.", filePath);
                         shouldWriteFile = false;
                     }
 
@@ -422,12 +428,11 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (shouldWriteFile)
                 {
+                    log.LogMessage("Writing file {0}.", filePath);
                     // Write the new content to file using CopyTo
                     contentStream.Position = 0;
-                    using (var fileStream = File.Create(fileName))
-                    {
-                        contentStream.CopyTo(fileStream);
-                    }
+                    using var fileStream = File.Create(filePath);
+                    contentStream.CopyTo(fileStream);
                 }
             }
         }

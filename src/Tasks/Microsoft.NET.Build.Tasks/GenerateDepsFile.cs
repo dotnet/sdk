@@ -257,34 +257,44 @@ namespace Microsoft.NET.Build.Tasks
             var writer = new DependencyContextWriter();
 
             bool shouldWriteFile = true;
+            var tempDepsFilePath = depsFilePath + ".tmp";
 
             // Generate new content
-            using (var contentStream = new MemoryStream())
+            using (var fileStream = File.Create(tempDepsFilePath))
             {
-                writer.Write(dependencyContext, contentStream);
-
-                // If file exists, check if content is different using streaming hash comparison
-                if (File.Exists(depsFilePath))
+                writer.Write(dependencyContext, fileStream);
+            }
+            
+            // If file exists, check if content is different using streaming hash comparison
+            if (File.Exists(depsFilePath))
+            {
+                Log.LogMessage("File {0} already exists, checking hash.", depsFilePath);
+                using var existingFileContentStream = File.OpenRead(depsFilePath);
+                var existingContentHash = HashingUtils.ComputeXXHash64(existingFileContentStream);
+                var existingContentHashRendered = BitConverter.ToString(existingContentHash).Replace("-", "");
+                Log.LogMessage("Existing file hash: {0}", existingContentHashRendered);
+                using var newContentStream = File.OpenRead(tempDepsFilePath);
+                var newContentHash = HashingUtils.ComputeXXHash64(newContentStream);
+                var newContentHashRendered = BitConverter.ToString(newContentHash).Replace("-", "");
+                Log.LogMessage("New content hash: {0}", newContentHashRendered);
+                // If hashes are equal, content is the same - don't write
+                if (existingContentHash.SequenceEqual(newContentHash))
                 {
-                    using var existingFileContentStream = File.OpenRead(depsFilePath);
-                    var existingContentHash = HashingUtils.ComputeXXHash64(existingFileContentStream);
-                    var newContentHash = HashingUtils.ComputeXXHash64(contentStream);
-                    // If hashes are equal, content is the same - don't write
-                    if (existingContentHash.SequenceEqual(newContentHash))
-                    {
-                        shouldWriteFile = false;
-                    }
+                    Log.LogMessage("File {0} is unchanged, skipping write.", depsFilePath);
+                    shouldWriteFile = false;
                 }
+            }
 
-                if (shouldWriteFile)
-                {
-                    // Write the new content to file using CopyTo
-                    contentStream.Position = 0;
-                    using (var fileStream = File.Create(depsFilePath))
-                    {
-                        contentStream.CopyTo(fileStream);
-                    }
-                }
+            if (shouldWriteFile)
+            {
+                Log.LogMessage("Writing file {0}.", depsFilePath);
+                File.Move(tempDepsFilePath, depsFilePath);
+            }
+            else
+            {
+                // If we didn't write the file, delete the temporary file
+                Log.LogMessage("Deleting temporary file {0}.", tempDepsFilePath);
+                File.Delete(tempDepsFilePath);
             }
             _filesWritten.Add(new TaskItem(depsFilePath));
 
