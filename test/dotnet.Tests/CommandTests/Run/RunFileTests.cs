@@ -92,6 +92,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     private static string PrepareOutOfTreeBaseDirectory()
     {
         string outOfTreeBaseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.Join(Path.GetTempPath(), "dotnetSdkTests"));
+        Directory.CreateDirectory(outOfTreeBaseDirectory);
 
         // Create NuGet.config in our out-of-tree base directory.
         var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
