@@ -124,7 +124,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             var testOutputPath = asset.GetWatchTestOutputPath();
             Directory.CreateDirectory(testOutputPath);
+
+            // FileSystemWatcher is unreliable. Use polling for testing to avoid flakiness.
             commandSpec.WithEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER", "true");
+
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             commandSpec.WithEnvironmentVariable("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             commandSpec.WithEnvironmentVariable("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);

@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Watch
             {
                 try
                 {
-                    _ = await WaitForExitAsync(process, timeout: null, processTerminationToken);
+                    await process.WaitForExitAsync(processTerminationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -219,7 +219,7 @@ namespace Microsoft.DotNet.Watch
                     // Ctrl+C hasn't been sent, force termination.
                     // We don't have means to terminate gracefully on Windows (https://github.com/dotnet/runtime/issues/109432)
                     TerminateProcess(process, state, reporter, force: true);
-                    _ = await WaitForExitAsync(process, timeout: null, cancellationToken);
+                    _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
 
                     return;
                 }
@@ -231,42 +231,70 @@ namespace Microsoft.DotNet.Watch
             }
 
             // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
-            if (!await WaitForExitAsync(process, processCleanupTimeout, cancellationToken))
+            if (processCleanupTimeout.Milliseconds == 0 ||
+                !await WaitForExitAsync(process, state, processCleanupTimeout, reporter, cancellationToken))
             {
                 // Force termination if the process is still running after the timeout.
                 TerminateProcess(process, state, reporter, force: true);
 
-                _ = await WaitForExitAsync(process, timeout: null, cancellationToken);
+                _ = await WaitForExitAsync(process, state, timeout: null, reporter, cancellationToken);
             }
         }
 
-        private static async ValueTask<bool> WaitForExitAsync(Process process, TimeSpan? timeout, CancellationToken cancellationToken)
+        private static async ValueTask<bool> WaitForExitAsync(Process process, ProcessState state, TimeSpan? timeout, IReporter reporter, CancellationToken cancellationToken)
         {
+            // On Linux simple call WaitForExitAsync does not work reliably (it may hang).
+            // As a workaround we poll for HasExited.
+            // See also https://github.com/dotnet/runtime/issues/109434.
+
             var task = process.WaitForExitAsync(cancellationToken);
 
-            if (timeout.HasValue)
+            if (timeout is { } timeoutValue)
             {
                 try
                 {
-                    await task.WaitAsync(timeout.Value, cancellationToken);
+                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit within {timeoutValue.TotalSeconds}s.");
+                    await task.WaitAsync(timeoutValue, cancellationToken);
                 }
                 catch (TimeoutException)
                 {
-                    return false;
+                    try
+                    {
+                        return process.HasExited;
+                    }
+                    catch
+                    {
+                        return false;
+                    }
                 }
             }
             else
             {
-                await task;
-            }
+                int i = 1;
+                while (true)
+                {
+                    try
+                    {
+                        if (process.HasExited)
+                        {
+                            return true;
+                        }
+                    }
+                    catch
+                    {
+                    }
 
-            // ensures that all process output has been reported:
-            try
-            {
-                process.WaitForExit();
-            }
-            catch
-            {
+                    reporter.Verbose($"Waiting for process {state.ProcessId} to exit ({i++}).");
+
+                    try
+                    {
+                        await task.WaitAsync(TimeSpan.FromSeconds(1), cancellationToken);
+                        break;
+                    }
+                    catch (TimeoutException)
+                    {
+                    }
+                }
             }
 
             return true;

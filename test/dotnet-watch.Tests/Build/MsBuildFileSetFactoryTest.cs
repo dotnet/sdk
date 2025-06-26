@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             .OrderBy(entry => entry.Key)
             .Select(entry => $"{InspectPath(entry.Key, rootDir)}: [{string.Join(", ", entry.Value.ContainingProjectPaths.Select(p => InspectPath(p, rootDir)))}]");
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task FindsCustomWatchItems()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ExcludesDefaultItemsWithWatchFalseMetadata()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task SingleTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -118,7 +118,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task MultiTfm()
         {
             var project = _testAssets.CreateTestProject(new TestProject("Project1")
@@ -154,7 +154,7 @@ $@"<ItemGroup>
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task IncludesContentFiles()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -187,7 +187,7 @@ $@"<ItemGroup>
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task IncludesContentFilesFromRCL()
         {
             var testDir = _testAssets.CreateTestDirectory();
@@ -239,7 +239,7 @@ $@"<ItemGroup>
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProjectReferences_OneLevel()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
@@ -268,7 +268,7 @@ $@"<ItemGroup>
             );
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task TransitiveProjectReferences_TwoLevels()
         {
             var project3 = _testAssets.CreateTestProject(new TestProject("Project3")
@@ -307,7 +307,7 @@ $@"<ItemGroup>
             Assert.All(result.Files.Values, f => Assert.False(f.IsStaticFile, $"File {f.FilePath} should not be a static file."));
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task ProjectReferences_Graph()
         {
             // A->B,F,W(Watch=False)
@@ -364,7 +364,7 @@ $@"<ItemGroup>
                 _reporter.Messages.Where(l => l.text.Contains("Collecting watch items from")).Select(l => l.text.Trim()).Order());
         }
 
-        [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+        [Fact]
         public async Task MsbuildOutput()
         {
             var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
