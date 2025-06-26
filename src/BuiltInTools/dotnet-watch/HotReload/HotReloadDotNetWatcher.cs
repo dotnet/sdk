@@ -14,13 +14,10 @@ namespace Microsoft.DotNet.Watch
         private readonly RestartPrompt? _rudeEditRestartPrompt;
 
         private readonly DotNetWatchContext _context;
-        private readonly MSBuildFileSetFactory _fileSetFactory;
 
         public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
         {
             _context = context;
-            _fileSetFactory = context.CreateMSBuildFileSetFactory();
-
             _console = console;
             _runtimeProcessLauncherFactory = runtimeProcessLauncherFactory;
             if (!context.Options.NonInteractive)
@@ -89,7 +86,6 @@ namespace Microsoft.DotNet.Watch
                     // Evaluate the target to find out the set of files to watch.
                     // In case the app fails to start due to build or other error we can wait for these files to change.
                     evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
-                    Debug.Assert(evaluationResult.ProjectGraph != null);
 
                     var rootProject = evaluationResult.ProjectGraph.GraphRoots.Single();
 
@@ -169,7 +165,7 @@ namespace Microsoft.DotNet.Watch
                         return;
                     }
 
-                    await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
+                    await compilationHandler.Workspace.UpdateProjectConeAsync(rootProjectOptions.ProjectPath, iterationCancellationToken);
 
                     // Solution must be initialized after we load the solution but before we start watching for file changes to avoid race condition
                     // when the EnC session captures content of the file after the changes has already been made.
@@ -446,7 +442,7 @@ namespace Microsoft.DotNet.Watch
                                 // additional directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
-                                await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
+                                await compilationHandler.Workspace.UpdateProjectConeAsync(rootProjectOptions.ProjectPath, iterationCancellationToken);
 
                                 if (shutdownCancellationToken.IsCancellationRequested)
                                 {
@@ -568,7 +564,7 @@ namespace Microsoft.DotNet.Watch
             else
             {
                 // evaluation cancelled - watch for any changes in the directory tree containing the root project:
-                fileWatcher.WatchContainingDirectories([_fileSetFactory.RootProjectFile], includeSubdirectories: true);
+                fileWatcher.WatchContainingDirectories([_context.RootProjectOptions.ProjectPath], includeSubdirectories: true);
 
                 _ = await fileWatcher.WaitForFileChangeAsync(
                     acceptChange: change => AcceptChange(change),
@@ -760,15 +756,20 @@ namespace Microsoft.DotNet.Watch
             {
                 cancellationToken.ThrowIfCancellationRequested();
 
-                var result = await _fileSetFactory.TryCreateAsync(requireProjectGraph: true, cancellationToken);
+                var result = EvaluationResult.TryCreate(
+                    _context.RootProjectOptions.ProjectPath,
+                    _context.RootProjectOptions.BuildArguments,
+                    _context.Reporter,
+                    _context.EnvironmentOptions,
+                    cancellationToken);
+
                 if (result != null)
                 {
-                    Debug.Assert(result.ProjectGraph != null);
                     return result;
                 }
 
                 await FileWatcher.WaitForFileChangeAsync(
-                    _fileSetFactory.RootProjectFile,
+                    _context.RootProjectOptions.ProjectPath,
                     _context.Reporter,
                     startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
