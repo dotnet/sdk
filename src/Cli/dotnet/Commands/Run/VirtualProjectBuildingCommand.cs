@@ -75,7 +75,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "NuGetInteractive",
     ];
 
-    public const string TargetFrameworkVersion = "10.0";
+    public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     internal static readonly string TargetOverrides = """
           <!--

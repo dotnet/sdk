@@ -42,7 +42,7 @@ internal sealed partial class CSharpCompilerCommand
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
     internal static string RuntimeVersion => field ??= RuntimeInformation.FrameworkDescription.Split(' ').Last();
-    private const string TargetFrameworkVersion = VirtualProjectBuildingCommand.TargetFrameworkVersion;
+    private static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
 
     public required string EntryPointFileFullPath { get; init; }
     public required string ArtifactsPath { get; init; }
