@@ -1,14 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
+using System.Xml;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
 
-internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
+internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph projectGraph)
 {
     public readonly IReadOnlyDictionary<string, FileItem> Files = files;
-    public readonly ProjectGraph? ProjectGraph = projectGraph;
+    public readonly ProjectGraph ProjectGraph = projectGraph;
 
     public readonly FilePathExclusions ItemExclusions
         = projectGraph != null ? FilePathExclusions.Create(projectGraph) : FilePathExclusions.Empty;
@@ -16,7 +18,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
     private readonly Lazy<IReadOnlySet<string>> _lazyBuildFiles
         = new(() => projectGraph != null ? CreateBuildFileSet(projectGraph) : new HashSet<string>());
 
-    public static IReadOnlySet<string> CreateBuildFileSet(ProjectGraph projectGraph)
+    private static IReadOnlySet<string> CreateBuildFileSet(ProjectGraph projectGraph)
         => projectGraph.ProjectNodes.SelectMany(p => p.ProjectInstance.ImportPaths)
             .Concat(projectGraph.ProjectNodes.Select(p => p.ProjectInstance.FullPath))
             .ToHashSet(PathUtilities.OSSpecificPathComparer);
@@ -28,5 +30,148 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
     {
         fileWatcher.WatchContainingDirectories(Files.Keys, includeSubdirectories: true);
         fileWatcher.WatchFiles(BuildFiles);
+    }
+
+    /// <summary>
+    /// Loads project graph and performs design-time build.
+    /// </summary>
+    public static EvaluationResult? TryCreate(
+        string rootProjectPath,
+        IEnumerable<string> buildArguments,
+        IReporter reporter,
+        EnvironmentOptions environmentOptions,
+        CancellationToken cancellationToken)
+    {
+        var buildReporter = new BuildReporter(reporter, environmentOptions);
+
+        // See https://github.com/dotnet/project-system/blob/main/docs/well-known-project-properties.md
+
+        var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
+            .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value)
+            .SetItem(PropertyNames.DotNetWatchBuild, "true")
+            .SetItem(PropertyNames.DesignTimeBuild, "true")
+            .SetItem(PropertyNames.SkipCompilerExecution, "true")
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true");
+
+        var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(
+            rootProjectPath,
+            globalOptions,
+            reporter,
+            projectGraphRequired: true,
+            cancellationToken);
+
+        if (projectGraph == null)
+        {
+            return null;
+        }
+
+        var rootNode = projectGraph.GraphRoots.Single();
+
+        using (var loggers = buildReporter.GetLoggers("Restore"))
+        {
+            if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
+            {
+                reporter.Error($"Failed to restore project '{rootProjectPath}'.");
+                loggers.ReportOutput();
+                return null;
+            }
+        }
+
+        var fileItems = new Dictionary<string, FileItem>();
+
+        foreach (var project in projectGraph.ProjectNodesTopologicallySorted)
+        {
+            var projectInstance = project.ProjectInstance;
+
+            // Skip non-C# projects. Consider supporting other project types.
+            // We could collect Watch items and watch the directory tree of the project for changes.
+            // Any change to these projects would trigger rebuild.
+            if (Path.GetExtension(projectInstance.FullPath) != ".csproj")
+            {
+                continue;
+            }
+
+            // skip outer build project nodes:
+            if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
+            {
+                continue;
+            }
+
+            var customCollectWatchItems = project.GetStringListPropertyValue(PropertyNames.CustomCollectWatchItems);
+
+            using (var loggers = buildReporter.GetLoggers("DesignTimeBuild"))
+            {
+                if (!projectInstance.Build([TargetNames.Compile, .. customCollectWatchItems], loggers))
+                {
+                    reporter.Error($"Failed to build project '{projectInstance.FullPath}'.");
+                    loggers.ReportOutput();
+                    return null;
+                }
+            }
+
+            var projectPath = projectInstance.FullPath;
+            var projectDirectory = Path.GetDirectoryName(projectPath)!;
+
+            // TODO: Compile and AdditionalItems should be provided by Roslyn
+            var items = projectInstance.GetItems(ItemNames.Compile)
+                .Concat(projectInstance.GetItems(ItemNames.AdditionalFiles))
+                .Concat(projectInstance.GetItems(ItemNames.Watch));
+
+            foreach (var item in items)
+            {
+                AddFile(item.EvaluatedInclude, staticWebAssetPath: null);
+            }
+
+            if (!environmentOptions.SuppressHandlingStaticContentFiles &&
+                project.GetBooleanPropertyValue(PropertyNames.UsingMicrosoftNETSdkRazor) &&
+                project.GetBooleanPropertyValue(PropertyNames.DotNetWatchContentFiles, defaultValue: true))
+            {
+                foreach (var item in projectInstance.GetItems(ItemNames.Content))
+                {
+                    if (item.GetBooleanMetadataValue(MetadataNames.Watch, defaultValue: true))
+                    {
+                        var relativeUrl = item.EvaluatedInclude.Replace('\\', '/');
+                        if (relativeUrl.StartsWith("wwwroot/"))
+                        {
+                            AddFile(item.EvaluatedInclude, staticWebAssetPath: relativeUrl);
+                        }
+                    }
+                }
+            }
+
+            void AddFile(string include, string? staticWebAssetPath)
+            {
+                var filePath = Path.GetFullPath(Path.Combine(projectDirectory, include));
+
+                if (!fileItems.TryGetValue(filePath, out var existingFile))
+                {
+                    fileItems.Add(filePath, new FileItem
+                    {
+                        FilePath = filePath,
+                        ContainingProjectPaths = [projectPath],
+                        StaticWebAssetPath = staticWebAssetPath,
+                    });
+                }
+                else if (!existingFile.ContainingProjectPaths.Contains(projectPath))
+                {
+                    // linked files might be included to multiple projects:
+                    existingFile.ContainingProjectPaths.Add(projectPath);
+                }
+            }
+        }
+
+        reporter.Verbose($"Watching {fileItems.Count} file(s) for changes");
+
+        if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+        {
+            foreach (var file in fileItems.Values)
+            {
+                reporter.Verbose(file.StaticWebAssetPath != null
+                    ? $"> {file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
+                    : $"> {file.FilePath}");
+            }
+        }
+
+        return new EvaluationResult(fileItems, projectGraph);
     }
 }

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
@@ -31,6 +32,12 @@ namespace Microsoft.DotNet.Watch
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         public string RootProjectFile => rootProjectFile;
+
+        internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
+        {
+            public readonly IReadOnlyDictionary<string, FileItem> Files = files;
+            public readonly ProjectGraph? ProjectGraph = projectGraph;
+        }
 
         // Virtual for testing.
         public virtual async ValueTask<EvaluationResult?> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
@@ -125,7 +132,10 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value, cancellationToken);
+                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
+                        .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
+
+                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, reporter, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -174,6 +184,8 @@ namespace Microsoft.DotNet.Watch
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
             arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
             arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
+            arguments.Add("/p:SkipCompilerExecution=true");
+            arguments.Add("/p:ProvideCommandLineArgs=true");
             arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
             arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
 
@@ -195,58 +207,6 @@ namespace Microsoft.DotNet.Watch
 
             var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).FirstOrDefault(File.Exists);
             return targetPath ?? throw new FileNotFoundException("Fatal error: could not find DotNetWatch.targets");
-        }
-
-        // internal for testing
-
-        /// <summary>
-        /// Tries to create a project graph by running the build evaluation phase on the <see cref="rootProjectFile"/>.
-        /// </summary>
-        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
-        {
-            var globalOptions = new Dictionary<string, string>();
-
-            foreach (var (name, value) in CommandLineOptions.ParseBuildProperties(buildArguments))
-            {
-                globalOptions[name] = value;
-            }
-
-            var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
-
-            try
-            {
-                return new ProjectGraph([entryPoint], ProjectCollection.GlobalProjectCollection, projectInstanceFactory: null, cancellationToken);
-            }
-            catch (Exception e)
-            {
-                reporter.Verbose("Failed to load project graph.");
-
-                if (e is AggregateException { InnerExceptions: var innerExceptions })
-                {
-                    foreach (var inner in innerExceptions)
-                    {
-                        Report(inner);
-                    }
-                }
-                else
-                {
-                    Report(e);
-                }
-
-                void Report(Exception e)
-                {
-                    if (projectGraphRequired)
-                    {
-                        reporter.Error(e.Message);
-                    }
-                    else
-                    {
-                        reporter.Warn(e.Message);
-                    }
-                }
-            }
-
-            return null;
         }
     }
 }

@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49542")]
+        [Fact]
         public async Task ProjectChange_GlobalUsings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -340,9 +340,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 <Using Include="System.Xml.Linq" />
                 """));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchNoDepsApp ({ToolsetInfo.CurrentTargetFramework})");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})", failure: _ => false);
 
-            await App.WaitUntilOutputContains(">>> System.Linq.Enumerable");
+            await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
 
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
@@ -1009,7 +1009,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             Directory.CreateDirectory(oldSubdir);
             File.WriteAllText(Path.Combine(oldSubdir, "Foo.cs"), source);
 
-            App.Start(testAsset, [], "AppWithDeps");
+            App.Start(testAsset, ["--non-interactive"], "AppWithDeps");
 
             await App.AssertWaitingForChanges();
 
@@ -1027,7 +1027,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             Log($"Renamed '{oldSubdir}' to '{newSubdir}'.");
 
-            await App.AssertOutputLineStartsWith("> NewSubdir");
+            // dotnet-watch may observe the delete separately from the new file write.
+            // If so, rude edit is reported, the app is auto-restarted and we should observe the final result.
+
+            await App.AssertOutputLineStartsWith("> NewSubdir", failure: _ => false);
         }
 
         [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
