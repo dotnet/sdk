@@ -78,7 +78,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// Used when we need an out-of-tree base test directory to avoid having implicit build files
     /// like Directory.Build.props in scope and negating the optimizations we want to test.
     /// </summary>
-    private static readonly string s_outOfTreeBaseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.Join(Path.GetTempPath(), "dotnetSdkTests"));
+    private static string OutOfTreeBaseDirectory => field ??= PrepareOutOfTreeBaseDirectory();
 
     private static bool HasCaseInsensitiveFileSystem
     {
@@ -87,6 +87,18 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 || RuntimeInformation.IsOSPlatform(OSPlatform.OSX);
         }
+    }
+
+    private static string PrepareOutOfTreeBaseDirectory()
+    {
+        string outOfTreeBaseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.Join(Path.GetTempPath(), "dotnetSdkTests"));
+
+        // Create NuGet.config in our out-of-tree base directory.
+        var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
+        var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
+        File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
+
+        return outOfTreeBaseDirectory;
     }
 
     /// <summary>
@@ -1177,7 +1189,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory, CombinatorialData]
     public void LaunchProfile(bool cscOnly)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? s_outOfTreeBaseDirectory : null);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program + """
 
             Console.WriteLine($"Message: '{Environment.GetEnvironmentVariable("Message")}'");
@@ -1430,7 +1442,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscArguments()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         const string programName = "TestProgram";
         const string fileName = $"{programName}.cs";
         string entryPointPath = Path.Join(testInstance.Path, fileName);
@@ -1705,7 +1717,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [InlineData("noext")]
     public void CscVsMSBuild(string fileName)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         string entryPointPath = Path.Join(testInstance.Path, fileName);
         File.WriteAllText(entryPointPath, $"""
             #!/test
@@ -1784,7 +1796,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void UpToDate()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("Hello v1");
             """);
@@ -1954,7 +1966,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscOnly()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Console.WriteLine("v1");
@@ -1985,7 +1997,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscOnly_CompilationDiagnostics()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             string x = null;
@@ -2021,7 +2033,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscOnly_DotNetRoot()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             foreach (var entry in Environment.GetEnvironmentVariables(EnvironmentVariableTarget.Process)
                 .Cast<System.Collections.DictionaryEntry>()
@@ -2070,7 +2082,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscOnly_IntermediateFiles()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             Expression<Func<int>> e = () => 1 + 1;
             Console.WriteLine(e);
@@ -2116,13 +2128,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Fact]
     public void CscOnly_NotRestored()
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: s_outOfTreeBaseDirectory);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
-
-        // Create NuGet.config in our out-of-tree base directory.
-        var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
-        var targetNuGetConfig = Path.Join(testInstance.Path, "NuGet.config");
-        File.Copy(sourceNuGetConfig, targetNuGetConfig);
 
         // Remove artifacts from possible previous runs of this test.
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(Path.Join(testInstance.Path, "Program.cs"));
@@ -2422,7 +2429,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     [Theory, CombinatorialData]
     public void EntryPointFilePath(bool cscOnly)
     {
-        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? s_outOfTreeBaseDirectory : null);
+        var testInstance = _testAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, """"
             var entryPointFilePath = AppContext.GetData("EntryPointFilePath") as string;
