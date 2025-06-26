@@ -264,7 +264,7 @@ namespace Microsoft.NET.Build.Tasks
             {
                 writer.Write(dependencyContext, fileStream);
             }
-            
+
             // If file exists, check if content is different using streaming hash comparison
             if (File.Exists(depsFilePath))
             {
@@ -288,7 +288,14 @@ namespace Microsoft.NET.Build.Tasks
             if (shouldWriteFile)
             {
                 Log.LogMessage("Writing file {0}.", depsFilePath);
+#if NET
+                File.Move(tempDepsFilePath, depsFilePath, overwrite: true);
+#else
+                // For .NET Framework, we can't use File.Move because it doesn't overwrite the existing file
+                // so we delete the existing file first.
+                File.Delete(depsFilePath);
                 File.Move(tempDepsFilePath, depsFilePath);
+#endif
             }
             else
             {
