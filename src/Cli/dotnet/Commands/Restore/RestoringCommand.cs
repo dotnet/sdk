@@ -64,7 +64,10 @@ public class RestoringCommand : MSBuildForwardingApp
         // we're running two separate build operations
         if (HasPropertyToExcludeFromRestore(msbuildArgs))
         {
-            msbuildArgs.OtherMSBuildArgs.Add("-nologo");
+            if (!msbuildArgs.OtherMSBuildArgs.Contains("-nologo"))
+            {
+                msbuildArgs.OtherMSBuildArgs.Add("-nologo");
+            }
             return msbuildArgs;
         }
 
@@ -157,17 +160,26 @@ public class RestoringCommand : MSBuildForwardingApp
         // Separate restore should be silent in terminal logger - regardless of actual scenario
         HashSet<string> newArgumentsToAdd = ["-tlp:verbosity=quiet"];
         List<string> existingArgumentsToForward = [];
+        bool hasSetNologo = false;
 
         foreach (var argument in msbuildArgs.OtherMSBuildArgs ?? [])
         {
             if (!IsExcludedFromSeparateRestore(argument))
             {
+                if (argument.Equals("-nologo", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasSetNologo = true;
+                }
                 existingArgumentsToForward.Add(argument);
             }
 
             if (TriggersSilentSeparateRestore(argument))
             {
-                newArgumentsToAdd.Add("-nologo");
+                if (!hasSetNologo)
+                {
+                    newArgumentsToAdd.Add("-nologo");
+                    hasSetNologo = true;
+                }
                 newArgumentsToAdd.Add("-verbosity:quiet");
             }
         }
