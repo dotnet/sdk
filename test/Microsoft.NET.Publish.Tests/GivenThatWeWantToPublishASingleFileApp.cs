@@ -747,10 +747,9 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
-            testAsset.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             
             var buildCommand = new BuildCommand(testAsset);
-            var resultAssertion = buildCommand.Execute("/bl:my.binlog")
+            var resultAssertion = buildCommand.Execute("/bl:my.binlog /p:CheckEolTargetFramework=false")
                 .Should().Pass();
             if (shouldWarn) {
                 // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
