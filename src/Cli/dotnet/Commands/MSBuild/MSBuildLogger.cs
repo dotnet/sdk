@@ -5,14 +5,11 @@ using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly IFirstTimeUseNoticeSentinel _sentinel =
-        new FirstTimeUseNoticeSentinel();
     private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
@@ -65,8 +62,7 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string? sessionId =
-                Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
+            string? sessionId = Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
             {
@@ -75,7 +71,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during telemetry shouldn't cause anything else to fail
+            // Exceptions during _telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -117,7 +113,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during telemetry shouldn't cause anything else to fail
+            // Exceptions during _telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -246,7 +242,7 @@ public sealed class MSBuildLogger : INodeLogger
         {
             foreach (var propertyToBeHashed in toBeHashed)
             {
-                if (eventProperties.TryGetValue(propertyToBeHashed, out var value))
+                if (eventProperties.TryGetValue(propertyToBeHashed, out var value) && value is not null)
                 {
                     // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new(eventProperties);
@@ -274,7 +270,7 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        telemetry.TrackEvent(eventName, properties ?? eventProperties, measurements);
+        telemetry?.TrackEvent(eventName, properties ?? eventProperties, measurements);
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
