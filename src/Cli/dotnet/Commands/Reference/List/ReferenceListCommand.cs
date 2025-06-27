@@ -31,7 +31,6 @@ internal class ReferenceListCommand : CommandBase
     public override int Execute()
     {
         var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
-
         var p2ps = msbuildProj.GetProjectToProjectReferences();
         if (!p2ps.Any())
         {
@@ -49,8 +48,8 @@ internal class ReferenceListCommand : CommandBase
             Reporter.Error.WriteLine(string.Format(CliStrings.InvalidProjectWithExceptionMessage, _fileOrDirectory, ex.Message));
             return 0;
         }
-        ProjectInstance projectInstance = new(projectRootElement);
 
+        ProjectInstance projectInstance = new(projectRootElement);
         Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
         foreach (var item in projectInstance.GetItems("ProjectReference"))
