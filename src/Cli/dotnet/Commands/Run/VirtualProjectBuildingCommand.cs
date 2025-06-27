@@ -161,6 +161,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
+        ProjectCollection? projectCollection = null;
         try
         {
             // Set environment variables.
@@ -172,7 +173,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
-            var projectCollection = new ProjectCollection(
+            projectCollection = new ProjectCollection(
                 GlobalProperties,
                 [.. binaryLoggers, consoleLogger],
                 ToolsetDefinitionLocations.Default);
@@ -181,7 +182,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Loggers = projectCollection.Loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
-            BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             PrepareProjectInstance();
 
@@ -199,6 +199,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+
+                BuildManager.DefaultBuildManager.BeginBuild(parameters);
+
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
@@ -212,6 +215,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
                     targetsToBuild: [BuildTarget]);
+
+                // For some reason we need to BeginBuild after creating BuildRequestData otherwise the binlog doesn't contain Evaluation.
+                if (NoRestore)
+                {
+                    BuildManager.DefaultBuildManager.BeginBuild(parameters);
+                }
+
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
@@ -238,8 +248,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            binaryLogger?.Shutdown();
-            consoleLogger.Shutdown();
+            projectCollection?.Dispose();
         }
 
         static ILogger? GetBinaryLogger(IReadOnlyList<string> args)
@@ -459,6 +468,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
         {
+            ProjectCollection = projectCollection,
             GlobalProperties = globalProperties,
         });
 
