@@ -248,7 +248,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Environment.SetEnvironmentVariable(key, value);
             }
 
-            projectCollection?.Dispose();
+            binaryLogger?.Shutdown();
+            consoleLogger.Shutdown();
         }
 
         static ILogger? GetBinaryLogger(IReadOnlyList<string> args)
