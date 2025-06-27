@@ -9,7 +9,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// <summary>
 /// Represents all of the parsed and forwarded arguments that the SDK should pass to MSBuild.
 /// </summary>
-public class MSBuildArgs
+public sealed class MSBuildArgs
 {
     private MSBuildArgs(FrozenDictionary<string, string>? properties, FrozenDictionary<string, string>? restoreProperties, string[]? targets, string[]? otherMSBuildArgs)
     {
@@ -22,12 +22,12 @@ public class MSBuildArgs
     }
 
     /// <summary>
-    /// The set of `-p` flags that should be passed to MSBuild.
+    /// The set of <c>-p</c> flags that should be passed to MSBuild.
     /// </summary>
     public FrozenDictionary<string, string>? GlobalProperties { get; }
     /// <summary>
-    /// The set of `-rp` flags that should be passed to MSBuild for restore operations only.
-    /// If this is non-empty, all <see cref="GlobalProperties"/> flags should be passed as `-rp` as well.
+    /// The set of <c>-rp</c> flags that should be passed to MSBuild for restore operations only.
+    /// If this is non-empty, all <see cref="GlobalProperties"/> flags should be passed as <c>-rp</c> as well.
     /// </summary>
     public FrozenDictionary<string, string>? RestoreGlobalProperties { get; private set; }
 
@@ -83,7 +83,7 @@ public class MSBuildArgs
         return new MSBuildArgs(null, null, null, args.ToArray());
     }
 
-    public static MSBuildArgs ForHelp = new(null, null, null, ["--help"]);
+    public static readonly MSBuildArgs ForHelp = new(null, null, null, ["--help"]);
 
     public MSBuildArgs CloneWithExplicitArgs(string[] newArgs)
     {
@@ -149,7 +149,7 @@ public class MSBuildArgs
             RestoreGlobalProperties = GlobalProperties;
             return;
         }
-        else if (GlobalProperties is not null)
+        else if (GlobalProperties is not null && GlobalProperties.Count > 0)
         {
             // If we have restore properties, we need to merge the global properties into them.
             // We ensure the restore properties overwrite the properties to align with expected MSBuild semantics.

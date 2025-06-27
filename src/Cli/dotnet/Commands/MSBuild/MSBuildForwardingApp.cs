@@ -37,8 +37,6 @@ public class MSBuildForwardingApp : CommandBase
     /// <summary>
     /// Mostly intended for quick/one-shot usage - most 'core' SDK commands should do more hands-on parsing.
     /// </summary>
-    /// <param name="rawMSBuildArgs"></param>
-    /// <param name="msbuildPath"></param>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
         MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption()),
         msbuildPath)
