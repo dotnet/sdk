@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <PropertyGroup>
     <DefineConstants Condition=" '$(DefineConstants)' != '' ">$(DefineConstants);TRACE</DefineConstants>
+    <DefineConstants Condition=" '$(DefineConstants)' == '' ">TRACE</DefineConstants>
   </PropertyGroup>
 
   <!-- Implicit imports -->
