@@ -293,7 +293,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 RidSpecific = true, // will make one package for each RID except the current RID
                 IncludeAnyRid = true // will make one package with the "any" RID
             };
-            List<string> expectedRids = [ .. ToolsetInfo.LatestRuntimeIdentifiers.Split(';').Where(rid => rid != RuntimeInformation.RuntimeIdentifier), "any"];
+            List<string> expectedRids = [.. ToolsetInfo.LatestRuntimeIdentifiers.Split(';').Where(rid => rid != RuntimeInformation.RuntimeIdentifier), "any"];
 
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
             var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg").Select(p => Path.GetFileName(p)).ToArray();
