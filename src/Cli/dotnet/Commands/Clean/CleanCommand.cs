@@ -22,7 +22,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
         result.ShowHelpOrErrorIfAppropriate();
         var args = result.GetValue(CleanCommandParser.SlnOrProjectArgument) ?? [];
         string[] forwardedOptions = result.OptionValuesToBeForwarded(CleanCommandParser.GetCommand()).ToArray();
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(["-verbosity:normal", "-target:Clean", ..forwardedOptions, ..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption);
         return new CleanCommand(msbuildArgs, msbuildPath);
     }
 

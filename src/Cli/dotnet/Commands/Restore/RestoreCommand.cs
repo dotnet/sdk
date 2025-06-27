@@ -30,7 +30,7 @@ public static class RestoreCommand
 
         string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption);
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
@@ -44,7 +44,7 @@ public static class RestoreCommand
             };
         }
 
-        msbuildArgs.OtherMSBuildArgs.AddRange(["-target:Restore", .. nonBinLogArgs]);
+        msbuildArgs.OtherMSBuildArgs.AddRange(nonBinLogArgs);
         return CreateForwarding(msbuildArgs, msbuildPath);
     }
 

@@ -16,6 +16,8 @@ internal static class WorkloadRepairCommandParser
 
     public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -30,7 +32,7 @@ internal static class WorkloadRepairCommandParser
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
         command.Options.Add(SourceOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
 

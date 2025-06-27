@@ -28,7 +28,6 @@ namespace Microsoft.DotNet.Cli
                 Arity = ArgumentArity.ExactlyOne,
             };
 
-
         private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))

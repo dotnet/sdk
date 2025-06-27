@@ -49,6 +49,17 @@ public class RestoringCommand : MSBuildForwardingApp
         }
     }
 
+    /// <summary>
+    /// Inspects and potentially modifies the MSBuildArgs structure for this command based on
+    /// if this command needs to run a separate restore command or if it can be done as part of
+    /// the same MSBuild invocation.
+    ///
+    /// If the command isn't do a restore, no modifications are made.
+    /// If the command requires a separate restore, we remove the MSBuild logo/header from this command.
+    /// If the command is doing an inline restore, we need to ensure the restore-only
+    /// properties are set correctly so that the restore operation uses our optimizations,
+    /// while also getting the same set of properties as the build operation.
+    /// </summary>
     private static MSBuildArgs GetCommandArguments(
         MSBuildArgs msbuildArgs,
         bool noRestore)
@@ -79,6 +90,15 @@ public class RestoringCommand : MSBuildForwardingApp
         return msbuildArgs.CloneWithAdditionalRestoreProperties(RestoreOptimizationProperties);
     }
 
+    /// <summary>
+    /// Creates the separate restore command if needed.
+    /// If no restore is requested, or if there are no properties that would trigger a separate restore,
+    /// then this method returns null.
+    /// If a separate restore command is needed, it returns an instance of <see cref="MSBuildForwardingApp"/>
+    /// that is configured to run the restore operation with the appropriate properties and arguments.
+    /// Because the separate restore command is run in a separate process,
+    /// we don't have to map _restore_ properties - we can just use the regular properties.
+    /// </summary>
     private static MSBuildForwardingApp? GetSeparateRestoreCommand(
         MSBuildArgs msbuildArgs,
         bool noRestore,
@@ -96,13 +116,16 @@ public class RestoringCommand : MSBuildForwardingApp
         // we don't set the 'restore properties' of the MSBuildArgs, because
         // we are running a separate restore command - it can just use 'properties' instead.
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(msbuildArgs);
-        string[] restoreArguments = ["--target:Restore", .. newArgumentsToAdd, .. existingArgumentsToForward];
         // we need to strip the properties from GlobalProperties that are excluded from restore
         // and create a new MSBuildArgs instance that will be used for the separate restore command
         var restoreProperties = msbuildArgs.GlobalProperties?
             .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))
             .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
-        var restoreMSBuildArgs = MSBuildArgs.FromProperties(RestoreOptimizationProperties).CloneWithExplicitArgs(restoreArguments).CloneWithAdditionalProperties(restoreProperties);
+        var restoreMSBuildArgs =
+            MSBuildArgs.FromProperties(RestoreOptimizationProperties)
+                       .CloneWithAdditionalTarget("Restore")
+                       .CloneWithExplicitArgs([..newArgumentsToAdd, ..existingArgumentsToForward])
+                       .CloneWithAdditionalProperties(restoreProperties);
         return RestoreCommand.CreateForwarding(restoreMSBuildArgs, msbuildPath);
     }
 
@@ -153,8 +176,6 @@ public class RestoringCommand : MSBuildForwardingApp
     /// arguments that negatively influence the restore. In addition, some flags signal different modes of execution
     /// that we need to compensate for, so we might yield new arguments that should be  included in the overall restore call.
     /// </summary>
-    /// <param name="forwardedArguments"></param>
-    /// <returns></returns>
     private static (string[] newArgumentsToAdd, string[] existingArgumentsToForward) ProcessForwardedArgumentsForSeparateRestore(MSBuildArgs msbuildArgs)
     {
         // Separate restore should be silent in terminal logger - regardless of actual scenario

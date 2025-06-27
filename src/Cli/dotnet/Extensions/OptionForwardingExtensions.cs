@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
-using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.CommandLine.StaticCompletions;
@@ -56,12 +55,18 @@ public static class OptionForwardingExtensions
     /// <c>--property:A=B --property:C=D</c>.
     /// This is useful for options that can take multiple key-value pairs, such as --property.
     /// </summary>
-    public static ForwardedOption<string[]> ForwardAsMSBuildProperty(this ForwardedOption<string[]> option) => option
-        .SetForwardingFunction((optionVals) =>
-            (optionVals ?? [])
-                .SelectMany(Utils.MSBuildPropertyParser.ParseProperties)
-                .Select(keyValue => $"{option.Name}:{keyValue.key}={keyValue.value}")
-            );
+    public static ForwardedOption<FrozenDictionary<string, string>?> ForwardAsMSBuildProperty(this ForwardedOption<FrozenDictionary<string, string>?> option) => option
+        .SetForwardingFunction(propertyDict => ForwardedMSBuildPropertyValues(propertyDict, option.Name));
+
+    private static IEnumerable<string> ForwardedMSBuildPropertyValues(FrozenDictionary<string, string>? properties, string optionName)
+    {
+        if (properties is null || properties.Count == 0)
+        {
+            return Enumerable.Empty<string>();
+        }
+
+        return properties.Select(kv => $"{optionName}:{kv.Key}={kv.Value}");
+    }
 
     public static Option<T> ForwardAsMany<T>(this ForwardedOption<T> option, Func<T?, IEnumerable<string>> format) => option.SetForwardingFunction(format);
 

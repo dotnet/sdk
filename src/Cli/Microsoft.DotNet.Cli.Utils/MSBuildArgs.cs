@@ -11,10 +11,11 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public class MSBuildArgs
 {
-    private MSBuildArgs(FrozenDictionary<string, string>? properties, FrozenDictionary<string, string>? restoreProperties, string[]? otherMSBuildArgs)
+    private MSBuildArgs(FrozenDictionary<string, string>? properties, FrozenDictionary<string, string>? restoreProperties, string[]? targets, string[]? otherMSBuildArgs)
     {
         GlobalProperties = properties;
         RestoreGlobalProperties = restoreProperties;
+        RequestedTargets = targets;
         OtherMSBuildArgs = otherMSBuildArgs is not null
             ? [.. otherMSBuildArgs]
             : new List<string>();
@@ -29,6 +30,12 @@ public class MSBuildArgs
     /// If this is non-empty, all <see cref="GlobalProperties"/> flags should be passed as `-rp` as well.
     /// </summary>
     public FrozenDictionary<string, string>? RestoreGlobalProperties { get; private set; }
+
+    /// <summary>
+    /// The ordered list of targets that should be passed to MSBuild.
+    /// </summary>
+    public string[]? RequestedTargets { get; }
+
     /// <summary>
     /// All non <c>-p</c> and <c>-rp</c> arguments that should be passed to MSBuild.
     /// </summary>
@@ -40,35 +47,50 @@ public class MSBuildArgs
     /// </summary>
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
     /// <returns></returns>
-    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, Option<string[]> propertiesOption, Option<FrozenDictionary<string, string>?> restorePropertiesOption)
+    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, Option<FrozenDictionary<string, string>?> propertiesOption, Option<FrozenDictionary<string, string>?> restorePropertiesOption, Option<string[]?>? targetsOption)
     {
-        var fakeCommand = new System.CommandLine.Command("dotnet") { propertiesOption, restorePropertiesOption };
+        var fakeCommand = new System.CommandLine.Command("dotnet") {
+            propertiesOption,
+            restorePropertiesOption,
+        };
+        if (targetsOption is not null)
+        {
+            fakeCommand.Options.Add(targetsOption);
+        }
         var propertyParsingConfiguration = new CommandLineConfiguration(fakeCommand)
         {
             EnablePosixBundling = false
         };
         var parseResult = propertyParsingConfiguration.Parse([..forwardedAndUserFacingArgs]);
-        var globalProperties = ParseProperties(parseResult.GetValue(propertiesOption));
+        var globalProperties = parseResult.GetValue(propertiesOption);
         var restoreProperties = parseResult.GetValue(restorePropertiesOption);
+        var requestedTargets = targetsOption is not null ? parseResult.GetValue(targetsOption) : null;
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
             properties: globalProperties,
             restoreProperties: restoreProperties,
+            targets: requestedTargets,
             otherMSBuildArgs: otherMSBuildArgs);
     }
 
     public static MSBuildArgs FromProperties(FrozenDictionary<string, string>? properties)
     {
-        return new MSBuildArgs(properties, null, []);
+        return new MSBuildArgs(properties, null, null, null);
     }
 
-    public static MSBuildArgs ForHelp = new(null, null, ["--help"]);
+    public static MSBuildArgs FromOtherArgs(params ReadOnlySpan<string> args)
+    {
+        return new MSBuildArgs(null, null, null, args.ToArray());
+    }
+
+    public static MSBuildArgs ForHelp = new(null, null, null, ["--help"]);
 
     public MSBuildArgs CloneWithExplicitArgs(string[] newArgs)
     {
         return new MSBuildArgs(
             properties: GlobalProperties,
             restoreProperties: RestoreGlobalProperties,
+            targets: RequestedTargets,
             otherMSBuildArgs: newArgs);
     }
 
@@ -77,11 +99,11 @@ public class MSBuildArgs
         if (additionalRestoreProperties is null || additionalRestoreProperties.Count == 0)
         {
             // If there are no additional restore properties, we can just return the current instance.
-            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
         }
         if (RestoreGlobalProperties is null)
         {
-            return new MSBuildArgs(GlobalProperties, additionalRestoreProperties, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, additionalRestoreProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
         }
 
         var newRestoreProperties = new Dictionary<string, string>(RestoreGlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -89,7 +111,7 @@ public class MSBuildArgs
         {
             newRestoreProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(GlobalProperties, newRestoreProperties.ToFrozenDictionary(newRestoreProperties.Comparer), OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, newRestoreProperties.ToFrozenDictionary(newRestoreProperties.Comparer), RequestedTargets, OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalProperties(FrozenDictionary<string, string>? additionalProperties)
@@ -97,11 +119,11 @@ public class MSBuildArgs
         if (additionalProperties is null || additionalProperties.Count == 0)
         {
             // If there are no additional properties, we can just return the current instance.
-            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
         }
         if (GlobalProperties is null)
         {
-            return new MSBuildArgs(additionalProperties, RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
+            return new MSBuildArgs(additionalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
         }
 
         var newProperties = new Dictionary<string, string>(GlobalProperties, StringComparer.OrdinalIgnoreCase);
@@ -109,7 +131,15 @@ public class MSBuildArgs
         {
             newProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(newProperties.ToFrozenDictionary(newProperties.Comparer), RestoreGlobalProperties, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(newProperties.ToFrozenDictionary(newProperties.Comparer), RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+    }
+
+    public MSBuildArgs CloneWithAdditionalTarget(string additionalTarget)
+    {
+        string[] newTargets = RequestedTargets is not null
+            ? [.. RequestedTargets, additionalTarget]
+            : [ additionalTarget ];
+        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, newTargets, OtherMSBuildArgs.ToArray());
     }
 
     public void ApplyPropertiesToRestore()
@@ -130,26 +160,5 @@ public class MSBuildArgs
             }
             RestoreGlobalProperties = newdict.ToFrozenDictionary(newdict.Comparer);
         }
-    }
-
-    private static FrozenDictionary<string, string>? ParseProperties(
-        string[]? properties)
-    {
-        if (properties is null || properties.Length == 0)
-        {
-            return null;
-        }
-
-        var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var propertyExpression in properties)
-        {
-            foreach (var kvp in MSBuildPropertyParser.ParseProperties(propertyExpression))
-            {
-                // msbuild properties explicitly have the semantic of being 'overwrite' so we do not check for duplicates
-                // and just overwrite the value if it already exists.
-                dictionary[kvp.key] = kvp.value;
-            }
-        }
-        return dictionary.ToFrozenDictionary(dictionary.Comparer);
     }
 }

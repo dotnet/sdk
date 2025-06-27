@@ -47,11 +47,7 @@ public class PublishCommand : RestoringCommand
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedOptions, .. binLogArgs, "--property:_IsPublishing=true"], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
-            if (!parseResult.HasOption(PublishCommandParser.ConfigurationOption))
-            {
-                msbuildArgs.OtherMSBuildArgs.Add("-p:Configuration=Release");
-            }
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedOptions, .. binLogArgs, "--property:_IsPublishing=true"], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption);
 
             msbuildArgs.OtherMSBuildArgs.AddRange(binLogArgs);
 
@@ -62,7 +58,6 @@ public class PublishCommand : RestoringCommand
                 NoBuild = noBuild,
                 NoRestore = noRestore,
                 NoCache = true,
-                BuildTarget = "Publish",
             };
         }
         else
@@ -76,11 +71,11 @@ public class PublishCommand : RestoringCommand
              );
             var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([
                 .. forwardedOptions,
-            ..args,
-            "-target:Publish",
-            "--property:_IsPublishing=true",
-            ..projectLocator.GetCustomDefaultConfigurationValueIfSpecified()
-            ], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+                ..args,
+                "--property:_IsPublishing=true",
+                ..projectLocator.GetCustomDefaultConfigurationValueIfSpecified()
+            ],
+            CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption);
 
             return new PublishCommand(
                 msbuildArgs,

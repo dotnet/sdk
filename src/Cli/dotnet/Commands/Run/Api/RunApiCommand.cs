@@ -86,7 +86,7 @@ internal abstract class RunApiInput
 
         public override RunApiOutput Execute()
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(["-verbosity:quiet"], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+            var msbuildArgs = MSBuildArgs.FromOtherArgs("-verbosity:quiet");
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: EntryPointFileFullPath,
                 msbuildArgs: msbuildArgs)

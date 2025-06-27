@@ -129,8 +129,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoRestore { get; init; }
     public bool NoCache { get; init; }
     public bool NoBuild { get; init; }
-    public string BuildTarget { get; init; } = "Build";
-
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
@@ -207,7 +205,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
-                    targetsToBuild: [BuildTarget]);
+                    targetsToBuild: MSBuildArgs.RequestedTargets ?? ["Build"]);
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
@@ -496,7 +494,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: GetArtifactsPath(),
-                includeRuntimeConfigInformation: BuildTarget != "Publish");
+                includeRuntimeConfigInformation: !MSBuildArgs.RequestedTargets?.Contains("Publish") ?? true);
             var projectFileText = projectFileWriter.ToString();
 
             using var reader = new StringReader(projectFileText);
