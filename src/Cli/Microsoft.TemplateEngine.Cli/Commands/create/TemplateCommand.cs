@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal class TemplateCommand : Command
     {
         private static readonly TimeSpan ConstraintEvaluationTimeout = TimeSpan.FromMilliseconds(1000);
-        private static readonly string[] _helpAliases = new[] { "-h", "/h", "--help", "-?", "/?" };
+        private static readonly string[] _helpAliases = ["-h", "/h", "--help", "-?", "/?"];
         private readonly TemplatePackageManager _templatePackageManager;
         private readonly IEngineEnvironmentSettings _environmentSettings;
         private readonly BaseCommand _instantiateCommand;
@@ -177,7 +177,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Task<(string Id, string Version, string Provider)> builtInPackageCheck = packageCoordinator.ValidateBuiltInPackageAvailabilityAsync(args.Template, cancellationToken);
             Task<CheckUpdateResult?> checkForUpdateTask = packageCoordinator.CheckUpdateForTemplate(args, cancellationToken);
 
-            Task[] tasksToWait = new Task[] { instantiateTask, builtInPackageCheck, checkForUpdateTask };
+            Task[] tasksToWait = [instantiateTask, builtInPackageCheck, checkForUpdateTask];
 
             await Task.WhenAll(tasksToWait).ConfigureAwait(false);
             Reporter.Output.WriteLine();

@@ -39,18 +39,19 @@ public class InternalReportInstallSuccessCommand
 
     internal class ThreadBlockingTelemetry : ITelemetry
     {
-        private readonly Telemetry.Telemetry telemetry;
+        private readonly Telemetry.Telemetry _telemetry;
 
         internal ThreadBlockingTelemetry()
         {
             var sessionId = Environment.GetEnvironmentVariable(TelemetrySessionIdEnvironmentVariableName);
-            telemetry = new Telemetry.Telemetry(sessionId);
+            _telemetry = new Telemetry.Telemetry(sessionId);
         }
-        public bool Enabled => telemetry.Enabled;
+
+        public bool Enabled => _telemetry.Enabled;
 
         public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
         {
-            telemetry.ThreadBlockingTrackEvent(eventName, properties, measurements);
+            _telemetry.ThreadBlockingTrackEvent(eventName, properties, measurements);
         }
     }
 }

@@ -119,7 +119,7 @@ public class Program
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
         {
-            // If telemetry object has not been initialized yet. It cannot be collected
+            // If _telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
 
@@ -237,7 +237,7 @@ public class Program
         // Set the display name to the full command name
         activity.DisplayName = name;
 
-        // Set the command name as an attribute for better filtering in telemetry
+        // Set the command name as an attribute for better filtering in _telemetry
         activity.SetTag("command.name", name);
     }
 
