@@ -84,11 +84,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
 
-        IToolPackage toolPackage;
-
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
+        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
             {

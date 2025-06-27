@@ -276,7 +276,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--yes", "--add-source", toolPackagesPath)
+            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--add-source", toolPackagesPath)
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
@@ -304,7 +304,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var testDirectory = _testAssetsManager.CreateTestDirectory();
             var homeFolder = Path.Combine(testDirectory.Path, "home");
 
-            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--yes", "--add-source", toolPackagesPath)
+            new DotnetToolCommand(Log, "exec", toolSettings.ToolPackageId, "--verbosity", "diagnostic", "--yes", "--add-source", toolPackagesPath)
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
                 .Execute()
