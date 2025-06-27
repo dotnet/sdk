@@ -101,43 +101,41 @@ public class Program
 
         InitializeProcess();
 
-            try
-            {
-                var exitCode = ProcessArgs(args);
-                _mainActivity.AddTag("process.exit.code", exitCode);
-                _mainActivity.SetStatus(ActivityStatusCode.Ok);
-                return exitCode;
-            }
-            catch (Exception e) when (e.ShouldBeDisplayedAsError())
-            {
-                Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
-                    ? e.ToString().Red().Bold()
-                    : e.Message.Red().Bold());
-
-                var commandParsingException = e as CommandParsingException;
-                if (commandParsingException != null && commandParsingException.ParseResult != null)
-                {
-                    commandParsingException.ParseResult.ShowHelp();
-                }
-                _mainActivity.AddTag("process.exit.code", exitCode);
-                _mainActivity.SetStatus(ActivityStatusCode.Error);
-                return 1;
-            }
-            catch (Exception e) when (!e.ShouldBeDisplayedAsError())
-            {
-                // If telemetry object has not been initialized yet. It cannot be collected
-                TelemetryEventEntry.SendFiltered(e);
-                Reporter.Error.WriteLine(e.ToString().Red().Bold());
-                _mainActivity.AddTag("process.exit.code", exitCode);
-                _mainActivity.SetStatus(ActivityStatusCode.Error);
-                return 1;
-            }
-            finally
-            {
-            Shutdown(default!);
-            }
+        try
+        {
+            var exitCode = ProcessArgs(args);
+            _mainActivity.AddTag("process.exit.code", exitCode);
+            _mainActivity.SetStatus(ActivityStatusCode.Ok);
+            return exitCode;
         }
+        catch (Exception e) when (e.ShouldBeDisplayedAsError())
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose
+                ? e.ToString().Red().Bold()
+                : e.Message.Red().Bold());
 
+            var commandParsingException = e as CommandParsingException;
+            if (commandParsingException != null && commandParsingException.ParseResult != null)
+            {
+                commandParsingException.ParseResult.ShowHelp();
+            }
+            _mainActivity.AddTag("process.exit.code", exitCode);
+            _mainActivity.SetStatus(ActivityStatusCode.Error);
+            return 1;
+        }
+        catch (Exception e) when (!e.ShouldBeDisplayedAsError())
+        {
+            // If telemetry object has not been initialized yet. It cannot be collected
+            TelemetryEventEntry.SendFiltered(e);
+            Reporter.Error.WriteLine(e.ToString().Red().Bold());
+            _mainActivity.AddTag("process.exit.code", exitCode);
+            _mainActivity.SetStatus(ActivityStatusCode.Error);
+            return 1;
+        }
+        finally
+        {
+            Shutdown(default!);
+        }
     }
 
     public static void Shutdown(PosixSignalContext context)
@@ -258,7 +256,7 @@ public class Program
         // Set the display name to the full command name
         activity.DisplayName = name;
 
-        // Set the command name as an attribute for better filtering in telemetry
+        // Set the command name as an attribute for better filtering in _telemetry
         activity.SetTag("command.name", name);
     }
 

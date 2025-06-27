@@ -1,19 +1,16 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
-    private readonly ITelemetry _telemetry;
+    private readonly ITelemetry? _telemetry;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -52,8 +49,7 @@ public sealed class MSBuildLogger : INodeLogger
     {
         try
         {
-            string sessionId =
-                Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
+            string? sessionId = Environment.GetEnvironmentVariable(MSBuildForwardingApp.TelemetrySessionIdEnvironmentVariableName);
 
             if (sessionId != null)
             {
@@ -62,7 +58,7 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during telemetry shouldn't cause anything else to fail
+            // Exceptions during _telemetry shouldn't cause anything else to fail
         }
     }
 
@@ -92,18 +88,18 @@ public sealed class MSBuildLogger : INodeLogger
         }
         catch (Exception)
         {
-            // Exceptions during telemetry shouldn't cause anything else to fail
+            // Exceptions during _telemetry shouldn't cause anything else to fail
         }
     }
 
-    internal static void FormatAndSend(ITelemetry telemetry, TelemetryEventArgs args)
+    internal static void FormatAndSend(ITelemetry? telemetry, TelemetryEventArgs args)
     {
         switch (args.EventName)
         {
             case TargetFrameworkTelemetryEventName:
                 {
                     var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
-                    Dictionary<string, string> maskedProperties = [];
+                    Dictionary<string, string?> maskedProperties = [];
 
                     foreach (var key in new[] {
                         TargetFrameworkVersionTelemetryPropertyKey,
@@ -115,13 +111,13 @@ public sealed class MSBuildLogger : INodeLogger
                         ArtifactsPathLocationTypeTelemetryPropertyKey
                     })
                     {
-                        if (args.Properties.TryGetValue(key, out string value))
+                        if (args.Properties.TryGetValue(key, out string? value) && value is not null)
                         {
                             maskedProperties.Add(key, Sha256Hasher.HashWithNormalizedCasing(value));
                         }
                     }
 
-                    telemetry.TrackEvent(newEventName, maskedProperties, measurements: null);
+                    telemetry?.TrackEvent(newEventName, maskedProperties, measurements: null);
                     break;
                 }
             case BuildTelemetryEventName:
@@ -165,38 +161,38 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
-    private static void TrackEvent(ITelemetry telemetry, string eventName, IDictionary<string, string> eventProperties, string[] toBeHashed, string[] toBeMeasured)
+    private static void TrackEvent(ITelemetry? telemetry, string eventName, IDictionary<string, string?> eventProperties, string[] toBeHashed, string[] toBeMeasured)
     {
-        Dictionary<string, string> properties = null;
-        Dictionary<string, double> measurements = null;
+        Dictionary<string, string?>? properties = null;
+        Dictionary<string, double>? measurements = null;
 
         foreach (var propertyToBeHashed in toBeHashed)
         {
-            if (eventProperties.TryGetValue(propertyToBeHashed, out string value))
+            if (eventProperties.TryGetValue(propertyToBeHashed, out string? value) && value is not null)
             {
-                // Lets lazy allocate in case there is tons of telemetry
-                properties ??= new Dictionary<string, string>(eventProperties);
+                // Lets lazy allocate in case there is tons of _telemetry
+                properties ??= new Dictionary<string, string?>(eventProperties);
                 properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
             }
         }
 
         foreach (var propertyToBeMeasured in toBeMeasured)
         {
-            if (eventProperties.TryGetValue(propertyToBeMeasured, out string value))
+            if (eventProperties.TryGetValue(propertyToBeMeasured, out string? value))
             {
-                // Lets lazy allocate in case there is tons of telemetry
-                properties ??= new Dictionary<string, string>(eventProperties);
+                // Lets lazy allocate in case there is tons of _telemetry
+                properties ??= new Dictionary<string, string?>(eventProperties);
                 properties.Remove(propertyToBeMeasured);
                 if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                 {
-                    // Lets lazy allocate in case there is tons of telemetry
+                    // Lets lazy allocate in case there is tons of _telemetry
                     measurements ??= [];
                     measurements[propertyToBeMeasured] = realValue;
                 }
             }
         }
 
-        telemetry.TrackEvent(eventName, properties ?? eventProperties, measurements);
+        telemetry?.TrackEvent(eventName, properties ?? eventProperties, measurements);
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
@@ -210,5 +206,5 @@ public sealed class MSBuildLogger : INodeLogger
 
     public LoggerVerbosity Verbosity { get; set; }
 
-    public string Parameters { get; set; }
+    public string? Parameters { get; set; }
 }
