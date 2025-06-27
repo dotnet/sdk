@@ -137,6 +137,11 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
         var package = localRepository.FindPackage(packageId.ToString(), version);
 
+        if (verbosity.IsDetailedOrDiagnostic())
+        {
+            Reporter.Output.WriteLine($"Locating package {packageId}@{version} in package store {packagesRootPath.Value}");
+            Reporter.Output.WriteLine($"The package has {string.Join(',', package.Nuspec.GetPackageTypes().Select(p => $"{p.Name},{p.Version}"))} package types");
+        }
         if (!package.Nuspec.GetPackageTypes().Any(pt => pt.Name.Equals(PackageType.DotnetTool.Name, StringComparison.OrdinalIgnoreCase) ||
                                                         pt.Name.Equals("DotnetToolRidPackage", StringComparison.OrdinalIgnoreCase)))
         {
