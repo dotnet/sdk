@@ -18,8 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WarningsAsErrors>$(WarningsAsErrors);NU1605</WarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup>
-    <DefineConstants Condition=" '$(DefineConstants)' != '' ">$(DefineConstants);</DefineConstants>
-    <DefineConstants>$(DefineConstants)TRACE</DefineConstants>
+    <DefineConstants Condition=" '$(DefineConstants)' != '' ">$(DefineConstants);TRACE</DefineConstants>
   </PropertyGroup>
 
   <!-- Implicit imports -->
