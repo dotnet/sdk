@@ -30,7 +30,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
 
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. binLogArgs, "-target:Clean", "-verbosity:normal", .. forwardedArgs,], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(["-target:Clean", "-verbosity:normal", .. binLogArgs, .. forwardedArgs,], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
 
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
@@ -45,7 +45,7 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
         }
         else
         {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. args, "-target:Clean", "-verbosity:normal", .. forwardedArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([ "-target:Clean", "-verbosity:normal", .. forwardedArgs, .. args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
             return new CleanCommand(msbuildArgs, msbuildPath);
         }
     }
