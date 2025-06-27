@@ -3,6 +3,7 @@
 
 using System.Collections.Frozen;
 using System.Collections.Immutable;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
@@ -43,7 +44,7 @@ public class RunCommand
     /// </summary>
     public bool ReadCodeFromStdin { get; }
 
-    public FrozenDictionary<string, string>? RestoreProperties { get; }
+    public ReadOnlyDictionary<string, string>? RestoreProperties { get; }
 
     /// <summary>
     /// unparsed/arbitrary CLI tokens to be passed to the running application
@@ -102,7 +103,7 @@ public class RunCommand
         string[] applicationArgs,
         bool readCodeFromStdin,
         IReadOnlyDictionary<string, string> environmentVariables,
-        FrozenDictionary<string, string>? msbuildRestoreProperties)
+        ReadOnlyDictionary<string, string>? msbuildRestoreProperties)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);

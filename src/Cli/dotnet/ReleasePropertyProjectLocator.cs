@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
 using Microsoft.Build.Execution;
@@ -105,7 +105,7 @@ internal class ReleasePropertyProjectLocator
     /// </summary>
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
-    public ProjectInstance? GetTargetedProject(FrozenDictionary<string, string>? globalProps)
+    public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps)
     {
         foreach (string arg in _slnOrProjectArgs.Append(Directory.GetCurrentDirectory()))
         {
@@ -139,7 +139,7 @@ internal class ReleasePropertyProjectLocator
 
     /// <returns>An arbitrary existant project in a solution file. Returns null if no projects exist.
     /// Throws exception if two+ projects disagree in PublishRelease, PackRelease, or whatever _propertyToCheck is, and have it defined.</returns>
-    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, FrozenDictionary<string, string>? globalProps)
+    public ProjectInstance? GetArbitraryProjectFromSolution(string slnPath, ReadOnlyDictionary<string, string>? globalProps)
     {
         string slnFullPath = Path.GetFullPath(slnPath);
         if (!Path.Exists(slnFullPath))
@@ -209,7 +209,7 @@ internal class ReleasePropertyProjectLocator
     /// <param name="solution">The solution to get an arbitrary project from.</param>
     /// <param name="globalProps">The global properties to load into the project.</param>
     /// <returns>null if no project exists in the solution that can be evaluated properly. Else, the first project in the solution that can be.</returns>
-    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, FrozenDictionary<string, string>? globalProps)
+    private ProjectInstance? GetSingleProjectFromSolution(SolutionModel sln, string slnPath, ReadOnlyDictionary<string, string>? globalProps)
     {
         foreach (var project in sln.SolutionProjects.AsEnumerable())
         {
@@ -241,7 +241,7 @@ internal class ReleasePropertyProjectLocator
     }
 
     /// <returns>Creates a ProjectInstance if the project is valid, elsewise, fails.</returns>
-    private static ProjectInstance? TryGetProjectInstance(string projectPath, FrozenDictionary<string, string>? globalProperties)
+    private static ProjectInstance? TryGetProjectInstance(string projectPath, ReadOnlyDictionary<string, string>? globalProperties)
     {
         try
         {
@@ -267,7 +267,7 @@ internal class ReleasePropertyProjectLocator
     }
 
     /// <returns>A case-insensitive dictionary of any properties passed from the user and their values.</returns>
-    private FrozenDictionary<string, string>? GetUserSpecifiedExplicitMSBuildProperties() => _parseResult.GetValue(CommonOptions.PropertiesOption);
+    private ReadOnlyDictionary<string, string>? GetUserSpecifiedExplicitMSBuildProperties() => _parseResult.GetValue(CommonOptions.PropertiesOption);
 
     /// <summary>
     /// Because command-line options that translate to MSBuild properties aren't in the global arguments from Properties, we need to add the TargetFramework to the collection.
@@ -276,13 +276,13 @@ internal class ReleasePropertyProjectLocator
     /// </summary>
     /// <param name="oldGlobalProperties">The set of MSBuild properties that were specified explicitly like -p:Property=Foo or in other syntax sugars.</param>
     /// <returns>The same set of global properties for the project, but with the new potential TFM based on -f or --framework.</returns>
-    private FrozenDictionary<string, string>? InjectTargetFrameworkIntoGlobalProperties(FrozenDictionary<string, string>? globalProperties)
+    private ReadOnlyDictionary<string, string>? InjectTargetFrameworkIntoGlobalProperties(ReadOnlyDictionary<string, string>? globalProperties)
     {
         if (globalProperties is null || globalProperties.Count == 0)
         {
             if (_options.FrameworkOption != null)
             {
-                return FrozenDictionary.Create(new KeyValuePair<string, string>(MSBuildPropertyNames.TARGET_FRAMEWORK, _options.FrameworkOption));
+                return new(new Dictionary<string, string>() { [MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption });
             }
             return null;
         }
@@ -295,6 +295,6 @@ internal class ReleasePropertyProjectLocator
         // Note: dotnet -f FRAMEWORK_1 --property:TargetFramework=FRAMEWORK_2 will use FRAMEWORK_1.
         // So we can replace the value in the globals non-dubiously if it exists.
         newDictionary[MSBuildPropertyNames.TARGET_FRAMEWORK] = _options.FrameworkOption;
-        return newDictionary.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        return new(newDictionary);
     }
 }

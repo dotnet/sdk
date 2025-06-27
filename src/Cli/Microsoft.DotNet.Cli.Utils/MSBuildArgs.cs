@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Utils;
@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public sealed class MSBuildArgs
 {
-    private MSBuildArgs(FrozenDictionary<string, string>? properties, FrozenDictionary<string, string>? restoreProperties, string[]? targets, string[]? otherMSBuildArgs)
+    private MSBuildArgs(ReadOnlyDictionary<string, string>? properties, ReadOnlyDictionary<string, string>? restoreProperties, string[]? targets, string[]? otherMSBuildArgs)
     {
         GlobalProperties = properties;
         RestoreGlobalProperties = restoreProperties;
@@ -24,12 +24,12 @@ public sealed class MSBuildArgs
     /// <summary>
     /// The set of <c>-p</c> flags that should be passed to MSBuild.
     /// </summary>
-    public FrozenDictionary<string, string>? GlobalProperties { get; }
+    public ReadOnlyDictionary<string, string>? GlobalProperties { get; }
     /// <summary>
     /// The set of <c>-rp</c> flags that should be passed to MSBuild for restore operations only.
     /// If this is non-empty, all <see cref="GlobalProperties"/> flags should be passed as <c>-rp</c> as well.
     /// </summary>
-    public FrozenDictionary<string, string>? RestoreGlobalProperties { get; private set; }
+    public ReadOnlyDictionary<string, string>? RestoreGlobalProperties { get; private set; }
 
     /// <summary>
     /// The ordered list of targets that should be passed to MSBuild.
@@ -47,7 +47,7 @@ public sealed class MSBuildArgs
     /// </summary>
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
     /// <returns></returns>
-    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, Option<FrozenDictionary<string, string>?> propertiesOption, Option<FrozenDictionary<string, string>?> restorePropertiesOption, Option<string[]?>? targetsOption)
+    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, Option<ReadOnlyDictionary<string, string>?> propertiesOption, Option<ReadOnlyDictionary<string, string>?> restorePropertiesOption, Option<string[]?>? targetsOption)
     {
         var fakeCommand = new System.CommandLine.Command("dotnet") {
             propertiesOption,
@@ -73,7 +73,7 @@ public sealed class MSBuildArgs
             otherMSBuildArgs: otherMSBuildArgs);
     }
 
-    public static MSBuildArgs FromProperties(FrozenDictionary<string, string>? properties)
+    public static MSBuildArgs FromProperties(ReadOnlyDictionary<string, string>? properties)
     {
         return new MSBuildArgs(properties, null, null, null);
     }
@@ -94,7 +94,7 @@ public sealed class MSBuildArgs
             otherMSBuildArgs: newArgs);
     }
 
-    public MSBuildArgs CloneWithAdditionalRestoreProperties(FrozenDictionary<string, string>? additionalRestoreProperties)
+    public MSBuildArgs CloneWithAdditionalRestoreProperties(ReadOnlyDictionary<string, string>? additionalRestoreProperties)
     {
         if (additionalRestoreProperties is null || additionalRestoreProperties.Count == 0)
         {
@@ -111,10 +111,10 @@ public sealed class MSBuildArgs
         {
             newRestoreProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(GlobalProperties, newRestoreProperties.ToFrozenDictionary(newRestoreProperties.Comparer), RequestedTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, new (newRestoreProperties), RequestedTargets, OtherMSBuildArgs.ToArray());
     }
 
-    public MSBuildArgs CloneWithAdditionalProperties(FrozenDictionary<string, string>? additionalProperties)
+    public MSBuildArgs CloneWithAdditionalProperties(ReadOnlyDictionary<string, string>? additionalProperties)
     {
         if (additionalProperties is null || additionalProperties.Count == 0)
         {
@@ -131,7 +131,7 @@ public sealed class MSBuildArgs
         {
             newProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(newProperties.ToFrozenDictionary(newProperties.Comparer), RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(new(newProperties), RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalTarget(string additionalTarget)
@@ -158,7 +158,7 @@ public sealed class MSBuildArgs
             {
                 newdict[restoreKvp.Key] = restoreKvp.Value;
             }
-            RestoreGlobalProperties = newdict.ToFrozenDictionary(newdict.Comparer);
+            RestoreGlobalProperties = new(newdict);
         }
     }
 }

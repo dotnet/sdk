@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Utils;
@@ -18,13 +19,13 @@ public class RestoringCommand : MSBuildForwardingApp
     /// during Restore, and can often cause performance issues by globbing across the
     /// entire workspace.
     /// </summary>
-    public static FrozenDictionary<string, string> RestoreOptimizationProperties =>
-        new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+    public static ReadOnlyDictionary<string, string> RestoreOptimizationProperties =>
+        new(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
             { Constants.EnableDefaultItems, "false" },
             { Constants.EnableDefaultEmbeddedResourceItems, "false" },
             { Constants.EnableDefaultNoneItems, "false" },
-        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        });
 
     public MSBuildForwardingApp? SeparateRestoreCommand { get; }
 
@@ -118,9 +119,10 @@ public class RestoringCommand : MSBuildForwardingApp
         (var newArgumentsToAdd, var existingArgumentsToForward) = ProcessForwardedArgumentsForSeparateRestore(msbuildArgs);
         // we need to strip the properties from GlobalProperties that are excluded from restore
         // and create a new MSBuildArgs instance that will be used for the separate restore command
-        var restoreProperties = msbuildArgs.GlobalProperties?
-            .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))
-            .ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
+        ReadOnlyDictionary<string, string> restoreProperties =
+            msbuildArgs.GlobalProperties?
+            .Where(kvp => !IsPropertyExcludedFromRestore(kvp.Key))?
+            .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase) is { } filteredList ? new(filteredList): ReadOnlyDictionary<string, string>.Empty;
         var restoreMSBuildArgs =
             MSBuildArgs.FromProperties(RestoreOptimizationProperties)
                        .CloneWithAdditionalTarget("Restore")
