@@ -183,8 +183,9 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("net5.0", true)]
         [InlineData("net6.0", false)]
         [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for trimming
-        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for trimming and targeting.
-        [InlineData("netstandard2.0;net8.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
+        [InlineData("netstandard2.0;net6.0", false)] // net6.0 is the min TFM supported for trimming and targeting.
+        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for trimming and targeting.
+        [InlineData("netstandard2.0;net9.0", true)] // Net8.0 is supported for trimming, but leaves a "gap" for the supported net6.0/net7.0 TFMs.
         [InlineData("alias-ns2", true)]
         [InlineData("alias-n6", false)]
         [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
@@ -208,7 +209,7 @@ namespace Microsoft.NET.Publish.Tests
                     // Note: can't check for Strings.IsTrimmableUnsupported because each line of
                     // the message gets prefixed with a file path by MSBuild.
                     .And.HaveStdOutContaining($"warning NETSDK1212")
-                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net6.0'))\">true</IsTrimmable>");
+                    .And.HaveStdOutContaining($"<IsTrimmable Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</IsTrimmable>");
             } else {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
