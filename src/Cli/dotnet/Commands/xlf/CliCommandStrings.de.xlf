@@ -1443,7 +1443,7 @@ Erstellen Sie eindeutige Profilnamen.</target>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
-        <target state="new">The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</target>
+        <target state="translated">Die Direktive bei "{2}" sollte einen Namen ohne Sonderzeichen und einen optionalen Wert enthalten, die durch "{1}" wie "#:{0} Name{1}Wert" getrennt ist.</target>
         <note>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</note>
       </trans-unit>
       <trans-unit id="InvalidFilePath">
