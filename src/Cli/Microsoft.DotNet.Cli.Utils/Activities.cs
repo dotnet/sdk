@@ -10,7 +10,6 @@ namespace Microsoft.DotNet.Cli.Utils;
 /// </summary>
 public static class Activities
 {
-
     /// <summary>
     /// The main entrypoint for creating <see cref="Activity">Activities</see> in the .NET CLI.
     /// All activities created in the CLI should use this <see cref="ActivitySource"/>, to allow

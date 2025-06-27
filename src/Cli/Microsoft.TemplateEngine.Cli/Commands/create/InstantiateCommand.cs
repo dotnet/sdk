@@ -51,13 +51,13 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             Arity = new ArgumentArity(0, 999)
         };
 
-        internal IReadOnlyList<Option> PassByOptions { get; } = new Option[]
-        {
+        internal IReadOnlyList<Option> PassByOptions { get; } =
+        [
             SharedOptions.ForceOption,
             SharedOptions.NameOption,
             SharedOptions.DryRunOption,
             SharedOptions.NoUpdateCheckOption
-        };
+        ];
 
         internal static Task<NewCommandStatus> ExecuteAsync(
             NewCommandArgs newCommandArgs,
@@ -116,7 +116,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     templateGroup,
                     candidates);
             }
-            return new HashSet<TemplateCommand>();
+            return [];
         }
 
         internal static void HandleNoMatchingTemplateGroup(InstantiateCommandArgs instantiateArgs, IEnumerable<TemplateGroup> templateGroups, IReporter reporter)

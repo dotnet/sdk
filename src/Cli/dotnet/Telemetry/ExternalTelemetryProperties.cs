@@ -10,7 +10,7 @@ using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Telemetry;
 
-// Some properties we need for telemetry, that don't yet have suitable
+// Some properties we need for _telemetry, that don't yet have suitable
 // public API
 internal static class ExternalTelemetryProperties
 {
@@ -32,7 +32,7 @@ internal static class ExternalTelemetryProperties
         {
             return (string)Registry.GetValue(Key, ValueName, defaultValue: "");
         }
-        // Catch everything: this is for telemetry only.
+        // Catch everything: this is for _telemetry only.
         catch (Exception e)
         {
             Debug.Assert(e is ArgumentException | e is SecurityException | e is InvalidCastException);
@@ -64,7 +64,7 @@ internal static class ExternalTelemetryProperties
                 return productType.ToString("D", CultureInfo.InvariantCulture);
             }
         }
-        // Catch everything: this is for telemetry only
+        // Catch everything: this is for _telemetry only
         catch (Exception e)
         {
             Debug.Assert(false, $"Unexpected exception from GetProductInfo: ${e.GetType().Name}: ${e.Message}");
@@ -95,7 +95,7 @@ internal static class ExternalTelemetryProperties
         {
             return Marshal.PtrToStringUTF8(gnu_get_libc_release());
         }
-        // Catch everything: this is for telemetry only
+        // Catch everything: this is for _telemetry only
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
@@ -119,7 +119,7 @@ internal static class ExternalTelemetryProperties
         {
             return Marshal.PtrToStringUTF8(gnu_get_libc_version());
         }
-        // Catch everything: this is for telemetry only
+        // Catch everything: this is for _telemetry only
         catch (Exception e)
         {
             Debug.Assert(e is DllNotFoundException || e is EntryPointNotFoundException);
