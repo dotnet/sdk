@@ -24,7 +24,7 @@ internal static class RestoreCommandParser
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption("Restore");
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
 
     private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(

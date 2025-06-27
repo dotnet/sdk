@@ -32,7 +32,7 @@ internal static class CleanCommandParser
 
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.CleanConfigurationOptionDescription);
 
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption("Clean");
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Clean");
 
     public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
 

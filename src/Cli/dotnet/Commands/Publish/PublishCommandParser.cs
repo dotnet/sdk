@@ -54,7 +54,7 @@ internal static class PublishCommandParser
     public static readonly Option<string> FrameworkOption = CommonOptions.FrameworkOption(CliCommandStrings.PublishFrameworkOptionDescription);
 
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PublishConfigurationOptionDescription);
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption("Publish");
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Publish");
 
     private static readonly Command Command = ConstructCommand();
 

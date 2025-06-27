@@ -153,8 +153,8 @@ internal static class TestCommandParser
     public static readonly Option ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.TestConfigurationOptionDescription);
 
     public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.minimal);
-    public static readonly Option<string[]?> VsTestTargetOption = CommonOptions.MSBuildTargetOption("VSTest");
-    public static readonly Option<string[]?> MTPTargetOption = CommonOptions.MSBuildTargetOption(CliConstants.MTPTarget);
+    public static readonly Option<string[]> VsTestTargetOption = CommonOptions.RequiredMSBuildTargetOption("VSTest");
+    public static readonly Option<string[]> MTPTargetOption = CommonOptions.RequiredMSBuildTargetOption(CliConstants.MTPTarget);
 
 
     private static readonly Command Command = ConstructCommand();
