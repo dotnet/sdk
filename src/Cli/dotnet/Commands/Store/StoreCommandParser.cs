@@ -66,7 +66,7 @@ internal static class StoreCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
-    public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption("ComposeStore");
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("ComposeStore");
 
     private static readonly Command Command = ConstructCommand();
 

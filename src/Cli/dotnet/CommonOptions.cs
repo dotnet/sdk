@@ -71,17 +71,19 @@ internal static class CommonOptions
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
+            DefaultValueFactory = _ => defaultTargetName is not null ? [defaultTargetName] : null,
             CustomParser = (result) =>
                 {
                     if (result.Tokens.Count == 0)
                     {
                         return defaultTargetName is not null ? [defaultTargetName] : null;
                     }
-                    return defaultTargetName is not null ? [ defaultTargetName, ..result.Tokens.Select(t => t.Value) ] : [..result.Tokens.Select(t => t.Value) ];
+                    return defaultTargetName is not null ? [defaultTargetName, .. result.Tokens.Select(t => t.Value)] : [.. result.Tokens.Select(t => t.Value)];
                 },
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
+        .ForwardAsMany(targets => targets is null ? Enumerable.Empty<string>() : [$"--target:{string.Join(";", targets)}"])
         .AllowSingleArgPerToken();
 
         public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
@@ -96,11 +98,12 @@ internal static class CommonOptions
                     {
                         return [defaultTargetName];
                     }
-                    return [ defaultTargetName, ..result.Tokens.Select(t => t.Value) ];
+                    return [defaultTargetName, .. result.Tokens.Select(t => t.Value)];
                 },
                 Hidden = true,
                 Arity = ArgumentArity.ZeroOrMore
             }
+            .ForwardAsSingle(targets => $"--target:{string.Join(";", targets)}")
             .AllowSingleArgPerToken();
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>

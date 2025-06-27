@@ -3,6 +3,7 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.CommandLine.Parsing;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
@@ -47,24 +48,22 @@ public sealed class MSBuildArgs
     /// </summary>
     /// <param name="forwardedAndUserFacingArgs">the complete set of forwarded MSBuild arguments and un-parsed, potentially MSBuild-relevant arguments</param>
     /// <returns></returns>
-    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, Option<ReadOnlyDictionary<string, string>?> propertiesOption, Option<ReadOnlyDictionary<string, string>?> restorePropertiesOption, Option<string[]?>? targetsOption)
+    public static MSBuildArgs AnalyzeMSBuildArguments(IEnumerable<string> forwardedAndUserFacingArgs, params Option[] options)
     {
-        var fakeCommand = new System.CommandLine.Command("dotnet") {
-            propertiesOption,
-            restorePropertiesOption,
-        };
-        if (targetsOption is not null)
+        var fakeCommand = new System.CommandLine.Command("dotnet");
+        foreach (var option in options)
         {
-            fakeCommand.Options.Add(targetsOption);
+            fakeCommand.Options.Add(option);
         }
+
         var propertyParsingConfiguration = new CommandLineConfiguration(fakeCommand)
         {
             EnablePosixBundling = false
         };
         var parseResult = propertyParsingConfiguration.Parse([..forwardedAndUserFacingArgs]);
-        var globalProperties = parseResult.GetValue(propertiesOption);
-        var restoreProperties = parseResult.GetValue(restorePropertiesOption);
-        var requestedTargets = targetsOption is not null ? parseResult.GetValue(targetsOption) : null;
+        var globalProperties = parseResult.GetResult("--property") is OptionResult propResult ? propResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
+        var restoreProperties = parseResult.GetResult("--restoreProperty") is OptionResult restoreResult ? restoreResult.GetValueOrDefault<ReadOnlyDictionary<string, string>?>() : null;
+        var requestedTargets = parseResult.GetResult("--target") is OptionResult targetResult ? targetResult.GetValueOrDefault<string[]?>() : null;
         var otherMSBuildArgs = parseResult.UnmatchedTokens.ToArray();
         return new MSBuildArgs(
             properties: globalProperties,
@@ -72,6 +71,7 @@ public sealed class MSBuildArgs
             targets: requestedTargets,
             otherMSBuildArgs: otherMSBuildArgs);
     }
+
 
     public static MSBuildArgs FromProperties(ReadOnlyDictionary<string, string>? properties)
     {
