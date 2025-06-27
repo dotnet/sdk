@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -20,9 +21,9 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         };
 
-    public static Option<FrozenDictionary<string, string>?> PropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<FrozenDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
@@ -35,9 +36,9 @@ internal static class CommonOptions
     /// </summary>
     /// <remarks>
     /// </remarks>
-    public static Option<FrozenDictionary<string, string>?> RestorePropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<FrozenDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
@@ -46,7 +47,7 @@ internal static class CommonOptions
         .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    private static FrozenDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
+    private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
     {
         if (result.Tokens.Count == 0)
         {
@@ -62,7 +63,7 @@ internal static class CommonOptions
                 dictionary[kvp.key] = kvp.value;
             }
         }
-        return dictionary.ToFrozenDictionary(dictionary.Comparer);
+        return new(dictionary);
     }
 
     public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null) =>

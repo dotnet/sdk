@@ -236,7 +236,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             consoleLogger.Shutdown();
         }
 
-        static Action<IDictionary<string, string>> AddRestoreGlobalProperties(FrozenDictionary<string, string>? restoreProperties)
+        static Action<IDictionary<string, string>> AddRestoreGlobalProperties(ReadOnlyDictionary<string, string>? restoreProperties)
         {
             return globalProperties =>
             {
@@ -291,8 +291,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     private RunFileBuildCacheEntry ComputeCacheEntry(out FileInfo entryPointFileInfo)
     {
-        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary(MSBuildArgs.GlobalProperties.Comparer)
-            ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
+        var cacheEntry = new RunFileBuildCacheEntry(MSBuildArgs.GlobalProperties?.ToDictionary(StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase));
         entryPointFileInfo = new FileInfo(EntryPointFileFullPath);
 
         // Collect current implicit build files.

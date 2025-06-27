@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -22,7 +23,7 @@ internal static class RunCommandParser
         HelpName = CliCommandStrings.CommandOptionProjectHelpName
     };
 
-    public static readonly Option<FrozenDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
+    public static readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.PropertiesOption;
 
     public static readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
     {
