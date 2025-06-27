@@ -5,30 +5,23 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
 
-internal abstract partial class HotReloadAppModel
+/// <summary>
+/// Blazor client-only WebAssembly app.
+/// </summary>
+internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject)
+    // Blazor WASM does not need agent injected as all changes are applied in the browser, the process being launched is a dev server.
+    : HotReloadAppModel(agentInjectionProject: null)
 {
-    /// <summary>
-    /// Blazor client-only WebAssembly app.
-    /// </summary>
-    internal sealed class BlazorWebAssemblyAppModel(ProjectGraphNode clientProject) : HotReloadAppModel
+    public override bool RequiresBrowserRefresh => true;
+
+    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
     {
-        public override bool RequiresBrowserRefresh => true;
-
-        /// <summary>
-        /// Blazor WASM does not need dotnet applier as all changes are applied in the browser,
-        /// the process being launched is a dev server.
-        /// </summary>
-        public override bool InjectDeltaApplier => false;
-
-        public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+        if (browserRefreshServer == null)
         {
-            if (browserRefreshServer == null)
-            {
-                // error has been reported earlier
-                return null;
-            }
-
-            return new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer, clientProject);
+            // error has been reported earlier
+            return null;
         }
+
+        return new BlazorWebAssemblyDeltaApplier(processReporter, browserRefreshServer, clientProject);
     }
 }

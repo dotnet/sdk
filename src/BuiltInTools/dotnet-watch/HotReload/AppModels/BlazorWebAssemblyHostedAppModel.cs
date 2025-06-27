@@ -5,26 +5,24 @@ using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
 
-internal abstract partial class HotReloadAppModel
+/// <summary>
+/// Blazor WebAssembly app hosted by an ASP.NET Core app.
+/// App has a client and server projects and deltas are applied to both processes.
+/// Agent is injected into the server process. The client process is updated via WebSocketScriptInjection.js injected into the browser.
+/// </summary>
+internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientProject, ProjectGraphNode serverProject)
+    : HotReloadAppModel(agentInjectionProject: serverProject)
 {
-    /// <summary>
-    /// Blazor WebAssembly app hosted by an ASP.NET Core app.
-    /// App has a client and server projects and deltas are applied to both processes.
-    /// </summary>
-    internal sealed class BlazorWebAssemblyHostedAppModel(ProjectGraphNode clientProject) : HotReloadAppModel
+    public override bool RequiresBrowserRefresh => true;
+
+    public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
     {
-        public override bool RequiresBrowserRefresh => true;
-        public override bool InjectDeltaApplier => true;
-
-        public override DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter)
+        if (browserRefreshServer == null)
         {
-            if (browserRefreshServer == null)
-            {
-                // error has been reported earlier
-                return null;
-            }
-
-            return new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer, clientProject);
+            // error has been reported earlier
+            return null;
         }
+
+        return new BlazorWebAssemblyHostedDeltaApplier(processReporter, browserRefreshServer, clientProject);
     }
 }

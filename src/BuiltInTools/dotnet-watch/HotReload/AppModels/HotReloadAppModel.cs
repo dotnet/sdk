@@ -1,21 +1,38 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Execution;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
 
-internal abstract partial class HotReloadAppModel
+internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjectionProject)
 {
     public abstract bool RequiresBrowserRefresh { get; }
 
-    /// <summary>
-    /// True to inject delta applier to the process.
-    /// </summary>
-    public abstract bool InjectDeltaApplier { get; }
-
     public abstract DeltaApplier? CreateDeltaApplier(BrowserRefreshServer? browserRefreshServer, IReporter processReporter);
+
+    /// <summary>
+    /// Returns true and the path to the client agent implementation binary if the application needs the agent to be injected.
+    /// </summary>
+    public bool TryGetStartupHookPath([NotNullWhen(true)] out string? path)
+    {
+        if (agentInjectionProject == null)
+        {
+            path = null;
+            return false;
+        }
+
+        var hookTargetFramework = agentInjectionProject.GetTargetFramework() switch
+        {
+            // Note: Hot Reload is only supported on net6.0+
+            "net6.0" or "net7.0" or "net8.0" or "net9.0" => "netstandard2.1",
+            _ => "net10.0",
+        };
+
+        path = Path.Combine(AppContext.BaseDirectory, "hotreload", hookTargetFramework, "Microsoft.Extensions.DotNetDeltaApplier.dll");
+        return true;
+    }
 
     public static HotReloadAppModel InferFromProject(ProjectGraphNode projectNode, IReporter reporter)
     {
@@ -24,7 +41,7 @@ internal abstract partial class HotReloadAppModel
             var queue = new Queue<ProjectGraphNode>();
             queue.Enqueue(projectNode);
 
-            ProjectInstance? aspnetCoreProject = null;
+            ProjectGraphNode? aspnetCoreProject = null;
 
             var visited = new HashSet<ProjectGraphNode>();
 
@@ -37,17 +54,17 @@ internal abstract partial class HotReloadAppModel
                 {
                     if (item.EvaluatedInclude == "AspNetCore")
                     {
-                        aspnetCoreProject = currentNode.ProjectInstance;
+                        aspnetCoreProject = currentNode;
                         break;
                     }
 
                     if (item.EvaluatedInclude == "WebAssembly")
                     {
                         // We saw a previous project that was AspNetCore. This must be a blazor hosted app.
-                        if (aspnetCoreProject is not null && aspnetCoreProject != currentNode.ProjectInstance)
+                        if (aspnetCoreProject is not null && aspnetCoreProject.ProjectInstance != currentNode.ProjectInstance)
                         {
-                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", emoji: "🔥");
-                            return new BlazorWebAssemblyHostedAppModel(clientProject: currentNode);
+                            reporter.Verbose($"HotReloadProfile: BlazorHosted. {aspnetCoreProject.ProjectInstance.FullPath} references BlazorWebAssembly project {currentNode.ProjectInstance.FullPath}.", emoji: "🔥");
+                            return new BlazorWebAssemblyHostedAppModel(clientProject: currentNode, serverProject: aspnetCoreProject);
                         }
 
                         reporter.Verbose("HotReloadProfile: BlazorWebAssembly.", emoji: "🔥");
@@ -66,6 +83,6 @@ internal abstract partial class HotReloadAppModel
         }
 
         reporter.Verbose("HotReloadProfile: Default.", emoji: "🔥");
-        return DefaultAppModel.Instance;
+        return new DefaultAppModel(projectNode);
     }
 }

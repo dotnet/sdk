@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 () => File.WriteAllText(file, string.Empty));
         }
 
-        [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+        [Theory]
         [CombinatorialData]
         public async Task MoveFile(bool usePolling)
         {
