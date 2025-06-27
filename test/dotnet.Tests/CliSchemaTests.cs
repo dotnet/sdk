@@ -867,7 +867,6 @@ public class CliSchemaTests : SdkTest
       ],
       "valueType": "System.Collections.Frozen.FrozenDictionary<System.String, System.String>",
       "hasDefaultValue": false,
-      "defaultValue": {},
       "arity": {
         "minimum": 0
       },

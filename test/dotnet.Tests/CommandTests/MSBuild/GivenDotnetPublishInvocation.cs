@@ -75,7 +75,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             output.WriteLine(string.Join(" ", restoreTokens));
             restoreTokens
                    .Should()
-                   .BeEquivalentTo([.. ExpectedPrefix, "--target:Restore", "-tlp:verbosity=quiet", .. ExpectedProperties, NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore]);
+                   .BeEquivalentTo([.. ExpectedPrefix, "--target:Restore", "-tlp:verbosity=quiet", .. ExpectedProperties, NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForSeparateRestore]);
 
             var buildTokens =
                 command.GetArgumentTokensToMSBuild();
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             buildTokens
                    .Should()
-                   .BeEquivalentTo([.. ExpectedPrefix, "-nologo", "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty]);
+                   .BeEquivalentTo([.. ExpectedPrefix, "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty]);
         }
 
         [Fact]

@@ -115,7 +115,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 command.GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, "-nologo", "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
+                    .BeEquivalentTo([.. ExpectedPrefix, "-consoleloggerparameters:Summary", NugetInteractiveProperty, .. expectedAdditionalArgs]);
             });
         }
     }
