@@ -113,7 +113,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             serviceHolder.Value = s;
         });
 
-        var watcher = Assert.IsType<HotReloadDotNetWatcher>(program.CreateWatcher(processRunner, factory));
+        var watcher = new HotReloadDotNetWatcher(program.CreateContext(processRunner), console, runtimeProcessLauncherFactory: factory);
 
         var shutdownSource = new CancellationTokenSource();
         var watchTask = Task.Run(async () =>
@@ -133,7 +133,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -294,7 +294,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -393,7 +393,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+    [Theory]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -484,7 +484,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -539,7 +539,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Theory]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
@@ -593,7 +593,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
         var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
         var ignoringChangeInHiddenDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInHiddenDirectory);
-        var ignoringChangeInOutputDirectory = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInOutputDirectory);
+        var ignoringChangeInExcludedFile = w.Reporter.RegisterSemaphore(MessageDescriptor.IgnoringChangeInExcludedFile);
         var fileAdditionTriggeredReEvaluation = w.Reporter.RegisterSemaphore(MessageDescriptor.FileAdditionTriggeredReEvaluation);
         var reEvaluationCompleted = w.Reporter.RegisterSemaphore(MessageDescriptor.ReEvaluationCompleted);
         var noHotReloadChangesToApply = w.Reporter.RegisterSemaphore(MessageDescriptor.NoCSharpChangesToApply);
@@ -629,7 +629,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
 
             case (isExisting: _, isIncluded: _, directoryKind: DirectoryKind.Bin or DirectoryKind.Obj):
                 Log("Waiting for ignored change in output dir ...");
-                await ignoringChangeInOutputDirectory.WaitAsync(w.ShutdownSource.Token);
+                await ignoringChangeInExcludedFile.WaitAsync(w.ShutdownSource.Token);
                 break;
 
             default:

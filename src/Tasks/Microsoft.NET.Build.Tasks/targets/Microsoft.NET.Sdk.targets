@@ -623,6 +623,11 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Value="$(_UseManagedNtlm)"
                                     Trim="true" />
 
+    <RuntimeHostConfigurationOption Include="System.Net.SocketsHttpHandler.Http3Support"
+                                    Condition="'$(Http3Support)' != ''"
+                                    Value="$(Http3Support)"
+                                    Trim="true" />
+
     <RuntimeHostConfigurationOption Include="System.Reflection.Metadata.MetadataUpdater.IsSupported"
                                     Condition="'$(MetadataUpdaterSupport)' != ''"
                                     Value="$(MetadataUpdaterSupport)"

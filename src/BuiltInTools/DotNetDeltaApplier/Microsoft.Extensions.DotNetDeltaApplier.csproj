@@ -6,8 +6,10 @@
     <!--
       dotnet-watch may inject this assembly to .NET 6.0+ app, so we can't target a newer version.
       At the same time source build requires us to not target 6.0, so we fall back to netstandard.
+
+      When updating these also update ProjectReferences in dotnet-watch.csproj.
      -->
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net10.0</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- NuGet -->
