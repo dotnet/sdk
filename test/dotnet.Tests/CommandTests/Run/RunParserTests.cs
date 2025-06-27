@@ -17,22 +17,21 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [Fact]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            // Create a temporary project file to ensure file validation passes
-            var tempDir = Path.GetTempPath();
-            var projectPath = Path.Combine(tempDir, "foo.csproj");
-            File.WriteAllText(projectPath, "<Project Sdk=\"Microsoft.NET.Sdk\"><PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net8.0</TargetFramework></PropertyGroup></Project>");
-            
+            var tam = new TestAssetsManager(output);
+            var oldWorkingDirectory = Directory.GetCurrentDirectory();
+            var newWorkingDir = tam.CopyTestAsset("HelloWorld").Path;
+
             try
             {
+                Directory.SetCurrentDirectory(newWorkingDir);
+                var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
+                
                 var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
                 runCommand.Args.Single().Should().Be("foo");
             }
             finally
             {
-                if (File.Exists(projectPath))
-                {
-                    File.Delete(projectPath);
-                }
+                Directory.SetCurrentDirectory(oldWorkingDirectory);
             }
         }
     }
