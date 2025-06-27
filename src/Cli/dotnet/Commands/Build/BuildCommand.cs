@@ -34,7 +34,7 @@ public static class BuildCommand
 
         string[] forwardedOptions = parseResult.OptionValuesToBeForwarded(BuildCommandParser.GetCommand()).ToArray();
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption);
 
         bool noRestore = parseResult.GetResult(BuildCommandParser.NoRestoreOption) is not null;
 
@@ -51,7 +51,6 @@ public static class BuildCommand
             {
                 NoRestore = noRestore,
                 NoCache = true,
-                BuildTarget = noIncremental ? "Rebuild" : "Build",
             };
         }
         else
@@ -59,7 +58,7 @@ public static class BuildCommand
             msbuildArgs.OtherMSBuildArgs.AddRange(["-consoleloggerparameters:Summary", .. nonBinLogArgs]);
             if (noIncremental)
             {
-                msbuildArgs.OtherMSBuildArgs.Add("-target:Rebuild");
+                msbuildArgs = msbuildArgs.CloneWithAdditionalTarget("Rebuild");
             }
 
             command = new RestoringCommand(

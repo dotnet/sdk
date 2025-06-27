@@ -35,8 +35,6 @@ public class StoreCommand : MSBuildForwardingApp
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
 
-        msbuildArgs.Add("-target:ComposeStore");
-
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
 
         msbuildArgs.AddRange(result.GetValue(StoreCommandParser.Argument) ?? []);

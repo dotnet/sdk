@@ -268,6 +268,18 @@ public static class ParseResultExtensions
             return default;
         }
     }
+    public static T? SafelyGetValueForOption<T>(this ParseResult parseResult, string name)
+    {
+        if (parseResult.GetResult(name) is OptionResult optionResult &&
+            !parseResult.Errors.Any(e => e.SymbolResult == optionResult))
+        {
+            return optionResult.GetValue<T>(name);
+        }
+        else
+        {
+            return default;
+        }
+    }
 
     /// <summary>
     /// Checks if the option is present and not implicit (i.e. not set by default).

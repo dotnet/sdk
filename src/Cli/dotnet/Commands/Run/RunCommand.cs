@@ -609,7 +609,7 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption());
 
         var command = new RunCommand(
             noBuild: noBuild,
@@ -621,7 +621,7 @@ public class RunCommand
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
             noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
-            verbosity: parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+            verbosity: parseResult.HasOption(RunCommandParser.VerbosityOption) ? parseResult.GetValue(RunCommandParser.VerbosityOption) : null,
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,

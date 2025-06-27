@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -27,7 +28,6 @@ public class PackCommand(
 
         var msbuildArgs = new List<string>()
         {
-            "-target:pack",
             "--property:_IsPacking=true" // This property will not hold true for MSBuild /t:Publish or in VS.
         };
 
@@ -49,7 +49,8 @@ public class PackCommand(
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption);
+            CommonOptions.RestorePropertiesOption,
+            PackCommandParser.TargetOption);
         return new PackCommand(
             parsedMSBuildArgs,
             noRestore,

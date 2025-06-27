@@ -39,6 +39,8 @@ internal static class WorkloadUpdateCommandParser
         Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
+
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -57,7 +59,7 @@ internal static class WorkloadUpdateCommandParser
         command.Options.Add(AdManifestOnlyOption);
         command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
         command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(PrintRollbackOption);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
         command.Options.Add(FromHistoryOption);

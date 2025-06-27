@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using NuGet.Frameworks;
@@ -384,7 +385,7 @@ public class ProjectToolsCommandResolver(
         string? stdOut;
         string? stdErr;
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption);
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, BuildCommandParser.TargetOption);
         var forwardingAppWithoutLogging = new MSBuildForwardingAppWithoutLogging(msbuildArgs, msBuildExePath);
         if (forwardingAppWithoutLogging.ExecuteMSBuildOutOfProc)
         {

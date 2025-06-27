@@ -99,6 +99,7 @@ internal class MSBuildForwardingAppWithoutLogging
     private string[] EmitMSBuildArgs(MSBuildArgs msbuildArgs) => [
         .. msbuildArgs.GlobalProperties?.Select(kvp => EmitProperty(kvp)) ?? [],
         .. msbuildArgs.RestoreGlobalProperties?.Select(kvp => EmitProperty(kvp, "restoreProperty")) ?? [],
+        .. msbuildArgs.RequestedTargets?.Select(target => $"--target:{target}") ?? [],
         .. msbuildArgs.OtherMSBuildArgs
     ];
 

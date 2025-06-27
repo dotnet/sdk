@@ -187,7 +187,6 @@ public class TestCommand(
 
         var msbuildArgs = new List<string>(additionalBuildProperties)
         {
-            "-target:VSTest",
             "-nologo",
         };
 
@@ -224,7 +223,8 @@ public class TestCommand(
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
             msbuildArgs,
             CommonOptions.PropertiesOption,
-            CommonOptions.RestorePropertiesOption);
+            CommonOptions.RestorePropertiesOption,
+            TestCommandParser.VsTestTargetOption);
 
         TestCommand testCommand = new(
             parsedMSBuildArgs,

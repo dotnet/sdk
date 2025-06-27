@@ -40,7 +40,7 @@ public class MSBuildForwardingApp : CommandBase
     /// <param name="rawMSBuildArgs"></param>
     /// <param name="msbuildPath"></param>
     public MSBuildForwardingApp(IEnumerable<string> rawMSBuildArgs, string? msbuildPath = null) : this(
-        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption),
+        MSBuildArgs.AnalyzeMSBuildArguments(rawMSBuildArgs.ToArray(), CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption()),
         msbuildPath)
     {
     }

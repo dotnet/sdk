@@ -20,11 +20,13 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         };
 
-    public static Option<string[]> PropertiesOption =
+    public static Option<FrozenDictionary<string, string>?> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")
+        new ForwardedOption<FrozenDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
-            Hidden = true
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            CustomParser = ParseMSBuildTokensIntoDictionary
         }.ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
@@ -32,17 +34,16 @@ internal static class CommonOptions
     /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
     /// </summary>
     /// <remarks>
-    /// This isn't 'forwarded' like the other options because we need to more accurately control how and when values are parsed and forwarded to MSBuild.
-    /// <c>-p</c>-style properties are always safe to flow, but these are used in more specific scenarios.
     /// </remarks>
     public static Option<FrozenDictionary<string, string>?> RestorePropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<FrozenDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "-rp", "--rp")
+        new ForwardedOption<FrozenDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
         {
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore,
             CustomParser = ParseMSBuildTokensIntoDictionary
         }
+        .ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
     private static FrozenDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
@@ -64,8 +65,53 @@ internal static class CommonOptions
         return dictionary.ToFrozenDictionary(dictionary.Comparer);
     }
 
-    public static Option<VerbosityOptions> VerbosityOption =
+    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null) =>
+        new ForwardedOption<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
+        {
+            Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+            HelpName = "TARGET",
+            CustomParser = (result) =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return defaultTargetName is not null ? [defaultTargetName] : null;
+                    }
+                    return defaultTargetName is not null ? [ defaultTargetName, ..result.Tokens.Select(t => t.Value) ] : [..result.Tokens.Select(t => t.Value) ];
+                },
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore
+        }
+        .AllowSingleArgPerToken();
+
+        public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
+            new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
+            {
+                Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+                HelpName = "TARGET",
+                DefaultValueFactory = _ => [defaultTargetName],
+                CustomParser = (result) =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return [defaultTargetName];
+                    }
+                    return [ defaultTargetName, ..result.Tokens.Select(t => t.Value) ];
+                },
+                Hidden = true,
+                Arity = ArgumentArity.ZeroOrMore
+            }
+            .AllowSingleArgPerToken();
+
+    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        {
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName,
+            DefaultValueFactory = _ => defaultVerbosity
+        }.ForwardAsSingle(o => $"-verbosity:{o}");
+
+    public static Option<VerbosityOptions?> VerbosityOption() =>
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
@@ -131,11 +177,12 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static Option<string> ConfigurationOption(string description) =>
-        new DynamicForwardedOption<string>("--configuration", "-c")
+    public static Option<string?> ConfigurationOption(string description, string? defaultConfiguration = null) =>
+        new DynamicForwardedOption<string?>("--configuration", "-c")
         {
             Description = description,
-            HelpName = CliStrings.ConfigurationArgumentName
+            HelpName = CliStrings.ConfigurationArgumentName,
+            DefaultValueFactory = _ => defaultConfiguration
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
