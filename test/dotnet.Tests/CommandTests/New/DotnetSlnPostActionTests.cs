@@ -33,6 +33,19 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+            
+            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
+            string? currentPath = targetBasePath;
+            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
+            {
+                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
+                {
+                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
+                }
+                currentPath = Path.GetDirectoryName(currentPath);
+            }
+            
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
@@ -45,6 +58,19 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public void AddProjectToSolutionPostActionPrefersSlnOverSlnx()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+            
+            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
+            string? currentPath = targetBasePath;
+            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
+            {
+                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
+                {
+                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
+                }
+                currentPath = Path.GetDirectoryName(currentPath);
+            }
+            
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
