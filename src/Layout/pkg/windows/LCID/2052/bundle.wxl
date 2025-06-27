@@ -46,22 +46,22 @@
   <String Id="FilesInUseDontCloseRadioButton">不关闭应用程序(&amp;D)。需要重启。</String>
   <String Id="FilesInUseOkButton">确定(&amp;O)</String>
   <String Id="FilesInUseCancelButton">取消(&amp;C)</String>
-  <String Id="FirstTimeWelcomeMessage">The installation was successful.
+  <String Id="FirstTimeWelcomeMessage">安装已成功。
 
-The following products were installed:
+已安装以下产品:
     • .NET SDK [DOTNETSDKVERSION]
-    • .NET Runtime [DOTNETRUNTIMEVERSION]
-    • ASP.NET Core Runtime [ASPNETCOREVERSION]
-    • .NET Windows Desktop Runtime [WINFORMSANDWPFVERSION]
+    • .NET 运行时 [DOTNETRUNTIMEVERSION]
+    • ASP.NET Core 运行时 [ASPNETCOREVERSION]
+    • .NET Windows Desktop 运行时 [WINFORMSANDWPFVERSION]
 
-This product collects usage data
-    • More information and opt-out https://aka.ms/dotnet-cli-telemetry
+此产品会收集使用情况数据
+    • 详细信息和选择退出 https://aka.ms/dotnet-cli-telemetry
 
-Resources
-    • .NET Documentation https://aka.ms/dotnet-docs
-    • SDK Documentation https://aka.ms/dotnet-sdk-docs
-    • Release Notes https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
-    • Tutorials https://aka.ms/dotnet-tutorials</String>
+资源
+    • .NET 文档 https://aka.ms/dotnet-docs
+    • SDK 文档 https://aka.ms/dotnet-sdk-docs
+    • 发行说明 https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • 教程 https://aka.ms/dotnet-tutorials</String>
   <String Id="WelcomeHeaderMessage">.NET SDK</String>
   <String Id="WelcomeDescription">
     .NET SDK 用于生成、运行和测试 .NET 应用程序。可以从多种语言、编辑器和开发人员工具中进行选择，并利用大型库生态系统来生成面向 Web、移动设备、桌面、游戏和 IoT 的应用。希望你喜欢它!</String>

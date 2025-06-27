@@ -49,36 +49,31 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
               ""ErrorMessage"": null,
               ""StateBeforeCommand"": {
                 ""ManifestVersions"": {
-                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
-                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1""
                 },
                 ""InstalledWorkloads"": []
               },
               ""StateAfterCommand"": {
                 ""ManifestVersions"": {
-                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1"",
-                  ""microsoft.net.sdk.aspire"": ""8.0.0-alpha.23471.13/8.0.100-rc.1""
+                  ""microsoft.net.sdk.android"": ""34.0.0-rc.1.432/8.0.100-rc.1""
                 },
-                ""InstalledWorkloads"": [""maui-android"", ""aspire""]
+                ""InstalledWorkloads"": [""maui-android""]
               }
             }";
 
             var mauiAndroidPack = new PackInfo(new WorkloadPackId("maui-android-pack"), "34.0", WorkloadPackKind.Sdk, "androidDir", "maui-android-pack");
             var mauiIosPack = new PackInfo(new WorkloadPackId("maui-ios-pack"), "16.4", WorkloadPackKind.Framework, "iosDir", "maui-ios-pack");
-            var aspirePack = new PackInfo(new WorkloadPackId("aspire-pack"), "8.0", WorkloadPackKind.Library, "aspireDir", "aspire-pack");
 
             IEnumerable<WorkloadManifestInfo> installedManifests = new List<WorkloadManifestInfo>() {
                                                 new WorkloadManifestInfo("microsoft.net.sdk.android", "34.0.0-rc.1", "androidDirectory", "8.0.100-rc.1"),
                                                 new WorkloadManifestInfo("microsoft.net.sdk.ios", "16.4.8825", "iosDirectory", "8.0.100-rc.1") };
 
             var workloadResolver = new MockWorkloadResolver(
-                                        new string[] { "maui-android", "maui-ios", "aspire" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
+                                        new string[] { "maui-android", "maui-ios" }.Select(s => new WorkloadInfo(new WorkloadId(s), null)),
                                         installedManifests,
                                         id => new List<WorkloadPackId>() { new WorkloadPackId(id.ToString() + "-pack") },
                                         id => id.ToString().Contains("android") ? mauiAndroidPack :
-                                              id.ToString().Contains("ios") ? mauiIosPack :
-                                              id.ToString().Contains("aspire") ? aspirePack :
-                                              null);
+                                              id.ToString().Contains("ios") ? mauiIosPack : null);
 
             IWorkloadResolverFactory mockResolverFactory = new MockWorkloadResolverFactory(
                     Path.Combine(Path.GetTempPath(), "dotnetTestPath"),
@@ -107,9 +102,9 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("maui-ios") });
             mockInstaller.GarbageCollectionCalled.Should().BeFalse();
             update.Execute();
-            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android"), new WorkloadId("aspire") });
+            mockInstaller.InstallationRecordRepository.InstalledWorkloads.Should().BeEquivalentTo(new List<WorkloadId>() { new WorkloadId("maui-android") });
             mockInstaller.GarbageCollectionCalled.Should().BeTrue();
-            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android", "microsoft.net.sdk.aspire" });
+            mockInstaller.InstalledManifests.Select(m => m.manifestUpdate.ManifestId.ToString()).Should().BeEquivalentTo(new List<string>() { "microsoft.net.sdk.android" });
         }
 
         [Theory]

@@ -1438,7 +1438,6 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
            microsoft.net.workload.mono.toolchain.net6         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net7         9.0.100-rc.1               9.0.0-rc.1.24431.7
            microsoft.net.workload.mono.toolchain.net8         9.0.100-rc.1               9.0.0-rc.1.24431.7
-           microsoft.net.sdk.aspire                           8.0.100                    8.2.0
       3. If one or more workloads are provided along with their versions (by joining them with the '@' character), it outputs workload versions that match the provided versions. Takes the --take option to specify how many to provide and --format to alter the format.
          Example:
            dotnet workload search version maui@9.0.0-rc.1.24453.9 ios@17.5.9270-net9-rc1
@@ -1520,7 +1519,7 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <comment>{0} is the file path and line number.</comment>
   </data>
   <data name="InvalidDirectiveName" xml:space="preserve">
-    <value>The directive at '{2}' should contain a name without special characters and an optional version separated by '{1}' like '#:{0} Abc{1}Xyz'.</value>
+    <value>The directive at '{2}' should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</value>
     <comment>{0} is the directive type like 'package' or 'sdk'. {1} is the expected separator like '@' or '='. {2} is the file path and line number.</comment>
   </data>
   <data name="CannotConvertDirective" xml:space="preserve">
@@ -2402,6 +2401,9 @@ To display a value, specify the corresponding command-line option without provid
   </data>
   <data name="WorkloadNotRecognized" xml:space="preserve">
     <value>Workload ID {0} is not recognized.</value>
+  </data>
+  <data name="AspireWorkloadDeprecated" xml:space="preserve">
+    <value>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</value>
   </data>
   <data name="WorkloadNotSupportedOnPlatform" xml:space="preserve">
     <value>Workload ID {0} isn't supported on this platform.</value>

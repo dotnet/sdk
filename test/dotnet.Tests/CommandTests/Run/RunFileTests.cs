@@ -221,6 +221,119 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
+    /// Even if there is a file-based app <c>./build</c>, <c>dotnet build</c> should not execute that.
+    /// </summary>
+    [Theory]
+    // error MSB1003: Specify a project or solution file. The current working directory does not contain a project or solution file.
+    [InlineData("build", "MSB1003")]
+    // dotnet watch: Could not find a MSBuild project file in '...'. Specify which project to use with the --project option.
+    [InlineData("watch", "--project")]
+    public void Precedence_BuiltInCommand(string cmd, string error)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, cmd), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello 1");
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, $"dotnet-{cmd}"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello 2");
+            """);
+
+        // dotnet build -> built-in command
+        new DotnetCommand(Log, cmd)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdOutContaining(error);
+
+        // dotnet ./build -> file-based app
+        new DotnetCommand(Log, $"./{cmd}")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello 1");
+
+        // dotnet run build -> file-based app
+        new DotnetCommand(Log, "run", cmd)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello 1");
+    }
+
+    /// <summary>
+    /// Even if there is a file-based app <c>./test.dll</c>, <c>dotnet test.dll</c> should not execute that.
+    /// </summary>
+    [Theory]
+    [InlineData("test.dll")]
+    [InlineData("./test.dll")]
+    public void Precedence_Dll(string arg)
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "test.dll"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        // dotnet [./]test.dll -> exec the dll
+        new DotnetCommand(Log, arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // A fatal error was encountered. The library 'hostpolicy.dll' required to execute the application was not found in ...
+            .And.HaveStdErrContaining("hostpolicy");
+
+        // dotnet run [./]test.dll -> file-based app
+        new DotnetCommand(Log, "run", arg)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+    }
+
+    [Fact]
+    public void Precedence_NuGetTool()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "complog"), """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("hello world");
+            """);
+
+        new DotnetCommand(Log, "new", "tool-manifest")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DotnetCommand(Log, "tool", "install", "complog@0.7.0")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // dotnet complog -> NuGet tool
+        new DotnetCommand(Log, "complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("complog");
+
+        // dotnet ./complog -> file-based app
+        new DotnetCommand(Log, "./complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+
+        // dotnet run complog -> file-based app
+        new DotnetCommand(Log, "run", "complog")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello world");
+    }
+
+    /// <summary>
     /// <c>dotnet run -</c> reads the C# code from stdin.
     /// </summary>
     [Fact]
@@ -985,14 +1098,17 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
         new DotnetCommand(Log, "publish", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(artifactsDir).Sub("publish/release")
+        new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
-            .And.NotHaveFile("Program.deps.json"); // no deps.json file for AOT-published app
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1005,16 +1121,110 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
         new DotnetCommand(Log, "publish", "Program.cs", "-c", "Debug", "-p:PublishAot=false", "-bl")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
-        new DirectoryInfo(artifactsDir).Sub("publish/debug")
+        new DirectoryInfo(publishDir).Sub("Program")
             .Should().Exist()
             .And.HaveFile("Program.deps.json");
 
         new DirectoryInfo(testInstance.Path).File("msbuild.binlog").Should().Exist();
+    }
+
+    [Fact]
+    public void Publish_PublishDir_IncludesFileName()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "MyCustomProgram.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "MyCustomProgram.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(publishDir).Sub("MyCustomProgram")
+            .Should().Exist()
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_PublishDir_CommandLine()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var customPublishDir = Path.Join(testInstance.Path, "custom-publish");
+        if (Directory.Exists(customPublishDir)) Directory.Delete(customPublishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs", $"/p:PublishDir={customPublishDir}")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(customPublishDir)
+            .Should().Exist()
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_PublishDir_PropertyDirective()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        var publishDir = Path.Join(testInstance.Path, "directive-publish");
+        File.WriteAllText(programFile, $"""
+            #:property PublishDir={publishDir}
+            {s_program}
+            """);
+
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(publishDir)
+            .Should().Exist()
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Publish_In_SubDir()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subDir = Directory.CreateDirectory(Path.Combine(testInstance.Path, "subdir"));
+
+        var programFile = Path.Join(subDir.FullName, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var publishDir = Path.Join(subDir.FullName, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "./subdir/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path).Sub("subdir").Sub("artifacts").Sub("Program")
+            .Should().Exist()
+            .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
     }
 
     [Fact]
@@ -1519,6 +1729,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1597,6 +1808,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <ItemGroup>
@@ -1668,6 +1880,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                       <PropertyGroup>
                         <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                         <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
                       <ItemGroup>
