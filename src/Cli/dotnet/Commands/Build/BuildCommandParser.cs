@@ -33,7 +33,7 @@ internal static class BuildCommandParser
     {
         Description = CliCommandStrings.NoDependenciesOptionDescription,
         Arity = ArgumentArity.Zero
-    }.ForwardAs("-property:BuildProjectReferences=false");
+    }.ForwardAs("--property:BuildProjectReferences=false");
 
     public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
@@ -58,7 +58,7 @@ internal static class BuildCommandParser
     /// </summary>
     public static readonly Option<string[]?> TargetOption = CommonOptions.MSBuildTargetOption();
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.minimal);
+    public static readonly Option<VerbosityOptions?> VerbosityOption = CommonOptions.VerbosityOption();
 
     private static readonly Command Command = ConstructCommand();
 

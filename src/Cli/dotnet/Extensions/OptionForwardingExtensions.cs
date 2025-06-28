@@ -42,8 +42,8 @@ public static class OptionForwardingExtensions
                 argVal = TestCommandParser.SurroundWithDoubleQuotes(argVal);
             }
             return [
-                $"-property:{outputPropertyName}={argVal}",
-                "-property:_CommandLineDefinedOutputPath=true"
+                $"--property:{outputPropertyName}={argVal}",
+                "--property:_CommandLineDefinedOutputPath=true"
             ];
         });
     }
