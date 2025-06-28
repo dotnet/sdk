@@ -26,7 +26,7 @@ public class StoreCommand : MSBuildForwardingApp
 
     public static StoreCommand FromParseResult(ParseResult result, string msbuildPath = null)
     {
-        var msbuildArgs = new List<string>();
+        List<string> msbuildArgs = ["--target:ComposeStore"];
 
         result.ShowHelpOrErrorIfAppropriate();
 
@@ -34,8 +34,6 @@ public class StoreCommand : MSBuildForwardingApp
         {
             throw new GracefulException(CliCommandStrings.SpecifyManifests);
         }
-
-        msbuildArgs.Add("-target:ComposeStore");
 
         msbuildArgs.AddRange(result.OptionValuesToBeForwarded(StoreCommandParser.GetCommand()));
 

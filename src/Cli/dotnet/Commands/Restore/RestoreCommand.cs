@@ -30,21 +30,25 @@ public static class RestoreCommand
 
         string[] forwardedOptions = result.OptionValuesToBeForwarded(RestoreCommandParser.GetCommand()).ToArray();
 
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([..forwardedOptions, ..binLogArgs], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, RestoreCommandParser.TargetOption);
+
         if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
         {
             return new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: [.. forwardedOptions, ..binLogArgs])
+                msbuildArgs: msbuildArgs
+                )
             {
                 NoCache = true,
                 NoBuild = true,
             };
         }
 
-        return CreateForwarding(["-target:Restore", .. forwardedOptions, .. args], msbuildPath);
+        msbuildArgs.OtherMSBuildArgs.AddRange(nonBinLogArgs);
+        return CreateForwarding(msbuildArgs, msbuildPath);
     }
 
-    public static MSBuildForwardingApp CreateForwarding(IEnumerable<string> msbuildArgs, string? msbuildPath = null)
+    public static MSBuildForwardingApp CreateForwarding(MSBuildArgs msbuildArgs, string? msbuildPath = null)
     {
         var forwardingApp = new MSBuildForwardingApp(msbuildArgs, msbuildPath);
         NuGetSignatureVerificationEnabler.ConditionallyEnable(forwardingApp);

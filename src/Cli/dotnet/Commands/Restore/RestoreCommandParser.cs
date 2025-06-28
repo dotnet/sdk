@@ -1,10 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Packaging;
 
 namespace Microsoft.DotNet.Cli.Commands.Restore;
 
@@ -25,10 +24,12 @@ internal static class RestoreCommandParser
     }.ForwardAsSingle(o => $"-property:RestoreSources={string.Join("%3B", o)}")
     .AllowSingleArgPerToken();
 
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Restore");
+
     private static IEnumerable<Option> FullRestoreOptions() =>
         ImplicitRestoreOptions(true, true, true, true).Concat(
             [
-                CommonOptions.VerbosityOption,
+                CommonOptions.VerbosityOption(VerbosityOptions.minimal),
                 CommonOptions.InteractiveMsBuildForwardOption,
                 CommonOptions.ArtifactsPathOption,
                 new ForwardedOption<bool>("--use-lock-file")
@@ -51,6 +52,7 @@ internal static class RestoreCommandParser
                     Description = CliCommandStrings.CmdReevaluateOptionDescription,
                     Arity = ArgumentArity.Zero
                 }.ForwardAs("-property:RestoreForceEvaluate=true"),
+                TargetOption
             ]);
 
     private static readonly Command Command = ConstructCommand();
@@ -67,10 +69,7 @@ internal static class RestoreCommandParser
         command.Arguments.Add(SlnOrProjectOrFileArgument);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
-        foreach (var option in FullRestoreOptions())
-        {
-            command.Options.Add(option);
-        }
+        command.Options.AddRange(FullRestoreOptions());
 
         command.Options.Add(CommonOptions.ArchitectureOption);
         command.Options.Add(CommonOptions.OperatingSystemOption);
@@ -186,6 +185,7 @@ internal static class RestoreCommandParser
         yield return forceOption;
 
         yield return CommonOptions.PropertiesOption;
+        yield return CommonOptions.RestorePropertiesOption;
 
         if (includeRuntimeOption)
         {

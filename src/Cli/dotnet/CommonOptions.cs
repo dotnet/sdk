@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -19,16 +21,101 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         };
 
-    public static Option<string[]> PropertiesOption =
+    public static Option<ReadOnlyDictionary<string, string>?> PropertiesOption =
         // these are all of the forms that the property switch can be understood by in MSBuild
-        new ForwardedOption<string[]>("--property", "-property", "/property", "/p", "-p", "--p")
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--property", "-property", "/property", "/p", "-p", "--p")
         {
-            Hidden = true
-        }.ForwardAsProperty()
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            CustomParser = ParseMSBuildTokensIntoDictionary
+        }.ForwardAsMSBuildProperty()
         .AllowSingleArgPerToken();
 
-    public static Option<VerbosityOptions> VerbosityOption =
+    /// <summary>
+    /// Sets MSBuild Global Property values that are only used during Restore (implicit or explicit)
+    /// </summary>
+    /// <remarks>
+    /// </remarks>
+    public static Option<ReadOnlyDictionary<string, string>?> RestorePropertiesOption =
+        // these are all of the forms that the property switch can be understood by in MSBuild
+        new ForwardedOption<ReadOnlyDictionary<string, string>?>("--restoreProperty", "-restoreProperty", "/restoreProperty", "-rp", "--rp", "/rp")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore,
+            CustomParser = ParseMSBuildTokensIntoDictionary
+        }
+        .ForwardAsMSBuildProperty()
+        .AllowSingleArgPerToken();
+
+    private static ReadOnlyDictionary<string, string>? ParseMSBuildTokensIntoDictionary(ArgumentResult result)
+    {
+        if (result.Tokens.Count == 0)
+        {
+            return null;
+        }
+        var dictionary = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var token in result.Tokens)
+        {
+            foreach (var kvp in MSBuildPropertyParser.ParseProperties(token.Value))
+            {
+                // msbuild properties explicitly have the semantic of being 'overwrite' so we do not check for duplicates
+                // and just overwrite the value if it already exists.
+                dictionary[kvp.key] = kvp.value;
+            }
+        }
+        return new(dictionary);
+    }
+
+    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null) =>
+        new ForwardedOption<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
+        {
+            Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+            HelpName = "TARGET",
+            DefaultValueFactory = _ => defaultTargetName is not null ? [defaultTargetName] : null,
+            CustomParser = (result) =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return defaultTargetName is not null ? [defaultTargetName] : null;
+                    }
+                    return defaultTargetName is not null ? [defaultTargetName, .. result.Tokens.Select(t => t.Value)] : [.. result.Tokens.Select(t => t.Value)];
+                },
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore
+        }
+        .ForwardAsMany(targets => targets is null ? Enumerable.Empty<string>() : [$"--target:{string.Join(";", targets)}"])
+        .AllowSingleArgPerToken();
+
+        public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
+            new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
+            {
+                Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+                HelpName = "TARGET",
+                DefaultValueFactory = _ => [defaultTargetName],
+                CustomParser = (result) =>
+                {
+                    if (result.Tokens.Count == 0)
+                    {
+                        return [defaultTargetName];
+                    }
+                    return [defaultTargetName, .. result.Tokens.Select(t => t.Value).Where(t => !t.Equals(defaultTargetName, StringComparison.OrdinalIgnoreCase))];
+                },
+                Hidden = true,
+                Arity = ArgumentArity.ZeroOrMore
+            }
+            .ForwardAsSingle(targets => $"--target:{string.Join(";", targets)}")
+            .AllowSingleArgPerToken();
+
+    public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
+        {
+            Description = CliStrings.VerbosityOptionDescription,
+            HelpName = CliStrings.LevelArgumentName,
+            DefaultValueFactory = _ => defaultVerbosity
+        }.ForwardAsSingle(o => $"-verbosity:{o}");
+
+    public static Option<VerbosityOptions?> VerbosityOption() =>
+        new ForwardedOption<VerbosityOptions?>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
@@ -49,7 +136,7 @@ internal static class CommonOptions
             HelpName = CliStrings.FrameworkArgumentName
         }
         .AddCompletions(CliCompletion.TargetFrameworksFromProjectFile)
-        .ForwardAsSingle(o => $"-property:TargetFramework={o}");
+        .ForwardAsSingle(o => $"--property:TargetFramework={o}");
 
     public static Option<string> ArtifactsPathOption =
         new ForwardedOption<string>(
@@ -58,7 +145,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.ArtifactsPathOptionDescription,
             HelpName = CliStrings.ArtifactsPathArgumentName
-        }.ForwardAsSingle(o => $"-property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
+        }.ForwardAsSingle(o => $"--property:ArtifactsPath={CommandDirectoryContext.GetFullPath(o)}");
 
     private static readonly string RuntimeArgName = CliStrings.RuntimeIdentifierArgumentName;
     public static IEnumerable<string> RuntimeArgFunc(string rid)
@@ -67,7 +154,7 @@ internal static class CommonOptions
         {
             rid = GetOsFromRid(rid) + "-x64";
         }
-        return [$"-property:RuntimeIdentifier={rid}", "-property:_CommandLineDefinedRuntimeIdentifier=true"];
+        return [$"--property:RuntimeIdentifier={rid}", "--property:_CommandLineDefinedRuntimeIdentifier=true"];
     }
 
     public const string RuntimeOptionName = "--runtime";
@@ -92,14 +179,14 @@ internal static class CommonOptions
         {
             Description = description,
             Arity = ArgumentArity.Zero
-        }.ForwardAs("-property:UseCurrentRuntimeIdentifier=True");
+        }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static Option<string> ConfigurationOption(string description) =>
-        new DynamicForwardedOption<string>("--configuration", "-c")
+    public static Option<string?> ConfigurationOption(string description) =>
+        new DynamicForwardedOption<string?>("--configuration", "-c")
         {
             Description = description,
             HelpName = CliStrings.ConfigurationArgumentName
-        }.ForwardAsSingle(o => $"-property:Configuration={o}")
+        }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
     public static Option<string> VersionSuffixOption =
@@ -107,7 +194,7 @@ internal static class CommonOptions
         {
             Description = CliStrings.CmdVersionSuffixDescription,
             HelpName = CliStrings.VersionSuffixArgumentName
-        }.ForwardAsSingle(o => $"-property:VersionSuffix={o}");
+        }.ForwardAsSingle(o => $"--property:VersionSuffix={o}");
 
     public static Lazy<string> NormalizedCurrentDirectory = new(() => PathUtility.EnsureTrailingSlash(Directory.GetCurrentDirectory()));
 
@@ -124,6 +211,14 @@ internal static class CommonOptions
         Description = CliStrings.NoRestoreDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-restore:false");
+
+
+    public static Option<bool> RestoreOption = new ForwardedOption<bool>("--restore", "-restore")
+    {
+        Description = "Restore the project before building it. This is the default behavior.",
+        Arity = ArgumentArity.Zero,
+        Hidden = true
+    }.ForwardAs("-restore");
 
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
@@ -146,7 +241,7 @@ internal static class CommonOptions
              DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
          };
 
-    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"-property:NuGetInteractive={(b ? "true" : "false")}");
+    public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
     public static Option<bool> DisableBuildServersOption =
         new ForwardedOption<bool>("--disable-build-servers")
@@ -290,7 +385,7 @@ internal static class CommonOptions
     }
 
     private static IEnumerable<string> ResolveRidShorthandOptions(string? os, string? arch) =>
-        [$"-property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
+        [$"--property:RuntimeIdentifier={ResolveRidShorthandOptionsToRuntimeIdentifier(os, arch)}"];
 
     internal static string ResolveRidShorthandOptionsToRuntimeIdentifier(string? os, string? arch)
     {
@@ -329,7 +424,7 @@ internal static class CommonOptions
 
     private static IEnumerable<string> ForwardSelfContainedOptions(bool isSelfContained, ParseResult parseResult)
     {
-        IEnumerable<string> selfContainedProperties = [$"-property:SelfContained={isSelfContained}", "-property:_CommandLineDefinedSelfContained=true"];
+        IEnumerable<string> selfContainedProperties = [$"--property:SelfContained={isSelfContained}", "--property:_CommandLineDefinedSelfContained=true"];
         return selfContainedProperties;
     }
 

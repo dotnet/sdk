@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
@@ -9,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     public class GivenDotnetRunInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
         private static readonly string[] ConstantRestoreArgs = ["-nologo", "-verbosity:quiet"];
-        private static readonly string NuGetDisabledProperty = "-property:NuGetInteractive=false";
+        private static readonly string NuGetDisabledProperty = "--property:NuGetInteractive=false";
 
         public ITestOutputHelper Log { get; }
 
@@ -40,9 +41,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 CommandDirectoryContext.PerformActionWithBasePath(newWorkingDir, () =>
                 {
                     var command = RunCommand.FromArgs(args);
-                    command.RestoreArgs
+                    command.MSBuildArgs
                         .Should()
-                        .BeEquivalentTo([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty]);
+                        .BeEquivalentTo(MSBuildArgs.AnalyzeMSBuildArguments([.. ConstantRestoreArgs, .. expectedArgs, NuGetDisabledProperty ], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption()));
                 });
             }
             finally
