@@ -181,12 +181,11 @@ internal static class CommonOptions
             Arity = ArgumentArity.Zero
         }.ForwardAs("--property:UseCurrentRuntimeIdentifier=True");
 
-    public static Option<string?> ConfigurationOption(string description, string? defaultConfiguration = null) =>
+    public static Option<string?> ConfigurationOption(string description) =>
         new DynamicForwardedOption<string?>("--configuration", "-c")
         {
             Description = description,
-            HelpName = CliStrings.ConfigurationArgumentName,
-            DefaultValueFactory = _ => defaultConfiguration
+            HelpName = CliStrings.ConfigurationArgumentName
         }.ForwardAsSingle(o => $"--property:Configuration={o}")
         .AddCompletions(CliCompletion.ConfigurationsFromProjectFileOrDefaults);
 
