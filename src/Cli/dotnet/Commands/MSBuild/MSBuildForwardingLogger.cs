@@ -26,7 +26,7 @@ public sealed class MSBuildForwardingLogger : IForwardingLogger
             eventSource4.IncludeEvaluationPropertiesAndItems();
         }
 
-        // Only forward telemetry events
+        // Only forward _telemetry events
         if (eventSource is IEventSource2 eventSource2)
         {
             eventSource2.TelemetryLogged += (sender, args) => BuildEventRedirector.ForwardEvent(args);

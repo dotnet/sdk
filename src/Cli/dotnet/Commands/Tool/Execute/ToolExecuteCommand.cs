@@ -7,19 +7,15 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
-
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
@@ -89,11 +85,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
 
-        IToolPackage toolPackage;
-
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
+        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out IToolPackage toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
             {
@@ -129,7 +123,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
-        using var _ = Activities.s_source.StartActivity("execute-inline-tool");
+        using var _ = Activities.Source.StartActivity("execute-inline-tool");
         var result = command.Execute();
         return result.ExitCode;
     }

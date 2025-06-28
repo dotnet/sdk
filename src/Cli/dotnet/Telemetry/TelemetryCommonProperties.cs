@@ -42,12 +42,8 @@ internal class TelemetryCommonProperties(
     private const string ProductType = "Product Type";
     private const string LibcRelease = "Libc Release";
     private const string LibcVersion = "Libc Version";
-
     private const string CI = "Continuous Integration";
-
     private const string TelemetryProfileEnvironmentVariable = "DOTNET_CLI_TELEMETRY_PROFILE";
-    private const string CannotFindMacAddress = "Unknown";
-
     private const string MachineIdCacheKey = "MachineId";
     private const string IsDockerContainerCacheKey = "IsDockerContainer";
 
@@ -67,8 +63,7 @@ internal class TelemetryCommonProperties(
             {CurrentPathHash, _hasher(_getCurrentDirectory())},
             {MachineIdOld, _userLevelCacheWriter.RunWithCache(MachineIdCacheKey, GetMachineId)},
             // we don't want to recalcuate a new id for every new SDK version. Reuse the same path across versions.
-            // If we change the format of the cache later.
-            // We need to rename the cache from v1 to v2
+            // If we change the format of the cache later, we need to rename the cache from v1 to v2.
             {MachineId,
                 _userLevelCacheWriter.RunWithCacheInFilePath(
                     Path.Combine(
@@ -86,15 +81,12 @@ internal class TelemetryCommonProperties(
 
     private string GetMachineId()
     {
-        var macAddress = _getMACAddress();
-        if (macAddress != null)
+        if (_getMACAddress() is { } macAddress)
         {
             return _hasher(macAddress);
         }
-        else
-        {
-            return Guid.NewGuid().ToString();
-        }
+
+        return Guid.NewGuid().ToString();
     }
 
     /// <summary>
@@ -131,8 +123,5 @@ internal class TelemetryCommonProperties(
     ///     Windows.7        Microsoft Windows 6.1.7601 S
     ///     Windows.81       Microsoft Windows 6.3.9600
     /// </summary>
-    private static string GetKernelVersion()
-    {
-        return RuntimeInformation.OSDescription;
-    }
+    private static string GetKernelVersion() => RuntimeInformation.OSDescription;
 }

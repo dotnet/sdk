@@ -3075,6 +3075,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">PACKAGE_ID</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolInstallPackageIdMissing">
+        <source>A package ID was not specified for tool installation.</source>
+        <target state="new">A package ID was not specified for tool installation.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolInstallSourceOptionDescription">
         <source>Replace all NuGet package sources to use during installation with these.</source>
         <target state="translated">설치 중에 사용할 모든 NuGet 패키지 원본을 이러한 패키지 원본으로 바꿉니다.</target>

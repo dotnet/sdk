@@ -71,7 +71,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
         string folderToDeleteOnFailure = null;
         return TransactionalAction.Run<NuGetVersion>(() =>
         {
-            var _downloadActivity = Activities.s_source.StartActivity("download-tool");
+            var _downloadActivity = Activities.Source.StartActivity("download-tool");
             _downloadActivity?.DisplayName = $"Downloading tool {packageId}@{packageVersion}";
             var packagePath = nugetPackageDownloader.DownloadPackageAsync(packageId, packageVersion, packageSourceLocation,
                         includeUnlisted: includeUnlisted, downloadFolder: new DirectoryPath(packagesRootPath)).ConfigureAwait(false).GetAwaiter().GetResult();
@@ -94,7 +94,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             }
 
             // Extract the package
-            var _extractActivity = Activities.s_source.StartActivity("extract-tool");
+            var _extractActivity = Activities.Source.StartActivity("extract-tool");
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), version);
             nugetPackageDownloader.ExtractPackageAsync(packagePath, new DirectoryPath(nupkgDir)).ConfigureAwait(false).GetAwaiter().GetResult();
             _extractActivity?.Stop();

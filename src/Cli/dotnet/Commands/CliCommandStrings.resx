@@ -2522,4 +2522,7 @@ Proceed?</value>
     <value>Tool package download needs confirmation. Run in interactive mode or use the "--yes" command-line option to confirm.</value>
     <comment>{Locked="--yes"}</comment>
   </data>
+  <data name="ToolInstallPackageIdMissing" xml:space="preserve">
+    <value>A package ID was not specified for tool installation.</value>
+  </data>
 </root>

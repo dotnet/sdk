@@ -405,7 +405,7 @@ public class TerminalLoggerDetector
 
         string FindDefaultValue(IReadOnlyList<string> unmatchedTokens)
         {
-            // Find default configuration so it is part of telemetry even when default is not used.
+            // Find default configuration so it is part of _telemetry even when default is not used.
             // Default can be stored in /tlp:default=true|false|on|off|auto
             Switch terminalLoggerDefault = Find(unmatchedTokens, "tlp", "terminalloggerparameters");
             if (terminalLoggerDefault == null)

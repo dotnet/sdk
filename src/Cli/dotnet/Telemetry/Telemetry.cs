@@ -9,31 +9,26 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 
 public class Telemetry : ITelemetry
 {
-    internal static string? CurrentSessionId = null;
-    internal static bool DisabledForTests = false;
-    private static FrozenDictionary<string, object?> _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
+    internal static string? s_currentSessionId = null;
+    internal static bool s_disabledForTests = false;
+    private static readonly FrozenDictionary<string, object?> s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
     private Task? _trackEventTask;
 
-    public static string ConnectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
-    public static string DefaultStorageFolderName = "TelemetryStorageService";
+    public static string ConnectionString { get; } = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+    public static string DefaultStorageFolderName { get; } = "TelemetryStorageService";
     public bool Enabled { get; }
 
     public Telemetry() : this(null) { }
 
-    public Telemetry(
-        string? sessionId,
-        IEnvironmentProvider? environmentProvider = null)
+    public Telemetry(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
-
-        if (DisabledForTests)
+        if (s_disabledForTests)
         {
             return;
         }
 
         environmentProvider ??= new EnvironmentProvider();
-
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-
         if (!Enabled)
         {
             return;
@@ -42,35 +37,34 @@ public class Telemetry : ITelemetry
         // Store the session ID in a static field so that it can be reused
         if (!string.IsNullOrEmpty(sessionId))
         {
-            CurrentSessionId = sessionId;
+            s_currentSessionId = sessionId;
         }
-        else if (CurrentSessionId == null)
+        else
         {
             // Generate a new session ID if not provided
-            CurrentSessionId = Guid.NewGuid().ToString();
+            s_currentSessionId ??= Guid.NewGuid().ToString();
         }
     }
 
     internal static void DisableForTests()
     {
-        DisabledForTests = true;
-        CurrentSessionId = null;
+        s_disabledForTests = true;
+        s_currentSessionId = null;
     }
 
     internal static void EnableForTests()
     {
-        DisabledForTests = false;
+        s_disabledForTests = false;
     }
 
-    public void TrackEvent(string eventName, IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
+    public void TrackEvent(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         if (!Enabled)
         {
             return;
         }
 
-        //continue the task in different threads
+        // Continue the task in different threads.
         if (_trackEventTask == null)
         {
             _trackEventTask = Task.Run(() => TrackEventTask(eventName, properties, measurements));
@@ -100,14 +94,12 @@ public class Telemetry : ITelemetry
         TrackEventTask(eventName, properties, measurements);
     }
 
-    private static void TrackEventTask(
-        string eventName,
-        IDictionary<string, string?>? properties,
-        IDictionary<string, double>? measurements)
+    private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties, IDictionary<string, double>? measurements)
     {
         try
         {
-            Activity.Current?.AddEvent(MakeActivityEvent(PrependProducerNamespace(eventName), properties, measurements));
+            var activity = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties, measurements));
+            Activity.Current?.AddEvent(activity);
         }
         catch (Exception e)
         {
@@ -115,23 +107,15 @@ public class Telemetry : ITelemetry
         }
     }
 
-    private static ActivityEvent MakeActivityEvent(string v, IDictionary<string, string?>? eventProperties, IDictionary<string, double>? eventMeasurements)
-    {
-        var tags = MakeTags(eventProperties, eventMeasurements);
-        return new ActivityEvent(v, tags: tags);
-    }
-
     private static ActivityTagsCollection MakeTags(IDictionary<string, string?>? eventProperties, IDictionary<string, double>? eventMeasurements)
     {
-        var tags = new ActivityTagsCollection
-        (
-            _commonProperties
-        );
-        if (CurrentSessionId is not null)
+        var tags = new ActivityTagsCollection(s_commonProperties);
+        if (s_currentSessionId is not null)
         {
-            tags.Add("sessionId", CurrentSessionId);
+            tags.Add("sessionId", s_currentSessionId);
         }
-        foreach (var property in _commonProperties)
+
+        foreach (var property in s_commonProperties)
         {
             if (property.Value is null)
             {
@@ -139,6 +123,7 @@ public class Telemetry : ITelemetry
             }
             tags.TryAdd(property.Key, property.Value);
         }
+
         if (eventProperties is not null)
         {
             foreach (var property in eventProperties)
@@ -150,6 +135,7 @@ public class Telemetry : ITelemetry
                 tags.TryAdd(property.Key, property.Value);
             }
         }
+
         if (eventMeasurements is not null)
         {
             foreach (var measurement in eventMeasurements)
@@ -157,11 +143,7 @@ public class Telemetry : ITelemetry
                 tags.TryAdd(measurement.Key, measurement.Value);
             }
         }
-        return tags;
-    }
 
-    private static string PrependProducerNamespace(string eventName)
-    {
-        return "dotnet/cli/" + eventName;
+        return tags;
     }
 }

@@ -28,22 +28,23 @@ namespace Microsoft.DotNet.Cli;
 
 public class Program
 {
-    private static readonly string ToolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
+    private static readonly string s_toolPathSentinelFileName = $"{Product.Version}.toolpath.sentinel";
 
-    public static ITelemetry TelemetryClient;
+    public static ITelemetry TelemetryClient { get; }
+
     // Create a new OpenTelemetry tracer provider and add the Azure Monitor trace exporter and the OTLP trace exporter.
     // It is important to keep the TracerProvider instance active throughout the process lifetime.
-    private static TracerProvider tracerProvider;
+    private static readonly TracerProvider s_tracerProvider;
 
     // Create a new OpenTelemetry meter provider and add the Azure Monitor metric exporter and the OTLP metric exporter.
     // It is important to keep the MetricsProvider instance active throughout the process lifetime.
-    private static MeterProvider metricsProvider;
+    private static readonly MeterProvider s_metricsProvider;
 
-    static Activity? s_mainActivity;
-    private static DateTime s_mainTimeStamp;
-    private static PosixSignalRegistration s_sigIntRegistration;
-    private static PosixSignalRegistration s_sigQuitRegistration;
-    private static PosixSignalRegistration s_sigTermRegistration;
+    private static readonly Activity? s_mainActivity;
+    private static readonly DateTime s_mainTimeStamp;
+    private static readonly PosixSignalRegistration s_sigIntRegistration;
+    private static readonly PosixSignalRegistration s_sigQuitRegistration;
+    private static readonly PosixSignalRegistration s_sigTermRegistration;
 
     static Program()
     {
@@ -51,33 +52,36 @@ public class Program
         s_sigIntRegistration = PosixSignalRegistration.Create(PosixSignal.SIGINT, Shutdown);
         s_sigQuitRegistration = PosixSignalRegistration.Create(PosixSignal.SIGQUIT, Shutdown);
         s_sigTermRegistration = PosixSignalRegistration.Create(PosixSignal.SIGTERM, Shutdown);
-        metricsProvider = Sdk.CreateMeterProviderBuilder()
+        s_metricsProvider = Sdk.CreateMeterProviderBuilder()
             .ConfigureResource(r =>
             {
                 r.AddService("dotnet-cli", serviceVersion: Product.Version);
             })
-            .AddMeter(Activities.s_source.Name)
+            .AddMeter(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddRuntimeInstrumentation()
             .AddOtlpExporter()
             .Build();
-        tracerProvider = Sdk.CreateTracerProviderBuilder()
+
+        s_tracerProvider = Sdk.CreateTracerProviderBuilder()
             .ConfigureResource(r =>
             {
                 r.AddService("dotnet-cli", serviceVersion: Product.Version);
             })
-            .AddSource(Activities.s_source.Name)
+            .AddSource(Activities.Source.Name)
             .AddHttpClientInstrumentation()
             .AddOtlpExporter()
-            .AddAzureMonitorTraceExporter(o => {
+            .AddAzureMonitorTraceExporter(o =>
+            {
                 o.ConnectionString = Telemetry.Telemetry.ConnectionString;
                 o.EnableLiveMetrics = false;
                 o.StorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, Telemetry.Telemetry.DefaultStorageFolderName);
             })
             .SetSampler(new AlwaysOnSampler())
             .Build();
+
         (var s_parentActivityContext, var s_activityKind) = DeriveParentActivityContextFromEnv();
-        s_mainActivity = Activities.s_source.CreateActivity("main", s_activityKind, s_parentActivityContext);
+        s_mainActivity = Activities.Source.CreateActivity("main", s_activityKind, s_parentActivityContext);
         s_mainActivity?.Start();
         s_mainActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         TrackHostStartup(s_mainTimeStamp);
@@ -109,8 +113,7 @@ public class Program
                 ? e.ToString().Red().Bold()
                 : e.Message.Red().Bold());
 
-            var commandParsingException = e as CommandParsingException;
-            if (commandParsingException != null && commandParsingException.ParseResult != null)
+            if (e is CommandParsingException commandParsingException && commandParsingException.ParseResult != null)
             {
                 commandParsingException.ParseResult.ShowHelp();
             }
@@ -119,7 +122,7 @@ public class Program
         }
         catch (Exception e) when (!e.ShouldBeDisplayedAsError())
         {
-            // If telemetry object has not been initialized yet. It cannot be collected
+            // If _telemetry object has not been initialized yet. It cannot be collected
             TelemetryEventEntry.SendFiltered(e);
             Reporter.Error.WriteLine(e.ToString().Red().Bold());
 
@@ -129,7 +132,6 @@ public class Program
         {
             Shutdown(default!);
         }
-
     }
 
     public static void Shutdown(PosixSignalContext context)
@@ -138,36 +140,29 @@ public class Program
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
         s_mainActivity?.Stop();
-        tracerProvider?.ForceFlush();
-        metricsProvider?.ForceFlush();
-        Activities.s_source.Dispose();
+        s_tracerProvider?.ForceFlush();
+        s_metricsProvider?.ForceFlush();
+        Activities.Source.Dispose();
     }
 
     /// <summary>
-    /// uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
+    /// Uses the OpenTelemetrySDK's Propagation API to derive the parent activity context and kind
     /// from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
     /// </summary>
-    /// <returns></returns>
     private static (ActivityContext parentActivityContext, ActivityKind kind) DeriveParentActivityContextFromEnv()
     {
         var traceParent = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACEPARENT);
         var traceState = Env.GetEnvironmentVariable(Activities.DOTNET_CLI_TRACESTATE);
-        static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key)
-        {
-            return carrier.TryGetValue(key, out var value) ? value : null;
-        }
 
         if (string.IsNullOrEmpty(traceParent))
         {
             return (default, ActivityKind.Internal);
         }
-        var carriermap = new Dictionary<string, IEnumerable<string>?>
-        {
-            { "traceparent", [traceParent] },
-        };
+
+        var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
         if (!string.IsNullOrEmpty(traceState))
         {
-            carriermap.Add("tracestate", [traceState]);
+            carrierMap.Add("tracestate", [traceState]);
         }
 
         // Use the OpenTelemetry Propagator to extract the parent activity context and kind. For some reason this isn't set by the OTel SDK like docs say it should be.
@@ -175,15 +170,20 @@ public class Program
             new TraceContextPropagator(),
             new BaggagePropagator()
         ]));
-        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carriermap, GetValueFromCarrier);
+        var parentActivityContext = Propagators.DefaultTextMapPropagator.Extract(default, carrierMap, GetValueFromCarrier);
         var kind = parentActivityContext.ActivityContext.IsRemote ? ActivityKind.Server : ActivityKind.Internal;
 
         return (parentActivityContext.ActivityContext, kind);
+
+        static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key)
+        {
+            return carrier.TryGetValue(key, out var value) ? value : null;
+        }
     }
 
     private static void TrackHostStartup(DateTime mainTimeStamp)
     {
-        var hostStartupActivity = Activities.s_source.StartActivity("host-startup");
+        var hostStartupActivity = Activities.Source.StartActivity("host-startup");
         hostStartupActivity?.SetStartTime(Process.GetCurrentProcess().StartTime);
         hostStartupActivity?.SetEndTime(mainTimeStamp);
         hostStartupActivity?.SetStatus(ActivityStatusCode.Ok);
@@ -215,7 +215,7 @@ public class Program
             return "dotnet --info";
         }
 
-        // walk the parent command tree to find the top-level command name and get the full command name for this parseresult
+        // Walk the parent command tree to find the top-level command name and get the full command name for this parseresult.
         List<string> parentNames = [r.CommandResult.Command.Name];
         var current = r.CommandResult.Parent;
         while (current is CommandResult parentCommandResult)
@@ -226,6 +226,7 @@ public class Program
         parentNames.Reverse();
         return string.Join(' ', parentNames);
     }
+
     private static void SetDisplayName(Activity? activity, ParseResult parseResult)
     {
         if (activity == null)
@@ -237,7 +238,7 @@ public class Program
         // Set the display name to the full command name
         activity.DisplayName = name;
 
-        // Set the command name as an attribute for better filtering in telemetry
+        // Set the command name as an attribute for better filtering in _telemetry
         activity.SetTag("command.name", name);
     }
 
@@ -268,35 +269,35 @@ public class Program
 
     private static int LookupAndExecuteCommand(string[] args, ParseResult parseResult)
     {
-        var _lookupExternalCommandActivity = Activities.s_source.StartActivity("lookup-external-command");
+        var lookupExternalCommandActivity = Activities.Source.StartActivity("lookup-external-command");
         string commandName = "dotnet-" + parseResult.GetValue(Parser.DotnetSubCommand);
         var resolvedCommandSpec = CommandResolver.TryResolveCommandSpec(
             new DefaultCommandResolverPolicy(),
             commandName,
             args.GetSubArguments(),
             FrameworkConstants.CommonFrameworks.NetStandardApp15);
-        _lookupExternalCommandActivity?.Dispose();
+        lookupExternalCommandActivity?.Dispose();
         
         if (resolvedCommandSpec is null && TryRunFileBasedApp(parseResult) is { } fileBasedAppExitCode)
         {
-            _lookupExternalCommandActivity?.Dispose();
+            lookupExternalCommandActivity?.Dispose();
             return fileBasedAppExitCode;
         }
         else
         {
             var resolvedCommand = CommandFactoryUsingResolver.CreateOrThrow(commandName, resolvedCommandSpec);
-            _lookupExternalCommandActivity?.Dispose();
+            lookupExternalCommandActivity?.Dispose();
             
-            using var _executionActivity = Activities.s_source.StartActivity("execute-extensible-command");
+            using var _executionActivity = Activities.Source.StartActivity("execute-extensible-command");
             var result = resolvedCommand.Execute();
             return result.ExitCode;
         }
     }
 
-    static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
+    private static void InvokeBuiltInCommand(ParseResult parseResult, out int exitCode)
     {
         Debug.Assert(parseResult.CanBeInvoked());
-        using var _invocationActivity = Activities.s_source.StartActivity("invocation");
+        using var _invocationActivity = Activities.Source.StartActivity("invocation");
         try
         {
             exitCode = parseResult.Invoke();
@@ -308,7 +309,7 @@ public class Program
         }
     }
 
-    static int? TryRunFileBasedApp(ParseResult parseResult)
+    private static int? TryRunFileBasedApp(ParseResult parseResult)
     {
         // If we didn't match any built-in commands, and a C# file path is the first argument,
         // parse as `dotnet run file.cs ..rest_of_args` instead.
@@ -350,7 +351,7 @@ public class Program
     private static ParseResult ParseArgs(string[] args)
     {
         ParseResult parseResult;
-        using (var _parseActivity = Activities.s_source.StartActivity("parse"))
+        using (var _parseActivity = Activities.Source.StartActivity("parse"))
         {
             parseResult = Parser.Instance.Parse(args);
 
@@ -367,62 +368,55 @@ public class Program
 
     private static void SetupDotnetFirstRun(ParseResult parseResult)
     {
-        using (var _firstTimeUseActivity = Activities.s_source.StartActivity("first-time-use"))
+        using var _ = Activities.Source.StartActivity("first-time-use");
+        IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
+        IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
+        string toolPath = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, s_toolPathSentinelFileName);
+        IFileSentinel toolPathSentinel = new FileSentinel(new FilePath(toolPath));
+
+        var environmentProvider = new EnvironmentProvider();
+        bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
+        bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
+        bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
+        bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
+        bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
+            // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
+            defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
+
+        ReportDotnetHomeUsage(environmentProvider);
+
+        var isDotnetBeingInvokedFromNativeInstaller = false;
+        if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
         {
-            IFirstTimeUseNoticeSentinel firstTimeUseNoticeSentinel = new FirstTimeUseNoticeSentinel();
-
-            IAspNetCertificateSentinel aspNetCertificateSentinel = new AspNetCertificateSentinel();
-            IFileSentinel toolPathSentinel = new FileSentinel(
-                new FilePath(
-                    Path.Combine(
-                        CliFolderPathCalculator.DotnetUserProfileFolderPath,
-                        ToolPathSentinelFileName)));
-
-            var environmentProvider = new EnvironmentProvider();
-
-            bool generateAspNetCertificate = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_GENERATE_ASPNET_CERTIFICATE, defaultValue: true);
-            bool telemetryOptout = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault);
-            bool addGlobalToolsToPath = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_ADD_GLOBAL_TOOLS_TO_PATH, defaultValue: true);
-            bool nologo = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_NOLOGO, defaultValue: false);
-            bool skipWorkloadIntegrityCheck = environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK,
-                // Default the workload integrity check skip to true if the command is being ran in CI. Otherwise, false.
-                defaultValue: new CIEnvironmentDetectorForTelemetry().IsCIEnvironment());
-
-            ReportDotnetHomeUsage(environmentProvider);
-
-            var isDotnetBeingInvokedFromNativeInstaller = false;
-            if (parseResult.CommandResult.Command.Name.Equals(Parser.InstallSuccessCommand.Name))
-            {
-                aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
-                firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
-                toolPathSentinel = new NoOpFileSentinel(exists: false);
-                isDotnetBeingInvokedFromNativeInstaller = true;
-            }
-
-            var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
-                generateAspNetCertificate: generateAspNetCertificate,
-                telemetryOptout: telemetryOptout,
-                addGlobalToolsToPath: addGlobalToolsToPath,
-                nologo: nologo,
-                skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
-
-            string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
-            char[] switchIndicators = ['-', '/'];
-            var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
-                getStarOperators.Any(o =>
-                switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
-
-            ConfigureDotNetForFirstTimeUse(
-                firstTimeUseNoticeSentinel,
-                aspNetCertificateSentinel,
-                toolPathSentinel,
-                isDotnetBeingInvokedFromNativeInstaller,
-                dotnetFirstRunConfiguration,
-                environmentProvider,
-                skipFirstTimeUseCheck: getStarOptionPassed);
+            aspNetCertificateSentinel = new NoOpAspNetCertificateSentinel();
+            firstTimeUseNoticeSentinel = new NoOpFirstTimeUseNoticeSentinel();
+            toolPathSentinel = new NoOpFileSentinel(exists: false);
+            isDotnetBeingInvokedFromNativeInstaller = true;
         }
+
+        var dotnetFirstRunConfiguration = new DotnetFirstRunConfiguration(
+            generateAspNetCertificate: generateAspNetCertificate,
+            telemetryOptout: telemetryOptout,
+            addGlobalToolsToPath: addGlobalToolsToPath,
+            nologo: nologo,
+            skipWorkloadIntegrityCheck: skipWorkloadIntegrityCheck);
+
+        string[] getStarOperators = ["getProperty", "getItem", "getTargetResult"];
+        char[] switchIndicators = ['-', '/'];
+        var getStarOptionPassed = parseResult.CommandResult.Tokens.Any(t =>
+            getStarOperators.Any(o =>
+            switchIndicators.Any(i => t.Value.StartsWith(i + o, StringComparison.OrdinalIgnoreCase))));
+
+        ConfigureDotNetForFirstTimeUse(
+            firstTimeUseNoticeSentinel,
+            aspNetCertificateSentinel,
+            toolPathSentinel,
+            isDotnetBeingInvokedFromNativeInstaller,
+            dotnetFirstRunConfiguration,
+            environmentProvider,
+            skipFirstTimeUseCheck: getStarOptionPassed);
     }
-    
+
     private static int AdjustExitCode(ParseResult parseResult, int exitCode)
     {
         if (parseResult.Errors.Count > 0)
@@ -453,11 +447,7 @@ public class Program
             return;
         }
 
-        Reporter.Verbose.WriteLine(
-            string.Format(
-                LocalizableStrings.DotnetCliHomeUsed,
-                home,
-                CliFolderPathCalculator.DotnetHomeVariableName));
+        Reporter.Verbose.WriteLine(string.Format(LocalizableStrings.DotnetCliHomeUsed, home, CliFolderPathCalculator.DotnetHomeVariableName));
     }
 
     private static void ConfigureDotNetForFirstTimeUse(
