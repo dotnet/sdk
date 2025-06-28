@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "--output", "foo" }, new string[] { "--property:OutputPath=<cwd>foo", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "--artifacts-path", "foo" }, new string[] { "--property:ArtifactsPath=<cwd>foo" })]
         [InlineData(new string[] { "-o", "foo1 foo2" }, new string[] { "--property:OutputPath=<cwd>foo1 foo2", "--property:_CommandLineDefinedOutputPath=true" })]
-        [InlineData(new string[] { "--no-incremental" }, new string[] { "-target:Rebuild" })]
+        [InlineData(new string[] { "--no-incremental" }, new string[] { "--target:Rebuild" })]
         [InlineData(new string[] { "-r", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new string[] { "-r", "linux-amd64" }, new string[] { "--property:RuntimeIdentifier=linux-x64", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
         [InlineData(new string[] { "--runtime", "rid" }, new string[] { "--property:RuntimeIdentifier=rid", "--property:_CommandLineDefinedRuntimeIdentifier=true" })]
@@ -38,8 +38,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [InlineData(new string[] { "-v", "diag" }, new string[] { "-verbosity:diag" })]
         [InlineData(new string[] { "--verbosity", "diag" }, new string[] { "-verbosity:diag" })]
         [InlineData(new string[] { "--no-incremental", "-o", "myoutput", "-r", "myruntime", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
-                   new string[] { "-target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "-verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
-        [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "/t:CustomTarget" })]
+                   new string[] { "--target:Rebuild", "--property:RuntimeIdentifier=myruntime", "--property:_CommandLineDefinedRuntimeIdentifier=true", "-verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
+        [InlineData(new string[] { "/t:CustomTarget" }, new string[] { "--target:CustomTarget" })]
         [InlineData(new string[] { "--disable-build-servers" }, new string[] { "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
         public void MsbuildInvocationIsCorrect(string[] args, string[] expectedAdditionalArgs)
         {
@@ -82,10 +82,10 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             new string[] { "--property:TargetFramework=tfm" })]
         [InlineData(new string[] { "-t:Run", "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
-            new string[] { "--property:TargetFramework=tfm", "-t:Run" })]
+            new string[] { "--property:TargetFramework=tfm", "--target:Run" })]
         [InlineData(new string[] { "/t:Run", "-f", "tfm" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet" },
-            new string[] { "--property:TargetFramework=tfm", "/t:Run" })]
+            new string[] { "--property:TargetFramework=tfm", "--target:Run" })]
         [InlineData(new string[] { "-o", "myoutput", "-f", "tfm", "-v", "diag", "/ArbitrarySwitchForMSBuild" },
             new string[] { "--target:Restore", "-tlp:verbosity=quiet", "-verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" },
             new string[] { "--property:TargetFramework=tfm", "-verbosity:diag", "--property:OutputPath=<cwd>myoutput", "--property:_CommandLineDefinedOutputPath=true", "/ArbitrarySwitchForMSBuild" })]
