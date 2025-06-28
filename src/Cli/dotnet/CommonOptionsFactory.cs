@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -25,7 +24,7 @@ internal static class CommonOptionsFactory
         Arity = ArgumentArity.Zero
     };
 
-    internal class SetDiagnosticModeAction(Option<bool> diagnosticOption) : System.CommandLine.Invocation.SynchronousCommandLineAction
+    internal class SetDiagnosticModeAction(Option<bool> diagnosticOption) : SynchronousCommandLineAction
     {
         public override int Invoke(ParseResult parseResult)
         {
@@ -42,6 +41,7 @@ internal static class CommonOptionsFactory
                     Reporter.Reset();
                 }
             }
+
             return 0;
         }
     }
