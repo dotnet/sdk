@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Invocation;
@@ -105,12 +103,13 @@ public static class Parser
         Action = new PrintVersionAction()
     };
 
-    internal class PrintVersionAction : System.CommandLine.Invocation.SynchronousCommandLineAction
+    internal class PrintVersionAction : SynchronousCommandLineAction
     {
         public PrintVersionAction()
         {
             Terminating = true;
         }
+
         public override int Invoke(ParseResult parseResult)
         {
             CommandLineInfo.PrintVersion();
@@ -124,7 +123,7 @@ public static class Parser
         Action = new PrintInfoAction()
     };
 
-    internal class PrintInfoAction : System.CommandLine.Invocation.SynchronousCommandLineAction
+    internal class PrintInfoAction : SynchronousCommandLineAction
     {
         public PrintInfoAction()
         {
@@ -220,14 +219,14 @@ public static class Parser
         return rootCommand;
     }
 
-    public static Command GetBuiltInCommand(string commandName) =>
+    public static Command? GetBuiltInCommand(string commandName) =>
         Subcommands.FirstOrDefault(c => c.Name.Equals(commandName, StringComparison.OrdinalIgnoreCase));
 
     /// <summary>
     /// Implements token-per-line response file handling for the CLI. We use this instead of the built-in S.CL handling
     /// to ensure backwards-compatibility with MSBuild.
     /// </summary>
-    public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string> replacementTokens, out string errorMessage)
+    public static bool TokenPerLine(string tokenToReplace, out IReadOnlyList<string>? replacementTokens, out string? errorMessage)
     {
         var filePath = Path.GetFullPath(tokenToReplace);
         if (File.Exists(filePath))
@@ -260,7 +259,7 @@ public static class Parser
         ResponseFileTokenReplacer = TokenPerLine
     };
 
-    internal static int ExceptionHandler(Exception exception, ParseResult parseResult)
+    internal static int ExceptionHandler(Exception? exception, ParseResult parseResult)
     {
         if (exception is TargetInvocationException)
         {
@@ -280,13 +279,13 @@ public static class Parser
                 exception.Message.Red().Bold());
             parseResult.ShowHelp();
         }
-        else if (exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
+        else if (exception is not null && exception.GetType().Name.Equals("WorkloadManifestCompositionException"))
         {
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
                 exception.ToString().Red().Bold() :
                 exception.Message.Red().Bold());
         }
-        else
+        else if (exception is not null)
         {
             Reporter.Error.Write("Unhandled exception: ".Red().Bold());
             Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
@@ -374,7 +373,7 @@ public static class Parser
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {
-                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments);
+                var arguments = context.ParseResult.GetValue(FormatCommandParser.Arguments) ?? [];
                 new FormatForwardingApp([.. arguments, .. helpArgs]).Execute();
             }
             else if (command.Name.Equals(FsiCommandParser.GetCommand().Name))
@@ -401,9 +400,9 @@ public static class Parser
             {
                 if (command.Name.Equals(ListReferenceCommandParser.GetCommand().Name))
                 {
-                    Command listCommand = command.Parents.Single() as Command;
+                    Command? listCommand = command.Parents.Single() as Command;
 
-                    for (int i = 0; i < listCommand.Arguments.Count; i++)
+                    for (int i = 0; i < listCommand?.Arguments.Count; i++)
                     {
                         if (listCommand.Arguments[i].Name == CliStrings.SolutionOrProjectArgumentName)
                         {
@@ -434,6 +433,7 @@ public static class Parser
         {
             Terminating = true;
         }
+
         public override int Invoke(ParseResult parseResult)
         {
             CliSchema.PrintCliSchema(parseResult.CommandResult, parseResult.Configuration.Output, Program.TelemetryClient);
