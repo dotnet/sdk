@@ -55,7 +55,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     .Should()
                     .BeNull();
 
-                List<string> expected = [.. ExpectedPrefix, "-restore", "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
+                List<string> expected = [.. ExpectedPrefix, "-restore", "--target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty, .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                 expected.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
             });
         }
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             buildTokens
                    .Should()
-                   .BeEquivalentTo([.. ExpectedPrefix, "-target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty]);
+                   .BeEquivalentTo([.. ExpectedPrefix, "--target:Publish", .. ExpectedProperties, .. expectedAdditionalArgs, NuGetDisabledProperty]);
         }
 
         [Fact]
@@ -99,7 +99,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             command.GetArgumentTokensToMSBuild()
                    .Should()
-                   .BeEquivalentTo([.. ExpectedPrefix, "-target:Publish", .. ExpectedProperties, "--property:NoBuild=true", NuGetDisabledProperty]);
+                   .BeEquivalentTo([.. ExpectedPrefix, "--target:Publish", .. ExpectedProperties, "--property:NoBuild=true", NuGetDisabledProperty]);
         }
 
         [Fact]
