@@ -17,7 +17,7 @@
     <PackageReference Include="System.Text.Json" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
+    <ProjectReference Include="..\..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
   </ItemGroup>
 
   <ItemGroup>
