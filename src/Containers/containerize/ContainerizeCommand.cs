@@ -12,10 +12,42 @@ namespace containerize;
 
 internal class ContainerizeCommand : RootCommand
 {
-    internal Argument<DirectoryInfo> PublishDirectoryArgument { get; } = new Argument<DirectoryInfo>("PublishDirectory")
+    // internal Argument<DirectoryInfo> PublishDirectoryArgument { get; } = new Argument<DirectoryInfo>("PublishDirectory")
+    // {
+    //     Description = "The directory for the build outputs to be published."
+    // }.AcceptExistingOnly();
+
+    internal Option<(string absolutefilePath, string relativePath)[]> InputFilesOption { get; } = new("--input-file")
     {
-        Description = "The directory for the build outputs to be published."
-    }.AcceptExistingOnly();
+        Description = "Specify once per file in the container, in the format '<absolute path to file>=<relative path inside container working directory>'",
+        Required = true,
+        Arity = ArgumentArity.OneOrMore,
+        CustomParser = result =>
+        {
+            var maps = new List<(string absolutefilePath, string relativePath)>(result.Tokens.Count);
+            foreach (var token in result.Tokens)
+            {
+                var parts = token.Value.Split('=', StringSplitOptions.TrimEntries);
+                if (parts.Length != 2)
+                {
+                    result.AddError($"Invalid input file format: '{token.Value}'. Expected format is '<absolute path>=<relative path>'.");
+                    continue;
+                }
+                if (!Path.IsPathRooted(parts[0]))
+                {
+                    result.AddError($"The absolute path '{parts[0]}' is not rooted. Please provide a valid absolute path.");
+                    continue;
+                }
+                if (string.IsNullOrWhiteSpace(parts[1]))
+                {
+                    result.AddError("The relative path inside the container working directory cannot be empty.");
+                    continue;
+                }
+                maps.Add((absolutefilePath: parts[0], relativePath: parts[1]));
+            }
+            return maps.ToArray();
+        }
+    };
 
     internal Option<string> BaseRegistryOption { get; } = new("--baseregistry")
     {
@@ -185,10 +217,6 @@ internal class ContainerizeCommand : RootCommand
         AllowMultipleArgumentsPerToken = true
     };
 
-    internal Option<string> RidOption { get; } = new("--rid") { Description = "Runtime Identifier of the generated container." };
-
-    internal Option<string> RidGraphPathOption { get; } = new("--ridgraphpath") { Description = "Path to the RID graph file." };
-
     internal Option<string> ContainerUserOption { get; } = new("--container-user") { Description = "User to run the container as." };
 
     internal Option<bool> GenerateLabelsOption { get; } = new("--generate-labels")
@@ -208,10 +236,50 @@ internal class ContainerizeCommand : RootCommand
         Description = "If set to OCI or Docker will force the generated image to be that format. If unset, the base images format will be used."
     };
 
+    internal Option<string> ContentStoreRootOption { get; } = new("--content-store-root")
+    {
+        Description = "The path to the content store root. This is used to compute RID compatibility for Image Manifest List entries.",
+        Required = true
+    };
+
+    internal Option<FileInfo> BaseImageManifestFileOption { get; } = new("--base-image-manifest")
+    {
+        Description = "The path to the local manifest of the base image, selected earlier on in the build process",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> BaseImageConfigFileOption { get; } = new("--base-image-config")
+    {
+        Description = "The path to the local container configuration of the base image, selected earlier on in the build process",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> GeneratedManifestPathOption { get; } = new("--generated-manifest")
+    {
+        Description = "The path to the generated manifest file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> GeneratedConfigurationPathOption { get; } = new("--generated-configuration")
+    {
+        Description = "The path to the generated configuration file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
+    internal Option<FileInfo> GeneratedLayerPathOption { get; } = new("--generated-layer")
+    {
+        Description = "The path to the generated layer file.",
+        Required = true,
+        Arity = ArgumentArity.ExactlyOne
+    };
+
     internal ContainerizeCommand() : base("Containerize an application without Docker.")
     {
-        PublishDirectoryArgument.AcceptLegalFilePathsOnly();
-        Arguments.Add(PublishDirectoryArgument);
+        Options.Add(InputFilesOption);
         Options.Add(BaseRegistryOption);
         Options.Add(BaseImageNameOption);
         Options.Add(BaseImageTagOption);
@@ -230,18 +298,19 @@ internal class ContainerizeCommand : RootCommand
         Options.Add(LabelsOption);
         Options.Add(PortsOption);
         Options.Add(EnvVarsOption);
-        Options.Add(RidOption);
-        Options.Add(RidGraphPathOption);
         LocalRegistryOption.AcceptOnlyFromAmong(KnownLocalRegistryTypes.SupportedLocalRegistryTypes);
         Options.Add(LocalRegistryOption);
         Options.Add(ContainerUserOption);
         Options.Add(GenerateLabelsOption);
         Options.Add(GenerateDigestLabelOption);
         Options.Add(ImageFormatOption);
+        Options.Add(ContentStoreRootOption);
+        Options.Add(BaseImageManifestFileOption);
+        Options.Add(BaseImageConfigFileOption);
 
         SetAction(async (parseResult, cancellationToken) =>
         {
-            DirectoryInfo _publishDir = parseResult.GetValue(PublishDirectoryArgument)!;
+            var _inputFiles = parseResult.GetValue(InputFilesOption)!;
             string _baseReg = parseResult.GetValue(BaseRegistryOption)!;
             string _baseName = parseResult.GetValue(BaseImageNameOption)!;
             string _baseTag = parseResult.GetValue(BaseImageTagOption)!;
@@ -260,13 +329,17 @@ internal class ContainerizeCommand : RootCommand
             Dictionary<string, string> _labels = parseResult.GetValue(LabelsOption) ?? new Dictionary<string, string>();
             Port[]? _ports = parseResult.GetValue(PortsOption);
             Dictionary<string, string> _envVars = parseResult.GetValue(EnvVarsOption) ?? new Dictionary<string, string>();
-            string _rid = parseResult.GetValue(RidOption)!;
-            string _ridGraphPath = parseResult.GetValue(RidGraphPathOption)!;
             string _localContainerDaemon = parseResult.GetValue(LocalRegistryOption)!;
             string? _containerUser = parseResult.GetValue(ContainerUserOption);
             bool _generateLabels = parseResult.GetValue(GenerateLabelsOption);
             bool _generateDigestLabel = parseResult.GetValue(GenerateDigestLabelOption);
             KnownImageFormats? _imageFormat = parseResult.GetValue(ImageFormatOption);
+            string _contentStoreRoot = parseResult.GetValue(ContentStoreRootOption)!;
+            FileInfo _baseImageManifestFile = parseResult.GetValue(BaseImageManifestFileOption)!;
+            FileInfo _baseImageConfigFile = parseResult.GetValue(BaseImageConfigFileOption)!;
+            FileInfo _generatedManifestPath = parseResult.GetValue(GeneratedManifestPathOption)!;
+            FileInfo _generatedConfigPath = parseResult.GetValue(GeneratedConfigurationPathOption)!;
+            FileInfo _generatedLayerPath = parseResult.GetValue(GeneratedLayerPathOption)!;
 
             //setup basic logging
             bool traceEnabled = Env.GetEnvironmentVariableAsBool("CONTAINERIZE_TRACE_LOGGING_ENABLED");
@@ -274,7 +347,7 @@ internal class ContainerizeCommand : RootCommand
             using ILoggerFactory loggerFactory = LoggerFactory.Create(builder => builder.AddSimpleConsole(c => c.ColorBehavior = LoggerColorBehavior.Disabled).SetMinimumLevel(verbosity));
 
             await ContainerBuilder.ContainerizeAsync(
-                _publishDir,
+                _inputFiles,
                 _workingDir,
                 _baseReg,
                 _baseName,
@@ -292,14 +365,18 @@ internal class ContainerizeCommand : RootCommand
                 _labels,
                 _ports,
                 _envVars,
-                _rid,
-                _ridGraphPath,
                 _localContainerDaemon,
                 _containerUser,
                 _archiveOutputPath,
                 _generateLabels,
                 _generateDigestLabel,
                 _imageFormat,
+                _contentStoreRoot,
+                _baseImageManifestFile,
+                _baseImageConfigFile,
+                _generatedManifestPath,
+                _generatedConfigPath,
+                _generatedLayerPath,
                 loggerFactory,
                 cancellationToken).ConfigureAwait(false);
         });

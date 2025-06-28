@@ -17,7 +17,7 @@ internal static class ImageIndexGenerator
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static (string, string) GenerateImageIndex(BuiltImage[] images)
+    internal static IMultiImageManifest GenerateImageIndex(BuiltImage[] images)
     {
         if (images.Length == 0)
         {
@@ -33,11 +33,11 @@ internal static class ImageIndexGenerator
 
         if (manifestMediaType == SchemaTypes.DockerManifestV2)
         {
-            return (GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2), SchemaTypes.DockerManifestListV2);
+            return GenerateDockerManifestList(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2);
         }
         else if (manifestMediaType == SchemaTypes.OciManifestV1)
         {
-            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1), SchemaTypes.OciImageIndexV1);
+            return GenerateDockerManifestList(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1);
         }
         else
         {
@@ -54,7 +54,7 @@ internal static class ImageIndexGenerator
     /// <returns>Returns json string of image index and image index mediaType.</returns>
     /// <exception cref="ArgumentException"></exception>
     /// <exception cref="NotSupportedException"></exception>
-    internal static string GenerateImageIndex(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
+    internal static ManifestListV2 GenerateDockerManifestList(BuiltImage[] images, string manifestMediaType, string imageIndexMediaType)
     {
         if (images.Length == 0)
         {
@@ -70,7 +70,7 @@ internal static class ImageIndexGenerator
             manifests[i] = new PlatformSpecificManifest
             {
                 mediaType = manifestMediaType,
-                size = images[i].Manifest.Length,
+                size = JsonSerializer.SerializeToNode(images[i].Manifest)!.ToJsonString().Length,
                 digest = images[i].ManifestDigest,
                 platform = new PlatformInformation
                 {
@@ -87,10 +87,10 @@ internal static class ImageIndexGenerator
             manifests = manifests
         };
 
-        return GetJsonStringFromImageIndex(imageIndex);
+        return imageIndex;
     }
 
-    internal static string GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
+    internal static ImageIndexV1 GenerateImageIndexWithAnnotations(string manifestMediaType, string manifestDigest, long manifestSize, string repository, string[] tags)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
         
@@ -118,21 +118,6 @@ internal static class ImageIndexGenerator
             manifests = manifests
         };
 
-        return GetJsonStringFromImageIndex(index);
-    }
-
-    private static string GetJsonStringFromImageIndex<T>(T imageIndex)
-    {
-        var nullIgnoreOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
-        // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
-        var escapeOptions = new JsonSerializerOptions
-        {
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-        };
-
-        return JsonSerializer.SerializeToNode(imageIndex, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
+        return index;
     }
 }

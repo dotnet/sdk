@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Logging;
@@ -52,12 +54,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         ILoggerFactory msbuildLoggerFactory = new LoggerFactory(new[] { loggerProvider });
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateNewImage>();
 
-        if (!Directory.Exists(PublishDirectory))
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.PublishDirectoryDoesntExist), nameof(PublishDirectory), PublishDirectory);
-            return !Log.HasLoggedErrors;
-        }
-
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
@@ -72,96 +68,47 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
+        KnownImageFormats? format = null;
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse(ImageFormat, out KnownImageFormats knownFormat))
+            {
+                format = knownFormat;
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetNames(typeof(KnownImageFormats))));
+                return false;
+            }
+        }
+
         ImageBuilder? imageBuilder;
         if (sourceRegistry is { } registry)
         {
-            try
-            {
-                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
-                imageBuilder = await registry.GetImageManifestAsync(
-                    BaseImageName,
-                    sourceImageReference.Reference,
-                    ContainerRuntimeIdentifier,
-                    picker,
-                    cancellationToken).ConfigureAwait(false);
-            }
-            catch (RepositoryNotFoundException)
-            {
-                telemetry.LogUnknownRepository();
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (UnableToAccessRepositoryException)
-            {
-                telemetry.LogCredentialFailure(sourceImageReference);
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (ContainerHttpException e)
-            {
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
-            catch (BaseImageNotFoundException e)
-            {
-                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
+            imageBuilder = await ContainerBuilder.LoadFromManifestAndConfig(BaseImageManifestPath.ItemSpec, format, BaseImageConfigurationPath.ItemSpec, logger);
         }
         else
         {
             throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
         }
 
-        if (imageBuilder is null)
-        {
-            Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
-            return !Log.HasLoggedErrors;
-        }
-
-        (string message, object[] parameters) = SkipPublishing ?
-            (Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
+        (string message, object[] parameters) =
             (Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
 
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
+        var storePath = new DirectoryInfo(ContentStoreRoot);
+        if (!storePath.Exists)
         {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
+            throw new ArgumentException($"The content store path '{ContentStoreRoot}' does not exist.");
         }
+        var store = new ContentStore(storePath);
 
-        // forcibly change the media type if required
-        if (ImageFormat is not null)
-        {
-            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
-            {
-                imageBuilder.ManifestMediaType = imageFormat switch
-                {
-                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
-                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
-                };
-            }
-            else
-            {
-                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
-            }
-        }
-
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
+        (string absolutefilePath, string relativeContainerPath)[] filesWithRelativePaths =
+            PublishFiles
+            .Select(f => (f.ItemSpec, f.GetMetadata("RelativePath")))
+            .Where(x => !string.IsNullOrWhiteSpace(x.ItemSpec) && !string.IsNullOrWhiteSpace(x.Item2))
+            .ToArray();
+        Layer newLayer = await Layer.FromFiles(filesWithRelativePaths, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, store, new(GeneratedLayerPath), cancellationToken);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
@@ -209,23 +156,47 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
-        GeneratedContainerManifest = builtImage.Manifest;
-        GeneratedContainerConfiguration = builtImage.Config;
+
+        var serializedManifest = JsonSerializer.Serialize(builtImage.Manifest);
+        var manifestWriteTask = File.WriteAllTextAsync(GeneratedManifestPath, serializedManifest, DigestUtils.UTF8);
+
+        var serializedConfig = JsonSerializer.Serialize(builtImage.Config);
+        var configWriteTask = File.WriteAllTextAsync(GeneratedConfigurationPath, serializedConfig, DigestUtils.UTF8);
+
+        await Task.WhenAll(manifestWriteTask, configWriteTask).ConfigureAwait(false);
+
+        GeneratedContainerManifest = serializedManifest;
+        GeneratedContainerConfiguration = serializedConfig;
         GeneratedContainerDigest = builtImage.ManifestDigest;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
         GeneratedContainerMediaType = builtImage.ManifestMediaType;
         GeneratedContainerNames = destinationImageReference.FullyQualifiedImageNames().Select(name => new Microsoft.Build.Utilities.TaskItem(name)).ToArray();
+        GeneratedAppContainerLayer = new Microsoft.Build.Utilities.TaskItem(GeneratedLayerPath, new Dictionary<string, string>(4)
+        {
+            ["Size"] = newLayer.Descriptor.Size.ToString(),
+            ["MediaType"] = newLayer.Descriptor.MediaType,
+            ["Digest"] = newLayer.Descriptor.Digest,
+        });
+
+        GeneratedAppContainerConfig = new Microsoft.Build.Utilities.TaskItem(GeneratedConfigurationPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = builtImage.Manifest.Config.size.ToString(),
+            ["MediaType"] = builtImage.Manifest.Config.mediaType,
+            ["Digest"] = builtImage.Manifest.Config.digest,
+        });
+
+        GeneratedAppContainerManifest = new Microsoft.Build.Utilities.TaskItem(GeneratedManifestPath, new Dictionary<string, string>(2)
+        {
+            ["Size"] = new FileInfo(GeneratedManifestPath).Length.ToString(),
+            ["MediaType"] = builtImage.Manifest.MediaType!,
+            ["Digest"] = builtImage.Manifest.GetDigest(),
+        });
+
         if (baseImageLabel is not null && baseImageDigest is not null)
         {
             var labelItem = new Microsoft.Build.Utilities.TaskItem(baseImageLabel);
             labelItem.SetMetadata("Value", baseImageDigest);
             GeneratedDigestLabel = labelItem;
-        }
-
-        if (!SkipPublishing)
-        {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-                .ConfigureAwait(false);
         }
 
         return !Log.HasLoggedErrors;
