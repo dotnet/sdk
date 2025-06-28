@@ -1,10 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
     [CollectionDefinition(nameof(TestToolBuilderCollection))]
@@ -35,10 +31,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public bool NativeAOT { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool SelfContained { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool Trimmed { get; set { field = value; this.RidSpecific = value; } } = false;
-            public bool IncludeAnyRid { get; set { field = value; this.RidSpecific = value; } } = false;
+            public bool IncludeAnyRid { get; set { field = value; } } = false;
             public bool RidSpecific { get; set; } = false;
+            public bool IncludeCurrentRid { get; set; } = true;
 
-            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}{(RidSpecific ? "-specific" : "")}{(IncludeAnyRid ? "-anyrid" : "")}";
+            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}{(RidSpecific ? "-specific" : "")}{(IncludeAnyRid ? "-anyrid" : "")}{(IncludeCurrentRid ? "" : "-no-current-rid")}";
         }
 
 
@@ -57,12 +54,17 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             testProject.AdditionalProperties["ImplicitUsings"] = "enable";
             testProject.AdditionalProperties["Version"] = toolSettings.ToolPackageVersion;
 
-            var singleRid = RuntimeInformation.RuntimeIdentifier;
-            var multiRid = toolSettings.IncludeAnyRid ? $"{ToolsetInfo.LatestRuntimeIdentifiers};any" : ToolsetInfo.LatestRuntimeIdentifiers;
+            var multiRid = toolSettings.IncludeCurrentRid ? ToolsetInfo.LatestRuntimeIdentifiers : ToolsetInfo.LatestRuntimeIdentifiers.Replace(RuntimeInformation.RuntimeIdentifier, string.Empty).Trim(';');
 
             if (toolSettings.RidSpecific)
             {
                 testProject.AdditionalProperties["RuntimeIdentifiers"] = multiRid;
+            }
+            if (toolSettings.IncludeAnyRid)
+            {
+                testProject.AdditionalProperties["RuntimeIdentifiers"] = testProject.AdditionalProperties.TryGetValue("RuntimeIdentifiers", out var existingRids)
+                    ? $"{existingRids};any"
+                    : "any";
             }
 
             if (toolSettings.NativeAOT)
