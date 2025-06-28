@@ -66,8 +66,6 @@ internal static class StoreCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
-    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("ComposeStore");
-
     private static readonly Command Command = ConstructCommand();
 
     public static Command GetCommand()
@@ -88,7 +86,7 @@ internal static class StoreCommandParser
         command.Options.Add(SkipSymbolsOption);
         command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption(VerbosityOptions.minimal));
+        command.Options.Add(CommonOptions.VerbosityOption());
         command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
