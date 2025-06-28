@@ -531,6 +531,74 @@ namespace Microsoft.NET.Build.Tests
             new FileInfo(Path.Combine(testAsset.Path, "MSBuildSdk", "obj", "Debug", ToolsetInfo.CurrentTargetFramework, "MSBuildSdk.dll")).Should().Exist();
 
         }
+
+        [Fact]
+        public void PublishingRegistersWrittenFilesForProperCleanup()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true,
+                UseArtifactsOutput = true,
+            };
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            //  Now add a Directory.Build.props file setting UseArtifactsOutput to true
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var projectDir = Path.Combine(testAsset.Path, testAsset.TestProject.Name);
+
+            // publish the app
+            // we publish self-contained so that we include hostfxr.dll.
+            // if we don't clean up this file, when we build in Release,
+            // the generated exe will pick up the hostfxr and fail to run.
+            // so the only way to successfully run the exe is to clean up
+            // the hostfxr.dll and other self-contained files.
+            new DotnetPublishCommand(Log)
+                .WithWorkingDirectory(projectDir)
+                .Execute("--self-contained")
+                .Should()
+                .Pass();
+
+            var outputDir = new DirectoryInfo(OutputPathCalculator.FromProject(testAsset.Path, testProject).GetOutputDirectory(configuration: "release"));
+            outputDir.Should().Exist().And.HaveFile("hostfxr.dll");
+            LocateAndRunApp(outputDir);
+
+            var publishDir = new DirectoryInfo(OutputPathCalculator.FromProject(testAsset.Path, testProject).GetPublishDirectory(configuration: "release"));
+            publishDir.Should().Exist().And.HaveFile("hostfxr.dll");
+            LocateAndRunApp(publishDir);
+
+            // now build the app in Release configuration.
+            // now self-contained, so that we are forced to clean up the runtime
+            // files that were published.
+            new DotnetBuildCommand(Log)
+                .WithWorkingDirectory(projectDir)
+                .Execute("-c", "Release")
+                .Should()
+                .Pass();
+            outputDir.Should().Exist();
+            outputDir.Should().NotHaveFiles(["hostfxr.dll"]);
+            LocateAndRunApp(outputDir);
+
+            void LocateAndRunApp(DirectoryInfo root)
+            {
+                var appBinaryName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
+                ? $"{testProject.Name}.exe"
+                : testProject.Name;
+                root.Should().HaveFiles([appBinaryName]);
+                var binary = root.GetFiles(appBinaryName).First();
+                new RunExeCommand(Log, binary.FullName)
+                    .Execute()
+                    .Should()
+                    .Pass();
+            }
+        }
     }
 
     namespace ArtifactsTestExtensions
