@@ -98,7 +98,7 @@ internal static class CommonOptions
                     {
                         return [defaultTargetName];
                     }
-                    return [defaultTargetName, .. result.Tokens.Select(t => t.Value)];
+                    return [defaultTargetName, .. result.Tokens.Select(t => t.Value).Where(t => !t.Equals(defaultTargetName, StringComparison.OrdinalIgnoreCase))];
                 },
                 Hidden = true,
                 Arity = ArgumentArity.ZeroOrMore
