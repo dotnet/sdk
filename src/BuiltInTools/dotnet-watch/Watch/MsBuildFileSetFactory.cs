@@ -32,6 +32,12 @@ namespace Microsoft.DotNet.Watch
 
         public string RootProjectFile => rootProjectFile;
 
+        internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
+        {
+            public readonly IReadOnlyDictionary<string, FileItem> Files = files;
+            public readonly ProjectGraph? ProjectGraph = projectGraph;
+        }
+
         // Virtual for testing.
         public virtual async ValueTask<EvaluationResult?> TryCreateAsync(bool? requireProjectGraph, CancellationToken cancellationToken)
         {
@@ -125,7 +131,10 @@ namespace Microsoft.DotNet.Watch
                 ProjectGraph? projectGraph = null;
                 if (requireProjectGraph != null)
                 {
-                    projectGraph = TryLoadProjectGraph(requireProjectGraph.Value, cancellationToken);
+                    var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
+                        .ToDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
+
+                    projectGraph = TryLoadProjectGraph(rootProjectFile, globalOptions, reporter, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -174,6 +183,8 @@ namespace Microsoft.DotNet.Watch
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
             arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
             arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
+            arguments.Add("/p:SkipCompilerExecution=true");
+            arguments.Add("/p:ProvideCommandLineArgs=true");
             arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
             arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
 
@@ -202,15 +213,13 @@ namespace Microsoft.DotNet.Watch
         /// <summary>
         /// Tries to create a project graph by running the build evaluation phase on the <see cref="rootProjectFile"/>.
         /// </summary>
-        internal ProjectGraph? TryLoadProjectGraph(bool projectGraphRequired, CancellationToken cancellationToken)
+        internal static ProjectGraph? TryLoadProjectGraph(
+            string rootProjectFile,
+            Dictionary<string, string> globalOptions,
+            IReporter reporter,
+            bool projectGraphRequired,
+            CancellationToken cancellationToken)
         {
-            var globalOptions = new Dictionary<string, string>();
-
-            foreach (var (name, value) in CommandLineOptions.ParseBuildProperties(buildArguments))
-            {
-                globalOptions[name] = value;
-            }
-
             var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
 
             try

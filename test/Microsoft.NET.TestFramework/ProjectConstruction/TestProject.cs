@@ -464,22 +464,15 @@ namespace {safeThisName}
     @"    }
 }";
                     string sourcePath = Path.Combine(targetFolder, Name + ".cs");
-
                     File.WriteAllText(sourcePath, source);
                 }
-
-            }
-            else
-            {
-                foreach (var kvp in SourceFiles)
-                {
-                    File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
-                }
             }
 
-            foreach (var kvp in EmbeddedResources)
+            foreach (var kvp in SourceFiles.Concat(EmbeddedResources))
             {
-                File.WriteAllText(Path.Combine(targetFolder, kvp.Key), kvp.Value);
+                var targetPath = Path.Combine(targetFolder, kvp.Key);
+                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
+                File.WriteAllText(targetPath, kvp.Value);
             }
         }
 

@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.Cli;
 
@@ -57,11 +58,14 @@ internal static class ProjectGraphNodeExtensions
     public static IEnumerable<string> GetDefaultItemExcludes(this ProjectGraphNode projectNode)
         => projectNode.GetStringListPropertyValue("DefaultItemExcludes");
 
-    private static IEnumerable<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
+    public static IEnumerable<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
         => projectNode.ProjectInstance.GetPropertyValue(propertyName).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
-    private static bool GetBooleanPropertyValue(this ProjectGraphNode projectNode, string propertyName)
-        => bool.TryParse(projectNode.ProjectInstance.GetPropertyValue(propertyName), out var result) && result;
+    public static bool GetBooleanPropertyValue(this ProjectGraphNode projectNode, string propertyName, bool defaultValue = false)
+        => projectNode.ProjectInstance.GetPropertyValue(propertyName) is { Length: >0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
+
+    public static bool GetBooleanMetadataValue(this ProjectItemInstance item, string metadataName, bool defaultValue = false)
+        => item.GetMetadataValue(metadataName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
 
     public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
     {

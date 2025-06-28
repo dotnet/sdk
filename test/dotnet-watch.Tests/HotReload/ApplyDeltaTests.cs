@@ -310,7 +310,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.WaitUntilOutputContains($"dotnet watch ⌚ Ignoring change in output directory: Add '{objDirFilePath}'");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/49542")]
+        [Fact]
         public async Task ProjectChange_GlobalUsings()
         {
             var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -340,9 +340,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 <Using Include="System.Xml.Linq" />
                 """));
 
-            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchNoDepsApp ({ToolsetInfo.CurrentTargetFramework})");
+            await App.AssertOutputLineStartsWith(MessageDescriptor.HotReloadSucceeded, $"WatchHotReloadApp ({ToolsetInfo.CurrentTargetFramework})", failure: _ => false);
 
-            await App.WaitUntilOutputContains(">>> System.Linq.Enumerable");
+            await App.WaitUntilOutputContains(">>> System.Xml.Linq.XDocument");
 
             App.AssertOutputContains(MessageDescriptor.ReEvaluationCompleted);
         }
