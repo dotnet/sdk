@@ -75,6 +75,8 @@ internal sealed class Registry
     private const string DockerHubRegistry1 = "registry-1.docker.io";
     private const string DockerHubRegistry2 = "registry.hub.docker.com";
     private static readonly int s_defaultChunkSizeBytes = 1024 * 64;
+    private const int MaxDownloadRetries = 5;
+    private readonly Func<TimeSpan> _retryDelayProvider;
 
     private readonly ILogger _logger;
     private readonly IRegistryAPI _registryAPI;
@@ -87,7 +89,7 @@ internal sealed class Registry
     /// </summary>
     public string RegistryName { get; }
 
-    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) :
+    internal Registry(string registryName, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
         this(new Uri($"https://{registryName}"), logger, registryAPI, settings)
     { }
 
@@ -96,7 +98,7 @@ internal sealed class Registry
     { }
 
 
-    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null) :
+    internal Registry(Uri baseUri, ILogger logger, IRegistryAPI registryAPI, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null) :
         this(baseUri, logger, new RegistryApiFactory(registryAPI), settings)
     { }
 
@@ -104,7 +106,7 @@ internal sealed class Registry
         this(baseUri, logger, new RegistryApiFactory(mode), settings)
     { }
 
-    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null)
+    private Registry(Uri baseUri, ILogger logger, RegistryApiFactory factory, RegistrySettings? settings = null, Func<TimeSpan>? retryDelayProvider = null)
     {
         RegistryName = DeriveRegistryName(baseUri);
 
@@ -118,6 +120,8 @@ internal sealed class Registry
         _logger = logger;
         _settings = settings ?? new RegistrySettings(RegistryName);
         _registryAPI = factory.Create(RegistryName, BaseUri, logger, _settings.IsInsecure);
+
+        _retryDelayProvider = retryDelayProvider ?? (() => TimeSpan.FromSeconds(1));
     }
 
     private static string DeriveRegistryName(Uri baseUri)
@@ -404,33 +408,48 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         string localPath = ContentStore.PathForDescriptor(descriptor);
-
+    
         if (File.Exists(localPath))
         {
             // Assume file is up to date and just return it
             return localPath;
         }
-
+    
         string tempTarballPath = ContentStore.GetTempFile();
-
-        try
+    
+        int retryCount = 0;
+        while (retryCount < MaxDownloadRetries)
         {
-            // No local copy, so download one
-            using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
-
-            using (FileStream fs = File.Create(tempTarballPath))
+            try
             {
-                await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                // No local copy, so download one
+                using Stream responseStream = await _registryAPI.Blob.GetStreamAsync(repository, descriptor.Digest, cancellationToken).ConfigureAwait(false);
+    
+                using (FileStream fs = File.Create(tempTarballPath))
+                {
+                    await responseStream.CopyToAsync(fs, cancellationToken).ConfigureAwait(false);
+                }
+    
+                // Break the loop if successful
+                break;
+            }
+            catch (Exception ex)
+            {
+                retryCount++;
+                if (retryCount >= MaxDownloadRetries)
+                {
+                    throw new UnableToDownloadFromRepositoryException(repository);
+                }
+    
+                _logger.LogTrace("Download attempt {0}/{1} for repository '{2}' failed. Error: {3}", retryCount, MaxDownloadRetries, repository, ex.ToString());
+    
+                // Wait before retrying
+                await Task.Delay(_retryDelayProvider(), cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception)
-        {
-            throw new UnableToDownloadFromRepositoryException(repository);
-        }
-        cancellationToken.ThrowIfCancellationRequested();
-
+    
         File.Move(tempTarballPath, localPath, overwrite: true);
-
+    
         return localPath;
     }
 
