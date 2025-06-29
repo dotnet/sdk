@@ -116,6 +116,13 @@
     </ItemGroup>
   </Target>
 
+  <Target Name="ValidateMinimumVersions" Condition="'$(DotNetBuildSourceOnly)' != 'true'" BeforeTargets="CoreCompile">
+    <PropertyGroup>
+      <_MSBuildMajorMinor>$([System.Version]::Parse('$(MicrosoftBuildMinimumVersion)').Major).$([System.Version]::Parse('$(MicrosoftBuildMinimumVersion)').Minor)</_MSBuildMajorMinor>
+    </PropertyGroup>
+    <Error Condition="'$(_MSBuildMajorMinor)' != '$(MinimumVSVersion)'" Text="The major and minor versions of MicrosoftBuildMinimumVersion ($(_MSBuildMajorMinor)) must match MinimumVSVersion ($(MinimumVSVersion))." />
+  </Target>
+
   <Target Name="ReturnProductVersion" Returns="$(FullNugetVersion)" />
 
 </Project>
