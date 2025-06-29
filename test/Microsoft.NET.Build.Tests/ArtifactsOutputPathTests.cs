@@ -541,6 +541,11 @@ namespace Microsoft.NET.Build.Tests
                 UseArtifactsOutput = true,
             };
 
+            var hostfxrName =
+                RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "hostfxr.dll" :
+                RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "libhostfxr.so" :
+                "libhostfxr.dylib";
+
             var testAsset = _testAssetsManager.CreateTestProject(testProject);
 
             //  Now add a Directory.Build.props file setting UseArtifactsOutput to true
@@ -567,11 +572,11 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
 
             var outputDir = new DirectoryInfo(OutputPathCalculator.FromProject(testAsset.Path, testProject).GetOutputDirectory(configuration: "release"));
-            outputDir.Should().Exist().And.HaveFile("hostfxr.dll");
+            outputDir.Should().Exist().And.HaveFile(hostfxrName);
             LocateAndRunApp(outputDir);
 
             var publishDir = new DirectoryInfo(OutputPathCalculator.FromProject(testAsset.Path, testProject).GetPublishDirectory(configuration: "release"));
-            publishDir.Should().Exist().And.HaveFile("hostfxr.dll");
+            publishDir.Should().Exist().And.HaveFile(hostfxrName);
             LocateAndRunApp(publishDir);
 
             // now build the app in Release configuration.
@@ -583,7 +588,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .Pass();
             outputDir.Should().Exist();
-            outputDir.Should().NotHaveFiles(["hostfxr.dll"]);
+            outputDir.Should().NotHaveFiles([hostfxrName]);
             LocateAndRunApp(outputDir);
 
             void LocateAndRunApp(DirectoryInfo root)
