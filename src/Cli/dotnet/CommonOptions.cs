@@ -72,39 +72,43 @@ internal static class CommonOptions
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
             HelpName = "TARGET",
             DefaultValueFactory = _ => defaultTargetName is not null ? [defaultTargetName] : null,
-            CustomParser = (result) =>
-                {
-                    if (result.Tokens.Count == 0)
-                    {
-                        return defaultTargetName is not null ? [defaultTargetName] : null;
-                    }
-                    return defaultTargetName is not null ? [defaultTargetName, .. result.Tokens.Select(t => t.Value)] : [.. result.Tokens.Select(t => t.Value)];
-                },
+            CustomParser = r => SplitMSBuildTargets(defaultTargetName, r),
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
+        // there might not be _any_ targets, so we return an enumerable so we can return empty
         .ForwardAsMany(targets => targets is null ? Enumerable.Empty<string>() : [$"--target:{string.Join(";", targets)}"])
         .AllowSingleArgPerToken();
 
-        public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
-            new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
-            {
-                Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
-                HelpName = "TARGET",
-                DefaultValueFactory = _ => [defaultTargetName],
-                CustomParser = (result) =>
-                {
-                    if (result.Tokens.Count == 0)
-                    {
-                        return [defaultTargetName];
-                    }
-                    return [defaultTargetName, .. result.Tokens.Select(t => t.Value).Where(t => !t.Equals(defaultTargetName, StringComparison.OrdinalIgnoreCase))];
-                },
-                Hidden = true,
-                Arity = ArgumentArity.ZeroOrMore
-            }
-            .ForwardAsSingle(targets => $"--target:{string.Join(";", targets)}")
-            .AllowSingleArgPerToken();
+
+    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
+        new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
+        {
+            Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
+            HelpName = "TARGET",
+            DefaultValueFactory = _ => [defaultTargetName],
+            CustomParser = r => SplitMSBuildTargets(defaultTargetName, r),
+            Hidden = true,
+            Arity = ArgumentArity.ZeroOrMore
+        }
+        // since we know there's at least one target, we can forward it as a single argument
+        .ForwardAsSingle(targets => $"--target:{string.Join(";", targets)}")
+        .AllowSingleArgPerToken();
+
+    public static string[] SplitMSBuildTargets(string? defaultTargetName, ArgumentResult argumentResult)
+    {
+        if (argumentResult.Tokens.Count == 0)
+        {
+            return defaultTargetName is not null ? [defaultTargetName] : [];
+        }
+        var userTargets =
+            argumentResult.Tokens.Select(t => t.Value)
+            .SelectMany(t => t.Split([';', ','], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Where(t => !string.IsNullOrEmpty(t));
+        var allTargets = defaultTargetName is null ? userTargets : [defaultTargetName, .. userTargets];
+        return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+    }
+
 
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
