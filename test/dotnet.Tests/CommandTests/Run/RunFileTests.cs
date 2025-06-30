@@ -3,6 +3,8 @@
 
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -772,7 +774,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <c>dotnet run --bl file.cs</c> produces a binary log.
     /// </summary>
     [Theory, CombinatorialData]
-    public void BinaryLog(bool beforeFile)
+    public void BinaryLog_Run(bool beforeFile)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
@@ -900,6 +902,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
             .Select(f => f.Name)
             .Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Binary logs from our in-memory projects should have evaluation data.
+    /// </summary>
+    [Fact]
+    public void BinaryLog_EvaluationData()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        string binaryLogPath = Path.Join(testInstance.Path, "msbuild.binlog");
+        new FileInfo(binaryLogPath).Should().Exist();
+
+        var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
+        records.Any(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeTrue();
+        records.Any(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeTrue();
     }
 
     /// <summary>
