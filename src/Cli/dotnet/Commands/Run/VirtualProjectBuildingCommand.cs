@@ -108,8 +108,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
           </Target>
         """;
 
-    private ImmutableArray<CSharpDirective> _directives;
-
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
         string[] msbuildArgs)
@@ -131,6 +129,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoBuild { get; init; }
     public string BuildTarget { get; init; } = "Build";
 
+    public ImmutableArray<CSharpDirective> Directives
+    {
+        get
+        {
+            if (field.IsDefault)
+            {
+                var sourceFile = LoadSourceFile(EntryPointFileFullPath);
+                field = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
+                Debug.Assert(!field.IsDefault);
+            }
+
+            return field;
+        }
+
+        init;
+    }
+
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
@@ -151,8 +166,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
-
-                PrepareProjectInstance();
 
                 return 0;
             }
@@ -182,8 +195,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
-
-            PrepareProjectInstance();
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
@@ -426,19 +437,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cacheEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
-    /// <summary>
-    /// Needs to be called before the first call to <see cref="CreateProjectInstance(ProjectCollection)"/>.
-    /// </summary>
-    public VirtualProjectBuildingCommand PrepareProjectInstance()
-    {
-        Debug.Assert(_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should not be called multiple times.");
-
-        var sourceFile = LoadSourceFile(EntryPointFileFullPath);
-        _directives = FindDirectives(sourceFile, reportAllErrors: false, errors: null);
-
-        return this;
-    }
-
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
@@ -464,13 +462,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         ProjectRootElement CreateProjectRootElement(ProjectCollection projectCollection)
         {
-            Debug.Assert(!_directives.IsDefault, $"{nameof(PrepareProjectInstance)} should have been called first.");
-
             var projectFileFullPath = Path.ChangeExtension(EntryPointFileFullPath, ".csproj");
             var projectFileWriter = new StringWriter();
             WriteProjectFile(
                 projectFileWriter,
-                _directives,
+                Directives,
                 isVirtualProject: true,
                 targetFilePath: EntryPointFileFullPath,
                 artifactsPath: GetArtifactsPath(),
@@ -594,7 +590,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine("""
 
                   <PropertyGroup>
-                    <EnableDefaultItems>false</EnableDefaultItems>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+                    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                   </PropertyGroup>
                 """);
         }

@@ -126,7 +126,7 @@ public class RunCommand
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
+                projectFactory = CreateVirtualCommand().CreateProjectInstance;
             }
         }
 

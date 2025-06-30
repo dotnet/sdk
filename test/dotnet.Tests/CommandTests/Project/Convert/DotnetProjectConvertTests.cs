@@ -263,6 +263,93 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Default items like <c>None</c> or <c>Content</c> are copied over.
+    /// </summary>
+    [Fact]
+    public void DefaultItems()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+        Directory.CreateDirectory(Path.Join(testInstance.Path, "subdir"));
+        File.WriteAllText(Path.Join(testInstance.Path, "subdir", "second.json"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "my.json", "subdir"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program", "subdir"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["second.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreIncluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultCompileItems=true
+            #:property EnableDefaultEmbeddedResourceItems=true
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
+    }
+
+    [Fact]
+    public void DefaultItems_MoreExcluded()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property EnableDefaultItems=false
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json"]);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
+    }
+
+    /// <summary>
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
     /// </summary>
@@ -284,6 +371,28 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     }
 
     /// <summary>
+    /// Since we perform MSBuild evaluation during the conversion (to find included items to copy over),
+    /// the conversion can fail when the specified SDK does not exist.
+    /// </summary>
+    [Fact]
+    public void ProcessingFails_Evaluation()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            // The SDK 'Microsoft.ThisSdkDoesNotExist' specified could not be found.
+            .And.HaveStdErrContaining("Microsoft.ThisSdkDoesNotExist");
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().BeEmpty();
+    }
+
+    /// <summary>
     /// End-to-end test of directive processing. More cases are covered by faster unit tests below.
     /// </summary>
     [Fact]
@@ -291,7 +400,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
-            #:sdk Aspire.Hosting.Sdk@9.1.0
+            #:package Humanizer@2.14.1
             Console.WriteLine();
             """);
 
@@ -313,7 +422,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         File.ReadAllText(Path.Join(testInstance.Path, "Program", "Program.csproj"))
             .Should().Be($"""
-                <Project Sdk="Aspire.Hosting.Sdk/9.1.0">
+                <Project Sdk="Microsoft.NET.Sdk">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
@@ -322,6 +431,10 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
                   </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Humanizer" Version="2.14.1" />
+                  </ItemGroup>
 
                 </Project>
 
