@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47246")]
+        [Fact]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
+                .Execute("-c", "Debug", "-p:PackageID=LibraryWithOutputAssemblyName", "--include-symbols")
                 .Should().Pass();
 
 
