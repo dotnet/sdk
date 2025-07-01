@@ -322,7 +322,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 RidSpecific = true,
                 AdditionalPackageTypes = ["TestPackageType"]
             };
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings);
+            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
 
             var packages = Directory.GetFiles(toolPackagesPath, "*.nupkg");
             var packageIdentifier = toolSettings.ToolPackageId;
