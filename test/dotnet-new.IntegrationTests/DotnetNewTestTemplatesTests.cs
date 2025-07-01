@@ -281,15 +281,16 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                         version = match.Groups[3].Value;
                     }
 
-                    // Find existing registration for this package or null if not found
+                    // Find existing registration for this package with the SAME VERSION
                     var existingRegistration = manifest.Registrations?.FirstOrDefault(r =>
                         r.Component != null &&
                         r.Component.Nuget != null &&
-                        string.Equals(r.Component.Nuget.Name, packageId, StringComparison.OrdinalIgnoreCase));
+                        string.Equals(r.Component.Nuget.Name, packageId, StringComparison.OrdinalIgnoreCase) &&
+                        string.Equals(r.Component.Nuget.Version, version, StringComparison.OrdinalIgnoreCase));
 
                     if (existingRegistration == null)
                     {
-                        // Add new package if it doesn't exist
+                        // Add new package if it doesn't exist with this version
                         manifest.Registrations?.Add(new Registration
                         {
                             Component = new Component
@@ -302,12 +303,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                                 }
                             }
                         });
-                        updatedManifest = true;
-                    }
-                    else if (existingRegistration.Component?.Nuget?.Version != version)
-                    {
-                        // Update version if it's different from the existing one
-                        existingRegistration.Component?.Nuget?.Version = version;
                         updatedManifest = true;
                     }
                 }

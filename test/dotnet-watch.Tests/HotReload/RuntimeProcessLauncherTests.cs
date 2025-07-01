@@ -133,7 +133,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         return new RunningWatcher(this, watcher, watchTask, reporter, console, serviceHolder, shutdownSource);
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
@@ -294,7 +294,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         }
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
@@ -393,7 +393,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         TopFunction,
     }
 
-    [Theory(Skip = "https://github.com/dotnet/sdk/issues/49307")]
+    [Theory]
     [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
@@ -484,7 +484,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         await hasUpdate.WaitAsync(w.ShutdownSource.Token);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public async Task RudeEditInProjectWithoutRunningProcess()
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc");
@@ -539,7 +539,7 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
         Obj,
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Theory]
     [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {

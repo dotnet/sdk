@@ -1,14 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Commands.Restore;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -26,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public string? MockFeedWithNoPackages { get; set; }
 
         List<MockFeedPackage>? _packages = null;
-        
+
         public ToolPackageDownloaderMock2(IToolPackageStore store, string runtimeJsonPathForTests, string currentWorkingDirectory, IFileSystem fileSystem) : base(store, runtimeJsonPathForTests, currentWorkingDirectory, fileSystem)
         {
         }
@@ -60,7 +56,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             return matchingPackages.MaxBy(p => new NuGetVersion(p.Version));
         }
 
-        protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, string? targetFramework = null)
+        protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, VerbosityOptions verbosity, string? targetFramework = null)
         {
             var mockPackage = GetPackage(packageId, version);
             if (mockPackage == null)
@@ -116,7 +112,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         }
 
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
-            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, bool includeUnlisted = false)
+            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, VerbosityOptions verbosity, bool includeUnlisted = false)
         {
 
             var package = GetPackage(packageId, packageVersion);
@@ -179,7 +175,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         protected override ToolConfiguration GetToolConfiguration(PackageId id, DirectoryPath packageDirectory, DirectoryPath assetsJsonParentDirectory)
         {
             return new ToolConfiguration(DefaultToolCommandName, FakeEntrypointName, "dotnet");
-            
+
         }
         protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
         {

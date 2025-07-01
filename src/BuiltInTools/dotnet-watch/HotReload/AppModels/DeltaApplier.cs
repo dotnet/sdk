@@ -12,8 +12,6 @@ namespace Microsoft.DotNet.Watch
     {
         public readonly IReporter Reporter = reporter;
 
-        public static readonly string StartupHookPath = Path.Combine(AppContext.BaseDirectory, "hotreload", "Microsoft.Extensions.DotNetDeltaApplier.dll");
-
         public abstract void CreateConnection(string namedPipeName, CancellationToken cancellationToken);
 
         /// <summary>

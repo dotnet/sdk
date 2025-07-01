@@ -5,7 +5,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class CompilationHandlerTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public async Task ReferenceOutputAssembly_False()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")

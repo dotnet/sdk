@@ -119,7 +119,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Projects="@(_GenerateRestoreGraphProjectEntryInput)"
                 Targets="_GenerateProjectRestoreGraph"
                 Properties="$(_GenerateRestoreGraphProjectEntryInputProperties)">
-        
+
               <Output
                   TaskParameter="TargetOutputs"
                   ItemName="_RestoreGraphEntry" />
@@ -151,6 +151,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoBuild { get; init; }
     public string BuildTarget { get; init; } = "Build";
     public BuildLevel LastBuildLevel { get; private set; } = BuildLevel.None;
+
+    /// <summary>
+    /// If <see langword="true"/>, no build markers are written
+    /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
+    /// </summary>
+    public bool NoBuildMarkers { get; init; }
 
     public override int Execute()
     {
@@ -227,6 +233,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
+        ProjectCollection? projectCollection = null;
         try
         {
             // Set environment variables.
@@ -238,7 +245,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger];
-            var projectCollection = new ProjectCollection(
+            projectCollection = new ProjectCollection(
                 GlobalProperties,
                 [.. binaryLoggers, consoleLogger],
                 ToolsetDefinitionLocations.Default);
@@ -247,7 +254,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 Loggers = projectCollection.Loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
-            BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             // Do a restore first (equivalent to MSBuild's "implicit restore", i.e., `/restore`).
             // See https://github.com/dotnet/msbuild/blob/a1c2e7402ef0abe36bf493e395b04dd2cb1b3540/src/MSBuild/XMake.cs#L1838
@@ -263,6 +269,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     targetsToBuild: ["Restore"],
                     hostServices: null,
                     BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+
+                BuildManager.DefaultBuildManager.BeginBuild(parameters);
+
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
                 {
@@ -276,6 +285,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 var buildRequest = new BuildRequestData(
                     CreateProjectInstance(projectCollection),
                     targetsToBuild: [BuildTarget]);
+
+                // For some reason we need to BeginBuild after creating BuildRequestData otherwise the binlog doesn't contain Evaluation.
+                if (NoRestore)
+                {
+                    BuildManager.DefaultBuildManager.BeginBuild(parameters);
+                }
+
                 var buildResult = BuildManager.DefaultBuildManager.BuildRequest(buildRequest);
                 if (buildResult.OverallResult != BuildResultCode.Success)
                 {
@@ -568,6 +584,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private void MarkBuildStart()
     {
+        if (NoBuildMarkers)
+        {
+            return;
+        }
+
         string directory = ArtifactsPath;
 
         if (OperatingSystem.IsWindows())
@@ -587,6 +608,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private void MarkBuildSuccess(CacheInfo cache)
     {
+        if (NoBuildMarkers)
+        {
+            return;
+        }
+
         Debug.Assert(LastBuildLevel != BuildLevel.None);
         cache.CurrentEntry.BuildLevel = LastBuildLevel;
 
@@ -628,6 +654,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         return ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
         {
+            ProjectCollection = projectCollection,
             GlobalProperties = globalProperties,
         });
 
@@ -697,13 +724,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         {
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
 
+            // Note that ArtifactsPath needs to be specified before Sdk.props
+            // (usually it's recommended to specify it in Directory.Build.props
+            // but importing Sdk.props manually afterwards also works).
             writer.WriteLine($"""
                 <Project>
 
                   <PropertyGroup>
                     <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
                     <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                    <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                   </PropertyGroup>
+
+                  <ItemGroup>
+                    <Clean Include="{EscapeValue(artifactsPath)}/*" />
+                  </ItemGroup>
 
                   <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                   <Import Project="Sdk.props" Sdk="{EscapeValue(sdkValue)}" />

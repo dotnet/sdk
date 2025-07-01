@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 
 public class AspireServiceFactoryTests
 {
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public void GetRunCommandArguments_Empty()
     {
         var request = new ProjectLaunchRequest()
@@ -24,7 +24,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public void GetRunCommandArguments_DisableLaunchProfile()
     {
         var request = new ProjectLaunchRequest()
@@ -41,7 +41,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile" ], args);
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [InlineData("")]
     [InlineData(null)]
     public void GetRunCommandArguments_NoLaunchProfile_HostProfile(string? launchProfile)
@@ -60,7 +60,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "H"], args);
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [InlineData("")]
     [InlineData(null)]
     public void GetRunCommandArguments_DisableLaunchProfile_HostProfile(string? launchProfile)
@@ -79,7 +79,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--no-launch-profile"], args);
     }
 
-    [PlatformSpecificTheory(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/49307
+    [Theory]
     [InlineData("")]
     [InlineData(null)]
     public void GetRunCommandArguments_NoLaunchProfile_NoHostProfile(string? launchProfile)
@@ -97,7 +97,7 @@ public class AspireServiceFactoryTests
 
         AssertEx.SequenceEqual(["--project", "a.csproj"], args);
     }
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public void GetRunCommandArguments_LaunchProfile_NoArgs()
     {
         var request = new ProjectLaunchRequest()
@@ -114,7 +114,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P"], args);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public void GetRunCommandArguments_LaunchProfile_EmptyArgs()
     {
         var request = new ProjectLaunchRequest()
@@ -131,7 +131,7 @@ public class AspireServiceFactoryTests
         AssertEx.SequenceEqual(["--project", "a.csproj", "--launch-profile", "P", "--no-launch-profile-arguments"], args);
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // "https://github.com/dotnet/sdk/issues/49307")
+    [Fact]
     public void GetRunCommandArguments_LaunchProfile_NonEmptyArgs()
     {
         var request = new ProjectLaunchRequest()
