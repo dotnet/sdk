@@ -385,11 +385,11 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     This is so that the inner packages do not appear on any tool search results.
     -->
 
-    <AddPackageType Condition="$(_ToolPackageType) = 'DotnetTool'" CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+    <AddPackageType Condition="$(_ToolPackageType) == 'DotnetTool'" CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
       <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
     </AddPackageType>
 
-    <PropertyGroup Condition="$(_ToolPackageType) = 'DotnetToolRidPackage'">
+    <PropertyGroup Condition="$(_ToolPackageType) == 'DotnetToolRidPackage'">
       <PackageType>DotnetToolRidPackage</PackageType>
     </PropertyGroup>
   </Target>
