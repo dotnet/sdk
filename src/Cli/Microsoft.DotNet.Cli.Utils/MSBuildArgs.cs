@@ -85,6 +85,9 @@ public sealed class MSBuildArgs
 
     public static readonly MSBuildArgs ForHelp = new(null, null, null, ["--help"]);
 
+    /// <summary>
+    /// Completely replaces the MSBuild arguments with the provided <paramref name="newArgs"/>.
+    /// </summary>
     public MSBuildArgs CloneWithExplicitArgs(string[] newArgs)
     {
         return new MSBuildArgs(
@@ -92,6 +95,20 @@ public sealed class MSBuildArgs
             restoreProperties: RestoreGlobalProperties,
             targets: RequestedTargets,
             otherMSBuildArgs: newArgs);
+    }
+
+    /// <summary>
+    /// Adds new arbitrary MSBuild flags to the end of the existing MSBuild arguments.
+    /// </summary>
+    public MSBuildArgs CloneWithAdditionalArgs(params string[] additionalArgs)
+    {
+        if (additionalArgs is null || additionalArgs.Length == 0)
+        {
+            // If there are no additional args, we can just return the current instance.
+            return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, OtherMSBuildArgs.ToArray());
+        }
+
+        return new MSBuildArgs(GlobalProperties, RestoreGlobalProperties, RequestedTargets, [.. OtherMSBuildArgs, .. additionalArgs]);
     }
 
     public MSBuildArgs CloneWithAdditionalRestoreProperties(ReadOnlyDictionary<string, string>? additionalRestoreProperties)
@@ -111,7 +128,7 @@ public sealed class MSBuildArgs
         {
             newRestoreProperties[kvp.Key] = kvp.Value;
         }
-        return new MSBuildArgs(GlobalProperties, new (newRestoreProperties), RequestedTargets, OtherMSBuildArgs.ToArray());
+        return new MSBuildArgs(GlobalProperties, new(newRestoreProperties), RequestedTargets, OtherMSBuildArgs.ToArray());
     }
 
     public MSBuildArgs CloneWithAdditionalProperties(ReadOnlyDictionary<string, string>? additionalProperties)

@@ -39,7 +39,7 @@ public static class BuildCommand
                 NoCache = true,
             },
             (msbuildArgs, msbuildPath) => new RestoringCommand(
-                msbuildArgs: msbuildArgs,
+                msbuildArgs: msbuildArgs.CloneWithAdditionalArgs("-consoleloggerparameters:Summary"),
                 noRestore: noRestore,
                 msbuildPath: msbuildPath
             ),
