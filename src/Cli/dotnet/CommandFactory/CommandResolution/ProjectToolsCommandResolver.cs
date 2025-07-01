@@ -127,7 +127,7 @@ public class ProjectToolsCommandResolver(
         }
 
         LockFile? toolLockFile = null;
-        NuGetFramework? toolTargetFramework = null; ;
+        NuGetFramework? toolTargetFramework = null;
 
         foreach (var toolFramework in toolFrameworksToCheck)
         {

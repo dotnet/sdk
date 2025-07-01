@@ -81,7 +81,7 @@ internal class ReleasePropertyProjectLocator
             string propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
             if (!string.IsNullOrEmpty(propertyToCheckValue))
             {
-                var newConfigurationArgs = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase); ;
+                var newConfigurationArgs = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
 
                 if (propertyToCheckValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {

@@ -75,19 +75,7 @@ public class RunCommand
     /// </summary>
     public bool NoLaunchProfileArguments { get; }
 
-    /// <param name="noBuild"></param>
-    /// <param name="projectFileFullPath"></param>
-    /// <param name="entryPointFileFullPath"></param>
-    /// <param name="launchProfile"></param>
-    /// <param name="noLaunchProfile"></param>
-    /// <param name="noLaunchProfileArguments"></param>
-    /// <param name="noRestore"></param>
-    /// <param name="noCache"></param>
-    /// <param name="interactive"></param>
-    /// <param name="verbosity"></param>
     /// <param name="applicationArgs">unparsed/arbitrary CLI tokens to be passed to the running application</param>
-    /// <param name="readCodeFromStdin"></param>
-    /// <param name="environmentVariables"></param>
     public RunCommand(
         bool noBuild,
         string? projectFileFullPath,

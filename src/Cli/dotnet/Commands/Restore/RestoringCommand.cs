@@ -55,7 +55,7 @@ public class RestoringCommand : MSBuildForwardingApp
     /// if this command needs to run a separate restore command or if it can be done as part of
     /// the same MSBuild invocation.
     ///
-    /// If the command isn't do a restore, no modifications are made.
+    /// If the command doesn't do a restore, no modifications are made.
     /// If the command requires a separate restore, we remove the MSBuild logo/header from this command.
     /// If the command is doing an inline restore, we need to ensure the restore-only
     /// properties are set correctly so that the restore operation uses our optimizations,

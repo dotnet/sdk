@@ -54,7 +54,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
 
             });
-        }        [Fact]
+        }
+        [Fact]
         public void OSAndArchOptionsCanBeCombined()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -64,7 +65,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, "--property:RuntimeIdentifier=os-arch", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                 expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
             });
-        }        [Fact]
+        }
+
+        [Fact]
         public void OptionsRespectUserSpecifiedSelfContained()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -137,7 +140,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 .Execute(command, "--arch", RuntimeInformation.ProcessArchitecture.Equals(Architecture.Arm64) ? "arm64" : Environment.Is64BitOperatingSystem ? "x64" : "x86")
                 .Should()
                 .Pass();
-        }        [Fact]
+        }
+
+        [Fact]
         public void ArchOptionsAMD64toX64()
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
@@ -147,7 +152,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 List<string> expectedArgs = [.. ExpectedPrefix, .. DefaultArgs, "--property:RuntimeIdentifier=os-x64", .. GivenDotnetBuildInvocation.RestoreExpectedPrefixForImplicitRestore];
                 expectedArgs.Should().BeSubsetOf(command.GetArgumentTokensToMSBuild());
             });
-        }        [Fact]
+        }
+
+        [Fact]
         public void ArchOptionIsResolvedFromRidUnderDifferentCulture()
         {
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;
@@ -164,7 +171,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 });
             }
             finally { CultureInfo.CurrentCulture = currentCultureBefore; }
-        }        [Fact]
+        }
+
+        [Fact]
         public void OsOptionIsResolvedFromRidUnderDifferentCulture()
         {
             CultureInfo currentCultureBefore = CultureInfo.CurrentCulture;

@@ -124,7 +124,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
             var options = VerifyOptions(before ? [option, "test"] : ["test", option]);
             Assert.Equal("test", options.Command);
-            AssertEx.SequenceEqual(option == "--non-interactive" ? [] : [], options.CommandArguments);
+            AssertEx.SequenceEqual([], options.CommandArguments);
         }
 
         [Fact]
