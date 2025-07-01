@@ -444,7 +444,6 @@ namespace Microsoft.DotNet.Watch
 
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
-                                Debug.Assert(evaluationResult.ProjectGraph != null);
 
                                 // additional directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);

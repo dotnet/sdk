@@ -154,7 +154,9 @@ namespace Microsoft.DotNet.Watch
                 "/t:" + TargetName
             };
 
+#if !DEBUG
             if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+#endif
             {
                 arguments.Add($"/bl:{Path.Combine(environmentOptions.TestOutput, "DotnetWatch.GenerateWatchList.binlog")}");
             }
@@ -213,9 +215,7 @@ namespace Microsoft.DotNet.Watch
 
             try
             {
-                var graph = new ProjectGraph([entryPoint], ProjectCollection.GlobalProjectCollection, projectInstanceFactory: null, cancellationToken);
-                reporter.Verbose($"Project graph loaded ({graph.ProjectNodes.Count} nodes)");
-                return graph;
+                return new ProjectGraph([entryPoint], ProjectCollection.GlobalProjectCollection, projectInstanceFactory: null, cancellationToken);
             }
             catch (Exception e)
             {
