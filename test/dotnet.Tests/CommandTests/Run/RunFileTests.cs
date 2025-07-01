@@ -3,6 +3,8 @@
 
 using System.Runtime.Versioning;
 using System.Text.Json;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -786,7 +788,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     /// <c>dotnet run --bl file.cs</c> produces a binary log.
     /// </summary>
     [Theory, CombinatorialData]
-    public void BinaryLog(bool beforeFile)
+    public void BinaryLog_Run(bool beforeFile)
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
@@ -914,6 +916,29 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .EnumerateFiles("*.binlog", SearchOption.TopDirectoryOnly)
             .Select(f => f.Name)
             .Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// Binary logs from our in-memory projects should have evaluation data.
+    /// </summary>
+    [Fact]
+    public void BinaryLog_EvaluationData()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        string binaryLogPath = Path.Join(testInstance.Path, "msbuild.binlog");
+        new FileInfo(binaryLogPath).Should().Exist();
+
+        var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
+        records.Any(static r => r.Args is ProjectEvaluationStartedEventArgs).Should().BeTrue();
+        records.Any(static r => r.Args is ProjectEvaluationFinishedEventArgs).Should().BeTrue();
     }
 
     /// <summary>
@@ -1285,6 +1310,36 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         new DirectoryInfo(testInstance.Path).Sub("subdir").Sub("artifacts").Sub("Program")
             .Should().Exist()
             .And.NotHaveFilesMatching("*.deps.json", SearchOption.TopDirectoryOnly); // no deps.json file for AOT-published app
+    }
+
+    [Fact]
+    public void Clean()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello from Program");
+
+        var artifactsDir = new DirectoryInfo(VirtualProjectBuildingCommand.GetArtifactsPath(programFile));
+        artifactsDir.Should().HaveFiles(["build-start.cache", "build-success.cache"]);
+
+        var dllFile = artifactsDir.File("bin/debug/Program.dll");
+        dllFile.Should().Exist();
+
+        new DotnetCommand(Log, "clean", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        artifactsDir.EnumerateFiles().Should().BeEmpty();
+
+        dllFile.Refresh();
+        dllFile.Should().NotExist();
     }
 
     [PlatformSpecificFact(TestPlatforms.AnyUnix), UnsupportedOSPlatform("windows")]
@@ -1762,6 +1817,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
+
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
                       <Import Project="Sdk.props" Sdk="Aspire.Hosting.Sdk" Version="9.1.0" />
@@ -1838,6 +1897,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
 
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
+
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -1906,6 +1969,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                         <ArtifactsPath>/artifacts</ArtifactsPath>
                         <PublishDir>artifacts/$(MSBuildProjectName)</PublishDir>
                       </PropertyGroup>
+
+                      <ItemGroup>
+                        <Clean Include="/artifacts/*" />
+                      </ItemGroup>
 
                       <!-- We need to explicitly import Sdk props/targets so we can override the targets below. -->
                       <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
