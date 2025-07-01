@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands;
 
 public static class CommandFactory
 {
-        internal static CommandBase CreateVirtualOrPhysicalCommand(
+    internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command command,
         Argument<string[]> catchAllUserInputArgument,
         Func<MSBuildArgs, string, VirtualProjectBuildingCommand> configureVirtualCommand,

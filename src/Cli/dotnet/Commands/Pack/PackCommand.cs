@@ -26,14 +26,7 @@ public class PackCommand(
     {
         parseResult.ShowHelpOrErrorIfAppropriate();
 
-        var msbuildArgs = new List<string>()
-        {
-            "--property:_IsPacking=true" // This property will not hold true for MSBuild /t:Publish or in VS.
-        };
-
-        IEnumerable<string>? slnOrProjectArgs = parseResult.GetValue(PackCommandParser.SlnOrProjectArgument);
-
-        msbuildArgs.AddRange(parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()));
+        var msbuildArgs = parseResult.OptionValuesToBeForwarded(PackCommandParser.GetCommand()).Concat(parseResult.GetValue(PackCommandParser.SlnOrProjectArgument) ?? []);
 
         ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PACK_RELEASE,
             new ReleasePropertyProjectLocator.DependentCommandOptions(
@@ -41,9 +34,6 @@ public class PackCommand(
                     parseResult.HasOption(PackCommandParser.ConfigurationOption) ? parseResult.GetValue(PackCommandParser.ConfigurationOption) : null
                 )
         );
-        msbuildArgs.AddRange(projectLocator.GetCustomDefaultConfigurationValueIfSpecified());
-
-        msbuildArgs.AddRange(slnOrProjectArgs ?? []);
 
         bool noRestore = parseResult.HasOption(PackCommandParser.NoRestoreOption) || parseResult.HasOption(PackCommandParser.NoBuildOption);
         var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(
@@ -52,7 +42,7 @@ public class PackCommand(
             CommonOptions.RestorePropertiesOption,
             PackCommandParser.TargetOption);
         return new PackCommand(
-            parsedMSBuildArgs,
+            parsedMSBuildArgs.CloneWithAdditionalProperties(projectLocator.GetCustomDefaultConfigurationValueIfSpecified()),
             noRestore,
             msbuildPath);
     }

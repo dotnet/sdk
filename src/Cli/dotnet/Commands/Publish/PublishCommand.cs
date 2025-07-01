@@ -63,8 +63,9 @@ public class PublishCommand : RestoringCommand
                         parseResult.HasOption(PublishCommandParser.FrameworkOption) ? parseResult.GetValue(PublishCommandParser.FrameworkOption) : null
                     );
                 var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                var releaseModeProperties = projectLocator.GetCustomDefaultConfigurationValueIfSpecified();
                 return new PublishCommand(
-                    msbuildArgs: msbuildArgs,
+                    msbuildArgs: msbuildArgs.CloneWithAdditionalProperties(releaseModeProperties),
                     noRestore: noRestore,
                     msbuildPath: msbuildPath
                 );

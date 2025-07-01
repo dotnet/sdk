@@ -54,14 +54,13 @@ internal class ReleasePropertyProjectLocator
     /// ... a boolean that may or may not exist in the targeted project.
     /// </summary>
     /// <returns>Returns a string such as -property:configuration=value for a projects desired config. May be empty string.</returns>
-    public IEnumerable<string> GetCustomDefaultConfigurationValueIfSpecified()
+    public ReadOnlyDictionary<string, string>? GetCustomDefaultConfigurationValueIfSpecified()
     {
         // Setup
         Debug.Assert(_propertyToCheck == MSBuildPropertyNames.PUBLISH_RELEASE || _propertyToCheck == MSBuildPropertyNames.PACK_RELEASE, "Only PackRelease or PublishRelease are currently expected.");
-        var nothing = Enumerable.Empty<string>();
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE), "true", StringComparison.OrdinalIgnoreCase))
         {
-            return nothing;
+            return null;
         }
 
         // Analyze Global Properties
@@ -71,7 +70,7 @@ internal class ReleasePropertyProjectLocator
         // Configuration doesn't work in a .proj file, but it does as a global property.
         // Detect either A) --configuration option usage OR /p:Configuration=Foo, if so, don't use these properties.
         if (_options.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
-            return [$"-property:{EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE}=true"]; // Don't throw error if publish* conflicts but global config specified.
+            return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
         // Determine the project being acted upon
         ProjectInstance? project = GetTargetedProject(globalProperties);
@@ -82,22 +81,22 @@ internal class ReleasePropertyProjectLocator
             string propertyToCheckValue = project.GetPropertyValue(_propertyToCheck);
             if (!string.IsNullOrEmpty(propertyToCheckValue))
             {
-                var newConfigurationArgs = new List<string>();
+                var newConfigurationArgs = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase); ;
 
                 if (propertyToCheckValue.Equals("true", StringComparison.OrdinalIgnoreCase))
                 {
-                    newConfigurationArgs.Add($"-property:{MSBuildPropertyNames.CONFIGURATION}={MSBuildPropertyNames.CONFIGURATION_RELEASE_VALUE}");
+                    newConfigurationArgs[MSBuildPropertyNames.CONFIGURATION] = MSBuildPropertyNames.CONFIGURATION_RELEASE_VALUE;
                 }
 
                 if (_isHandlingSolution) // This will allow us to detect conflicting configuration values during evaluation.
                 {
-                    newConfigurationArgs.Add($"-property:_SolutionLevel{_propertyToCheck}={propertyToCheckValue}");
+                    newConfigurationArgs[$"_SolutionLevel{_propertyToCheck}"] = propertyToCheckValue;
                 }
 
-                return newConfigurationArgs;
+                return newConfigurationArgs.AsReadOnly();
             }
         }
-        return nothing;
+        return null;
     }
 
     /// <summary>

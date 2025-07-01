@@ -58,7 +58,7 @@ internal static class PackCommandParser
 
     public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
-    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack");
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
 
     private static readonly Command Command = ConstructCommand();
 
