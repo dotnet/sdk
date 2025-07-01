@@ -27,12 +27,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
         public static readonly string DefaultSuppressionFile = SuppressionFileHeader + @$"
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Message>MessageForCP0001</Message>
     <Target>T:A</Target>
     <Left>lib/netstandard1.3/tempValidation.dll</Left>
     <Right>lib/netstandard1.3/tempValidation.dll</Right>
   </Suppression>{SuppressionFileComment}
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Message>MessageForCP0001</Message>
     <Target>T:tempValidation.Class1</Target>
     <Left>lib/netstandard1.3/tempValidation.dll</Left>
     <Right>lib/netstandard1.3/tempValidation.dll</Right>
@@ -40,41 +42,48 @@ namespace Microsoft.DotNet.ApiCompatibility.Logging.Tests
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Message>MessageForCP0001</Message>
     <Target>T:A.B</Target>
     <Left>ref/netstandard2.0/tempValidation.dll</Left>
     <Right>lib/net6.0/tempValidation.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0001</DiagnosticId>
+    <Message>MessageForCP0001</Message>
     <Target>T:tempValidation.SomeGenericType`1</Target>
     <Left>ref/netstandard2.0/tempValidation.dll</Left>
     <Right>lib/net6.0/tempValidation.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Message>MessageForCP0002</Message>
     <Target>M:tempValidation.Class1.Bar(System.Int32)</Target>
     <Left>ref/netstandard2.0/tempValidation.dll</Left>
     <Right>lib/net6.0/tempValidation.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Message>MessageForCP0002</Message>
     <Target>M:tempValidation.Class1.SomeNewBreakingChange</Target>
     <Left>ref/netstandard2.0/tempValidation.dll</Left>
     <Right>lib/net6.0/tempValidation.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Message>MessageForCP0002</Message>
     <Target>M:tempValidation.Class1.SomeOtherGenericMethod``1(``0)</Target>
     <Left>ref/netstandard2.0/tempValidation.dll</Left>
     <Right>lib/net6.0/tempValidation.dll</Right>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP123</DiagnosticId>
+    <Message>MessageForCP123</Message>
     <Target>T:myValidation.Class1</Target>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>PKV004</DiagnosticId>
+    <Message>MessageForPKV004</Message>
     <Target>.NETFramework,Version=v4.8</Target>
   </Suppression>
 " + SuppressionFileFooter;
