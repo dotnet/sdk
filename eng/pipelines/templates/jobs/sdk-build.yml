@@ -77,6 +77,13 @@ jobs:
         legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
+    - task: powershell
+      displayName: DOCKER INFO!!!
+      inputs:
+        targetType: inline
+        script: |
+          docker info --format '{{json .}}'
+    
     - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
       - task: DownloadBuildArtifacts@1
         inputs:
@@ -104,10 +111,10 @@ jobs:
         env:
           BuildConfig: $(buildConfiguration)
           TestFullMSBuild: ${{ parameters.testFullMSBuild }}
-          
+
       - powershell: build/RunTestTemplateTests.ps1
         displayName: 🟣 Run Test Templates Tests
-        
+
     - ${{ else }}:
       - script: |
           source $(Build.SourcesDirectory)/eng/common/native/init-os-and-arch.sh
