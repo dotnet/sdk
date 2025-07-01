@@ -71,10 +71,10 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 {
                     builder.Append("-no-current-rid");
                 }
-                if (AdditionalPackageTypes is [] packages && packages.Length > 0)
+                if (AdditionalPackageTypes is not null && AdditionalPackageTypes.Length > 0)
                 {
                     builder.Append('-');
-                    builder.Append(string.Join("-", packages.Select(p => p.ToLowerInvariant())));
+                    builder.Append(string.Join("-", AdditionalPackageTypes.Select(p => p.ToLowerInvariant())));
                 }
 
                 return builder.ToString();
@@ -124,9 +124,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 testProject.AdditionalProperties["PublishTrimmed"] = "true";
             }
 
-            if (toolSettings.AdditionalPackageTypes is [] additionalPackageTypes && additionalPackageTypes.Length > 0)
+            if (toolSettings.AdditionalPackageTypes is not null && toolSettings.AdditionalPackageTypes.Length > 0)
             {
-                testProject.AdditionalProperties["PackageType"] = string.Join(";", additionalPackageTypes);
+                testProject.AdditionalProperties["PackageType"] = string.Join(";", toolSettings.AdditionalPackageTypes);
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");

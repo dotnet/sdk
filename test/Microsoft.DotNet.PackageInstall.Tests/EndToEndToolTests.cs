@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Compression;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -342,7 +343,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             // top-level package should declare all of the rids
             var topLevelPackage = packages.First(p => p.EndsWith($"{packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg"));
             topLevelPackage.Should().NotBeNull($"Package {packageIdentifier}.{toolSettings.ToolPackageVersion}.nupkg should be present in the tool packages directory")
-                .And.Satisfy<string>(EnsurePackageIsFdd)
+                .And.Satisfy<string>(EnsurePackageHasNoRunner)
                 .And.Satisfy<string>(EnsurePackageHasToolPackageTypeAnd(toolSettings.AdditionalPackageTypes!));
             var foundRids = GetRidsInSettingsFile(topLevelPackage);
             foundRids.Should().BeEquivalentTo(expectedRids, "The top-level package should declare all of the RIDs for the tools it contains");
@@ -382,6 +383,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             runner.Should().Be("dotnet", "The tool should be packaged as a framework-dependent executable (FDD) with a 'dotnet' runner.");
         }
 
+        static void EnsurePackageHasNoRunner(string packagePath)
+        {
+            var settingsXml = GetToolSettingsFile(packagePath);
+            if (TryGetRunnerFromSettingsFile(settingsXml, out _))
+            {
+                throw new Exception("The tool settings file should  not contain a 'Runner' attribute.");
+            }
+        }
+
         static void EnsurePackageIsAnExecutable(string packagePath)
         {
             var settingsXml = GetToolSettingsFile(packagePath);
@@ -389,10 +399,21 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             runner.Should().Be("executable", "The tool should be packaged as a executable with an 'executable' runner.");
         }
 
-        static object GetRunnerFromSettingsFile(XElement settingsXml)
+        static string GetRunnerFromSettingsFile(XElement settingsXml)
         {
-            return settingsXml.Elements("Commands").First().Elements("Command").First().Attribute("Runner")?.Value
-                   ?? throw new InvalidOperationException("The tool settings file does not contain a 'Runner' attribute.");
+            if (TryGetRunnerFromSettingsFile(settingsXml, out string? runner))
+            {
+                return runner;
+            } else
+            {
+                throw new InvalidOperationException("The tool settings file does not contain a 'Runner' attribute.");
+            }
+        }
+        static bool TryGetRunnerFromSettingsFile(XElement settingsXml, [NotNullWhen(true)] out string? runner)
+        {
+            var commandNode = settingsXml.Elements("Commands").First().Elements("Command").First();
+            runner = commandNode.Attributes().FirstOrDefault(a => a.Name == "Runner")?.Value;
+            return runner is not null;
         }
 
         static string[] GetRidsInSettingsFile(string packagePath)
