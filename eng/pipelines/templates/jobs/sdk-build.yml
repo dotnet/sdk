@@ -77,13 +77,13 @@ jobs:
         legacyCredential: $(dn-bot-dnceng-artifact-feeds-rw)
     - template: /eng/common/templates/steps/enable-internal-runtimes.yml
 
-    - task: powershell
+    - task: PowerShell@2
       displayName: DOCKER INFO!!!
       inputs:
         targetType: inline
         script: |
           docker info --format '{{json .}}'
-    
+
     - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
       - task: DownloadBuildArtifacts@1
         inputs:
