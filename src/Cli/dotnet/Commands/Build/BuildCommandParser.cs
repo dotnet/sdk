@@ -23,11 +23,11 @@ internal static class BuildCommandParser
         HelpName = CliCommandStrings.OutputOptionName
     }.ForwardAsOutputPath("OutputPath");
 
-    public static readonly Option<bool> NoIncrementalOption = new("--no-incremental")
+    public static readonly Option<bool> NoIncrementalOption = new ForwardedOption<bool>("--no-incremental")
     {
         Description = CliCommandStrings.NoIncrementalOptionDescription,
         Arity = ArgumentArity.Zero
-    };
+    }.ForwardAs("--target:Rebuild");
 
     public static readonly Option<bool> NoDependenciesOption = new ForwardedOption<bool>("--no-dependencies")
     {

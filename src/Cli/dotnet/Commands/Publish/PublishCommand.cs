@@ -45,43 +45,34 @@ public class PublishCommand : RestoringCommand
 
         bool noRestore = noBuild || parseResult.HasOption(PublishCommandParser.NoRestoreOption);
 
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
-        {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedOptions, .. binLogArgs, "--property:_IsPublishing=true"], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption);
-
-            msbuildArgs.OtherMSBuildArgs.AddRange(binLogArgs);
-
-            return new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: Path.GetFullPath(arg),
+        return CommandFactory.CreateVirtualOrPhysicalCommand(
+            PublishCommandParser.GetCommand(),
+            PublishCommandParser.SlnOrProjectOrFileArgument,
+            (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+                entryPointFileFullPath: Path.GetFullPath(appFilePath),
                 msbuildArgs: msbuildArgs)
             {
                 NoBuild = noBuild,
                 NoRestore = noRestore,
                 NoCache = true,
-            };
-        }
-        else
-        {
-            ReleasePropertyProjectLocator projectLocator = new(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE,
-                new ReleasePropertyProjectLocator.DependentCommandOptions(
+            },
+            (msbuildArgs, msbuildPath) => {
+                var options = new ReleasePropertyProjectLocator.DependentCommandOptions(
                         nonBinLogArgs,
                         parseResult.HasOption(PublishCommandParser.ConfigurationOption) ? parseResult.GetValue(PublishCommandParser.ConfigurationOption) : null,
                         parseResult.HasOption(PublishCommandParser.FrameworkOption) ? parseResult.GetValue(PublishCommandParser.FrameworkOption) : null
-                    )
-             );
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([
-                .. forwardedOptions,
-                ..args,
-                "--property:_IsPublishing=true",
-                ..projectLocator.GetCustomDefaultConfigurationValueIfSpecified()
-            ],
-            CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption);
-
-            return new PublishCommand(
-                msbuildArgs,
-                noRestore,
-                msbuildPath);
-        }
+                    );
+                var projectLocator = new ReleasePropertyProjectLocator(parseResult, MSBuildPropertyNames.PUBLISH_RELEASE, options);
+                return new PublishCommand(
+                    msbuildArgs: msbuildArgs,
+                    noRestore: noRestore,
+                    msbuildPath: msbuildPath
+                );
+            },
+            [CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, PublishCommandParser.TargetOption],
+            parseResult,
+            msbuildPath
+        );
     }
 
     public static int Run(ParseResult parseResult)

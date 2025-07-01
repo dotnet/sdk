@@ -21,28 +21,23 @@ public class CleanCommand(MSBuildArgs msbuildArgs, string? msbuildPath = null) :
     public static CommandBase FromParseResult(ParseResult result, string? msbuildPath = null)
     {
         result.ShowHelpOrErrorIfAppropriate();
-        var args = result.GetValue(CleanCommandParser.SlnOrProjectOrFileArgument) ?? [];
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
-        var forwardedArgs = result.OptionValuesToBeForwarded(CleanCommandParser.GetCommand());
-        if (nonBinLogArgs is [{ } arg] && VirtualProjectBuildingCommand.IsValidEntryPointPath(arg))
-        {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. binLogArgs,], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption);
-
-            return new VirtualProjectBuildingCommand(
-                entryPointFileFullPath: Path.GetFullPath(arg),
-                msbuildArgs: msbuildArgs)
+        return CommandFactory.CreateVirtualOrPhysicalCommand(
+            CleanCommandParser.GetCommand(),
+            CleanCommandParser.SlnOrProjectOrFileArgument,
+            static (msbuildArgs, appFilePath) => new VirtualProjectBuildingCommand(
+                    entryPointFileFullPath: appFilePath,
+                    msbuildArgs: msbuildArgs)
             {
                 NoBuild = false,
                 NoRestore = true,
                 NoCache = true,
                 NoBuildMarkers = true,
-            };
-        }
-        else
-        {
-            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. args], CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption);
-            return new CleanCommand(msbuildArgs, msbuildPath);
-        }
+            },
+            static (msbuildArgs, msbuildPath) => new CleanCommand(msbuildArgs, msbuildPath),
+            [ CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CleanCommandParser.TargetOption ],
+            result,
+            msbuildPath
+        );
     }
 
     public static int Run(ParseResult parseResult)

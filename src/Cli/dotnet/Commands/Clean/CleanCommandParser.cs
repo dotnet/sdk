@@ -10,7 +10,7 @@ internal static class CleanCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-clean";
 
-    public static readonly Argument<IEnumerable<string>> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
+    public static readonly Argument<string[]> SlnOrProjectOrFileArgument = new(CliStrings.SolutionOrProjectOrFileArgumentName)
     {
         Description = CliStrings.SolutionOrProjectOrFileArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore

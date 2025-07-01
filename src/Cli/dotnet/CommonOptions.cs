@@ -66,7 +66,7 @@ internal static class CommonOptions
         return new(dictionary);
     }
 
-    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null) =>
+    public static Option<string[]?> MSBuildTargetOption(string? defaultTargetName = null, (string key, string value)[]? additionalProperties = null) =>
         new ForwardedOption<string[]?>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -76,12 +76,11 @@ internal static class CommonOptions
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
-        // there might not be _any_ targets, so we return an enumerable so we can return empty
-        .ForwardAsMany(targets => targets is null ? Enumerable.Empty<string>() : [$"--target:{string.Join(";", targets)}"])
+        .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
 
 
-    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName) =>
+    public static Option<string[]> RequiredMSBuildTargetOption(string defaultTargetName, (string key, string value)[]? additionalProperties = null) =>
         new ForwardedOption<string[]>("--target", "/target", "-target", "-t", "--t", "/t")
         {
             Description = "Build these targets in this project. Use a semicolon or a comma to separate multiple targets, or specify each target separately.",
@@ -91,9 +90,23 @@ internal static class CommonOptions
             Hidden = true,
             Arity = ArgumentArity.ZeroOrMore
         }
-        // since we know there's at least one target, we can forward it as a single argument
-        .ForwardAsSingle(targets => $"--target:{string.Join(";", targets)}")
+        // we know there will be at least one target, so we return an enumerable with at least one item
+        .ForwardAsMany(targets => ForwardTargetsAndAdditionalProperties(targets, additionalProperties))
         .AllowSingleArgPerToken();
+
+    public static IEnumerable<string> ForwardTargetsAndAdditionalProperties(string[]? targets, (string key, string value)[]? additionalProperties)
+    {
+        var argsToReturn = new List<string>(targets is null ? 0 : 1 + (additionalProperties?.Length ?? 0));
+        if (targets is not null)
+        {
+            argsToReturn.Add($"--target:{string.Join(";", targets)}");
+        }
+        if (additionalProperties is not null)
+        {
+            argsToReturn.AddRange(additionalProperties.Select(p => $"--property:{p.key}={p.value}"));
+        }
+        return argsToReturn;
+    }
 
     public static string[] SplitMSBuildTargets(string? defaultTargetName, ArgumentResult argumentResult)
     {
