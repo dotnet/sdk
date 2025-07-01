@@ -42,8 +42,8 @@ public class CliSchemaTests : SdkTest
   "description": ".NET Clean Command",
   "hidden": false,
   "arguments": {
-    "PROJECT | SOLUTION": {
-      "description": "The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.",
+    "PROJECT | SOLUTION | FILE": {
+      "description": "The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.",
       "order": 0,
       "hidden": false,
       "valueType": "System.Collections.Generic.IEnumerable<System.String>",
