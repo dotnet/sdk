@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Pack.Tests
             var informationalVersion = PeReaderUtils.GetAssemblyAttributeValue(output.FullName, "AssemblyInformationalVersionAttribute");
 
             informationalVersion.Should().NotBeNull()
-                                .And.BeEquivalentTo("1.0.0-85");
+                                .And.StartWith("1.0.0-85"); // ensure that build metadata doesn't bork the test
 
             var outputPackage = new FileInfo(Path.Combine(testInstance.Path,
                                             "bin", "Debug",
