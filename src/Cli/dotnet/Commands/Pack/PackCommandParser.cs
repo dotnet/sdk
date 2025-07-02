@@ -6,6 +6,8 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
+using NuGet.Commands;
+using NuGet.Common;
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
@@ -55,6 +57,12 @@ internal static class PackCommandParser
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
+    public static readonly Option<bool> Nuspec = new ForwardedOption<bool>("--nuspec")
+    {
+        Description = "Nuspec",
+        Arity = ArgumentArity.Zero
+    }.ForwardAs("-nuspec");
+
     public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
     public static readonly Option<string> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
@@ -78,6 +86,7 @@ internal static class PackCommandParser
         command.Options.Add(IncludeSourceOption);
         command.Options.Add(ServiceableOption);
         command.Options.Add(NoLogoOption);
+        command.Options.Add(Nuspec);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
         command.Options.Add(CommonOptions.VerbosityOption);
@@ -89,7 +98,25 @@ internal static class PackCommandParser
         RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
         command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
 
-        command.SetAction(PackCommand.Run);
+        command.SetAction((ParseResult parseResult) =>
+        {
+            if (parseResult != null && parseResult.GetValue(Nuspec) == true)
+            {
+                var packArgs = new PackArgs();
+                packArgs.Path = parseResult.GetValue(SlnOrProjectArgument)?.FirstOrDefault();
+                packArgs.BasePath = Directory.GetCurrentDirectory();
+                packArgs.Logger = NullLogger.Instance;
+                var packCommandrunner = new PackCommandRunner(packArgs, null);
+                if (!packCommandrunner.RunPackageBuild())
+                {
+                    throw new InvalidOperationException("Failed to run pack command with nuspec option.");
+                }
+            }
+            else
+            {
+                PackCommand.Run(parseResult);
+            }
+        });
 
         return command;
     }
