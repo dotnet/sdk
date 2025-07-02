@@ -103,7 +103,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(UseCurrentRuntimeIdentifier)' == ''">
     <UseCurrentRuntimeIdentifier Condition="
                  '$(RuntimeIdentifier)' == '' and
-                 '$(_IsExecutable)' == 'true' and '$(IsTestProject)' != 'true' and
+                 '$(_IsExecutable)' == 'true' and
                  '$(IsRidAgnostic)' != 'true' and
                  '$(PackAsTool)' != true and
                  (
