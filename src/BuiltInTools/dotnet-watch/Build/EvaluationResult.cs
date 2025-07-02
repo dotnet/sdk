@@ -51,7 +51,9 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             .SetItem(PropertyNames.DotNetWatchBuild, "true")
             .SetItem(PropertyNames.DesignTimeBuild, "true")
             .SetItem(PropertyNames.SkipCompilerExecution, "true")
-            .SetItem(PropertyNames.ProvideCommandLineArgs, "true");
+            .SetItem(PropertyNames.ProvideCommandLineArgs, "true")
+            // F# targets depend on host path variable:
+            .SetItem("DOTNET_HOST_PATH", environmentOptions.MuxerPath);
 
         var projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(
             rootProjectPath,
@@ -82,14 +84,6 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         foreach (var project in projectGraph.ProjectNodesTopologicallySorted)
         {
             var projectInstance = project.ProjectInstance;
-
-            // Skip non-C# projects. Consider supporting other project types.
-            // We could collect Watch items and watch the directory tree of the project for changes.
-            // Any change to these projects would trigger rebuild.
-            if (Path.GetExtension(projectInstance.FullPath) != ".csproj")
-            {
-                continue;
-            }
 
             // skip outer build project nodes:
             if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
