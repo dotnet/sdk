@@ -1,6 +1,7 @@
 <Project>
   <PropertyGroup>
-    <_TestingGlobalJsonPath>$(ArtifactsTmpDir)global.json</_TestingGlobalJsonPath>
+    <!-- We put this in the root of the artifacts dir so that any usage (not just from ./tmp, but also from ./bin) gets redirected. -->
+    <_TestingGlobalJsonPath>$(ArtifactsDir)global.json</_TestingGlobalJsonPath>
   </PropertyGroup>
 
   <!-- Since the dotnet binary respects sdk.paths in global.json now, and we use this in the repo root to make sure that we consistently use the repo-local
