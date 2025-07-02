@@ -80,10 +80,12 @@ jobs:
     - ${{ if eq(parameters.pool.os, 'windows') }}:
       - powershell: |
           docker info --format '{{json .}}'
+          docker -v
         displayName: DOCKER INFO!!!
     - ${{ else }}:
       - script: |
           docker info --format '{{json .}}'
+          docker -v
         displayName: DOCKER INFO!!!
 
     - ${{ if eq(parameters.downloadManifestMsiPackages, true) }}:
