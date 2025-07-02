@@ -645,7 +645,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                   <PropertyGroup>
                     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                   </PropertyGroup>
                 """);
         }

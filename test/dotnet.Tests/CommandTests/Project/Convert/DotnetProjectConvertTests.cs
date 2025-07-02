@@ -289,7 +289,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "my.json", "subdir"]);
+            .Should().BeEquivalentTo(["Program.csproj", "Resources.resx", "Program.cs", "my.json", "subdir"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program", "subdir"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -302,7 +302,6 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
             #:property EnableDefaultCompileItems=true
-            #:property EnableDefaultEmbeddedResourceItems=true
             Console.WriteLine();
             """);
         File.WriteAllText(Path.Join(testInstance.Path, "my.json"), "");

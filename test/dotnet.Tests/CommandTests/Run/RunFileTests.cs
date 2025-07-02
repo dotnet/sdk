@@ -942,7 +942,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     /// <summary>
-    /// Default projects do not include embedded resources by default.
+    /// Default projects include embedded resources by default.
     /// </summary>
     [Fact]
     public void EmbeddedResource()
@@ -974,12 +974,12 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("""
-                Resource not found
+                [MyString, TestValue]
                 """);
 
         // This behavior can be overridden.
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), $"""
-            #:property EnableDefaultEmbeddedResourceItems=true
+            #:property EnableDefaultEmbeddedResourceItems=false
             {code}
             """);
 
@@ -988,7 +988,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("""
-                [MyString, TestValue]
+                Resource not found
                 """);
     }
 
@@ -1863,7 +1863,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -1942,7 +1941,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                       </PropertyGroup>
 
                       <PropertyGroup>
@@ -2015,7 +2013,6 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
                       <PropertyGroup>
                         <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
-                        <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
                       </PropertyGroup>
 
                       <PropertyGroup>
