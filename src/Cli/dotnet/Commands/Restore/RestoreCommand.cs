@@ -33,7 +33,7 @@ public static class RestoreCommand
                     msbuildArgs: msbuildArgs
                 )
                 {
-                    NoRestore = true,
+                    NoBuild = true,
                     NoCache = true,
                 };
             },
