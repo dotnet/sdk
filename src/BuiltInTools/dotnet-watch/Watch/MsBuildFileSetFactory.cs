@@ -184,8 +184,6 @@ namespace Microsoft.DotNet.Watch
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
             arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
             arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
-            arguments.Add("/p:SkipCompilerExecution=true");
-            arguments.Add("/p:ProvideCommandLineArgs=true");
             arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
             arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
 
