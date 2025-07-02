@@ -12,6 +12,10 @@
     <_IsPublishing>true</_IsPublishing>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Cli\Microsoft.DotNet.Cli.Utils\ArgumentEscaper.cs" />
+  </ItemGroup>
+
   <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" Condition="'$(PublishAot)' == 'true'" />
 
 </Project>
