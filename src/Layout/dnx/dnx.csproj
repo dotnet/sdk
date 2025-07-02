@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <PublishAot>true</PublishAot>
+    <ControlFlowGuard>Guard</ControlFlowGuard>
+    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
+    <OptimizationPreference>Size</OptimizationPreference>
+    <StackTraceSupport>false</StackTraceSupport>
+    <_IsPublishing>true</_IsPublishing>
+  </PropertyGroup>
+
+  <Target Name="PublishOnBuild" AfterTargets="Build" DependsOnTargets="Publish" Condition="'$(PublishAot)' == 'true'" />
+
+</Project>
