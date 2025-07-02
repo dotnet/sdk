@@ -3,7 +3,10 @@
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <OutputType>Exe</OutputType>
-    <PublishAot>true</PublishAot>
+    <!-- We only use the shim on Windows, so skip NativeAOT compilation for other platforms -->
+    <PublishAot Condition="$(NETCoreSdkPortableRuntimeIdentifier.StartsWith('win-'))">true</PublishAot>
+    <!-- However, still generate AOT warnings on other platforms -->
+    <IsAotCompatible>true</IsAotCompatible>
     <ControlFlowGuard>Guard</ControlFlowGuard>
     <UseSystemResourceKeys>true</UseSystemResourceKeys>
     <SatelliteResourceLanguages>en-US</SatelliteResourceLanguages>
