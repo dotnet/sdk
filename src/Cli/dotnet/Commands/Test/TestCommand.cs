@@ -144,7 +144,7 @@ public class TestCommand(
             convertedArgs.Add($"--testSessionCorrelationId:{testSessionCorrelationId}");
         }
 
-        string archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+        string? archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
 
         int exitCode = new VSTestForwardingApp(convertedArgs, archArg).Execute();
 
@@ -244,7 +244,7 @@ public class TestCommand(
 
         // Set DOTNET_ROOT if it isn't already set in the environment as it is required
         // by the testhost which uses the apphost feature (Windows only).
-        string archArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+        string? archArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
         (bool setRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable(archArg);
         if (!setRootVariable)
         {
@@ -280,7 +280,7 @@ public class TestCommand(
             artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
         }
 
-        string archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+        string? archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
 
         try
         {
