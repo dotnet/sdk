@@ -24,6 +24,8 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
         /// </summary>
         public string? Name { get; set; }
 
+        public string TargetExtension { get; set; } = ".csproj";
+
         public bool IsSdkProject { get; set; } = true;
 
         public bool IsExe { get; set; }
@@ -126,12 +128,12 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             }
         }
 
-        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder, string targetExtension = ".csproj")
+        internal void Create(TestAsset targetTestAsset, string testProjectsSourceFolder)
         {
             string targetFolder = Path.Combine(targetTestAsset.Path, Name ?? string.Empty);
             Directory.CreateDirectory(targetFolder);
 
-            string targetProjectPath = Path.Combine(targetFolder, Name + targetExtension);
+            string targetProjectPath = Path.Combine(targetFolder, Name + TargetExtension);
 
             string sourceProject;
             string sourceProjectBase = Path.Combine(testProjectsSourceFolder, "ProjectConstruction");
@@ -139,7 +141,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
             {
                 sourceProject = Path.Combine(sourceProjectBase, "SdkProject", "SdkProject.csproj");
             }
-            else if (targetExtension == ".vbproj")
+            else if (TargetExtension == ".vbproj")
             {
                 sourceProject = Path.Combine(sourceProjectBase, "NetFrameworkProjectVB", "NetFrameworkProject.vbproj");
             }
