@@ -1137,6 +1137,34 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
     }
 
     [Fact]
+    public void PublishWithCustomTarget()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programFile, s_program);
+
+        var artifactsDir = VirtualProjectBuildingCommand.GetArtifactsPath(programFile);
+        if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
+
+        var publishDir = Path.Join(testInstance.Path, "artifacts");
+        if (Directory.Exists(publishDir)) Directory.Delete(publishDir, recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs", "-t", "ComputeContainerConfig", "-p", "PublishAot=false", "--use-current-runtime")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var appBinaryName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Program.exe" : "Program";
+        new DirectoryInfo(publishDir).Sub("Program")
+            .Should().Exist()
+            .And.HaveFiles([
+                appBinaryName,
+                "Program.deps.json",
+                "Program.runtimeconfig.json"
+            ]);
+    }
+
+    [Fact]
     public void Publish_Options()
     {
         var testInstance = _testAssetsManager.CreateTestDirectory();

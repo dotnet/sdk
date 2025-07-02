@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
+using System.Collections.Frozen;
+using System.Collections.ObjectModel;
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.Restore;
@@ -54,7 +54,7 @@ namespace Microsoft.DotNet.Tests.CommandLineParserTests
         [InlineData(new string[] { "-p:RuntimeIdentifiers=linux-x64;linux-arm64" }, new string[] { "--property:RuntimeIdentifiers=linux-x64;linux-arm64" })]
         public void Can_pass_msbuild_properties_safely(string[] tokens, string[] forwardedTokens)
         {
-            var forwardingFunction = (CommonOptions.PropertiesOption as ForwardedOption<string[]>).GetForwardingFunction();
+            var forwardingFunction = (CommonOptions.PropertiesOption as ForwardedOption<ReadOnlyDictionary<string,string>?>)!.GetForwardingFunction();
             var result = new RootCommand() { CommonOptions.PropertiesOption }.Parse(tokens);
             var parsedTokens = forwardingFunction(result);
             parsedTokens.Should().BeEquivalentTo(forwardedTokens);
