@@ -81,7 +81,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             var projectCollection = new ProjectCollection();
             var command = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath: file,
-                msbuildArgs: [])
+                msbuildArgs: MSBuildArgs.FromOtherArgs([]))
             {
                 Directives = directives,
             };
