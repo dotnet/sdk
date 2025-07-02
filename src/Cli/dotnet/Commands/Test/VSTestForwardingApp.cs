@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -11,11 +12,11 @@ public class VSTestForwardingApp : ForwardingApp
 {
     private const string VstestAppName = "vstest.console.dll";
 
-    public VSTestForwardingApp(IEnumerable<string> argsToForward)
+    public VSTestForwardingApp(IEnumerable<string> argsToForward, string targetArchitecture)
         : base(GetVSTestExePath(), argsToForward)
     {
-        (bool hasRootVariable, string rootVariableName, string rootValue) = GetRootVariable();
-        if (!hasRootVariable)
+        (bool setRootVariable, string rootVariableName, string rootValue) = GetRootVariable(targetArchitecture);
+        if (!setRootVariable)
         {
             WithEnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
@@ -38,14 +39,57 @@ public class VSTestForwardingApp : ForwardingApp
         return Path.Combine(AppContext.BaseDirectory, VstestAppName);
     }
 
-    internal static (bool hasRootVariable, string rootVariableName, string rootValue) GetRootVariable()
+    internal static (bool setRootVariable, string rootVariableName, string rootValue) GetRootVariable(string targetArchitecture)
     {
-        string rootVariableName = Environment.Is64BitProcess ? "DOTNET_ROOT" : "DOTNET_ROOT(x86)";
-        bool hasRootVariable = Environment.GetEnvironmentVariable(rootVariableName) != null;
-        string rootValue = hasRootVariable ? null : Path.GetDirectoryName(new Muxer().MuxerPath);
+        string[] rootVariables = [];
+        var processArchitecture = RuntimeInformation.ProcessArchitecture;
+        if (string.IsNullOrWhiteSpace(targetArchitecture) || processArchitecture != Enum.Parse<Architecture>(targetArchitecture, ignoreCase: true))
+        {
+            // User specified the --arch parameter but it is different from current process architecture, so we won't set anything
+            // to not break child processes by setting DOTNET_ROOT on them;
+            return (setRootVariable: false, null, null);
+        }
+
+        // Get variables to pick up from the current environment in the order in which they are inspected by the process.
+        rootVariables = GetRootVariablesToInspect(processArchitecture);
+
+        string rootPath = null;
+        foreach (var variable in rootVariables)
+        {
+            rootPath = Environment.GetEnvironmentVariable(variable);
+            if (!string.IsNullOrWhiteSpace(rootPath))
+            {
+                break;
+            }
+        }
+
+        if (!string.IsNullOrWhiteSpace(rootPath))
+        {
+            // Root path for this process was already set externally don't do anything.
+            return (setRootVariable: false, null, null);
+        }
+
+        // VSTest only accepts the two variants below, and the apphost does fallback to DOTNET_ROOT in all architectures, so we pass the
+        // architecture non-specific env variable.
+        string rootVariableName = Environment.Is64BitProcess ? "VSTEST_WINAPPHOST_DOTNET_ROOT" : "VSTEST_WINAPPHOST_DOTNET_ROOT(x86)";
 
         // We rename env variable to support --arch switch that relies on DOTNET_ROOT/DOTNET_ROOT(x86)
         // We provide VSTEST_WINAPPHOST_ only in case of testhost*.exe removing VSTEST_WINAPPHOST_ prefix and passing as env vars.
-        return (hasRootVariable, $"VSTEST_WINAPPHOST_{rootVariableName}", rootValue);
+        return (setRootVariable: true, rootVariableName, rootPath);
+
+        static string[] GetRootVariablesToInspect(Architecture processArchitecture)
+        {
+            switch (processArchitecture)
+            {
+                case Architecture.X86:
+                    return ["DOTNET_ROOT_X86", "DOTNET_ROOT(x86)"];
+
+                case Architecture.X64:
+                    return ["DOTNET_ROOT_X64", "DOTNET_ROOT"];
+
+                default:
+                    return [$"DOTNET_ROOT_{processArchitecture.ToString().ToUpperInvariant()}"];
+            }
+        }
     }
 }

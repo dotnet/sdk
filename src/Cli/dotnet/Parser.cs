@@ -341,7 +341,7 @@ public static class Parser
             }
             else if (command.Name.Equals(VSTestCommandParser.GetCommand().Name))
             {
-                new VSTestForwardingApp(helpArgs).Execute();
+                new VSTestForwardingApp(helpArgs, targetArchitecture: null).Execute();
             }
             else if (command.Name.Equals(FormatCommandParser.GetCommand().Name))
             {

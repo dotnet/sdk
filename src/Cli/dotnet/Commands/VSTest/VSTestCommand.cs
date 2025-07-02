@@ -29,7 +29,8 @@ public class VSTestCommand
             args.Add($"--testSessionCorrelationId:{testSessionCorrelationId}");
         }
 
-        VSTestForwardingApp vsTestforwardingApp = new(args);
+        string archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+        VSTestForwardingApp vsTestforwardingApp = new(args, archArg);
 
         int exitCode = vsTestforwardingApp.Execute();
 

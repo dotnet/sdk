@@ -144,7 +144,9 @@ public class TestCommand(
             convertedArgs.Add($"--testSessionCorrelationId:{testSessionCorrelationId}");
         }
 
-        int exitCode = new VSTestForwardingApp(convertedArgs).Execute();
+        string archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+
+        int exitCode = new VSTestForwardingApp(convertedArgs, archArg).Execute();
 
         // We run post processing also if execution is failed for possible partial successful result to post process.
         exitCode |= RunArtifactPostProcessingIfNeeded(testSessionCorrelationId, parseResult, FeatureFlag.Instance);
@@ -235,10 +237,11 @@ public class TestCommand(
             }
         }
 
-        // Set DOTNET_PATH if it isn't already set in the environment as it is required
+        // Set DOTNET_ROOT if it isn't already set in the environment as it is required
         // by the testhost which uses the apphost feature (Windows only).
-        (bool hasRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable();
-        if (!hasRootVariable)
+        string archArg = result.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+        (bool setRootVariable, string rootVariableName, string rootValue) = VSTestForwardingApp.GetRootVariable(archArg);
+        if (!setRootVariable)
         {
             testCommand.EnvironmentVariable(rootVariableName, rootValue);
             VSTestTrace.SafeWriteTrace(() => $"Root variable set {rootVariableName}:{rootValue}");
@@ -272,9 +275,11 @@ public class TestCommand(
             artifactsPostProcessArgs.Add($"--diag:{parseResult.GetValue(TestCommandParser.DiagOption)}");
         }
 
+        string archArg = parseResult.ForwardedOptionValues<IReadOnlyCollection<string>>(TestCommandParser.GetCommand(), "--arch")?.SingleOrDefault() ?? null;
+
         try
         {
-            return new VSTestForwardingApp(artifactsPostProcessArgs).Execute();
+            return new VSTestForwardingApp(artifactsPostProcessArgs, archArg).Execute();
         }
         finally
         {
