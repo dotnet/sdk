@@ -58,7 +58,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
 
         public bool UseArtifactsOutput { get; set; }
 
-        public List<TestProject?> ReferencedProjects { get; } = new List<TestProject?>();
+        public List<TestProject> ReferencedProjects { get; } = [];
 
         public List<string> References { get; } = new List<string>();
 
@@ -311,7 +311,7 @@ namespace Microsoft.NET.TestFramework.ProjectConstruction
                 foreach (var referencedProject in ReferencedProjects)
                 {
                     projectReferenceItemGroup.Add(new XElement(ns + "ProjectReference",
-                    new XAttribute("Include", $"../{referencedProject?.Name}/{referencedProject?.Name}.csproj")));
+                    new XAttribute("Include", $"../{referencedProject.Name}/{referencedProject.Name}{referencedProject.TargetExtension}")));
                 }
             }
 
@@ -427,7 +427,7 @@ class Program
 
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
+                        string? safeDependencyName = dependency.Name?.Replace('.', '_');
 
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.Name);" + Environment.NewLine;
                         source += $"        Console.WriteLine({safeDependencyName}.{safeDependencyName}Class.List);" + Environment.NewLine;
@@ -456,7 +456,7 @@ namespace {safeThisName}
 ";
                     foreach (var dependency in ReferencedProjects)
                     {
-                        string? safeDependencyName = dependency?.Name?.Replace('.', '_');
+                        string? safeDependencyName = dependency.Name?.Replace('.', '_');
 
                         source += $"        public string {safeDependencyName}Name {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.Name; }} }}" + Environment.NewLine;
                         source += $"        public List<string> {safeDependencyName}List {{ get {{ return {safeDependencyName}.{safeDependencyName}Class.List; }} }}" + Environment.NewLine;
