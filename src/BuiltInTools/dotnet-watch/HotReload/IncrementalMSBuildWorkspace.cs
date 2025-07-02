@@ -30,7 +30,7 @@ internal class IncrementalMSBuildWorkspace : Workspace
         _reporter = reporter;
     }
 
-    public async Task UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
+    public async Task<SolutionChanges> UpdateProjectConeAsync(string rootProjectPath, CancellationToken cancellationToken)
     {
         var oldSolution = CurrentSolution;
 
@@ -91,12 +91,16 @@ internal class IncrementalMSBuildWorkspace : Workspace
                 .WithCompilationOutputInfo(newProjectInfo.CompilationOutputInfo));
         }
 
-        await ReportSolutionFilesAsync(SetCurrentSolution(newSolution), cancellationToken);
+        var finalNewSolution = SetCurrentSolution(newSolution);
+        await ReportSolutionFilesAsync(finalNewSolution, cancellationToken);
         UpdateReferencesAfterAdd();
 
+        return finalNewSolution.GetChanges(oldSolution);
+
         ProjectReference MapProjectReference(ProjectReference pr)
-            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing:
-            => new(projectIdMap.TryGetValue(pr.ProjectId, out var mappedId) ? mappedId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
+            // Only C# and VB projects are loaded by the MSBuildProjectLoader, so some references might be missing.
+            // When a new project is added along with a new project reference the old project id is also null.
+            => new(projectIdMap.TryGetValue(pr.ProjectId, out var oldProjectId) && oldProjectId != null ? oldProjectId : pr.ProjectId, pr.Aliases, pr.EmbedInteropTypes);
 
         ImmutableArray<DocumentInfo> MapDocuments(ProjectId mappedProjectId, IReadOnlyList<DocumentInfo> documents)
             => documents.Select(docInfo =>

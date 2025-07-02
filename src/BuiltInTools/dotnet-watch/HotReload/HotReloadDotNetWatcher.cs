@@ -3,6 +3,8 @@
 
 using System.Collections.Immutable;
 using System.Diagnostics;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Graph;
 using Microsoft.CodeAnalysis;
 
 namespace Microsoft.DotNet.Watch
@@ -446,7 +448,7 @@ namespace Microsoft.DotNet.Watch
                                 // additional directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
-                                await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
+                                var solutionChanges = await compilationHandler.Workspace.UpdateProjectConeAsync(_fileSetFactory.RootProjectFile, iterationCancellationToken);
 
                                 if (shutdownCancellationToken.IsCancellationRequested)
                                 {
@@ -457,6 +459,8 @@ namespace Microsoft.DotNet.Watch
                                 // Update files in the change set with new evaluation info.
                                 changedFiles = [.. changedFiles
                                     .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)];
+
+                                await DeployProjectDependenciesAsync(evaluationResult.ProjectGraph, solutionChanges, iterationCancellationToken);
 
                                 _context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -549,6 +553,64 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
             }
+        }
+
+        private Task DeployProjectDependenciesAsync(ProjectGraph graph, SolutionChanges solutionChanges, CancellationToken cancellationToken)
+        {
+            // TODO: tfm
+
+            var affectedProjectFilePaths =
+                (from projectChange in solutionChanges.GetProjectChanges()
+                 where projectChange.GetAddedProjectReferences().Any() || projectChange.GetAddedMetadataReferences().Any()
+                 select projectChange.NewProject.FilePath!).ToHashSet();
+
+            foreach (var node in graph.ProjectNodes)
+            {
+                if (affectedProjectFilePaths.Contains(node.ProjectInstance.FullPath))
+                {
+                    // TODO: logger; GenerateBuildDependencyFile?
+                    if (!node.ProjectInstance.Build(["ReferenceCopyLocalPathsOutputGroup"], loggers: [], out var targetOutputs))
+                    {
+                        Context.Reporter.Verbose("ReferenceCopyLocalPathsOutputGroup target failed");
+                        continue;
+                    }
+
+                    var copyLocalItems = targetOutputs.Values.Single();
+                    if (copyLocalItems.ResultCode != TargetResultCode.Success)
+                    {
+                        continue;
+                    }
+
+                    var outDir = Path.Combine(Path.GetDirectoryName(node.ProjectInstance.FullPath)!, node.ProjectInstance.GetPropertyValue("OutDir"));
+
+                    foreach (var item in copyLocalItems.Items)
+                    {
+                        var sourcePath = item.ItemSpec;
+                        var targetPath = Path.Combine(outDir, item.GetMetadata("TargetPath"));
+                        if (!File.Exists(targetPath))
+                        {
+                            Context.Reporter.Verbose($"Deploying project dependency '{targetPath}' from '{sourcePath}'");
+
+                            try
+                            {
+                                var directory = Path.GetDirectoryName(targetPath);
+                                if (directory != null)
+                                {
+                                    Directory.CreateDirectory(directory);
+                                }
+
+                                File.Copy(sourcePath, targetPath, overwrite: false);
+                            }
+                            catch (Exception e)
+                            {
+                                Context.Reporter.Verbose($"Copy failed: {e.Message}");
+                            }
+                        }
+                    }
+                }
+            }
+
+            return Task.CompletedTask;
         }
 
         private async ValueTask WaitForFileChangeBeforeRestarting(FileWatcher fileWatcher, EvaluationResult? evaluationResult, CancellationToken cancellationToken)
