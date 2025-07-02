@@ -1,13 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-using Microsoft.Build.FileSystem;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch
@@ -18,20 +14,20 @@ namespace Microsoft.DotNet.Watch
     /// Invokes msbuild to evaluate <see cref="TargetName"/> on the root project, which traverses all project dependencies and collects
     /// items that are to be watched. The target can be customized by defining CustomCollectWatchItems target. This is currently done by Razor SDK
     /// to collect razor and cshtml files.
-    ///
     /// Consider replacing with <see cref="Build.Graph.ProjectGraph"/> traversal (https://github.com/dotnet/sdk/issues/40214).
     /// </summary>
     internal class MSBuildFileSetFactory(
         string rootProjectFile,
         IEnumerable<string> buildArguments,
-        EnvironmentOptions environmentOptions,
         ProcessRunner processRunner,
-        IReporter reporter)
+        BuildReporter buildReporter)
     {
         private const string TargetName = "GenerateWatchList";
         private const string WatchTargetsFileName = "DotNetWatch.targets";
 
         public string RootProjectFile => rootProjectFile;
+        private EnvironmentOptions EnvironmentOptions => buildReporter.EnvironmentOptions;
+        private IReporter Reporter => buildReporter.Reporter;
 
         internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> files, ProjectGraph? projectGraph)
         {
@@ -51,7 +47,7 @@ namespace Microsoft.DotNet.Watch
 
                 var processSpec = new ProcessSpec
                 {
-                    Executable = environmentOptions.MuxerPath,
+                    Executable = EnvironmentOptions.MuxerPath,
                     WorkingDirectory = projectDir,
                     Arguments = arguments,
                     OnOutput = line =>
@@ -63,19 +59,19 @@ namespace Microsoft.DotNet.Watch
                     }
                 };
 
-                reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
+                Reporter.Verbose($"Running MSBuild target '{TargetName}' on '{rootProjectFile}'");
 
-                var exitCode = await processRunner.RunAsync(processSpec, reporter, isUserApplication: false, launchResult: null, cancellationToken);
+                var exitCode = await processRunner.RunAsync(processSpec, Reporter, isUserApplication: false, launchResult: null, cancellationToken);
 
                 var success = exitCode == 0 && File.Exists(watchList);
 
                 if (!success)
                 {
-                    reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
-                    reporter.Output($"MSBuild output from target '{TargetName}':");
+                    Reporter.Error($"Error(s) finding watch items project file '{Path.GetFileName(rootProjectFile)}'.");
+                    Reporter.Output($"MSBuild output from target '{TargetName}':");
                 }
 
-                BuildOutput.ReportBuildOutput(reporter, capturedOutput, success, projectDisplay: null);
+                BuildOutput.ReportBuildOutput(Reporter, capturedOutput, success, projectDisplay: null);
                 if (!success)
                 {
                     return null;
@@ -117,14 +113,8 @@ namespace Microsoft.DotNet.Watch
                     }
                 }
 
-                reporter.Verbose($"Watching {fileItems.Count} file(s) for changes");
+                buildReporter.ReportWatchedFiles(fileItems);
 #if DEBUG
-
-                foreach (var file in fileItems.Values)
-                {
-                    reporter.Verbose($"  -> {file.FilePath} {file.StaticWebAssetPath}");
-                }
-
                 Debug.Assert(fileItems.Values.All(f => Path.IsPathRooted(f.FilePath)), "All files should be rooted paths");
 #endif
 
@@ -135,7 +125,7 @@ namespace Microsoft.DotNet.Watch
                     var globalOptions = CommandLineOptions.ParseBuildProperties(buildArguments)
                         .ToImmutableDictionary(keySelector: arg => arg.key, elementSelector: arg => arg.value);
 
-                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, reporter, requireProjectGraph.Value, cancellationToken);
+                    projectGraph = ProjectGraphUtilities.TryLoadProjectGraph(rootProjectFile, globalOptions, Reporter, requireProjectGraph.Value, cancellationToken);
                     if (projectGraph == null && requireProjectGraph == true)
                     {
                         return null;
@@ -164,11 +154,9 @@ namespace Microsoft.DotNet.Watch
                 "/t:" + TargetName
             };
 
-#if !DEBUG
-            if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
-#endif
+            if (EnvironmentOptions.GetTestBinlogPath("GenerateWatchList") is { } binLogPath)
             {
-                arguments.Add($"/bl:{Path.Combine(environmentOptions.TestOutput, "DotnetWatch.GenerateWatchList.binlog")}");
+                arguments.Add($"/bl:{binLogPath}");
             }
 
             arguments.AddRange(buildArguments);
@@ -176,7 +164,7 @@ namespace Microsoft.DotNet.Watch
             // Set dotnet-watch reserved properties after the user specified propeties,
             // so that the former take precedence.
 
-            if (environmentOptions.SuppressHandlingStaticContentFiles)
+            if (EnvironmentOptions.SuppressHandlingStaticContentFiles)
             {
                 arguments.Add("/p:DotNetWatchContentFiles=false");
             }
@@ -184,8 +172,6 @@ namespace Microsoft.DotNet.Watch
             arguments.Add("/p:_DotNetWatchListFile=" + watchListFilePath);
             arguments.Add("/p:DotNetWatchBuild=true"); // extensibility point for users
             arguments.Add("/p:DesignTimeBuild=true"); // don't do expensive things
-            arguments.Add("/p:SkipCompilerExecution=true");
-            arguments.Add("/p:ProvideCommandLineArgs=true");
             arguments.Add("/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile);
             arguments.Add("/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile);
 

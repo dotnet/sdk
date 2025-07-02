@@ -61,5 +61,10 @@ namespace Microsoft.DotNet.Watch
             Debug.Assert(Path.GetFileNameWithoutExtension(muxerPath) == "dotnet", $"Invalid muxer path {muxerPath}");
             return muxerPath;
         }
+
+        public string? GetTestBinlogPath(string operationName)
+            => TestFlags.HasFlag(TestFlags.RunningAsTest)
+                ? Path.Combine(TestOutput, $"DotnetWatch.{operationName}.binlog")
+                : null;
     }
 }

@@ -10,17 +10,33 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions environmentOptions)
 {
     public IReporter Reporter => reporter;
+    public EnvironmentOptions EnvironmentOptions => environmentOptions;
 
     public Loggers GetLoggers(string operationName)
         => new(reporter, environmentOptions, operationName);
 
+    public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
+    {
+        reporter.Verbose($"Watching {fileItems.Count} file(s) for changes");
+
+        if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
+        {
+            foreach (var file in fileItems.Values)
+            {
+                reporter.Verbose(file.StaticWebAssetPath != null
+                    ? $"> {file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
+                    : $"> {file.FilePath}");
+            }
+        }
+    }
+
     public sealed class Loggers(IReporter reporter, EnvironmentOptions environmentOptions, string operationName) : IEnumerable<ILogger>, IDisposable
     {
-        private readonly BinaryLogger? _binaryLogger = environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest)
+        private readonly BinaryLogger? _binaryLogger = environmentOptions.GetTestBinlogPath(operationName) is { } binlogPath
             ? new()
             {
                 Verbosity = LoggerVerbosity.Diagnostic,
-                Parameters = "LogFile=" + Path.Combine(environmentOptions.TestOutput, $"DotnetWatch.{operationName}.binlog"),
+                Parameters = "LogFile=" + binlogPath,
             }
             : null;
 

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Xml;
 using Microsoft.Build.Graph;
 
 namespace Microsoft.DotNet.Watch;
@@ -154,17 +153,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             }
         }
 
-        reporter.Verbose($"Watching {fileItems.Count} file(s) for changes");
-
-        if (environmentOptions.TestFlags.HasFlag(TestFlags.RunningAsTest))
-        {
-            foreach (var file in fileItems.Values)
-            {
-                reporter.Verbose(file.StaticWebAssetPath != null
-                    ? $"> {file.FilePath}{Path.PathSeparator}{file.StaticWebAssetPath}"
-                    : $"> {file.FilePath}");
-            }
-        }
+        buildReporter.ReportWatchedFiles(fileItems);
 
         return new EvaluationResult(fileItems, projectGraph);
     }
