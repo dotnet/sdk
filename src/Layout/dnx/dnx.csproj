@@ -10,6 +10,9 @@
     <OptimizationPreference>Size</OptimizationPreference>
     <StackTraceSupport>false</StackTraceSupport>
     <_IsPublishing>true</_IsPublishing>
+
+    <!-- Don't include TargetFramework in output path to make using the result in the redist targets simpler -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
