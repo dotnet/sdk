@@ -41,6 +41,12 @@ partial class CreateNewImage
     /// </summary>
     public string BaseImageDigest { get; set; }
 
+    [Required]
+    public ITaskItem BaseImageManifestPath { get; set; }
+
+    [Required]
+    public ITaskItem BaseImageConfigurationPath { get; set; }
+
     /// <summary>
     /// The registry to push to.
     /// </summary>
@@ -69,11 +75,11 @@ partial class CreateNewImage
     public string[] ImageTags { get; set; }
 
     /// <summary>
-    /// The directory for the build outputs to be published.
-    /// Constructed from "$(MSBuildProjectDirectory)\$(PublishDir)"
+    /// The files to be published to the container.
+    /// MUST have RelativePath metadata..
     /// </summary>
     [Required]
-    public string PublishDirectory { get; set; }
+    public ITaskItem[] PublishFiles { get; set; }
 
     /// <summary>
     /// The working directory of the container.
@@ -130,18 +136,6 @@ partial class CreateNewImage
     public ITaskItem[] ContainerEnvironmentVariables { get; set; }
 
     /// <summary>
-    /// The RID to use to determine the host manifest if the parent container is a manifest list
-    /// </summary>
-    [Required]
-    public string ContainerRuntimeIdentifier { get; set; }
-
-    /// <summary>
-    /// The path to the runtime identifier graph file. This is used to compute RID compatibility for Image Manifest List entries.
-    /// </summary>
-    [Required]
-    public string RuntimeIdentifierGraphPath { get; set; }
-
-    /// <summary>
     /// The username or UID which is a platform-specific structure that allows specific control over which user the process run as.
     /// This acts as a default value to use when the value is not specified when creating a container.
     /// For Linux based systems, all of the following are valid: user, uid, user:group, uid:gid, uid:group, user:gid.
@@ -170,9 +164,25 @@ partial class CreateNewImage
     /// </summary>
     public string? ImageFormat { get; set; }
 
-    /// If true, the tooling will skip the publishing step.
+    public string ContentStoreRoot { get; set; }
+
+    /// <summary>
+    /// Where to write the generated manifest file.
     /// </summary>
-    public bool SkipPublishing { get; set; }
+    [Required]
+    public string GeneratedManifestPath { get; set; } = "";
+
+    /// <summary>
+    /// Where to write the generated configuration file.
+    /// </summary>
+    [Required]
+    public string GeneratedConfigurationPath { get; set; } = "";
+
+    /// <summary>
+    /// Where to write the generated layer tarball.
+    /// </summary>
+    [Required]
+    public string GeneratedLayerPath { get; set; } = "";
 
     [Output]
     public string GeneratedContainerManifest { get; set; }
@@ -193,6 +203,15 @@ partial class CreateNewImage
     public ITaskItem[] GeneratedContainerNames { get; set; }
 
     [Output]
+    public ITaskItem GeneratedAppContainerLayer { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerConfig { get; set; }
+
+    [Output]
+    public ITaskItem GeneratedAppContainerManifest { get; set; }
+
+    [Output]
     public ITaskItem? GeneratedDigestLabel { get; set; }
 
     public CreateNewImage()
@@ -204,11 +223,13 @@ partial class CreateNewImage
         BaseImageName = "";
         BaseImageTag = "";
         BaseImageDigest = "";
+        BaseImageManifestPath = null!;
+        BaseImageConfigurationPath = null!;
         OutputRegistry = "";
         ArchiveOutputPath = "";
         Repository = "";
         ImageTags = Array.Empty<string>();
-        PublishDirectory = "";
+        PublishFiles = [];
         WorkingDirectory = "";
         Entrypoint = Array.Empty<ITaskItem>();
         EntrypointArgs = Array.Empty<ITaskItem>();
@@ -219,10 +240,9 @@ partial class CreateNewImage
         Labels = Array.Empty<ITaskItem>();
         ExposedPorts = Array.Empty<ITaskItem>();
         ContainerEnvironmentVariables = Array.Empty<ITaskItem>();
-        ContainerRuntimeIdentifier = "";
-        RuntimeIdentifierGraphPath = "";
         LocalRegistry = "";
         ContainerUser = "";
+        ContentStoreRoot = "";
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
@@ -231,6 +251,9 @@ partial class CreateNewImage
         GeneratedContainerMediaType = "";
         GeneratedContainerNames = Array.Empty<ITaskItem>();
         GeneratedDigestLabel = null;
+        GeneratedAppContainerLayer = null!;
+        GeneratedAppContainerConfig = null!;
+        GeneratedAppContainerManifest = null!;
 
         GenerateLabels = false;
         GenerateDigestLabel = false;

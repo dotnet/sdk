@@ -11,9 +11,11 @@ namespace Microsoft.NET.Build.Containers.Logging;
 /// An <see cref="ILoggerProvider"/> that creates <see cref="ILogger"/>s which passes
 /// all the logs to MSBuild's <see cref="TaskLoggingHelper"/>.
 /// </summary>
-internal class MSBuildLoggerProvider : ILoggerProvider
+internal class MSBuildLoggerProvider : ILoggerProvider, ISupportExternalScope
 {
     private readonly TaskLoggingHelper _loggingHelper;
+    private List<MSBuildLogger> _loggers = new List<MSBuildLogger>();
+    private IExternalScopeProvider? _scopeProvider;
 
     public MSBuildLoggerProvider(TaskLoggingHelper loggingHelperToWrap)
     {
@@ -22,8 +24,19 @@ internal class MSBuildLoggerProvider : ILoggerProvider
 
     public ILogger CreateLogger(string categoryName)
     {
-        return new MSBuildLogger(categoryName, _loggingHelper);
+        var logger = new MSBuildLogger(categoryName, _loggingHelper, _scopeProvider);
+        _loggers.Add(logger);
+        return logger;
     }
 
     public void Dispose() { }
+
+    public void SetScopeProvider(IExternalScopeProvider scopeProvider)
+    {
+        _scopeProvider = scopeProvider;
+        foreach (var logger in _loggers)
+        {
+            logger.SetScopeProvider(scopeProvider);
+        }
+    }
 }

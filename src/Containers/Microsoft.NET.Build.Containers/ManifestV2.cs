@@ -7,12 +7,20 @@ using System.Text.Json.Serialization;
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
+/// Marker interface so we can return polymorphic manifests of all kinds
+/// </summary>
+public interface IManifest
+{
+    public string? MediaType { get; }
+};
+
+/// <summary>
 /// The struct represents image manifest specification.
 /// </summary>
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-public class ManifestV2
+public class ManifestV2 : IManifest
 {
     [JsonIgnore]
     public string? KnownDigest { get; set; }
@@ -50,7 +58,7 @@ public class ManifestV2
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(this);
 }
 
 public record struct ManifestConfig(string mediaType, long size, string digest);

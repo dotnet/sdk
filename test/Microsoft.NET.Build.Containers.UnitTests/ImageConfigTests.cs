@@ -50,7 +50,7 @@ public class ImageConfigTests
     public void PassesThroughPropertyEvenThoughPropertyIsntExplicitlyHandled(string property)
     {
         ImageConfig c = new(SampleImageConfig);
-        JsonNode after = JsonNode.Parse(c.BuildConfig())!;
+        JsonNode after = c.BuildConfig();
         JsonNode? prop = after["config"]?[property];
         Assert.NotNull(prop);
     }
