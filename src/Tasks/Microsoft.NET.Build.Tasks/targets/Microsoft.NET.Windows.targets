@@ -274,7 +274,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target
     Name="_RunCsWinRTGenerator"
     DependsOnTargets="CoreCompile;$(GetTargetPathDependsOn);$(GetTargetPathWithTargetPlatformMonikerDependsOn);_ComputeRunCsWinRTGeneratorCache"
-    BeforeTargets="GetTargetPath;GetTargetPathWithTargetPlatformMoniker;GenerateBuildDependencyFile;GeneratePublishDependencyFile"
+    BeforeTargets="GetTargetPath;GetTargetPathWithTargetPlatformMoniker;GenerateBuildDependencyFile;GeneratePublishDependencyFile;GetCopyToOutputDirectoryItems;GetCopyToPublishDirectoryItems"
     Inputs="@(ReferencePath);@(IntermediateAssembly);$(_RunCsWinRTGeneratorPropertyInputsCachePath)"
     Outputs="$(_CsWinRTGeneratorInteropAssemblyPath)"
     Condition="'$(CsWinRTGenerateInteropAssembly)' == 'true'">
@@ -310,9 +310,23 @@ Copyright (c) .NET Foundation. All rights reserved.
       </CsWinRTGeneratorInteropAssemblyPath>
     </ItemGroup>
 
-    <!-- Add the interop .dll to the list of reference paths -->
+    <!-- Add the interop .dll to the required output groups -->
     <ItemGroup>
+
+      <!-- 'ReferencePath' handles adding the interop .dll to '.deps.json', which is needed for '[UnsafeAccessor]' to work -->
       <ReferencePath Include="@(CsWinRTGeneratorInteropAssemblyPath)" />
+
+      <!-- 'AllItemsFullPathWithTargetPath' handles copying the interop .dll to the build output folder -->
+      <AllItemsFullPathWithTargetPath
+        Include="@(CsWinRTGeneratorInteropAssemblyPath)"
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)"
+        CopyToOutputDirectory="PreserveNewest" />
+      
+      <!-- 'AllPublishItemsFullPathWithTargetPath' handles copying the interop .dll to the publish output folder -->
+      <AllPublishItemsFullPathWithTargetPath
+        Include="@(CsWinRTGeneratorInteropAssemblyPath)"
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)"
+        CopyToOutputDirectory="PreserveNewest" />
     </ItemGroup>
 
     <!-- Append to 'FileWrites' so the interop .dll will be removed on clean -->
