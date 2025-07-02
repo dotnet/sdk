@@ -380,12 +380,18 @@ NOTE: This file is imported from the following contexts, so be aware when writin
        PackageType = 'MyDotnetTool'         -> 'DotnetTool;MyDotnetTool'
 
     _PaddedPackageType is used to ensure that the PackageType is semicolon delimited and can be easily checked for an existing DotnetTool package type.
+
+    All of this should only apply for the 'outer' tool package - the 'inner' RID-specific tool packages are always of type DotnetToolRidPackage.
+    This is so that the inner packages do not appear on any tool search results.
     -->
 
-    <AddPackageType CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
+    <AddPackageType Condition="$(_ToolPackageType) == 'DotnetTool'" CurrentPackageType="$(PackageType)" PackageTypeToAdd="$(_ToolPackageType)">
       <Output TaskParameter="UpdatedPackageType" PropertyName="PackageType" />
     </AddPackageType>
 
+    <PropertyGroup Condition="$(_ToolPackageType) == 'DotnetToolRidPackage'">
+      <PackageType>DotnetToolRidPackage</PackageType>
+    </PropertyGroup>
   </Target>
 
   <!-- Orchestrator for making the N RID-specific tool packages if this Tool supports that mode.

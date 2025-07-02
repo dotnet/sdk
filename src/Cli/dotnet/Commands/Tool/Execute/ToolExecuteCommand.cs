@@ -22,7 +22,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 {
     const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
 
-    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetRequiredValue(ToolExecuteCommandParser.PackageIdentityArgument);
+    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
     private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
     private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
     private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
