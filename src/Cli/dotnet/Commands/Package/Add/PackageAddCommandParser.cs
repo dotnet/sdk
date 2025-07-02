@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 using System.CommandLine.Completions;
 using System.CommandLine.Parsing;
@@ -18,7 +16,7 @@ public static class PackageAddCommandParser
     .AddCompletions((context) =>
     {
         // we should take --prerelease flags into account for version completion
-        var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
+        var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption!);
         return QueryNuGet(context.WordToComplete, allowPrerelease, CancellationToken.None).Result.Select(packageId => new CompletionItem(packageId));
     });
 
@@ -33,7 +31,7 @@ public static class PackageAddCommandParser
             if (context.ParseResult.GetValue(CmdPackageArgument) is { HasVersion: false } packageId)
             {
                 // we should take --prerelease flags into account for version completion
-                var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption);
+                var allowPrerelease = context.ParseResult.GetValue(PrereleaseOption!);
                 return QueryVersionsForPackage(packageId.Id, context.WordToComplete, allowPrerelease, CancellationToken.None)
                     .Result
                     .Select(version => new CompletionItem(version.ToNormalizedString()));
@@ -97,15 +95,16 @@ public static class PackageAddCommandParser
         command.Options.Add(InteractiveOption);
         command.Options.Add(PrereleaseOption);
         command.Options.Add(PackageCommandParser.ProjectOption);
+        command.Options.Add(PackageCommandParser.FileOption);
 
-        command.SetAction((parseResult) => new PackageAddCommand(parseResult, parseResult.GetValue(PackageCommandParser.ProjectOption)).Execute());
+        command.SetAction((parseResult) => new PackageAddCommand(parseResult).Execute());
 
         return command;
     }
 
     private static void DisallowVersionIfPackageIdentityHasVersionValidator(OptionResult result)
     {
-        if (result.Parent.GetValue(CmdPackageArgument).HasVersion)
+        if (result.Parent?.GetValue(CmdPackageArgument).HasVersion == true)
         {
             result.AddError(CliCommandStrings.ValidationFailedDuplicateVersion);
         }
