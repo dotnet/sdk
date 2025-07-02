@@ -91,6 +91,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         }
     }
 
+    /// <inheritdoc cref="OutOfTreeBaseDirectory"/>
     private static string PrepareOutOfTreeBaseDirectory()
     {
         string outOfTreeBaseDirectory = TestPathUtility.ResolveTempPrefixLink(Path.Join(Path.GetTempPath(), "dotnetSdkTests"));
@@ -100,6 +101,11 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         var sourceNuGetConfig = Path.Join(TestContext.Current.TestExecutionDirectory, "NuGet.config");
         var targetNuGetConfig = Path.Join(outOfTreeBaseDirectory, "NuGet.config");
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
+
+        // Check there are no implicit build files that would prevent testing optimizations.
+        VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
+        exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
+            "so we can test optimizations that would be disabled with implicit build files present");
 
         return outOfTreeBaseDirectory;
     }

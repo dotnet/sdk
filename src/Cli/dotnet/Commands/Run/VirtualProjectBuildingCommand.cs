@@ -41,13 +41,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     private const string BuildSuccessCacheFileName = "build-success.cache";
 
     /// <summary>
-    /// <c>MSBuildFile</c> is <see langword="true"/> if the presence of the implicit build file (even if there are no <see cref="CSharpDirective"/>s)
+    /// <c>IsMSBuildFile</c> is <see langword="true"/> if the presence of the implicit build file (even if there are no <see cref="CSharpDirective"/>s)
     /// implies that CSC is not enough and MSBuild is needed to build the project, i.e., the file alone can affect MSBuild props or targets.
     /// </summary>
     /// <remarks>
     /// For example, the simple programs our CSC optimized path handles do not need NuGet restore, hence we can ignore NuGet config files.
     /// </remarks>
-    private static readonly ImmutableArray<(string Name, bool MSBuildFile)> s_implicitBuildFiles =
+    private static readonly ImmutableArray<(string Name, bool IsMSBuildFile)> s_implicitBuildFiles =
     [
         ("global.json", false),
 
@@ -67,7 +67,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <summary>
     /// For purposes of determining whether CSC is enough to build as opposed to full MSBuild,
     /// we can ignore properties that do not affect the build on their own.
-    /// See also the <c>MSBuildFile</c> flag in <see cref="s_implicitBuildFiles"/>.
+    /// See also the <c>IsMSBuildFile</c> flag in <see cref="s_implicitBuildFiles"/>.
     /// </summary>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
@@ -379,28 +379,37 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var entryPointFile = new FileInfo(EntryPointFileFullPath);
 
         // Collect current implicit build files.
-        for (DirectoryInfo? directory = entryPointFile.Directory; directory != null; directory = directory.Parent)
-        {
-            foreach (var implicitBuildFile in s_implicitBuildFiles)
-            {
-                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFile.Name);
-                if (File.Exists(implicitBuildFilePath))
-                {
-                    cacheEntry.ImplicitBuildFiles.Add(implicitBuildFilePath);
-
-                    if (implicitBuildFile.MSBuildFile && cacheEntry.ExampleMSBuildFile is null)
-                    {
-                        cacheEntry.ExampleMSBuildFile = implicitBuildFilePath;
-                    }
-                }
-            }
-        }
+        CollectImplicitBuildFiles(entryPointFile.Directory, cacheEntry.ImplicitBuildFiles, out var exampleMSBuildFile);
+        cacheEntry.ExampleMSBuildFile = exampleMSBuildFile;
 
         return new CacheInfo
         {
             EntryPointFile = entryPointFile,
             CurrentEntry = cacheEntry,
         };
+    }
+
+    // internal for testing
+    internal static void CollectImplicitBuildFiles(DirectoryInfo? startDirectory, HashSet<string> collectedPaths, out string? exampleMSBuildFile)
+    {
+        Debug.Assert(startDirectory != null);
+        exampleMSBuildFile = null;
+        for (DirectoryInfo? directory = startDirectory; directory != null; directory = directory.Parent)
+        {
+            foreach (var implicitBuildFile in s_implicitBuildFiles)
+            {
+                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFile.Name);
+                if (File.Exists(implicitBuildFilePath))
+                {
+                    collectedPaths.Add(implicitBuildFilePath);
+
+                    if (implicitBuildFile.IsMSBuildFile && exampleMSBuildFile is null)
+                    {
+                        exampleMSBuildFile = implicitBuildFilePath;
+                    }
+                }
+            }
+        }
     }
 
     private bool NeedsToBuild(out CacheInfo cache)
