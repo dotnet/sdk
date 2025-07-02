@@ -20,7 +20,7 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
             ? new()
             {
                 Verbosity = LoggerVerbosity.Diagnostic,
-                Parameters = "LogFile=" + Path.Combine(environmentOptions.TestOutput, $"DotnetWatch.{operationName}.binlog")
+                Parameters = "LogFile=" + Path.Combine(environmentOptions.TestOutput, $"DotnetWatch.{operationName}.binlog"),
             }
             : null;
 

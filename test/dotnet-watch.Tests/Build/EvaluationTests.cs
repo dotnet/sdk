@@ -315,6 +315,70 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         [Fact]
+        public async Task FSharpProjectDependency()
+        {
+            var projectFS = new TestProject("FS")
+            {
+                TargetExtension = ".fsproj",
+                AdditionalItems =
+                {
+                    new("Compile", new() { { "Include", "Lib.fs" } })
+                },
+                SourceFiles = { { "Lib.fs", "" } }
+            };
+
+            var projectCS = new TestProject("CS")
+            {
+                ReferencedProjects = { projectFS },
+                TargetExtension = ".csproj",
+            };
+
+            var testAsset = _testAssets.CreateTestProject(projectCS);
+
+            await VerifyEvaluation(testAsset,
+            [
+                new("CS/CS.cs"),
+                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CS.AssemblyInfo.cs", graphOnly: true),
+                new("CS/CS.csproj", targetsOnly: true),
+                new("FS/FS.fsproj", targetsOnly: true),
+                new("FS/Lib.fs"),
+                new($"FS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.fs", graphOnly: true),
+                new($"FS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/FS.AssemblyInfo.fs", graphOnly: true),
+            ]);
+        }
+
+        [Fact]
+        public async Task VBProjectDependency()
+        {
+            var projectVB = new TestProject("VB")
+            {
+                TargetExtension = ".vbproj",
+                SourceFiles = { { "Lib.vb", "" } }
+            };
+
+            var projectCS = new TestProject("CS")
+            {
+                ReferencedProjects = { projectVB },
+                TargetExtension = ".csproj",
+            };
+
+            var testAsset = _testAssets.CreateTestProject(projectCS);
+
+            await VerifyEvaluation(testAsset,
+            [
+                new("CS/CS.cs"),
+                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CS.AssemblyInfo.cs", graphOnly: true),
+                new("CS/CS.csproj", targetsOnly: true),
+                new("VB/VB.vbproj", targetsOnly: true),
+                new("VB/Lib.vb"),
+                new($"VB/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.vb", graphOnly: true),
+                new($"VB/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/VB.AssemblyInfo.vb", graphOnly: true),
+            ]);
+        }
+
+        [Fact]
         public async Task ProjectReferences_Graph()
         {
             // A->B,F,W(Watch=False)
@@ -374,18 +438,19 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task MsbuildOutput()
         {
-            var project2 = _testAssets.CreateTestProject(new TestProject("Project2")
+            var project2 = new TestProject("Project2")
             {
                 TargetFrameworks = "netstandard2.1",
-            });
+            };
 
-            var project1 = _testAssets.CreateTestProject(new TestProject("Project1")
+            var project1 = new TestProject("Project1")
             {
                 TargetFrameworks = "net462",
-                ReferencedProjects = { project2.TestProject },
-            });
+                ReferencedProjects = { project2 },
+            };
 
-            var project1Path = GetTestProjectPath(project1);
+            var testAsset = _testAssets.CreateTestProject(project1);
+            var project1Path = GetTestProjectPath(testAsset);
 
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!, muxerPath: MuxerPath);
             var processRunner = new ProcessRunner(options.ProcessCleanupTimeout, CancellationToken.None);
