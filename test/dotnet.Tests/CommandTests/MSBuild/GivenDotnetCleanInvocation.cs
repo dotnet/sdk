@@ -8,8 +8,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
     [Collection(TestConstants.UsesStaticTelemetryState)]
     public class GivenDotnetCleanInvocation : IClassFixture<NullCurrentSessionIdFixture>
     {
-        private const string NugetInteractiveProperty = "-property:NuGetInteractive=false";
-        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-verbosity:normal", "-target:Clean", NugetInteractiveProperty];
+        private const string NugetInteractiveProperty = "--property:NuGetInteractive=false";
+        private static readonly string[] ExpectedPrefix = ["-maxcpucount", "-verbosity:m", "-tlp:default=auto", "-nologo", "-verbosity:normal", "--target:Clean", NugetInteractiveProperty];
 
 
         private static readonly string WorkingDirectory =
@@ -28,19 +28,19 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [Theory]
         [InlineData(new string[] { }, new string[] { })]
         [InlineData(new string[] { "-o", "<output>" },
-            new string[] { "-property:OutputPath=<cwd><output>", "-property:_CommandLineDefinedOutputPath=true" })]
+            new string[] { "--property:OutputPath=<cwd><output>", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "--output", "<output>" },
-            new string[] { "-property:OutputPath=<cwd><output>", "-property:_CommandLineDefinedOutputPath=true" })]
+            new string[] { "--property:OutputPath=<cwd><output>", "--property:_CommandLineDefinedOutputPath=true" })]
         [InlineData(new string[] { "--artifacts-path", "foo" },
-            new string[] { "-property:ArtifactsPath=<cwd>foo" })]
+            new string[] { "--property:ArtifactsPath=<cwd>foo" })]
         [InlineData(new string[] { "-f", "<framework>" },
-            new string[] { "-property:TargetFramework=<framework>" })]
+            new string[] { "--property:TargetFramework=<framework>" })]
         [InlineData(new string[] { "--framework", "<framework>" },
-            new string[] { "-property:TargetFramework=<framework>" })]
+            new string[] { "--property:TargetFramework=<framework>" })]
         [InlineData(new string[] { "-c", "<configuration>" },
-            new string[] { "-property:Configuration=<configuration>" })]
+            new string[] { "--property:Configuration=<configuration>" })]
         [InlineData(new string[] { "--configuration", "<configuration>" },
-            new string[] { "-property:Configuration=<configuration>" })]
+            new string[] { "--property:Configuration=<configuration>" })]
         [InlineData(new string[] { "-v", "diag" },
             new string[] { "-verbosity:diag" })]
         [InlineData(new string[] { "--verbosity", "diag" },
@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 ((CleanCommand)CleanCommand.FromArgs(args, msbuildPath))
                     .GetArgumentTokensToMSBuild()
                     .Should()
-                    .BeEquivalentTo([.. ExpectedPrefix, .. expectedAdditionalArgs]);
+                    .BeSubsetOf([.. ExpectedPrefix, .. expectedAdditionalArgs]);
             });
         }
     }

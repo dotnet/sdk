@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public string ToolPackageId { get; set; } = "TestTool";
             public string ToolPackageVersion { get; set; } = "1.0.0";
             public string ToolCommandName { get; set; } = "TestTool";
+            public string[]? AdditionalPackageTypes { get; set; } = null;
 
             public bool NativeAOT { get; set { field = value; this.RidSpecific = value; } } = false;
             public bool SelfContained { get; set { field = value; this.RidSpecific = value; } } = false;
@@ -35,14 +36,55 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             public bool RidSpecific { get; set; } = false;
             public bool IncludeCurrentRid { get; set; } = true;
 
-            public string GetIdentifier() => $"{ToolPackageId}-{ToolPackageVersion}-{ToolCommandName}-{(NativeAOT ? "nativeaot" : SelfContained ? "selfcontained" : Trimmed ? "trimmed" : "managed")}{(RidSpecific ? "-specific" : "")}{(IncludeAnyRid ? "-anyrid" : "")}{(IncludeCurrentRid ? "" : "-no-current-rid")}";
+            public string GetIdentifier() {
+                var builder = new StringBuilder();
+                builder.Append(ToolPackageId.ToLowerInvariant());
+                builder.Append('-');
+                builder.Append(ToolPackageVersion.ToLowerInvariant());
+                builder.Append('-');
+                builder.Append(ToolCommandName.ToLowerInvariant());
+                if (NativeAOT)
+                {
+                    builder.Append("-nativeaot");
+                }
+                else if (SelfContained)
+                {
+                    builder.Append("-selfcontained");
+                }
+                else if (Trimmed)
+                {
+                    builder.Append("-trimmed");
+                }
+                else
+                {
+                    builder.Append("-managed");
+                }
+                if (RidSpecific)
+                {
+                    builder.Append("-specific");
+                }
+                if (IncludeAnyRid)
+                {
+                    builder.Append("-anyrid");
+                }
+                if (!IncludeCurrentRid)
+                {
+                    builder.Append("-no-current-rid");
+                }
+                if (AdditionalPackageTypes is not null && AdditionalPackageTypes.Length > 0)
+                {
+                    builder.Append('-');
+                    builder.Append(string.Join("-", AdditionalPackageTypes.Select(p => p.ToLowerInvariant())));
+                }
+
+                return builder.ToString();
+            }
         }
 
 
         public string CreateTestTool(ITestOutputHelper log, TestToolSettings toolSettings, bool collectBinlogs = false)
         {
             var targetDirectory = Path.Combine(TestContext.Current.TestExecutionDirectory, "TestTools", toolSettings.GetIdentifier());
-
 
             var testProject = new TestProject(toolSettings.ToolPackageId)
             {
@@ -80,6 +122,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             if (toolSettings.Trimmed)
             {
                 testProject.AdditionalProperties["PublishTrimmed"] = "true";
+            }
+
+            if (toolSettings.AdditionalPackageTypes is not null && toolSettings.AdditionalPackageTypes.Length > 0)
+            {
+                testProject.AdditionalProperties["PackageType"] = string.Join(";", toolSettings.AdditionalPackageTypes);
             }
 
             testProject.SourceFiles.Add("Program.cs", "Console.WriteLine(\"Hello Tool!\");");
