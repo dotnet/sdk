@@ -349,6 +349,105 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .Should().BeEquivalentTo(["Program.csproj", "Program.cs"]);
     }
 
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileInDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(testInstance.Path)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program", "Util.cs"]);
+
+        // Directory.Build.props is included as it's a None item.
+        new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
+    [Fact]
+    public void DefaultItems_ImplicitBuildFileOutsideDirectory()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var subdir = Path.Join(testInstance.Path, "subdir");
+        Directory.CreateDirectory(subdir);
+        File.WriteAllText(Path.Join(subdir, "Program.cs"), """
+            Console.WriteLine(Util.GetText());
+            """);
+        File.WriteAllText(Path.Join(subdir, "Util.cs"), """
+            class Util { public static string GetText() => "Hi from Util"; }
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+                <ItemGroup>
+                    <Compile Include="$(MSBuildThisFileDirectory)subdir\Util.cs" />
+                </ItemGroup>
+            </Project>
+            """);
+
+        // The app works before conversion.
+        string expectedOutput = "Hi from Util";
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+
+        // Convert.
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(subdir)
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program", "Util.cs"]);
+
+        new DirectoryInfo(Path.Join(subdir, "Program"))
+            .EnumerateFileSystemInfos().Select(f => f.Name).Order()
+            .Should().BeEquivalentTo(["Program.csproj", "Program.cs", "Util.cs"]);
+
+        // The app works after conversion.
+        new DotnetCommand(Log, "run", "Program/Program.cs")
+            .WithWorkingDirectory(subdir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedOutput);
+    }
+
     /// <summary>
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
