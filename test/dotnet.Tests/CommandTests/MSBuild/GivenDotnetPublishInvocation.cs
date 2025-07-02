@@ -45,7 +45,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
                 expectedAdditionalArgs = expectedAdditionalArgs
-                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory))
+                    .Select(arg => arg.Replace("<cwd>", WorkingDirectory).Replace("<publishdir>", "<publishdir>" + Path.DirectorySeparatorChar))
                     .ToArray();
 
                 var msbuildPath = "<msbuildpath>";
