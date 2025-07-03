@@ -147,9 +147,10 @@ public sealed class RunCsWinRTGenerator : ToolTask
         if (CsWinRTToolsArchitecture is not null &&
             !CsWinRTToolsArchitecture.Equals("x86", StringComparison.OrdinalIgnoreCase) &&
             !CsWinRTToolsArchitecture.Equals("x64", StringComparison.OrdinalIgnoreCase) &&
-            !CsWinRTToolsArchitecture.Equals("arm64", StringComparison.OrdinalIgnoreCase))
+            !CsWinRTToolsArchitecture.Equals("arm64", StringComparison.OrdinalIgnoreCase) &&
+            !CsWinRTToolsArchitecture.Equals("AnyCPU", StringComparison.OrdinalIgnoreCase))
         {
-            Log.LogWarning("Tools architecture '{0}' is invalid (it must be 'x86', 'x64', or 'arm64').", CsWinRTToolsArchitecture);
+            Log.LogWarning("Tools architecture '{0}' is invalid (it must be 'x86', 'x64', 'arm64', or 'AnyCPU').", CsWinRTToolsArchitecture);
 
             return false;
         }
@@ -169,6 +170,14 @@ public sealed class RunCsWinRTGenerator : ToolTask
     protected override string GenerateFullPathToTool()
     {
         string? effectiveArchitecture = CsWinRTToolsArchitecture;
+
+        // Special case for when 'AnyCPU' is specified (mostly for testing scenarios).
+        // We just reuse the exact input directory and assume the architecture matches.
+        // This makes it easy to run the task against a local build of 'cswinrtgen'.
+        if (effectiveArchitecture?.Equals("AnyCPU", StringComparison.OrdinalIgnoreCase) is true)
+        {
+            return Path.Combine(CsWinRTToolsDirectory!, ToolName);
+        }
 
         // If the architecture is not specified, determine it based on the current process architecture
         effectiveArchitecture ??= RuntimeInformation.ProcessArchitecture switch
