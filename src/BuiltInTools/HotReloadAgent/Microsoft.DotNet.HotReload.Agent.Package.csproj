@@ -2,9 +2,8 @@
   <PropertyGroup>
     <!--
       Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.
-      At the same time source build requires us to not target 6.0, so we fall back to netstandard.
     -->
-    <TargetFramework>netstandard2.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>

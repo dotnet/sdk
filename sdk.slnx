@@ -85,6 +85,7 @@
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">
+    <Project Path="src/Layout/finalizer/finalizer.csproj" />
     <Project Path="src/Layout/pkg/dotnet-sdk.proj" Type="C#" />
     <Project Path="src/Layout/redist/redist.csproj" />
     <Project Path="src/Layout/redist/tools/tool_fsc.csproj" />
@@ -96,7 +97,6 @@
     <Project Path="src/Layout/VS.Redist.Common.NetCore.SdkPlaceholder/VS.Redist.Common.NetCore.SdkPlaceholder.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Toolset/VS.Redist.Common.NetCore.Toolset.proj" Type="C#" />
-    <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
   <Folder Name="/src/RazorSdk/" />
   <Folder Name="/src/RazorSdk/Sdk/">
@@ -138,6 +138,9 @@
   <Folder Name="/src/StaticWebAssetsSdk/">
     <File Path="src/StaticWebAssetsSdk/.editorconfig" />
   </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/benchmarks/">
+    <Project Path="src/StaticWebAssetsSdk/benchmarks/Microsoft.NET.Sdk.StaticWebAssets.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/src/StaticWebAssetsSdk/Sdk/">
     <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.props" />
     <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.StaticWebAssets.StaticAssets.ProjectSystem.props" />
@@ -165,6 +168,7 @@
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks.UnitTests/Microsoft.NET.Build.Tasks.UnitTests.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj" />
+    <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
   <Folder Name="/src/WasmSdk/" />
   <Folder Name="/src/WasmSdk/Targets/">
@@ -349,5 +353,4 @@
   <Folder Name="/test/Compatibility/GenAPI/">
     <Project Path="test/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
   </Folder>
-  <Project Path="src/Layout/finalizer/finalizer.csproj" />
 </Solution>

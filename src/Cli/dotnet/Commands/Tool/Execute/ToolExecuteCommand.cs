@@ -7,19 +7,14 @@ using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Commands.Tool.Restore;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-
 using Microsoft.Extensions.EnvironmentAbstractions;
-using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
-
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
@@ -27,7 +22,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 {
     const int ERROR_CANCELLED = 1223; //  Windows error code for "Operation canceled by user"
 
-    private readonly PackageIdentity _packageToolIdentityArgument = result.GetRequiredValue(ToolExecuteCommandParser.PackageIdentityArgument);
+    private readonly PackageIdentityWithRange _packageToolIdentityArgument = result.GetValue(ToolExecuteCommandParser.PackageIdentityArgument);
     private readonly IEnumerable<string> _forwardArguments = result.GetValue(ToolExecuteCommandParser.CommandArgument) ?? Enumerable.Empty<string>();
     private readonly bool _allowRollForward = result.GetValue(ToolExecuteCommandParser.RollForwardOption);
     private readonly string? _configFile = result.GetValue(ToolExecuteCommandParser.ConfigOption);
@@ -89,11 +84,9 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
         (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
 
-        IToolPackage toolPackage;
-
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, out toolPackage))
+        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
         {
             if (!UserAgreedToRunFromSource(packageId, bestVersion, packageSource))
             {

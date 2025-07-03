@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-restore" "1" "2025-06-13" "" ".NET Documentation"
+.TH "dotnet-restore" "1" "2025-06-30" "" ".NET Documentation"
 .hy
 .SH dotnet restore
 .PP
@@ -387,8 +387,8 @@ You can configure the level at which auditing will fail by setting the \f[V]<NuG
 Possible values are \f[V]low\f[R], \f[V]moderate\f[R], \f[V]high\f[R], and \f[V]critical\f[R].
 For example if you only want to see moderate, high, and critical advisories, you can set the property to \f[V]moderate\f[R].
 .PP
-Starting in .NET 9, NuGet audits both \f[I]direct\f[R] and \f[I]transitive\f[R] package references, by default.
-In .NET 8, only \f[I]direct\f[R] package references are audited.
+In .NET 8 and .NET 9, only \f[I]direct\f[R] package references are audited by default.
+Starting in .NET 10, NuGet audits both \f[I]direct\f[R] and \f[I]transitive\f[R] package references by default.
 You can change the mode by setting the \f[V]<NuGetAuditMode>\f[R] MSBuild property to \f[V]direct\f[R] or \f[V]all\f[R].
 .PP
 For more information, see Auditing package dependencies for security vulnerabilities.

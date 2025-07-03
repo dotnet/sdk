@@ -82,6 +82,11 @@
         <target state="translated">NETSDK1080: ссылка PackageReference на Microsoft.AspNetCore.App не требуется при ориентации на .NET Core 3.0 или более поздней версии. Если используется Microsoft.NET.Sdk.Web, ссылка на общую платформу будет применяться автоматически. В противном случае PackageReference следует заменить ссылкой FrameworkReference.</target>
         <note>{StrBegins="NETSDK1080: "}</note>
       </trans-unit>
+      <trans-unit id="AspireWorkloadIsDeprecated">
+        <source>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</source>
+        <target state="translated">NETSDK1228: этот проект зависит от упраздненной рабочей нагрузки Aspire. Теперь решение Aspire поставляется в виде пакетов NuGet, рабочая нагрузка для него больше не нужна. Посетите {0} для получения инструкций по обновлению.</target>
+        <note>{StrBegins="NETSDK1228: "}</note>
+      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>NETSDK1017: Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">NETSDK1017: необходимо настроить препроцессор ресурсов перед их обработкой.</target>

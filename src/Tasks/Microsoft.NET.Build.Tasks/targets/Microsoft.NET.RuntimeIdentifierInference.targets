@@ -80,7 +80,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Packing a tool runs the publish targets, so in that case set _IsPublishing to true -->
   <PropertyGroup Condition="'$(PackAsTool)' == 'true' And '$(_IsPacking)' == 'true'">
     <_IsPublishing>true</_IsPublishing>
-  </PropertyGroup>  
+  </PropertyGroup>
 
   <!-- Edit SelfContained to match the value of PublishSelfContained if we are publishing.
        This Won't affect t:/Publish (because of _IsPublishing), and also won't override a global SelfContained property.-->
@@ -175,14 +175,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_SelfContainedWasSpecified Condition="'$(SelfContained)' != ''">true</_SelfContainedWasSpecified>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(HasRuntimeOutput)' == 'true'">
-    
+
     <!-- Breaking change in .NET 8: Projects with 8.0+ TFMS will no longer have RuntimeIdentifier imply SelfContained. Note that PublishReadyToRun will imply SelfContained in these versions. -->
     <SelfContained Condition="'$(SelfContained)' == '' and
                               '$(RuntimeIdentifier)' != '' and
                               '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and
                               '$(_TargetFrameworkVersionWithoutV)' != '' and
                               $([MSBuild]::VersionLessThan($(_TargetFrameworkVersionWithoutV), '8.0'))">true</SelfContained>
-    
+
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser')) or $(RuntimeIdentifier.StartsWith('wasi'))">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_IsPublishing)' == 'true' and '$(PublishAot)' == 'true'">false</_RuntimeIdentifierUsesAppHost>
@@ -329,6 +329,16 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   </Target>
 
+  <PropertyGroup>
+    <!-- Suppress the .NET Core SDK preview message if the users has tried to express their intent to do so.
+         MSBuild doesn't allow Messages to be suppressed by NoWarn, but we've trained users to reach for this,
+         so let's bridge their intent a bit. -->
+    <SuppressNETCoreSdkPreviewMessage
+      Condition="'$(_NETCoreSdkIsPreview)' == 'true'
+                  AND '$(SuppressNETCoreSdkPreviewMessage)' == ''
+                  AND '$(NoWarn)' != ''
+                  AND $(NoWarn.Contains('NETSDK1057'))">true</SuppressNETCoreSdkPreviewMessage>
+  </PropertyGroup>
   <Target Name="_CheckForNETCoreSdkIsPreview"
           BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
           Condition=" '$(_NETCoreSdkIsPreview)' == 'true' AND '$(SuppressNETCoreSdkPreviewMessage)' != 'true' ">
