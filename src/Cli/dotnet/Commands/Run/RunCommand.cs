@@ -587,7 +587,10 @@ public class RunCommand
             }
 
             // If '-' is specified as the input file, read all text from stdin into a temporary file and use that as the entry point.
-            entryPointFilePath = Path.GetTempFileName();
+            // We create a new directory for each file so other files are not included in the compilation.
+            string directory = VirtualProjectBuildingCommand.GetTempSubdirectory(Path.GetRandomFileName());
+            VirtualProjectBuildingCommand.CreateTempSubdirectory(directory);
+            entryPointFilePath = Path.Join(directory, "app.cs");
             using (var stdinStream = Console.OpenStandardInput())
             using (var fileStream = File.OpenWrite(entryPointFilePath))
             {
