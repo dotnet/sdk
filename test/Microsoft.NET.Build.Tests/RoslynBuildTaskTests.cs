@@ -104,6 +104,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         {
             Name = "App1",
             IsExe = true,
+            TargetExtension = projExtension,
             SourceFiles =
             {
                 [sourceName] = sourceText,
@@ -117,7 +118,7 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         }
 
         configure?.Invoke(project);
-        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod, targetExtension: projExtension);
+        return _testAssetsManager.CreateTestProject(project, callingMethod: callingMethod);
     }
 
     private static void AddCompilersToolsetPackage(TestProject project)

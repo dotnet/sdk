@@ -37,6 +37,7 @@ namespace Microsoft.NET.Build.Tests
                 Name = "HelloWorld",
                 TargetFrameworks = targetFramework,
                 IsExe = isExe,
+                TargetExtension = ".vbproj",
                 SourceFiles =
                 {
                     ["Program.vb"] = @"
@@ -68,7 +69,7 @@ namespace Microsoft.NET.Build.Tests
             };
 
             var testAsset = _testAssetsManager
-                .CreateTestProject(testProject, identifier: targetFramework + isExe, targetExtension: ".vbproj");
+                .CreateTestProject(testProject, identifier: targetFramework + isExe);
 
             var buildCommand = new GetValuesCommand(
                 Log,
