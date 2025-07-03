@@ -155,18 +155,18 @@
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/nuget/nuget.client -->
-    <NuGetBuildTasksPackageVersion>6.15.0-preview.1.86</NuGetBuildTasksPackageVersion>
-    <NuGetBuildTasksConsolePackageVersion>6.15.0-preview.1.86</NuGetBuildTasksConsolePackageVersion>
-    <NuGetLocalizationPackageVersion>6.15.0-preview.1.86</NuGetLocalizationPackageVersion>
-    <NuGetBuildTasksPackPackageVersion>6.15.0-preview.1.86</NuGetBuildTasksPackPackageVersion>
-    <NuGetCommandLineXPlatPackageVersion>6.15.0-preview.1.86</NuGetCommandLineXPlatPackageVersion>
-    <NuGetProjectModelPackageVersion>6.15.0-preview.1.86</NuGetProjectModelPackageVersion>
-    <MicrosoftBuildNuGetSdkResolverPackageVersion>6.15.0-preview.1.86</MicrosoftBuildNuGetSdkResolverPackageVersion>
-    <NuGetCommonPackageVersion>6.15.0-preview.1.86</NuGetCommonPackageVersion>
-    <NuGetConfigurationPackageVersion>6.15.0-preview.1.86</NuGetConfigurationPackageVersion>
-    <NuGetFrameworksPackageVersion>6.15.0-preview.1.86</NuGetFrameworksPackageVersion>
-    <NuGetPackagingPackageVersion>6.15.0-preview.1.86</NuGetPackagingPackageVersion>
-    <NuGetVersioningPackageVersion>6.15.0-preview.1.86</NuGetVersioningPackageVersion>
+    <NuGetBuildTasksPackageVersion>7.0.0-preview.1.18</NuGetBuildTasksPackageVersion>
+    <NuGetBuildTasksConsolePackageVersion>7.0.0-preview.1.18</NuGetBuildTasksConsolePackageVersion>
+    <NuGetLocalizationPackageVersion>7.0.0-preview.1.18</NuGetLocalizationPackageVersion>
+    <NuGetBuildTasksPackPackageVersion>7.0.0-preview.1.18</NuGetBuildTasksPackPackageVersion>
+    <NuGetCommandLineXPlatPackageVersion>7.0.0-preview.1.18</NuGetCommandLineXPlatPackageVersion>
+    <NuGetProjectModelPackageVersion>7.0.0-preview.1.18</NuGetProjectModelPackageVersion>
+    <MicrosoftBuildNuGetSdkResolverPackageVersion>7.0.0-preview.1.18</MicrosoftBuildNuGetSdkResolverPackageVersion>
+    <NuGetCommonPackageVersion>7.0.0-preview.1.18</NuGetCommonPackageVersion>
+    <NuGetConfigurationPackageVersion>7.0.0-preview.1.18</NuGetConfigurationPackageVersion>
+    <NuGetFrameworksPackageVersion>7.0.0-preview.1.18</NuGetFrameworksPackageVersion>
+    <NuGetPackagingPackageVersion>7.0.0-preview.1.18</NuGetPackagingPackageVersion>
+    <NuGetVersioningPackageVersion>7.0.0-preview.1.18</NuGetVersioningPackageVersion>
   </PropertyGroup>
   <PropertyGroup>
     <!-- Dependencies from https://github.com/Microsoft/vstest -->
