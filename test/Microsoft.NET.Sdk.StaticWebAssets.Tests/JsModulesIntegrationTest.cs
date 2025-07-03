@@ -5,7 +5,7 @@
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.Razor.Tests
+namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     public class JsModulesIntegrationTest(ITestOutputHelper log) : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(JsModulesIntegrationTest))
     {

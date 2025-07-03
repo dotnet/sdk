@@ -35,7 +35,7 @@
       <_Parameter2>5.0</_Parameter2>
     </AssemblyAttribute>
   </ItemGroup>
-  
+
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />

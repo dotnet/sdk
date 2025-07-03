@@ -6,7 +6,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-namespace Microsoft.NET.Sdk.Razor.Tests
+namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     public class ScopedCssIntegrationTest(ITestOutputHelper log)
         : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(ScopedCssIntegrationTest))
