@@ -134,6 +134,8 @@ internal sealed partial class CSharpCompilerCommand
         string fileDirectory = Path.GetDirectoryName(EntryPointFileFullPath) ?? string.Empty;
         string fileNameWithoutExtension = Path.GetFileNameWithoutExtension(EntryPointFileFullPath);
 
+        // Note that Release builds won't go through this optimized code path because `-c Release` translates to global property `Configuration=Release`
+        // and customizing global properties triggers a full MSBuild run.
         string objDir = Path.Join(ArtifactsPath, "obj", "debug");
         Directory.CreateDirectory(objDir);
         string binDir = Path.Join(ArtifactsPath, "bin", "debug");

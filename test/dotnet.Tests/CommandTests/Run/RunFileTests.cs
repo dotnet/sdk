@@ -1692,10 +1692,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                 continue;
             }
 
-            // Ignore source link.
+            // There should be no source link arguments.
             if (arg.StartsWith("/sourcelink:", StringComparison.Ordinal))
             {
-                continue;
+                Assert.Fail($"Unexpected source link argument: {arg}");
             }
 
             // PreferredUILang is normally not set by default but can be in builds, so ignore it.
@@ -1799,7 +1799,10 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
                     ];
                 }
 
-                public static IEnumerable<string> GetNuGetPackageFilePaths()
+                /// <summary>
+                /// Files that come from referenced NuGet packages (e.g., analyzers for NativeAOT) need to be checked specially (if they don't exist, MSBuild needs to run).
+                /// </summary>
+                public static IEnumerable<string> GetPathsOfCscInputsFromNuGetCache()
                 {
                     return
                     [
@@ -2239,7 +2242,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         cscResult.Should().Pass()
             .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
-            .And.HaveStdOutContaining("DOTNET_ROOT");
+            .And.HaveStdOutContaining("DOTNET_ROOT")
+            .And.HaveStdOutContaining($"={expectedDotNetRoot}{Environment.NewLine}");
 
         // Add an implicit build file to force use of msbuild instead of csc.
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
@@ -2250,7 +2254,8 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
 
         msbuildResult.Should().Pass()
             .And.NotHaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
-            .And.HaveStdOutContaining("DOTNET_ROOT");
+            .And.HaveStdOutContaining("DOTNET_ROOT")
+            .And.HaveStdOutContaining($"={expectedDotNetRoot}{Environment.NewLine}");
 
         // The set of DOTNET_ROOT env vars should be the same in both cases.
         var cscVars = cscResult.StdOut!

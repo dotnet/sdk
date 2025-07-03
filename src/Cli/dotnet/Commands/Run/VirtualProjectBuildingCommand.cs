@@ -71,6 +71,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// we can ignore properties that do not affect the build on their own.
     /// See also the <c>IsMSBuildFile</c> flag in <see cref="s_implicitBuildFiles"/>.
     /// </summary>
+    /// <remarks>
+    /// This is an <see cref="IEnumerable{T}"/> rather than <see cref="ImmutableArray{T}"/> to avoid boxing at the use site.
+    /// </remarks>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
         // This is set by default by `dotnet run`, so it must be ignored otherwise the CSC optimization would not kick in by default.
@@ -209,16 +212,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     }
                     .Execute(out bool fallbackToNormalBuild);
 
-                    if (result == 0)
-                    {
-                        Debug.Assert(!fallbackToNormalBuild);
-                        MarkBuildSuccess(cache);
-                    }
-
                     if (!fallbackToNormalBuild)
                     {
+                        if (result == 0)
+                        {
+                            MarkBuildSuccess(cache);
+                        }
+
                         return result;
                     }
+
+                    Debug.Assert(result != 0);
                 }
             }
 
@@ -597,7 +601,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return BuildLevel.All;
         }
 
-        foreach (var filePath in CSharpCompilerCommand.GetNuGetPackageFilePaths())
+        foreach (var filePath in CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache())
         {
             if (!File.Exists(filePath))
             {

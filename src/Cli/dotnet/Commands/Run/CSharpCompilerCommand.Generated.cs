@@ -222,7 +222,10 @@ partial class CSharpCompilerCommand
         ];
     }
 
-    public static IEnumerable<string> GetNuGetPackageFilePaths()
+    /// <summary>
+    /// Files that come from referenced NuGet packages (e.g., analyzers for NativeAOT) need to be checked specially (if they don't exist, MSBuild needs to run).
+    /// </summary>
+    public static IEnumerable<string> GetPathsOfCscInputsFromNuGetCache()
     {
         return
         [
