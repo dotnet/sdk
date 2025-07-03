@@ -100,8 +100,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   =================================================================================
   -->
   <!-- This target is called by dotnet test for MTP for projects that are multi-targeted (using multiple target frameworks) -->
-  <Target Name="_MTPTest">
+  <Target Name="_MTPTest" Returns="$(_TestTfmsInParallel)">
     <PropertyGroup>
+      <_TestTfmsInParallel>$([MSBuild]::ValueOrDefault('$(TestTfmsInParallel)', '$(BuildInParallel)'))</_TestTfmsInParallel>
       <InnerTargets Condition="'$(MTPNoBuild)'!='true'">Build;_MTPTest</InnerTargets>
       <InnerTargets Condition="'$(MTPNoBuild)'=='true'">_MTPTest</InnerTargets>
     </PropertyGroup>
