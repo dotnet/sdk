@@ -306,7 +306,6 @@ Copyright (c) .NET Foundation. All rights reserved.
         <Private>true</Private>
         <MSBuildSourceTargetName>_RunCsWinRTGenerator</MSBuildSourceTargetName>
         <Platforms>AnyCPU</Platforms>
-        <CopyLocal>true</CopyLocal>
       </CsWinRTGeneratorInteropAssemblyPath>
     </ItemGroup>
 
@@ -316,17 +315,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <!-- 'ReferencePath' handles adding the interop .dll to '.deps.json', which is needed for '[UnsafeAccessor]' to work -->
       <ReferencePath Include="@(CsWinRTGeneratorInteropAssemblyPath)" />
 
-      <!-- 'AllItemsFullPathWithTargetPath' handles copying the interop .dll to the build output folder -->
-      <AllItemsFullPathWithTargetPath
+      <!-- '_SourceItemsToCopyToOutputDirectory' handles copying the interop .dll to the build output folder -->
+      <_SourceItemsToCopyToOutputDirectory
         Include="@(CsWinRTGeneratorInteropAssemblyPath)"
-        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)"
-        CopyToOutputDirectory="PreserveNewest" />
-      
-      <!-- 'AllPublishItemsFullPathWithTargetPath' handles copying the interop .dll to the publish output folder -->
-      <AllPublishItemsFullPathWithTargetPath
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)" />
+
+      <!-- '_SourceItemsToCopyToPublishDirectory' handles copying the interop .dll to the publish output folder -->
+      <_SourceItemsToCopyToPublishDirectory
         Include="@(CsWinRTGeneratorInteropAssemblyPath)"
-        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)"
-        CopyToOutputDirectory="PreserveNewest" />
+        TargetPath="$(_CsWinRTGeneratorInteropAssemblyFileName)" />
     </ItemGroup>
 
     <!-- Append to 'FileWrites' so the interop .dll will be removed on clean -->
