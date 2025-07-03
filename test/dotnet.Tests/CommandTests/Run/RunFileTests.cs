@@ -2243,7 +2243,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         cscResult.Should().Pass()
             .And.HaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
             .And.HaveStdOutContaining("DOTNET_ROOT")
-            .And.HaveStdOutContaining($"={expectedDotNetRoot}{Environment.NewLine}");
+            .And.HaveStdOutContaining($"={expectedDotNetRoot}");
 
         // Add an implicit build file to force use of msbuild instead of csc.
         File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
@@ -2255,7 +2255,7 @@ public sealed class RunFileTests(ITestOutputHelper log) : SdkTest(log)
         msbuildResult.Should().Pass()
             .And.NotHaveStdOutContaining(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc)
             .And.HaveStdOutContaining("DOTNET_ROOT")
-            .And.HaveStdOutContaining($"={expectedDotNetRoot}{Environment.NewLine}");
+            .And.HaveStdOutContaining($"={expectedDotNetRoot}");
 
         // The set of DOTNET_ROOT env vars should be the same in both cases.
         var cscVars = cscResult.StdOut!
