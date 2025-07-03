@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         [Fact]
         public void ItRunsVsTestApp()
         {
-            new VSTestForwardingApp([], targetArchitecture: null)
+            new VSTestForwardingApp(new string[0])
                 .GetProcessStartInfo().Arguments.Should().EndWith("vstest.console.dll");
         }
 
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             try
             {
                 Environment.SetEnvironmentVariable(vsTestConsolePath, dummyPath);
-                new VSTestForwardingApp([], targetArchitecture: null)
+                new VSTestForwardingApp(new string[0])
                     .GetProcessStartInfo().Arguments.Should().EndWith("vstest.custom.console.dll");
             }
             finally
