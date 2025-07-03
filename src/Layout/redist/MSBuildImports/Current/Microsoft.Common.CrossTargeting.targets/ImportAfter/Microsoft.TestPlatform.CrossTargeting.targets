@@ -93,14 +93,22 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
   ==================================================================================
-                                   _MTPBuild
+                                   _MTPTest
 
    Cross-targeting version of MTP.
 
   =================================================================================
   -->
-
-  <Target Name="_MTPBuild" DependsOnTargets="_ComputeTargetFrameworkItems">
+  <!-- This target is called by dotnet test for MTP for projects that are multi-targeted (using multiple target frameworks) -->
+  <Target Name="_MTPTest">
+    <PropertyGroup>
+      <InnerTargets Condition="'$(MTPNoBuild)'!='true'">Build;_MTPTest</InnerTargets>
+      <InnerTargets Condition="'$(MTPNoBuild)'=='true'">_MTPTest</InnerTargets>
+    </PropertyGroup>
+    <!-- This will call "InnerTargets" on the inner projects (i.e, the builds for each TFM). -->
+    <!-- If no build is used, then only _MTPTest will be called on the inner projects. -->
+    <!-- Otherwise, both Build and _MTPTest will be called on the inner projects. -->
+    <!-- Note that for inner projects, the _MTPTest target that is used is defined in Microsoft.TestPlatform.ImportAfter.targets -->
     <CallTarget Targets="Build" />
   </Target>
 

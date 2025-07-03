@@ -3,8 +3,10 @@
 
 using System.Collections.Concurrent;
 using System.CommandLine;
+using System.Diagnostics;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -12,6 +14,28 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
+
+internal class DotnetTestLogger : Microsoft.Build.Framework.ILogger
+{
+    private IEventSource? _eventSource;
+
+    public LoggerVerbosity Verbosity { get; set; }
+
+    public string? Parameters { get; set; }
+
+    public void Initialize(IEventSource eventSource)
+    {
+        _eventSource = eventSource;
+        _eventSource.TargetFinished += OnTargetFinished;
+    }
+
+    private void OnTargetFinished(object sender, TargetFinishedEventArgs e)
+    {
+        // Here, check if target name is _MTPTest, and access e.TargetOutputs to collect the info needed to run.
+    }
+
+    public void Shutdown() { }
+}
 
 internal static class MSBuildUtility
 {
@@ -79,11 +103,7 @@ internal static class MSBuildUtility
 
     private static bool BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
-        if (buildOptions.HasNoBuild)
-        {
-            return true;
-        }
-
+        Debugger.Launch();
         List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
 
         if (buildOptions.Verbosity is null)
@@ -92,7 +112,12 @@ internal static class MSBuildUtility
         }
 
         msbuildArgs.Add(filePath);
-        msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+        msbuildArgs.Add($"-target:{CliConstants.MTPTest}");
+        if (buildOptions.HasNoBuild)
+        {
+            msbuildArgs.Add($"-property:MTPNoBuild=true");
+        }
+        msbuildArgs.Add($"-logger:{typeof(DotnetTestLogger).FullName},{typeof(DotnetTestLogger).Assembly.FullName}");
 
         int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore).Execute();
 

@@ -17,7 +17,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <VSTestTargets Condition="'$(VSTestTargets)'==''">$(MSBuildExtensionsPath)\Microsoft.TestPlatform.targets</VSTestTargets>
   </PropertyGroup>
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
-  <Target Name="_MTPBuild">
-    <CallTarget Targets="Build" />
+  <Target Name="_MTPTest" DependsOnTargets="ComputeRunArguments" Returns="@(_MTPTestInformation)">
+    <ItemGroup>
+      <!-- TODO: Add all the information needed by dotnet test command -->
+      <_MTPTestInformation Include="$(RunCommand)" RunWorkingDirectory="$(RunWorkingDirectory)" />
+    </ItemGroup>
   </Target>
 </Project>

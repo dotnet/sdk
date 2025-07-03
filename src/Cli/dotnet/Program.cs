@@ -29,6 +29,11 @@ public class Program
     public static ITelemetry TelemetryClient;
     public static int Main(string[] args)
     {
+        if (args.Length >= 1 && args[0] == "test")
+        {
+            Debugger.Launch();
+        }
+
         using AutomaticEncodingRestorer _ = new();
 
         // Setting output encoding is not available on those platforms

@@ -28,7 +28,7 @@ internal static class CliConstants
 
     public const string DLLExtension = ".dll";
 
-    public const string MTPTarget = "_MTPBuild";
+    public const string MTPTest = "_MTPTest";
 
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
 }
