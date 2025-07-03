@@ -4,6 +4,12 @@
       Intentionally pinned. This feature is supported in projects targeting 6.0 or newer.
     -->
     <TargetFramework>net6.0</TargetFramework>
+
+    <!--
+      Set version of Microsoft.NETCore.App.Ref to one that's available in source build.
+    -->
+    <TargetingPackVersion Condition="'$(DotNetBuildSourceOnly)' == 'true'">6.0.0</TargetingPackVersion>
+
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>
     <GenerateDependencyFile>false</GenerateDependencyFile>

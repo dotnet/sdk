@@ -10,6 +10,12 @@
       and HotReloadAppModel.TryGetStartupHookPath.
     -->
     <TargetFrameworks>net6.0;net10.0</TargetFrameworks>
+
+    <!--
+      Set version of Microsoft.NETCore.App.Ref to one that's available in source build.
+    -->
+    <TargetingPackVersion Condition="'$(TargetFramework)' == 'net6.0' and '$(DotNetBuildSourceOnly)' == 'true'">6.0.0</TargetingPackVersion>
+
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
 
     <!-- NuGet -->
