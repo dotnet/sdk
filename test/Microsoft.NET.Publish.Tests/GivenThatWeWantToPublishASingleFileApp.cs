@@ -82,10 +82,10 @@ namespace Microsoft.NET.Publish.Tests
                    RuntimeInformation.RuntimeIdentifier.StartsWith("osx") ? "lib" + baseName + ".dylib" : "lib" + baseName + ".so";
         }
 
-        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework)
+        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework, string runtimeIdentifier = null)
         {
             return publishCommand.GetOutputDirectory(targetFramework: targetFramework,
-                                                     runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+                                                     runtimeIdentifier: runtimeIdentifier ??  RuntimeInformation.RuntimeIdentifier);
         }
 
         [Fact]
@@ -1124,6 +1124,44 @@ class C
                         new XElement(ns + "FilesToBundle",
                             new XAttribute("Remove", "@(FilesToBundle)"),
                             new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"))));
+            }
+        }
+
+        [Theory]
+        [InlineData("osx-x64")]
+        [InlineData("osx-arm64")]
+        public void It_codesigns_an_app_targeting_osx(string rid)
+        {
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", $"true");
+
+            var testAsset = _testAssetsManager.CreateTestProject(
+                testProject,
+                identifier: rid);
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand.Execute(PublishSingleFile, $"/p:RuntimeIdentifier={rid}", IncludeDefault)
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework, runtimeIdentifier: rid).FullName;
+            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(singleFilePath))
+                .Should()
+                .BeTrue($"The app host should have a Mach-O signature load command for {rid}.");
+
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                MachOSignature.HasValidMachOSignature(new FileInfo(singleFilePath), Log)
+                    .Should()
+                    .BeTrue($"The app host should have a valid Mach-O signature for {rid}.");
             }
         }
     }
