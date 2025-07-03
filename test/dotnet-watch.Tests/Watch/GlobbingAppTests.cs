@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         {
         }
 
-        [ConditionalTheory(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [ConditionalTheory]
         [InlineData(true)]
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
@@ -34,7 +34,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 2);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task DeleteCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task DeleteSourceFolder()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -68,7 +68,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await AssertCompiledAppDefinedTypes(expected: 1);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task RenameCompiledFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
@@ -85,7 +85,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             await App.AssertStarted();
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/42921")]
+        [Fact]
         public async Task ChangeExcludedFile()
         {
             var testAsset = TestAssets.CopyTestAsset(AppName)
