@@ -141,7 +141,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         bool? keepSourceFiles =
             _parseResult.HasOption(ProjectConvertCommandParser.KeepSourceOption)
             ? _parseResult.GetValue(ProjectConvertCommandParser.KeepSourceOption)
-            : InteractiveConsole.Confirm(CliCommandStrings.ProjectConvertConfirmKeepSourceFiles, _parseResult);
+            : InteractiveConsole.Confirm(CliCommandStrings.ProjectConvertConfirmKeepSourceFiles, _parseResult, acceptEscapeForFalse: false);
         return keepSourceFiles is { } value
             ? value
             : throw new GracefulException(CliCommandStrings.ProjectConvertNeedsConfirmation);

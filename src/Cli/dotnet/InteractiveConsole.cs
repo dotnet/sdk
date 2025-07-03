@@ -8,7 +8,11 @@ namespace Microsoft.DotNet.Cli;
 
 public static class InteractiveConsole
 {
-    public static bool? Confirm(string message, ParseResult parseResult)
+    /// <param name="acceptEscapeForFalse">
+    /// If you need to confirm an action, Escape means "cancel" and that is fine.
+    /// If you need an answer where the "no" might mean something dangerous, Escape should not be used as implicit "no".
+    /// </param>
+    public static bool? Confirm(string message, ParseResult parseResult, bool acceptEscapeForFalse)
     {
         if (parseResult.GetValue(CommonOptions.YesOption))
         {
@@ -32,7 +36,7 @@ public static class InteractiveConsole
                 return true;
             }
 
-            if (key.Key == ConsoleKey.Escape || KeyMatches(key, CliCommandStrings.ConfirmationPromptNoValue))
+            if ((acceptEscapeForFalse && key.Key == ConsoleKey.Escape) || KeyMatches(key, CliCommandStrings.ConfirmationPromptNoValue))
             {
                 return false;
             }
