@@ -57,4 +57,29 @@ public static class InteractiveConsole
                 valueKey.ToLowerInvariant().Substring(0, 1));
         }
     }
+
+    public static string? Ask(string question, ParseResult parseResult, Func<string?, string?> validate)
+    {
+        if (!parseResult.GetValue(CommonOptions.InteractiveOption()))
+        {
+            return null;
+        }
+
+        while (true)
+        {
+            Console.Write(question);
+            Console.Write(' ');
+
+            string? answer = Console.ReadLine();
+            answer = string.IsNullOrWhiteSpace(answer) ? null : answer.Trim();
+            if (validate(answer) is { } error)
+            {
+                Console.WriteLine(error);
+            }
+            else
+            {
+                return answer;
+            }
+        }
+    }
 }

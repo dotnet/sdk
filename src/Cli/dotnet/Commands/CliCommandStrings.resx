@@ -1504,6 +1504,10 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="CmdOptionKeepSourceDescription" xml:space="preserve">
     <value>Whether to keep source files intact (otherwise, they are deleted after conversion).</value>
   </data>
+  <data name="ProjectConvertAskForOutputDirectory" xml:space="preserve">
+    <value>Specify the output directory ({0}):</value>
+    <comment>{0} is the default value</comment>
+  </data>
   <data name="ProjectConvertConfirmKeepSourceFiles" xml:space="preserve">
     <value>Keep source files?</value>
   </data>

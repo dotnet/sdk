@@ -2295,6 +2295,11 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <target state="translated">파일 기반 프로그램을 프로젝트 기반 프로그램으로 변환합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertConfirmKeepSourceFiles">
         <source>Keep source files?</source>
         <target state="new">Keep source files?</target>

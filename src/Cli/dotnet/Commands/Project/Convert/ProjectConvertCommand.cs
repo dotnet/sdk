@@ -25,14 +25,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
-        // Determine the output directory.
-        string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
-        if (Directory.Exists(targetDirectory))
-        {
-            throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
-        }
-
-        // Determine whether to keep the source files.
+        string targetDirectory = DetermineOutputDirectory(file);
         bool keepSourceFiles = ShouldKeepSourceFiles();
 
         // Find directives (this can fail, so do this before creating the target directory).
@@ -134,6 +127,24 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
         }
+    }
+
+    private string DetermineOutputDirectory(string file)
+    {
+        string defaultValue = Path.ChangeExtension(file, null);
+        string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
+        string targetDirectory = _outputDirectory
+            ?? InteractiveConsole.Ask(
+                string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
+                _parseResult,
+                (path) => Directory.Exists(path) ? string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path)) : null)
+            ?? defaultValue;
+        if (Directory.Exists(targetDirectory))
+        {
+            throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
+        }
+
+        return Path.GetFullPath(targetDirectory);
     }
 
     private bool ShouldKeepSourceFiles()

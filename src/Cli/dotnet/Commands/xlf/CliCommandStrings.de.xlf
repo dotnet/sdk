@@ -2295,6 +2295,11 @@ Das Tool "{1}" (Version {2}) wurde erfolgreich installiert. Der Eintrag wird der
         <target state="translated">Konvertieren Sie ein dateibasiertes Programm in ein projektbasiertes Programm.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ProjectConvertAskForOutputDirectory">
+        <source>Specify the output directory ({0}):</source>
+        <target state="new">Specify the output directory ({0}):</target>
+        <note>{0} is the default value</note>
+      </trans-unit>
       <trans-unit id="ProjectConvertConfirmKeepSourceFiles">
         <source>Keep source files?</source>
         <target state="new">Keep source files?</target>
