@@ -241,22 +241,30 @@ internal static class CommonOptions
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
     /// <summary>
+    /// The interactive option is cached so utilities like <see cref="InteractiveConsole"/> can refer to the same instance.
+    /// </summary>
+    private static ForwardedOption<bool>? s_interactiveOptionWithoutArgument, s_interactiveOptionWithArgument;
+
+    /// <summary>
     /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
     /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
     /// </summary>
     /// <param name="acceptArgument">Whether the option accepts an boolean argument. If false, the option will be a flag.</param>
     /// <remarks>
-    // If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
-    // If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
-    // </remarks>
-    public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
-         new("--interactive")
-         {
-             Description = CliStrings.CommandInteractiveOptionDescription,
-             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
-             // this default is called when no tokens/options are passed on the CLI args
-             DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
-         };
+    /// If not set by a user, this will default to true if the user is not in a CI environment as detected by <see cref="Telemetry.CIEnvironmentDetectorForTelemetry.IsCIEnvironment"/>.
+    /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
+    /// </remarks>
+    public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false)
+    {
+        ref ForwardedOption<bool>? optionRef = ref acceptArgument ? ref s_interactiveOptionWithArgument : ref s_interactiveOptionWithoutArgument;
+        return optionRef ??= new("--interactive")
+        {
+            Description = CliStrings.CommandInteractiveOptionDescription,
+            Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
+            // this default is called when no tokens/options are passed on the CLI args
+            DefaultValueFactory = (ar) => !IsCIEnvironmentOrRedirected()
+        };
+    }
 
     public static Option<bool> InteractiveMsBuildForwardOption = InteractiveOption(acceptArgument: true).ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
