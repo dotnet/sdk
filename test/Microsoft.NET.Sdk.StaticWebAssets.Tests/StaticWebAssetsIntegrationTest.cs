@@ -474,10 +474,19 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     if (Path.GetFileName(name).Equals("ClassLibrary.csproj", StringComparison.Ordinal))
                     {
-                        project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk";
+                        var sdkAttribute = project.Root.Attribute("Sdk");
+                        if (sdkAttribute == null)
+                        {
+                            sdkAttribute = new XAttribute("Sdk", "Microsoft.NET.Sdk");
+                            project.Root.Add(sdkAttribute);
+                        }
+                        else
+                        {
+                            sdkAttribute.Value = "Microsoft.NET.Sdk";
+                        }
                         project.Root.AddFirst(new XElement("Import", new XAttribute("Project", "ExternalStaticAssets.targets")));
 
-                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.Razor.Tests.content.ExternalStaticAssets.targets");
+                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.StaticWebAssets.Tests.content.ExternalStaticAssets.targets");
                         using var destination = File.OpenWrite(Path.Combine(Path.GetDirectoryName(name), "ExternalStaticAssets.targets"));
                         stream.CopyTo(destination);
                     }
@@ -520,10 +529,19 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 {
                     if (Path.GetFileName(name).Equals("ClassLibrary.csproj", StringComparison.Ordinal))
                     {
-                        project.Root.Attribute("Sdk").Value = "Microsoft.NET.Sdk";
+                        var sdkAttribute = project.Root.Attribute("Sdk");
+                        if (sdkAttribute == null)
+                        {
+                            sdkAttribute = new XAttribute("Sdk", "Microsoft.NET.Sdk");
+                            project.Root.Add(sdkAttribute);
+                        }
+                        else
+                        {
+                            sdkAttribute.Value = "Microsoft.NET.Sdk";
+                        }
                         project.Root.AddFirst(new XElement("Import", new XAttribute("Project", "ExternalStaticAssets.targets")));
 
-                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.Razor.Tests.content.ExternalStaticAssets.targets");
+                        using var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Microsoft.NET.Sdk.StaticWebAssets.Tests.content.ExternalStaticAssets.targets");
                         using var destination = File.OpenWrite(Path.Combine(Path.GetDirectoryName(name), "ExternalStaticAssets.targets"));
                         stream.CopyTo(destination);
                     }

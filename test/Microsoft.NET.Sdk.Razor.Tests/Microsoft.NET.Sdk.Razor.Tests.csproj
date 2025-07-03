@@ -55,8 +55,6 @@
     <None Include="TestFiles\Generated\*.bundle.scp.css">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <EmbeddedResource Include="StaticWebAssetsBaselines\**">
-    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>

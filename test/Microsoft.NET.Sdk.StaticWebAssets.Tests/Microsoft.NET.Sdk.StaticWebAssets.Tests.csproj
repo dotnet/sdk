@@ -56,4 +56,13 @@
     <EmbeddedResource Include="content\ExternalStaticAssets.targets" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="TestFiles\Generated\*.rz.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\Generated\*.bundle.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
