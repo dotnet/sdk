@@ -611,6 +611,11 @@ Equivale a eliminare project.assets.json.</target>
         <target state="translated">Forza la conversione anche in presenza di direttive non valide.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdOptionKeepSourceDescription">
+        <source>Whether to keep source files intact (otherwise, they are deleted after conversion).</source>
+        <target state="new">Whether to keep source files intact (otherwise, they are deleted after conversion).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">Elenca i pacchetti con versioni più recenti. Non può essere combinato con l'opzione '--deprecated' o '--vulnerable'.</target>
@@ -2289,6 +2294,16 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">Converti un programma basato su file in un programma basato su progetto.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertConfirmKeepSourceFiles">
+        <source>Keep source files?</source>
+        <target state="new">Keep source files?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertNeedsConfirmation">
+        <source>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</source>
+        <target state="new">Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</target>
+        <note>{Locked="--keep-source"}</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

@@ -128,6 +128,6 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
-        return InteractiveConsole.Confirm(promptMessage, _parseResult);
+        return InteractiveConsole.Confirm(promptMessage, _parseResult) == true;
     }
 }

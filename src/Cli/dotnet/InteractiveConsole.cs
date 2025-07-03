@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.Cli;
 
 public static class InteractiveConsole
 {
-    public static bool Confirm(string message, ParseResult parseResult)
+    public static bool? Confirm(string message, ParseResult parseResult)
     {
         if (parseResult.GetValue(CommonOptions.YesOption))
         {
@@ -17,7 +17,7 @@ public static class InteractiveConsole
 
         if (!parseResult.GetValue(CommonOptions.InteractiveOption()))
         {
-            return false;
+            return null;
         }
 
         Console.Write(AddPromptOptions(message));

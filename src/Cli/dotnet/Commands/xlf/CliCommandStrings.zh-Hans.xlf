@@ -611,6 +611,11 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">即使存在格式不正确的指令，也强制执行转换。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdOptionKeepSourceDescription">
+        <source>Whether to keep source files intact (otherwise, they are deleted after conversion).</source>
+        <target state="new">Whether to keep source files intact (otherwise, they are deleted after conversion).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">列出具有较新版本的包。不能与 "--deprecated" 或 "--vulnerable" 选项结合使用。</target>
@@ -2289,6 +2294,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">将基于文件的程序转换为基于项目的程序。</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertConfirmKeepSourceFiles">
+        <source>Keep source files?</source>
+        <target state="new">Keep source files?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertNeedsConfirmation">
+        <source>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</source>
+        <target state="new">Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</target>
+        <note>{Locked="--keep-source"}</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

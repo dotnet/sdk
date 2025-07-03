@@ -20,13 +20,21 @@ internal sealed class ProjectConvertCommandParser
         Arity = ArgumentArity.Zero,
     };
 
+    public static readonly Option<bool> KeepSourceOption = new("--keep-source")
+    {
+        Description = CliCommandStrings.CmdOptionKeepSourceDescription,
+        Arity = ArgumentArity.ZeroOrOne,
+    };
+
     public static Command GetCommand()
     {
         Command command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
         {
             FileArgument,
             SharedOptions.OutputOption,
+            KeepSourceOption,
             ForceOption,
+            CommonOptions.InteractiveOption(),
         };
 
         command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());

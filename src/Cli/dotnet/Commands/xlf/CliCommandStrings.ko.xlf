@@ -611,6 +611,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">잘못된 형식의 지시문이 있는 경우에도 강제로 변환합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdOptionKeepSourceDescription">
+        <source>Whether to keep source files intact (otherwise, they are deleted after conversion).</source>
+        <target state="new">Whether to keep source files intact (otherwise, they are deleted after conversion).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdOutdatedDescription">
         <source>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</source>
         <target state="translated">최신 버전이 포함된 패키지를 나열합니다. '--deprecated' 또는 '--vulnerable' 옵션과 함께 사용할 수 없습니다.</target>
@@ -2289,6 +2294,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
         <source>Convert a file-based program to a project-based program.</source>
         <target state="translated">파일 기반 프로그램을 프로젝트 기반 프로그램으로 변환합니다.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertConfirmKeepSourceFiles">
+        <source>Keep source files?</source>
+        <target state="new">Keep source files?</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ProjectConvertNeedsConfirmation">
+        <source>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</source>
+        <target state="new">Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</target>
+        <note>{Locked="--keep-source"}</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

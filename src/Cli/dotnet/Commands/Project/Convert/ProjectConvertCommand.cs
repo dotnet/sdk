@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -17,17 +18,22 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
     public override int Execute()
     {
+        // Check the entry point file path.
         string file = Path.GetFullPath(_file);
         if (!VirtualProjectBuildingCommand.IsValidEntryPointPath(file))
         {
             throw new GracefulException(CliCommandStrings.InvalidFilePath, file);
         }
 
+        // Determine the output directory.
         string targetDirectory = _outputDirectory ?? Path.ChangeExtension(file, null);
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
+
+        // Determine whether to keep the source files.
+        bool keepSourceFiles = ShouldKeepSourceFiles();
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
@@ -40,8 +46,12 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
-        // If there were any directives, remove them from the file.
-        if (directives.Length != 0)
+        // Process the entry point file.
+        if (keepSourceFiles)
+        {
+            File.Copy(file, targetFile);
+        }
+        else if (directives.Length != 0)
         {
             VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
             File.Delete(file);
@@ -57,7 +67,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         using var writer = new StreamWriter(stream, Encoding.UTF8);
         VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
 
-        // Copy over included items.
+        // Copy or move over included items.
         foreach (var item in includeItems)
         {
             string targetItemFullPath = Path.Combine(targetDirectory, item.RelativePath);
@@ -70,7 +80,14 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
             Directory.CreateDirectory(targetItemDirectory);
-            File.Copy(item.FullPath, targetItemFullPath);
+            if (keepSourceFiles)
+            {
+                File.Copy(item.FullPath, targetItemFullPath);
+            }
+            else
+            {
+                File.Move(item.FullPath, targetItemFullPath);
+            }
         }
 
         return 0;
@@ -117,5 +134,16 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
                 yield return (FullPath: itemFullPath, RelativePath: itemRelativePath);
             }
         }
+    }
+
+    private bool ShouldKeepSourceFiles()
+    {
+        bool? keepSourceFiles =
+            _parseResult.HasOption(ProjectConvertCommandParser.KeepSourceOption)
+            ? _parseResult.GetValue(ProjectConvertCommandParser.KeepSourceOption)
+            : InteractiveConsole.Confirm(CliCommandStrings.ProjectConvertConfirmKeepSourceFiles, _parseResult);
+        return keepSourceFiles is { } value
+            ? value
+            : throw new GracefulException(CliCommandStrings.ProjectConvertNeedsConfirmation);
     }
 }

@@ -1501,6 +1501,16 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
   <data name="ProjectConvertAppFullName" xml:space="preserve">
     <value>Convert a file-based program to a project-based program.</value>
   </data>
+  <data name="CmdOptionKeepSourceDescription" xml:space="preserve">
+    <value>Whether to keep source files intact (otherwise, they are deleted after conversion).</value>
+  </data>
+  <data name="ProjectConvertConfirmKeepSourceFiles" xml:space="preserve">
+    <value>Keep source files?</value>
+  </data>
+  <data name="ProjectConvertNeedsConfirmation" xml:space="preserve">
+    <value>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--keep-source" command-line option to confirm.</value>
+    <comment>{Locked="--keep-source"}</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
