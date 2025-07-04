@@ -116,7 +116,7 @@
           SkipUnchangedFiles="true" />
 
     <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
-    <Copy SourceFiles="dnx.cmd" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
     
   </Target>
 
