@@ -65,11 +65,12 @@
   </Target>
 
   <Target Name="LayoutDnxShim">
-    <PropertyGroup>
-      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">$(ArtifactsBinDir)dnx\$(Configuration)\win-$(TargetArchitecture)\publish\dnx.exe</DnxShimSource>
-      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))">dnx</DnxShimSource>
-    </PropertyGroup>
-    <Copy SourceFiles="$(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
+    <ItemGroup>
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx.cmd" />
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx.ps1" />
+      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
+    </ItemGroup>
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
 
     <!-- Mark script as executable -->
     <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
