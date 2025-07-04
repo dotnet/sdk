@@ -1,16 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
   </PropertyGroup>
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <PackageId>testSdkBlazorWasm</PackageId>
+    <PackageId>testSdkStaticWebAssets</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -36,30 +37,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\Microsoft.NET.Sdk.StaticWebAssets.Tests\AspNetSdkBaselineTest.cs" Link="AspNetSdkBaselineTest.cs" />
-    <Compile Include="..\Microsoft.NET.Sdk.StaticWebAssets.Tests\IsolatedNuGetPackageFolderAspNetSdkBaselineTest.cs" Link="IsolatedNuGetPackageFolderAspNetSdkBaselineTest.cs" />
-    <Compile Include="..\Microsoft.NET.Sdk.StaticWebAssets.Tests\StaticWebAssetsBaselineFactory.cs" Link="StaticWebAssetsBaselineFactory.cs" />
-    <Compile Include="..\Microsoft.NET.Sdk.StaticWebAssets.Tests\StaticWebAssetsBaselineComparer.cs" Link="StaticWebAssetsBaselineComparer.cs" />
-  </ItemGroup>
-  
-  <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\BlazorWasmSdk\Tasks\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" SkipGetTargetFrameworkProperties="true" />
-    <ProjectReference Include="..\..\src\RazorSdk\Tasks\Microsoft.NET.Sdk.Razor.Tasks.csproj" />
     <ProjectReference Include="..\..\src\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="StaticWebAssetsBaselines\**" />
+    <EmbeddedResource Include="StaticWebAssetsBaselines\**">
+    </EmbeddedResource>
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="StaticWebAssetsBaselines\" />
+    <EmbeddedResource Include="content\ExternalStaticAssets.targets" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Include="TestFiles\Generated\*.rz.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TestFiles\Generated\*.bundle.scp.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
