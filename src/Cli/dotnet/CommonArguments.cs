@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Versioning;
 
@@ -59,6 +60,7 @@ namespace Microsoft.DotNet.Cli
 
     public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
     {
+        [MemberNotNullWhen(returnValue: true, nameof(VersionRange))]
         public bool HasVersion => VersionRange != null;
     }
 }

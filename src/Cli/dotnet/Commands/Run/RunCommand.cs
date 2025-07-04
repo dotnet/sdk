@@ -134,13 +134,13 @@ public class RunCommand
         {
             if (NoCache)
             {
-                throw new GracefulException(CliCommandStrings.InvalidOptionCombination, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
+                throw new GracefulException(CliCommandStrings.CannotCombineOptions, RunCommandParser.NoCacheOption.Name, RunCommandParser.NoBuildOption.Name);
             }
 
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                projectFactory = CreateVirtualCommand().PrepareProjectInstance().CreateProjectInstance;
+                projectFactory = CreateVirtualCommand().CreateProjectInstance;
             }
         }
 
