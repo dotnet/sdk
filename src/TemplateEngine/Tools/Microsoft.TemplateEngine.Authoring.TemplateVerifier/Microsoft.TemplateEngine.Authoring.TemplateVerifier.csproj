@@ -1,11 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>$(NetCurrent)</TargetFramework>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
     <Description>The verification engine for the templates for .NET template engine.</Description>
     <IsPackable>true</IsPackable>
     <EnablePublicApiAnalyzer>true</EnablePublicApiAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Unset IsTestProject which gets set by xunit.props which gets imported by the xunit PackageReference below. -->
+    <IsTestProject />
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +15,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Verify.Xunit" />
     <PackageReference Include="Verify.DiffPlex" />
-    <PackageReference Include="FluentAssertions" />
+    <PackageReference Include="Xunit" />
   </ItemGroup>
 
   <ItemGroup>

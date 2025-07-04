@@ -112,10 +112,10 @@ namespace Microsoft.TemplateEngine.Edge
         {
             Action<string> log = severity switch
             {
-                IValidationEntry.SeverityLevel.None => (string s) => throw new NotSupportedException($"{IValidationEntry.SeverityLevel.None} severity is not supported."),
-                IValidationEntry.SeverityLevel.Info => (string s) => logger.LogDebug(s),
-                IValidationEntry.SeverityLevel.Warning => (string s) => logger.LogWarning(s),
-                IValidationEntry.SeverityLevel.Error => (string s) => logger.LogError(s),
+                IValidationEntry.SeverityLevel.None => (s) => throw new NotSupportedException($"{IValidationEntry.SeverityLevel.None} severity is not supported."),
+                IValidationEntry.SeverityLevel.Info => (s) => logger.LogDebug(s),
+                IValidationEntry.SeverityLevel.Warning => (s) => logger.LogWarning(s),
+                IValidationEntry.SeverityLevel.Error => (s) => logger.LogError(s),
                 _ => throw new InvalidOperationException($"{severity} is not expected value for {nameof(IValidationEntry.SeverityLevel)}."),
             };
 

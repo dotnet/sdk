@@ -12,7 +12,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
         [Fact]
         public async Task ValidateCommand_BasicTest_InvalidTemplate()
         {
-            CliRootCommand root = new()
+            RootCommand root = new()
             {
                 new ValidateCommand()
             };
@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
         [Fact]
         public async Task ValidateCommand_BasicTest_ValidTemplate()
         {
-            CliRootCommand root = new()
+            RootCommand root = new()
             {
                 new ValidateCommand()
             };

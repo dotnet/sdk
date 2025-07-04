@@ -565,6 +565,13 @@ baz
 "
                 },
                 {
+"test.slnx",
+@"<!-- comment bar -->
+bar
+baz
+"
+                },
+                {
 "test.yaml",
 @"# comment bar
 bar
