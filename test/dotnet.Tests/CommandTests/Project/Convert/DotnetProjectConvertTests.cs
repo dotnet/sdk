@@ -26,7 +26,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var csFile = Path.Combine(dotnetProjectConvert, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
             .WithWorkingDirectory(dotnetProjectConvert)
             .Execute()
             .Should().Pass();
@@ -90,7 +90,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", "MyApp1")
+        new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", "MyApp1", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -133,7 +133,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.WriteLine(1);");
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.WriteLine(2);");
 
-        new DotnetCommand(Log, "project", "convert", "Program1.cs")
+        new DotnetCommand(Log, "project", "convert", "Program1.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -201,7 +201,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.CS"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "Program.CS")
+        new DotnetCommand(Log, "project", "convert", "Program.CS", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -223,7 +223,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), content);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -248,7 +248,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(appDirectory);
         File.WriteAllText(Path.Join(appDirectory, "Program.cs"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "app/Program.cs")
+        new DotnetCommand(Log, "project", "convert", "app/Program.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -278,14 +278,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(Path.Join(testInstance.Path, "subdir"));
         File.WriteAllText(Path.Join(testInstance.Path, "subdir", "second.json"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json", "subdir"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "subdir"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -308,14 +308,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -334,14 +334,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program", "Resources.resx", "Util.cs", "my.json"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Resources.resx", "Util.cs", "my.json"]);
 
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -371,14 +371,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             </Project>
             """);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Directory.Build.targets", "Program", "Resources.resx", "Util.cs", "my.json", "second.json"]);
+            .Should().BeEquivalentTo(["Directory.Build.targets", "Program", "Program.cs", "Resources.resx", "Util.cs", "my.json", "second.json"]);
 
         // `second.json` is excluded from the conversion.
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
@@ -413,14 +413,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(testInstance.Path)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Directory.Build.props", "Program", "Util.cs"]);
+            .Should().BeEquivalentTo(["Directory.Build.props", "Program", "Program.cs", "Util.cs"]);
 
         // Directory.Build.props is included as it's a None item.
         new DirectoryInfo(Path.Join(testInstance.Path, "Program"))
@@ -464,14 +464,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(subdir)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(subdir)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program", "Util.cs"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs", "Util.cs"]);
 
         new DirectoryInfo(Path.Join(subdir, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -514,14 +514,14 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
             .WithWorkingDirectory(subdir)
             .Execute()
             .Should().Pass();
 
         new DirectoryInfo(subdir)
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
-            .Should().BeEquivalentTo(["Program"]);
+            .Should().BeEquivalentTo(["Program", "Program.cs"]);
 
         new DirectoryInfo(Path.Join(subdir, "Program"))
             .EnumerateFileSystemInfos().Select(f => f.Name).Order()
@@ -535,6 +535,23 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
     }
 
+    [Fact]
+    public void KeepSourceNotSpecified()
+    {
+        var testInstance = _testAssetsManager.CreateTestDirectory();
+        var filePath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(filePath, "Console.WriteLine();");
+
+        new DotnetCommand(Log, "project", "convert", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.ProjectConvertNeedsConfirmation);
+
+        new DirectoryInfo(Path.Join(testInstance.Path))
+            .EnumerateDirectories().Should().BeEmpty();
+    }
+
     /// <summary>
     /// When processing fails due to invalid directives, no conversion should be performed
     /// (e.g., the target directory should not be created).
@@ -546,7 +563,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:invalid");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
@@ -567,7 +584,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
@@ -590,7 +607,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Console.WriteLine();
             """);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();

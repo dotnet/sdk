@@ -679,7 +679,9 @@ Register-ArgumentCompleter -Native -CommandName 'testhost' -ScriptBlock {
             $staticCompletions = @(
                 [CompletionResult]::new('--output', '--output', [CompletionResultType]::ParameterName, "Location to place the generated output.")
                 [CompletionResult]::new('--output', '-o', [CompletionResultType]::ParameterName, "Location to place the generated output.")
+                [CompletionResult]::new('--keep-source', '--keep-source', [CompletionResultType]::ParameterName, "Whether to keep source files intact (otherwise, they are deleted after conversion).")
                 [CompletionResult]::new('--force', '--force', [CompletionResultType]::ParameterName, "Force conversion even if there are malformed directives.")
+                [CompletionResult]::new('--interactive', '--interactive', [CompletionResultType]::ParameterName, "Allows the command to stop and wait for user input or action (for example to complete authentication).")
                 [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, "Show command line help.")
                 [CompletionResult]::new('--help', '-h', [CompletionResultType]::ParameterName, "Show command line help.")
             )

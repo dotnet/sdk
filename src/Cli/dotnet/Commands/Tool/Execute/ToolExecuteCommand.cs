@@ -30,7 +30,6 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
     private readonly string[] _addSource = result.GetValue(ToolExecuteCommandParser.AddSourceOption) ?? [];
     private readonly bool _interactive = result.GetValue(ToolExecuteCommandParser.InteractiveOption);
     private readonly VerbosityOptions _verbosity = result.GetValue(ToolExecuteCommandParser.VerbosityOption);
-    private readonly bool _yes = result.GetValue(ToolExecuteCommandParser.YesOption);
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig = new RestoreActionConfig(DisableParallel: result.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
@@ -128,47 +127,7 @@ internal class ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolMa
 
     private bool UserAgreedToRunFromSource(PackageId packageId, NuGetVersion version, PackageSource source)
     {
-        if (_yes)
-        {
-            return true;
-        }
-
-        if (!_interactive)
-        {
-            return false;
-        }
-
         string promptMessage = string.Format(CliCommandStrings.ToolDownloadConfirmationPrompt, packageId, version.ToString(), source.Source);
-
-        static string AddPromptOptions(string message)
-        {
-            return $"{message} [{CliCommandStrings.ConfirmationPromptYesValue}/{CliCommandStrings.ConfirmationPromptNoValue}] ({CliCommandStrings.ConfirmationPromptYesValue}): ";
-        }
-
-        Console.Write(AddPromptOptions(promptMessage));
-
-        static bool KeyMatches(ConsoleKeyInfo pressedKey, string valueKey)
-        {
-            //  Apparently you can't do invariant case insensitive comparison on a char directly, so we have to convert it to a string.
-            //  The resource string should be a single character, but we take the first character just to be sure.
-            return pressedKey.KeyChar.ToString().ToLowerInvariant().Equals(
-                    valueKey.ToLowerInvariant().Substring(0, 1));
-        }
-
-        while (true)
-        {
-            var key = Console.ReadKey();
-            Console.WriteLine();
-            if (key.Key == ConsoleKey.Enter || KeyMatches(key, CliCommandStrings.ConfirmationPromptYesValue))
-            {
-                return true;
-            }
-            if (key.Key == ConsoleKey.Escape || KeyMatches(key, CliCommandStrings.ConfirmationPromptNoValue))
-            {
-                return false;
-            }
-
-            Console.Write(AddPromptOptions(string.Format(CliCommandStrings.ConfirmationPromptInvalidChoiceMessage, CliCommandStrings.ConfirmationPromptYesValue, CliCommandStrings.ConfirmationPromptNoValue)));
-        }
+        return InteractiveConsole.Confirm(promptMessage, _parseResult, acceptEscapeForFalse: true) == true;
     }
 }
