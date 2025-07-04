@@ -85,7 +85,6 @@
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">
-    <Project Path="src/Layout/dnx/dnx.csproj" />
     <Project Path="src/Layout/finalizer/finalizer.csproj" />
     <Project Path="src/Layout/pkg/dotnet-sdk.proj" Type="C#" />
     <Project Path="src/Layout/redist/redist.csproj" />
