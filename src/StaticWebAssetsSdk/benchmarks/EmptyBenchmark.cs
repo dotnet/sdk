@@ -3,7 +3,7 @@
 
 using BenchmarkDotNet.Attributes;
 
-namespace Microsoft.NET.Sdk.StaticWebAssets.Benchmarks;
+namespace Microsoft.AspNetCore.StaticWebAssets.Benchmarks;
 
 [MemoryDiagnoser]
 public class EmptyBenchmark

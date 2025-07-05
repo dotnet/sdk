@@ -29,9 +29,15 @@ public class FilterStaticWebAssetEndpoints : Task
 
     [Output] public ITaskItem[] AssetsWithoutMatchingEndpoints { get; set; }
 
+    // Private fields for reusable collections and criteria
+    private FilterCriteria[] _filterCriteria;
+    private readonly List<StaticWebAssetEndpointProperty> _propertiesList = new();
+    private readonly List<StaticWebAssetEndpointSelector> _selectorsList = new();
+    private readonly List<StaticWebAssetEndpointResponseHeader> _headersList = new();
+
     public override bool Execute()
     {
-        var filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
+        _filterCriteria = (Filters ?? []).Select(FilterCriteria.FromTaskItem).ToArray();
         var assetFiles = Assets != null ? StaticWebAsset.ToAssetDictionary(Assets) : [];
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints ?? []);
         var endpointFoundMatchingAsset = new Dictionary<string, StaticWebAsset>();
@@ -46,7 +52,7 @@ public class FilterStaticWebAssetEndpoints : Task
                 continue;
             }
 
-            if (MeetsAllCriteria(endpoint, asset, filterCriteria, out var failingCriteria))
+            if (MeetsAllCriteria(endpoint, asset, out var failingCriteria))
             {
                 if (asset != null && !endpointFoundMatchingAsset.ContainsKey(asset.Identity))
                 {
@@ -73,18 +79,24 @@ public class FilterStaticWebAssetEndpoints : Task
         return !Log.HasLoggedErrors;
     }
 
-    private static bool MeetsAllCriteria(StaticWebAssetEndpoint endpoint, StaticWebAsset asset, FilterCriteria[] filterCriteria, out FilterCriteria failingCriteria)
+    private bool MeetsAllCriteria(
+        StaticWebAssetEndpoint endpoint,
+        StaticWebAsset asset,
+        out FilterCriteria failingCriteria)
     {
-        for (var i = 0; i < filterCriteria.Length; i++)
+        for (var i = 0; i < _filterCriteria.Length; i++)
         {
-            var criteria = filterCriteria[i];
+            var criteria = _filterCriteria[i];
             switch (criteria.Type)
             {
                 case "Property":
                     var meetsPropertyCriteria = criteria.ExcludeOnMatch();
-                    for (var j = 0; j < endpoint.EndpointProperties.Length; j++)
+                    var propertiesString = endpoint.EndpointPropertiesString;
+                    StaticWebAssetEndpointProperty.PopulateFromMetadataValue(propertiesString, _propertiesList);
+
+                    for (var j = 0; j < _propertiesList.Count; j++)
                     {
-                        var property = endpoint.EndpointProperties[j];
+                        var property = _propertiesList[j];
                         if (MeetsCriteria(criteria, property.Name, property.Value))
                         {
                             meetsPropertyCriteria = !criteria.ExcludeOnMatch();
@@ -99,9 +111,12 @@ public class FilterStaticWebAssetEndpoints : Task
                     break;
                 case "Selector":
                     var meetsSelectorCriteria = criteria.ExcludeOnMatch();
-                    for (var j = 0; j < endpoint.Selectors.Length; j++)
+                    var selectorsString = endpoint.SelectorsString;
+                    StaticWebAssetEndpointSelector.PopulateFromMetadataValue(selectorsString, _selectorsList);
+
+                    for (var j = 0; j < _selectorsList.Count; j++)
                     {
-                        var selector = endpoint.Selectors[j];
+                        var selector = _selectorsList[j];
                         if (MeetsCriteria(criteria, selector.Name, selector.Value))
                         {
                             meetsSelectorCriteria = !criteria.ExcludeOnMatch();
@@ -116,9 +131,12 @@ public class FilterStaticWebAssetEndpoints : Task
                     break;
                 case "Header":
                     var meetsHeaderCriteria = criteria.ExcludeOnMatch();
-                    for (var j = 0; j < endpoint.ResponseHeaders.Length; j++)
+                    var headersString = endpoint.ResponseHeadersString;
+                    StaticWebAssetEndpointResponseHeader.PopulateFromMetadataValue(headersString, _headersList);
+
+                    for (var j = 0; j < _headersList.Count; j++)
                     {
-                        var header = endpoint.ResponseHeaders[j];
+                        var header = _headersList[j];
                         if (MeetsCriteria(criteria, header.Name, header.Value))
                         {
                             meetsHeaderCriteria = !criteria.ExcludeOnMatch();

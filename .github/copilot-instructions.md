@@ -16,3 +16,15 @@ Localization:
 
 Documentation:
 - Do not manually edit files under documentation/manpages/sdk as these are generated based on documentation and should not be manually modified.
+
+Benchmarking:
+- Use BenchmarkDotNet for performance measurements with the [MemoryDiagnoser] attribute to track memory allocations.
+- Run benchmarks before and after changes to demonstrate performance improvements.
+- To run benchmarks:
+  ```
+  cd src/StaticWebAssetsSdk/benchmarks
+  dotnet run --framework <framework> -c Release -- --filter "*MethodName*"
+  ```
+- Compare both throughput (ops/s) and memory allocations (bytes allocated) in benchmark results.
+- Include benchmark results in PR descriptions when claiming performance improvements.
+- Consider benchmarking on both .NET Framework and modern .NET when targeting multiple frameworks.

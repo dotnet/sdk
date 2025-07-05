@@ -43,6 +43,10 @@ public partial class OverrideHtmlAssetPlaceholders : Task
 
     internal static readonly Regex _preloadRegex = new Regex(@"<link\s+rel=""preload""(\s+id=""(?<group>[^""]+)"")?\s*[/]?>");
 
+    // Reusable collections to avoid allocations
+    private readonly List<StaticWebAssetEndpointProperty> _propertiesList = new(10);
+    private readonly List<StaticWebAssetEndpointSelector> _selectorsList = new(4);
+
     public override bool Execute()
     {
         var endpoints = StaticWebAssetEndpoint.FromItemGroup(Endpoints).Where(e => e.AssetFile.EndsWith(".js") || e.AssetFile.EndsWith(".mjs"));
@@ -172,12 +176,18 @@ public partial class OverrideHtmlAssetPlaceholders : Task
         foreach (var endpoint in endpoints)
         {
             // If there's a selector this means that this is an alternative representation for a resource, so skip it.
-            if (endpoint.Selectors?.Length == 0)
+            // Use the reusable list to check selectors efficiently
+            StaticWebAssetEndpointSelector.PopulateFromMetadataValue(endpoint.SelectorsString, _selectorsList);
+            if (_selectorsList.Count == 0)
             {
                 var resourceAsset = new ResourceAsset(endpoint.Route);
-                for (var i = 0; i < endpoint.EndpointProperties?.Length; i++)
+                
+                // Use the reusable list to avoid allocations
+                StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpoint.EndpointPropertiesString, _propertiesList);
+                
+                for (var i = 0; i < _propertiesList.Count; i++)
                 {
-                    var property = endpoint.EndpointProperties[i];
+                    var property = _propertiesList[i];
                     if (property.Name.Equals("label", StringComparison.OrdinalIgnoreCase))
                     {
                         resourceAsset.Label = property.Value;
