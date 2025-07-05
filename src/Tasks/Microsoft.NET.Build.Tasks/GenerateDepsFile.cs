@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.Extensions.DependencyModel;
@@ -19,30 +17,30 @@ namespace Microsoft.NET.Build.Tasks
     public class GenerateDepsFile : TaskBase
     {
         [Required]
-        public string ProjectPath { get; set; }
+        public string ProjectPath { get; set; } = null!;
 
-        public string AssetsFilePath { get; set; }
-
-        [Required]
-        public string DepsFilePath { get; set; }
+        public string? AssetsFilePath { get; set; }
 
         [Required]
-        public string TargetFramework { get; set; }
-
-        public string RuntimeIdentifier { get; set; }
-
-        public string PlatformLibraryName { get; set; }
-
-        public ITaskItem[] RuntimeFrameworks { get; set; }
+        public string DepsFilePath { get; set; } = null!;
 
         [Required]
-        public string AssemblyName { get; set; }
+        public string TargetFramework { get; set; } = null!;
+
+        public string? RuntimeIdentifier { get; set; }
+
+        public string? PlatformLibraryName { get; set; }
+
+        public ITaskItem[] RuntimeFrameworks { get; set; } = Array.Empty<ITaskItem>();
 
         [Required]
-        public string AssemblyExtension { get; set; }
+        public string AssemblyName { get; set; } = null!;
 
         [Required]
-        public string AssemblyVersion { get; set; }
+        public string AssemblyExtension { get; set; } = null!;
+
+        [Required]
+        public string AssemblyVersion { get; set; } = null!;
 
         public ITaskItem[] AssemblySatelliteAssemblies { get; set; } = Array.Empty<ITaskItem>();
 
@@ -66,26 +64,26 @@ namespace Microsoft.NET.Build.Tasks
         // Runtime assets for self-contained deployment from runtime pack
         public ITaskItem[] RuntimePackAssets { get; set; } = Array.Empty<ITaskItem>();
 
-        public ITaskItem CompilerOptions { get; set; }
+        public ITaskItem? CompilerOptions { get; set; }
 
-        public ITaskItem[] RuntimeStorePackages { get; set; }
+        public ITaskItem[] RuntimeStorePackages { get; set; } = Array.Empty<ITaskItem>();
 
         // NuGet compilation assets
         [Required]
-        public ITaskItem[] CompileReferences { get; set; }
+        public ITaskItem[] CompileReferences { get; set; } = null!;
 
         // NuGet runtime assets for root directory: @(NativeCopyLocalItems), @(ResourceCopyLocalItems), @(RuntimeCopyLocalItems)
         [Required]
-        public ITaskItem[] ResolvedNuGetFiles { get; set; }
+        public ITaskItem[] ResolvedNuGetFiles { get; set; } = null!;
 
         // NuGet runtime assets for runtimes* directory
         [Required]
-        public ITaskItem[] ResolvedRuntimeTargetsFiles { get; set; }
+        public ITaskItem[] ResolvedRuntimeTargetsFiles { get; set; } = null!;
 
         // CopyLocal subset ot of @(ReferencePath), @(ReferenceDependencyPath)
         // Used to filter out non-runtime assemblies from deps file. Only project and direct references in this
         // set will be written to deps file as runtime dependencies.
-        public string[] UserRuntimeAssemblies { get; set; }
+        public string[] UserRuntimeAssemblies { get; set; } = null!;
 
         public bool IsSelfContained { get; set; }
 
@@ -97,10 +95,10 @@ namespace Microsoft.NET.Build.Tasks
 
         // List of runtime identifer (platform part only) to validate for runtime assets
         // If set, the task will warn on any RIDs that aren't in the list
-        public string[] ValidRuntimeIdentifierPlatformsForAssets { get; set; }
+        public string[] ValidRuntimeIdentifierPlatformsForAssets { get; set; } = null!;
 
         [Required]
-        public string RuntimeGraphPath { get; set; }
+        public string RuntimeGraphPath { get; set; } = null!;
 
         List<ITaskItem> _filesWritten = new();
 
@@ -110,13 +108,13 @@ namespace Microsoft.NET.Build.Tasks
             get { return _filesWritten.ToArray(); }
         }
 
-        private Dictionary<PackageIdentity, string> GetFilteredPackages()
+        private Dictionary<PackageIdentity, string>? GetFilteredPackages()
         {
-            Dictionary<PackageIdentity, string> filteredPackages = null;
+            Dictionary<PackageIdentity, string>? filteredPackages = null;
 
             if (RuntimeStorePackages != null && RuntimeStorePackages.Length > 0)
             {
-                filteredPackages = new Dictionary<PackageIdentity, string>();
+                filteredPackages = new Dictionary<PackageIdentity, string>(RuntimeStorePackages.Length);
                 foreach (var package in RuntimeStorePackages)
                 {
                     filteredPackages.Add(
@@ -130,8 +128,8 @@ namespace Microsoft.NET.Build.Tasks
 
         private void WriteDepsFile(string depsFilePath)
         {
-            ProjectContext projectContext = null;
-            LockFileLookup lockFileLookup = null;
+            ProjectContext? projectContext = null;
+            LockFileLookup? lockFileLookup = null;
             if (AssetsFilePath != null)
             {
                 LockFile lockFile = new LockFileCache(this).GetLockFile(AssetsFilePath);
@@ -157,12 +155,11 @@ namespace Microsoft.NET.Build.Tasks
             var userRuntimeAssemblySet = new HashSet<string>(UserRuntimeAssemblies ?? Enumerable.Empty<string>(), StringComparer.OrdinalIgnoreCase);
             Func<ITaskItem, bool> isUserRuntimeAssembly = item => userRuntimeAssemblySet.Contains(item.ItemSpec);
 
-            IEnumerable<ReferenceInfo> referenceAssemblyInfos =
-                ReferenceInfo.CreateReferenceInfos(ReferenceAssemblies);
+            var referenceAssemblyInfos = ReferenceInfo.CreateReferenceInfos(ReferenceAssemblies);
 
             // If there is a generated asset file, the projectContext will contain most of the project references.
             // So remove any project reference contained within projectContext from directReferences to avoid duplication
-            IEnumerable<ReferenceInfo> directReferences =
+            ReferenceInfo[] directReferences =
                 ReferenceInfo.CreateDirectReferenceInfos(
                     ReferencePaths,
                     ReferenceSatellitePaths,
@@ -170,7 +167,7 @@ namespace Microsoft.NET.Build.Tasks
                     isUserRuntimeAssembly,
                     IncludeProjectsNotInAssetsFile);
 
-            IEnumerable<ReferenceInfo> dependencyReferences =
+            var dependencyReferences =
                 ReferenceInfo.CreateDependencyReferenceInfos(ReferenceDependencyPaths, ReferenceSatellitePaths, isUserRuntimeAssembly);
 
             Dictionary<string, SingleProjectInfo> referenceProjects =
@@ -213,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks
                 // If a RID-graph is provided to the DependencyContextBuilder, it generates a RID-fallback
                 // graph with respect to the target RuntimeIdentifier.
 
-                RuntimeGraph runtimeGraph =
+                RuntimeGraph? runtimeGraph =
                     IsSelfContained ? new RuntimeGraphCache(this).GetRuntimeGraph(RuntimeGraphPath) : null;
 
                 builder = new DependencyContextBuilder(mainProject, IncludeRuntimeFileVersions, runtimeGraph, projectContext, lockFileLookup);
@@ -225,8 +222,8 @@ namespace Microsoft.NET.Build.Tasks
                     IncludeRuntimeFileVersions,
                     RuntimeFrameworks,
                     isSelfContained: IsSelfContained,
-                    platformLibraryName: PlatformLibraryName,
-                    runtimeIdentifier: RuntimeIdentifier,
+                    platformLibraryName: PlatformLibraryName ?? string.Empty,
+                    runtimeIdentifier: RuntimeIdentifier ?? string.Empty,
                     targetFramework: TargetFramework);
             }
 
@@ -247,8 +244,16 @@ namespace Microsoft.NET.Build.Tasks
                 builder = builder.WithCompileReferences(ReferenceInfo.CreateReferenceInfos(CompileReferences));
             }
 
-            var resolvedNuGetFiles = ResolvedNuGetFiles.Select(f => new ResolvedFile(f, false))
-                                .Concat(ResolvedRuntimeTargetsFiles.Select(f => new ResolvedFile(f, true)));
+            ResolvedFile[] resolvedNuGetFiles = new ResolvedFile[ResolvedNuGetFiles.Length + ResolvedRuntimeTargetsFiles.Length];
+            for (int i = 0; i < ResolvedNuGetFiles.Length; i++)
+            {
+                resolvedNuGetFiles[i] = new ResolvedFile(ResolvedNuGetFiles[i], false);
+            }
+            for (int i = 0; i < ResolvedRuntimeTargetsFiles.Length; i++)
+            {
+                resolvedNuGetFiles[ResolvedNuGetFiles.Length + i] = new ResolvedFile(ResolvedRuntimeTargetsFiles[i], true);
+            }
+
             builder = builder.WithResolvedNuGetFiles(resolvedNuGetFiles);
 
             DependencyContext dependencyContext = builder.Build(UserRuntimeAssemblies);
@@ -310,12 +315,12 @@ namespace Microsoft.NET.Build.Tasks
                 var affectedRids = new List<string>();
                 foreach (var lib in dependencyContext.RuntimeLibraries)
                 {
-                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer)
-                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer));
+                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(r => r is not null && ShouldWarnOnRuntimeIdentifer(r))
+                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(r => r is not null && ShouldWarnOnRuntimeIdentifer(r)));
                     if (warnOnRids.Any())
                     {
                         affectedLibs.Add(lib.Name);
-                        affectedRids.AddRange(warnOnRids);
+                        affectedRids.AddRange(warnOnRids!);
                     }
                 }
 

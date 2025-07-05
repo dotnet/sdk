@@ -20,7 +20,7 @@ namespace Microsoft.NET.Build.Tasks
         public string PathInPackage { get; }
 
         private List<ResourceAssemblyInfo> _resourceAssemblies;
-        public IEnumerable<ResourceAssemblyInfo> ResourceAssemblies
+        public List<ResourceAssemblyInfo> ResourceAssemblies
         {
             get { return _resourceAssemblies; }
         }
@@ -38,20 +38,20 @@ namespace Microsoft.NET.Build.Tasks
             _resourceAssemblies = new List<ResourceAssemblyInfo>();
         }
 
-        public static IEnumerable<ReferenceInfo> CreateReferenceInfos(IEnumerable<ITaskItem> referencePaths)
+        public static ReferenceInfo[] CreateReferenceInfos(ITaskItem[] referencePaths)
         {
-            List<ReferenceInfo> referenceInfos = new();
-            foreach (ITaskItem referencePath in referencePaths)
+            ReferenceInfo[] referenceInfos = new ReferenceInfo[referencePaths.Length];
+            for (int i = 0; i < referencePaths.Length; i++)
             {
-                referenceInfos.Add(CreateReferenceInfo(referencePath));
+                referenceInfos[i] = CreateReferenceInfo(referencePaths[i]);
             }
 
             return referenceInfos;
         }
 
-        public static IEnumerable<ReferenceInfo> CreateDirectReferenceInfos(
-            IEnumerable<ITaskItem> referencePaths,
-            IEnumerable<ITaskItem> referenceSatellitePaths,
+        public static ReferenceInfo[] CreateDirectReferenceInfos(
+            ITaskItem[] referencePaths,
+            ITaskItem[] referenceSatellitePaths,
             LockFileLookup lockFileLookup,
             Func<ITaskItem, bool> isRuntimeAssembly,
             bool includeProjectsNotInAssetsFile)
@@ -93,8 +93,8 @@ namespace Microsoft.NET.Build.Tasks
                 return lockFileLookup.GetProject(projectName) != null;
             }
 
-            IEnumerable<ITaskItem> directReferencePaths = referencePaths
-                .Where(r => !lockFileContainsProject(r) && !IsNuGetReference(r) && isRuntimeAssembly(r));
+            ITaskItem[] directReferencePaths = referencePaths
+                .Where(r => !lockFileContainsProject(r) && !IsNuGetReference(r) && isRuntimeAssembly(r)).ToArray();
 
             return CreateFilteredReferenceInfos(directReferencePaths, referenceSatellitePaths);
         }
@@ -110,22 +110,23 @@ namespace Microsoft.NET.Build.Tasks
             return reference.HasMetadataValue(MetadataKeys.ReferenceSourceTarget, "ProjectReference");
         }
 
-        public static IEnumerable<ReferenceInfo> CreateDependencyReferenceInfos(
-            IEnumerable<ITaskItem> referenceDependencyPaths,
-            IEnumerable<ITaskItem> referenceSatellitePaths,
+        public static ReferenceInfo[] CreateDependencyReferenceInfos(
+            ITaskItem[] referenceDependencyPaths,
+            ITaskItem[] referenceSatellitePaths,
             Func<ITaskItem, bool> isRuntimeAssembly)
         {
-            IEnumerable<ITaskItem> indirectReferencePaths = referenceDependencyPaths
-                .Where(r => !IsNuGetReference(r) && isRuntimeAssembly(r));
+
+            ITaskItem[] indirectReferencePaths = referenceDependencyPaths
+                .Where(r => !IsNuGetReference(r) && isRuntimeAssembly(r)).ToArray();
 
             return CreateFilteredReferenceInfos(indirectReferencePaths, referenceSatellitePaths);
         }
 
-        private static IEnumerable<ReferenceInfo> CreateFilteredReferenceInfos(
-            IEnumerable<ITaskItem> referencePaths,
-            IEnumerable<ITaskItem> referenceSatellitePaths)
+        private static ReferenceInfo[] CreateFilteredReferenceInfos(
+            ITaskItem[] referencePaths,
+            ITaskItem[] referenceSatellitePaths)
         {
-            Dictionary<string, ReferenceInfo> directReferences = new();
+            Dictionary<string, ReferenceInfo> directReferences = new(referencePaths.Length);
 
             foreach (ITaskItem referencePath in referencePaths)
             {
@@ -148,7 +149,7 @@ namespace Microsoft.NET.Build.Tasks
                 }
             }
 
-            return directReferences.Values;
+            return directReferences.Values.ToArray();
         }
 
         internal static ReferenceInfo CreateReferenceInfo(ITaskItem referencePath)

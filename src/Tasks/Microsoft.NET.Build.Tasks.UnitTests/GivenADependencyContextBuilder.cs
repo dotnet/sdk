@@ -34,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             ITaskItem[] assemblySatelliteAssemblies,
             ITaskItem[] referencePaths,
             ITaskItem[] referenceSatellitePaths,
-            object[] resolvedNuGetFiles)
+            ResolvedFile[] resolvedNuGetFiles)
         {
             LockFile lockFile = TestLockFiles.GetLockFile(mainProjectName);
             LockFileLookup lockFileLookup = new(lockFile);
@@ -46,7 +46,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 mainProjectVersion,
                 assemblySatelliteAssemblies ?? new ITaskItem[] { });
 
-            IEnumerable<ReferenceInfo> directReferences =
+            var directReferences =
                 ReferenceInfo.CreateDirectReferenceInfos(
                     referencePaths ?? new ITaskItem[] { },
                     referenceSatellitePaths ?? new ITaskItem[] { },
@@ -63,13 +63,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             if (resolvedNuGetFiles == null)
             {
-                resolvedNuGetFiles = Array.Empty<ResolvedFile>();
+                resolvedNuGetFiles = [];
             }
 
             DependencyContext dependencyContext = new DependencyContextBuilder(mainProject, includeRuntimeFileVersions: false, runtimeGraph: null, projectContext: projectContext, libraryLookup: lockFileLookup)
                 .WithDirectReferences(directReferences)
                 .WithCompilationOptions(compilationOptions)
-                .WithResolvedNuGetFiles((ResolvedFile[])resolvedNuGetFiles)
+                .WithResolvedNuGetFiles(resolvedNuGetFiles)
                 .Build();
 
             JObject result = Save(dependencyContext);
@@ -229,7 +229,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 []);
             string mainProjectDirectory = Path.GetDirectoryName(mainProject.ProjectPath);
 
-            
+
             ITaskItem[] referencePaths = dllReference ? references.Select(reference =>
                 new MockTaskItem($"/usr/Path/{reference}.dll", new Dictionary<string, string> {
                     { "CopyLocal", "false" },

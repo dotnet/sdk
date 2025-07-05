@@ -1,8 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks
@@ -14,7 +12,7 @@ namespace Microsoft.NET.Build.Tasks
     {
         internal static UnreferencedProjectInfo Default = new();
 
-        private UnreferencedProjectInfo() : base(string.Empty, string.Empty, string.Empty, string.Empty, new List<ReferenceInfo>(), new List<ResourceAssemblyInfo>())
+        private UnreferencedProjectInfo() : base(string.Empty, string.Empty, null, string.Empty, [], [])
         {
         }
     }
@@ -23,40 +21,36 @@ namespace Microsoft.NET.Build.Tasks
     {
         public string ProjectPath { get; }
         public string Name { get; }
-        public string Version { get; }
+        public string? Version { get; }
         public string OutputName { get; }
 
         private List<ReferenceInfo> _dependencyReferences;
-        public IEnumerable<ReferenceInfo> DependencyReferences
+        public List<ReferenceInfo> DependencyReferences
         {
             get { return _dependencyReferences; }
         }
 
         private List<ResourceAssemblyInfo> _resourceAssemblies;
-        public IEnumerable<ResourceAssemblyInfo> ResourceAssemblies
+        public List<ResourceAssemblyInfo> ResourceAssemblies
         {
             get { return _resourceAssemblies; }
         }
 
-        protected SingleProjectInfo()
-        {
-        }
-
-        protected SingleProjectInfo(string projectPath, string name, string version, string outputName, List<ReferenceInfo> dependencyReferences, List<ResourceAssemblyInfo> resourceAssemblies)
+        protected SingleProjectInfo(string projectPath, string name, string? version, string outputName, List<ReferenceInfo>? dependencyReferences, List<ResourceAssemblyInfo>? resourceAssemblies)
         {
             ProjectPath = projectPath;
             Name = name;
             Version = version;
             OutputName = outputName;
-            _dependencyReferences = dependencyReferences ?? new List<ReferenceInfo>();
-            _resourceAssemblies = resourceAssemblies ?? new List<ResourceAssemblyInfo>();
+            _dependencyReferences = dependencyReferences ?? [];
+            _resourceAssemblies = resourceAssemblies ?? [];
         }
 
         public static SingleProjectInfo Create(string projectPath, string name, string fileExtension, string version, ITaskItem[] satelliteAssemblies)
         {
-            List<ResourceAssemblyInfo> resourceAssemblies = new();
+            List<ResourceAssemblyInfo> resourceAssemblies = new List<ResourceAssemblyInfo>(satelliteAssemblies.Length);
 
-            foreach (ITaskItem satelliteAssembly in satelliteAssemblies)
+            foreach (var satelliteAssembly in satelliteAssemblies)
             {
                 string culture = satelliteAssembly.GetMetadata(MetadataKeys.Culture);
                 string relativePath = satelliteAssembly.GetMetadata(MetadataKeys.TargetPath);
@@ -89,7 +83,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 string outputName = Path.GetFileName(projectReferencePath.ItemSpec);
                 string name = Path.GetFileNameWithoutExtension(outputName);
-                string version = null; // it isn't possible to know the version from the MSBuild info.
+                string? version = null; // it isn't possible to know the version from the MSBuild info.
                                        // The version will be retrieved from the project assets file.
 
                 projectReferences.Add(
@@ -108,14 +102,14 @@ namespace Microsoft.NET.Build.Tasks
                     throw new BuildErrorException(Strings.MissingItemMetadata, MetadataKeys.MSBuildSourceProjectFile, "ReferenceSatellitePath", projectReferenceSatellitePath.ItemSpec);
                 }
 
-                SingleProjectInfo referenceProjectInfo;
+                SingleProjectInfo? referenceProjectInfo;
                 if (projectReferences.TryGetValue(sourceProjectFile, out referenceProjectInfo))
                 {
                     string originalItemSpec = projectReferenceSatellitePath.GetMetadata(MetadataKeys.OriginalItemSpec);
 
                     if (!string.IsNullOrEmpty(originalItemSpec))
                     {
-                        ReferenceInfo referenceInfo = referenceProjectInfo._dependencyReferences.SingleOrDefault(r => r.FullPath.Equals(originalItemSpec));
+                        ReferenceInfo? referenceInfo = referenceProjectInfo._dependencyReferences.SingleOrDefault(r => r.FullPath.Equals(originalItemSpec));
 
                         if (referenceInfo is null)
                         {

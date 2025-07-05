@@ -8,7 +8,7 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    internal enum AssetType
+    public enum AssetType
     {
         None,
         Runtime,
@@ -17,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks
         PgoData
     }
 
-    internal class ResolvedFile
+    public struct ResolvedFile
     {
         public string SourcePath { get; }
         public string PackageName { get; }
@@ -97,11 +97,29 @@ namespace Microsoft.NET.Build.Tasks
 
         public override bool Equals(object obj)
         {
-            ResolvedFile other = obj as ResolvedFile;
-            return other != null &&
+            if (!(obj is ResolvedFile))
+            {
+                return false;
+            }
+            return Equals((ResolvedFile)obj);
+        }
+
+        public bool Equals(ResolvedFile other)
+        {
+            return
                 other.Asset == Asset &&
                 other.SourcePath == SourcePath &&
                 other.DestinationSubDirectory == DestinationSubDirectory;
+        }
+
+        public static bool operator ==(ResolvedFile firstResolvedFile, ResolvedFile secondResolvedFile)
+        {
+            return firstResolvedFile.Equals(secondResolvedFile);
+        }
+
+        public static bool operator !=(ResolvedFile firstResolvedFile, ResolvedFile secondResolvedFile)
+        {
+            return !firstResolvedFile.Equals(secondResolvedFile);
         }
 
         public override int GetHashCode()
