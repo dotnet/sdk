@@ -1,0 +1,15 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+  
+  <!-- Override global usings for benchmark projects - they don't need test framework imports -->
+  <ItemGroup>
+    <Using Remove="FluentAssertions" />
+    <Using Remove="Microsoft.NET.TestFramework" />
+    <Using Remove="Microsoft.NET.TestFramework.Assertions" />
+    <Using Remove="Microsoft.NET.TestFramework.Commands" />
+    <Using Remove="Microsoft.NET.TestFramework.ProjectConstruction" />
+    <Using Remove="Microsoft.NET.TestFramework.Utilities" />
+    <Using Remove="Xunit" />
+    <Using Remove="Xunit.Abstractions" />
+  </ItemGroup>
+</Project>
