@@ -84,7 +84,8 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
             XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
                 .SelectMany(i => i ?? new())
-                .Where(wi => wi != null && workItemsToInclude.Contains(wi.ItemSpec))
+                .Where(wi => wi != null)
+                //.Where(workItemsToInclude.Contains(wi.ItemSpec))
                 .ToArray();
             return;
         }
