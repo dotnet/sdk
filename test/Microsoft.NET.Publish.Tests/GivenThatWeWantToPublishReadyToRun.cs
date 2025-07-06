@@ -104,7 +104,8 @@ namespace Microsoft.NET.Publish.Tests
             TestProjectPublishing_Internal("FrameworkDependent", targetFramework, isSelfContained: false, composite: false, emitNativeSymbols: true, identifier: targetFramework);
         }
 
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
         [InlineData("net5.0")]
         [InlineData(ToolsetInfo.CurrentTargetFramework)]

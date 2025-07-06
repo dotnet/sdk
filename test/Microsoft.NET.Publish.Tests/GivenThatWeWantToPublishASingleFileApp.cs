@@ -696,7 +696,8 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp2.1", true)]
         [InlineData("netcoreapp3.0", false)]
         [InlineData("netcoreapp3.1", false)]
@@ -812,6 +813,12 @@ class C
         [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
+            if (targetFramework == "net6.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "SingleFileTest",
