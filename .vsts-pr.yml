@@ -62,18 +62,17 @@ stages:
   #       os: macOS
   #    helixTargetQueue: osx.13.amd64.open
   ### ARM64 ###
-  - ${{ if eq(parameters.enableArm64Job, true) }}:
-    - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-      parameters:
-        pool:
-          name: Azure Pipelines
-          vmImage: macOS-latest
-          os: macOS
-        helixTargetQueue: osx.13.arm64.open
-        macOSJobParameterSets:
-        - categoryName: TestBuild
-          targetArchitecture: arm64
-          runtimeIdentifier: osx-arm64
+  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
+    parameters:
+      pool:
+        name: Azure Pipelines
+        vmImage: macOS-latest
+        os: macOS
+      helixTargetQueue: osx.13.arm64.open
+      macOSJobParameterSets:
+      - categoryName: TestBuild
+        targetArchitecture: arm64
+        runtimeIdentifier: osx-arm64
 
   ############### DOTNET-FORMAT ###############
   # - template: /eng/dotnet-format/dotnet-format-integration.yml
