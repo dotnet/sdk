@@ -75,17 +75,10 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
             {
                 return;
             }
-			
-            HashSet<string> workItemsToInclude = new()
-            {
-                "dotnet.Tests.dll.15",
-                "dotnet-watch.Tests.dll.3",
-            };
 
             XUnitWorkItems = (await Task.WhenAll(XUnitProjects.Select(PrepareWorkItem)))
                 .SelectMany(i => i ?? new())
                 .Where(wi => wi != null)
-                //.Where(workItemsToInclude.Contains(wi.ItemSpec))
                 .ToArray();
             return;
         }
