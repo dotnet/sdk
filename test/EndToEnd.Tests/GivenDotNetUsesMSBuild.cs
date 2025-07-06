@@ -41,7 +41,8 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void ItCanRunToolsInACSProj()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")

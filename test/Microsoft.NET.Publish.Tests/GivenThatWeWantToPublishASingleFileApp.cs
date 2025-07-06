@@ -415,7 +415,9 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'. 
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
         public void It_generates_a_single_file_including_pdbs(string targetFramework)
@@ -907,7 +909,8 @@ class C
                 .HaveStdOutContaining(Strings.CannotIncludeSymbolsInSingleFile);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_errors_when_enabling_compression_targeting_net5()
         {
             var testProject = new TestProject()

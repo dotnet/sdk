@@ -23,6 +23,13 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_only_runs_readytorun_compiler_when_switch_is_enabled(string targetFramework)
         {
+            if (targetFramework != ToolsetInfo.CurrentTargetFramework &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                return;
+            }
+
             var projectName = "CrossgenTest1";
 
             var testProject = CreateTestProjectForR2RTesting(
@@ -161,7 +168,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContainingIgnoreCase("NETSDK1095");
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //   error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_warns_when_targetting_netcoreapp_2_x_readytorun()
         {
             var testProject = new TestProject()
