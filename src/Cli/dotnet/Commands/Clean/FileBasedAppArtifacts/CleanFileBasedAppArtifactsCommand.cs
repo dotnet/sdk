@@ -38,7 +38,7 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                 }
                 catch (Exception ex)
                 {
-                    Reporter.Error.WriteLine(string.Join(CliCommandStrings.CleanFileBasedAppArtifactsErrorRemovingFolder, folder, ex.Message).Red());
+                    Reporter.Error.WriteLine(string.Format(CliCommandStrings.CleanFileBasedAppArtifactsErrorRemovingFolder, folder, ex.Message).Red());
                     anyErrors = true;
                 }
             }
