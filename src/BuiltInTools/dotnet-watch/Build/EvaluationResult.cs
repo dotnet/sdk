@@ -39,6 +39,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
         IEnumerable<string> buildArguments,
         IReporter reporter,
         EnvironmentOptions environmentOptions,
+        bool restore,
         CancellationToken cancellationToken)
     {
         var buildReporter = new BuildReporter(reporter, environmentOptions);
@@ -68,13 +69,16 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
         var rootNode = projectGraph.GraphRoots.Single();
 
-        using (var loggers = buildReporter.GetLoggers("Restore"))
+        if (restore)
         {
-            if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
+            using (var loggers = buildReporter.GetLoggers("Restore"))
             {
-                reporter.Error($"Failed to restore project '{rootProjectPath}'.");
-                loggers.ReportOutput();
-                return null;
+                if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
+                {
+                    reporter.Error($"Failed to restore project '{rootProjectPath}'.");
+                    loggers.ReportOutput();
+                    return null;
+                }
             }
         }
 

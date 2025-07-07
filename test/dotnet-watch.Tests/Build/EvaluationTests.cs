@@ -21,7 +21,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             .OrderBy(entry => entry.Key)
             .Select(entry => $"{InspectPath(entry.Key, rootDir)}: [{string.Join(", ", entry.Value.ContainingProjectPaths.Select(p => InspectPath(p, rootDir)))}]");
 
-        private static string s_emptyResx = """
+        private static readonly string s_emptyResx = """
             <root>
                 <resheader name="resmimetype">
                     <value>text/microsoft-resx</value>
@@ -38,6 +38,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
             </root>
             """;
 
+        private static readonly string s_emptyProgram = """
+            return 1;
+            """;
+
         [Fact]
         public async Task FindsCustomWatchItems()
         {
@@ -46,7 +50,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 IsExe = true,
                 SourceFiles =
                 {
-                    {"Program.cs", ""},
+                    {"Program.cs", s_emptyProgram},
                     {"app.js", ""},
                     {"gulpfile.js", ""},
                 },
@@ -93,7 +97,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 },
                 SourceFiles =
                 {
-                    {"Program.cs", ""},
+                    {"Program.cs", s_emptyProgram},
                     {"Class1.cs", ""},
                     {"Class2.cs", ""},
                 },
@@ -126,7 +130,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 IsExe = true,
                 SourceFiles =
                 {
-                    {"Program.cs", ""},
+                    {"Program.cs", s_emptyProgram},
                     {"wwwroot/css/app.css", ""},
                     {"wwwroot/js/site.js", ""},
                     {"wwwroot/favicon.ico", ""},
@@ -164,6 +168,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var projectRcl = new TestProject("RCL")
             {
                 ProjectSdk = "Microsoft.NET.Sdk.Razor",
+                PackageReferences =
+                {
+                    new("Microsoft.AspNetCore.Components.Web", ToolsetInfo.GetPackageVersion("Microsoft.AspNetCore.App.Ref")),
+                    new("Microsoft.AspNetCore.Mvc", "2.3.0"),
+                },
                 SourceFiles =
                 {
                     {"Code.cs", ""},
@@ -183,7 +192,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 ReferencedProjects = { projectRcl },
                 SourceFiles =
                 {
-                    {"Program.cs", ""},
+                    {"Program.cs", s_emptyProgram},
                     {"wwwroot/css/app.css", ""},
                     {"wwwroot/js/site.js", ""},
                     {"wwwroot/favicon.ico", ""},
@@ -324,20 +333,28 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 {
                     new("Compile", new() { { "Include", "Lib.fs" } })
                 },
-                SourceFiles = { { "Lib.fs", "" } }
+                SourceFiles =
+                {
+                    { "Lib.fs", "module Lib" }
+                }
             };
 
             var projectCS = new TestProject("CS")
             {
                 ReferencedProjects = { projectFS },
                 TargetExtension = ".csproj",
+                IsExe = true,
+                SourceFiles =
+                {
+                    { "Program.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(projectCS);
 
             await VerifyEvaluation(testAsset,
             [
-                new("CS/CS.cs"),
+                new("CS/Program.cs"),
                 new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                 new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CS.AssemblyInfo.cs", graphOnly: true),
                 new("CS/CS.csproj", targetsOnly: true),
@@ -354,20 +371,32 @@ namespace Microsoft.DotNet.Watch.UnitTests
             var projectVB = new TestProject("VB")
             {
                 TargetExtension = ".vbproj",
-                SourceFiles = { { "Lib.vb", "" } }
+                SourceFiles =
+                {
+                    { "Lib.vb", """
+                        Class C
+                        End Class
+                        """
+                    }
+                }
             };
 
             var projectCS = new TestProject("CS")
             {
                 ReferencedProjects = { projectVB },
                 TargetExtension = ".csproj",
+                IsExe = true,
+                SourceFiles =
+                {
+                    { "Program.cs", s_emptyProgram },
+                },
             };
 
             var testAsset = _testAssets.CreateTestProject(projectCS);
 
             await VerifyEvaluation(testAsset,
             [
-                new("CS/CS.cs"),
+                new("CS/Program.cs"),
                 new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
                 new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CS.AssemblyInfo.cs", graphOnly: true),
                 new("CS/CS.csproj", targetsOnly: true),
@@ -511,7 +540,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 using var watchableApp = new WatchableApp(new DebugTestOutputLogger(output));
                 var arguments = targetFramework != null ? new[] { "-f", targetFramework } : [];
                 watchableApp.Start(testAsset, arguments, relativeProjectDirectory: testAsset.TestProject!.Name);
-                await watchableApp.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
+                await watchableApp.AssertOutputLineStartsWith(MessageDescriptor.WaitingForFileChangeBeforeRestarting, failure: _ => false);
 
                 var normalizedActual = ParseOutput(watchableApp.Process.Output).OrderBy(f => f.relativePath);
                 var normalizedExpected = expectedFiles.Where(f => !f.TargetsOnly).Select(f => (f.Path, f.StaticAssetUrl)).OrderBy(f => f.Path);

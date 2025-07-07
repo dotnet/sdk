@@ -81,17 +81,25 @@ namespace Microsoft.DotNet.Watch
                 try
                 {
                     var rootProjectOptions = _context.RootProjectOptions;
-                    var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
+
+                    var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
+                    BuildOutput.ReportBuildOutput(_context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
+                    if (!buildSucceeded)
+                    {
+                        continue;
+                    }
 
                     // Evaluate the target to find out the set of files to watch.
                     // In case the app fails to start due to build or other error we can wait for these files to change.
-                    evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
+                    // Avoid restore since the build above already restored the root project.
+                    evaluationResult = await EvaluateRootProjectAsync(restore: false, iterationCancellationToken);
 
                     var rootProject = evaluationResult.ProjectGraph.GraphRoots.Single();
 
                     // use normalized MSBuild path so that we can index into the ProjectGraph
                     rootProjectOptions = rootProjectOptions with { ProjectPath = rootProject.ProjectInstance.FullPath };
 
+                    var runtimeProcessLauncherFactory = _runtimeProcessLauncherFactory;
                     var rootProjectCapabilities = rootProject.GetCapabilities();
                     if (rootProjectCapabilities.Contains(AspireServiceFactory.AppHostProjectCapability))
                     {
@@ -105,9 +113,7 @@ namespace Microsoft.DotNet.Watch
                     var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Reporter);
 
-                    var rootProjectNode = evaluationResult.ProjectGraph.GraphRoots.Single();
-
-                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProjectNode, projectLauncher, rootProjectOptions);
+                    runtimeProcessLauncher = runtimeProcessLauncherFactory?.TryCreate(rootProject, projectLauncher, rootProjectOptions);
                     if (runtimeProcessLauncher != null)
                     {
                         var launcherEnvironment = runtimeProcessLauncher.GetEnvironmentVariables();
@@ -115,13 +121,6 @@ namespace Microsoft.DotNet.Watch
                         {
                             LaunchEnvironmentVariables = [.. rootProjectOptions.LaunchEnvironmentVariables, .. launcherEnvironment]
                         };
-                    }
-
-                    var (buildSucceeded, buildOutput, _) = await BuildProjectAsync(rootProjectOptions.ProjectPath, rootProjectOptions.BuildArguments, iterationCancellationToken);
-                    BuildOutput.ReportBuildOutput(_context.Reporter, buildOutput, buildSucceeded, projectDisplay: rootProjectOptions.ProjectPath);
-                    if (!buildSucceeded)
-                    {
-                        continue;
                     }
 
                     rootRunningProject = await projectLauncher.TryLaunchProcessAsync(
@@ -437,7 +436,7 @@ namespace Microsoft.DotNet.Watch
                                 _context.Reporter.Report(fileAdded ? MessageDescriptor.FileAdditionTriggeredReEvaluation : MessageDescriptor.ProjectChangeTriggeredReEvaluation);
 
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
-                                evaluationResult = await EvaluateRootProjectAsync(iterationCancellationToken);
+                                evaluationResult = await EvaluateRootProjectAsync(restore: true, iterationCancellationToken);
 
                                 // additional directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
@@ -750,7 +749,7 @@ namespace Microsoft.DotNet.Watch
                 };
         }
 
-        private async ValueTask<EvaluationResult> EvaluateRootProjectAsync(CancellationToken cancellationToken)
+        private async ValueTask<EvaluationResult> EvaluateRootProjectAsync(bool restore, CancellationToken cancellationToken)
         {
             while (true)
             {
@@ -761,6 +760,7 @@ namespace Microsoft.DotNet.Watch
                     _context.RootProjectOptions.BuildArguments,
                     _context.Reporter,
                     _context.EnvironmentOptions,
+                    restore,
                     cancellationToken);
 
                 if (result != null)
