@@ -94,8 +94,6 @@ internal abstract class RunApiInput
                 CustomArtifactsPath = ArtifactsPath,
             };
 
-            buildCommand.PrepareProjectInstance();
-
             var runCommand = new RunCommand(
                 noBuild: false,
                 projectFileFullPath: null,

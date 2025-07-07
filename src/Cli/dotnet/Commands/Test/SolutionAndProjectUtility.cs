@@ -245,7 +245,7 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (!project.Build(s_computeRunArgumentsTarget, loggers: loggers))
+                if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
                 {
                     Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
                     return new RunProperties(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
