@@ -20,11 +20,17 @@ internal sealed class ProjectConvertCommandParser
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly Option<bool> KeepSourceOption = new("--keep-source")
+    public static readonly Option<SourceAction?> SourceOption = new("--source")
     {
         Description = CliCommandStrings.CmdOptionKeepSourceDescription,
-        Arity = ArgumentArity.ZeroOrOne,
+        Arity = ArgumentArity.ExactlyOne,
     };
+
+    public enum SourceAction
+    {
+        copy,
+        move,
+    }
 
     public static Command GetCommand()
     {
@@ -32,7 +38,7 @@ internal sealed class ProjectConvertCommandParser
         {
             FileArgument,
             SharedOptions.OutputOption,
-            KeepSourceOption,
+            SourceOption,
             ForceOption,
             CommonOptions.InteractiveOption(),
         };

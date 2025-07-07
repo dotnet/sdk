@@ -26,7 +26,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var csFile = Path.Combine(dotnetProjectConvert, "Program.cs");
         File.WriteAllText(csFile, """Console.WriteLine("Test");""");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=move")
             .WithWorkingDirectory(dotnetProjectConvert)
             .Execute()
             .Should().Pass();
@@ -90,7 +90,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(Path.Join(testInstance.Path, "MyApp"));
         File.WriteAllText(Path.Join(testInstance.Path, "MyApp.cs"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", "MyApp1", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "MyApp.cs", "-o", "MyApp1", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -133,7 +133,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Program1.cs"), "Console.WriteLine(1);");
         File.WriteAllText(Path.Join(testInstance.Path, "Program2.cs"), "Console.WriteLine(2);");
 
-        new DotnetCommand(Log, "project", "convert", "Program1.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program1.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -201,7 +201,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.CS"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "Program.CS", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.CS", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -223,7 +223,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var testInstance = _testAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), content);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -248,7 +248,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(appDirectory);
         File.WriteAllText(Path.Join(appDirectory, "Program.cs"), "Console.WriteLine();");
 
-        new DotnetCommand(Log, "project", "convert", "app/Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "app/Program.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -278,7 +278,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         Directory.CreateDirectory(Path.Join(testInstance.Path, "subdir"));
         File.WriteAllText(Path.Join(testInstance.Path, "subdir", "second.json"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -308,7 +308,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -334,7 +334,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         File.WriteAllText(Path.Join(testInstance.Path, "Resources.resx"), "");
         File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), "");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -371,7 +371,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             </Project>
             """);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -413,7 +413,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();
@@ -464,7 +464,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(subdir)
             .Execute()
             .Should().Pass();
@@ -514,7 +514,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             .And.HaveStdOut(expectedOutput);
 
         // Convert.
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=copy")
             .WithWorkingDirectory(subdir)
             .Execute()
             .Should().Pass();
@@ -563,7 +563,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:invalid");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
@@ -584,7 +584,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
         var filePath = Path.Join(testInstance.Path, "Program.cs");
         File.WriteAllText(filePath, "#:sdk Microsoft.ThisSdkDoesNotExist");
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Fail()
@@ -607,7 +607,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
             Console.WriteLine();
             """);
 
-        new DotnetCommand(Log, "project", "convert", "Program.cs", "--keep-source=false")
+        new DotnetCommand(Log, "project", "convert", "Program.cs", "--source=move")
             .WithWorkingDirectory(testInstance.Path)
             .Execute()
             .Should().Pass();

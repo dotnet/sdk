@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands;
 
 namespace Microsoft.DotNet.Cli;
@@ -58,11 +59,21 @@ public static class InteractiveConsole
         }
     }
 
-    public static string? Ask(string question, ParseResult parseResult, Func<string?, string?> validate)
+    public delegate bool Validator<TResult>(
+        string? answer,
+        out TResult? result,
+        [NotNullWhen(returnValue: false)] out string? error);
+
+    public static bool Ask<TResult>(
+        string question,
+        ParseResult parseResult,
+        Validator<TResult> validate,
+        out TResult? result)
     {
         if (!parseResult.GetValue(CommonOptions.InteractiveOption()))
         {
-            return null;
+            result = default;
+            return false;
         }
 
         while (true)
@@ -72,13 +83,13 @@ public static class InteractiveConsole
 
             string? answer = Console.ReadLine();
             answer = string.IsNullOrWhiteSpace(answer) ? null : answer.Trim();
-            if (validate(answer) is { } error)
+            if (!validate(answer, out result, out var error))
             {
                 Console.WriteLine(error);
             }
             else
             {
-                return answer;
+                return true;
             }
         }
     }

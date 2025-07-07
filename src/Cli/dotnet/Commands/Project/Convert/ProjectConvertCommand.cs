@@ -2,9 +2,9 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Commands.Run;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -134,25 +134,79 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         string defaultValue = Path.ChangeExtension(file, null);
         string defaultValueRelative = Path.GetRelativePath(relativeTo: Environment.CurrentDirectory, defaultValue);
         string targetDirectory = _outputDirectory
-            ?? InteractiveConsole.Ask(
-                string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
-                _parseResult,
-                (path) => Directory.Exists(path) ? string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path)) : null)
+            ?? TryAskForOutputDirectory(defaultValueRelative)
             ?? defaultValue;
         if (Directory.Exists(targetDirectory))
         {
             throw new GracefulException(CliCommandStrings.DirectoryAlreadyExists, targetDirectory);
         }
 
-        return Path.GetFullPath(targetDirectory);
+        return targetDirectory;
+    }
+
+    private string? TryAskForOutputDirectory(string defaultValueRelative)
+    {
+        return InteractiveConsole.Ask<string?>(
+            string.Format(CliCommandStrings.ProjectConvertAskForOutputDirectory, defaultValueRelative),
+            _parseResult,
+            (path, out result, [NotNullWhen(returnValue: false)] out error) =>
+            {
+                if (Directory.Exists(path))
+                {
+                    result = null;
+                    error = string.Format(CliCommandStrings.DirectoryAlreadyExists, Path.GetFullPath(path));
+                    return false;
+                }
+
+                result = path is null ? null : Path.GetFullPath(path);
+                error = null;
+                return true;
+            },
+            out var result)
+            ? result
+            : null;
     }
 
     private bool ShouldKeepSourceFiles()
     {
-        bool? keepSourceFiles =
-            _parseResult.HasOption(ProjectConvertCommandParser.KeepSourceOption)
-            ? _parseResult.GetValue(ProjectConvertCommandParser.KeepSourceOption)
-            : InteractiveConsole.Confirm(CliCommandStrings.ProjectConvertConfirmKeepSourceFiles, _parseResult, acceptEscapeForFalse: false);
-        return keepSourceFiles ?? throw new GracefulException(CliCommandStrings.ProjectConvertNeedsConfirmation);
+        if (_parseResult.GetValue(ProjectConvertCommandParser.SourceOption) is { } source)
+        {
+            if (source is ProjectConvertCommandParser.SourceAction.copy)
+            {
+                return true;
+            }
+
+            if (source is ProjectConvertCommandParser.SourceAction.move)
+            {
+                return false;
+            }
+        }
+
+        return InteractiveConsole.Ask<bool>(
+            string.Format(CliCommandStrings.ProjectConvertAskForSourceFilesAction, CliCommandStrings.ProjectConvertCopyAction, CliCommandStrings.ProjectConvertMoveAction),
+            _parseResult,
+            (answer, out result, [NotNullWhen(returnValue: false)] out error) =>
+            {
+                if (answer is null || string.Equals(answer, CliCommandStrings.ProjectConvertCopyAction, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = true;
+                    error = null;
+                    return true;
+                }
+
+                if (string.Equals(answer, CliCommandStrings.ProjectConvertMoveAction, StringComparison.OrdinalIgnoreCase))
+                {
+                    result = false;
+                    error = null;
+                    return true;
+                }
+
+                result = default;
+                error = string.Format(CliCommandStrings.ProjectConvertInvalidSourceAction, CliCommandStrings.ProjectConvertCopyAction, CliCommandStrings.ProjectConvertMoveAction);
+                return false;
+            },
+            out var result)
+            ? result
+            : throw new GracefulException(CliCommandStrings.ProjectConvertNeedsConfirmation);
     }
 }
