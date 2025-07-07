@@ -1,45 +1,84 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-// UrlMonTypeLib.IInternetSecurityManager
+#if NET9_0_OR_GREATER
+using GeneratedWhenPossibleComInterfaceAttribute = System.Runtime.InteropServices.Marshalling.GeneratedComInterfaceAttribute;
+#else
+using GeneratedWhenPossibleComInterfaceAttribute = System.Runtime.InteropServices.ComImportAttribute;
+#endif
+
 using System.Runtime.CompilerServices;
+
+#if NET
+using System.Runtime.InteropServices.Marshalling;
+#endif
+
+#if NET9_0_OR_GREATER
+[assembly: System.Runtime.CompilerServices.DisableRuntimeMarshalling]
+#endif
 
 namespace Microsoft.DotNet.Cli.Utils;
 
+#if NET
+[GeneratedComInterface(StringMarshalling = System.Runtime.InteropServices.StringMarshalling.Utf16)]
+#else
 [ComImport]
-[Guid("79EAC9EE-BAF9-11CE-8C82-00AA004BA90B")]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
 [ComConversionLoss]
-internal interface IInternetSecurityManager
+#endif
+[Guid("79EAC9EE-BAF9-11CE-8C82-00AA004BA90B")]
+// UrlMonTypeLib.IInternetSecurityManager
+internal partial interface IInternetSecurityManager
 {
-    void SetSecuritySite([In][MarshalAs(UnmanagedType.Interface)] IInternetSecurityMgrSite pSite);
+    void SetSecuritySite([MarshalAs(UnmanagedType.Interface)] in IInternetSecurityMgrSite pSite);
 
     void GetSecuritySite([MarshalAs(UnmanagedType.Interface)] out IInternetSecurityMgrSite ppSite);
 
-    void MapUrlToZone([In][MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, out int pdwZone, [In] int dwFlags);
+    void MapUrlToZone(in string pwszUrl, out int pdwZone, in int dwFlags);
 
-    void GetSecurityId([In][MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, out byte pbSecurityId, [In][Out] ref int pcbSecurityId, [In][ComAliasName("UrlMonTypeLib.ULONG_PTR")] int dwReserved);
+    void GetSecurityId(in string pwszUrl, out byte pbSecurityId, ref int pcbSecurityId, [ComAliasName("UrlMonTypeLib.ULONG_PTR")] in int dwReserved);
 
-    void ProcessUrlAction([In][MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, [In] int dwAction, out byte pPolicy, [In] int cbPolicy, [In] ref byte pContext, [In] int cbContext, [In] int dwFlags, [In] int dwReserved);
+    void ProcessUrlAction(in string pwszUrl, in int dwAction, out byte pPolicy, in int cbPolicy, ref byte pContext, in int cbContext, in int dwFlags, in int dwReserved);
 
-    void QueryCustomPolicy([In][MarshalAs(UnmanagedType.LPWStr)] string pwszUrl, [In][ComAliasName("UrlMonTypeLib.GUID")] ref GUID guidKey, [Out] IntPtr ppPolicy, out int pcbPolicy, [In] ref byte pContext, [In] int cbContext, [In] int dwReserved);
+    void QueryCustomPolicy(in string pwszUrl, ref Guid guidKey, out IntPtr ppPolicy, out int pcbPolicy, ref byte pContext, in int cbContext, in int dwReserved);
 
-    void SetZoneMapping([In] int dwZone, [In][MarshalAs(UnmanagedType.LPWStr)] string lpszPattern, [In] int dwFlags);
+    void SetZoneMapping(in int dwZone, in string lpszPattern, in int dwFlags);
 
-    void GetZoneMappings([In] int dwZone, [MarshalAs(UnmanagedType.Interface)] out IEnumString ppenumString, [In] int dwFlags);
+    void GetZoneMappings(in int dwZone, [MarshalAs(UnmanagedType.Interface)] out IEnumString ppenumString, in int dwFlags);
 }
 
+#if NET
+[GeneratedComClass]
+internal partial class InternetSecurityManager : IInternetSecurityManager
+{
+    public void SetSecuritySite([MarshalAs(UnmanagedType.Interface)] in IInternetSecurityMgrSite pSite) => throw new NotImplementedException();
+    public void GetSecuritySite([MarshalAs(UnmanagedType.Interface)] out IInternetSecurityMgrSite ppSite) => throw new NotImplementedException();
+    public void MapUrlToZone(in string pwszUrl, out int pdwZone, in int dwFlags) => throw new NotImplementedException();
+    public void GetSecurityId(in string pwszUrl, out byte pbSecurityId, ref int pcbSecurityId, in int dwReserved) => throw new NotImplementedException();
+    public void ProcessUrlAction(in string pwszUrl, in int dwAction, out byte pPolicy, in int cbPolicy, ref byte pContext, in int cbContext, in int dwFlags, in int dwReserved) => throw new NotImplementedException();
+    public void QueryCustomPolicy(in string pwszUrl, ref Guid guidKey, out IntPtr ppPolicy, out int pcbPolicy, ref byte pContext, in int cbContext, in int dwReserved) => throw new NotImplementedException();
+    public void SetZoneMapping(in int dwZone, in string lpszPattern, in int dwFlags) => throw new NotImplementedException();
+    public void GetZoneMappings(in int dwZone, [MarshalAs(UnmanagedType.Interface)] out IEnumString ppenumString, in int dwFlags) => throw new NotImplementedException();
+}
+#endif
+
 // UrlMonTypeLib.IInternetSecurityMgrSite
+
+#if NET
+[GeneratedComInterface]
+#else
 [ComImport]
 [ComConversionLoss]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
 [Guid("79EAC9ED-BAF9-11CE-8C82-00AA004BA90B")]
-interface IInternetSecurityMgrSite
+partial interface IInternetSecurityMgrSite
 {
-    void GetWindow([Out][ComAliasName("UrlMonTypeLib.wireHWND")] IntPtr phwnd);
+    void GetWindow([ComAliasName("UrlMonTypeLib.wireHWND")] out IntPtr phwnd);
 
-    void EnableModeless([In] int fEnable);
+    void EnableModeless(in int fEnable);
 }
+
 
 [StructLayout(LayoutKind.Sequential, Pack = 4)]
 struct GUID
@@ -54,16 +93,20 @@ struct GUID
     public byte[] Data4;
 }
 
+#if NET
+[GeneratedComInterface(StringMarshalling = System.Runtime.InteropServices.StringMarshalling.Utf16)]
+#else
 [ComImport]
 [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+#endif
 [Guid("00000101-0000-0000-C000-000000000046")]
-interface IEnumString
+partial interface IEnumString
 {
     [MethodImpl(MethodImplOptions.InternalCall)]
-    void RemoteNext([In] int celt, [MarshalAs(UnmanagedType.LPWStr)] out string rgelt, out int pceltFetched);
+    void RemoteNext(in int celt, out string rgelt, out int pceltFetched);
 
     [MethodImpl(MethodImplOptions.InternalCall)]
-    void Skip([In] int celt);
+    void Skip(in int celt);
 
     [MethodImpl(MethodImplOptions.InternalCall)]
     void Reset();

@@ -40,11 +40,15 @@ internal class DangerousFileDetector : IDangerousFileDetector
                 // First check the zone, if they are not an untrusted zone, they aren't dangerous
                 if (internetSecurityManager == null)
                 {
+#if NET
+                    internetSecurityManager = new InternetSecurityManager();
+#else
                     Type? iismType = Type.GetTypeFromCLSID(new Guid(CLSID_InternetSecurityManager));
                     if (iismType is not null)
                     {
                         internetSecurityManager = Activator.CreateInstance(iismType) as IInternetSecurityManager;
                     }
+#endif
                 }
                 int zone = 0;
                 internetSecurityManager?.MapUrlToZone(Path.GetFullPath(filename), out zone, 0);

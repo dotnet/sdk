@@ -2,12 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Win32.SafeHandles;
+#if NET
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
+#endif
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-internal static class NativeMethods
+public static partial class NativeMethods
 {
-    internal static class Windows
+    public unsafe static partial class Windows
     {
         internal enum JobObjectInfoClass : uint
         {
@@ -68,29 +72,91 @@ internal static class NativeMethods
             public UIntPtr UniqueProcessId;
             public UIntPtr InheritedFromUniqueProcessId;
         }
-
+#if NET
+        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        internal static extern SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
+#endif
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+        SafeWaitHandle CreateJobObjectW(IntPtr lpJobAttributes, string? lpName);
 
+#if NET
+        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+#else
         [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern bool SetInformationJobObject(IntPtr hJob, JobObjectInfoClass jobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength);
+#endif
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+        bool SetInformationJobObject(IntPtr hJob, JobObjectInfoClass jobObjectInformationClass, IntPtr lpJobObjectInformation, uint cbJobObjectInformationLength);
 
-        [DllImport("kernel32.dll", SetLastError = true)]
-        internal static extern bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
+#if NET
+        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16, SetLastError = true)]
+#else
+        [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+#endif
+        [return: MarshalAs(UnmanagedType.Bool)]
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
 
+        bool AssignProcessToJobObject(IntPtr hJob, IntPtr hProcess);
+
+#if NET
+        [LibraryImport("kernel32.dll", StringMarshalling = StringMarshalling.Utf16)]
+#else
         [DllImport("kernel32.dll", CharSet = CharSet.Auto)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        internal static extern IntPtr GetCommandLine();
+#endif
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+        IntPtr GetCommandLine();
 
+#if NET
+        [LibraryImport("ntdll.dll", SetLastError = true)]
+#else
         [DllImport("ntdll.dll", SetLastError = true)]
         [DefaultDllImportSearchPaths(DllImportSearchPath.System32)]
-        internal static extern unsafe uint NtQueryInformationProcess(SafeProcessHandle ProcessHandle, int ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength);
+#endif
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+        uint NtQueryInformationProcess(SafeProcessHandle ProcessHandle, int ProcessInformationClass, void* ProcessInformation, uint ProcessInformationLength, out uint ReturnLength);
     }
 
-    internal static class Posix
+    internal static partial class Posix
     {
+#if NET
+        [LibraryImport("libc", SetLastError = true)]
+#else
         [DllImport("libc", SetLastError = true)]
-        internal static extern int kill(int pid, int sig);
+#endif
+        internal static
+#if NET
+        partial
+#else
+        extern
+#endif
+        int kill(int pid, int sig);
 
         internal const int SIGINT = 2;
         internal const int SIGTERM = 15;

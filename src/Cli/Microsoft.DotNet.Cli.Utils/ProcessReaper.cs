@@ -162,7 +162,7 @@ internal class ProcessReaper : IDisposable
             }
         };
 
-        var length = Marshal.SizeOf(typeof(NativeMethods.Windows.JobObjectExtendedLimitInformation));
+        var length = Marshal.SizeOf<NativeMethods.Windows.JobObjectExtendedLimitInformation>();
         var informationPtr = Marshal.AllocHGlobal(length);
 
         try
