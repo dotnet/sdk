@@ -14,7 +14,9 @@ namespace Microsoft.NET.Publish.Tests
         // Libuv version used by LibraryWithRid/LibraryWithRids
         private const string LibuvVersion = "1.10.0";
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        //  Unhandled exception. System.DllNotFoundException: Unable to load shared library 'libuv' or one of its dependencies.
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_publishes_a_self_contained_runnable_output()
         {
             PublishAppWithLibraryAndRid(true,
@@ -52,7 +54,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining($"{LibuvVersion} '{runtimeIdentifier}' {LibuvVersion} '{runtimeIdentifier}' Hello World");
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void It_publishes_a_framework_dependent_RID_specific_runnable_output()
         {
             PublishAppWithLibraryAndRid(false,

@@ -48,6 +48,13 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [CoreMSBuildOnlyFact]
         public void Publish50Hosted_Works()
         {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                //   tried: '/private/tmp/helix/working/A452091E/p/d/shared/Microsoft.NETCore.App/7.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
+                return;
+            }
+
             // Arrange
             var testAsset = "BlazorWasmHosted50";
             var targetFramework = "net5.0";
