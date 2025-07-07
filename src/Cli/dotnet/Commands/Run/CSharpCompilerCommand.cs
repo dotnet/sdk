@@ -4,7 +4,6 @@
 using System.Buffers;
 using System.Collections.Immutable;
 using System.Diagnostics;
-using System.Reflection;
 using System.Text.Json;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CommandLine;
@@ -23,6 +22,9 @@ internal sealed partial class CSharpCompilerCommand
 {
     private static readonly SearchValues<char> s_additionalShouldSurroundWithQuotes = SearchValues.Create('=', ',');
 
+    /// <summary>
+    /// Options which denote paths and which might appear in the simple app compilation that we optimize for.
+    /// </summary>
     private static readonly ImmutableArray<string> s_pathOptions =
     [
         "reference:",
@@ -37,7 +39,7 @@ internal sealed partial class CSharpCompilerCommand
         "link:",
     ];
 
-    private static string SdkPath => field ??= Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
+    private static string SdkPath => field ??= PathUtility.EnsureNoTrailingDirectorySeparator(AppContext.BaseDirectory);
     private static string DotNetRootPath => field ??= Path.GetDirectoryName(Path.GetDirectoryName(SdkPath)!)!;
     private static string ClientDirectory => field ??= Path.Combine(SdkPath, "Roslyn", "bincore");
     private static string NuGetCachePath => field ??= SettingsUtility.GetGlobalPackagesFolder(Settings.LoadDefaultSettings(null));
@@ -108,12 +110,12 @@ internal sealed partial class CSharpCompilerCommand
                     return completed.ReturnCode;
 
                 case IncorrectHashBuildResponse:
-                    Reporter.Output.WriteLine("Warning: Compiler server reports a different hash version than the SDK.".Yellow());
+                    Reporter.Error.WriteLine("Warning: Compiler server reports a different hash version than the SDK.".Yellow());
                     fallbackToNormalBuild = true;
                     return 1;
 
                 case null:
-                    Reporter.Error.WriteLine("Warning: Could not launch the compiler server.".Yellow());
+                    Reporter.Output.WriteLine("Warning: Could not launch the compiler server.".Yellow());
                     fallbackToNormalBuild = true;
                     return 1;
 
