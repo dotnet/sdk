@@ -1178,7 +1178,7 @@ _testhost_project_convert() {
     prev="${COMP_WORDS[COMP_CWORD-1]}" 
     COMPREPLY=()
     
-    opts="--output --keep-source --force --interactive --help" 
+    opts="--output --source --force --interactive --help" 
     
     if [[ $COMP_CWORD == "$1" ]]; then
         COMPREPLY=( $(compgen -W "$opts" -- "$cur") )
@@ -1186,8 +1186,8 @@ _testhost_project_convert() {
     fi
     
     case $prev in
-        --keep-source)
-            COMPREPLY=( $(compgen -W "False True" -- "$cur") )
+        --source)
+            COMPREPLY=( $(compgen -W "copy move" -- "$cur") )
             return
         ;;
     esac

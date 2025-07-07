@@ -675,7 +675,7 @@ _testhost() {
                                         _arguments "${_arguments_options[@]}" : \
                                             '--output=[Location to place the generated output.]: :_files' \
                                             '-o=[Location to place the generated output.]: :_files' \
-                                            '--keep-source=[Whether to keep source files intact (otherwise, they are deleted after conversion).]: :((False\:"False" True\:"True" ))' \
+                                            '--source=[Whether to keep source files intact (copy) or delete them after conversion (move).]: :((copy\:"copy" move\:"move" ))' \
                                             '--force[Force conversion even if there are malformed directives.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
                                             '--help[Show command line help.]' \
