@@ -19,6 +19,15 @@ internal sealed class CleanFileBasedAppArtifactsCommandParser
         DefaultValueFactory = _ => 30,
     };
 
+    /// <summary>
+    /// Specified internally when the command is started automatically in background by <c>dotnet run</c>.
+    /// Causes <see cref="RunFileArtifactsMetadata.LastAutomaticCleanupUtc"/> to be updated.
+    /// </summary>
+    public static readonly Option<bool> AutomaticOption = new("--automatic")
+    {
+        Hidden = true,
+    };
+
     public static Command GetCommand()
     {
         Command command = new("clean-file-based-app-artifacts", CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
@@ -28,6 +37,7 @@ internal sealed class CleanFileBasedAppArtifactsCommandParser
             {
                 DryRunOption,
                 DaysOption,
+                AutomaticOption,
             },
         };
 

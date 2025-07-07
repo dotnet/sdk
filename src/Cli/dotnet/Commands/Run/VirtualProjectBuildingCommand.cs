@@ -21,6 +21,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -131,6 +132,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
     /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
+    /// Also skips automatic cleanup.
     /// </summary>
     public bool NoBuildMarkers { get; init; }
 
@@ -176,6 +178,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             MarkBuildStart();
+        }
+
+        if (!NoBuildMarkers)
+        {
+            CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
 
         Dictionary<string, string?> savedEnvironmentVariables = [];
@@ -527,7 +534,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
         string directoryName = $"{fileName}-{hash}";
 
-        return GetTempSubdirectory(directoryName);
+        return GetTempSubpath(directoryName);
     }
 
     /// <summary>
@@ -544,16 +551,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     /// <summary>
-    /// Obtains a specific temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}/</c>.
+    /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
     /// </summary>
-    public static string GetTempSubdirectory(string name)
+    public static string GetTempSubpath(string name)
     {
         return Path.Join(GetTempSubdirectory(), name);
     }
 
     /// <summary>
     /// Creates a temporary subdirectory for file-based apps.
-    /// Use <see cref="GetTempSubdirectory"/> to obtain the path.
+    /// Use <see cref="GetTempSubpath"/> to obtain the path.
     /// </summary>
     public static void CreateTempSubdirectory(string path)
     {
@@ -1331,4 +1338,5 @@ internal sealed class RunFileBuildCacheEntry
 }
 
 [JsonSerializable(typeof(RunFileBuildCacheEntry))]
+[JsonSerializable(typeof(RunFileArtifactsMetadata))]
 internal partial class RunFileJsonSerializerContext : JsonSerializerContext;
