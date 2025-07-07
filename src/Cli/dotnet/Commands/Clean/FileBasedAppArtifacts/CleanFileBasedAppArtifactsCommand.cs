@@ -142,6 +142,11 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
 
     private static bool ShouldStartAutomaticCleanup()
     {
+        if (Env.GetEnvironmentVariableAsBool("DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP", defaultValue: false))
+        {
+            return false;
+        }
+
         FileInfo? metadataFile = null;
         try
         {
