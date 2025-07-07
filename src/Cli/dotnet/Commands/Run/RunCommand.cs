@@ -140,7 +140,9 @@ public class RunCommand
             if (EntryPointFileFullPath is not null)
             {
                 Debug.Assert(!ReadCodeFromStdin);
-                projectFactory = CreateVirtualCommand().CreateProjectInstance;
+                var command = CreateVirtualCommand();
+                command.MarkArtifactsFolderUsed();
+                projectFactory = command.CreateProjectInstance;
             }
         }
 

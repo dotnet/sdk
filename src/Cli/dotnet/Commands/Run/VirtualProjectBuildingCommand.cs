@@ -174,6 +174,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
 
+                MarkArtifactsFolderUsed();
                 return 0;
             }
 
@@ -454,6 +455,28 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+    /// <summary>
+    /// Touching the artifacts folder ensures it's considered as recently used and not cleaned up by <see cref="CleanFileBasedAppArtifactsCommand"/>.
+    /// </summary>
+    public void MarkArtifactsFolderUsed()
+    {
+        if (NoBuildMarkers)
+        {
+            return;
+        }
+
+        string directory = GetArtifactsPath();
+
+        try
+        {
+            Directory.SetLastWriteTimeUtc(directory, DateTime.UtcNow);
+        }
+        catch (Exception ex)
+        {
+            Reporter.Verbose.WriteLine($"Cannot touch folder '{directory}': {ex}");
+        }
+    }
+
     private void MarkBuildStart()
     {
         if (NoBuildMarkers)
@@ -464,6 +487,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         string directory = GetArtifactsPath();
 
         CreateTempSubdirectory(directory);
+
+        MarkArtifactsFolderUsed();
 
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
