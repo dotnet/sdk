@@ -531,16 +531,24 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     /// <summary>
-    /// Obtains a temporary subdirectory for file-based apps.
+    /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
-    public static string GetTempSubdirectory(string name)
+    public static string GetTempSubdirectory()
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        return Path.Join(directory, "dotnet", "runfile", name);
+        return Path.Join(directory, "dotnet", "runfile");
+    }
+
+    /// <summary>
+    /// Obtains a specific temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}/</c>.
+    /// </summary>
+    public static string GetTempSubdirectory(string name)
+    {
+        return Path.Join(GetTempSubdirectory(), name);
     }
 
     /// <summary>

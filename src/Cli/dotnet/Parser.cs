@@ -10,6 +10,7 @@ using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Dnx;
 using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
@@ -67,6 +68,7 @@ public static class Parser
         BuildCommandParser.GetCommand(),
         BuildServerCommandParser.GetCommand(),
         CleanCommandParser.GetCommand(),
+        CleanFileBasedAppArtifactsCommandParser.GetCommand(),
         DnxCommandParser.GetCommand(),
         FormatCommandParser.GetCommand(),
         CompleteCommandParser.GetCommand(),
