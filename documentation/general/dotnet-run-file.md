@@ -184,9 +184,12 @@ The subdirectory is created by the SDK CLI with permissions restricting access t
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
 Apart from keeping the source directory clean, such artifact isolation also avoids clashes of build outputs that are not project-scoped, like `project.assets.json`, in the case of multiple entry-point files.
 
-Artifacts are cleaned periodically by a background task that is started by `dotnet run` and
-removes current user's `dotnet run` build outputs that haven't been used in some time.
+Artifacts are cleaned periodically (every 2 days) by a background task that is started by `dotnet run` and
+removes current user's `dotnet run` build outputs that haven't been used in 30 days.
 They are not cleaned immediately because they can be re-used on subsequent runs for better performance.
+The automatic cleanup can be disabled by environment variable `DOTNET_CLI_DISABLE_FILE_BASED_APP_ARTIFACTS_AUTOMATIC_CLEANUP=true`,
+but other parameters of the automatic cleanup are currently not configurable.
+The same cleanup can be performed manually via command `dotnet clean-file-based-app-artifacts`.
 
 ## Directives for project metadata
 
