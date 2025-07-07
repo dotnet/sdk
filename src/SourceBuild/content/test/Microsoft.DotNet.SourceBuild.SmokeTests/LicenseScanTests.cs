@@ -67,6 +67,7 @@ public class LicenseScanTests : TestBase
         "cc-by-sa-4.0", // https://creativecommons.org/licenses/by-sa/4.0/legalcode
         "cc-pd", // https://creativecommons.org/publicdomain/mark/1.0/
         "cc-sa-1.0", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/cc-sa-1.0.LICENSE
+        "cpl-1.0", // https://opensource.org/license/cpl1-0-txt
         "epl-1.0", // https://opensource.org/license/epl-1-0/
         "generic-cla", // https://github.com/nexB/scancode-toolkit/blob/develop/src/licensedcode/data/licenses/generic-cla.LICENSE
         "gpl-1.0-plus", // https://opensource.org/license/gpl-1-0/
