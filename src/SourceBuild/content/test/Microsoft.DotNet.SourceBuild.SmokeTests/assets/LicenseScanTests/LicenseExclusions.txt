@@ -182,8 +182,8 @@ src/runtime/src/libraries/System.Text.Json/roadmap/images/higher-level-component
 
 # False positive
 src/sdk/THIRD-PARTY-NOTICES.TXT|unknown-license-reference
-src/Installer/redist-installer/packaging/deb/dotnet-debian_config.json|commercial-license
-src/Installer/redist-installer/packaging/rpm/dotnet-config.json|commercial-license
+src/sdk/src/Installer/redist-installer/packaging/deb/dotnet-debian_config.json|commercial-license
+src/sdk/src/Installer/redist-installer/packaging/rpm/dotnet-config.json|commercial-license
 src/sdk/src/Installer/redist-installer/packaging/rpm/templates/copyright|unknown-license-reference
 
 # Configuration, doesn't apply to source directly
@@ -195,6 +195,7 @@ src/sdk/src/VirtualMonoRepo/THIRD-PARTY-NOTICES.template.txt
 
 # False positive
 src/source-build-externals/src/application-insights/NETCORE/ThirdPartyNotices.txt|unknown-license-reference
+src/source-build-externals/src/azure-activedirectory-identitymodel-extensions-for-dotnet/src/Microsoft.IdentityModel.Validators/AadIssuerValidator/AadIssuerValidatorConstants.cs|cpl-1.0
 src/source-build-externals/src/humanizer/NuSpecs/*.nuspec*
 
 # Configuration, doesn't apply to source directly
