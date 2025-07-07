@@ -126,15 +126,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public MSBuildArgs MSBuildArgs { get; }
     public string? CustomArtifactsPath { get; init; }
     public bool NoRestore { get; init; }
+
+    /// <summary>
+    /// If <see langword="true"/>, build markers are not checked and hence MSBuild is always run.
+    /// This property does not control whether the build markers are written, use <see cref="NoWriteBuildMarkers"/> for that.
+    /// </summary>
     public bool NoCache { get; init; }
+
     public bool NoBuild { get; init; }
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
     /// (like <see cref="BuildStartCacheFileName"/> and <see cref="BuildSuccessCacheFileName"/>).
     /// Also skips automatic cleanup.
+    /// This property does not control whether the markers are checked, use <see cref="NoCache"/> for that.
     /// </summary>
-    public bool NoBuildMarkers { get; init; }
+    public bool NoWriteBuildMarkers { get; init; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -181,7 +188,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             MarkBuildStart();
         }
 
-        if (!NoBuildMarkers)
+        if (!NoWriteBuildMarkers)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
@@ -460,7 +467,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public void MarkArtifactsFolderUsed()
     {
-        if (NoBuildMarkers)
+        if (NoWriteBuildMarkers)
         {
             return;
         }
@@ -479,7 +486,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private void MarkBuildStart()
     {
-        if (NoBuildMarkers)
+        if (NoWriteBuildMarkers)
         {
             return;
         }
@@ -495,7 +502,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private void MarkBuildSuccess(RunFileBuildCacheEntry cacheEntry)
     {
-        if (NoBuildMarkers)
+        if (NoWriteBuildMarkers)
         {
             return;
         }
