@@ -30,7 +30,7 @@ internal abstract partial class HotReloadAppModel(ProjectGraphNode? agentInjecti
             _ => "net10.0",
         };
 
-        path = Path.Combine(AppContext.BaseDirectory, "hotreload", hookTargetFramework, "Microsoft.Extensions.DotNetDeltaApplier.dll");
+        path = Path.Combine(Path.GetDirectoryName(typeof(HotReloadAppModel).Assembly.Location)!, "hotreload", hookTargetFramework, "Microsoft.Extensions.DotNetDeltaApplier.dll");
         return true;
     }
 
