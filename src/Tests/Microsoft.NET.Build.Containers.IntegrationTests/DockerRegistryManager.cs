@@ -26,18 +26,6 @@ public class DockerRegistryManager
     // TODO: some logic to pivot between this and Docker Hub
     private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
 
-    internal class SameArchManifestPicker : IManifestPicker
-    {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
-        {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
-        }
-
-        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
-        {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
-        }
-    }
 
     public static async Task StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
