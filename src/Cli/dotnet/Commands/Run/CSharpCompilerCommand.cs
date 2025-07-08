@@ -110,8 +110,8 @@ internal sealed partial class CSharpCompilerCommand
                     return completed.ReturnCode;
 
                 case IncorrectHashBuildResponse:
-                    Reporter.Error.WriteLine("Warning: Compiler server reports a different hash version than the SDK.".Yellow());
-                    fallbackToNormalBuild = true;
+                    Reporter.Error.WriteLine("Error: Compiler server reports a different hash version than the SDK.".Yellow());
+                    fallbackToNormalBuild = false;
                     return 1;
 
                 case null:
