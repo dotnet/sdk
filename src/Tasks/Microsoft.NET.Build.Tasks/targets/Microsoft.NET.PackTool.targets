@@ -157,7 +157,9 @@ NOTE: This file is imported from the following contexts, so be aware when writin
   <Target Name="PackToPublishDependencyIndirection"
           DependsOnTargets="$(_PackToolPublishDependency)"/>
 
-  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" Condition=" '$(PackAsTool)' == 'true' ">
+  <Target Name="PackTool" DependsOnTargets="SetPackToolProperties;GenerateToolsSettingsFileFromBuildProperty;PackToPublishDependencyIndirection;_PackToolValidation;PackToolImplementation" 
+    Condition=" '$(PackAsTool)' == 'true' "
+    Returns="@(TfmSpecificPackageFile)">
     <ItemGroup>
       <_GeneratedFiles Include="$(_ToolsSettingsFilePath)"/>
       <!-- Note here that we're _not_ computing relative directories inside the package anymore. In our packages, we essentially want to
@@ -358,7 +360,7 @@ NOTE: This file is imported from the following contexts, so be aware when writin
     </ItemGroup>
   </Target>
 
-  <Target Name="SetDotnetToolPackageType">
+  <Target Name="SetDotnetToolPackageType" Returns="$(_ToolPackageType)">
 
     <PropertyGroup>
       <_ToolPackageType Condition="'$(RuntimeIdentifier)' != '' And '$(_HasRIDSpecificTools)' != ''">DotnetToolRidPackage</_ToolPackageType>
