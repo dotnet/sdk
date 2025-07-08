@@ -42,7 +42,7 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithRegistryPushAndPull));
@@ -89,7 +89,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithLocalLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithLocalLoad));
@@ -130,7 +130,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithArchiveWritingAndLoad()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(ApiEndToEndWithArchiveWritingAndLoad));
@@ -180,7 +180,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task TarballsHaveCorrectStructure()
     {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
@@ -351,7 +351,7 @@ public class EndToEndTests : IDisposable
         return publishDirectory;
     }
 
-    [DockerAvailableFact()]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution));
@@ -441,7 +441,7 @@ public class EndToEndTests : IDisposable
     /// It's safe to load the target for libraries in a multi-targeted context because libraries don't have EnableSdkContainerSupport
     /// enabled by default, so the target will be skipped.
     /// </summary>
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library));
@@ -509,7 +509,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -685,7 +685,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNet)]
     [InlineData(DockerRegistryManager.FullyQualifiedBaseImageAspNetDigest)]
     public void EndToEnd_NoAPI_Console(string baseImage)
@@ -768,7 +768,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
@@ -860,7 +860,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRID()
     {
         string imageName = NewImageName();
@@ -912,7 +912,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
         string imageName = NewImageName();
@@ -1432,7 +1432,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
