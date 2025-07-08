@@ -1128,9 +1128,11 @@ class C
         }
 
         [Theory]
-        [InlineData("osx-x64")]
-        [InlineData("osx-arm64")]
-        public void It_codesigns_an_app_targeting_osx(string rid)
+        [InlineData("osx-x64", true)]
+        [InlineData("osx-arm64", true)]
+        [InlineData("osx-x64", false)]
+        [InlineData("osx-arm64", false)]
+        public void It_codesigns_an_app_targeting_osx(string rid, bool enableMacOSCodeSign)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;
             var testProject = new TestProject()
@@ -1143,10 +1145,10 @@ class C
 
             var testAsset = _testAssetsManager.CreateTestProject(
                 testProject,
-                identifier: rid);
+                identifier: $"{rid}_{enableMacOSCodeSign}");
             var publishCommand = new PublishCommand(testAsset);
 
-            publishCommand.Execute(PublishSingleFile, $"/p:RuntimeIdentifier={rid}", IncludeDefault)
+            publishCommand.Execute(PublishSingleFile, $"/p:RuntimeIdentifier={rid}", $"/p:_EnableMacOSCodeSign={enableMacOSCodeSign}")
                 .Should()
                 .Pass();
 
@@ -1155,13 +1157,13 @@ class C
 
             MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(singleFilePath))
                 .Should()
-                .BeTrue($"The app host should have a Mach-O signature load command for {rid}.");
+                .Be(enableMacOSCodeSign, $"The app host should {(enableMacOSCodeSign ? "" : "not ")}have a Mach-O signature load command.");
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 MachOSignature.HasValidMachOSignature(new FileInfo(singleFilePath), Log)
                     .Should()
-                    .BeTrue($"The app host should have a valid Mach-O signature for {rid}.");
+                    .Be(enableMacOSCodeSign, $"The app host should {(enableMacOSCodeSign ? "" : "not ")}have a valid Mach-O signature for {rid}.");
             }
         }
     }

@@ -80,40 +80,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [PlatformSpecificTheory(TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
-        [InlineData("net5.0")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
-        public void It_can_disable_codesign_if_opt_out(string targetFramework)
-        {
-            var testAsset = _testAssetsManager
-                .CopyTestAsset("HelloWorld", identifier: targetFramework)
-                .WithSource()
-                .WithTargetFramework(targetFramework);
-
-            var buildCommand = new BuildCommand(testAsset);
-            buildCommand
-                .Execute(new string[] {
-                    "/p:_EnableMacOSCodeSign=false;ProduceReferenceAssembly=false",
-                })
-                .Should()
-                .Pass();
-
-            var outputDirectory = buildCommand.GetOutputDirectory(targetFramework);
-            var appHostFullPath = Path.Combine(outputDirectory.FullName, "HelloWorld");
-
-            // Check that the apphost was not signed
-            var codesignPath = @"/usr/bin/codesign";
-            new RunExeCommand(Log, codesignPath, new string[] { "-d", appHostFullPath })
-                .Execute()
-                .Should()
-                .Fail()
-                .And
-                .HaveStdErrContaining($"{appHostFullPath}: code object is not signed at all");
-
-            outputDirectory.Should().OnlyHaveFiles(GetExpectedFilesFromBuild(testAsset, targetFramework));
-        }
-
-        [PlatformSpecificTheory(TestPlatforms.OSX)]
         [InlineData("netcoreapp3.1", "win-x64")]
         [InlineData("net5.0", "win-x64")]
         [InlineData(ToolsetInfo.CurrentTargetFramework, "win-x64")]
@@ -153,11 +119,15 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Theory]
-        [InlineData("net6.0", "osx-x64")]
-        [InlineData("net6.0", "osx-arm64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64")]
-        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid)
+        [InlineData("net8.0", "osx-x64", true)]
+        [InlineData("net8.0", "osx-arm64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", true)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", true)]
+        [InlineData("net8.0", "osx-x64", false)]
+        [InlineData("net8.0", "osx-arm64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-x64", false)]
+        [InlineData(ToolsetInfo.CurrentTargetFramework, "osx-arm64", false)]
+        public void It_codesigns_an_app_targeting_osx(string targetFramework, string rid, bool shouldSign)
         {
             const string testAssetName = "HelloWorld";
             var testAsset = _testAssetsManager
@@ -166,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
                 .WithTargetFramework(targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
-            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}" };
+            var buildArgs = new List<string>() { $"/p:RuntimeIdentifier={rid}", $"/p:_EnableMacOSCodeSign={shouldSign}" };
             buildCommand
                 .Execute(buildArgs.ToArray())
                 .Should()
@@ -176,12 +146,12 @@ namespace Microsoft.NET.Build.Tests
             var appHostFullPath = Path.Combine(outputDirectory.FullName, testAssetName);
 
             // Check that the apphost is signed
-            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().BeTrue();
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(appHostFullPath)).Should().Be(shouldSign, $"The app host should {(shouldSign ? "" : "not ")}have a Mach-O signature load command.");
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                MachOSignature.HasValidMachOSignature(new FileInfo(appHostFullPath))
+                MachOSignature.HasValidMachOSignature(new FileInfo(appHostFullPath), Log)
                     .Should()
-                    .BeTrue($"The app host should have a valid Mach-O signature for {rid}.");
+                    .Be(shouldSign, $"The app host should have a valid Mach-O signature for {rid}.");
             }
         }
 
