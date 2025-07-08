@@ -86,7 +86,10 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
         foreach (var project in projectGraph.ProjectNodesTopologicallySorted)
         {
-            var projectInstance = project.ProjectInstance;
+            // Deep copy so that we can reuse the graph for building additional targets later on.
+            // If we didn't copy the instance the targets might duplicate items that were already
+            // populated by design-time build.
+            var projectInstance = project.ProjectInstance.DeepCopy();
 
             // skip outer build project nodes:
             if (projectInstance.GetPropertyValue(PropertyNames.TargetFramework) == "")
@@ -94,7 +97,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
                 continue;
             }
 
-            var customCollectWatchItems = project.GetStringListPropertyValue(PropertyNames.CustomCollectWatchItems);
+            var customCollectWatchItems = projectInstance.GetStringListPropertyValue(PropertyNames.CustomCollectWatchItems);
 
             using (var loggers = buildReporter.GetLoggers("DesignTimeBuild"))
             {
@@ -120,8 +123,8 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
             }
 
             if (!environmentOptions.SuppressHandlingStaticContentFiles &&
-                project.GetBooleanPropertyValue(PropertyNames.UsingMicrosoftNETSdkRazor) &&
-                project.GetBooleanPropertyValue(PropertyNames.DotNetWatchContentFiles, defaultValue: true))
+                projectInstance.GetBooleanPropertyValue(PropertyNames.UsingMicrosoftNETSdkRazor) &&
+                projectInstance.GetBooleanPropertyValue(PropertyNames.DotNetWatchContentFiles, defaultValue: true))
             {
                 foreach (var item in projectInstance.GetItems(ItemNames.Content))
                 {

@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Watch
 
                     var projectMap = new ProjectNodeMap(evaluationResult.ProjectGraph, _context.Reporter);
                     compilationHandler = new CompilationHandler(_context.Reporter, _context.ProcessRunner);
-                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Reporter, projectMap, browserConnector);
+                    var scopedCssFileHandler = new ScopedCssFileHandler(_context.Reporter, projectMap, browserConnector, _context.EnvironmentOptions);
                     var projectLauncher = new ProjectLauncher(_context, projectMap, browserConnector, compilationHandler, iteration);
                     evaluationResult.ItemExclusions.Report(_context.Reporter);
 
@@ -571,9 +571,6 @@ namespace Microsoft.DotNet.Watch
                     cancellationToken);
             }
         }
-
-        private Predicate<ChangedPath> CreateChangeFilter(EvaluationResult evaluationResult)
-            => new(change => AcceptChange(change, evaluationResult));
 
         private bool AcceptChange(ChangedPath change, EvaluationResult evaluationResult)
         {

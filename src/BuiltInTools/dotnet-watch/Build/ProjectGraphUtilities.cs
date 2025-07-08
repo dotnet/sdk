@@ -110,10 +110,16 @@ internal static class ProjectGraphUtilities
         => projectNode.GetStringListPropertyValue(PropertyNames.DefaultItemExcludes);
 
     public static IEnumerable<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
-        => projectNode.ProjectInstance.GetPropertyValue(propertyName).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+        => projectNode.ProjectInstance.GetStringListPropertyValue(propertyName);
+
+    public static IEnumerable<string> GetStringListPropertyValue(this ProjectInstance project, string propertyName)
+        => project.GetPropertyValue(propertyName).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
 
     public static bool GetBooleanPropertyValue(this ProjectGraphNode projectNode, string propertyName, bool defaultValue = false)
-        => projectNode.ProjectInstance.GetPropertyValue(propertyName) is { Length: >0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
+        => GetBooleanPropertyValue(projectNode.ProjectInstance, propertyName, defaultValue);
+
+    public static bool GetBooleanPropertyValue(this ProjectInstance project, string propertyName, bool defaultValue = false)
+        => project.GetPropertyValue(propertyName) is { Length: >0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
 
     public static bool GetBooleanMetadataValue(this ProjectItemInstance item, string metadataName, bool defaultValue = false)
         => item.GetMetadataValue(metadataName) is { Length: > 0 } value ? bool.TryParse(value, out var result) && result : defaultValue;
