@@ -20,11 +20,31 @@ public class DockerRegistryManager
     public const string FullyQualifiedBaseImageAspNet = $"{BaseImageSource}/{AspNetBaseImage}:{Net8PreviewImageTag}";
     private static string? s_registryContainerId;
 
-    public static void StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
+    private static string SDK_AzureContainerRegistryImage => "dotnetdhmirror-f8bzbjakh8cga6ab.azurecr.io/registry:2";
+    private static string Docker_HubRegistryImage => "docker.io/library/registry:2";
+
+    // TODO: some logic to pivot between this and Docker Hub
+    private static string RegistryImageToUse => SDK_AzureContainerRegistryImage;
+
+    internal class SameArchManifestPicker : IManifestPicker
+    {
+        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+
+        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
+        {
+            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+        }
+    }
+
+    public static async Task StartAndPopulateDockerRegistry(ITestOutputHelper testOutput)
     {
         using TestLoggerFactory loggerFactory = new(testOutput);
 
-        if (!new DockerCli(loggerFactory).IsAvailable()) {
+        if (!new DockerCli(loggerFactory).IsAvailable())
+        {
             throw new InvalidOperationException("Docker is not available, tests cannot run");
         }
 
@@ -40,7 +60,7 @@ public class DockerRegistryManager
             {
                 logger.LogInformation("Spawning local registry at '{registry}', attempt #{attempt}.", LocalRegistry, spawnRegistryAttempt);
 
-                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", "docker.io/library/registry:2").Execute();
+                CommandResult processResult = ContainerCli.RunCommand(testOutput, "--rm", "--publish", "5010:5000", "--detach", RegistryImageToUse).Execute();
 
                 processResult.Should().Pass().And.HaveStdOut();
 
@@ -59,7 +79,7 @@ public class DockerRegistryManager
                         .Execute()
                         .Should().Pass();
 
-                    logger.LogInformation("Tagging image '{sourceRepo}/{sourceImage}:{sourceTag}' as '{targetRepo}/{targetImage}:{targetTag}'.",BaseImageSource, RuntimeBaseImage, tag, LocalRegistry, RuntimeBaseImage, tag);
+                    logger.LogInformation("Tagging image '{sourceRepo}/{sourceImage}:{sourceTag}' as '{targetRepo}/{targetImage}:{targetTag}'.", BaseImageSource, RuntimeBaseImage, tag, LocalRegistry, RuntimeBaseImage, tag);
                     ContainerCli.TagCommand(testOutput, $"{BaseImageSource}/{RuntimeBaseImage}:{tag}", $"{LocalRegistry}/{RuntimeBaseImage}:{tag}")
                         .Execute()
                         .Should().Pass();
@@ -84,7 +104,7 @@ public class DockerRegistryManager
                     {
                         ContainerCli.StopCommand(testOutput, s_registryContainerId).Execute();
                     }
-                    catch(Exception ex2)
+                    catch (Exception ex2)
                     {
                         logger.LogError(ex2, "Failed to stop the registry {id}.", s_registryContainerId);
                     }
