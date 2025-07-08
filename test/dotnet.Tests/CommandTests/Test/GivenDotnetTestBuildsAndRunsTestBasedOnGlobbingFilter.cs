@@ -13,7 +13,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         {
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectWithFilterOfDll_ShouldReturnExitCodeSuccess()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())
@@ -49,7 +50,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectsWithFilterOfDll_ShouldReturnExitCodeGenericFailure()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
@@ -95,7 +97,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectWithFilterOfDllWithRootDirectory_ShouldReturnExitCodeSuccess()
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString())

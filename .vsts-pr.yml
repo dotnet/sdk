@@ -18,7 +18,7 @@ parameters:
 - name: enableArm64Job
   displayName: Enables the ARM64 job
   type: boolean
-  default: false
+  default: true
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml

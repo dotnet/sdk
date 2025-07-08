@@ -73,6 +73,14 @@ namespace FrameworkReferenceTest
         [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
         public void Multiple_frameworks_are_written_to_runtimeconfig_for_self_contained_apps(string tfm, bool shouldHaveIncludedFrameworks)
         {
+            if (tfm == "netcoreapp3.0" &&
+                RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                //  https://github.com/dotnet/sdk/issues/49665
+                //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+                return;
+            }
+
             var testProject = new TestProject()
             {
                 Name = "MultipleFrameworkReferenceTest",
