@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
@@ -18,7 +20,7 @@ public class DefaultCommandResolverPolicy : ICommandResolverPolicy
         var packagedCommandSpecFactory = new PackagedCommandSpecFactoryWithCliRuntime();
         var publishedPathCommandSpecFactory = new PublishPathCommandSpecFactory();
 
-        var platformCommandSpecFactory = default(IPlatformCommandSpecFactory);
+        IPlatformCommandSpecFactory platformCommandSpecFactory;
         if (OperatingSystem.IsWindows())
         {
             platformCommandSpecFactory = new WindowsExePreferredCommandSpecFactory();

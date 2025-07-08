@@ -170,9 +170,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
     {
         writer.WriteStartObject();
 
-        writer.WritePropertyName(nameof(BoundAttributeDescriptor.Kind));
-        writer.WriteValue(boundAttribute.Kind);
-
         writer.WritePropertyName(nameof(BoundAttributeDescriptor.Name));
         writer.WriteValue(boundAttribute.Name);
 
@@ -239,10 +236,13 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
         writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Name));
         writer.WriteValue(boundAttributeParameter.Name);
 
+        writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.PropertyName));
+        writer.WriteValue(boundAttributeParameter.PropertyName);
+
         writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.TypeName));
         writer.WriteValue(boundAttributeParameter.TypeName);
 
-        if (boundAttributeParameter.IsEnum != default)
+        if (boundAttributeParameter.IsEnum)
         {
             writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.IsEnum));
             writer.WriteValue(boundAttributeParameter.IsEnum);
@@ -259,9 +259,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
             writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Diagnostics));
             serializer.Serialize(writer, boundAttributeParameter.Diagnostics);
         }
-
-        writer.WritePropertyName(nameof(BoundAttributeParameterDescriptor.Metadata));
-        WriteMetadata(writer, boundAttributeParameter.Metadata);
 
         writer.WriteEndObject();
     }
@@ -345,12 +342,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
         {
             writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Diagnostics));
             serializer.Serialize(writer, requiredAttribute.Diagnostics);
-        }
-
-        if (requiredAttribute.Metadata != null && requiredAttribute.Metadata.Count > 0)
-        {
-            writer.WritePropertyName(nameof(RequiredAttributeDescriptor.Metadata));
-            WriteMetadata(writer, requiredAttribute.Metadata);
         }
 
         writer.WriteEndObject();
@@ -495,15 +486,22 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
 
         builder.BindAttributeParameter(parameter =>
         {
-            reader.ReadProperties(propertyName =>
+            reader.ReadProperties(jsonPropertyName =>
             {
-                switch (propertyName)
+                switch (jsonPropertyName)
                 {
                     case nameof(BoundAttributeParameterDescriptor.Name):
                         if (reader.Read())
                         {
                             var name = (string)reader.Value;
                             parameter.Name = name;
+                        }
+                        break;
+                    case nameof(BoundAttributeParameterDescriptor.PropertyName):
+                        if (reader.Read())
+                        {
+                            var propertyName = (string)reader.Value;
+                            parameter.PropertyName = propertyName;
                         }
                         break;
                     case nameof(BoundAttributeParameterDescriptor.TypeName):
@@ -526,9 +524,6 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
                             var documentation = (string)reader.Value;
                             parameter.SetDocumentation(documentation);
                         }
-                        break;
-                    case nameof(BoundAttributeParameterDescriptor.Metadata):
-                        ReadMetadata(reader, parameter.Metadata);
                         break;
                     case nameof(BoundAttributeParameterDescriptor.Diagnostics):
                         ReadDiagnostics(reader, parameter.Diagnostics);
@@ -646,8 +641,8 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
                         }
                         break;
                     case nameof(RequiredAttributeDescriptor.NameComparison):
-                        var nameComparison = (RequiredAttributeDescriptor.NameComparisonMode)reader.ReadAsInt32();
-                        attribute.NameComparisonMode = nameComparison;
+                        var nameComparison = (RequiredAttributeNameComparison)reader.ReadAsInt32();
+                        attribute.NameComparison = nameComparison;
                         break;
                     case nameof(RequiredAttributeDescriptor.Value):
                         if (reader.Read())
@@ -657,14 +652,11 @@ internal class TagHelperDescriptorJsonConverter : JsonConverter
                         }
                         break;
                     case nameof(RequiredAttributeDescriptor.ValueComparison):
-                        var valueComparison = (RequiredAttributeDescriptor.ValueComparisonMode)reader.ReadAsInt32();
-                        attribute.ValueComparisonMode = valueComparison;
+                        var valueComparison = (RequiredAttributeValueComparison)reader.ReadAsInt32();
+                        attribute.ValueComparison = valueComparison;
                         break;
                     case nameof(RequiredAttributeDescriptor.Diagnostics):
                         ReadDiagnostics(reader, attribute.Diagnostics);
-                        break;
-                    case nameof(RequiredAttributeDescriptor.Metadata):
-                        ReadMetadata(reader, attribute.Metadata);
                         break;
                 }
             });

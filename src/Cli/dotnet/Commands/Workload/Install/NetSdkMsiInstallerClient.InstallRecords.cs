@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Net;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Installer.Windows;
@@ -11,7 +13,7 @@ using Microsoft.Win32.Msi;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
 internal partial class NetSdkMsiInstallerClient
 {
@@ -82,7 +84,7 @@ internal partial class NetSdkMsiInstallerClient
         Log?.LogMessage($"Detecting installed workload manifests for {HostArchitecture}.");
 
         var manifestRecords = new List<WorkloadManifestRecord>();
-        HashSet<(string id, string version)> discoveredManifests = new();
+        HashSet<(string id, string version)> discoveredManifests = [];
 
         using RegistryKey installedManifestsKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledManifests\{HostArchitecture}");
         if (installedManifestsKey != null)
@@ -171,7 +173,7 @@ internal partial class NetSdkMsiInstallerClient
                             List<string> relatedProductCodes;
                             try
                             {
-                                relatedProductCodes = WindowsInstaller.FindRelatedProducts(upgradeCode.ToString()).ToList();
+                                relatedProductCodes = [.. WindowsInstaller.FindRelatedProducts(upgradeCode.ToString())];
                             }
                             catch (WindowsInstallerException)
                             {
@@ -300,7 +302,7 @@ internal partial class NetSdkMsiInstallerClient
     protected List<WorkloadPackRecord> GetWorkloadPackRecords()
     {
         Log?.LogMessage($"Detecting installed workload packs for {HostArchitecture}.");
-        List<WorkloadPackRecord> workloadPackRecords = new();
+        List<WorkloadPackRecord> workloadPackRecords = [];
         using RegistryKey installedPacksKey = Registry.LocalMachine.OpenSubKey(@$"SOFTWARE\Microsoft\dotnet\InstalledPacks\{HostArchitecture}");
 
         static void SetRecordMsiProperties(WorkloadPackRecord record, RegistryKey key)

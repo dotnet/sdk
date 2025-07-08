@@ -12,6 +12,11 @@
         <target state="translated">Non è stato possibile risolvere il tipo '{0}' nell'assembly contenitore '{1}' tramite l'inoltro del tipo. Assicurarsi che l'assembly sia fornito come riferimento e contenga il tipo.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Nodo di sintassi non trovato.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

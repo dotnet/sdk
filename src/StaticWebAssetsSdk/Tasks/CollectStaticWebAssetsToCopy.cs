@@ -25,7 +25,7 @@ public class CollectStaticWebAssetsToCopy : Task
         var normalizedOutputPath = StaticWebAsset.NormalizeContentRootPath(Path.GetFullPath(OutputPath));
         try
         {
-            foreach (var asset in Assets.Select(StaticWebAsset.FromTaskItem))
+            foreach (var asset in StaticWebAsset.FromTaskItemGroup(Assets))
             {
                 string fileOutputPath = null;
                 if (!(asset.IsDiscovered() || asset.IsComputed()))

@@ -117,19 +117,33 @@ There is nothing preventing NuGet based analyzers from following the same model 
 
 Solutions that mix .NET SDK and Visual Studio projects will end up with multiple compiler servers running. This is a result of the .NET SDK projects using the compiler from the .NET SDK and non-SDK projects using the compiler from Visual Studio. There is nothing functionally wrong with this but it's possible customers will notice this and ask questions about it.
 
-The compiler will offer a property that allows SDK projects to use the MSBuild version of the compiler when being built with `msbuild`: `<RoslynUseMSBuildCompiler>true</RoslynUseMSBuildCompiler>`. This can be added to a `Directory.Build.props` file to impact the entire solution. This is not expected to be a common scenario but is available for customers who need it. This property will be ignored when using `dotnet build` as there is no way to fall back to the Visual Studio compiler in that scenario.
+The compiler will offer a property that allows SDK projects to use the MSBuild version of the compiler when being built with `msbuild`: `<RoslynCompilerType>Framework</RoslynCompilerType>`. This can be added to a `Directory.Build.props` file to impact the entire solution. This is not expected to be a common scenario but is available for customers who need it. This property will be ignored when using `dotnet build` as there is no way to fall back to the Visual Studio compiler in that scenario.
 
 ### .NET Framework based analyzers
 
 There are a few analyzers which are built against .NET Framework TFMs. That means when loaded in a .NET Core compiler it could lead to compatibility issues. This is not expected to be a significant issue as our processes have been pushing customers to target `netstandard` in analyzers for 5+ years. However it is possible that some customers will run into issues here.
 
-For those customers we will recommend that they set `<RoslynUseMSBuildCompiler>true</RoslynUseMSBuildCompiler>` in their build to ensure a .NET Framework based compiler is used.  However, it is not our intent to support loading .NET Framework based analyzers in perpetuity. Starting in .NET 12 the compiler will begin issueing warnings is this setup when it detects framework analyzers, and this will become an error in .NET 13. Non-SDK projects will support loading framework based analyzers for the foreseeable future.
+For those customers we will recommend that they set `<RoslynCompilerType>Framework</RoslynCompilerType>` in their build to ensure a .NET Framework based compiler is used.  However, it is not our intent to support loading .NET Framework based analyzers in perpetuity. Starting in .NET 12 the compiler will begin issueing warnings is this setup when it detects framework analyzers, and this will become an error in .NET 13. Non-SDK projects will support loading framework based analyzers for the foreseeable future.
 
 ### Build server shutdown
 
 Today there is not a 100% reliable way to shutdown the VBCSCompiler process. The `dotnet build-server shutdown` command works in common cases but fails in a number of corner cases. This has lead to customers who require the server to be shutdown to add lines like `kill VBCSCompiler` into their infrastructure scripts. This proposal will break those scripts as it will change the process name of the compiler server from `VBCSCompiler` to `dotnet`.
 
 To mitigate this we will be fixing the `build-server shutdown` command to be reliable across all the scenarios we care about. The details of this are captured in [issue 45956](https://github.com/dotnet/sdk/issues/45956).
+
+## RoslynCompilerType
+
+Based on the value of the `RoslynCompilerType` property, the SDK sets property `RoslynTasksAssembly` to a full path to a [Roslyn build task DLL][roslyn-build-task],
+and the SDK targets use `$(RoslynTasksAssembly)` to load the build task.
+
+The SDK also sets `RoslynTargetsPath` to the directory path of the roslyn tasks assembly. This property is used by some targets
+but it should be avoided if possible because the tasks assembly name can change as well, not just the directory path.
+
+These values are recognized for property `RoslynCompilerType`:
+- `Core`: use the compiler that comes with the .NET SDK
+- `Framework`: use the compiler that comes with .NET Framework MSBuild
+- `FrameworkPackage`: download the Microsoft.Net.Sdk.Compilers.Toolset package which contains the .NET Framework compiler corresponding to the .NET SDK version
+- `Custom`: the SDK will not override `RoslynTasksAssembly` - used for example by Microsoft.Net.Compilers.Toolset package which injects its own version of the build task
 
 ## Alternative
 
@@ -183,6 +197,7 @@ There is only one version of the DevKit extension. It is released using the late
 [matrix-of-paine]: https://aka.ms/dotnet/matrixofpaine
 [sdk-lifecycle]: https://learn.microsoft.com/en-us/dotnet/core/porting/versioning-sdk-msbuild-vs#lifecycle
 [code-razor-vs-load]: https://github.com/dotnet/roslyn/blob/9aea80927e3d4e5a2846efaa710438c0d8d2bfa2/src/Workspaces/Core/Portable/Workspace/ProjectSystem/ProjectSystemProject.cs#L1009
+[roslyn-build-task]: https://github.com/dotnet/roslyn/blob/ccb05769e5298ac23c01b33a180a0b3715f53a18/src/Compilers/Core/MSBuildTask/README.md
 [setup-dotnet]: https://github.com/actions/setup-dotnet
 [pr-detect-torn-state]: https://github.com/dotnet/installer/pull/19144
 [issue-analyzer-mt]: https://github.com/dotnet/sdk/issues/20355

@@ -2,14 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 
-namespace Microsoft.DotNet.Workloads.Workload;
+namespace Microsoft.DotNet.Cli.Commands.Workload;
 
 /// <summary>
 /// Base class for workload related commands.
@@ -85,44 +85,53 @@ internal abstract class WorkloadCommandBase : CommandBase
     /// <param name="nugetPackageDownloader">The package downloader to use for acquiring NuGet packages.</param>
     public WorkloadCommandBase(
         ParseResult parseResult,
-        CliOption<VerbosityOptions> verbosityOptions = null,
+        Option<VerbosityOptions>? verbosityOptions = null,
         IReporter? reporter = null,
-        string tempDirPath = null,
-        INuGetPackageDownloader nugetPackageDownloader = null) : base(parseResult)
+        string? tempDirPath = null,
+        INuGetPackageDownloader? nugetPackageDownloader = null) : base(parseResult)
     {
         VerifySignatures = ShouldVerifySignatures(parseResult);
 
         RestoreActionConfiguration = _parseResult.ToRestoreActionConfig();
 
         Verbosity = verbosityOptions == null
-            ? parseResult.GetValue(CommonOptions.VerbosityOption)
-            : parseResult.GetValue(verbosityOptions);
+            ? parseResult.GetValue(CommonOptions.VerbosityOption(VerbosityOptions.normal))
+            : parseResult.GetValue(verbosityOptions) ;
 
         ILogger nugetLogger = Verbosity.IsDetailedOrDiagnostic() ? new NuGetConsoleLogger() : new NullLogger();
 
-        Reporter = reporter ?? Cli.Utils.Reporter.Output;
+        Reporter = reporter ?? Utils.Reporter.Output;
 
         TempDirectoryPath = !string.IsNullOrWhiteSpace(tempDirPath)
             ? tempDirPath
-            : (!string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
-                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)
-                : PathUtilities.CreateTempSubdirectory());
+            : !string.IsNullOrWhiteSpace(parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption))
+                ? parseResult.GetValue(WorkloadInstallCommandParser.TempDirOption)!
+                : PathUtilities.CreateTempSubdirectory();
 
         TempPackagesDirectory = new DirectoryPath(Path.Combine(TempDirectoryPath, "dotnet-sdk-advertising-temp"));
 
-        IsPackageDownloaderProvided = nugetPackageDownloader != null;
-        PackageDownloader = IsPackageDownloaderProvided ? nugetPackageDownloader : new NuGetPackageDownloader(TempPackagesDirectory,
-            filePermissionSetter: null,
-            new FirstPartyNuGetPackageSigningVerifier(),
-            nugetLogger,
-            Reporter,
-            restoreActionConfig: RestoreActionConfiguration,
-            verifySignatures: VerifySignatures,
-            shouldUsePackageSourceMapping: true);
+        if (nugetPackageDownloader is not null)
+        {
+            IsPackageDownloaderProvided = true;
+            PackageDownloader = nugetPackageDownloader;
+        }
+        else
+        {
+            IsPackageDownloaderProvided = false;
+            PackageDownloader = new NuGetPackageDownloader.NuGetPackageDownloader(
+                TempPackagesDirectory,
+                filePermissionSetter: null,
+                new FirstPartyNuGetPackageSigningVerifier(),
+                nugetLogger,
+                Reporter,
+                restoreActionConfig: RestoreActionConfiguration,
+                verifySignatures: VerifySignatures,
+                shouldUsePackageSourceMapping: true);
+        }
     }
 
     /// <summary>
-    /// Determines whether workload packs and installer signatures should be verified based on whether 
+    /// Determines whether workload packs and installer signatures should be verified based on whether
     /// dotnet is signed, the skip option was specified, and whether a global policy enforcing verification
     /// was set.
     /// </summary>
@@ -144,7 +153,7 @@ internal abstract class WorkloadCommandBase : CommandBase
         if (skipSignCheck && policyEnabled)
         {
             // Can't override the global policy by using the skip option.
-            throw new GracefulException(LocalizableStrings.SkipSignCheckInvalidOption);
+            throw new GracefulException(CliCommandStrings.SkipSignCheckInvalidOption);
         }
 
         return !skipSignCheck;

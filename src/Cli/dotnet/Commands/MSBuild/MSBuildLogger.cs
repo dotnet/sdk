@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 
-namespace Microsoft.DotNet.Tools.MSBuild;
+namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
 public sealed class MSBuildLogger : INodeLogger
 {
@@ -61,7 +63,7 @@ public sealed class MSBuildLogger : INodeLogger
                 // When senders in different process running at the same
                 // time they will read from the same global queue and cause
                 // sending duplicated events. Disable sender to reduce it.
-                _telemetry = new Telemetry(
+                _telemetry = new Telemetry.Telemetry(
                     _sentinel,
                     sessionId,
                     senderCount: 0);
@@ -110,7 +112,7 @@ public sealed class MSBuildLogger : INodeLogger
             case TargetFrameworkTelemetryEventName:
                 {
                     var newEventName = $"msbuild/{TargetFrameworkTelemetryEventName}";
-                    Dictionary<string, string> maskedProperties = new();
+                    Dictionary<string, string> maskedProperties = [];
 
                     foreach (var key in new[] {
                         TargetFrameworkVersionTelemetryPropertyKey,
@@ -133,28 +135,28 @@ public sealed class MSBuildLogger : INodeLogger
                 }
             case BuildTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildTelemetryEventName}", args.Properties,
-                    toBeHashed: new[] { "ProjectPath", "BuildTarget" },
-                    toBeMeasured: new[] { "BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds" });
+                    toBeHashed: ["ProjectPath", "BuildTarget"],
+                    toBeMeasured: ["BuildDurationInMilliseconds", "InnerBuildDurationInMilliseconds"]);
                 break;
             case LoggingConfigurationTelemetryEventName:
                 TrackEvent(telemetry, $"msbuild/{LoggingConfigurationTelemetryEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
-                    toBeMeasured: new[] { "FileLoggersCount" });
+                    toBeHashed: [],
+                    toBeMeasured: ["FileLoggersCount"]);
                 break;
             case BuildcheckAcquisitionFailureEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckAcquisitionFailureEventName}", args.Properties,
-                    toBeHashed: new[] { "AssemblyName", "ExceptionType", "ExceptionMessage" },
-                    toBeMeasured: Array.Empty<string>());
+                    toBeHashed: ["AssemblyName", "ExceptionType", "ExceptionMessage"],
+                    toBeMeasured: []);
                 break;
             case BuildcheckRunEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRunEventName}", args.Properties,
-                    toBeHashed: Array.Empty<string>(),
-                    toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
+                    toBeHashed: [],
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             case BuildcheckRuleStatsEventName:
                 TrackEvent(telemetry, $"msbuild/{BuildcheckRuleStatsEventName}", args.Properties,
-                    toBeHashed: new[] { "RuleId", "CheckFriendlyName" },
-                    toBeMeasured: new[] { "TotalRuntimeInMilliseconds" });
+                    toBeHashed: ["RuleId", "CheckFriendlyName"],
+                    toBeMeasured: ["TotalRuntimeInMilliseconds"]);
                 break;
             // Pass through events that don't need special handling
             case SdkTaskBaseCatchExceptionTelemetryEventName:
@@ -164,7 +166,7 @@ public sealed class MSBuildLogger : INodeLogger
             case SdkContainerPublishBaseImageInferenceEventName:
             case SdkContainerPublishSuccessEventName:
             case SdkContainerPublishErrorEventName:
-                TrackEvent(telemetry, args.EventName, args.Properties, Array.Empty<string>(), Array.Empty<string>());
+                TrackEvent(telemetry, args.EventName, args.Properties, [], []);
                 break;
             default:
                 // Ignore unknown events
@@ -197,7 +199,7 @@ public sealed class MSBuildLogger : INodeLogger
                 if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))
                 {
                     // Lets lazy allocate in case there is tons of telemetry
-                    measurements ??= new Dictionary<string, double>();
+                    measurements ??= [];
                     measurements[propertyToBeMeasured] = realValue;
                 }
             }

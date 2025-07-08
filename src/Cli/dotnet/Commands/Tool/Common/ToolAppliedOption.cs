@@ -1,64 +1,74 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using UpdateToolsLocalizableStrings = Microsoft.DotNet.Tools.Tool.Update.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Tools.Tool.Common;
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
+using Microsoft.DotNet.Cli.Utils;
+
+namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 internal class ToolAppliedOption
 {
-    public static CliOption<bool> GlobalOption = new("--global", "-g")
+    private const string GlobalOptionName = "--global";
+    private const string LocalOptionName = "--local";
+    private const string ToolPathName = "--tool-path";
+    private const string ToolManifestName = "--tool-manifest";
+
+    public static Option<bool> GlobalOption(string description) => new(GlobalOptionName, "-g")
     {
+        Arity = ArgumentArity.Zero,
+        Description = description
+    };
+
+    public static Option<bool> LocalOption(string description) => new(LocalOptionName)
+    {
+        Arity = ArgumentArity.Zero,
+        Description = description,
+    };
+
+    public static Option<bool> UpdateAllOption = new("--all")
+    {
+        Description = CliCommandStrings.UpdateAllOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static CliOption<bool> LocalOption = new("--local")
-    {
-        Arity = ArgumentArity.Zero
-    };
-
-    public static CliOption<bool> UpdateAllOption = new("--all")
-    {
-        Description = UpdateToolsLocalizableStrings.UpdateAllOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly CliOption<string> VersionOption
+    public static readonly Option<string> VersionOption
         = ToolInstallCommandParser.VersionOption
           ?? new("--version"); // Workaround for Mono runtime (https://github.com/dotnet/sdk/issues/41672)
 
-    public static CliOption<string> ToolPathOption = new("--tool-path")
+    public static Option<string> ToolPathOption(string description) => new(ToolPathName)
     {
-        HelpName = Install.LocalizableStrings.ToolPathOptionName
+        HelpName = CliCommandStrings.ToolInstallToolPathOptionName,
+        Description = description,
     };
 
-    public static CliOption<string> ToolManifestOption = new("--tool-manifest")
+    public static Option<string> ToolManifestOption(string description) => new(ToolManifestName)
     {
-        HelpName = Install.LocalizableStrings.ManifestPathOptionName,
-        Arity = ArgumentArity.ZeroOrOne
+        HelpName = CliCommandStrings.ToolInstallManifestPathOptionName,
+        Arity = ArgumentArity.ZeroOrOne,
+        Description = description,
     };
 
     internal static void EnsureNoConflictGlobalLocalToolPathOption(
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new();
-        if (parseResult.GetResult(GlobalOption) is not null)
+        List<string> options = [];
+        if (parseResult.GetResult(GlobalOptionName) is not null)
         {
-            options.Add(GlobalOption.Name);
+            options.Add(GlobalOptionName);
         }
 
-        if (parseResult.GetResult(LocalOption) is not null)
+        if (parseResult.GetResult(LocalOptionName) is not null)
         {
-            options.Add(LocalOption.Name);
+            options.Add(LocalOptionName);
         }
 
-        if (!string.IsNullOrWhiteSpace(parseResult.GetValue(ToolPathOption)))
+        if (parseResult.GetResult(ToolPathName) is not null)
         {
-            options.Add(ToolPathOption.Name);
+            options.Add(ToolPathName);
         }
 
         if (options.Count > 1)
@@ -74,7 +84,7 @@ internal class ToolAppliedOption
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new List<string>();
+        List<string> options = [];
         if (parseResult.GetResult(UpdateAllOption) is not null)
         {
             options.Add(UpdateAllOption.Name);
@@ -97,17 +107,15 @@ internal class ToolAppliedOption
     internal static void EnsureToolManifestAndOnlyLocalFlagCombination(ParseResult parseResult)
     {
         if (GlobalOrToolPath(parseResult) &&
-            !string.IsNullOrWhiteSpace(parseResult.GetValue(ToolManifestOption)))
+            parseResult.GetResult(ToolManifestName) is not null)
         {
             throw new GracefulException(
                 string.Format(
-                    LocalizableStrings.OnlyLocalOptionSupportManifestFileOption));
+                    CliCommandStrings.OnlyLocalOptionSupportManifestFileOption));
         }
     }
 
     private static bool GlobalOrToolPath(ParseResult parseResult)
-    {
-        return parseResult.GetResult(GlobalOption) is not null ||
-               !string.IsNullOrWhiteSpace(parseResult.GetValue(ToolPathOption));
-    }
+        => parseResult.GetResult(GlobalOptionName) is not null
+        || parseResult.GetResult(ToolPathName) is not null;
 }

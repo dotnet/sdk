@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Newtonsoft.Json;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -9,7 +11,7 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// Represents the payload associated with a single workload pack installer. The payload
 /// consists of the installer (MSI) and its JSON manifest.
 /// </summary>
-internal class MsiPayload
+internal class MsiPayload(string manifestPath, string msiPath)
 {
     private MsiManifest _manifest;
 
@@ -18,12 +20,12 @@ internal class MsiPayload
     /// <summary>
     /// The full path of the JSON manifest associated with this payload.
     /// </summary>
-    public readonly string ManifestPath;
+    public readonly string ManifestPath = manifestPath;
 
     /// <summary>
     /// The full path of the MSI associated with this payload.
     /// </summary>
-    public readonly string MsiPath;
+    public readonly string MsiPath = msiPath;
 
     /// <summary>
     /// The name of the MSI package.
@@ -53,10 +55,7 @@ internal class MsiPayload
     {
         get
         {
-            if (_relatedProducts == null)
-            {
-                _relatedProducts = Manifest.RelatedProducts ?? Enumerable.Empty<RelatedProduct>();
-            }
+            _relatedProducts ??= Manifest.RelatedProducts ?? Enumerable.Empty<RelatedProduct>();
 
             return _relatedProducts;
         }
@@ -69,10 +68,7 @@ internal class MsiPayload
     {
         get
         {
-            if (_manifest == null)
-            {
-                _manifest = JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(ManifestPath));
-            }
+            _manifest ??= JsonConvert.DeserializeObject<MsiManifest>(File.ReadAllText(ManifestPath));
 
             return _manifest;
         }
@@ -82,10 +78,4 @@ internal class MsiPayload
     /// The upgrade code of the MSI.
     /// </summary>
     public string UpgradeCode => Manifest.UpgradeCode;
-
-    public MsiPayload(string manifestPath, string msiPath)
-    {
-        ManifestPath = manifestPath;
-        MsiPath = msiPath;
-    }
 }

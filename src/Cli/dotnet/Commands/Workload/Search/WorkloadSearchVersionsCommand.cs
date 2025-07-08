@@ -1,21 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 
-using InformationStrings = Microsoft.DotNet.Workloads.Workload.LocalizableStrings;
-
-namespace Microsoft.DotNet.Workloads.Workload.Search;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 {
@@ -40,7 +39,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
         if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
         {
-            throw new GracefulException(Install.LocalizableStrings.SdkVersionOptionNotSupported);
+            throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }
 
         var creationResult = workloadResolverFactory.Create();
@@ -91,7 +90,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             }
             catch (NuGetPackageNotFoundException)
             {
-                Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
+                Utils.Reporter.Error.WriteLine(string.Format(CliCommandStrings.NoWorkloadVersionsFound, new SdkFeatureBand(_sdkVersion)));
                 return 0;
             }
 
@@ -117,7 +116,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
             if (!versions.Any())
             {
-                Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadVersionWithSpecifiedManifestNotFound, string.Join(' ', _workloadVersion)));
+                Reporter.WriteLine(string.Format(CliCommandStrings.WorkloadVersionWithSpecifiedManifestNotFound, string.Join(' ', _workloadVersion)));
             }
             else if (_workloadSetOutputFormat?.Equals("json", StringComparison.OrdinalIgnoreCase) == true)
             {
@@ -142,9 +141,9 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
             else
             {
                 PrintableTable<KeyValuePair<ManifestId, (ManifestVersion Version, SdkFeatureBand FeatureBand)>> table = new();
-                table.AddColumn(LocalizableStrings.WorkloadManifestIdColumn, manifest => manifest.Key.ToString());
-                table.AddColumn(LocalizableStrings.WorkloadManifestFeatureBandColumn, manifest => manifest.Value.FeatureBand.ToString());
-                table.AddColumn(InformationStrings.WorkloadManifestVersionColumn, manifest => manifest.Value.Version.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestIdColumn, manifest => manifest.Key.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestFeatureBandColumn, manifest => manifest.Value.FeatureBand.ToString());
+                table.AddColumn(CliCommandStrings.WorkloadManifestVersionColumn, manifest => manifest.Value.Version.ToString());
                 table.PrintRows(workloadSet.ManifestVersions, l => Reporter.WriteLine(l));
             }
         }
@@ -159,13 +158,12 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver)
     {
-        installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
-        return packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
+        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
             .GetAwaiter().GetResult()
-            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))
-            .ToList();
+            .Select(version => WorkloadSetVersion.FromWorkloadSetPackageVersion(featureBand, version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()
@@ -175,7 +173,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
 
     public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
     {
-        installer ??= GenerateInstaller(Cli.Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
         List<string> versions;
         try
         {
@@ -184,7 +182,7 @@ internal class WorkloadSearchVersionsCommand : WorkloadCommandBase
         }
         catch (NuGetPackageNotFoundException)
         {
-            Cli.Utils.Reporter.Error.WriteLine(string.Format(LocalizableStrings.NoWorkloadVersionsFound, featureBand));
+            Utils.Reporter.Error.WriteLine(string.Format(CliCommandStrings.NoWorkloadVersionsFound, featureBand));
             return null;
         }
 

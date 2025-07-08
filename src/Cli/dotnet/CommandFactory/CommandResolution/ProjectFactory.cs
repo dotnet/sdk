@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Exceptions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -8,16 +10,11 @@ using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-internal class ProjectFactory
+internal class ProjectFactory(IEnvironmentProvider environment)
 {
     private const string ProjectFactoryName = "projectfactory";
 
-    private IEnvironmentProvider _environment;
-
-    public ProjectFactory(IEnvironmentProvider environment)
-    {
-        _environment = environment;
-    }
+    private readonly IEnvironmentProvider _environment = environment;
 
     public IProject GetProject(
         string projectDirectory,
@@ -38,14 +35,14 @@ internal class ProjectFactory
             msBuildExePath;
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildExePath,
+            CliStrings.MSBuildExePath,
             ProjectFactoryName,
             msBuildExePath));
 
         string msBuildProjectPath = GetMSBuildProjPath(projectDirectory);
 
         Reporter.Verbose.WriteLine(string.Format(
-            LocalizableStrings.MSBuildProjectPath,
+            CliStrings.MSBuildProjectPath,
             ProjectFactoryName,
             msBuildProjectPath));
 
@@ -66,7 +63,7 @@ internal class ProjectFactory
         }
     }
 
-    private string GetMSBuildProjPath(string projectDirectory)
+    private static string GetMSBuildProjPath(string projectDirectory)
     {
         IEnumerable<string> projectFiles = Directory
             .GetFiles(projectDirectory, "*.*proj")
@@ -79,7 +76,7 @@ internal class ProjectFactory
         else if (projectFiles.Count() > 1)
         {
             throw new GracefulException(string.Format(
-                LocalizableStrings.MultipleProjectFilesFound,
+                CliStrings.MultipleProjectFilesFound,
                 projectDirectory));
         }
 

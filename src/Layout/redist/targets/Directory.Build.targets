@@ -10,16 +10,18 @@
 
   <ImportGroup Condition="'$(GenerateSdkBundleOnly)' != 'true'">
     <Import Project="BundledSdks.targets" />
-    <Import Project="PublishDotnetWatch.targets" />
-    <Import Project="GenerateLayout.targets" />
-    <Import Project="OverlaySdkOnLKG.targets" Condition="'$(DotNetBuild)' != 'true'" />
-
-    <Import Project="BundledTemplates.targets" />
     <Import Project="BundledDotnetTools.targets" />
     <Import Project="GenerateBundledVersions.targets" />
+    <Import Project="GeneratePackagePruneData.targets" />
+    <Import Project="GenerateLayout.targets" />
+
+    <Import Project="BundledTemplates.targets" />
     <Import Project="Crossgen.targets" />
     <Import Project="GenerateInstallerLayout.targets" />
     <Import Project="GenerateArchives.targets" />
+
+    <Import Project="OverlaySdkOnLKG.targets" />
+    <Import Project="GenerateTestingGlobalJson.targets" />
   </ImportGroup>
 
   <!-- Installers -->

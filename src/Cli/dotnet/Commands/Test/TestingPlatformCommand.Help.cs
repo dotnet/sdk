@@ -1,25 +1,26 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using System.CommandLine;
-using System.CommandLine.Help;
-using Microsoft.DotNet.Tools.Test;
+using Microsoft.TemplateEngine.Cli.Help;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class TestingPlatformCommand
 {
     private readonly ConcurrentDictionary<string, CommandLineOption> _commandLineOptionNameToModuleNames = [];
     private readonly ConcurrentDictionary<bool, List<(string, string[])>> _moduleNamesToCommandLineOptions = [];
-    private static string Indent = "  ";
+    private static readonly string Indent = "  ";
 
     public IEnumerable<Action<HelpContext>> CustomHelpLayout()
     {
         yield return (context) =>
         {
             WriteHelpOptions(context);
-            Console.WriteLine(LocalizableStrings.HelpWaitingForOptionsAndExtensions);
+            Console.WriteLine(CliCommandStrings.HelpWaitingForOptionsAndExtensions);
 
             Run(context.ParseResult);
 
@@ -38,7 +39,7 @@ internal partial class TestingPlatformCommand
         };
     }
 
-    private void WriteHelpOptions(HelpContext context)
+    private static void WriteHelpOptions(HelpContext context)
     {
         HelpBuilder.Default.SynopsisSection()(context);
         context.Output.WriteLine();
@@ -50,18 +51,18 @@ internal partial class TestingPlatformCommand
 
     private static void WriteUsageSection(HelpContext context)
     {
-        context.Output.WriteLine(LocalizableStrings.CmdHelpUsageTitle);
+        context.Output.WriteLine(CliCommandStrings.CmdHelpUsageTitle);
         context.Output.WriteLine(Indent + string.Join(" ", GetCustomUsageParts(context.Command)));
     }
 
-    private static IEnumerable<string> GetCustomUsageParts(CliCommand command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
+    private static IEnumerable<string> GetCustomUsageParts(Command command, bool showOptions = true, bool showPlatformOptions = true, bool showExtensionOptions = true)
     {
-        var parentCommands = new List<CliCommand>();
+        var parentCommands = new List<Command>();
         var nextCommand = command;
         while (nextCommand is not null)
         {
             parentCommands.Add(nextCommand);
-            nextCommand = nextCommand.Parents.FirstOrDefault(c => c is CliCommand) as CliCommand;
+            nextCommand = nextCommand.Parents.FirstOrDefault(c => c is Command) as Command;
         }
         parentCommands.Reverse();
 
@@ -72,17 +73,17 @@ internal partial class TestingPlatformCommand
 
         if (showOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpOptions);
         }
 
         if (showPlatformOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpPlatformOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpPlatformOptions);
         }
 
         if (showExtensionOptions)
         {
-            yield return FormatHelpOption(LocalizableStrings.HelpExtensionOptions);
+            yield return FormatHelpOption(CliCommandStrings.HelpExtensionOptions);
         }
     }
 

@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -41,10 +43,7 @@ public class Telemetry : ITelemetry
             return;
         }
 
-        if (environmentProvider == null)
-        {
-            environmentProvider = new EnvironmentProvider();
-        }
+        environmentProvider ??= new EnvironmentProvider();
 
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, defaultValue: CompileOptions.TelemetryOptOutDefault)
                     && PermissionExists(sentinel);
@@ -79,7 +78,7 @@ public class Telemetry : ITelemetry
         DisabledForTests = false;
     }
 
-    private bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
+    private static bool PermissionExists(IFirstTimeUseNoticeSentinel sentinel)
     {
         if (sentinel == null)
         {
@@ -149,7 +148,7 @@ public class Telemetry : ITelemetry
             _client.Context.Device.OperatingSystem = CLIRuntimeEnvironment.OperatingSystem;
 
             _commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties();
-            _commonMeasurements = new Dictionary<string, double>();
+            _commonMeasurements = [];
         }
         catch (Exception e)
         {

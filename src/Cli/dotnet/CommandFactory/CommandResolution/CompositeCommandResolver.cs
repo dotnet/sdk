@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
@@ -8,7 +10,7 @@ namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 public class CompositeCommandResolver : ICommandResolver
 {
     private const string CommandResolveEvent = "commandresolution/commandresolved";
-    private IList<ICommandResolver> _orderedCommandResolvers;
+    private readonly IList<ICommandResolver> _orderedCommandResolvers;
 
     public IEnumerable<ICommandResolver> OrderedCommandResolvers
     {
@@ -20,7 +22,7 @@ public class CompositeCommandResolver : ICommandResolver
 
     public CompositeCommandResolver()
     {
-        _orderedCommandResolvers = new List<ICommandResolver>();
+        _orderedCommandResolvers = [];
     }
 
     public void AddCommandResolver(ICommandResolver commandResolver)

@@ -3,87 +3,79 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Store;
-using LocalizableStrings = Microsoft.DotNet.Tools.Store.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Store;
 
 internal static class StoreCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-store";
 
-    public static readonly CliArgument<IEnumerable<string>> Argument = new("argument")
+    public static readonly Argument<IEnumerable<string>> Argument = new("argument")
     {
         Arity = ArgumentArity.ZeroOrMore,
     };
 
-    public static readonly CliOption<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
+    public static readonly Option<IEnumerable<string>> ManifestOption = new ForwardedOption<IEnumerable<string>>("--manifest", "-m")
     {
-        Description = LocalizableStrings.ProjectManifestDescription,
-        HelpName = LocalizableStrings.ProjectManifest
+        Description = CliCommandStrings.ProjectManifestDescription,
+        HelpName = CliCommandStrings.ProjectManifest,
+        Arity = ArgumentArity.OneOrMore
     }.ForwardAsMany(o =>
     {
         // the first path doesn't need to go through CommandDirectoryContext.ExpandPath
         // since it is a direct argument to MSBuild, not a property
-        var materializedString = $"{o.First()}";
+        var materializedString = $"{o!.First()}";
 
-        if (o.Count() == 1)
+        if (o!.Count() == 1)
         {
-            return new[]
-            {
-                materializedString
-            };
+            return [materializedString];
         }
         else
         {
-            return new[]
-            {
-                materializedString,
-                $"-property:AdditionalProjects={string.Join("%3B", o.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"
-            };
+            return [materializedString, $"-property:AdditionalProjects={string.Join("%3B", o!.Skip(1).Select(CommandDirectoryContext.GetFullPath))}"];
         }
     }).AllowSingleArgPerToken();
 
-    public static readonly CliOption<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version")
+    public static readonly Option<string> FrameworkVersionOption = new ForwardedOption<string>("--framework-version")
     {
-        Description = LocalizableStrings.FrameworkVersionOptionDescription,
-        HelpName = LocalizableStrings.FrameworkVersionOption
+        Description = CliCommandStrings.FrameworkVersionOptionDescription,
+        HelpName = CliCommandStrings.FrameworkVersionOption
     }.ForwardAsSingle(o => $"-property:RuntimeFrameworkVersion={o}");
 
-    public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.OutputOptionDescription,
-        HelpName = LocalizableStrings.OutputOption
+        Description = CliCommandStrings.StoreOutputOptionDescription,
+        HelpName = CliCommandStrings.StoreOutputOption
     }.ForwardAsOutputPath("ComposeDir");
 
-    public static readonly CliOption<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
+    public static readonly Option<string> WorkingDirOption = new ForwardedOption<string>("--working-dir", "-w")
     {
-        Description = LocalizableStrings.IntermediateWorkingDirOptionDescription,
-        HelpName = LocalizableStrings.IntermediateWorkingDirOption
+        Description = CliCommandStrings.IntermediateWorkingDirOptionDescription,
+        HelpName = CliCommandStrings.IntermediateWorkingDirOption
     }.ForwardAsSingle(o => $"-property:ComposeWorkingDir={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly CliOption<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
+    public static readonly Option<bool> SkipOptimizationOption = new ForwardedOption<bool>("--skip-optimization")
     {
-        Description = LocalizableStrings.SkipOptimizationOptionDescription,
+        Description = CliCommandStrings.SkipOptimizationOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:SkipOptimization=true");
 
-    public static readonly CliOption<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
+    public static readonly Option<bool> SkipSymbolsOption = new ForwardedOption<bool>("--skip-symbols")
     {
-        Description = LocalizableStrings.SkipSymbolsOptionDescription,
+        Description = CliCommandStrings.SkipSymbolsOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:CreateProfilingSymbols=false");
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        DocumentedCommand command = new("store", DocsLink, LocalizableStrings.AppDescription);
+        DocumentedCommand command = new("store", DocsLink, CliCommandStrings.StoreAppDescription);
 
         command.Arguments.Add(Argument);
         command.Options.Add(ManifestOption);
@@ -92,10 +84,10 @@ internal static class StoreCommandParser
         command.Options.Add(WorkingDirOption);
         command.Options.Add(SkipOptimizationOption);
         command.Options.Add(SkipSymbolsOption);
-        command.Options.Add(CommonOptions.FrameworkOption(LocalizableStrings.FrameworkOptionDescription));
-        command.Options.Add(CommonOptions.RuntimeOption.WithHelpDescription(command, LocalizableStrings.RuntimeOptionDescription));
-        command.Options.Add(CommonOptions.VerbosityOption);
-        command.Options.Add(CommonOptions.CurrentRuntimeOption(LocalizableStrings.CurrentRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.FrameworkOption(CliCommandStrings.StoreFrameworkOptionDescription));
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.StoreRuntimeOptionDescription));
+        command.Options.Add(CommonOptions.VerbosityOption());
+        command.Options.Add(CommonOptions.CurrentRuntimeOption(CliCommandStrings.CurrentRuntimeOptionDescription));
         command.Options.Add(CommonOptions.DisableBuildServersOption);
 
         command.SetAction(StoreCommand.Run);

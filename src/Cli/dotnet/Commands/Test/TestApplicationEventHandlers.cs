@@ -1,32 +1,35 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Tools.Test;
-using Microsoft.Testing.Platform.OutputDevice;
-using Microsoft.Testing.Platform.OutputDevice.Terminal;
+using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
-internal sealed class TestApplicationsEventHandlers : IDisposable
+internal sealed class TestApplicationsEventHandlers(TerminalTestReporter output) : IDisposable
 {
     private readonly ConcurrentDictionary<TestApplication, (string ModulePath, string TargetFramework, string Architecture, string ExecutionId)> _executions = new();
-    private readonly TerminalTestReporter _output;
-
-    public TestApplicationsEventHandlers(TerminalTestReporter output)
-    {
-        _output = output;
-    }
+    private readonly TerminalTestReporter _output = output;
 
     public void OnHandshakeReceived(object sender, HandshakeArgs args)
     {
-        var testApplication = (TestApplication)sender;
-        var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
-        var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
-        var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
-        (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId);
-        _executions[testApplication] = appInfo;
-        _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+        var hostType = args.Handshake.Properties[HandshakeMessagePropertyNames.HostType];
+        // https://github.com/microsoft/testfx/blob/2a9a353ec2bb4ce403f72e8ba1f29e01e7cf1fd4/src/Platform/Microsoft.Testing.Platform/Hosts/CommonTestHost.cs#L87-L97
+        if (hostType == "TestHost")
+        {
+            // AssemblyRunStarted counts "retry count", and writes to terminal "(Try <number-of-try>) Running tests from <assembly>"
+            // So, we want to call it only for test host, and not for test host controller (or orchestrator, if in future it will handshake as well)
+            // Calling it for both test host and test host controllers means we will count retries incorrectly, and will messages twice.
+            var testApplication = (TestApplication)sender;
+            var executionId = args.Handshake.Properties[HandshakeMessagePropertyNames.ExecutionId];
+            var arch = args.Handshake.Properties[HandshakeMessagePropertyNames.Architecture]?.ToLower();
+            var tfm = TargetFrameworkParser.GetShortTargetFramework(args.Handshake.Properties[HandshakeMessagePropertyNames.Framework]);
+            (string ModulePath, string TargetFramework, string Architecture, string ExecutionId) appInfo = new(testApplication.Module.RunProperties.RunCommand, tfm, arch, executionId);
+            _executions[testApplication] = appInfo;
+            _output.AssemblyRunStarted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId);
+        }
 
         LogHandshake(args);
     }
@@ -63,12 +66,18 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
 
     public void OnTestResultsReceived(object sender, TestResultEventArgs args)
     {
+        // TODO: If we got some results for ExecutionId1 and InstanceId1
+        // Then we started getting ExecutionId1 and InstanceId2,
+        // Then we started getting ExecutionId1 and InstanceId1 again.
+        // Should we discard the last result from ExecutionId1 and InstanceId1 completely?
+        // Or is it considered a violation of the protocol and should never happen? (in that case maybe we should throw?)
         var testApp = (TestApplication)sender;
         var appInfo = _executions[testApp];
 
         foreach (var testResult in args.SuccessfulTestResults)
         {
             _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+                args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
@@ -82,12 +91,12 @@ internal sealed class TestApplicationsEventHandlers : IDisposable
 
         foreach (var testResult in args.FailedTestResults)
         {
-            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId,
+            _output.TestCompleted(appInfo.ModulePath, appInfo.TargetFramework, appInfo.Architecture, appInfo.ExecutionId, args.InstanceId,
                 testResult.Uid,
                 testResult.DisplayName,
                 ToOutcome(testResult.State),
                 TimeSpan.FromTicks(testResult.Duration ?? 0),
-                exceptions: testResult.Exceptions.Select(fe => new Testing.Platform.OutputDevice.Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace)).ToArray(),
+                exceptions: [.. testResult.Exceptions.Select(fe => new Terminal.FlatException(fe.ErrorMessage, fe.ErrorType, fe.StackTrace))],
                 expected: null,
                 actual: null,
                 standardOutput: testResult.StandardOutput,

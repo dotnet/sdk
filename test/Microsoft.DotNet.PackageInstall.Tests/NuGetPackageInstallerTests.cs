@@ -157,9 +157,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [Fact]
         public async Task GivenARelativeSourcePathInstallSucceeds()
         {
+            new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
+                .Execute().Should().Pass();
+
             string getTestLocalFeedPath = GetTestLocalFeedPath();
             string relativePath = Path.GetRelativePath(Environment.CurrentDirectory, getTestLocalFeedPath);
-            Log.WriteLine(relativePath);
+            Log.WriteLine("Relative path: " + relativePath);
             string packagePath = await _installer.DownloadPackageAsync(
                 TestPackageId,
                 new NuGetVersion(TestPackageVersion),
@@ -186,7 +189,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -207,7 +210,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new NuGetVersion(TestPackageVersion),
                 new PackageSourceLocation(additionalSourceFeeds: [ relativePath ]),
                 packageSourceMapping: mockPackageSourceMapping);
-            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
+            (await a.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
         [Fact]
@@ -245,7 +248,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
             bufferedReporter.Lines.Should()
                 .ContainSingle(
-                    Cli.NuGetPackageDownloader.LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                    CliStrings.NuGetPackageSignatureVerificationSkipped);
             File.Exists(packagePath).Should().BeTrue();
         }
 

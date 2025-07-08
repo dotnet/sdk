@@ -5,13 +5,15 @@ using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.Utils;
 
-public class EnvironmentProvider : IEnvironmentProvider
+public class EnvironmentProvider(
+    IEnumerable<string>? extensionsOverride = null,
+    IEnumerable<string>? searchPathsOverride = null) : IEnvironmentProvider
 {
-    private static char[] s_pathSeparator = new char[] { Path.PathSeparator };
-    private static char[] s_quote = new char[] { '"' };
-    private IEnumerable<string>? _searchPaths;
+    private static char[] s_pathSeparator = [Path.PathSeparator];
+    private static char[] s_quote = ['"'];
+    private IEnumerable<string>? _searchPaths = searchPathsOverride;
     private readonly Lazy<string> _userHomeDirectory = new(() => Environment.GetEnvironmentVariable("HOME") ?? string.Empty);
-    private IEnumerable<string>? _executableExtensions;
+    private IEnumerable<string>? _executableExtensions = extensionsOverride;
 
     public IEnumerable<string> ExecutableExtensions
     {
@@ -65,19 +67,11 @@ public class EnvironmentProvider : IEnvironmentProvider
         }
     }
 
-    public EnvironmentProvider(
-        IEnumerable<string>? extensionsOverride = null,
-        IEnumerable<string>? searchPathsOverride = null)
-    {
-        _executableExtensions = extensionsOverride;
-        _searchPaths = searchPathsOverride;
-    }
-
     public string? GetCommandPath(string commandName, params string[] extensions)
     {
         if (!extensions.Any())
         {
-            extensions = ExecutableExtensions.ToArray();
+            extensions = [.. ExecutableExtensions];
         }
 
         var commandPath = SearchPaths.Join(
@@ -93,7 +87,7 @@ public class EnvironmentProvider : IEnvironmentProvider
     {
         if (!extensions.Any())
         {
-            extensions = ExecutableExtensions.ToArray();
+            extensions = [.. ExecutableExtensions];
         }
 
         var commandPath = extensions.Select(e => Path.Combine(rootPath, commandName + e))

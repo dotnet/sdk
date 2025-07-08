@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
 using Microsoft.Extensions.EnvironmentAbstractions;
@@ -13,9 +15,8 @@ internal sealed class PerformanceLogManager
     private const string PerfLogRoot = "PerformanceLogs";
     private const int DefaultNumLogsToKeep = 10;
 
-    private IFileSystem _fileSystem;
+    private readonly IFileSystem _fileSystem;
     private string _perfLogRoot;
-    private string _currentLogDir;
 
     internal static PerformanceLogManager Instance
     {
@@ -55,10 +56,7 @@ internal sealed class PerformanceLogManager
         _fileSystem = fileSystem;
     }
 
-    internal string CurrentLogDirectory
-    {
-        get { return _currentLogDir; }
-    }
+    internal string CurrentLogDirectory { get; private set; }
 
     private void CreateLogDirectory()
     {
@@ -69,20 +67,20 @@ internal sealed class PerformanceLogManager
         }
 
         // Create a new perf log directory.
-        _currentLogDir = Path.Combine(_perfLogRoot, Guid.NewGuid().ToString("N"));
-        _fileSystem.Directory.CreateDirectory(_currentLogDir);
+        CurrentLogDirectory = Path.Combine(_perfLogRoot, Guid.NewGuid().ToString("N"));
+        _fileSystem.Directory.CreateDirectory(CurrentLogDirectory);
     }
 
     private void UseExistingLogDirectory(string logDirectory)
     {
-        _currentLogDir = logDirectory;
+        CurrentLogDirectory = logDirectory;
     }
 
     private void CleanupOldLogs()
     {
         if (_fileSystem.Directory.Exists(_perfLogRoot))
         {
-            List<DirectoryInfo> logDirectories = new();
+            List<DirectoryInfo> logDirectories = [];
             foreach (string directoryPath in _fileSystem.Directory.EnumerateDirectories(_perfLogRoot))
             {
                 logDirectories.Add(new DirectoryInfo(directoryPath));

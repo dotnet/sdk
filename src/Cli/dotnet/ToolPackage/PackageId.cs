@@ -1,16 +1,13 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
-internal struct PackageId : IEquatable<PackageId>, IComparable<PackageId>
+internal struct PackageId(string id) : IEquatable<PackageId>, IComparable<PackageId>
 {
-    private string _id;
-
-    public PackageId(string id)
-    {
-        _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
-    }
+    private readonly string _id = id?.ToLowerInvariant() ?? throw new ArgumentNullException(nameof(id));
 
     public bool Equals(PackageId other)
     {

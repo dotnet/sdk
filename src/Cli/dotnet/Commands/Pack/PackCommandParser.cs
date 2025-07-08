@@ -2,72 +2,74 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Build;
+using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Pack;
-using LocalizableStrings = Microsoft.DotNet.Tools.Pack.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Pack;
 
 internal static class PackCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-pack";
 
-    public static readonly CliArgument<IEnumerable<string>> SlnOrProjectArgument = new(CommonLocalizableStrings.SolutionOrProjectArgumentName)
+    public static readonly Argument<IEnumerable<string>> SlnOrProjectArgument = new(CliStrings.SolutionOrProjectArgumentName)
     {
-        Description = CommonLocalizableStrings.SolutionOrProjectArgumentDescription,
+        Description = CliStrings.SolutionOrProjectArgumentDescription,
         Arity = ArgumentArity.ZeroOrMore
     };
 
-    public static readonly CliOption<string> OutputOption = new ForwardedOption<string>("--output", "-o")
+    public static readonly Option<string> OutputOption = new ForwardedOption<string>("--output", "-o")
     {
-        Description = LocalizableStrings.CmdOutputDirDescription,
-        HelpName = LocalizableStrings.CmdOutputDir
+        Description = CliCommandStrings.PackCmdOutputDirDescription,
+        HelpName = CliCommandStrings.PackCmdOutputDir
     }.ForwardAsSingle(o => $"-property:PackageOutputPath={CommandDirectoryContext.GetFullPath(o)}");
 
-    public static readonly CliOption<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
+    public static readonly Option<bool> NoBuildOption = new ForwardedOption<bool>("--no-build")
     {
-        Description = LocalizableStrings.CmdNoBuildOptionDescription,
+        Description = CliCommandStrings.CmdNoBuildOptionDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:NoBuild=true");
 
-    public static readonly CliOption<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
+    public static readonly Option<bool> IncludeSymbolsOption = new ForwardedOption<bool>("--include-symbols")
     {
-        Description = LocalizableStrings.CmdIncludeSymbolsDescription,
+        Description = CliCommandStrings.CmdIncludeSymbolsDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSymbols=true");
 
-    public static readonly CliOption<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
+    public static readonly Option<bool> IncludeSourceOption = new ForwardedOption<bool>("--include-source")
     {
-        Description = LocalizableStrings.CmdIncludeSourceDescription,
+        Description = CliCommandStrings.CmdIncludeSourceDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:IncludeSource=true");
 
-    public static readonly CliOption<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
+    public static readonly Option<bool> ServiceableOption = new ForwardedOption<bool>("--serviceable", "-s")
     {
-        Description = LocalizableStrings.CmdServiceableDescription,
+        Description = CliCommandStrings.CmdServiceableDescription,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-property:Serviceable=true");
 
-    public static readonly CliOption<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
+    public static readonly Option<bool> NoLogoOption = new ForwardedOption<bool>("--nologo")
     {
-        Description = LocalizableStrings.CmdNoLogo,
+        Description = CliCommandStrings.PackCmdNoLogo,
         Arity = ArgumentArity.Zero
     }.ForwardAs("-nologo");
 
-    public static readonly CliOption<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
+    public static readonly Option<bool> NoRestoreOption = CommonOptions.NoRestoreOption;
 
-    public static readonly CliOption<string> ConfigurationOption = CommonOptions.ConfigurationOption(LocalizableStrings.ConfigurationOptionDescription);
+    public static readonly Option<string?> ConfigurationOption = CommonOptions.ConfigurationOption(CliCommandStrings.PackConfigurationOptionDescription);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    public static readonly Option<string[]> TargetOption = CommonOptions.RequiredMSBuildTargetOption("Pack", [("_IsPacking", "true")]);
 
-    public static CliCommand GetCommand()
+    private static readonly Command Command = ConstructCommand();
+
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new DocumentedCommand("pack", DocsLink, LocalizableStrings.AppFullName);
+        var command = new DocumentedCommand("pack", DocsLink, CliCommandStrings.PackAppFullName);
 
         command.Arguments.Add(SlnOrProjectArgument);
         command.Options.Add(OutputOption);
@@ -79,11 +81,15 @@ internal static class PackCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.InteractiveMsBuildForwardOption);
         command.Options.Add(NoRestoreOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(BuildCommandParser.VerbosityOption);
         command.Options.Add(CommonOptions.VersionSuffixOption);
         command.Options.Add(ConfigurationOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
-        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: true, includeNoDependenciesOption: true);
+        command.Options.Add(TargetOption);
+
+        // Don't include runtime option because we want to include it specifically and allow the short version ("-r") to be used
+        RestoreCommandParser.AddImplicitRestoreOptions(command, includeRuntimeOption: false, includeNoDependenciesOption: true);
+        command.Options.Add(CommonOptions.RuntimeOption(CliCommandStrings.BuildRuntimeOptionDescription));
 
         command.SetAction(PackCommand.Run);
 

@@ -2,98 +2,94 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.Install;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Install.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal static class ToolInstallCommandParser
 {
-    public static readonly CliArgument<string> PackageIdArgument = new("packageId")
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.RequiredPackageIdentityArgument();
+
+    public static readonly Option<string> VersionOption = new("--version")
     {
-        HelpName = LocalizableStrings.PackageIdArgumentName,
-        Description = LocalizableStrings.PackageIdArgumentDescription
+        Description = CliCommandStrings.ToolInstallVersionOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallVersionOptionName
     };
 
-    public static readonly CliOption<string> VersionOption = new("--version")
+    public static readonly Option<string> ConfigOption = new("--configfile")
     {
-        Description = LocalizableStrings.VersionOptionDescription,
-        HelpName = LocalizableStrings.VersionOptionName
+        Description = CliCommandStrings.ToolInstallConfigFileOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallConfigFileOptionName
     };
 
-    public static readonly CliOption<string> ConfigOption = new("--configfile")
+    public static readonly Option<string[]> SourceOption = new Option<string[]>("--source")
     {
-        Description = LocalizableStrings.ConfigFileOptionDescription,
-        HelpName = LocalizableStrings.ConfigFileOptionName
-    };
-
-    public static readonly CliOption<string[]> SourceOption = new CliOption<string[]>("--source")
-    {
-        Description = LocalizableStrings.SourceOptionDescription,
-        HelpName = LocalizableStrings.SourceOptionName
+        Description = CliCommandStrings.ToolInstallSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallSourceOptionName
     }.AllowSingleArgPerToken();
 
-    public static readonly CliOption<string[]> AddSourceOption = new CliOption<string[]>("--add-source")
+    public static readonly Option<string[]> AddSourceOption = new Option<string[]>("--add-source")
     {
-        Description = LocalizableStrings.AddSourceOptionDescription,
-        HelpName = LocalizableStrings.AddSourceOptionName
+        Description = CliCommandStrings.ToolInstallAddSourceOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallAddSourceOptionName
     }.AllowSingleArgPerToken();
 
-    public static readonly CliOption<string> FrameworkOption = new("--framework")
+    public static readonly Option<string> FrameworkOption = new("--framework")
     {
-        Description = LocalizableStrings.FrameworkOptionDescription,
-        HelpName = LocalizableStrings.FrameworkOptionName
+        Description = CliCommandStrings.ToolInstallFrameworkOptionDescription,
+        HelpName = CliCommandStrings.ToolInstallFrameworkOptionName
     };
 
-    public static readonly CliOption<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
+    public static readonly Option<bool> PrereleaseOption = ToolSearchCommandParser.PrereleaseOption;
 
-    public static readonly CliOption<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
+    public static readonly Option<bool> CreateManifestIfNeededOption = new("--create-manifest-if-needed")
     {
-        Description = LocalizableStrings.CreateManifestIfNeededOptionDescription,
+        Description = CliCommandStrings.CreateManifestIfNeededOptionDescription,
+        Arity = ArgumentArity.ZeroOrOne,
+        DefaultValueFactory = _ => true,
+    };
+
+    public static readonly Option<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
+    {
+        Description = CliCommandStrings.AllowPackageDowngradeOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> AllowPackageDowngradeOption = new("--allow-downgrade")
-    {
-        Description = LocalizableStrings.AllowPackageDowngradeOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
-
-    public static readonly CliOption<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption;
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
 
     // Don't use the common options version as we don't want this to be a forwarded option
-    public static readonly CliOption<string> ArchitectureOption = new("--arch", "-a")
+    public static readonly Option<string> ArchitectureOption = new("--arch", "-a")
     {
-        Description = CommonLocalizableStrings.ArchitectureOptionDescription
+        Description = CliStrings.ArchitectureOptionDescription
     };
 
-    public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+    public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = LocalizableStrings.RollForwardOptionDescription,
+        Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> GlobalOption = ToolAppliedOption.GlobalOption;
+    public static readonly Option<bool> GlobalOption = ToolAppliedOption.GlobalOption(CliCommandStrings.ToolInstallGlobalOptionDescription);
 
-    public static readonly CliOption<bool> LocalOption = ToolAppliedOption.LocalOption;
+    public static readonly Option<bool> LocalOption = ToolAppliedOption.LocalOption(CliCommandStrings.ToolInstallLocalOptionDescription);
 
-    public static readonly CliOption<string> ToolPathOption = ToolAppliedOption.ToolPathOption;
+    public static readonly Option<string> ToolPathOption = ToolAppliedOption.ToolPathOption(CliCommandStrings.ToolInstallToolPathOptionDescription);
 
-    public static readonly CliOption<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption;
+    public static readonly Option<string> ToolManifestOption = ToolAppliedOption.ToolManifestOption(CliCommandStrings.ToolInstallManifestPathOptionDescription);
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("install", LocalizableStrings.CommandDescription);
-        command.Arguments.Add(PackageIdArgument);
+        Command command = new("install", CliCommandStrings.ToolInstallCommandDescription);
+        command.Arguments.Add(PackageIdentityArgument);
 
         AddCommandOptions(command);
 
@@ -107,14 +103,14 @@ internal static class ToolInstallCommandParser
         return command;
     }
 
-    public static CliCommand AddCommandOptions(CliCommand command)
+    public static Command AddCommandOptions(Command command)
     {
-        command.Options.Add(GlobalOption.WithHelpDescription(command, LocalizableStrings.GlobalOptionDescription));
-        command.Options.Add(LocalOption.WithHelpDescription(command, LocalizableStrings.LocalOptionDescription));
-        command.Options.Add(ToolPathOption.WithHelpDescription(command, LocalizableStrings.ToolPathOptionDescription));
+        command.Options.Add(GlobalOption);
+        command.Options.Add(LocalOption);
+        command.Options.Add(ToolPathOption);
         command.Options.Add(VersionOption);
         command.Options.Add(ConfigOption);
-        command.Options.Add(ToolManifestOption.WithHelpDescription(command, LocalizableStrings.ManifestPathOptionDescription));
+        command.Options.Add(ToolManifestOption);
         command.Options.Add(AddSourceOption);
         command.Options.Add(SourceOption);
         command.Options.Add(FrameworkOption);

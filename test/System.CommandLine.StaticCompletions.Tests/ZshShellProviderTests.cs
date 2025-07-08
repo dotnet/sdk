@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 namespace System.CommandLine.StaticCompletions.Tests;
 
 using System.CommandLine.Help;
@@ -15,23 +17,23 @@ public class ZshShellProviderTests(ITestOutputHelper log)
     [Fact]
     public async Task GenericCompletions()
     {
-        CliCommand command = new CliCommand("my-app") {
-            new CliOption<bool>("-c") {
+        Command command = new Command("my-app") {
+            new Option<bool>("-c") {
                 Arity = ArgumentArity.Zero,
                 Recursive = true
             },
-            new CliOption<bool>("-v") {
+            new Option<bool>("-v") {
                 Arity = ArgumentArity.Zero
             },
             new HelpOption(),
-            new CliCommand("test", "Subcommand\nwith a second line") {
-                new CliOption<bool>("--debug", "-d")
+            new Command("test", "Subcommand\nwith a second line") {
+                new Option<bool>("--debug", "-d")
                 {
                     Arity = ArgumentArity.Zero
                 }
             },
-            new CliCommand("help", "Print this message or the help of the given subcommand(s)") {
-                new CliCommand("test")
+            new Command("help", "Print this message or the help of the given subcommand(s)") {
+                new Command("test")
             }
         };
         await _provider.Verify(command, log);
@@ -51,7 +53,7 @@ public class ZshShellProviderTests(ITestOutputHelper log)
                 new ("6")
             ];
         });
-        CliCommand command = new CliCommand("my-app")
+        Command command = new Command("my-app")
         {
             staticOption,
             dynamicArg
@@ -62,9 +64,9 @@ public class ZshShellProviderTests(ITestOutputHelper log)
     [Fact]
     public async Task CustomStaticCompletionsGeneration()
     {
-        var staticOption = new CliOption<int>("--static");
+        var staticOption = new Option<int>("--static");
         staticOption.AcceptOnlyFromAmong("1", "2", "3");
-        var dynamicArg = new CliArgument<int>("--dynamic");
+        var dynamicArg = new Argument<int>("--dynamic");
         dynamicArg.CompletionSources.Add((context) =>
         {
             return [
@@ -73,7 +75,7 @@ public class ZshShellProviderTests(ITestOutputHelper log)
                 new ("6")
             ];
         });
-        CliCommand command = new CliCommand("my-app")
+        Command command = new Command("my-app")
         {
             staticOption,
             dynamicArg

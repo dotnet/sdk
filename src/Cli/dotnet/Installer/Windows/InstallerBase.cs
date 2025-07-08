@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.Versioning;
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Workloads.Workload;
 using Microsoft.Win32.Msi;
 
 namespace Microsoft.DotNet.Cli.Installer.Windows;
@@ -13,8 +15,14 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// <summary>
 /// Base class for Windows installer components.
 /// </summary>
+/// <remarks>
+/// Creates a new <see cref="InstallerBase"/> instance using the specified elevation context and logger.
+/// </remarks>
+/// <param name="elevationContext"></param>
+/// <param name="logger"></param>
+/// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
 [SupportedOSPlatform("windows")]
-internal abstract class InstallerBase
+internal abstract class InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
 {
     /// <summary>
     /// The current process.
@@ -38,7 +46,7 @@ internal abstract class InstallerBase
     protected InstallElevationContextBase ElevationContext
     {
         get;
-    }
+    } = elevationContext;
 
     /// <summary>
     /// Returns true if the current process is 64-bit.
@@ -59,7 +67,7 @@ internal abstract class InstallerBase
     /// <summary>
     /// Provides access to the underlying setup log.
     /// </summary>
-    protected readonly ISetupLogger Log;
+    protected readonly ISetupLogger Log = logger;
 
     /// <summary>
     /// The parent process of this process.
@@ -88,7 +96,7 @@ internal abstract class InstallerBase
     /// <summary>
     /// The name of the SDK directory, e.g. 6.0.100.
     /// </summary>
-    protected string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+    protected static string SdkDirectory => Path.GetFileName(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
     /// <summary>
     /// Gets whether signatures for workload packages and installers should be verified.
@@ -96,20 +104,7 @@ internal abstract class InstallerBase
     protected bool VerifySignatures
     {
         get;
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="InstallerBase"/> instance using the specified elevation context and logger.
-    /// </summary>
-    /// <param name="elevationContext"></param>
-    /// <param name="logger"></param>
-    /// <param name="verifySignatures">Determines whether MSI signatures should be verified</param>
-    protected InstallerBase(InstallElevationContextBase elevationContext, ISetupLogger logger, bool verifySignatures)
-    {
-        ElevationContext = elevationContext;
-        Log = logger;
-        VerifySignatures = verifySignatures;
-    }
+    } = verifySignatures;
 
     /// <summary>
     /// Starts an elevated process to perform privileged operations.
@@ -160,7 +155,7 @@ internal abstract class InstallerBase
     /// </summary>
     /// <param name="response">The response message to examine.</param>
     /// <exception cref="WorkloadException"/>
-    protected void ExitOnFailure(InstallResponseMessage response, string message)
+    protected static void ExitOnFailure(InstallResponseMessage response, string message)
     {
         if (response.HResult < 0)
         {

@@ -1,0 +1,40 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.AspireWorkloadDeprecation.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+
+  <!--
+    This target detects old Aspire applications that still depend on the deprecated Aspire workload.
+
+    Starting with Aspire 9.0.0, Aspire moved from a workload-based distribution model to NuGet packages
+    with the Aspire.AppHost.Sdk. Projects using the old workload-based approach need to be upgraded.
+
+    Detection logic:
+    - IsAspireHost='true' indicates this is an Aspire host project
+    - AspireHostingSDKVersion is set by Aspire.AppHost.Sdk in new projects (9.0.0+)
+    - If AspireHostingSDKVersion is missing or < 9.0.0, this is likely an old workload-based project
+
+    This check runs before PrepareForBuild to catch the issue early in the build process.
+
+    Note: This error provides a clear upgrade message for customers. Without it, users would get
+    confusing errors about missing workloads that no longer exist, since the Aspire workload has
+    been removed from the SDK.
+  -->
+  <Target Name="_CheckForAspireWorkloadDeprecation"
+          BeforeTargets="PrepareForBuild"
+          Condition="'$(IsAspireHost)' == 'true' and ('$(AspireHostingSDKVersion)' == '' or $([MSBuild]::VersionLessThan('$(AspireHostingSDKVersion)', '9.0.0')))">
+
+    <NetSdkError ResourceName="AspireWorkloadIsDeprecated"
+                 FormatArguments="https://aka.ms/aspire/update-to-sdk" />
+
+  </Target>
+
+</Project>

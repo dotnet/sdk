@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Fsi;
 
-public class FsiForwardingApp : ForwardingApp
+public class FsiForwardingApp(string[] arguments) : ForwardingApp(GetFsiAppPath(), processArguments(arguments))
 {
     private const string FsiDllName = @"FSharp/fsi.dll";
     private const string FsiExeName = @"FSharp/fsi.exe";
@@ -19,11 +21,8 @@ public class FsiForwardingApp : ForwardingApp
         }
         else
         {
-            return args.Append($"--preferreduilang:{lang.Name}").ToArray();
+            return [.. args, $"--preferreduilang:{lang.Name}"];
         }
-    }
-    public FsiForwardingApp(string[] arguments) : base(GetFsiAppPath(), processArguments(arguments))
-    {
     }
 
     private static bool exists(string path)

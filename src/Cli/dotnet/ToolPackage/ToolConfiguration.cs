@@ -1,6 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+
+using NuGet.Packaging.Core;
+
 namespace Microsoft.DotNet.Cli.ToolPackage;
 
 internal class ToolConfiguration
@@ -8,18 +11,20 @@ internal class ToolConfiguration
     public ToolConfiguration(
         string commandName,
         string toolAssemblyEntryPoint,
-        IEnumerable<string> warnings = null)
+        string runner,
+        IDictionary<string, PackageIdentity>? ridSpecificPackages = null,
+        IEnumerable<string>? warnings = null)
     {
         if (string.IsNullOrWhiteSpace(commandName))
         {
-            throw new ToolConfigurationException(CommonLocalizableStrings.ToolSettingsMissingCommandName);
+            throw new ToolConfigurationException(CliStrings.ToolSettingsMissingCommandName);
         }
 
-        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint))
+        if (string.IsNullOrWhiteSpace(toolAssemblyEntryPoint) && ridSpecificPackages?.Any() != true)
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsMissingEntryPoint,
+                    CliStrings.ToolSettingsMissingEntryPoint,
                     commandName));
         }
 
@@ -28,34 +33,42 @@ internal class ToolConfiguration
 
         CommandName = commandName;
         ToolAssemblyEntryPoint = toolAssemblyEntryPoint;
-        Warnings = warnings ?? new List<string>();
+        Runner = runner;
+        RidSpecificPackages = ridSpecificPackages;
+        Warnings = warnings ?? [];
     }
 
-    private void EnsureNoInvalidFilenameCharacters(string commandName)
+    private static void EnsureNoInvalidFilenameCharacters(string commandName)
     {
         var invalidCharacters = Path.GetInvalidFileNameChars();
         if (commandName.IndexOfAny(invalidCharacters) != -1)
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsInvalidCommandName,
+                    CliStrings.ToolSettingsInvalidCommandName,
                     commandName,
                     string.Join(", ", invalidCharacters.Select(c => $"'{c}'"))));
         }
     }
 
-    private void EnsureNoLeadingDot(string commandName)
+    private static void EnsureNoLeadingDot(string commandName)
     {
         if (commandName.StartsWith(".", StringComparison.OrdinalIgnoreCase))
         {
             throw new ToolConfigurationException(
                 string.Format(
-                    CommonLocalizableStrings.ToolSettingsInvalidLeadingDotCommandName,
+                    CliStrings.ToolSettingsInvalidLeadingDotCommandName,
                     commandName));
         }
     }
 
+    
+
     public string CommandName { get; }
     public string ToolAssemblyEntryPoint { get; }
+    public string Runner { get; }
+
+    public IDictionary<string, PackageIdentity>? RidSpecificPackages { get; }
+
     public IEnumerable<string> Warnings { get; }
 }

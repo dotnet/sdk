@@ -1,48 +1,35 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
+#nullable disable
+
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
-internal class ProjectRestorer : IProjectRestorer
+internal class ProjectRestorer(IReporter reporter = null,
+    IEnumerable<string> additionalRestoreArguments = null) : IProjectRestorer
 {
-    private readonly IReporter _reporter;
-    private readonly IReporter _errorReporter;
-    private readonly bool _forceOutputRedirection;
-    private readonly IEnumerable<string> _additionalRestoreArguments;
-
-    public ProjectRestorer(IReporter reporter = null,
-        IEnumerable<string> additionalRestoreArguments = null)
-    {
-        _additionalRestoreArguments = additionalRestoreArguments;
-        _reporter = reporter ?? Reporter.Output;
-        _errorReporter = reporter ?? Reporter.Error;
-        _forceOutputRedirection = reporter != null;
-    }
+    private readonly IReporter _reporter = reporter ?? Reporter.Output;
+    private readonly IReporter _errorReporter = reporter ?? Reporter.Error;
+    private readonly bool _forceOutputRedirection = reporter != null;
+    private readonly IEnumerable<string> _additionalRestoreArguments = additionalRestoreArguments;
 
     public void Restore(FilePath project,
         PackageLocation packageLocation,
         string verbosity = null)
     {
-        var argsToPassToRestore = new List<string>();
-
-        argsToPassToRestore.Add(project.Value);
+        List<string> argsToPassToRestore = [project.Value];
         if (packageLocation.NugetConfig != null)
         {
             argsToPassToRestore.Add("--configfile");
             argsToPassToRestore.Add(packageLocation.NugetConfig.Value.Value);
         }
 
-        argsToPassToRestore.AddRange(new List<string>
-        {
-            "--runtime",
-            Constants.AnyRid
-        });
+        argsToPassToRestore.AddRange(["--runtime", Constants.AnyRid]);
 
         argsToPassToRestore.Add($"--verbosity:{verbosity ?? GetDefaultVerbosity()}");
 
@@ -64,7 +51,7 @@ internal class ProjectRestorer : IProjectRestorer
         var result = command.Execute();
         if (result.ExitCode != 0)
         {
-            throw new ToolPackageException(LocalizableStrings.ToolInstallationRestoreFailed);
+            throw new ToolPackageException(CliCommandStrings.ToolInstallationRestoreFailed);
         }
     }
 
@@ -77,7 +64,7 @@ internal class ProjectRestorer : IProjectRestorer
     private string GetDefaultVerbosity()
     {
         var defaultVerbosity = "quiet";
-        if ((_additionalRestoreArguments != null)
+        if (_additionalRestoreArguments != null
             && _additionalRestoreArguments.Contains(Constants.RestoreInteractiveOption, StringComparer.Ordinal))
         {
             defaultVerbosity = "minimal";

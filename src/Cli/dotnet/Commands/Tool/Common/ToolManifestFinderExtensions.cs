@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Common;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
 
 internal static class ToolManifestFinderExtensions
 {
@@ -23,18 +25,11 @@ internal static class ToolManifestFinderExtensions
         IReadOnlyList<FilePath> manifestFilesContainPackageId;
         try
         {
-            manifestFilesContainPackageId
-             = toolManifestFinder.FindByPackageId(packageId);
+            manifestFilesContainPackageId = toolManifestFinder.FindByPackageId(packageId);
         }
         catch (ToolManifestCannotBeFoundException e)
         {
-            throw new GracefulException(new[]
-                {
-                    e.Message,
-                    LocalizableStrings.NoManifestGuide
-                },
-                verboseMessages: new[] { e.VerboseMessage },
-                isUserError: false);
+            throw new GracefulException([e.Message, CliCommandStrings.ToolCommonNoManifestGuide], verboseMessages: [e.VerboseMessage], isUserError: false);
         }
 
         if (manifestFilesContainPackageId.Any())
@@ -44,7 +39,7 @@ internal static class ToolManifestFinderExtensions
             {
                 warning =
                     string.Format(
-                        LocalizableStrings.SamePackageIdInOtherManifestFile,
+                        CliCommandStrings.SamePackageIdInOtherManifestFile,
                         string.Join(
                             Environment.NewLine,
                             manifestFilesContainPackageId.Skip(1).Select(m => $"\t{m}")));

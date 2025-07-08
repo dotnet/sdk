@@ -29,7 +29,7 @@ public class DiscoverPrecompressedAssets : Task
             return true;
         }
 
-        var candidates = CandidateAssets.Select(StaticWebAsset.FromTaskItem).ToArray();
+        var candidates = StaticWebAsset.FromTaskItemGroup(CandidateAssets);
         var assetsToUpdate = new List<ITaskItem>();
 
         var candidatesByIdentity = candidates.ToDictionary(asset => asset.Identity, OSPath.PathComparer);

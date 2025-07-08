@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 
@@ -9,10 +11,15 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// <summary>
 /// Provides logging support for external processes, allowing them to send log requests through a named pipe.
 /// </summary>
+/// <remarks>
+/// Creates a new <see cref="PipeStreamSetupLogger"/> instance.
+/// </remarks>
+/// <param name="pipeStream">The <see cref="PipeStream"/> to use for sending log requests.</param>
+/// <param name="pipeName"></param>
 [SupportedOSPlatform("windows")]
-internal class PipeStreamSetupLogger : SetupLoggerBase, ISetupLogger
+internal class PipeStreamSetupLogger(PipeStream pipeStream, string pipeName) : SetupLoggerBase, ISetupLogger
 {
-    private PipeStreamMessageDispatcherBase _dispatcher;
+    private readonly PipeStreamMessageDispatcherBase _dispatcher = new PipeStreamMessageDispatcherBase(pipeStream);
 
     /// <summary>
     /// Queue to track log requests issued before the pipestream is connected.
@@ -23,18 +30,7 @@ internal class PipeStreamSetupLogger : SetupLoggerBase, ISetupLogger
     {
         get;
         private set;
-    }
-
-    /// <summary>
-    /// Creates a new <see cref="PipeStreamSetupLogger"/> instance.
-    /// </summary>
-    /// <param name="pipeStream">The <see cref="PipeStream"/> to use for sending log requests.</param>
-    /// <param name="pipeName"></param>
-    public PipeStreamSetupLogger(PipeStream pipeStream, string pipeName)
-    {
-        _dispatcher = new PipeStreamMessageDispatcherBase(pipeStream);
-        LogPath = pipeName;
-    }
+    } = pipeName;
 
     /// <summary>
     /// Waits for the underlying pipe stream to become connected.

@@ -1,10 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.NugetSearch.NugetSearchApiSerializable;
 using Microsoft.DotNet.Cli.ToolPackage;
-using Microsoft.DotNet.Tools.Tool.Search;
 
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
@@ -27,7 +29,7 @@ internal static class NugetSearchApiResultDeserializer
                 deserializedPackage.Versions.Select(v => new SearchResultPackageVersion(v.Version, v.Downloads))
                     .ToArray();
 
-            string[] authors = deserializedPackage?.Authors?.Authors ?? Array.Empty<string>();
+            string[] authors = deserializedPackage?.Authors?.Authors ?? [];
 
             var searchResultPackage = new SearchResultPackage(new PackageId(deserializedPackage.Id),
                 deserializedPackage.Version, deserializedPackage.Description, deserializedPackage.Summary,

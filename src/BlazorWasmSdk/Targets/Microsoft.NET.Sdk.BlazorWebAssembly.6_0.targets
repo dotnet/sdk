@@ -37,6 +37,11 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
+    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
+    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
+    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+    <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
+
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
@@ -46,14 +51,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
     <UseSizeOptimizedLinq Condition="'$(UseSizeOptimizedLinq)' == ''">true</UseSizeOptimizedLinq>
     <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <Http3Support Condition="'$(Http3Support)' == ''">false</Http3Support>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
-    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
-    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(WriteImportMapToHtml)' == 'true'">true</BlazorFingerprintBlazorJs>
-
-    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
-    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == '' and '$(_TargetingNET100OrLater)' != 'true'">true</BlazorCacheBootResources>
+    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(OverrideHtmlAssetPlaceholders)' == 'true'">true</BlazorFingerprintBlazorJs>
 
     <!--  8 <  .NET      we want to fingerprint dotnet.js because it's part of the blazor.boot.json which is loaded from blazor.webassembly.js -->
     <!--  8 <= .NET < 10 we don't want to fingerprint dotnet.js because it's path is hardcoded in blazor.webassembly.js -->
@@ -62,8 +64,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true' and '$(_TargetingNETBefore100)' == 'true'">false</WasmFingerprintDotnetJs>
     <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
-    <!-- Turn off parts of the build that do not apply to Blazor projects -->
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <!-- Turn off parts of the build that do not apply to Blazor projects until Net10 -->
+    <GenerateRuntimeConfigurationFiles Condition="'$(_TargetingNETBefore100)' == 'true'">false</GenerateRuntimeConfigurationFiles>
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
@@ -114,6 +116,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorJsFile>
         <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
       </_BlazorJsFile>
+      <!-- Fingerprint only javascript files -->
       <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
 
       <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
@@ -157,9 +160,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <Target Name="_ReplaceFingerprintedBlazorJsForPublish" DependsOnTargets="ProcessPublishFilesForWasm" Condition="'$(WasmBuildingForNestedPublish)' != 'true' and '$(BlazorFingerprintBlazorJs)' == 'true'">
+    <PropertyGroup>
+      <_BlazorJSFileNames>;@(_BlazorJSFile->'%(FileName)');</_BlazorJSFileNames>
+    </PropertyGroup>
     <ItemGroup>
-      <_BlazorJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(FileName)' == '%(_BlazorJSFile.FileName)'" />
-      <_BlazorJSPublishCandidate Include="%(_BlazorJSStaticWebAsset.RelativeDir)%(_BlazorJSStaticWebAsset.FileName).%(_BlazorJSStaticWebAsset.Fingerprint)%(_BlazorJSStaticWebAsset.Extension)" />
+      <_BlazorJSJSStaticWebAsset Include="@(StaticWebAsset)" Condition="$(_BlazorJSFileNames.Contains(';%(FileName);')) and '%(Extension)' == '.js'" />
+      <_BlazorJSPublishCandidate Include="%(_BlazorJSJSStaticWebAsset.RelativeDir)%(_BlazorJSJSStaticWebAsset.FileName).%(_BlazorJSJSStaticWebAsset.Fingerprint)%(_BlazorJSJSStaticWebAsset.Extension)" />
+      <_BlazorJSPublishCandidate Remove="@(_BlazorJSPublishCandidate)" Condition="'%(Extension)' == '.map'" />
       <_BlazorJSPublishCandidate>
         <RelativePath>_framework/$([System.IO.Path]::GetFileNameWithoutExtension('%(Filename)'))%(Extension)</RelativePath>
       </_BlazorJSPublishCandidate>
@@ -178,36 +185,36 @@ Copyright (c) .NET Foundation. All rights reserved.
       AssetTraitValue="boot"
       CopyToOutputDirectory="Never"
       CopyToPublishDirectory="PreserveNewest"
-      ContentRoot="%(_BlazorJSStaticWebAsset.ContentRoot)"
-      BasePath="%(_BlazorJSStaticWebAsset.BasePath)"
+      ContentRoot="%(_BlazorJSJSStaticWebAsset.ContentRoot)"
+      BasePath="%(_BlazorJSJSStaticWebAsset.BasePath)"
     >
-      <Output TaskParameter="Assets" ItemName="_BlazorJSPublishStaticWebAssets" />
+      <Output TaskParameter="Assets" ItemName="_BlazorJSJSPublishStaticWebAssets" />
     </DefineStaticWebAssets>
     <DefineStaticWebAssetEndpoints
-      CandidateAssets="@(_BlazorJSPublishStaticWebAssets)"
+      CandidateAssets="@(_BlazorJSJSPublishStaticWebAssets)"
       ExistingEndpoints="@(StaticWebAssetEndpoint)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
     >
-      <Output TaskParameter="Endpoints" ItemName="_BlazorJSPublishStaticWebAssetsEndpoint" />
+      <Output TaskParameter="Endpoints" ItemName="_BlazorJSJSPublishStaticWebAssetsEndpoint" />
     </DefineStaticWebAssetEndpoints>
     <PropertyGroup>
-      <_BlazorJSStaticWebAssetFullPath>@(_BlazorJSStaticWebAsset->'%(FullPath)')</_BlazorJSStaticWebAssetFullPath>
+      <_BlazorJSJSStaticWebAssetFullPath>@(_BlazorJSJSStaticWebAsset->'%(FullPath)')</_BlazorJSJSStaticWebAssetFullPath>
     </PropertyGroup>
     <ItemGroup>
-      <_BlazorJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(RelatedAsset)' == '$(_BlazorJSStaticWebAssetFullPath)'" />
+      <_BlazorJSJSStaticWebAsset Include="@(StaticWebAsset)" Condition="'%(AssetTraitName)' == 'Content-Encoding' and '%(RelatedAsset)' == '$(_BlazorJSJSStaticWebAssetFullPath)'" />
     </ItemGroup>
-    <FilterStaticWebAssetEndpoints Condition="'@(_BlazorJSStaticWebAsset)' != ''"
+    <FilterStaticWebAssetEndpoints Condition="'@(_BlazorJSJSStaticWebAsset)' != ''"
       Endpoints="@(StaticWebAssetEndpoint)"
-      Assets="@(_BlazorJSStaticWebAsset)"
+      Assets="@(_BlazorJSJSStaticWebAsset)"
       Filters=""
     >
       <Output TaskParameter="FilteredEndpoints" ItemName="_BlazorJSEndpointsToRemove" />
     </FilterStaticWebAssetEndpoints>
     <ItemGroup>
-      <StaticWebAsset Remove="@(_BlazorJSStaticWebAsset)" />
-      <StaticWebAsset Include="@(_BlazorJSPublishStaticWebAssets)" />
+      <StaticWebAsset Remove="@(_BlazorJSJSStaticWebAsset)" />
+      <StaticWebAsset Include="@(_BlazorJSJSPublishStaticWebAssets)" />
       <StaticWebAssetEndpoint Remove="@(_BlazorJSEndpointsToRemove)" />
-      <StaticWebAssetEndpoint Include="@(_BlazorJSPublishStaticWebAssetsEndpoint)" />
+      <StaticWebAssetEndpoint Include="@(_BlazorJSJSPublishStaticWebAssetsEndpoint)" />
     </ItemGroup>
   </Target>
 

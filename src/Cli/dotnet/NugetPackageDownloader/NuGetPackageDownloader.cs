@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -109,10 +111,16 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         if (resource == null)
         {
             throw new NuGetPackageNotFoundException(
-                string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
+                string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, source.Source));
         }
 
-        var pathResolver = new VersionFolderPathResolver(downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value);
+        var resolvedDownloadFolder = downloadFolder == null || !downloadFolder.HasValue ? _packageInstallDir.Value : downloadFolder.Value.Value;
+        if (string.IsNullOrEmpty(resolvedDownloadFolder))
+        {
+            throw new ArgumentException($"Package download folder must be specified either via {nameof(NuGetPackageDownloader)} constructor or via {nameof(downloadFolder)} method argument.");
+        }
+        var pathResolver = new VersionFolderPathResolver(resolvedDownloadFolder);
+        
         string nupkgPath = pathResolver.GetPackageFilePath(packageId.ToString(), resolvedPackageVersion);
         Directory.CreateDirectory(Path.GetDirectoryName(nupkgPath));
 
@@ -159,7 +167,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             if (VerbosityGreaterThanMinimal())
             {
-                _reporter.WriteLine(LocalizableStrings.NuGetPackageSignatureVerificationSkipped);
+                _reporter.WriteLine(CliStrings.NuGetPackageSignatureVerificationSkipped);
             }
             _validationMessagesDisplayed = true;
         }
@@ -180,17 +188,17 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             if ((!_shouldUsePackageSourceMapping && !_firstPartyNuGetPackageSigningVerifier.Verify(new FilePath(nupkgPath), out commandOutput)) ||
                 (_shouldUsePackageSourceMapping && !FirstPartyNuGetPackageSigningVerifier.NuGetVerify(new FilePath(nupkgPath), out commandOutput, _currentWorkingDirectory)))
             {
-                throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToValidatePackageSigning, commandOutput));
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToValidatePackageSigning, commandOutput));
             }
 
             if (DiagnosticVerbosity())
             {
-                _reporter.WriteLine(LocalizableStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
+                _reporter.WriteLine(CliStrings.VerifyingNuGetPackageSignature, Path.GetFileNameWithoutExtension(nupkgPath));
             }
         }
         else if (DiagnosticVerbosity())
         {
-            _reporter.WriteLine(LocalizableStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
+            _reporter.WriteLine(CliStrings.NuGetPackageShouldNotBeSigned, Path.GetFileNameWithoutExtension(nupkgPath));
         }
     }
 
@@ -296,7 +304,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return (source, packageVersion);
     }
 
-    private string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
+    private static string GetNupkgUrl(string baseUri, PackageId id, NuGetVersion version) => baseUri + id.ToString() + "/" + version.ToNormalizedString() + "/" + id.ToString() +
         "." + version.ToNormalizedString().ToLowerInvariant() + ".nupkg";
 
     internal IEnumerable<FilePath> FindAllFilesNeedExecutablePermission(IEnumerable<string> files,
@@ -304,7 +312,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
     {
         if (!PackageIsInAllowList(files))
         {
-            return Array.Empty<FilePath>();
+            return [];
         }
 
         bool FileUnderToolsWithoutSuffix(string p)
@@ -351,7 +359,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             if (packageSource.TrySourceAsUri == null)
             {
                 _verboseLogger.LogWarning(string.Format(
-                    LocalizableStrings.FailedToLoadNuGetSource,
+                    CliStrings.FailedToLoadNuGetSource,
                     source));
                 continue;
             }
@@ -363,7 +371,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     private List<PackageSource> LoadDefaultSources(PackageId packageId, PackageSourceLocation packageSourceLocation = null, PackageSourceMapping packageSourceMapping = null)
     {
-        List<PackageSource> defaultSources = new();
+        List<PackageSource> defaultSources = [];
         string currentDirectory = _currentWorkingDirectory ?? Directory.GetCurrentDirectory();
         ISettings settings;
         if (packageSourceLocation?.NugetConfig != null)
@@ -381,7 +389,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
 
         PackageSourceProvider packageSourceProvider = new(settings);
-        defaultSources = packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
+        defaultSources = [.. packageSourceProvider.LoadPackageSources().Where(source => source.IsEnabled)];
 
         packageSourceMapping ??= PackageSourceMapping.GetPackageSourceMapping(settings);
 
@@ -392,12 +400,12 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
             if (sources.Count == 0)
             {
-                throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, packageId));
             }
-            defaultSources = defaultSources.Where(source => sources.Contains(source.Name)).ToList();
+            defaultSources = [.. defaultSources.Where(source => sources.Contains(source.Name))];
             if (defaultSources.Count == 0)
             {
-                throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
+                throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, packageId));
             }
         }
 
@@ -414,7 +422,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 if (packageSource.TrySourceAsUri == null)
                 {
                     _verboseLogger.LogWarning(string.Format(
-                        LocalizableStrings.FailedToLoadNuGetSource,
+                        CliStrings.FailedToLoadNuGetSource,
                         source));
                     continue;
                 }
@@ -461,9 +469,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
         if (_restoreActionConfig.DisableParallel)
         {
-            foundPackagesBySource = packageSources.Select(source => GetPackageMetadataAsync(source,
+            foundPackagesBySource = [.. packageSources.Select(source => GetPackageMetadataAsync(source,
                 packageIdentifier,
-                true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
+                true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult())];
         }
         else
         {
@@ -489,7 +497,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             throw new NuGetPackageNotFoundException(
                 string.Format(
-                    LocalizableStrings.IsNotFoundInNuGetFeeds,
+                    CliStrings.IsNotFoundInNuGetFeeds,
                     GenerateVersionRangeErrorDescription(packageIdentifier, versionRange),
                     string.Join(", ", packageSources.Select(source => source.Source))));
         }
@@ -503,27 +511,27 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
         else if (versionRange.HasLowerAndUpperBounds && versionRange.MinVersion == versionRange.MaxVersion)
         {
-            return string.Format(LocalizableStrings.PackageVersionDescriptionForExactVersionMatch,
+            return string.Format(CliStrings.PackageVersionDescriptionForExactVersionMatch,
                 versionRange.MinVersion, packageIdentifier);
         }
         else if (versionRange.HasLowerAndUpperBounds)
         {
-            return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithLowerAndUpperBounds,
+            return string.Format(CliStrings.PackageVersionDescriptionForVersionWithLowerAndUpperBounds,
                 versionRange.MinVersion, versionRange.MaxVersion, packageIdentifier);
         }
         else if (versionRange.HasLowerBound)
         {
-            return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithLowerBound,
+            return string.Format(CliStrings.PackageVersionDescriptionForVersionWithLowerBound,
                 versionRange.MinVersion, packageIdentifier);
         }
         else if (versionRange.HasUpperBound)
         {
-            return string.Format(LocalizableStrings.PackageVersionDescriptionForVersionWithUpperBound,
+            return string.Format(CliStrings.PackageVersionDescriptionForVersionWithUpperBound,
                 versionRange.MaxVersion, packageIdentifier);
         }
 
         // Default message if the format doesn't match any of the expected cases
-        return string.Format(LocalizableStrings.PackageVersionDescriptionDefault, versionRange, packageIdentifier);
+        return string.Format(CliStrings.PackageVersionDescriptionDefault, versionRange, packageIdentifier);
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetLatestVersionInternalAsync(
@@ -547,9 +555,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
         if (_restoreActionConfig.DisableParallel)
         {
-            foundPackagesBySource = packageSources.Select(source => GetPackageMetadataAsync(source,
+            foundPackagesBySource = [.. packageSources.Select(source => GetPackageMetadataAsync(source,
                 packageIdentifier,
-                true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult()).ToArray();
+                true, false, cancellationToken).ConfigureAwait(false).GetAwaiter().GetResult())];
         }
         else
         {
@@ -563,7 +571,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         if (foundPackagesBySource.Length == 0)
         {
             throw new NuGetPackageNotFoundException(
-                string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds, packageIdentifier, packageSources.Select(s => s.Source)));
+                string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageIdentifier, packageSources.Select(s => s.Source)));
         }
 
         IEnumerable<(PackageSource source, IPackageSearchMetadata package)> accumulativeSearchResults =
@@ -575,7 +583,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             throw new NuGetPackageNotFoundException(
                 string.Format(
-                    LocalizableStrings.IsNotFoundInNuGetFeeds,
+                    CliStrings.IsNotFoundInNuGetFeeds,
                     packageIdentifier,
                     string.Join(", ", packageSources.Select(source => source.Source))));
         }
@@ -606,14 +614,23 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             return versionRange.MinVersion;
         }
 
+        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)
+            .ConfigureAwait(false))
+            .version;
+    }
+
+    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
+        VersionRange versionRange,
+         PackageSourceLocation packageSourceLocation = null)
+    {
         CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);
-        (_, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
+        (var source, packageMetadata) = await GetMatchingVersionInternalAsync(packageId.ToString(), packagesSources,
                 versionRange, cancellationToken).ConfigureAwait(false);
 
-        return packageMetadata.Identity.Version;
+        return (packageMetadata.Identity.Version, source);
     }
 
     private async Task<(PackageSource, IPackageSearchMetadata)> GetPackageMetadataAsync(string packageIdentifier,
@@ -631,9 +648,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         bool atLeastOneSourceValid = false;
         using CancellationTokenSource linkedCts =
             CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        List<Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>> tasks = sources
+        List<Task<(PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages)>> tasks = [.. sources
             .Select(source =>
-                GetPackageMetadataAsync(source, packageIdentifier, true, includeUnlisted, linkedCts.Token)).ToList();
+                GetPackageMetadataAsync(source, packageIdentifier, true, includeUnlisted, linkedCts.Token))];
 
         bool TryGetPackageMetadata(
             (PackageSource source, IEnumerable<IPackageSearchMetadata> foundPackages) sourceAndFoundPackages,
@@ -690,11 +707,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
         if (!atLeastOneSourceValid)
         {
-            throw new NuGetPackageInstallerException(string.Format(LocalizableStrings.FailedToLoadNuGetSource,
+            throw new NuGetPackageInstallerException(string.Format(CliStrings.FailedToLoadNuGetSource,
                 string.Join(";", sources.Select(s => s.Source))));
         }
 
-        throw new NuGetPackageNotFoundException(string.Format(LocalizableStrings.IsNotFoundInNuGetFeeds,
+        throw new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds,
                                     GenerateVersionRangeErrorDescription(packageIdentifier, new VersionRange(minVersion: packageVersion, maxVersion: packageVersion, includeMaxVersion: true)),
                                     string.Join(";", sources.Select(s => s.Source))));
     }
@@ -790,7 +807,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             return [resource];
         }
-        else return Enumerable.Empty<AutoCompleteResource>();
+        else return [];
     }
 
     // only exposed for testing
@@ -807,11 +824,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
         catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
         {
-            return Enumerable.Empty<NuGetVersion>();
+            return [];
         }
         catch (Exception) // any errors (i.e. auth) should just be ignored for completions
         {
-            return Enumerable.Empty<NuGetVersion>();
+            return [];
         }
     }
 
@@ -826,11 +843,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         }
         catch (FatalProtocolException)  // this most often means that the source didn't actually have a SearchAutocompleteService
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
         catch (Exception) // any errors (i.e. auth) should just be ignored for completions
         {
-            return Enumerable.Empty<string>();
+            return [];
         }
     }
 

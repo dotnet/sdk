@@ -1,25 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class PublishedPathCommandResolver : ICommandResolver
+public class PublishedPathCommandResolver(
+    IEnvironmentProvider environment,
+    IPublishedPathCommandSpecFactory commandSpecFactory) : ICommandResolver
 {
     private const string PublishedPathCommandResolverName = "PublishedPathCommandResolver";
 
-    private readonly IEnvironmentProvider _environment;
-    private readonly IPublishedPathCommandSpecFactory _commandSpecFactory;
-
-    public PublishedPathCommandResolver(
-        IEnvironmentProvider environment,
-        IPublishedPathCommandSpecFactory commandSpecFactory)
-    {
-        _environment = environment;
-        _commandSpecFactory = commandSpecFactory;
-    }
+    private readonly IEnvironmentProvider _environment = environment;
+    private readonly IPublishedPathCommandSpecFactory _commandSpecFactory = commandSpecFactory;
 
     public CommandSpec Resolve(CommandResolverArguments commandResolverArguments)
     {
@@ -43,7 +39,7 @@ public class PublishedPathCommandResolver : ICommandResolver
         if (!File.Exists(depsFilePath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 depsFilePath));
             return null;
@@ -53,7 +49,7 @@ public class PublishedPathCommandResolver : ICommandResolver
         if (!File.Exists(runtimeConfigPath))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 runtimeConfigPath));
             return null;
@@ -71,7 +67,7 @@ public class PublishedPathCommandResolver : ICommandResolver
         if (!Directory.Exists(publishDirectory))
         {
             Reporter.Verbose.WriteLine(string.Format(
-                LocalizableStrings.DoesNotExist,
+                CliStrings.DoesNotExist,
                 PublishedPathCommandResolverName,
                 publishDirectory));
             return null;

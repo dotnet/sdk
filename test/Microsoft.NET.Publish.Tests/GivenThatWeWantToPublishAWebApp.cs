@@ -49,7 +49,10 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        // This test is for netcoreapp2 and no longer working on ubuntu 2404
+        //  Disabled for OSX due to //  https://github.com/dotnet/sdk/issues/49665, should be re-enabled
+        //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
+        [PlatformSpecificFact(TestPlatforms.Windows)]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";
@@ -103,12 +106,14 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World!");
         }
 
-
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("Microsoft.AspNetCore.App")]
         [InlineData("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)
         {
+
+
             var tfm = "netcoreapp2.2";
 
             var testProject = new TestProject()

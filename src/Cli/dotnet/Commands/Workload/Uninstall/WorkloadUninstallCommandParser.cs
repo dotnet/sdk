@@ -1,31 +1,32 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Uninstall;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Uninstall.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+
+namespace Microsoft.DotNet.Cli.Commands.Workload.Uninstall;
 
 internal static class WorkloadUninstallCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
+    public static readonly Argument<IEnumerable<string>> WorkloadIdArgument = WorkloadInstallCommandParser.WorkloadIdArgument;
+    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
 
-    public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    private static readonly Command Command = ConstructCommand();
 
-    private static readonly CliCommand Command = ConstructCommand();
-
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("uninstall", LocalizableStrings.CommandDescription);
+        Command command = new("uninstall", CliCommandStrings.WorkloadUninstallCommandDescription);
         command.Arguments.Add(WorkloadIdArgument);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
 
         command.SetAction((parseResult) => new WorkloadUninstallCommand(parseResult).Execute());
 

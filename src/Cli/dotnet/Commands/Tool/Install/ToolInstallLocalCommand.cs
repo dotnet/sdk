@@ -1,18 +1,20 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.List;
+using Microsoft.DotNet.Cli.Commands.Tool.Update;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
-using Microsoft.DotNet.Tools.Tool.List;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Install;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Install;
 
 internal class ToolInstallLocalCommand : CommandBase
 {
@@ -44,13 +46,13 @@ internal class ToolInstallLocalCommand : CommandBase
         : base(parseResult)
     {
         _updateAll = parseResult.GetValue(ToolUpdateCommandParser.UpdateAllOption);
-        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdArgument);
+        var packageIdArgument = parseResult.GetValue(ToolInstallCommandParser.PackageIdentityArgument).Id;
         _packageId = packageId ?? (packageIdArgument is not null ? new PackageId(packageIdArgument) : null);
-        _explicitManifestFile = parseResult.GetValue(ToolAppliedOption.ToolManifestOption);
+        _explicitManifestFile = parseResult.GetValue(ToolInstallCommandParser.ToolManifestOption);
 
         _createManifestIfNeeded = parseResult.GetValue(ToolInstallCommandParser.CreateManifestIfNeededOption);
 
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         _toolManifestFinder = toolManifestFinder ??
                               new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
@@ -58,7 +60,7 @@ internal class ToolInstallLocalCommand : CommandBase
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
         restoreActionConfig = new RestoreActionConfig(DisableParallel: parseResult.GetValue(ToolCommandRestorePassThroughOptions.DisableParallelOption),
-            NoCache: (parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption)),
+            NoCache: parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoCacheOption) || parseResult.GetValue(ToolCommandRestorePassThroughOptions.NoHttpCacheOption),
             IgnoreFailedSources: parseResult.GetValue(ToolCommandRestorePassThroughOptions.IgnoreFailedSourcesOption),
             Interactive: parseResult.GetValue(ToolCommandRestorePassThroughOptions.InteractiveRestoreOption));
 
@@ -121,21 +123,21 @@ internal class ToolInstallLocalCommand : CommandBase
     {
         if (existingPackage.Version > toolDownloadedPackage.Version && !_allowPackageDowngrade)
         {
-            throw new GracefulException(new[]
-                {
+            throw new GracefulException(
+                [
                     string.Format(
-                        Update.LocalizableStrings.UpdateLocalToolToLowerVersion,
+                        CliCommandStrings.UpdateLocalToolToLowerVersion,
                         toolDownloadedPackage.Version.ToNormalizedString(),
                         existingPackage.Version.ToNormalizedString(),
                         manifestFile.Value)
-                },
+                ],
                 isUserError: false);
         }
         else if (existingPackage.Version == toolDownloadedPackage.Version)
         {
             _reporter.WriteLine(
                 string.Format(
-                    Update.LocalizableStrings.UpdateLocaToolSucceededVersionNoChange,
+                    CliCommandStrings.UpdateLocaToolSucceededVersionNoChange,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     manifestFile.Value));
@@ -149,7 +151,7 @@ internal class ToolInstallLocalCommand : CommandBase
                 [toolDownloadedPackage.Command.Name]);
             _reporter.WriteLine(
                 string.Format(
-                    Update.LocalizableStrings.UpdateLocalToolSucceeded,
+                    CliCommandStrings.UpdateLocalToolSucceeded,
                     toolDownloadedPackage.Id,
                     existingPackage.Version.ToNormalizedString(),
                     toolDownloadedPackage.Version.ToNormalizedString(),
@@ -181,7 +183,7 @@ internal class ToolInstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.LocalToolInstallationSucceeded,
+                CliCommandStrings.LocalToolInstallationSucceeded,
                 toolDownloadedPackage.Command.Name,
                 toolDownloadedPackage.Id,
                 toolDownloadedPackage.Version.ToNormalizedString(),
@@ -192,21 +194,8 @@ internal class ToolInstallLocalCommand : CommandBase
 
     public FilePath GetManifestFilePath()
     {
-        try
-        {
-            return string.IsNullOrWhiteSpace(_explicitManifestFile)
-                ? _toolManifestFinder.FindFirst(_createManifestIfNeeded)
-                : new FilePath(_explicitManifestFile);
-        }
-        catch (ToolManifestCannotBeFoundException e)
-        {
-            throw new GracefulException(new[]
-                {
-                    e.Message,
-                    LocalizableStrings.NoManifestGuide
-                },
-                verboseMessages: new[] { e.VerboseMessage },
-                isUserError: false);
-        }
+        return string.IsNullOrWhiteSpace(_explicitManifestFile)
+            ? _toolManifestFinder.FindFirst(_createManifestIfNeeded)
+            : new FilePath(_explicitManifestFile);
     }
 }

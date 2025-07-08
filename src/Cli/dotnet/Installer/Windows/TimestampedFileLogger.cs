@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Concurrent;
 using System.Globalization;
 using System.IO.Pipes;
@@ -19,7 +21,7 @@ internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchroniz
     /// <summary>
     /// Thread safe queue use to store incoming log request messages.
     /// </summary>
-    private readonly BlockingCollection<string> _messageQueue = new();
+    private readonly BlockingCollection<string> _messageQueue = [];
 
     private bool _disposed;
     private readonly StreamWriter _stream;
@@ -38,7 +40,7 @@ internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchroniz
         get;
     }
 
-    private Thread LogWriter;
+    private readonly Thread LogWriter;
 
     /// <summary>
     /// The locale-neutral timestamp prefix.

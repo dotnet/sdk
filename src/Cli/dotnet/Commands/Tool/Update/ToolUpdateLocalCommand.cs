@@ -1,16 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Install;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Update;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal class ToolUpdateLocalCommand : CommandBase
 {
@@ -30,15 +31,14 @@ internal class ToolUpdateLocalCommand : CommandBase
         IReporter reporter = null)
         : base(parseResult)
     {
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         if (toolPackageDownloader == null)
         {
             (IToolPackageStore,
                 IToolPackageStoreQuery,
                 IToolPackageDownloader downloader) toolPackageStoresAndDownloader
-                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader(
-                        additionalRestoreArguments: parseResult.OptionValuesToBeForwarded(ToolUpdateCommandParser.GetCommand()));
+                    = ToolPackageFactory.CreateToolPackageStoresAndDownloader();
             _toolPackageDownloader = toolPackageStoresAndDownloader.downloader;
         }
         else
@@ -52,7 +52,7 @@ internal class ToolUpdateLocalCommand : CommandBase
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
 
         PackageId? packageId = null;
-        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdArgument) is string s)
+        if (parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.Id is string s)
         {
             packageId = new PackageId(s);
         }

@@ -1,9 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 
 internal interface IWorkloadInstallationRecordRepository
 {

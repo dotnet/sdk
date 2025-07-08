@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Pipes;
 using System.Runtime.Versioning;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
@@ -15,11 +17,8 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 #if NETCOREAPP
 [SupportedOSPlatform("windows")]
 #endif
-internal class InstallMessageDispatcher : PipeStreamMessageDispatcherBase, IInstallMessageDispatcher
+internal class InstallMessageDispatcher(PipeStream pipeStream) : PipeStreamMessageDispatcherBase(pipeStream), IInstallMessageDispatcher
 {
-    public InstallMessageDispatcher(PipeStream pipeStream) : base(pipeStream)
-    {
-    }
 
     /// <summary>
     /// Sends a message and blocks until a reply is received.

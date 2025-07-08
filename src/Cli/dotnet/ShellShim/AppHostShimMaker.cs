@@ -1,26 +1,21 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.HostModel.AppHost;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class AppHostShellShimMaker : IAppHostShellShimMaker
+internal class AppHostShellShimMaker(string appHostSourceDirectory, IFilePermissionSetter filePermissionSetter = null) : IAppHostShellShimMaker
 {
     private const string ApphostNameWithoutExtension = "apphost";
-    private readonly string _appHostSourceDirectory;
-    private readonly IFilePermissionSetter _filePermissionSetter;
-    private const ushort WindowsGUISubsystem = 0x2;
-
-    public AppHostShellShimMaker(string appHostSourceDirectory, IFilePermissionSetter filePermissionSetter = null)
-    {
-        _appHostSourceDirectory = appHostSourceDirectory;
-
-        _filePermissionSetter =
+    private readonly string _appHostSourceDirectory = appHostSourceDirectory;
+    private readonly IFilePermissionSetter _filePermissionSetter =
             filePermissionSetter
             ?? new FilePermissionSetter();
-    }
+    private const ushort WindowsGUISubsystem = 0x2;
 
     public void CreateApphostShellShim(FilePath entryPoint, FilePath shimPath)
     {

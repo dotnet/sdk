@@ -1,16 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
-using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Tools.Tool.Uninstall;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 internal class ToolUninstallLocalCommand : CommandBase
 {
@@ -31,7 +32,7 @@ internal class ToolUninstallLocalCommand : CommandBase
         _packageId = new PackageId(parseResult.GetValue(ToolUninstallCommandParser.PackageIdArgument));
         _explicitManifestFile = parseResult.GetValue(ToolUninstallCommandParser.ToolManifestOption);
 
-        _reporter = (reporter ?? Reporter.Output);
+        _reporter = reporter ?? Reporter.Output;
 
         _toolManifestFinder = toolManifestFinder ??
                               new ToolManifestFinder(new DirectoryPath(Directory.GetCurrentDirectory()));
@@ -45,9 +46,7 @@ internal class ToolUninstallLocalCommand : CommandBase
 
         if (!manifestFileOptional.HasValue)
         {
-            throw new GracefulException(
-                new[] { string.Format(LocalizableStrings.NoManifestFileContainPackageId, _packageId) },
-                isUserError: false);
+            throw new GracefulException([string.Format(CliCommandStrings.NoManifestFileContainPackageId, _packageId)], isUserError: false);
         }
 
         var manifestFile = manifestFileOptional.Value;
@@ -61,7 +60,7 @@ internal class ToolUninstallLocalCommand : CommandBase
 
         _reporter.WriteLine(
             string.Format(
-                LocalizableStrings.UninstallLocalToolSucceeded,
+                CliCommandStrings.UninstallLocalToolSucceeded,
                 _packageId,
                 manifestFile.Value).Green());
         return 0;

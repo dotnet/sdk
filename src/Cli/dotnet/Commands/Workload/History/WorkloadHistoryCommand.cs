@@ -1,21 +1,21 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Workloads.Workload.Install;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.Deployment.DotNet.Releases;
-using Microsoft.DotNet.Cli.Commands.DotNetWorkloads;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-namespace Microsoft.DotNet.Workloads.Workload.History;
+namespace Microsoft.DotNet.Cli.Commands.Workload.History;
 
 internal class WorkloadHistoryCommand : WorkloadCommandBase
 {
     private readonly IInstaller _workloadInstaller;
-    private IWorkloadResolver _workloadResolver;
+    private readonly IWorkloadResolver _workloadResolver;
     private readonly ReleaseVersion _sdkVersion;
     private readonly SdkFeatureBand _sdkFeatureBand;
 
@@ -45,17 +45,17 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
 
         if (displayRecords.Count == 0)
         {
-            Reporter.WriteLine(LocalizableStrings.NoHistoryFound);
+            Reporter.WriteLine(CliCommandStrings.NoHistoryFound);
         }
         else
         {
             var table = new PrintableTable<WorkloadHistoryDisplay.DisplayRecord>();
-            table.AddColumn(LocalizableStrings.Id, r => r.ID?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Date, r => r.TimeStarted?.ToString() ?? "");
-            table.AddColumn(LocalizableStrings.Command, r => r.Command);
-            table.AddColumn(LocalizableStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? new List<string>(0)));
-            table.AddColumn(LocalizableStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
-            table.AddColumn(LocalizableStrings.WorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
+            table.AddColumn(CliCommandStrings.Id, r => r.ID?.ToString() ?? "");
+            table.AddColumn(CliCommandStrings.Date, r => r.TimeStarted?.ToString() ?? "");
+            table.AddColumn(CliCommandStrings.Command, r => r.Command);
+            table.AddColumn(CliCommandStrings.Workloads, r => string.Join(", ", r.HistoryState.InstalledWorkloads ?? []));
+            table.AddColumn(CliCommandStrings.GlobalJsonVersion, r => r.GlobalJsonVersion ?? string.Empty);
+            table.AddColumn(CliCommandStrings.WorkloadHistoryWorkloadSetVersion, r => r.HistoryState.WorkloadSetVersion ?? string.Empty);
 
             Reporter.WriteLine();
             table.PrintRows(displayRecords, l => Reporter.WriteLine(l));
@@ -63,7 +63,7 @@ internal class WorkloadHistoryCommand : WorkloadCommandBase
 
             if (unknownRecordsPresent)
             {
-                Reporter.WriteLine(LocalizableStrings.UnknownRecordsInformationalMessage);
+                Reporter.WriteLine(CliCommandStrings.UnknownRecordsInformationalMessage);
                 Reporter.WriteLine();
             }
         }

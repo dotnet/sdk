@@ -42,7 +42,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
-    <PackageReference Include="FluentAssertions" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="xunit" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
@@ -63,6 +62,7 @@
 
   <ItemGroup>
     <Compile Include="**\*.cs" Exclude="$(GlobalExclude)" />
+    <Compile Include="$(RepoRoot)src\Common\Polyfills.cs" LinkBase="Common" />
   </ItemGroup>
 
   <ItemGroup>

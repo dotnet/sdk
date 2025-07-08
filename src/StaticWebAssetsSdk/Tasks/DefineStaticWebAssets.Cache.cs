@@ -41,7 +41,7 @@ public partial class DefineStaticWebAssets : Task
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
         var fingerprintPatternsHash = HashingUtils.ComputeHash(memoryStream, FingerprintPatterns ?? [], patternMetadata);
 
-        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides, nameof(ITaskItem.GetMetadata));
+        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides ?? []);
 
 #if NET9_0_OR_GREATER
         Span<string> candidateAssetMetadata = [
@@ -113,7 +113,7 @@ public partial class DefineStaticWebAssets : Task
 
         internal void WriteCacheManifest()
         {
-            if (_manifestPath != null)
+            if (_manifestPath != null && !_cacheUpToDate && InputHashes.Count > 0)
             {
                 using var manifestFile = File.OpenWrite(_manifestPath);
                 manifestFile.SetLength(0);
@@ -165,13 +165,21 @@ public partial class DefineStaticWebAssets : Task
             GlobalPropertiesHash = propertiesHash;
             FingerprintPatternsHash = fingerprintPatternsHash;
             PropertyOverridesHash = propertyOverridesHash;
+            CachedAssets.Clear();
+            CachedCopyCandidates.Clear();
             InputHashes = [.. inputsByHash.Keys];
             _inputByHash = inputsByHash;
         }
 
         private void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
         {
-            var newHashes = new HashSet<string>(inputHashes.Keys);
+            var newHashes = new HashSet<string>(inputHashes.Count);
+            foreach (var kvp in inputHashes)
+            {
+                var hash = kvp.Key;
+                newHashes.Add(hash);
+            }
+
             var oldHashes = InputHashes;
 
             if (newHashes.SetEquals(oldHashes))

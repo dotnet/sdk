@@ -1,53 +1,56 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Update;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Update.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+
+namespace Microsoft.DotNet.Cli.Commands.Workload.Update;
 
 internal static class WorkloadUpdateCommandParser
 {
-    public static readonly CliOption<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
+    public static readonly Option<string> TempDirOption = WorkloadInstallCommandParser.TempDirOption;
 
-    public static readonly CliOption<bool> FromPreviousSdkOption = new("--from-previous-sdk")
+    public static readonly Option<bool> FromPreviousSdkOption = new("--from-previous-sdk")
     {
-        Description = LocalizableStrings.FromPreviousSdkOptionDescription
+        Description = CliCommandStrings.FromPreviousSdkOptionDescription
     };
 
-    public static readonly CliOption<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
+    public static readonly Option<bool> AdManifestOnlyOption = new("--advertising-manifests-only")
     {
-        Description = LocalizableStrings.AdManifestOnlyOptionDescription,
+        Description = CliCommandStrings.AdManifestOnlyOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> PrintRollbackOption = new("--print-rollback")
+    public static readonly Option<bool> PrintRollbackOption = new("--print-rollback")
     {
         Hidden = true,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<int> FromHistoryOption = new("--from-history")
+    public static readonly Option<int> FromHistoryOption = new("--from-history")
     {
-        Description = LocalizableStrings.FromHistoryOptionDescription
+        Description = CliCommandStrings.FromHistoryOptionDescription
     };
 
-    public static readonly CliOption<string> HistoryManifestOnlyOption = new("--manifests-only")
+    public static readonly Option<string> HistoryManifestOnlyOption = new("--manifests-only")
     {
-        Description = LocalizableStrings.HistoryManifestOnlyOptionDescription
+        Description = CliCommandStrings.HistoryManifestOnlyOptionDescription
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
 
-    public static CliCommand GetCommand()
+    private static readonly Command Command = ConstructCommand();
+
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("update", LocalizableStrings.CommandDescription);
+        Command command = new("update", CliCommandStrings.WorkloadUpdateCommandDescription);
 
         InstallingWorkloadCommandParser.AddWorkloadInstallCommandOptions(command);
 
@@ -56,7 +59,7 @@ internal static class WorkloadUpdateCommandParser
         command.Options.Add(AdManifestOnlyOption);
         command.Options.Add(InstallingWorkloadCommandParser.WorkloadSetVersionOption);
         command.AddWorkloadCommandNuGetRestoreActionConfigOptions();
-        command.Options.Add(CommonOptions.VerbosityOption);
+        command.Options.Add(VerbosityOption);
         command.Options.Add(PrintRollbackOption);
         command.Options.Add(WorkloadInstallCommandParser.SkipSignCheckOption);
         command.Options.Add(FromHistoryOption);

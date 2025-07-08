@@ -1,40 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Workloads.Workload.List;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.List.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal static class WorkloadListCommandParser
 {
     // arguments are a list of workload to be detected
-    public static readonly CliOption<bool> MachineReadableOption = new("--machine-readable") { Hidden = true };
+    public static readonly Option<bool> MachineReadableOption = new("--machine-readable") { Hidden = true };
 
-    public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
-    public static readonly CliOption<string> TempDirOption = new CliOption<string>("--temp-dir")
+    public static readonly Option<string> TempDirOption = new Option<string>("--temp-dir")
     {
-        Description = Workloads.Workload.Install.LocalizableStrings.TempDirOptionDescription
+        Description = CliCommandStrings.TempDirOptionDescription
     }.Hide();
 
-    public static readonly CliOption<bool> IncludePreviewsOption = new CliOption<bool>("--include-previews")
+    public static readonly Option<bool> IncludePreviewsOption = new Option<bool>("--include-previews")
     {
-        Description = Workloads.Workload.Install.LocalizableStrings.IncludePreviewOptionDescription
+        Description = CliCommandStrings.IncludePreviewOptionDescription
     }.Hide();
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("list", LocalizableStrings.CommandDescription);
+        Command command = new("list", CliCommandStrings.WorkloadListCommandDescription);
         command.Options.Add(MachineReadableOption);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);
         command.Options.Add(VersionOption);

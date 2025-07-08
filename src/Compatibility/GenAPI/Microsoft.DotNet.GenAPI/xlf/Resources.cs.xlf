@@ -12,6 +12,11 @@
         <target state="translated">Nepodařilo se přeložit typ {0} v sestavení {1}, které ho obsahuje, pomocí předávání typů. Ujistěte se, že sestavení je uvedeno jako odkaz a obsahuje typ.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Uzel syntaxe nebyl nalezen.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

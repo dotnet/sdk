@@ -4,9 +4,9 @@
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Run;
 
-internal record RunProperties(string? RunCommand, string? RunArguments, string? RunWorkingDirectory)
+internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
 {
     internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs, bool fallbackToTargetPath)
     {

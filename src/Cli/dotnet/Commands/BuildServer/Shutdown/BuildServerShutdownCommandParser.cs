@@ -1,42 +1,42 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.Tools.BuildServer.Shutdown;
-using LocalizableStrings = Microsoft.DotNet.Tools.BuildServer.Shutdown.LocalizableStrings;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.BuildServer.Shutdown;
 
-internal static class ServerShutdownCommandParser
+internal static class BuildServerShutdownCommandParser
 {
-    public static readonly CliOption<bool> MSBuildOption = new("--msbuild")
+    public static readonly Option<bool> MSBuildOption = new("--msbuild")
     {
-        Description = LocalizableStrings.MSBuildOptionDescription,
+        Description = CliCommandStrings.MSBuildOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> VbcsOption = new("--vbcscompiler")
+    public static readonly Option<bool> VbcsOption = new("--vbcscompiler")
     {
-        Description = LocalizableStrings.VBCSCompilerOptionDescription,
+        Description = CliCommandStrings.VBCSCompilerOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<bool> RazorOption = new("--razor")
+    public static readonly Option<bool> RazorOption = new("--razor")
     {
-        Description = LocalizableStrings.RazorOptionDescription,
+        Description = CliCommandStrings.RazorOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("shutdown", LocalizableStrings.CommandDescription);
+        Command command = new("shutdown", CliCommandStrings.BuildServerShutdownCommandDescription);
 
         command.Options.Add(MSBuildOption);
         command.Options.Add(VbcsOption);

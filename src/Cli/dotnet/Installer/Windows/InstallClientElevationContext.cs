@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 using System.IO.Pipes;
 using System.Reflection;
@@ -12,18 +14,13 @@ namespace Microsoft.DotNet.Cli.Installer.Windows;
 /// Encapsulates information about elevation to support workload installations.
 /// </summary>
 [SupportedOSPlatform("windows")]
-internal sealed class InstallClientElevationContext : InstallElevationContextBase
+internal sealed class InstallClientElevationContext(ISynchronizingLogger logger) : InstallElevationContextBase
 {
-    private ISynchronizingLogger _log;
+    private readonly ISynchronizingLogger _log = logger;
 
     private Process _serverProcess;
 
     public override bool IsClient => true;
-
-    public InstallClientElevationContext(ISynchronizingLogger logger)
-    {
-        _log = logger;
-    }
 
     /// <summary>
     /// Starts the elevated install server.

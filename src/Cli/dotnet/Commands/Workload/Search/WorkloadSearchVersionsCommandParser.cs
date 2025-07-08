@@ -1,41 +1,40 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload;
-using Microsoft.DotNet.Workloads.Workload.Search;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal static class WorkloadSearchVersionsCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> WorkloadVersionArgument =
-        new(LocalizableStrings.WorkloadVersionArgument)
+    public static readonly Argument<IEnumerable<string>> WorkloadVersionArgument =
+        new(CliCommandStrings.WorkloadVersionArgument)
         {
             Arity = ArgumentArity.ZeroOrMore,
-            Description = LocalizableStrings.WorkloadVersionArgumentDescription
+            Description = CliCommandStrings.WorkloadVersionArgumentDescription
         };
 
-    public static readonly CliOption<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
+    public static readonly Option<int> TakeOption = new("--take") { DefaultValueFactory = (_) => 5 };
 
-    public static readonly CliOption<string> FormatOption = new("--format")
+    public static readonly Option<string> FormatOption = new("--format")
     {
-        Description = LocalizableStrings.FormatOptionDescription
+        Description = CliCommandStrings.FormatOptionDescription
     };
 
-    public static readonly CliOption<bool> IncludePreviewsOption = new("--include-previews");
+    public static readonly Option<bool> IncludePreviewsOption = new("--include-previews");
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("version", LocalizableStrings.PrintSetVersionsDescription);
+        var command = new Command("version", CliCommandStrings.PrintSetVersionsDescription);
         command.Arguments.Add(WorkloadVersionArgument);
         command.Options.Add(FormatOption);
         command.Options.Add(TakeOption);
@@ -53,7 +52,7 @@ internal static class WorkloadSearchVersionsCommandParser
         {
             if (result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument) != null)
             {
-                result.AddError(string.Format(LocalizableStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
+                result.AddError(string.Format(CliCommandStrings.CannotCombineSearchStringAndVersion, WorkloadSearchCommandParser.WorkloadIdStubArgument.Name, command.Name));
             }
         });
 
@@ -62,7 +61,7 @@ internal static class WorkloadSearchVersionsCommandParser
             var versionArgument = result.GetValue(WorkloadVersionArgument);
             if (versionArgument is not null && !versionArgument.All(v => v.Contains('@')) && !WorkloadSetVersion.IsWorkloadSetPackageVersion(versionArgument.SingleOrDefault(defaultValue: string.Empty)))
             {
-                result.AddError(string.Format(CommonLocalizableStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
+                result.AddError(string.Format(CliStrings.UnrecognizedCommandOrArgument, string.Join(' ', versionArgument)));
             }
         });
 

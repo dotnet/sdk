@@ -1,7 +1,6 @@
 <Project>
 
   <Target Name="GenerateBundledVersions"
-          Condition="'$(PgoInstrument)' != 'true'"
           DependsOnTargets="GenerateBundledVersionsProps;GenerateBundledCliToolsProps;GenerateBundledMSBuildProps" >
     <WriteLinesToFile
       File="$(ArtifactsShippingPackagesDir)productVersion.txt"
@@ -15,31 +14,36 @@
       Overwrite="true"
       Encoding="ASCII" />
 
+    <!-- The Version.Details file doesn't contain live information when building
+         inside the VMR. Therefore don't read from it in that mode. -->
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
-      DependencyName="Microsoft.NETCore.App.Ref">
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
+      DependencyName="Microsoft.NETCore.App.Ref"
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepRuntimeVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepRuntimeCommit" />
     </GetDependencyInfo>
 
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
-      DependencyName="Microsoft.AspNetCore.App.Ref">
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
+      DependencyName="Microsoft.AspNetCore.App.Ref"
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepAspNetCoreVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepAspNetCoreCommit" />
     </GetDependencyInfo>
 
     <GetDependencyInfo
-      VersionDetailsXmlFile="$(RepoRoot)eng/Version.Details.xml"
-      DependencyName="Microsoft.WindowsDesktop.App.Ref">
+      VersionDetailsXmlFile="$(RepositoryEngineeringDir)Version.Details.xml"
+      DependencyName="Microsoft.WindowsDesktop.App.Ref"
+      Condition="'$(DotNetBuildFromVMR)' != 'true'">
        <Output TaskParameter="DependencyVersion" PropertyName="DepWindowsDesktopVersion" />
        <Output TaskParameter="DependencyCommit" PropertyName="DepWindowsDesktopCommit" />
     </GetDependencyInfo>
 
     <ItemGroup Label="Version info">
-      <Line Include="runtime" Version="$(DepRuntimeVersion)" Commit="$(DepRuntimeCommit)" />
-      <Line Include="aspnetcore" Version="$(DepAspNetCoreVersion)" Commit="$(DepAspNetCoreCommit)" />
-      <Line Include="windowsdesktop" Version="$(DepWindowsDesktopVersion)" Commit="$(DepWindowsDesktopCommit)" />
+      <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
+      <Line Include="windowsdesktop" Version="$(MicrosoftWindowsDesktopAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepWindowsDesktopCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="sdk" Version="$(PackageVersion)" Commit="$(BUILD_SOURCEVERSION)" />
     </ItemGroup>
 
@@ -50,7 +54,7 @@
        sdk_commit="%commit%" sdk_version="%version%"
     -->
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).txt"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).txt"
       Lines="@(Line->'%(Identity)_commit=&quot;%(Commit)&quot; %(Identity)_version=&quot;%(Version)&quot;', '%0A')"
       Overwrite="true"
       Encoding="ASCII" />
@@ -68,11 +72,10 @@
     </PropertyGroup>
 
     <WriteLinesToFile
-      File="$(ArtifactsShippingPackagesDir)productCommit-$(Rid).json"
+      File="$(ArtifactsShippingPackagesDir)productCommit-$(TargetRid).json"
       Lines="$(JsonContents)"
       Overwrite="true"
       Encoding="ASCII" />
-
   </Target>
 
   <Target Name="GenerateBundledVersionsProps">
@@ -273,6 +276,10 @@
         Condition="'$(BundleNativeAotCompiler)' == 'true'"
         Include="$(ProductMonikerRid)" />
 
+      <Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net60MonoRuntimePackRids Include="
         @(Net60RuntimePackRids);
         browser-wasm;
@@ -391,7 +398,7 @@
         win-x86;
         " />
 
-      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (OutputRID). See:
+      <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
            https://github.com/dotnet/runtime/blob/main/src/installer/pkg/projects/Microsoft.DotNet.ILCompiler/ILCompilerRIDs.props -->
       <ILCompilerSupportedRids Include="
         @(Net90ILCompilerSupportedRids);
@@ -531,6 +538,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <NetCoreRoot Condition="'%24(NetCoreRoot)' == ''">%24([MSBuild]::NormalizePath('%24(MSBuildThisFileDirectory)..\..\'))</NetCoreRoot>
     <NetCoreTargetingPackRoot Condition="'%24(NetCoreTargetingPackRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(NetCoreRoot)'))packs</NetCoreTargetingPackRoot>
+    <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
     <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
@@ -580,6 +588,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <KnownILCompilerPack Include="Microsoft.DotNet.ILCompiler"
                          TargetFramework="net10.0"
                          ILCompilerPackNamePattern="runtime.**RID**.Microsoft.DotNet.ILCompiler"
+                         ILCompilerRuntimePackNamePattern="Microsoft.NETCore.App.Runtime.NativeAOT.**RID**"
                          ILCompilerPackVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
                          ILCompilerRuntimeIdentifiers="@(ILCompilerSupportedRids, '%3B')"
                          />
@@ -1345,7 +1354,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledVersionsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledVersionsPropsFileName)"
+    <WriteLinesToFile File="$(OutputPath)$(BundledVersionsPropsFileName)"
                       Lines="$(BundledVersionsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -1380,7 +1389,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </BundledBundledCliToolsPropsContent>
   </PropertyGroup>
 
-    <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledBundledCliToolsPropsFileName)"
+    <WriteLinesToFile File="$(OutputPath)$(BundledBundledCliToolsPropsFileName)"
                       Lines="$(BundledBundledCliToolsPropsContent)"
                       Overwrite="true" />
   </Target>
@@ -1428,7 +1437,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </BundledMSBuildPropsFileContent>
     </PropertyGroup>
 
-  <WriteLinesToFile File="$(InstallerOutputDirectory)$(BundledMSBuildPropsFileName)"
+  <WriteLinesToFile File="$(OutputPath)$(BundledMSBuildPropsFileName)"
     Lines="$(BundledMSBuildPropsFileContent)"
     Overwrite="true" />
   </Target>

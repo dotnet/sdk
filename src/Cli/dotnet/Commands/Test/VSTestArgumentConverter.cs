@@ -1,9 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections.Immutable;
 
-namespace Microsoft.DotNet.Cli;
+namespace Microsoft.DotNet.Cli.Commands.Test;
 
 /// <summary>
 /// Converts the given arguments to vstest parsable arguments.
@@ -85,11 +87,11 @@ public class VSTestArgumentConverter
     /// </summary>
     /// <param name="args">original arguments</param>
     /// <param name="ignoredArgs">arguments ignored by the converter</param>
-    /// <returns>list of args which can be passsed to vstest</returns>
+    /// <returns>list of args which can be passed to vstest</returns>
     public List<string> Convert(string[] args, out List<string> ignoredArgs)
     {
         var newArgList = new List<string>();
-        ignoredArgs = new List<string>();
+        ignoredArgs = [];
 
         string activeArgument = null;
         BlameArgs blame = new();

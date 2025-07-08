@@ -18,8 +18,8 @@ internal static class ProjectGraphNodeExtensions
     public static Version? GetTargetFrameworkVersion(this ProjectGraphNode projectNode)
         => EnvironmentVariableNames.TryParseTargetFrameworkVersion(projectNode.ProjectInstance.GetPropertyValue("TargetFrameworkVersion"));
 
-    public static ImmutableArray<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
-        => [.. projectNode.ProjectInstance.GetPropertyValue("WebAssemblyHotReloadCapabilities").Split(';').Select(static c => c.Trim()).Where(static c => c != "")];
+    public static IEnumerable<string> GetWebAssemblyCapabilities(this ProjectGraphNode projectNode)
+        => projectNode.GetStringListPropertyValue("WebAssemblyHotReloadCapabilities");
 
     public static bool IsTargetFrameworkVersionOrNewer(this ProjectGraphNode projectNode, Version minVersion)
         => GetTargetFrameworkVersion(projectNode) is { } version && version >= minVersion;
@@ -33,6 +33,9 @@ internal static class ProjectGraphNodeExtensions
     public static bool IsNetCoreApp(this ProjectGraphNode projectNode, Version minVersion)
         => IsNetCoreApp(projectNode) && IsTargetFrameworkVersionOrNewer(projectNode, minVersion);
 
+    public static bool IsWebApp(this ProjectGraphNode projectNode)
+        => projectNode.GetCapabilities().Any(static value => value is "AspNetCore" or "WebAssembly");
+
     public static string? GetOutputDirectory(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetPropertyValue("TargetPath") is { Length: >0 } path ? Path.GetDirectoryName(Path.Combine(projectNode.ProjectInstance.Directory, path)) : null;
 
@@ -44,6 +47,21 @@ internal static class ProjectGraphNodeExtensions
 
     public static IEnumerable<string> GetCapabilities(this ProjectGraphNode projectNode)
         => projectNode.ProjectInstance.GetItems("ProjectCapability").Select(item => item.EvaluatedInclude);
+
+    public static bool IsAutoRestartEnabled(this ProjectGraphNode projectNode)
+        => projectNode.GetBooleanPropertyValue("HotReloadAutoRestart");
+
+    public static bool AreDefaultItemsEnabled(this ProjectGraphNode projectNode)
+        => projectNode.GetBooleanPropertyValue("EnableDefaultItems");
+
+    public static IEnumerable<string> GetDefaultItemExcludes(this ProjectGraphNode projectNode)
+        => projectNode.GetStringListPropertyValue("DefaultItemExcludes");
+
+    private static IEnumerable<string> GetStringListPropertyValue(this ProjectGraphNode projectNode, string propertyName)
+        => projectNode.ProjectInstance.GetPropertyValue(propertyName).Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+    private static bool GetBooleanPropertyValue(this ProjectGraphNode projectNode, string propertyName)
+        => bool.TryParse(projectNode.ProjectInstance.GetPropertyValue(propertyName), out var result) && result;
 
     public static IEnumerable<ProjectGraphNode> GetTransitivelyReferencingProjects(this IEnumerable<ProjectGraphNode> projects)
     {

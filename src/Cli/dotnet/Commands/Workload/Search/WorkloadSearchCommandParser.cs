@@ -1,33 +1,33 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Workloads.Workload.Search;
-using LocalizableStrings = Microsoft.DotNet.Workloads.Workload.Search.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
 internal static class WorkloadSearchCommandParser
 {
-    public static readonly CliArgument<string> WorkloadIdStubArgument =
-        new(LocalizableStrings.WorkloadIdStubArgumentName)
+    public static readonly Argument<string> WorkloadIdStubArgument =
+        new(CliCommandStrings.WorkloadIdStubArgumentName)
         {
             Arity = ArgumentArity.ZeroOrOne,
-            Description = LocalizableStrings.WorkloadIdStubArgumentDescription
+            Description = CliCommandStrings.WorkloadIdStubArgumentDescription
         };
 
-    public static readonly CliOption<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
+    public static readonly Option<string> VersionOption = InstallingWorkloadCommandParser.VersionOption;
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("search", LocalizableStrings.CommandDescription);
+        var command = new Command("search", CliCommandStrings.WorkloadSearchCommandDescription);
         command.Subcommands.Add(WorkloadSearchVersionsCommandParser.GetCommand());
         command.Arguments.Add(WorkloadIdStubArgument);
         command.Options.Add(CommonOptions.HiddenVerbosityOption);

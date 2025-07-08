@@ -50,47 +50,12 @@
           DestinationFiles="@(BundledLayoutPackageDownloadFilesWithDestination->'%(DestinationPath)')"
           SkipUnchangedFiles="true" />
 
-    <!-- https://github.com/dotnet/msbuild/issues/5881#issuecomment-802492423 -->
     <ItemGroup>
-      <DotnetToolsetInternalSource Include="$(SdkLayoutOutputDirectory)**\*" />
-      <DotnetToolsetInternalDestination Include="@(DotnetToolsetInternalSource->'$(RedistInstallerLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+      <SdkOutputFile Include="$(OutputPath)**\*" />
+      <SdkOutputFileDestination Include="@(SdkOutputFile->'$(RedistInstallerLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(DotnetToolsetInternalSource)" DestinationFiles="@(DotnetToolsetInternalDestination)" SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="RetargetInstallerTools">
-    <ItemGroup>
-      <ToolRuntimeConfigPath Include="$(RedistInstallerLayoutPath)sdk/$(Version)/**/*.runtimeconfig.json" />
-    </ItemGroup>
-
-    <!-- Update runtimeconfig files for tools in the SDK to pin the shared frameworks to the one carried by this installer. -->
-    <UpdateRuntimeConfig
-      RuntimeConfigPaths="@(ToolRuntimeConfigPath)"
-      MicrosoftNetCoreAppVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
-      MicrosoftAspNetCoreAppVersion="$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
-  </Target>
-
-  <Target Name="GenerateVersionFile">
-    <WriteLinesToFile File="$(InstallerOutputDirectory).version"
-                      Lines="$(SourceRevisionId);$(Version);$(Rid);$(FullNugetVersion);$(SdkFeatureBand)"
-                      Overwrite="true" />
-  </Target>
-
-  <Target Name="CopyKnownWorkloadManifestFile">
-    <ItemGroup>
-      <WorkloadManifestFilesContent Include="$([MSBuild]::ValueOrDefault('%(BundledManifests.Identity)', '').ToLowerInvariant())" />
-    </ItemGroup>
-
-    <Error Text="No workload manifest content found." Condition="'@(WorkloadManifestFilesContent->Count())' == '0'" />
-
-    <ItemGroup>
-      <WorkloadManifestFilesContent Include="samsung.net.sdk.tizen" />
-    </ItemGroup>
-
-    <WriteLinesToFile File="$(InstallerOutputDirectory)KnownWorkloadManifests.txt"
-                      Lines="@(WorkloadManifestFilesContent)"
-                      Overwrite="true" />
+    <Copy SourceFiles="@(SdkOutputFile)" DestinationFiles="@(SdkOutputFileDestination)" SkipUnchangedFiles="true" />
   </Target>
 
   <Target Name="LayoutWorkloadUserLocalMarker"
@@ -99,72 +64,60 @@
                       Overwrite="true" />
   </Target>
 
-  <Target Name="LayoutAppHostTemplate" DependsOnTargets="RunResolvePackageDependencies">
-    <PropertyGroup>
-    <NETCoreAppHostPackageName>Microsoft.NETCore.App.Host.$(SharedFrameworkRid)</NETCoreAppHostPackageName>
-      <AppHostRestorePath>$(NuGetPackageRoot)$(NETCoreAppHostPackageName.ToLowerInvariant())\$(MicrosoftNETCoreAppHostPackageVersion)\</AppHostRestorePath>
-      <AppHostTemplatePath>$(InstallerOutputDirectory)AppHostTemplate</AppHostTemplatePath>
-      <AppHostExecutableName>AppHost$(ExeExtension)</AppHostExecutableName>
-    </PropertyGroup>
-
+  <Target Name="LayoutDnxShim">
     <ItemGroup>
-      <AllFileOfRestoredAppHostPackage Include="$(AppHostRestorePath)\**\*.*" />
-      <NativeRestoredAppHostNETCore Include="@(AllFileOfRestoredAppHostPackage)"
-          Condition="'%(FileName)%(Extension)' == '$(AppHostExecutableName)'" />
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.cmd" />
+      <DnxShimSource Condition="$([MSBuild]::IsOSPlatform('Windows'))" Include="dnx.ps1" />
+      <DnxShimSource Condition="!$([MSBuild]::IsOSPlatform('WINDOWS'))" Include="dnx" />
     </ItemGroup>
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(RedistInstallerLayoutPath)" />
 
-    <Error Condition="@(NativeRestoredAppHostNETCore->Distinct()->Count()) != 1"
-           Text="Failed to determine the $(NETCoreAppHostPackageName) executable in @(AllFileOfRestoredAppHostPackage)" />
-
-    <Copy SourceFiles="@(NativeRestoredAppHostNETCore)" DestinationFolder="$(AppHostTemplatePath)" />
-
-    <Message Text="Copy from @(NativeRestoredAppHostNETCore) to $(AppHostTemplatePath)." Importance="High" />
-  </Target>
-
-  <!-- This target no longer runs by default. The ResolveAssemblyReference task is substantially faster if it has a cache, so the idea was to precompute a cache for commonly resolved (SDK) assemblies,
-       but the expected performance win did not materialize. This target can take multiple minutes to run with every build, so disabling it until/unless we find good value for it. -->
-  <Target Name="GeneratePrecomputedRarCache" DependsOnTargets="LayoutTemplates;LayoutManifests;LayoutBundledTools">
-    <ItemGroup>
-      <AssembliesToResolve Include="$(RedistInstallerLayoutPath)\**\*.dll" Exclude="$(RedistInstallerLayoutPath)\**\native\**\*.dll" />
-    </ItemGroup>
-    <ResolveAssemblyReference AssemblyFiles="@(AssembliesToResolve)" Silent="$(ResolveAssemblyReferencesSilent)" AssemblyInformationCacheOutputPath="$(RedistInstallerLayoutPath)sdk\$(Version)\SDKPrecomputedAssemblyReferences.cache" SearchPaths="{RawFileName}" WarnOrErrorOnTargetArchitectureMismatch="$(ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch)" />
+    <!-- Mark script as executable -->
+    <Exec Command="chmod 755 &quot;$(RedistInstallerLayoutPath)/dnx&quot;" Condition="!$([MSBuild]::IsOSPlatform('Windows'))" />
   </Target>
 
   <!-- Replace files from the runtime packs with symbolic links to the corresponding shared framework files (and hostfxr) to reduce the size of the runtime pack directories. -->
   <Target Name="ReplaceBundledRuntimePackFilesWithSymbolicLinks" DependsOnTargets="LayoutBundledComponents"
-                                                                 Condition="'$(BundleRuntimePacks)' == 'true' and  !$([MSBuild]::IsOSPlatform('WINDOWS'))">
+                                                                 Condition="'$(BundleRuntimePacks)' == 'true' and !$([MSBuild]::IsOSPlatform('WINDOWS'))">
     <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.NETCore.App/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.NETCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftNETCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/host/fxr/$(MicrosoftNETCoreAppRuntimePackageVersion)" />
     <ReplaceFilesWithSymbolicLinks Directory="$(RedistInstallerLayoutPath)/packs/Microsoft.AspNetCore.App.Runtime.$(SharedFrameworkRid)/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" LinkToFilesFrom="$(RedistInstallerLayoutPath)/shared/Microsoft.AspNetCore.App/$(MicrosoftAspNetCoreAppRuntimePackageVersion)" />
   </Target>
 
+  <!-- Anything that goes outside of the sdk/$(Version) directory. -->
   <Target Name="GenerateInstallerLayout"
-          DependsOnTargets="DownloadBundledComponents;
-                            GenerateLayout;
+          DependsOnTargets="GenerateSdkLayout;
+                            DownloadBundledComponents;
                             LayoutBundledComponents;
-                            GenerateVersionFile;
-                            CopyKnownWorkloadManifestFile;
-                            GenerateBundledVersions;
                             LayoutTemplates;
                             LayoutManifests;
                             LayoutBaselineWorkloadSet;
                             LayoutWorkloadUserLocalMarker;
-                            LayoutBundledTools;
-                            RetargetInstallerTools;
+                            LayoutDnxShim;
                             CrossgenLayout;
-                            LayoutAppHostTemplate;
                             ReplaceBundledRuntimePackFilesWithSymbolicLinks"
-          AfterTargets="Build">
-    <RemoveDir Directories="$(SdkInternalLayoutPath)" />
-    <MakeDir Directories="$(SdkInternalLayoutPath)" />
+          AfterTargets="AfterBuild" />
 
-    <!-- Create "SDK Internal" layout to create the MSI to bundle -->
+  <!-- Copy the sdk layout into a temporary folder so that it's nested under "sdk\$(Version)\" which is
+       necessary for the msi/pkg to install correctly and put the content under that sub path. -->
+  <Target Name="PrepareIntermediateSdkInstallerOutput" DependsOnTargets="GenerateInstallerLayout">
+    <PropertyGroup>
+      <IntermediateSdkInstallerOutputPath>$([MSBuild]::NormalizeDirectory('$(ArtifactsObjDir)', 'sdk-installer', '$(Configuration)'))</IntermediateSdkInstallerOutputPath>
+    </PropertyGroup>
+
+    <!-- Create "SDK Internal" layout. -->
     <ItemGroup>
-      <SdkInternalFiles Include="$(RedistInstallerLayoutPath)sdk/$(Version)/**/*.*" />
+      <SdkOutputFile Include="$(InstallerOutputDirectory)**\*" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(SdkInternalFiles)"
-          DestinationFiles="@(SdkInternalFiles -> '$(SdkInternalLayoutPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
+    <Copy SourceFiles="@(SdkOutputFile)"
+          DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')"
+          UseHardLinksIfPossible="true"
+          SkipUnchangedFiles="true" />
+
+    <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
+    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
+    
   </Target>
 
 </Project>

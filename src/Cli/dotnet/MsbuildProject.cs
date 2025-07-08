@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -20,11 +22,11 @@ internal class MsbuildProject
     public ProjectRootElement ProjectRootElement { get; private set; }
     public string ProjectDirectory { get; private set; }
 
-    private ProjectCollection _projects;
+    private readonly ProjectCollection _projects;
     private List<NuGetFramework> _cachedTfms = null;
     private IEnumerable<string> cachedRuntimeIdentifiers;
     private IEnumerable<string> cachedConfigurations;
-    private bool _interactive = false;
+    private readonly bool _interactive = false;
 
     private MsbuildProject(ProjectCollection projects, ProjectRootElement project, bool interactive)
     {
@@ -50,13 +52,13 @@ internal class MsbuildProject
     {
         if (!File.Exists(projectPath))
         {
-            throw new GracefulException(CommonLocalizableStrings.ProjectDoesNotExist, projectPath);
+            throw new GracefulException(CliStrings.ProjectDoesNotExist, projectPath);
         }
 
         var project = TryOpenProject(projects, projectPath);
         if (project == null)
         {
-            throw new GracefulException(CommonLocalizableStrings.ProjectIsInvalid, projectPath);
+            throw new GracefulException(CliStrings.ProjectIsInvalid, projectPath);
         }
 
         return new MsbuildProject(projects, project, interactive);
@@ -69,7 +71,7 @@ internal class MsbuildProject
         var project = TryOpenProject(projects, projectFile.FullName);
         if (project == null)
         {
-            throw new GracefulException(CommonLocalizableStrings.FoundInvalidProject, projectFile.FullName);
+            throw new GracefulException(CliStrings.FoundInvalidProject, projectFile.FullName);
         }
 
         return new MsbuildProject(projects, project, interactive);
@@ -84,25 +86,25 @@ internal class MsbuildProject
         }
         catch (ArgumentException)
         {
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
         }
 
         if (!dir.Exists)
         {
-            throw new GracefulException(CommonLocalizableStrings.CouldNotFindProjectOrDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
         }
 
         FileInfo[] files = dir.GetFiles("*proj");
         if (files.Length == 0)
         {
             throw new GracefulException(
-                CommonLocalizableStrings.CouldNotFindAnyProjectInDirectory,
+                CliStrings.CouldNotFindAnyProjectInDirectory,
                 projectDirectory);
         }
 
         if (files.Length > 1)
         {
-            throw new GracefulException(CommonLocalizableStrings.MoreThanOneProjectInDirectory, projectDirectory);
+            throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, projectDirectory);
         }
 
         return files.First();
@@ -120,7 +122,7 @@ internal class MsbuildProject
             if (ProjectRootElement.HasExistingItemWithCondition(framework, @ref))
             {
                 Reporter.Output.WriteLine(string.Format(
-                    CommonLocalizableStrings.ProjectAlreadyHasAreference,
+                    CliStrings.ProjectAlreadyHasAreference,
                     @ref));
                 continue;
             }
@@ -128,7 +130,7 @@ internal class MsbuildProject
             numberOfAddedReferences++;
             itemGroup.AppendChild(ProjectRootElement.CreateItemElement(ProjectItemElementType, @ref));
 
-            Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.ReferenceAddedToTheProject, @ref));
+            Reporter.Output.WriteLine(string.Format(CliStrings.ReferenceAddedToTheProject, @ref));
         }
 
         return numberOfAddedReferences;
@@ -153,8 +155,7 @@ internal class MsbuildProject
 
     public IEnumerable<string> GetRuntimeIdentifiers()
     {
-        return cachedRuntimeIdentifiers ??
-               (cachedRuntimeIdentifiers = GetEvaluatedProject().GetRuntimeIdentifiers());
+        return cachedRuntimeIdentifiers ??= GetEvaluatedProject().GetRuntimeIdentifiers();
     }
 
     public IEnumerable<NuGetFramework> GetTargetFrameworks()
@@ -165,14 +166,13 @@ internal class MsbuildProject
         }
 
         var project = GetEvaluatedProject();
-        _cachedTfms = project.GetTargetFrameworks().ToList();
+        _cachedTfms = [.. project.GetTargetFrameworks()];
         return _cachedTfms;
     }
 
     public IEnumerable<string> GetConfigurations()
     {
-        return cachedConfigurations ??
-               (cachedConfigurations = GetEvaluatedProject().GetConfigurations());
+        return cachedConfigurations ??= GetEvaluatedProject().GetConfigurations();
     }
 
     public bool CanWorkOnFramework(NuGetFramework framework)
@@ -228,7 +228,7 @@ internal class MsbuildProject
         catch (InvalidProjectFileException e)
         {
             throw new GracefulException(string.Format(
-                CommonLocalizableStrings.ProjectCouldNotBeEvaluated,
+                CliStrings.ProjectCouldNotBeEvaluated,
                 ProjectRootElement.FullPath, e.Message));
         }
         finally
@@ -252,14 +252,14 @@ internal class MsbuildProject
                 }
 
                 numberOfRemovedRefs++;
-                Reporter.Output.WriteLine(string.Format(CommonLocalizableStrings.ProjectReferenceRemoved, r));
+                Reporter.Output.WriteLine(string.Format(CliStrings.ProjectReferenceRemoved, r));
             }
         }
 
         if (numberOfRemovedRefs == 0)
         {
             Reporter.Output.WriteLine(string.Format(
-                CommonLocalizableStrings.ProjectReferenceCouldNotBeFound,
+                CliStrings.ProjectReferenceCouldNotBeFound,
                 reference));
         }
 
@@ -280,8 +280,7 @@ internal class MsbuildProject
     private IEnumerable<string> GetIncludeAlternativesForRemoval(string reference)
     {
         // We do not care about duplicates in case when i.e. reference is already full path
-        var ret = new List<string>();
-        ret.Add(reference);
+        List<string> ret = [reference];
 
         string fullPath = Path.GetFullPath(reference);
         ret.Add(fullPath);

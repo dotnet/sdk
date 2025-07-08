@@ -1,15 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
-public class AppBaseCommandResolver : AbstractPathBasedCommandResolver
+public class AppBaseCommandResolver(IEnvironmentProvider environment,
+    IPlatformCommandSpecFactory commandSpecFactory) : AbstractPathBasedCommandResolver(environment, commandSpecFactory)
 {
-    public AppBaseCommandResolver(IEnvironmentProvider environment,
-        IPlatformCommandSpecFactory commandSpecFactory) : base(environment, commandSpecFactory) { }
-
     internal override string ResolveCommandPath(CommandResolverArguments commandResolverArguments)
     {
         return _environment.GetCommandPathFromRootPath(

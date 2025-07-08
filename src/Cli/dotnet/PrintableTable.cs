@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Globalization;
 
 namespace Microsoft.DotNet.Cli;
@@ -9,7 +11,7 @@ namespace Microsoft.DotNet.Cli;
 internal class PrintableTable<T>
 {
     public const string ColumnDelimiter = "      ";
-    private List<Column> _columns = new();
+    private readonly List<Column> _columns = [];
 
     private class Column
     {
@@ -29,7 +31,7 @@ internal class PrintableTable<T>
         if (maxWidth <= 0)
         {
             throw new ArgumentException(
-                CommonLocalizableStrings.ColumnMaxWidthMustBeGreaterThanZero,
+                CliStrings.ColumnMaxWidthMustBeGreaterThanZero,
                 nameof(maxWidth));
         }
 
@@ -94,9 +96,7 @@ internal class PrintableTable<T>
             throw new InvalidOperationException();
         }
 
-        return EnumerateLines(
-            widths,
-            _columns.Select(c => new StringInfo(c.Header ?? "")).ToArray());
+        return EnumerateLines(widths, [.. _columns.Select(c => new StringInfo(c.Header ?? ""))]);
     }
 
     private IEnumerable<string> EnumerateRowLines(T row, int[] widths)
@@ -106,9 +106,7 @@ internal class PrintableTable<T>
             throw new InvalidOperationException();
         }
 
-        return EnumerateLines(
-            widths,
-            _columns.Select(c => new StringInfo(c.GetContent(row) ?? "")).ToArray());
+        return EnumerateLines(widths, [.. _columns.Select(c => new StringInfo(c.GetContent(row) ?? ""))]);
     }
 
     private static IEnumerable<string> EnumerateLines(int[] widths, StringInfo[] contents)
@@ -178,21 +176,19 @@ internal class PrintableTable<T>
 
     private int[] CalculateColumnWidths(IEnumerable<T> rows)
     {
-        return _columns
-            .Select(c =>
+        return [.. _columns.Select(c =>
+        {
+            var width = new StringInfo(c.Header ?? "").LengthInTextElements;
+
+            foreach (var row in rows)
             {
-                var width = new StringInfo(c.Header ?? "").LengthInTextElements;
+                width = Math.Max(
+                    width,
+                    new StringInfo(c.GetContent(row) ?? "").LengthInTextElements);
+            }
 
-                foreach (var row in rows)
-                {
-                    width = Math.Max(
-                        width,
-                        new StringInfo(c.GetContent(row) ?? "").LengthInTextElements);
-                }
-
-                return Math.Min(width, c.MaxWidth);
-            })
-            .ToArray();
+            return Math.Min(width, c.MaxWidth);
+        })];
     }
 
     private static int CalculateTotalWidth(int[] widths)

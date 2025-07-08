@@ -1,41 +1,41 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Tools.Reference.Remove;
-using LocalizableStrings = Microsoft.DotNet.Tools.Reference.Remove.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
 internal static class ReferenceRemoveCommandParser
 {
-    public static readonly CliArgument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(LocalizableStrings.ProjectPathArgumentName)
+    public static readonly Argument<IEnumerable<string>> ProjectPathArgument = new DynamicArgument<IEnumerable<string>>(CliCommandStrings.ReferenceRemoveProjectPathArgumentName)
     {
-        Description = LocalizableStrings.ProjectPathArgumentDescription,
+        Description = CliCommandStrings.ReferenceRemoveProjectPathArgumentDescription,
         Arity = ArgumentArity.OneOrMore,
-    }.AddCompletions(Complete.ProjectReferencesFromProjectFile);
+    }.AddCompletions(CliCompletion.ProjectReferencesFromProjectFile);
 
-    public static readonly CliOption<string> FrameworkOption = new("--framework", "-f")
+    public static readonly Option<string> FrameworkOption = new("--framework", "-f")
     {
-        Description = LocalizableStrings.CmdFrameworkDescription,
-        HelpName = CommonLocalizableStrings.CmdFramework
+        Description = CliCommandStrings.ReferenceRemoveCmdFrameworkDescription,
+        HelpName = CliStrings.CommonCmdFramework
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        var command = new CliCommand("remove", LocalizableStrings.AppFullName);
+        var command = new Command("remove", CliCommandStrings.ReferenceRemoveAppFullName);
 
         command.Arguments.Add(ProjectPathArgument);
         command.Options.Add(FrameworkOption);
 
-        command.SetAction((parseResult) => new RemoveProjectToProjectReferenceCommand(parseResult).Execute());
+        command.SetAction((parseResult) => new ReferenceRemoveCommand(parseResult).Execute());
 
         return command;
     }

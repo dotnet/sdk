@@ -1,41 +1,41 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Tools.Tool.Run;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Run.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Cli.Commands.Tool.Run;
 
 internal static class ToolRunCommandParser
 {
-    public static readonly CliArgument<string> CommandNameArgument = new("commandName")
+    public static readonly Argument<string> CommandNameArgument = new("commandName")
     {
-        HelpName = LocalizableStrings.CommandNameArgumentName,
-        Description = LocalizableStrings.CommandNameArgumentDescription
+        HelpName = CliCommandStrings.CommandNameArgumentName,
+        Description = CliCommandStrings.CommandNameArgumentDescription
     };
 
-    public static readonly CliArgument<IEnumerable<string>> CommandArgument = new("toolArguments")
+    public static readonly Argument<IEnumerable<string>> CommandArgument = new("toolArguments")
     {
-        Description = "arguments forwarded to the tool"
+        Description = CliCommandStrings.ToolRunArgumentsDescription
     };
 
-    public static readonly CliOption<bool> RollForwardOption = new("--allow-roll-forward")
+    public static readonly Option<bool> RollForwardOption = new("--allow-roll-forward")
     {
-        Description = Tools.Tool.Install.LocalizableStrings.RollForwardOptionDescription,
+        Description = CliCommandStrings.RollForwardOptionDescription,
         Arity = ArgumentArity.Zero
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("run", LocalizableStrings.CommandDescription);
+        Command command = new("run", CliCommandStrings.ToolRunCommandDescription);
 
         command.Arguments.Add(CommandNameArgument);
         command.Arguments.Add(CommandArgument);

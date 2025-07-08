@@ -1,14 +1,12 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.ToolManifest;
 
-internal class ToolManifestException : GracefulException
+internal class ToolManifestException(string message) : GracefulException([message], null, false)
 {
-    public ToolManifestException(string message) : base(new[] { message }, null, false)
-    {
-
-    }
 }

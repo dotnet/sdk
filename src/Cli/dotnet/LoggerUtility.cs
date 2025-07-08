@@ -10,7 +10,7 @@ internal static class LoggerUtility
 {
     public static FacadeLogger? DetermineBinlogger(string[] restoreArgs, string verb)
     {
-        List<BinaryLogger> binaryLoggers = new();
+        List<BinaryLogger> binaryLoggers = [];
 
         for (int i = restoreArgs.Length - 1; i >= 0; i--)
         {
@@ -61,6 +61,23 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
+    internal static void SeparateBinLogArguments(IEnumerable<string>? args, out List<string> binLogArgs, out List<string> nonBinLogArgs)
+    {
+        binLogArgs = new List<string>();
+        nonBinLogArgs = new List<string>();
+        foreach (var arg in args ?? [])
+        {
+            if (IsBinLogArgument(arg))
+            {
+                binLogArgs.Add(arg);
+            }
+            else
+            {
+                nonBinLogArgs.Add(arg);
+            }
+        }
+    }
+
     internal static bool IsBinLogArgument(string arg)
     {
         const StringComparison comp = StringComparison.OrdinalIgnoreCase;
@@ -80,7 +97,7 @@ internal static class LoggerUtility
 /// <param name="innerLogger"></param>
 internal class PersistentDispatcher : EventArgsDispatcher, IEventSource4
 {
-    private List<BinaryLogger> innerLoggers;
+    private readonly List<BinaryLogger> innerLoggers;
 
     public PersistentDispatcher(List<BinaryLogger> innerLoggers)
     {

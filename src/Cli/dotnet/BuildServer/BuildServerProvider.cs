@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
@@ -88,7 +90,7 @@ internal class BuildServerProvider(
         {
             _reporter.WriteLine(
                 string.Format(
-                    LocalizableStrings.FailedToReadPidFile,
+                    CliStrings.FailedToReadPidFile,
                     path.Value,
                     ex.Message).Yellow());
             return null;

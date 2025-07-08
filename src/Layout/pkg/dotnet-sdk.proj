@@ -4,11 +4,10 @@
     <BuildSdkRpm Condition="'$(BuildSdkRpm)' == '' and '$(IsRPMBasedDistro)' == 'true'">true</BuildSdkRpm>
     <SkipBuild Condition="'$(BuildSdkDeb)' != 'true' and '$(BuildSdkRpm)' != 'true'">true</SkipBuild>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <RuntimeIdentifier>$(Rid)</RuntimeIdentifier>
-    <GenerateInstallers>true</GenerateInstallers>
+    <RuntimeIdentifier>$(TargetRid)</RuntimeIdentifier>
+    <GenerateInstallers Condition="'$(DotNetBuildSourceOnly)' != 'true'">true</GenerateInstallers>
     <BuildDebPackage Condition="'$(BuildSdkDeb)' == 'true'">true</BuildDebPackage>
     <BuildRpmPackage Condition="'$(BuildSdkRpm)' == 'true'">true</BuildRpmPackage>
-    <UseArcadeRpmTooling>true</UseArcadeRpmTooling>
     <ProductBrandPrefix>Microsoft .NET</ProductBrandPrefix>
     <LicenseFile>$(RepoRoot)LICENSE.TXT</LicenseFile>
     <InstallerName>dotnet-sdk</InstallerName>
@@ -24,15 +23,15 @@
       All supported installer runtime identifiers should be specified here.
       New arcade infra is only used for Linux installers, at the moment.
     -->
-    <InstallerRuntimeIdentifiers>linux-$(Architecture)</InstallerRuntimeIdentifiers>
+    <InstallerRuntimeIdentifiers>linux-$(TargetArchitecture)</InstallerRuntimeIdentifiers>
     <IsShippingPackage>true</IsShippingPackage>
+    <!-- The PublishToDisk target which depends on ResolveProjectReferences is invoked with OutputPath as an global property
+         which would flow to redist.csproj or sdk-tasks.csproj. -->
+    <_GlobalPropertiesToRemoveFromProjectReferences>$(_GlobalPropertiesToRemoveFromProjectReferences);OutputPath</_GlobalPropertiesToRemoveFromProjectReferences>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\redist\redist.csproj" ReferenceOutputAssembly="false" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
@@ -42,7 +41,7 @@
     <ManpagesDirectory>$(RepoRoot)documentation/manpages/sdk</ManpagesDirectory>
   </PropertyGroup>
 
-  <Target Name="PublishToDisk">
+  <Target Name="PublishToDisk" DependsOnTargets="ResolveProjectReferences">
     <Error Condition="'$(OutputPath)' == ''" Text="Publishing to disk requires the OutputPath to be set to the root of the path to write to." />
 
     <ItemGroup>
@@ -52,6 +51,7 @@
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
+    <Error Condition="'@(CLISdkFiles)' == ''" Text="The 'CLISdkFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(CLISdkFiles)"
@@ -60,6 +60,7 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Templates -->
+    <Error Condition="'@(TemplatesFiles)' == ''" Text="The 'TemplatesFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(TemplatesFiles->'$(OutputPath)/templates/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(TemplatesFiles)"
@@ -68,6 +69,7 @@
       UseHardlinksIfPossible="False" />
 
     <!-- Create layout: Workload Manifests -->
+    <Error Condition="'@(ManifestFiles)' == ''" Text="The 'ManifestFiles' items are empty. This shouldn't happen!" />
     <Copy
       DestinationFiles="@(ManifestFiles->'$(OutputPath)/sdk-manifests/%(RecursiveDir)%(Filename)%(Extension)')"
       SourceFiles="@(ManifestFiles)"
@@ -96,7 +98,7 @@
   </Target>
 
   <Target Name="AddLinuxPackageInformation"
-      BeforeTargets="GetDebInstallerJsonProperties;GetRpmInstallerJsonProperties"
+      BeforeTargets="GetAdditionalLinuxInstallerProperties"
       DependsOnTargets="CalculateLinuxNativeInstallerDependencyVersions">
 
     <PropertyGroup>
@@ -116,7 +118,7 @@
       <LinuxPackageDependency Include="dotnet-runtime-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-targeting-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRefPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="dotnet-apphost-pack-$(MicrosoftNETCoreAppMajorMinorVersion)" Version="$(MicrosoftNETCoreAppRuntimePackageVersionWithTilde)" />
-      <LinuxPackageDependency Condition="'$(Architecture)' == 'x64'" Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
+      <LinuxPackageDependency Condition="'$(TargetArchitecture)' == 'x64'" Include="netstandard-targeting-pack-$(NetStandardTargetingPackMajorMinorVersion)" Version="$(NetStandardTargetingPackPackageVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-runtime-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRuntimeVersionWithTilde)" />
       <LinuxPackageDependency Include="aspnetcore-targeting-pack-$(AspNetCoreMajorMinorVersion)" Version="$(AspNetCoreRefVersionWithTilde)" />
       <LinuxPostInstallScript Include="$(DebianPostinstFile)" Condition="'$(BuildDebPackage)' == 'true'" />

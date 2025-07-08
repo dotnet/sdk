@@ -1,13 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.List;
+namespace Microsoft.DotNet.Cli.Commands.Workload.List;
 
 internal class InstalledWorkloadsCollection
 {
-    private Dictionary<string, string> _workloads;
+    private readonly Dictionary<string, string> _workloads;
 
     /// <summary>
     /// Gets the number of workloads in the collection.
@@ -27,7 +29,7 @@ internal class InstalledWorkloadsCollection
 
     public InstalledWorkloadsCollection()
     {
-        _workloads = new();
+        _workloads = [];
     }
 
     public IEnumerable<KeyValuePair<string, string>> AsEnumerable() =>
@@ -37,7 +39,7 @@ internal class InstalledWorkloadsCollection
     /// Adds a new workload ID and installation source. If the ID already exists, the source is appended.
     /// </summary>
     /// <param name="workloadId">The ID of the workload to update.</param>
-    /// <param name="installationSource">A string describing the installation soruce of the workload.</param>
+    /// <param name="installationSource">A string describing the installation source of the workload.</param>
     public void Add(string workloadId, string installationSource)
     {
         if (!_workloads.ContainsKey(workloadId))

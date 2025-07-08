@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics.Tracing;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
@@ -15,15 +17,15 @@ internal sealed class PerformanceLogEventListener : EventListener
         internal EventLevel Level { get; set; }
     }
 
-    private static ProviderConfiguration[] s_config = new ProviderConfiguration[]
-    {
+    private static readonly ProviderConfiguration[] s_config =
+    [
         new ProviderConfiguration()
         {
             Name = "Microsoft-Dotnet-CLI-Performance",
             Keywords = EventKeywords.All,
             Level = EventLevel.Verbose
         }
-    };
+    ];
 
     private const char EventDelimiter = '\n';
     private StreamWriter _writer;

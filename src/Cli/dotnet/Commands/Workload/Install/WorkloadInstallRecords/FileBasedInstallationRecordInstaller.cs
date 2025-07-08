@@ -1,19 +1,16 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
-namespace Microsoft.DotNet.Workloads.Workload.Install.InstallRecord;
+namespace Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
 
-internal class FileBasedInstallationRecordRepository : IWorkloadInstallationRecordRepository
+internal class FileBasedInstallationRecordRepository(string workloadMetadataDir) : IWorkloadInstallationRecordRepository
 {
-    private readonly string _workloadMetadataDir;
+    private readonly string _workloadMetadataDir = workloadMetadataDir;
     private const string InstalledWorkloadDir = "InstalledWorkloads";
-
-    public FileBasedInstallationRecordRepository(string workloadMetadataDir)
-    {
-        _workloadMetadataDir = workloadMetadataDir;
-    }
 
     public IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords()
     {
@@ -26,7 +23,7 @@ internal class FileBasedInstallationRecordRepository : IWorkloadInstallationReco
         }
         else
         {
-            return new List<SdkFeatureBand>();
+            return [];
         }
     }
 
@@ -40,7 +37,7 @@ internal class FileBasedInstallationRecordRepository : IWorkloadInstallationReco
         }
         else
         {
-            return new List<WorkloadId>();
+            return [];
         }
     }
 

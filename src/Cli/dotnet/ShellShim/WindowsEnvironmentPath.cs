@@ -1,48 +1,35 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 
 namespace Microsoft.DotNet.Cli.ShellShim;
 
-internal class WindowsEnvironmentPath : IEnvironmentPath
+internal class WindowsEnvironmentPath(string packageExecutablePath,
+    string nonExpandedPackageExecutablePath,
+    IEnvironmentProvider expandedEnvironmentReader,
+    IWindowsRegistryEnvironmentPathEditor environmentPathEditor,
+    IReporter reporter) : IEnvironmentPath
 {
-    private readonly IReporter _reporter;
+    private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
     private const string PathName = "PATH";
-    private readonly string _expandedPackageExecutablePath;
-    private readonly string _nonExpandedPackageExecutablePath;
+    private readonly string _expandedPackageExecutablePath = packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
+    private readonly string _nonExpandedPackageExecutablePath = nonExpandedPackageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
 
     /// <summary>
     /// This will read cached and expanded environment variable. We use this
     /// to check if the expanded tool shim path exists. Since this is ultimately how shell will invoke command
     /// </summary>
-    private readonly IEnvironmentProvider _expandedEnvironmentReader;
+    private readonly IEnvironmentProvider _expandedEnvironmentReader = expandedEnvironmentReader ?? throw new ArgumentNullException(nameof(expandedEnvironmentReader));
 
     /// <summary>
     /// This will read from registry with non expanded environment like %USERPROFILE%\AppData\Local\Microsoft\WindowsApps
     /// when append tool shim PATH. Use to read and write to avoid edit existing PATH.
     /// </summary>
-    private readonly IWindowsRegistryEnvironmentPathEditor _environmentPathEditor;
-
-    public WindowsEnvironmentPath(string packageExecutablePath,
-        string nonExpandedPackageExecutablePath,
-        IEnvironmentProvider expandedEnvironmentReader,
-        IWindowsRegistryEnvironmentPathEditor environmentPathEditor,
-        IReporter reporter)
-    {
-        _nonExpandedPackageExecutablePath = nonExpandedPackageExecutablePath ??
-                                            throw new ArgumentNullException(nameof(packageExecutablePath));
-        _expandedPackageExecutablePath =
-            packageExecutablePath ?? throw new ArgumentNullException(nameof(packageExecutablePath));
-        _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
-
-        _expandedEnvironmentReader =
-            expandedEnvironmentReader ?? throw new ArgumentNullException(nameof(expandedEnvironmentReader));
-
-        _environmentPathEditor =
-            environmentPathEditor ?? throw new ArgumentNullException(nameof(environmentPathEditor));
-    }
+    private readonly IWindowsRegistryEnvironmentPathEditor _environmentPathEditor = environmentPathEditor ?? throw new ArgumentNullException(nameof(environmentPathEditor));
 
     public void AddPackageExecutablePathToUserPath()
     {
@@ -78,7 +65,7 @@ internal class WindowsEnvironmentPath : IEnvironmentPath
         {
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.FailedToSetToolsPathEnvironmentVariable,
+                    CliStrings.FailedToSetToolsPathEnvironmentVariable,
                     _expandedPackageExecutablePath).Yellow());
         }
     }
@@ -119,13 +106,13 @@ internal class WindowsEnvironmentPath : IEnvironmentPath
     {
         if (!PackageExecutablePathExistsForCurrentProcess() && PackageExecutablePathWillExistForFutureNewProcess())
         {
-            _reporter.WriteLine(CommonLocalizableStrings.EnvironmentPathWindowsNeedReopen);
+            _reporter.WriteLine(CliStrings.EnvironmentPathWindowsNeedReopen);
         }
         else if (!PackageExecutablePathWillExistForFutureNewProcess())
         {
             _reporter.WriteLine(
                 string.Format(
-                    CommonLocalizableStrings.EnvironmentPathWindowsManualInstructions,
+                    CliStrings.EnvironmentPathWindowsManualInstructions,
                     _expandedPackageExecutablePath));
         }
     }

@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 internal sealed class TerminalTestReporterOptions
 {
@@ -46,6 +46,12 @@ internal sealed class TerminalTestReporterOptions
     /// Gets a value indicating whether we should use ANSI escape codes or disable them. When true the capabilities of the console are autodetected.
     /// </summary>
     public bool UseAnsi { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether we are running in compatible CI, and should use simplified ANSI renderer, which colors output, but does not move cursor.
+    /// Setting <see cref="UseAnsi"/> to false will disable this option.
+    /// </summary>
+    public bool UseCIAnsi { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether we should force ANSI escape codes. When true the ANSI is used without auto-detecting capabilities of the console. This is needed only for testing.

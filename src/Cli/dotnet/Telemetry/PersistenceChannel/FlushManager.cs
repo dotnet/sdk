@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using IChannelTelemetry = Microsoft.ApplicationInsights.Channel.ITelemetry;
@@ -42,7 +44,7 @@ internal class FlushManager
     {
         if (telemetryItem != null)
         {
-            byte[] data = JsonSerializer.Serialize(new[] { telemetryItem });
+            byte[] data = JsonSerializer.Serialize([telemetryItem]);
             Transmission transmission = new(
                 EndpointAddress,
                 data,

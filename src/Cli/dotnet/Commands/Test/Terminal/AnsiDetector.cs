@@ -8,7 +8,7 @@
 
 using System.Text.RegularExpressions;
 
-namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
+namespace Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 /// <summary>
 /// Works together with the <see cref="NativeMethods"/> to figure out if the current console is capable of using ANSI output codes.
@@ -16,7 +16,7 @@ namespace Microsoft.Testing.Platform.OutputDevice.Terminal;
 internal static class AnsiDetector
 {
     private static readonly Regex[] TerminalsRegexes =
-    {
+    [
         new("^xterm"), // xterm, PuTTY, Mintty
         new("^rxvt"), // RXVT
         new("^(?!eterm-color).*eterm.*"), // Accepts eterm, but not eterm-color, which does not support moving the cursor, see #9950.
@@ -34,8 +34,8 @@ internal static class AnsiDetector
         new("bvterm"), // Bitvise SSH Client
         new("^st-256color"), // Suckless Simple Terminal, st
         new("alacritty"), // Alacritty
-    };
+    ];
 
     public static bool IsAnsiSupported(string? termType)
-        => !String.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
+        => !string.IsNullOrEmpty(termType) && TerminalsRegexes.Any(regex => regex.IsMatch(termType));
 }

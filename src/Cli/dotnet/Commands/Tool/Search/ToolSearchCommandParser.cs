@@ -1,54 +1,54 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.CommandLine;
-using Microsoft.DotNet.Tools.Tool.Search;
-using LocalizableStrings = Microsoft.DotNet.Tools.Tool.Search.LocalizableStrings;
+#nullable disable
 
-namespace Microsoft.DotNet.Cli;
+using System.CommandLine;
+
+namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 internal static class ToolSearchCommandParser
 {
-    public static readonly CliArgument<string> SearchTermArgument = new("searchTerm")
+    public static readonly Argument<string> SearchTermArgument = new("searchTerm")
     {
-        HelpName = LocalizableStrings.SearchTermArgumentName,
-        Description = LocalizableStrings.SearchTermDescription
+        HelpName = CliCommandStrings.ToolSearchSearchTermArgumentName,
+        Description = CliCommandStrings.ToolSearchSearchTermDescription
     };
 
-    public static readonly CliOption<bool> DetailOption = new("--detail")
+    public static readonly Option<bool> DetailOption = new("--detail")
     {
-        Description = LocalizableStrings.DetailDescription,
+        Description = CliCommandStrings.DetailDescription,
         Arity = ArgumentArity.Zero
     };
 
-    public static readonly CliOption<string> SkipOption = new("--skip")
+    public static readonly Option<string> SkipOption = new("--skip")
     {
-        Description = LocalizableStrings.SkipDescription,
-        HelpName = LocalizableStrings.SkipArgumentName
+        Description = CliCommandStrings.ToolSearchSkipDescription,
+        HelpName = CliCommandStrings.ToolSearchSkipArgumentName
     };
 
-    public static readonly CliOption<string> TakeOption = new("--take")
+    public static readonly Option<string> TakeOption = new("--take")
     {
-        Description = LocalizableStrings.TakeDescription,
-        HelpName = LocalizableStrings.TakeArgumentName
+        Description = CliCommandStrings.ToolSearchTakeDescription,
+        HelpName = CliCommandStrings.ToolSearchTakeArgumentName
     };
 
-    public static readonly CliOption<bool> PrereleaseOption = new("--prerelease")
+    public static readonly Option<bool> PrereleaseOption = new("--prerelease")
     {
-        Description = LocalizableStrings.PrereleaseDescription,
+        Description = CliCommandStrings.ToolSearchPrereleaseDescription,
         Arity = ArgumentArity.Zero
     };
 
-    private static readonly CliCommand Command = ConstructCommand();
+    private static readonly Command Command = ConstructCommand();
 
-    public static CliCommand GetCommand()
+    public static Command GetCommand()
     {
         return Command;
     }
 
-    private static CliCommand ConstructCommand()
+    private static Command ConstructCommand()
     {
-        CliCommand command = new("search", LocalizableStrings.CommandDescription);
+        Command command = new("search", CliCommandStrings.ToolSearchCommandDescription);
 
         command.Arguments.Add(SearchTermArgument);
 

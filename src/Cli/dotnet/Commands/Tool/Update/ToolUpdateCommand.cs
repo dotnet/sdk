@@ -1,16 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.CommandLine;
-using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.Tool.Common;
+using Microsoft.DotNet.Cli.Commands.Tool.Install;
 using Microsoft.DotNet.Cli.ToolManifest;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Tools.Tool.Common;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using CreateShellShimRepository = Microsoft.DotNet.Tools.Tool.Install.CreateShellShimRepository;
+using CreateShellShimRepository = Microsoft.DotNet.Cli.Commands.Tool.Install.CreateShellShimRepository;
 
-namespace Microsoft.DotNet.Tools.Tool.Update;
+namespace Microsoft.DotNet.Cli.Commands.Tool.Update;
 
 internal class ToolUpdateCommand : CommandBase
 {
@@ -61,15 +63,15 @@ internal class ToolUpdateCommand : CommandBase
         ParseResult parseResult,
         string message)
     {
-        List<string> options = new List<string>();
+        List<string> options = [];
         if (parseResult.GetResult(ToolAppliedOption.UpdateAllOption) is not null)
         {
             options.Add(ToolAppliedOption.UpdateAllOption.Name);
         }
 
-        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdArgument) is not null)
+        if (parseResult.GetResult(ToolUpdateCommandParser.PackageIdentityArgument) is not null)
         {
-            options.Add(ToolUpdateCommandParser.PackageIdArgument.Name);
+            options.Add(ToolUpdateCommandParser.PackageIdentityArgument.Name);
         }
 
         if (options.Count != 1)
@@ -78,21 +80,32 @@ internal class ToolUpdateCommand : CommandBase
         }
     }
 
+    internal static void EnsureNoConflictPackageIdentityVersionOption(ParseResult parseResult)
+    {
+        if (!string.IsNullOrEmpty(parseResult.GetValue(ToolUpdateCommandParser.PackageIdentityArgument)?.VersionRange?.OriginalString) &&
+            !string.IsNullOrEmpty(parseResult.GetValue(ToolAppliedOption.VersionOption)))
+        {
+            throw new GracefulException(CliStrings.PackageIdentityArgumentVersionOptionConflict);
+        }
+    }
+
     public override int Execute()
     {
         ToolAppliedOption.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
+            CliCommandStrings.UpdateToolCommandInvalidGlobalAndLocalAndToolPath);
 
         ToolAppliedOption.EnsureToolManifestAndOnlyLocalFlagCombination(_parseResult);
 
         ToolAppliedOption.EnsureNoConflictUpdateAllVersionOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndVersion);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndVersion);
 
         EnsureEitherUpdateAllOrUpdateOption(
             _parseResult,
-            LocalizableStrings.UpdateToolCommandInvalidAllAndPackageId);
+            CliCommandStrings.UpdateToolCommandInvalidAllAndPackageId);
+
+        EnsureNoConflictPackageIdentityVersionOption(_parseResult);
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
