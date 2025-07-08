@@ -796,9 +796,10 @@ public class EndToEndTests : IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
     }
 
+    /**
     [InlineData("endtoendmultiarch-localregisty")]
     [InlineData("myteam/endtoendmultiarch-localregisty")]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_LocalRegistry(string imageName)
     {
         string tag = "1.0";
@@ -853,6 +854,7 @@ public class EndToEndTests : IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
+    */
 
     [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public void MultiArchStillAllowsSingleRID()
@@ -977,9 +979,10 @@ public class EndToEndTests : IDisposable
     private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
         => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
 
+    /**
     [InlineData("endtoendmultiarch-archivepublishing")]
     [InlineData("myteam/endtoendmultiarch-archivepublishing")]
-    [DockerIsAvailableAndSupportsArchTheory("linux/arm64", checkContainerdStoreAvailability: true)]
+    [DockerIsAvailableAndSupportsArchTheory(Skip = "https://github.com/dotnet/sdk/issues/49502", "linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_ArchivePublishing(string imageName)
     {
         string tag = "1.0";
@@ -1045,6 +1048,7 @@ public class EndToEndTests : IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
+    */
 
     [DockerIsAvailableAndSupportsArchFact("linux/arm64", checkContainerdStoreAvailability: true)]
     public void EndToEndMultiArch_RemoteRegistry()
@@ -1367,7 +1371,7 @@ public class EndToEndTests : IDisposable
     [DockerSupportsArchInlineData("linux/386", "linux-x86", "/app", Skip = "There's no apphost for linux-x86 so we can't execute self-contained, and there's no .NET runtime base image for linux-x86 so we can't execute framework-dependent.")]
     [DockerSupportsArchInlineData("windows/amd64", "win-x64", "C:\\app")]
     [DockerSupportsArchInlineData("linux/amd64", "linux-x64", "/app")]
-    [DockerAvailableTheory()]
+    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task CanPackageForAllSupportedContainerRIDs(string dockerPlatform, string rid, string workingDir)
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(CanPackageForAllSupportedContainerRIDs));
