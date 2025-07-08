@@ -9,7 +9,9 @@ namespace Microsoft.NET.TestFramework.Utilities
 {
     public static class MachOSignature
     {
+#if NET
         [SupportedOSPlatform("osx")]
+#endif
         public static bool HasValidMachOSignature(FileInfo file, ITestOutputHelper log)
         {
             var codesignPath = @"/usr/bin/codesign";
@@ -27,7 +29,7 @@ namespace Microsoft.NET.TestFramework.Utilities
              * - 4-byte command size
              * - variable length command-specific data
              */
-            const uint LC_CODE_SIGNATURE = 0x1D;
+            const uint LC_CODE_SIGNATURE = 0x0000001D;
             using (var stream = file.OpenRead())
             {
                 // Read the MachO magic number to determine endianness
