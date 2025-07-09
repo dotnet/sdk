@@ -51,8 +51,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ArtifactsBinOutputName Condition="'$(ArtifactsBinOutputName)' == ''">bin</ArtifactsBinOutputName>
     <ArtifactsPublishOutputName Condition="'$(ArtifactsPublishOutputName)' == ''">publish</ArtifactsPublishOutputName>
     <ArtifactsPackageOutputName Condition="'$(ArtifactsPackageOutputName)' == ''">package</ArtifactsPackageOutputName>
-    <!-- When using artifacts output, we need to track file writes  with a bit more knowledge than the MSBuild Common targets have-->
-    <IncrementalCleanDependsOn>$(IncrementalCleanDependsOn);_TrackFileWritesShareableUnderArtifactsPath</IncrementalCleanDependsOn>
+    <!-- By default MSBuild won't allow tracking/automatic clean-up of files that are outside of a Project's child directory structure.
+         This flag opts us into a mode where the Common targets will track and clean such files, which is good because
+         in Artifacts layout virtually all transitive and package references are such files. 
+         See https://github.com/dotnet/msbuild/pull/12096 for full details. -->
+    <TrackFileWritesShareableOutsideOfProjectDirectory>true</TrackFileWritesShareableOutsideOfProjectDirectory>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true' And '$(ArtifactsPivots)' == ''">
@@ -161,27 +164,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NetSdkError Condition="'$(_ArtifactsPathLocationType)' == 'ProjectFolder'"
                  ResourceName="UseArtifactsOutputRequiresDirectoryBuildProps" />
 
-  </Target>
-
-
-  <!-- Addresses a gap in the _CleanGetCurrentAndPriorFileWrites:
-       https://github.com/dotnet/msbuild/blob/25d1e4c409f9efd81c345fb41fbee6d2af83bed6/src/Tasks/Microsoft.Common.CurrentVersion.targets#L5765-L5777
-
-       This Target won't remove FileWritesShareable if they aren't under the Project's own directory,
-       but in Artifacts layout that will never be the case. So we allow finding the FileWritesShareable under our output
-       paths as well -->
-  <Target Name="_TrackFileWritesShareableUnderArtifactsPath">
-    <FindUnderPath Path="$(OutputPath)" Files="@(FileWritesShareable)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_LocatedFileWritesShareable"/>
-    </FindUnderPath>
-    <FindUnderPath Path="$(IntermediateOutputPath)" Files="@(FileWritesShareable)" UpdateToAbsolutePaths="true">
-      <Output TaskParameter="InPath" ItemName="_LocatedFileWritesShareable"/>
-    </FindUnderPath>
-
-    <!-- Remove duplicates from files produced in this build. -->
-    <RemoveDuplicates Inputs="@(_LocatedFileWritesShareable)" >
-      <Output TaskParameter="Filtered" ItemName="_CleanCurrentFileWrites"/>
-    </RemoveDuplicates>
   </Target>
 
 </Project>
