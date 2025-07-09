@@ -69,7 +69,8 @@ public sealed class RoslynBuildTaskTests(ITestOutputHelper log) : SdkTest(log)
         VerifyCompiler(buildCommand, CoreCompilerFileName(language), useSharedCompilation);
     }
 
-    [Theory, CombinatorialData]
+    //  https://github.com/dotnet/sdk/issues/49665
+    [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX), CombinatorialData]
     public void DotNet_ToolsetPackage(bool useSharedCompilation, Language language)
     {
         var testAsset = CreateProject(useSharedCompilation, language, AddCompilersToolsetPackage);

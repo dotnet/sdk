@@ -126,6 +126,12 @@
       PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
       RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
 
+    <BundledLayoutPackage Include="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
+      Condition="'$(BundleNativeAotCompiler)' == 'true'"
+      PackageName="Microsoft.NETCore.App.Runtime.NativeAOT.$(SharedFrameworkRid)"
+      PackageVersion="$(MicrosoftNETCoreAppRuntimePackageVersion)"
+      RelativeLayoutPath="packs/%(PackageName)/%(PackageVersion)" />
+
     <BundledLayoutPackage Include="Microsoft.DotNet.ILCompiler"
       Condition="'$(BundleNativeAotCompiler)' == 'true'"
       PackageName="Microsoft.DotNet.ILCompiler"
@@ -304,12 +310,13 @@
       </UrisToDownload>
     </ItemGroup>
 
-    <!-- If building in product source build mode, there is no need to attempt the external URIs. These are not desired,
-            and won't work anyway because the source build file URI doesn't use the same structure as the storage accounts.
-            For example, the dotnetbuilds uri for 'file:///vmr/dotnet2/artifacts/obj/x64/Release/blob-feed/assets//aspnetcore_base_runtime.version'
-            would end up 'https://ci.dot.net/public//dotnet-runtime-8.0.0-rc.1.23381.3-centos.8-x64.tar.gz'. This is
-            missing the runtime version number directory. -->
-    <ItemGroup Condition="'$(DotNetBuildFromVMR)' != 'true'">
+    <!--
+      Only access external URIs if building the repo outside the context of the VMR or if building a non-1xx feature band.
+      For VMR builds in the 1xx feature band, we want to use the locally built artifacts produced by repos built earlier in the build.
+      But in later feature bands, we need to download the artifacts since the current build did not produce them. They were only produced
+      by builds of the 1xx feature band and are being shared with other feature bands through this download workflow.
+    -->
+    <ItemGroup Condition="'$(DotNetBuildFromVMR)' != 'true' or '$(VersionSDKMinor)' != '1'">
       <UrisToDownload Include="$([System.String]::Copy('%(ComponentToDownload.BaseUrl)').Replace($(PublicBaseURL), 'https://ci.dot.net/public/'))/%(ComponentToDownload.DownloadFileName)"
                       Condition="'%(ComponentToDownload.ShouldDownload)' == 'true'">
         <ShouldDownload>%(ComponentToDownload.ShouldDownload)</ShouldDownload>

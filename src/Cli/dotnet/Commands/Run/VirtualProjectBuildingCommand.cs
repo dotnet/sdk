@@ -456,17 +456,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         string directory = GetArtifactsPath();
 
-        if (OperatingSystem.IsWindows())
-        {
-            Directory.CreateDirectory(directory);
-        }
-        else
-        {
-            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
-            // We don't mind that permissions might be different if the directory already exists,
-            // since it's under user's local directory and its path should be unique.
-            Directory.CreateDirectory(directory, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
-        }
+        CreateTempSubdirectory(directory);
 
         File.WriteAllText(Path.Join(directory, BuildStartCacheFileName), EntryPointFileFullPath);
     }
@@ -530,20 +520,46 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     private string GetArtifactsPath() => CustomArtifactsPath ?? GetArtifactsPath(EntryPointFileFullPath);
 
-    // internal for testing
-    internal static string GetArtifactsPath(string entryPointFileFullPath)
+    public static string GetArtifactsPath(string entryPointFileFullPath)
+    {
+        // Include entry point file name so the directory name is not completely opaque.
+        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
+        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
+        string directoryName = $"{fileName}-{hash}";
+
+        return GetTempSubdirectory(directoryName);
+    }
+
+    /// <summary>
+    /// Obtains a temporary subdirectory for file-based apps.
+    /// </summary>
+    public static string GetTempSubdirectory(string name)
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
             ? Path.GetTempPath()
             : Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
 
-        // Include entry point file name so the directory name is not completely opaque.
-        string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
-        string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
-        string directoryName = $"{fileName}-{hash}";
+        return Path.Join(directory, "dotnet", "runfile", name);
+    }
 
-        return Path.Join(directory, "dotnet", "runfile", directoryName);
+    /// <summary>
+    /// Creates a temporary subdirectory for file-based apps.
+    /// Use <see cref="GetTempSubdirectory"/> to obtain the path.
+    /// </summary>
+    public static void CreateTempSubdirectory(string path)
+    {
+        if (OperatingSystem.IsWindows())
+        {
+            Directory.CreateDirectory(path);
+        }
+        else
+        {
+            // Ensure only the current user has access to the directory to avoid leaking the program to other users.
+            // We don't mind that permissions might be different if the directory already exists,
+            // since it's under user's local directory and its path should be unique.
+            Directory.CreateDirectory(path, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute);
+        }
     }
 
     public static void WriteProjectFile(
@@ -644,7 +660,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             writer.WriteLine("""
 
                   <PropertyGroup>
-                    <EnableDefaultItems>false</EnableDefaultItems>
+                    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
                   </PropertyGroup>
                 """);
         }
