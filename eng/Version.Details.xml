@@ -225,18 +225,6 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="10.0.0-preview.7.25351.106">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Internal" Version="10.0.0-preview.7.25351.106">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="10.0.0-preview.7.25351.106">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
-    </Dependency>
     <Dependency Name="Microsoft.AspNetCore.App.Ref" Version="10.0.0-preview.7.25351.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
@@ -359,15 +347,6 @@
       <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.Razor.SourceGenerators.Transport" Version="10.0.0-preview.25351.106">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
-    </Dependency>
-    <!-- For coherency purposes, these versions should be gated by the versions of winforms and wpf routed via windowsdesktop -->
-    <Dependency Name="Microsoft.Dotnet.WinForms.ProjectTemplates" Version="10.0.0-preview.7.25351.106">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
-    </Dependency>
-    <Dependency Name="Microsoft.DotNet.Wpf.ProjectTemplates" Version="10.0.0-preview.7.25351.106">
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>eaa19c281d34580a8168cff9ce1e7337da8bfe4f</Sha>
     </Dependency>
