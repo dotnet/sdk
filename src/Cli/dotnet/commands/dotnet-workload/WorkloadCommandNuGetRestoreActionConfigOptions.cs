@@ -17,7 +17,13 @@ namespace Microsoft.DotNet.Cli
 
         public static CliOption<bool> NoCacheOption = new ForwardedOption<bool>("--no-cache")
         {
-            Description = LocalizableStrings.CmdNoCacheOptionDescription
+            Description = LocalizableStrings.CmdNoCacheOptionDescription,
+            Hidden = true
+        };
+
+        public static CliOption<bool> NoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
+        {
+            Description = LocalizableStrings.CmdNoCacheOptionDescription,
         };
 
         public static CliOption<bool> IgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
@@ -40,6 +46,11 @@ namespace Microsoft.DotNet.Cli
             Description = LocalizableStrings.CmdNoCacheOptionDescription
         }.Hide();
 
+        public static CliOption<bool> HiddenNoHttpCacheOption = new ForwardedOption<bool>("--no-http-cache")
+        {
+            Description = LocalizableStrings.CmdNoCacheOptionDescription
+        }.Hide();
+
         public static CliOption<bool> HiddenIgnoreFailedSourcesOption = new ForwardedOption<bool>("--ignore-failed-sources")
         {
             Description = LocalizableStrings.CmdIgnoreFailedSourcesOptionDescription
@@ -53,7 +64,7 @@ namespace Microsoft.DotNet.Cli
         public static RestoreActionConfig ToRestoreActionConfig(this ParseResult parseResult)
         {
             return new RestoreActionConfig(DisableParallel: parseResult.GetValue(DisableParallelOption),
-                NoCache: parseResult.GetValue(NoCacheOption),
+                NoCache: parseResult.GetValue(NoCacheOption) || parseResult.GetValue(NoHttpCacheOption),
                 IgnoreFailedSources: parseResult.GetValue(IgnoreFailedSourcesOption),
                 Interactive: parseResult.GetValue(InteractiveRestoreOption));
         }
@@ -63,6 +74,7 @@ namespace Microsoft.DotNet.Cli
             command.Options.Add(Hide ? HiddenDisableParallelOption : DisableParallelOption);
             command.Options.Add(Hide ? HiddenIgnoreFailedSourcesOption : IgnoreFailedSourcesOption);
             command.Options.Add(Hide ? HiddenNoCacheOption : NoCacheOption);
+            command.Options.Add(Hide ? HiddenNoHttpCacheOption : NoHttpCacheOption);
             command.Options.Add(Hide ? HiddenInteractiveRestoreOption : InteractiveRestoreOption);
         }
     }

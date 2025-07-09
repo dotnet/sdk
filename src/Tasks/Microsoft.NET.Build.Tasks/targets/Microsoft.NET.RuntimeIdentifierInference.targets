@@ -54,11 +54,13 @@ Copyright (c) .NET Foundation. All rights reserved.
    -->
   <PropertyGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' and
                             '$(HasRuntimeOutput)' == 'true' and
-                            $([MSBuild]::IsOSPlatform(`Windows`))and
+                            $([MSBuild]::IsOSPlatform(`Windows`)) and
                             '$(RuntimeIdentifier)' == ''">
     <_UsingDefaultRuntimeIdentifier>true</_UsingDefaultRuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64'">win7-x64</RuntimeIdentifier>
     <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == ''">win7-x86</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(PlatformTarget)' == 'x64' and '$(UseRidGraph)' != 'true'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="('$(PlatformTarget)' == 'x86' or '$(PlatformTarget)' == '') and '$(UseRidGraph)' != 'true'">win-x86</RuntimeIdentifier>
   </PropertyGroup>
 
   <!-- Breaking change in .NET 8: Some publish properties used to imply SelfContained or require it at the time of this PR to work. We decided to infer SelfContained still in these situations. -->
@@ -174,6 +176,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     
     <SelfContained Condition="'$(SelfContained)' == ''">false</SelfContained>
     <_RuntimeIdentifierUsesAppHost Condition="$(RuntimeIdentifier.StartsWith('ios')) or $(RuntimeIdentifier.StartsWith('tvos')) or $(RuntimeIdentifier.StartsWith('maccatalyst')) or $(RuntimeIdentifier.StartsWith('android')) or $(RuntimeIdentifier.StartsWith('browser'))">false</_RuntimeIdentifierUsesAppHost>
+    <_RuntimeIdentifierUsesAppHost Condition="'$(_IsPublishing)' == 'true' and '$(PublishAot)' == 'true'">false</_RuntimeIdentifierUsesAppHost>
     <_RuntimeIdentifierUsesAppHost Condition="'$(_RuntimeIdentifierUsesAppHost)' == ''">true</_RuntimeIdentifierUsesAppHost>
     <UseAppHost Condition="'$(UseAppHost)' == '' and
                            '$(_RuntimeIdentifierUsesAppHost)' == 'true' and
@@ -277,6 +280,18 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <PropertyGroup>
       <Prefer32Bit>false</Prefer32Bit>
+    </PropertyGroup>
+
+  </Target>
+
+  <Target Name="_CheckAndUnsetUnsupportedPreferNativeArm64"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' and '$(PreferNativeArm64)' == 'true'">
+
+    <NETSdkWarning ResourceName="PreferNativeArm64IgnoredForNetCoreApp" />
+
+    <PropertyGroup>
+      <PreferNativeArm64>false</PreferNativeArm64>
     </PropertyGroup>
 
   </Target>

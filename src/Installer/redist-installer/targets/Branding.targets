@@ -1,0 +1,20 @@
+<Project>
+
+  <Target Name="SetSdkBrandingInfo">
+    <PropertyGroup>
+      <BuildName>cli</BuildName>
+      <SdkBrandName>Microsoft .NET SDK $(Version)</SdkBrandName>
+      <ToolsetBrandName>Microsoft .NET Toolset $(Version)</ToolsetBrandName>
+      <MSBuildExtensionsBrandName>.NET Standard Support for Visual Studio 2015</MSBuildExtensionsBrandName>
+      <SharedFrameworkBrandName>Microsoft .NET Runtime $(MicrosoftNETCoreAppRuntimePackageVersion)</SharedFrameworkBrandName>
+      <NetCoreAppTargetingPackBrandName>Microsoft .NET Targeting Pack $(MicrosoftNETCoreAppRefPackageVersion)</NetCoreAppTargetingPackBrandName>
+      <NetStandardTargetingPackBrandName>Microsoft .NET Standard 2.1 Targeting Pack $(NETStandardLibraryRefPackageVersion)</NetStandardTargetingPackBrandName>
+      <NetCoreAppHostPackBrandName>Microsoft .NET AppHost Pack $(MicrosoftNETCoreAppHostHostPackageVersion)</NetCoreAppHostPackBrandName>
+      <SharedHostBrandName>Microsoft .NET Host $(SharedHostVersion)</SharedHostBrandName>
+      <HostFxrBrandName>Microsoft .NET Host FX Resolver $(HostFxrVersion)</HostFxrBrandName>
+      <SharedFrameworkName>Microsoft.NETCore.App</SharedFrameworkName>
+      <SharedFrameworkNugetName>$(SharedFrameworkName)</SharedFrameworkNugetName>
+    </PropertyGroup>
+  </Target>
+
+</Project>
