@@ -62,7 +62,14 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
         }
 
         public void ReportOutput()
-            => _outputLogger.ReportOutput();
+        {
+            if (environmentOptions.GetTestBinlogPath(operationName) is { } binlogPath)
+            {
+                reporter.Verbose($"Binary log: '{binlogPath}'");
+            }
+
+            _outputLogger.ReportOutput();
+        }
 
         IEnumerator IEnumerable.GetEnumerator()
             => GetEnumerator();
