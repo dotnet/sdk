@@ -42,9 +42,6 @@ internal abstract class DirectoryWatcher(string watchedDirectory, ImmutableHashS
         OnError?.Invoke(this, e);
     }
 
-    public static DirectoryWatcher Create(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool includeSubdirectories)
-        => Create(watchedDirectory, watchedFileNames, EnvironmentVariables.IsPollingEnabled, includeSubdirectories);
-
     public static DirectoryWatcher Create(string watchedDirectory, ImmutableHashSet<string> watchedFileNames, bool usePollingWatcher, bool includeSubdirectories)
     {
         return usePollingWatcher ?

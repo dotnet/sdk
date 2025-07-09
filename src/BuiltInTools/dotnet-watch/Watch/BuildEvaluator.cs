@@ -102,6 +102,7 @@ namespace Microsoft.DotNet.Watch
                 await FileWatcher.WaitForFileChangeAsync(
                     _fileSetFactory.RootProjectFile,
                     _context.Reporter,
+                    _context.EnvironmentOptions,
                     startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }

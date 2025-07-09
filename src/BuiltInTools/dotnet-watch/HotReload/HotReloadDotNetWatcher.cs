@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.Watch
 
         private readonly DotNetWatchContext _context;
 
+        internal Task? Test_FileChangesCompletedTask { get; set; }
+
         public HotReloadDotNetWatcher(DotNetWatchContext context, IConsole console, IRuntimeProcessLauncherFactory? runtimeProcessLauncherFactory)
         {
             _context = context;
@@ -59,7 +61,7 @@ namespace Microsoft.DotNet.Watch
             }
 
             await using var browserConnector = new BrowserConnector(_context);
-            using var fileWatcher = new FileWatcher(_context.Reporter);
+            using var fileWatcher = new FileWatcher(_context.Reporter, _context.EnvironmentOptions);
 
             for (var iteration = 0; !shutdownCancellationToken.IsCancellationRequested; iteration++)
             {
@@ -200,6 +202,11 @@ namespace Microsoft.DotNet.Watch
                     {
                         try
                         {
+                            if (Test_FileChangesCompletedTask != null)
+                            {
+                                await Test_FileChangesCompletedTask;
+                            }
+
                             // Use timeout to batch file changes. If the process doesn't exit within the given timespan we'll check
                             // for accumulated file changes. If there are any we attempt Hot Reload. Otherwise we come back here to wait again.
                             _ = await rootRunningProject.RunningProcess.WaitAsync(TimeSpan.FromMilliseconds(extendTimeout ? 200 : 50), iterationCancellationToken);
@@ -438,7 +445,7 @@ namespace Microsoft.DotNet.Watch
                                 // TODO: consider re-evaluating only affected projects instead of the whole graph.
                                 evaluationResult = await EvaluateRootProjectAsync(restore: true, iterationCancellationToken);
 
-                                // additional directories may have been added:
+                                // additional files/directories may have been added:
                                 evaluationResult.WatchFiles(fileWatcher);
 
                                 await compilationHandler.Workspace.UpdateProjectConeAsync(rootProjectOptions.ProjectPath, iterationCancellationToken);
@@ -451,7 +458,8 @@ namespace Microsoft.DotNet.Watch
 
                                 // Update files in the change set with new evaluation info.
                                 changedFiles = [.. changedFiles
-                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)];
+                                    .Select(f => evaluationResult.Files.TryGetValue(f.Item.FilePath, out var evaluatedFile) ? f with { Item = evaluatedFile } : f)
+                                ];
 
                                 _context.Reporter.Report(MessageDescriptor.ReEvaluationCompleted);
                             }
@@ -485,7 +493,8 @@ namespace Microsoft.DotNet.Watch
 
                             if (!evaluationRequired)
                             {
-                                // update the workspace to reflect changes in the file content:
+                                // Update the workspace to reflect changes in the file content:.
+                                // If the project was re-evaluated the Roslyn solution is already up to date.
                                 await compilationHandler.Workspace.UpdateFileContentAsync(changedFiles, iterationCancellationToken);
                             }
 
@@ -768,6 +777,7 @@ namespace Microsoft.DotNet.Watch
                 await FileWatcher.WaitForFileChangeAsync(
                     _context.RootProjectOptions.ProjectPath,
                     _context.Reporter,
+                    _context.EnvironmentOptions,
                     startedWatching: () => _context.Reporter.Report(MessageDescriptor.FixBuildError),
                     cancellationToken);
             }
