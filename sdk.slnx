@@ -313,6 +313,7 @@
     <Project Path="test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Razor.Tests/Microsoft.NET.Sdk.Razor.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Razor.Tool.Tests/Microsoft.NET.Sdk.Razor.Tool.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.StaticWebAssets.Tests/Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Web.Tests/Microsoft.NET.Sdk.Web.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj" />
     <Project Path="test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj" />
