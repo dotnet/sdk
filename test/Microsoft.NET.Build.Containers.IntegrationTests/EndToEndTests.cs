@@ -180,7 +180,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public async Task TarballsHaveCorrectStructure()
     {
         var archiveFile = Path.Combine(TestSettings.TestArtifactsDirectory,
@@ -441,7 +441,7 @@ public class EndToEndTests : IDisposable
     /// It's safe to load the target for libraries in a multi-targeted context because libraries don't have EnableSdkContainerSupport
     /// enabled by default, so the target will be skipped.
     /// </summary>
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public async Task EndToEnd_MultiProjectSolution_with_multitargeted_library()
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(EndToEnd_MultiProjectSolution_with_multitargeted_library));
@@ -509,7 +509,7 @@ public class EndToEndTests : IDisposable
         commandResult.Should().HaveStdOutContaining("Pushed image 'webapp:latest'");
     }
 
-    [DockerAvailableTheory(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableTheory()]
     [InlineData("webapi", false)]
     [InlineData("webapi", true)]
     [InlineData("worker", false)]
@@ -768,7 +768,7 @@ public class EndToEndTests : IDisposable
         privateNuGetAssets.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
@@ -860,7 +860,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public void MultiArchStillAllowsSingleRID()
     {
         string imageName = NewImageName();
@@ -912,7 +912,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public void MultiArchStillAllowsSingleRIDUsingJustRIDProperties()
     {
         string imageName = NewImageName();
@@ -1432,7 +1432,7 @@ public class EndToEndTests : IDisposable
         }
     }
 
-    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
+    [DockerAvailableFact]
     public async void CheckDownloadErrorMessageWhenSourceRepositoryThrows()
     {
         var loggerFactory = new TestLoggerFactory(_testOutput);
