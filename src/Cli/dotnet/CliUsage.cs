@@ -43,6 +43,7 @@ sdk-options:
   clean             {CliCommandStrings.CleanDefinition}
   format            {CliCommandStrings.FormatDefinition}
   help              {CliCommandStrings.HelpDefinition}
+  install           Installs the .NET SDK
   msbuild           {CliCommandStrings.MsBuildDefinition}
   new               {CliCommandStrings.NewDefinition}
   nuget             {CliCommandStrings.NugetDefinition}
