@@ -24,7 +24,20 @@ internal static class ProjectGraphUtilities
         var entryPoint = new ProjectGraphEntryPoint(rootProjectFile, globalOptions);
         try
         {
-            return new ProjectGraph([entryPoint], ProjectCollection.GlobalProjectCollection, projectInstanceFactory: null, cancellationToken);
+            // Create a new project collection that does not reuse element cache
+            // to work around https://github.com/dotnet/msbuild/issues/12064:
+            var collection = new ProjectCollection(
+                globalProperties: globalOptions,
+                loggers: [],
+                remoteLoggers: [],
+                ToolsetDefinitionLocations.Default,
+                maxNodeCount: 1,
+                onlyLogCriticalEvents: false,
+                loadProjectsReadOnly: false,
+                useAsynchronousLogging: false,
+                reuseProjectRootElementCache: false);
+
+            return new ProjectGraph([entryPoint], collection, projectInstanceFactory: null, cancellationToken);
         }
         catch (Exception e)
         {
