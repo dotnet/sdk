@@ -167,4 +167,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                       and '$(UseUwp)' == 'true' ">
     <NetSdkError ResourceName="WindowsSDKXamlInvalidTfm" />
   </Target>
+
+  <!--
+    Emit a warning if using CsWinRT 3.0, which is selected when targeting a Windows SDK with '1' as the patch version.
+    NOTE: remove this target when CsWinRT 3.0 is released as a stable version and becomes officially supported.
+  -->
+  <Target Name="_WarnForCsWinRT3_0PreviewFeatureEnabled"
+          AfterTargets="ResolvePackageAssets"
+            Condition=" '$(IncludeWindowsSDKRefFrameworkReferences)' == 'true'
+                        and $([System.Version]::Parse('$(TargetPlatformVersion)').Build) == 1">
+    <NETSdkWarning ResourceName="UsingPreviewCsWinRT3_0Feature"
+                   FormatArguments="$(TargetPlatformVersion)" />
+  </Target>
 </Project>
