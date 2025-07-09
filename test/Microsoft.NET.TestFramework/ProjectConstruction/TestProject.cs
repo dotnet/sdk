@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
 
 namespace Microsoft.NET.TestFramework.ProjectConstruction
@@ -515,12 +514,6 @@ namespace {safeThisName}
             }
 
             return propertyValues;
-        }
-
-        public static bool ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion targetFrameworkVersion)
-        {
-            var referenceAssemblies = ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(targetFrameworkVersion);
-            return referenceAssemblies != null;
         }
 
         private OutputPathCalculator GetOutputPathCalculator(string testRoot)

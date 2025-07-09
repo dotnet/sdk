@@ -104,7 +104,7 @@ namespace Microsoft.NET.Build.Tests
                             "HelloWorld.exe.config",
                             "HelloWorld.pdb"
                         };
-                    if (TestProject.ReferenceAssembliesAreInstalled(TargetDotNetFrameworkVersion.Version471))
+                    if (ToolLocationHelper.GetPathToDotNetFrameworkReferenceAssemblies(TargetDotNetFrameworkVersion.Version471) != null)
                     {
                         return (VBRuntime.Default, files);
                     }
