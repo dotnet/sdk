@@ -875,7 +875,6 @@ You may need to build the project on another operating system or architecture, o
   <data name="SolutionProjectConfigurationsConflict" xml:space="preserve">
     <value>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</value>
-  <comment>{StrBegins="NETSDK1197: "}</comment>
   </data>
   <data name="PublishProfileNotPresent" xml:space="preserve">
     <value>NETSDK1198: A publish profile with the name '{0}' was not found in the project. Set the PublishProfile property to a valid file name.</value>
@@ -994,5 +993,9 @@ You may need to build the project on another operating system or architecture, o
   <data name="AspireWorkloadIsDeprecated" xml:space="preserve">
     <value>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</value>
     <comment>{StrBegins="NETSDK1228: "}</comment>
+  </data>
+  <data name="UsingPreviewCsWinRT3_0Feature" xml:space="preserve">
+    <value>NETSDK1229: Targeting a Windows SDK version with '1' as the build number will reference CsWinRT 3.0, which is currently in preview. The current project is targeting the Windows SDK version '{0}'. If this is not intended, change the build number to '0' to use CsWinRT 2.x instead.</value>
+    <comment>{StrBegins="NETSDK1229: "}</comment>
   </data>
 </root>
