@@ -12,8 +12,8 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
     public IReporter Reporter => reporter;
     public EnvironmentOptions EnvironmentOptions => environmentOptions;
 
-    public Loggers GetLoggers(string operationName)
-        => new(reporter, environmentOptions, operationName);
+    public Loggers GetLoggers(string projectPath, string operationName)
+        => new(reporter, environmentOptions.GetTestBinLogPath(projectPath, operationName));
 
     public void ReportWatchedFiles(Dictionary<string, FileItem> fileItems)
     {
@@ -30,13 +30,13 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
         }
     }
 
-    public sealed class Loggers(IReporter reporter, EnvironmentOptions environmentOptions, string operationName) : IEnumerable<ILogger>, IDisposable
+    public sealed class Loggers(IReporter reporter, string? binLogPath) : IEnumerable<ILogger>, IDisposable
     {
-        private readonly BinaryLogger? _binaryLogger = environmentOptions.GetTestBinlogPath(operationName) is { } binlogPath
+        private readonly BinaryLogger? _binaryLogger = binLogPath != null
             ? new()
             {
                 Verbosity = LoggerVerbosity.Diagnostic,
-                Parameters = "LogFile=" + binlogPath,
+                Parameters = "LogFile=" + binLogPath,
             }
             : null;
 
@@ -63,9 +63,9 @@ internal sealed class BuildReporter(IReporter reporter, EnvironmentOptions envir
 
         public void ReportOutput()
         {
-            if (environmentOptions.GetTestBinlogPath(operationName) is { } binlogPath)
+            if (binLogPath != null)
             {
-                reporter.Verbose($"Binary log: '{binlogPath}'");
+                reporter.Verbose($"Binary log: '{binLogPath}'");
             }
 
             _outputLogger.ReportOutput();

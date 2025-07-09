@@ -788,6 +788,10 @@ namespace Microsoft.DotNet.Watch
         {
             var buildOutput = new List<OutputLine>();
 
+            string[] binLogArguments = _context.EnvironmentOptions.GetTestBinLogPath(projectPath, "Build") is { } binLogPath
+                ? [$"-bl:{binLogPath}"]
+                : [];
+
             var processSpec = new ProcessSpec
             {
                 Executable = _context.EnvironmentOptions.MuxerPath,
@@ -800,7 +804,7 @@ namespace Microsoft.DotNet.Watch
                     }
                 },
                 // pass user-specified build arguments last to override defaults:
-                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. buildArguments]
+                Arguments = ["build", projectPath, "-consoleLoggerParameters:NoSummary;Verbosity=minimal", .. binLogArguments, .. buildArguments]
             };
 
             _context.Reporter.Output($"Building {projectPath} ...");

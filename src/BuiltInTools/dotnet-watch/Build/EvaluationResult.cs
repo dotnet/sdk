@@ -71,7 +71,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
         if (restore)
         {
-            using (var loggers = buildReporter.GetLoggers("Restore"))
+            using (var loggers = buildReporter.GetLoggers(rootNode.ProjectInstance.FullPath, "Restore"))
             {
                 if (!rootNode.ProjectInstance.Build([TargetNames.Restore], loggers))
                 {
@@ -99,7 +99,7 @@ internal sealed class EvaluationResult(IReadOnlyDictionary<string, FileItem> fil
 
             var customCollectWatchItems = projectInstance.GetStringListPropertyValue(PropertyNames.CustomCollectWatchItems);
 
-            using (var loggers = buildReporter.GetLoggers("DesignTimeBuild"))
+            using (var loggers = buildReporter.GetLoggers(projectInstance.FullPath, "DesignTimeBuild"))
             {
                 if (!projectInstance.Build([TargetNames.Compile, .. customCollectWatchItems], loggers))
                 {

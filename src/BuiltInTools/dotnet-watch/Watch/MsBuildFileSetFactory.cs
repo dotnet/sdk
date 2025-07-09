@@ -154,7 +154,7 @@ namespace Microsoft.DotNet.Watch
                 "/t:" + TargetName
             };
 
-            if (EnvironmentOptions.GetTestBinlogPath("GenerateWatchList") is { } binLogPath)
+            if (EnvironmentOptions.GetTestBinLogPath(rootProjectFile, "GenerateWatchList") is { } binLogPath)
             {
                 arguments.Add($"/bl:{binLogPath}");
             }
