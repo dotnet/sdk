@@ -904,9 +904,9 @@ The following are names of parameters or literal values and should not be transl
       <trans-unit id="SolutionProjectConfigurationsConflict">
         <source>NETSDK1197: Multiple solution project(s) contain conflicting '{0}' values; ensure the values match. Consider using a Directory.build.props file to set the property for all projects. Conflicting projects:
 {1}</source>
-        <target state="translated">NETSDK1197: Varios proyectos de solución que contienen valores '{0}' en conflicto; asegúrese de que los valores coinciden. Considere la posibilidad de usar un archivo Directory.build.props para establecer la propiedad para todos los proyectos. Proyectos en conflicto:
+        <target state="needs-review-translation">NETSDK1197: Varios proyectos de solución que contienen valores '{0}' en conflicto; asegúrese de que los valores coinciden. Considere la posibilidad de usar un archivo Directory.build.props para establecer la propiedad para todos los proyectos. Proyectos en conflicto:
 {1}</target>
-        <note>{StrBegins="NETSDK1197: "}</note>
+        <note />
       </trans-unit>
       <trans-unit id="TargetFrameworkIsEol">
         <source>NETSDK1138: The target framework '{0}' is out of support and will not receive security updates in the future. Please refer to {1} for more information about the support policy.</source>
