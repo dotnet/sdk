@@ -326,7 +326,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         [Fact]
         public async Task FSharpProjectDependency()
         {
-            var projectFS = new TestProject("FS")
+            var projectFS = new TestProject("FSProj")
             {
                 TargetExtension = ".fsproj",
                 AdditionalItems =
@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 }
             };
 
-            var projectCS = new TestProject("CS")
+            var projectCS = new TestProject("CSProj")
             {
                 ReferencedProjects = { projectFS },
                 TargetExtension = ".csproj",
@@ -354,14 +354,14 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             await VerifyEvaluation(testAsset,
             [
-                new("CS/Program.cs"),
-                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
-                new($"CS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CS.AssemblyInfo.cs", graphOnly: true),
-                new("CS/CS.csproj", targetsOnly: true),
-                new("FS/FS.fsproj", targetsOnly: true),
-                new("FS/Lib.fs"),
-                new($"FS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.fs", graphOnly: true),
-                new($"FS/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/FS.AssemblyInfo.fs", graphOnly: true),
+                new("CSProj/Program.cs"),
+                new($"CSProj/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.cs", graphOnly: true),
+                new($"CSProj/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/CSProj.AssemblyInfo.cs", graphOnly: true),
+                new("CSProj/CSProj.csproj", targetsOnly: true),
+                new("FSProj/FSProj.fsproj", targetsOnly: true),
+                new("FSProj/Lib.fs"),
+                new($"FSProj/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/{ToolsetInfo.CurrentTargetFrameworkMoniker}.AssemblyAttributes.fs", graphOnly: true),
+                new($"FSProj/obj/Debug/{ToolsetInfo.CurrentTargetFramework}/FSProj.AssemblyInfo.fs", graphOnly: true),
             ]);
         }
 
