@@ -230,6 +230,17 @@ internal static class SolutionAndProjectUtility
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
         RunProperties runProperties = GetRunProperties(project, loggers);
+        if (string.IsNullOrEmpty(runProperties.RunCommand) || runProperties.RunCommand.HasExtension(CliConstants.DLLExtension))
+        {
+            throw new GracefulException(
+                string.Format(
+                    CliCommandStrings.RunCommandExceptionUnableToRun,
+                    "dotnet test",
+                    "OutputType",
+                    project.GetPropertyValue("OutputType")));
+
+        }
+
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
         // TODO: Support --launch-profile and pass it here.
@@ -252,7 +263,7 @@ internal static class SolutionAndProjectUtility
                 }
             }
 
-            return RunProperties.FromProjectAndApplicationArguments(project, [], fallbackToTargetPath: true);
+            return RunProperties.FromProjectAndApplicationArguments(project, []);
         }
     }
 

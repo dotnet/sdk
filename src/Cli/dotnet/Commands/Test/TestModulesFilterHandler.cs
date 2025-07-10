@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.FileSystemGlobbing;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -49,7 +50,11 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
 
         foreach (string testModule in testModulePaths)
         {
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(new RunProperties(testModule, null, null), null, null, true, true, null));
+            RunProperties runProperties = testModule.HasExtension(CliConstants.DLLExtension)
+                ? new RunProperties(new Muxer().MuxerPath, $@"exec ""{testModule}""", null)
+                : new RunProperties(testModule, null, null);
+
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }
