@@ -35,30 +35,46 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         // Find other items to copy over, e.g., default Content items like JSON files in Web apps.
         var includeItems = FindIncludedItems().ToList();
 
-        Directory.CreateDirectory(targetDirectory);
+        bool dryRun = _parseResult.GetValue(ProjectConvertCommandParser.DryRunOption);
+
+        CreateDirectory(targetDirectory);
 
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
         // Process the entry point file.
         if (keepSourceFiles)
         {
-            File.Copy(file, targetFile);
+            CopyFile(file, targetFile);
         }
         else if (directives.Length != 0)
         {
-            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
-            File.Delete(file);
+            if (dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertAndMoveFile, file, targetFile);
+            }
+            else
+            {
+                VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
+                File.Delete(file);
+            }
         }
         else
         {
-            File.Move(file, targetFile);
+            MoveFile(file, targetFile);
         }
 
         // Create project file.
         string projectFile = Path.Join(targetDirectory, Path.GetFileNameWithoutExtension(file) + ".csproj");
-        using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
-        using var writer = new StreamWriter(stream, Encoding.UTF8);
-        VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
+        if (dryRun)
+        {
+            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCreateFile, projectFile);
+        }
+        else
+        {
+            using var stream = File.Open(projectFile, FileMode.Create, FileAccess.Write);
+            using var writer = new StreamWriter(stream, Encoding.UTF8);
+            VirtualProjectBuildingCommand.WriteProjectFile(writer, directives, isVirtualProject: false);
+        }
 
         // Copy or move over included items.
         foreach (var item in includeItems)
@@ -72,18 +88,57 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             }
 
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
-            Directory.CreateDirectory(targetItemDirectory);
+            CreateDirectory(targetItemDirectory);
             if (keepSourceFiles)
             {
-                File.Copy(item.FullPath, targetItemFullPath);
+                CopyFile(item.FullPath, targetItemFullPath);
             }
             else
             {
-                File.Move(item.FullPath, targetItemFullPath);
+                MoveFile(item.FullPath, targetItemFullPath);
             }
         }
 
         return 0;
+
+        void CreateDirectory(string path)
+        {
+            if (dryRun)
+            {
+                if (!Directory.Exists(path))
+                {
+                    Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCreateDirectory, path);
+                }
+            }
+            else
+            {
+                Directory.CreateDirectory(path);
+            }
+        }
+
+        void CopyFile(string source, string target)
+        {
+            if (dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, source, target);
+            }
+            else
+            {
+                File.Copy(source, target);
+            }
+        }
+
+        void MoveFile(string source, string target)
+        {
+            if (dryRun)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldMoveFile, source, target);
+            }
+            else
+            {
+                File.Copy(source, target);
+            }
+        }
 
         IEnumerable<(string FullPath, string RelativePath)> FindIncludedItems()
         {

@@ -32,6 +32,12 @@ internal sealed class ProjectConvertCommandParser
         move,
     }
 
+    public static readonly Option<bool> DryRunOption = new("--dry-run")
+    {
+        Description = CliCommandStrings.ProjectConvertDryRun,
+        Arity = ArgumentArity.Zero,
+    };
+
     public static Command GetCommand()
     {
         Command command = new("convert", CliCommandStrings.ProjectConvertAppFullName)
@@ -41,6 +47,7 @@ internal sealed class ProjectConvertCommandParser
             SourceOption,
             ForceOption,
             CommonOptions.InteractiveOption(),
+            DryRunOption,
         };
 
         command.SetAction((parseResult) => new ProjectConvertCommand(parseResult).Execute());

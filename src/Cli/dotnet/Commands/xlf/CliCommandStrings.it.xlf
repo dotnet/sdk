@@ -2310,6 +2310,11 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <target state="new">copy</target>
         <note>One of the choices for the source files action. The user needs to type this to the console to select the option.</note>
       </trans-unit>
+      <trans-unit id="ProjectConvertDryRun">
+        <source>Determines changes without actually modifying the file system</source>
+        <target state="new">Determines changes without actually modifying the file system</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ProjectConvertInvalidSourceAction">
         <source>Please type '{0}' or '{1}'.</source>
         <target state="new">Please type '{0}' or '{1}'.</target>
@@ -2324,6 +2329,36 @@ Lo strumento '{1}' versione '{2}' è stato installato. La voce è stata aggiunta
         <source>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--source" command-line option to confirm.</source>
         <target state="new">Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--source" command-line option to confirm.</target>
         <note>{Locked="--source"}</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldConvertAndMoveFile">
+        <source>Dry run: would remove directives from file '{0}' and move it to '{1}'.</source>
+        <target state="new">Dry run: would remove directives from file '{0}' and move it to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCopyFile">
+        <source>Dry run: would copy file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would copy file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateDirectory">
+        <source>Dry run: would create directory: {0}</source>
+        <target state="new">Dry run: would create directory: {0}</target>
+        <note>{0} is the directory full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldCreateFile">
+        <source>Dry run: would create file: {0}</source>
+        <target state="new">Dry run: would create file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldDeleteFile">
+        <source>Dry run: would delete file: {0}</source>
+        <target state="new">Dry run: would delete file: {0}</target>
+        <note>{0} is the file full path.</note>
+      </trans-unit>
+      <trans-unit id="ProjectConvertWouldMoveFile">
+        <source>Dry run: would move file '{0}' to '{1}'.</source>
+        <target state="new">Dry run: would move file '{0}' to '{1}'.</target>
+        <note>{0} and {1} are file full paths.</note>
       </trans-unit>
       <trans-unit id="ProjectManifest">
         <source>PROJECT_MANIFEST</source>

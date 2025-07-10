@@ -1527,6 +1527,33 @@ Tool '{1}' (version '{2}') was successfully installed. Entry is added to the man
     <value>Conversion command needs to confirm whether to keep source files. Run in interactive mode or use the "--source" command-line option to confirm.</value>
     <comment>{Locked="--source"}</comment>
   </data>
+  <data name="ProjectConvertDryRun" xml:space="preserve">
+    <value>Determines changes without actually modifying the file system</value>
+  </data>
+  <data name="ProjectConvertWouldCreateDirectory" xml:space="preserve">
+    <value>Dry run: would create directory: {0}</value>
+    <comment>{0} is the directory full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCopyFile" xml:space="preserve">
+    <value>Dry run: would copy file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldConvertAndMoveFile" xml:space="preserve">
+    <value>Dry run: would remove directives from file '{0}' and move it to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldMoveFile" xml:space="preserve">
+    <value>Dry run: would move file '{0}' to '{1}'.</value>
+    <comment>{0} and {1} are file full paths.</comment>
+  </data>
+  <data name="ProjectConvertWouldDeleteFile" xml:space="preserve">
+    <value>Dry run: would delete file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
+  <data name="ProjectConvertWouldCreateFile" xml:space="preserve">
+    <value>Dry run: would create file: {0}</value>
+    <comment>{0} is the file full path.</comment>
+  </data>
   <data name="ProjectManifest" xml:space="preserve">
     <value>PROJECT_MANIFEST</value>
   </data>
