@@ -48,10 +48,11 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
             return false;
         }
 
+        var muxerPath = new Muxer().MuxerPath;
         foreach (string testModule in testModulePaths)
         {
             RunProperties runProperties = testModule.HasExtension(CliConstants.DLLExtension)
-                ? new RunProperties(new Muxer().MuxerPath, $@"exec ""{testModule}""", null)
+                ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
             var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null));
