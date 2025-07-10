@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
         private IEnumerable<SegmentsAssetPair> ComputeManifestAssets(IEnumerable<StaticWebAsset> assets)
         {
             var assetsByTargetPath = assets
-                .GroupBy(a => a.ComputeTargetPath("", '/'));
+                .GroupBy(a => a.ComputeTargetPath("", '/', StaticWebAssetTokenResolver.Instance));
 
             foreach (var group in assetsByTargetPath)
             {
@@ -151,9 +151,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                         }
                         var matchingAsset = new StaticWebAssetMatch
                         {
-                            SubPath = asset.Identity.StartsWith(asset.ContentRoot) ?
-                                StaticWebAsset.Normalize(asset.Identity.Substring(asset.ContentRoot.Length)) :
-                                asset.RelativePath,
+                            SubPath = ResolveSubPath(asset),
                             ContentRootIndex = index
                         };
                         currentNode.Children ??= new Dictionary<string, StaticWebAssetNode>(StringComparer.Ordinal);
@@ -271,6 +269,33 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks
                 ContentRoots = contentRootIndex.OrderBy(kvp => kvp.Value).Select(kvp => kvp.Key).ToArray(),
                 Root = root
             };
+
+            static string ResolveSubPath(StaticWebAsset asset)
+            {
+                if (File.Exists(asset.Identity))
+                {
+                    if (asset.Identity.StartsWith(asset.ContentRoot, OSPath.PathComparison))
+                    {
+                        // We need an extra check that the file exist to avoid pointing out to a non-existing file. This can happen
+                        // when the asset is defined with an identity that doesn't exist yet, but that will be materialized later
+                        // when the asset is copied to the wwwroot folder.
+                        return StaticWebAsset.Normalize(asset.Identity.Substring(asset.ContentRoot.Length));
+                    }
+                    else
+                    {
+                        // This is a content root that we don't know about, so we can't resolve the subpath based on the identity, and
+                        // we need to rely on the assumption that the file will be available at contentRoot + relativePath.
+                        return asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+                    }
+                }
+                else
+                {
+                    // In any other case where the file doesn't exist, we expect the file to end up at the correct final location
+                    // which is defined by contentRoot + relativePath, and since the file will be copied there, the tokens will be
+                    // replaced as needed so that the file can be found.
+                    return asset.ReplaceTokens(asset.RelativePath, StaticWebAssetTokenResolver.Instance);
+                }
+            }
         }
 
         public class StaticWebAssetsDevelopmentManifest
