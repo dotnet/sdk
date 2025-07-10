@@ -678,6 +678,7 @@ _testhost() {
                                             '--source=[Whether to keep source files intact (copy) or delete them after conversion (move).]: :((copy\:"copy" move\:"move" ))' \
                                             '--force[Force conversion even if there are malformed directives.]' \
                                             '--interactive[Allows the command to stop and wait for user input or action (for example to complete authentication).]' \
+                                            '--dry-run[Determines changes without actually modifying the file system]' \
                                             '--help[Show command line help.]' \
                                             '-h[Show command line help.]' \
                                             ':file -- Path to the file-based program.: ' \
