@@ -35,7 +35,7 @@
     <ItemGroup Label="Version info">
       <Line Include="runtime" Version="$(MicrosoftNETCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepRuntimeCommit)', '$(BUILD_SOURCEVERSION)'))" />
       <Line Include="aspnetcore" Version="$(MicrosoftAspNetCoreAppRefPackageVersion)" Commit="$([MSBuild]::ValueOrDefault('$(DepAspNetCoreCommit)', '$(BUILD_SOURCEVERSION)'))" />
-      <!-- For the windows desktop commit, use the Microsoft.NETCore.App.Ref commit.
+      <!-- For the WindowsDesktop commit, use the Microsoft.NETCore.App.Ref commit.
            These will always be the same and the Microsoft.WindowsDesktop.App.Ref dependency has been eliminated from Version.Details.xml
            so the info cannot be used since in VMR builds Linux/Mac do not build WindowsDesktop, even though
            info about WindowsDesktop **does** leak into those SDKs. -->
