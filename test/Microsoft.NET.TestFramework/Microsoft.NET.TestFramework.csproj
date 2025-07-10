@@ -40,7 +40,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <!--
+    WARNING: Do not add dependencies on MSBuild packages.
+    Some tests (e.g. dotnet-watch.Tests) need to have total control over the loading of MSBuild assemblies.
+    -->
+
     <PackageReference Include="Microsoft.DotNet.XUnitExtensions" />
     <PackageReference Include="Newtonsoft.Json" />
     <PackageReference Include="xunit" />
