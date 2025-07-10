@@ -28,9 +28,11 @@ internal sealed class CleanFileBasedAppArtifactsCommandParser
         Hidden = true,
     };
 
-    public static Command GetCommand()
+    public static Command Command => field ??= ConstructCommand();
+
+    private static Command ConstructCommand()
     {
-        Command command = new("clean-file-based-app-artifacts", CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
+        Command command = new("file-based-apps", CliCommandStrings.CleanFileBasedAppArtifactsCommandDescription)
         {
             Hidden = true,
             Options =

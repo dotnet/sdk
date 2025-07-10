@@ -126,7 +126,8 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                 FileName = new Muxer().MuxerPath,
                 Arguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(
                 [
-                    CleanFileBasedAppArtifactsCommandParser.GetCommand().Name,
+                    CleanCommandParser.GetCommand().Name,
+                    CleanFileBasedAppArtifactsCommandParser.Command.Name,
                     CleanFileBasedAppArtifactsCommandParser.AutomaticOption.Name,
                 ]),
                 UseShellExecute = false,

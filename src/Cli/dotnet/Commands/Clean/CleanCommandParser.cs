@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Extensions;
 
 namespace Microsoft.DotNet.Cli.Commands.Clean;
@@ -59,6 +60,7 @@ internal static class CleanCommandParser
         command.Options.Add(NoLogoOption);
         command.Options.Add(CommonOptions.DisableBuildServersOption);
         command.Options.Add(TargetOption);
+        command.Subcommands.Add(CleanFileBasedAppArtifactsCommandParser.Command);
 
         command.SetAction(CleanCommand.Run);
 
