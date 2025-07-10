@@ -136,7 +136,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             }
             else
             {
-                File.Copy(source, target);
+                File.Move(source, target);
             }
         }
 
