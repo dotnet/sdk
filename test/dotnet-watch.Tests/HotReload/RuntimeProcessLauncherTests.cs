@@ -1,11 +1,11 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[Collection(nameof(InProcBuildTestCollection))]
 public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
 {
     public enum TriggerEvent
@@ -635,5 +635,51 @@ public class RuntimeProcessLauncherTests(ITestOutputHelper logger) : DotNetWatch
             default:
                 throw new InvalidOperationException();
         }
+    }
+
+    [Fact]
+    public async Task ProjectAndSourceFileChange()
+    {
+        var testAsset = CopyTestAsset("WatchHotReloadApp");
+
+        var workingDirectory = testAsset.Path;
+        var projectPath = Path.Combine(testAsset.Path, "WatchHotReloadApp.csproj");
+        var programPath = Path.Combine(testAsset.Path, "Program.cs");
+
+        await using var w = StartWatcher(testAsset, [], workingDirectory, projectPath);
+
+        var fileChangesCompleted = w.CreateCompletionSource();
+        w.Watcher.Test_FileChangesCompletedTask = fileChangesCompleted.Task;
+
+        var waitingForChanges = w.Reporter.RegisterSemaphore(MessageDescriptor.WaitingForChanges);
+
+        var changeHandled = w.Reporter.RegisterSemaphore(MessageDescriptor.HotReloadChangeHandled);
+
+        var hasUpdatedOutput = w.CreateCompletionSource();
+        w.Reporter.OnProcessOutput += line =>
+        {
+            if (line.Content.Contains("System.Xml.Linq.XDocument"))
+            {
+                hasUpdatedOutput.TrySetResult();
+            }
+        };
+
+        // let the host process start:
+        Log("Waiting for changes...");
+        await waitingForChanges.WaitAsync(w.ShutdownSource.Token);
+
+        // change the project and source files at the same time:
+
+        UpdateSourceFile(programPath, src => src.Replace("""Console.WriteLine(".");""", """Console.WriteLine(typeof(XDocument));"""));
+        UpdateSourceFile(projectPath, src => src.Replace("<!-- items placeholder -->", """<Using Include="System.Xml.Linq"/>"""));
+
+        // done updating files:
+        fileChangesCompleted.TrySetResult();
+
+        Log("Waiting for change handled ...");
+        await changeHandled.WaitAsync(w.ShutdownSource.Token);
+
+        Log("Waiting for output 'System.Xml.Linq.XDocument'...");
+        await hasUpdatedOutput.Task;
     }
 }

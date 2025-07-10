@@ -8,7 +8,11 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    public class MockTaskItem : ITaskItem
+    /// <summary>
+    /// Must be internal to avoid loading msbuild assemblies before the test assembly,
+    /// which might need to set the msbuild location.
+    /// </summary>
+    internal class MockTaskItem : ITaskItem
     {
         private Dictionary<string, string> _metadata = new(StringComparer.OrdinalIgnoreCase);
 

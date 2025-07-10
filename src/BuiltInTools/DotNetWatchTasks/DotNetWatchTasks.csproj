@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="..\dotnet-watch\Build\MSBuildFileSetResult.cs" />
+    <Compile Include="..\dotnet-watch\Watch\MSBuildFileSetResult.cs" />
   </ItemGroup>
 
 </Project>
