@@ -1065,14 +1065,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_WarnForApphostCultureCollision"
           DependsOnTargets="ResolvePackageAssets"
           BeforeTargets="Build"
-          Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true' and '@(ResourceCopyLocalItems)' != ''">
+          Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true'">
 
     <PropertyGroup>
       <_ApphostFileName>$(AssemblyName)$(_NativeExecutableExtension)</_ApphostFileName>
     </PropertyGroup>
 
     <ItemGroup>
-      <!-- Find ResourceCopyLocalItems that have Culture metadata matching the apphost file name -->
+      <!-- Find cultures that match the apphost file name -->
       <_CollidingCultures Include="@(ResourceCopyLocalItems->Metadata('Culture')->Distinct())"
                           Condition="'%(Identity)' == '$(_ApphostFileName)'" />
     </ItemGroup>

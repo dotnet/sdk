@@ -544,5 +544,42 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
+        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        public void It_warns_when_apphost_name_collides_with_culture_directory()
+        {
+            var testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource()
+                .WithTargetFramework(ToolsetInfo.CurrentTargetFramework)
+                .WithProjectChanges((path, project) =>
+                {
+                    var ns = project.Root.Name.Namespace;
+
+                    // Set assembly name to "cs" to trigger collision
+                    project.Root.Add(
+                        new XElement(ns + "PropertyGroup",
+                            new XElement(ns + "AssemblyName", "cs"),
+                            new XElement(ns + "UseAppHost", "true")));
+                    
+                    // Add a target that injects ResourceCopyLocalItems with matching culture
+                    project.Root.Add(
+                        new XElement(ns + "Target", 
+                            new XAttribute("Name", "InjectResourceCopyLocalItems"),
+                            new XAttribute("BeforeTargets", "_WarnForApphostCultureCollision"),
+                            new XElement(ns + "ItemGroup",
+                                new XElement(ns + "ResourceCopyLocalItems", 
+                                    new XAttribute("Include", "cs\\test.resources.dll"),
+                                    new XElement(ns + "Culture", "cs")))));
+                });
+
+            var buildCommand = new BuildCommand(testAsset);
+            buildCommand
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("NETSDK1229");
+        }
+
     }
 }
