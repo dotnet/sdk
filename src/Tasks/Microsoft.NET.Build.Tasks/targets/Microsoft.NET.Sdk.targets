@@ -1058,6 +1058,34 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        _WarnForApphostCultureCollision
+    Warns if the apphost executable name would collide with culture directories.
+    ============================================================
+    -->
+  <Target Name="_WarnForApphostCultureCollision"
+          DependsOnTargets="ResolvePackageAssets"
+          BeforeTargets="Build"
+          Condition="'$(UseAppHost)' == 'true' and '$(_IsExecutable)' == 'true' and '@(ResourceCopyLocalItems)' != ''">
+
+    <PropertyGroup>
+      <_ApphostFileName>$(AssemblyName)$(_NativeExecutableExtension)</_ApphostFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <!-- Find ResourceCopyLocalItems that have Culture metadata matching the apphost file name -->
+      <_CollidingCultures Include="@(ResourceCopyLocalItems->Metadata('Culture')->Distinct())"
+                          Condition="'%(Identity)' == '$(_ApphostFileName)'" />
+    </ItemGroup>
+
+    <!-- Issue warning if there are colliding cultures -->
+    <NetSdkWarning Condition="'@(_CollidingCultures)' != ''"
+                   ResourceName="ApphostCollisionWithCultureDirectory"
+                   FormatArguments="$(_ApphostFileName);@(_CollidingCultures)" />
+
+  </Target>
+
+  <!--
+    ============================================================
                                         _ComputeReferenceAssemblies
     Computes references that are only used at compile-time.
     ============================================================

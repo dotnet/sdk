@@ -62,6 +62,11 @@
         <target state="translated">NETSDK1177: 无法对 Apphost 进行签名，错误代码为 {1}: {0}</target>
         <note>{StrBegins="NETSDK1177: "}</note>
       </trans-unit>
+      <trans-unit id="ApphostCollisionWithCultureDirectory">
+        <source>NETSDK1229: The executable file name '{0}' may conflict with resource directories for culture '{1}'. Consider renaming the application or restricting the SatelliteResourceLanguages property to avoid this conflict.</source>
+        <target state="new">NETSDK1229: The executable file name '{0}' may conflict with resource directories for culture '{1}'. Consider renaming the application or restricting the SatelliteResourceLanguages property to avoid this conflict.</target>
+        <note>{StrBegins="NETSDK1229: "}</note>
+      </trans-unit>
       <trans-unit id="ArtifactsPathCannotBeSetInProject">
         <source>NETSDK1199: The ArtifactsPath and UseArtifactsOutput properties cannot be set in a project file, due to MSBuild ordering constraints. They must be set in a Directory.Build.props file or from the command line. See https://aka.ms/netsdk1199 for more information.</source>
         <target state="translated">NETSDK1199: 由于 MSBuild 排序约束，无法在项目文件中设置 ArtifactsPath 和 UseArtifactsOutput 属性。必须在 Directory.Build.props 文件中或通过命令行设置它们。有关详细信息，请参阅 https://aka.ms/netsdk1199。</target>

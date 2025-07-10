@@ -995,4 +995,8 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</value>
     <comment>{StrBegins="NETSDK1228: "}</comment>
   </data>
+  <data name="ApphostCollisionWithCultureDirectory" xml:space="preserve">
+    <value>NETSDK1229: The executable file name '{0}' may conflict with resource directories for culture '{1}'. Consider renaming the application or restricting the SatelliteResourceLanguages property to avoid this conflict.</value>
+    <comment>{StrBegins="NETSDK1229: "}</comment>
+  </data>
 </root>
