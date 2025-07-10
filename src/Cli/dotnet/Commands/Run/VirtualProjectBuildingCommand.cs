@@ -6,6 +6,7 @@ using System.Collections.Frozen;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.IO;
 using System.Security;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -186,6 +187,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
 
             MarkBuildStart();
+        }
+        else if (!NoWriteBuildMarkers)
+        {
+            CreateTempSubdirectory(GetArtifactsPath());
+            MarkArtifactsFolderUsed();
         }
 
         if (!NoWriteBuildMarkers)
