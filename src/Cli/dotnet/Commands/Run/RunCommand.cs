@@ -343,7 +343,7 @@ public class RunCommand
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, Verbosity, logger);
+        InvokeRunArgumentsTarget(project, Verbosity, logger, MSBuildArgs);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
         var command = CreateCommandFromRunProperties(project, runProperties);
@@ -406,11 +406,10 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, VerbosityOptions? verbosity, FacadeLogger? binaryLogger)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, VerbosityOptions? verbosity, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
         {
-            // if the restoreArgs contain a `-bl` then let's probe it
             List<ILogger> loggersForBuild = [
-                MakeTerminalLogger(verbosity)
+                MakeTerminalLogger(verbosity, buildArgs)
             ];
             if (binaryLogger is not null)
             {
@@ -424,13 +423,11 @@ public class RunCommand
         }
     }
 
-    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity)
+    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity, MSBuildArgs buildArgs)
     {
-        var msbuildVerbosity = ToLoggerVerbosity(verbosity);
-
-        // Temporary fix for 9.0.1xx. 9.0.2xx will use the TerminalLogger in the safe way.
-        var thing = new ConsoleLogger(msbuildVerbosity);
-        return thing!;
+        var msbuildVerbosity = ToLoggerVerbosity(verbosity ?? VerbosityOptions.quiet);
+        var thing = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{msbuildVerbosity}", ..buildArgs.OtherMSBuildArgs]);
+        return thing;
     }
 
     static readonly string ComputeRunArgumentsTarget = "ComputeRunArguments";
