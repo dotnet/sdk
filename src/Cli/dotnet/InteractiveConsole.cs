@@ -25,7 +25,7 @@ public static class InteractiveConsole
             return true;
         }
 
-        if (!parseResult.GetValue(CommonOptions.InteractiveOption()))
+        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
         {
             return null;
         }
@@ -75,7 +75,7 @@ public static class InteractiveConsole
         Validator<TResult> validate,
         out TResult? result)
     {
-        if (!parseResult.GetValue(CommonOptions.InteractiveOption()))
+        if (!parseResult.GetValue<bool>(CommonOptions.InteractiveOptionName))
         {
             result = default;
             return false;

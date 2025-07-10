@@ -240,6 +240,8 @@ internal static class CommonOptions
     private static bool IsCIEnvironmentOrRedirected() =>
         new Telemetry.CIEnvironmentDetectorForTelemetry().IsCIEnvironment() || Console.IsOutputRedirected;
 
+    public const string InteractiveOptionName = "--interactive";
+
     /// <summary>
     /// A 'template' for interactive usage across the whole dotnet CLI. Use this as a base and then specialize it for your use cases.
     /// Despite being a 'forwarded option' there is no default forwarding configured, so if you want forwarding you can add it on a per-command basis.
@@ -250,7 +252,7 @@ internal static class CommonOptions
     /// If this is set to function as a flag, then there is no simple user-provided way to circumvent the behavior.
     /// </remarks>
     public static ForwardedOption<bool> InteractiveOption(bool acceptArgument = false) =>
-        new("--interactive")
+        new(InteractiveOptionName)
         {
             Description = CliStrings.CommandInteractiveOptionDescription,
             Arity = acceptArgument ? ArgumentArity.ZeroOrOne : ArgumentArity.Zero,
