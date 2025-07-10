@@ -27,3 +27,10 @@ jobs:
       - name: Do an initial build to ensure all dependencies are restored
         run: |
           ./build.sh
+      - name: Put repo-local dotnet install on PATH
+        run: |
+          echo "PATH=$PWD/.dotnet:$PATH" >> $GITHUB_ENV
+
+      - name: Check dotnet version
+        run: |
+          dotnet --version

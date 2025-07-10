@@ -32,7 +32,7 @@
     <Project Path="src/BlazorWasmSdk/Tasks/Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" />
     <Project Path="src/BlazorWasmSdk/Tool/Microsoft.NET.Sdk.BlazorWebAssembly.Tool.csproj" />
   </Folder>
-  <Folder Name="/src/BlazorWasmSdk/Targets (2)/">
+  <Folder Name="/src/BlazorWasmSdk/Targets/">
     <File Path="src/BlazorWasmSdk/Targets/BlazorWasm.web.config" />
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.props" />
     <File Path="src/BlazorWasmSdk/Targets/Microsoft.NET.Sdk.BlazorWebAssembly.Current.targets" />
@@ -85,6 +85,7 @@
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">
+    <Project Path="src/Layout/finalizer/finalizer.csproj" />
     <Project Path="src/Layout/pkg/dotnet-sdk.proj" Type="C#" />
     <Project Path="src/Layout/redist/redist.csproj" />
     <Project Path="src/Layout/redist/tools/tool_fsc.csproj" />
@@ -96,14 +97,13 @@
     <Project Path="src/Layout/VS.Redist.Common.NetCore.SdkPlaceholder/VS.Redist.Common.NetCore.SdkPlaceholder.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Templates/VS.Redist.Common.NetCore.Templates.proj" Type="C#" />
     <Project Path="src/Layout/VS.Redist.Common.NetCore.Toolset/VS.Redist.Common.NetCore.Toolset.proj" Type="C#" />
-    <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
   <Folder Name="/src/RazorSdk/" />
-  <Folder Name="/src/RazorSdk/Sdk (2)/">
+  <Folder Name="/src/RazorSdk/Sdk/">
     <File Path="src/RazorSdk/Sdk/Sdk.props" />
     <File Path="src/RazorSdk/Sdk/Sdk.targets" />
   </Folder>
-  <Folder Name="/src/RazorSdk/Targets (2)/">
+  <Folder Name="/src/RazorSdk/Targets/">
     <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.CodeGeneration.targets" />
     <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.Compilation.targets" />
     <File Path="src/RazorSdk/Targets/Microsoft.NET.Sdk.Razor.Component.targets" />
@@ -115,14 +115,14 @@
     <File Path="src/RazorSdk/Targets/Sdk.Razor.CurrentVersion.props" />
     <File Path="src/RazorSdk/Targets/Sdk.Razor.CurrentVersion.targets" />
   </Folder>
-  <Folder Name="/src/RazorSdk/Targets (2)/Rules/">
+  <Folder Name="/src/RazorSdk/Targets/Rules/">
     <File Path="src/RazorSdk/Targets/Rules/RazorComponentWithTargetPath.xaml" />
     <File Path="src/RazorSdk/Targets/Rules/RazorConfiguration.xaml" />
     <File Path="src/RazorSdk/Targets/Rules/RazorExtension.xaml" />
     <File Path="src/RazorSdk/Targets/Rules/RazorGeneral.xaml" />
     <File Path="src/RazorSdk/Targets/Rules/RazorGenerateWithTargetPath.xaml" />
   </Folder>
-  <Folder Name="/src/RazorSdk/Tasks (2)/">
+  <Folder Name="/src/RazorSdk/Tasks/">
     <Project Path="src/RazorSdk/Tasks/Microsoft.NET.Sdk.Razor.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/RazorSdk/Tool/">
@@ -137,6 +137,9 @@
   </Folder>
   <Folder Name="/src/StaticWebAssetsSdk/">
     <File Path="src/StaticWebAssetsSdk/.editorconfig" />
+  </Folder>
+  <Folder Name="/src/StaticWebAssetsSdk/benchmarks/">
+    <Project Path="src/StaticWebAssetsSdk/benchmarks/Microsoft.NET.Sdk.StaticWebAssets.Benchmarks.csproj" />
   </Folder>
   <Folder Name="/src/StaticWebAssetsSdk/Sdk/">
     <File Path="src/StaticWebAssetsSdk/Sdk/Sdk.props" />
@@ -165,6 +168,7 @@
     <Project Path="src/Tasks/Microsoft.NET.Build.Extensions.Tasks/Microsoft.NET.Build.Extensions.Tasks.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks.UnitTests/Microsoft.NET.Build.Tasks.UnitTests.csproj" />
     <Project Path="src/Tasks/Microsoft.NET.Build.Tasks/Microsoft.NET.Build.Tasks.csproj" />
+    <Project Path="src/Tasks/sdk-tasks/sdk-tasks.csproj" />
   </Folder>
   <Folder Name="/src/WasmSdk/" />
   <Folder Name="/src/WasmSdk/Targets/">
@@ -190,29 +194,29 @@
     <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.ProjectSystem.props" />
     <File Path="src/WebSdk/ProjectSystem/Targets/Microsoft.NET.Sdk.Web.ProjectSystem.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/ProjectSystem/Tasks (2)/">
+  <Folder Name="/src/WebSdk/ProjectSystem/Tasks/">
     <Project Path="src/WebSdk/ProjectSystem/Tasks/Microsoft.NET.Sdk.Web.ProjectSystem.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/WebSdk/Publish/" />
-  <Folder Name="/src/WebSdk/Publish/Sdk (2)/">
+  <Folder Name="/src/WebSdk/Publish/Sdk/">
     <File Path="src/WebSdk/Publish/Sdk/Sdk.props" />
     <File Path="src/WebSdk/Publish/Sdk/Sdk.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/">
+  <Folder Name="/src/WebSdk/Publish/Targets/">
     <File Path="src/WebSdk/Publish/Targets/Microsoft.NET.Sdk.Publish.props" />
     <File Path="src/WebSdk/Publish/Targets/Microsoft.NET.Sdk.Publish.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/ComputeTargets/">
+  <Folder Name="/src/WebSdk/Publish/Targets/ComputeTargets/">
     <File Path="src/WebSdk/Publish/Targets/ComputeTargets/Microsoft.NET.Sdk.Publish.ComputeFiles.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/CopyTargets/">
+  <Folder Name="/src/WebSdk/Publish/Targets/CopyTargets/">
     <File Path="src/WebSdk/Publish/Targets/CopyTargets/Microsoft.NET.Sdk.Publish.CopyFiles.targets" />
     <File Path="src/WebSdk/Publish/Targets/CopyTargets/Microsoft.NET.Sdk.Publish.FilterFiles.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/DotNetCLIToolTargets/">
+  <Folder Name="/src/WebSdk/Publish/Targets/DotNetCLIToolTargets/">
     <File Path="src/WebSdk/Publish/Targets/DotNetCLIToolTargets/Microsoft.NET.Sdk.DotNetCLITool.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/PublishProfiles/">
+  <Folder Name="/src/WebSdk/Publish/Targets/PublishProfiles/">
     <File Path="src/WebSdk/Publish/Targets/PublishProfiles/Default.pubxml" />
     <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultMSDeploy.pubxml" />
     <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultMSDeployPackage.pubxml" />
@@ -220,7 +224,7 @@
     <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultWebJobOneDeploy.pubxml" />
     <File Path="src/WebSdk/Publish/Targets/PublishProfiles/DefaultZipDeploy.pubxml" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/PublishTargets/">
+  <Folder Name="/src/WebSdk/Publish/Targets/PublishTargets/">
     <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.Docker.targets" />
     <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.FileSystem.targets" />
     <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.Kudu.targets" />
@@ -229,40 +233,40 @@
     <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.OneDeploy.targets" />
     <File Path="src/WebSdk/Publish/Targets/PublishTargets/Microsoft.NET.Sdk.Publish.ZipDeploy.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/TransformTargets/">
+  <Folder Name="/src/WebSdk/Publish/Targets/TransformTargets/">
     <File Path="src/WebSdk/Publish/Targets/TransformTargets/Microsoft.NET.Sdk.Publish.TransformFiles.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Targets (2)/TransformTargets/Transforms/">
+  <Folder Name="/src/WebSdk/Publish/Targets/TransformTargets/Transforms/">
     <File Path="src/WebSdk/Publish/Targets/TransformTargets/Transforms/EnvironmentNoLocation.transform" />
     <File Path="src/WebSdk/Publish/Targets/TransformTargets/Transforms/EnvironmentWithLocation.transform" />
   </Folder>
-  <Folder Name="/src/WebSdk/Publish/Tasks (2)/">
+  <Folder Name="/src/WebSdk/Publish/Tasks/">
     <Project Path="src/WebSdk/Publish/Tasks/Microsoft.NET.Sdk.Publish.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/WebSdk/Web/" />
-  <Folder Name="/src/WebSdk/Web/Sdk (2)/">
+  <Folder Name="/src/WebSdk/Web/Sdk/">
     <File Path="src/WebSdk/Web/Sdk/Sdk.props" />
     <File Path="src/WebSdk/Web/Sdk/Sdk.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Web/Targets (2)/">
+  <Folder Name="/src/WebSdk/Web/Targets/">
     <File Path="src/WebSdk/Web/Targets/Sdk.Browser.props" />
     <File Path="src/WebSdk/Web/Targets/Sdk.Browser.targets" />
     <File Path="src/WebSdk/Web/Targets/Sdk.Server.props" />
     <File Path="src/WebSdk/Web/Targets/Sdk.Server.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Web/Tasks (2)/">
+  <Folder Name="/src/WebSdk/Web/Tasks/">
     <Project Path="src/WebSdk/Web/Tasks/Microsoft.NET.Sdk.Web.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/WebSdk/Worker/" />
-  <Folder Name="/src/WebSdk/Worker/Sdk (2)/">
+  <Folder Name="/src/WebSdk/Worker/Sdk/">
     <File Path="src/WebSdk/Worker/Sdk/Sdk.props" />
     <File Path="src/WebSdk/Worker/Sdk/Sdk.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Worker/Targets (2)/">
+  <Folder Name="/src/WebSdk/Worker/Targets/">
     <File Path="src/WebSdk/Worker/Targets/Microsoft.NET.Sdk.Worker.props" />
     <File Path="src/WebSdk/Worker/Targets/Microsoft.NET.Sdk.Worker.targets" />
   </Folder>
-  <Folder Name="/src/WebSdk/Worker/Tasks (2)/">
+  <Folder Name="/src/WebSdk/Worker/Tasks/">
     <Project Path="src/WebSdk/Worker/Tasks/Microsoft.NET.Sdk.Worker.Tasks.csproj" />
   </Folder>
   <Folder Name="/src/Workloads/" />
@@ -309,6 +313,7 @@
     <Project Path="test/Microsoft.NET.Sdk.Publish.Tasks.Tests/Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Razor.Tests/Microsoft.NET.Sdk.Razor.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Razor.Tool.Tests/Microsoft.NET.Sdk.Razor.Tool.Tests.csproj" />
+    <Project Path="test/Microsoft.NET.Sdk.StaticWebAssets.Tests/Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.Web.Tests/Microsoft.NET.Sdk.Web.Tests.csproj" />
     <Project Path="test/Microsoft.NET.Sdk.WorkloadManifestReader.Tests/Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj" />
     <Project Path="test/Microsoft.NET.TestFramework/Microsoft.NET.TestFramework.csproj" />
@@ -349,5 +354,4 @@
   <Folder Name="/test/Compatibility/GenAPI/">
     <Project Path="test/Microsoft.DotNet.GenAPI.Tests/Microsoft.DotNet.GenAPI.Tests.csproj" />
   </Folder>
-  <Project Path="src/Layout/finalizer/finalizer.csproj" />
 </Solution>

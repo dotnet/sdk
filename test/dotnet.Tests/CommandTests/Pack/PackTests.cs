@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Pack.Tests
             var informationalVersion = PeReaderUtils.GetAssemblyAttributeValue(output.FullName, "AssemblyInformationalVersionAttribute");
 
             informationalVersion.Should().NotBeNull()
-                                .And.BeEquivalentTo("1.0.0-85");
+                                .And.StartWith("1.0.0-85"); // ensure that build metadata doesn't bork the test
 
             var outputPackage = new FileInfo(Path.Combine(testInstance.Path,
                                             "bin", "Debug",
@@ -103,7 +103,7 @@ namespace Microsoft.DotNet.Pack.Tests
                      .And.Contain(e => e.FullName == "anotherpath/pack2.txt");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/47246")]
+        [Fact]
         public void PackAddsCorrectFilesForProjectsWithOutputNameSpecified()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("LibraryWithOutputAssemblyName")
@@ -111,7 +111,7 @@ namespace Microsoft.DotNet.Pack.Tests
 
             new DotnetPackCommand(Log)
                 .WithWorkingDirectory(testInstance.Path)
-                .Execute()
+                .Execute("-c", "Debug", "-p:PackageID=LibraryWithOutputAssemblyName", "--include-symbols")
                 .Should().Pass();
 
 

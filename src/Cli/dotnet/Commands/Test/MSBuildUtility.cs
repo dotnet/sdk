@@ -75,7 +75,7 @@ internal static class MSBuildUtility
             pathOptions,
             parseResult.GetValue(CommonOptions.NoRestoreOption),
             parseResult.GetValue(TestingPlatformOptions.NoBuildOption),
-            parseResult.HasOption(CommonOptions.VerbosityOption) ? parseResult.GetValue(CommonOptions.VerbosityOption) : null,
+            parseResult.HasOption(TestCommandParser.VerbosityOption) ? parseResult.GetValue(TestCommandParser.VerbosityOption) : null,
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileOption),
             parseResult.GetValue(TestingPlatformOptions.NoLaunchProfileArgumentsOption),
             degreeOfParallelism,
@@ -89,18 +89,16 @@ internal static class MSBuildUtility
         {
             return true;
         }
-
-        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs];
+        List<string> msbuildArgs = [.. buildOptions.MSBuildArgs, filePath];
 
         if (buildOptions.Verbosity is null)
         {
             msbuildArgs.Add($"-verbosity:quiet");
         }
 
-        msbuildArgs.Add(filePath);
-        msbuildArgs.Add($"-target:{CliConstants.MTPTarget}");
+        var parsedMSBuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildArgs, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, TestCommandParser.MTPTargetOption);
 
-        int result = new RestoringCommand(msbuildArgs, buildOptions.HasNoRestore).Execute();
+        int result = new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
 
         return result == (int)BuildResultCode.Success;
     }

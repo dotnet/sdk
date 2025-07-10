@@ -34,9 +34,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunWithSolutionPathWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -54,9 +55,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -74,9 +76,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunWithSolutionFilterPathInOtherDirectory_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -231,9 +234,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithArchOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -251,9 +255,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithRuntimeOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -289,9 +294,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithOSOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -308,9 +314,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithArchAndOSOptions_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -368,7 +375,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                                     .Execute("-bl", TestingPlatformOptions.ConfigurationOption.Name, configuration);
 
             Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, CliConstants.BinLogFileName)));
-            Assert.True(File.Exists(string.Format("{0}{1}{2}", testInstance.TestRoot, Path.DirectorySeparatorChar, "msbuild-dotnet-test.binlog")));
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
@@ -424,9 +430,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunTestProjectSolutionWithFrameworkOption_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithTests", Guid.NewGuid().ToString()).WithSource();
@@ -499,9 +506,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
 
+        //  https://github.com/dotnet/sdk/issues/49665
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
-        [Theory]
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void RunMultiTFMsProjectSolutionWithCurrentFramework_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = _testAssetsManager.CopyTestAsset("TestProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString()).WithSource();

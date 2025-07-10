@@ -4,14 +4,13 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
-using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli
 {
     internal class CommonArguments
     {
-        public static DynamicArgument<PackageIdentity?> OptionalPackageIdentityArgument() =>
+        public static DynamicArgument<PackageIdentityWithRange?> OptionalPackageIdentityArgument() =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
@@ -20,17 +19,16 @@ namespace Microsoft.DotNet.Cli
                 Arity = ArgumentArity.ZeroOrOne,
             };
 
-        public static DynamicArgument<PackageIdentity> RequiredPackageIdentityArgument() =>
+        public static DynamicArgument<PackageIdentityWithRange> RequiredPackageIdentityArgument() =>
             new("packageId")
             {
                 HelpName = "PACKAGE_ID",
                 Description = CliStrings.PackageIdentityArgumentDescription,
-                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value),
+                CustomParser = (ArgumentResult argumentResult) => ParsePackageIdentityWithVersionSeparator(argumentResult.Tokens[0]?.Value)!.Value,
                 Arity = ArgumentArity.ExactlyOne,
             };
 
-
-        private static PackageIdentity? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
+        private static PackageIdentityWithRange? ParsePackageIdentityWithVersionSeparator(string? packageIdentity, char versionSeparator = '@')
         {
             if (string.IsNullOrEmpty(packageIdentity))
             {
@@ -47,15 +45,20 @@ namespace Microsoft.DotNet.Cli
 
             if (string.IsNullOrEmpty(versionString))
             {
-                return new PackageIdentity(packageId, null);
+                return new PackageIdentityWithRange(packageId, null);
             }
 
-            if (!NuGetVersion.TryParse(versionString, out var version))
+            if (!VersionRange.TryParse(versionString, out var versionRange))
             {
                 throw new GracefulException(string.Format(CliStrings.InvalidVersion, versionString));
             }
 
-            return new PackageIdentity(packageId, new NuGetVersion(version));
+            return new PackageIdentityWithRange(packageId, versionRange);
         }
+    }
+
+    public readonly record struct PackageIdentityWithRange(string Id, VersionRange? VersionRange)
+    {
+        public bool HasVersion => VersionRange != null;
     }
 }

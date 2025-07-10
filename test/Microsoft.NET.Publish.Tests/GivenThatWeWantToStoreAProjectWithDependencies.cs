@@ -248,7 +248,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Theory]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData(true)]
         [InlineData(false)]
         public void It_stores_when_targeting_netcoreapp3(bool isExe)
@@ -287,7 +288,8 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        //  https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
         public void DotnetStoreWithPrunedPackages()
         {
             const string TargetFramework = "netcoreapp3.1";

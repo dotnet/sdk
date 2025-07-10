@@ -82,6 +82,11 @@
         <target state="translated">NETSDK1080: .NET Core 3.0 veya üzeri hedeflenirken Microsoft.AspNetCore.App için bir PackageReference gerekmez. Microsoft.NET.Sdk.Web kullanılırsa, paylaşılan çerçeveye otomatik olarak başvurulur. Aksi halde PackageReference FrameworkReference ile değiştirilmelidir.</target>
         <note>{StrBegins="NETSDK1080: "}</note>
       </trans-unit>
+      <trans-unit id="AspireWorkloadIsDeprecated">
+        <source>NETSDK1228: This project depends on the Aspire Workload which has been deprecated. Aspire now ships via NuGet packages and no longer requires a workload. Please visit {0} for upgrade guidance.</source>
+        <target state="translated">NETSDK1228: Bu proje, kullanım dışı bırakılmış Aspire İş Yüküne bağımlıdır. Aspire artık NuGet paketleri aracılığıyla dağıtılıyor ve iş yükü gerektirmiyor. Lütfen yükseltme kılavuzu için {0} sayfasını ziyaret edin.</target>
+        <note>{StrBegins="NETSDK1228: "}</note>
+      </trans-unit>
       <trans-unit id="AssetPreprocessorMustBeConfigured">
         <source>NETSDK1017: Asset preprocessor must be configured before assets are processed.</source>
         <target state="translated">NETSDK1017: Varlıkların işlenebilmesi için varlık ön işlemcisi yapılandırılmalıdır.</target>

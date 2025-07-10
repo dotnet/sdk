@@ -28,6 +28,23 @@ The [guiding principle](#guiding-principle) implies that we can think of file-ba
 The implicit project file is the default project that would be created by running `dotnet new console`.
 This means that the behavior of `dotnet run file.cs` can change between SDK versions if the `dotnet new console` template changes.
 
+Additionally, the implicit project file has the following customizations:
+
+- `PublishAot` is set to `true`, see [`dotnet publish file.cs`](#other-commands) for more details.
+
+- [File-level directives](#directives-for-project-metadata) are applied.
+
+- The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
+
+  - `ArtifactsPath` is set to a [temp directory](#build-outputs).
+
+  - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` which can be accessed in the app via `AppContext`:
+
+    ```cs
+    string? filePath = AppContext.GetData("EntryPointFilePath") as string;
+    string? directoryPath = AppContext.GetData("EntryPointFileDirectoryPath") as string;
+    ```
+
 ## Grow up
 
 When file-based programs reach an inflection point where build customizations in a project file are needed,
@@ -60,6 +77,8 @@ The file-based build and run kicks in only when:
 - a project file cannot be found (in the current directory or via the `--project` option), and
 - if the target file exists, and has the `.cs` file extension or contents that start with `#!`.
 
+Otherwise, project-based `dotnet run` fallback is used and you might get an error like "Couldn't find a project to run."
+
 File-based programs are processed by `dotnet run` equivalently to project-based programs unless specified otherwise in this document.
 For example, the remaining command-line arguments after the first argument (the target path) are passed through to the target app
 (except for the arguments recognized by `dotnet run` unless they are after the `--` separator)
@@ -78,6 +97,8 @@ Commands `dotnet restore file.cs` and `dotnet build file.cs` are needed for IDE 
 Command `dotnet publish file.cs` is also supported for file-based programs.
 Note that file-based apps have implicitly set `PublishAot=true`, so publishing uses Native AOT (and building reports AOT warnings).
 To opt out, use `#:property PublishAot=false` directive in your `.cs` file.
+
+Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
 ## Entry points
 
@@ -104,6 +125,10 @@ Similarly, implicit build files like `Directory.Build.props` or `Directory.Packa
 > [!CAUTION]
 > Multi-file support is postponed for .NET 11.
 > In .NET 10, only the single file passed as the command-line argument to `dotnet run` is part of the compilation.
+> Specifically, the virtual project has properties `EnableDefaultCompileItems=false` and `EnableDefaultEmbeddedResourceItems=false`
+> (which can be customized via `#:property` directives), and a `Compile` item for the entry point file.
+> During [conversion](#grow-up), any `Content`, `None`, `Compile`, and `EmbeddedResource` items that do not have metadata `ExcludeFromFileBasedAppConversion=true`
+> and that are files inside the entry point file's directory tree are copied to the converted directory.
 
 ### Nested files
 
@@ -179,20 +204,28 @@ Other directives result in an error, reserving them for future use.
 #:project ../MyLibrary
 ```
 
-The value must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
-and any leading and trailing white space is not considered part of the value.
-Any value can optionally have two parts separated by `@` in case of `package`/`sdk` or `=` in case of `property`
-and whitespace is trimmed from the two parts around the separator.
-The value of the first `#:sdk` is injected into `<Project Sdk="{0}">` with the separator (if any) replaced with `/`,
-and the subsequent `#:sdk` directive values are split by the separator and injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if there is no separator).
-It is an error if the first part (name) is empty (the version is allowed to be empty, but that results in empty `Version=""`).
-The value of `#:property` is split by the separator and injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
-It is an error if no separator appears in the value or if the first part (property name) is empty (the property value is allowed to be empty) or contains invalid characters.
-The value of `#:package` is split by the separator and injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if there is no separator) in an `<ItemGroup>`.
-It is an error if the first part (package name) is empty (the package version is allowed to be empty, but that results in empty `Version=""`).
-The value of `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
-If the value points to an existing directory, a project file is found inside that directory and its path is used instead
-(because `ProjectReference` items don't support directory paths).
+Each directive has a kind (e.g., `package`), a name (e.g., `System.CommandLine`), a separator (e.g., `@`), and a value (e.g., the package version).
+The value is required for `#:property`, optional for `#:package`/`#:sdk`, and disallowed for `#:project`.  
+
+The name must be separated from the kind (`package`/`sdk`/`property`) of the directive by whitespace
+and any leading and trailing white space is not considered part of the name and value.
+
+The directives are processed as follows:
+
+- The name and value of the first `#:sdk` is injected into `<Project Sdk="{0}/{1}">` (or just `<Project Sdk="{0}">` if it has no value),
+  and the subsequent `#:sdk` directive names and values are injected as `<Sdk Name="{0}" Version="{1}" />` elements (or without the `Version` attribute if it has no value).
+  It is an error if the name is empty (the version is allowed to be empty, but that results in empty `Version=""`).
+
+- A `#:property` is injected as `<{0}>{1}</{0}>` in a `<PropertyGroup>`.
+  It is an error if property does not have a value or if its name is empty (the value is allowed to be empty) or contains invalid characters.
+
+- A `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
+  It is an error if its name is empty (the value, i.e., package version, is allowed to be empty, but that results in empty `Version=""`).
+
+- A `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
+  If the path points to an existing directory, a project file is found inside that directory and its path is used instead
+  (because `ProjectReference` items don't support directory paths).
+  An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.
 
 Because these directives are limited by the C# language to only appear before the first "C# token" and any `#if`,
 dotnet CLI can look for them via a regex or Roslyn lexer without any knowledge of defined conditional symbols
@@ -235,7 +268,13 @@ The build is performed using MSBuild APIs on in-memory project files.
 
 ### Optimizations
 
-MSBuild invocation can be skipped in subsequent `dotnet run file.cs` invocations if an up-to-date check detects that inputs didn't change.
+If an up-to-date check detects that inputs didn't change in subsequent `dotnet run file.cs` invocations,
+building is skipped (as if `--no-build` option has been passed).
+The up-to-date check is not 100% precise (e.g., files imported through an implicit build file are not considered).
+It is possible to enforce a full build using `--no-cache` flag or `dotnet build file.cs`.
+Environment variable [`DOTNET_CLI_CONTEXT_VERBOSE=true`][verbose-env] can be used to get more details about caching decisions made by `dotnet run file.cs`.
+
+There are multiple optimization levels - skipping build altogether, running just the C# compiler, or running full MSBuild.
 We always need to re-run MSBuild if implicit build files like `Directory.Build.props` change but
 from `.cs` files, the only relevant MSBuild inputs are the `#:` directives,
 hence we can first check the `.cs` file timestamps and for those that have changed, compare the sets of `#:` directives.
@@ -331,9 +370,8 @@ or as the first argument if it makes sense for them.
 We could also add `dotnet compile` command that would be the equivalent of `dotnet build` but for file-based programs
 (because "compiling" might make more sense for file-based programs than "building").
 
-`dotnet clean` could be extended to support cleaning [the output directory](#build-outputs),
-e.g., via `dotnet clean --file-based-program <path-to-entry-point>`
-or `dotnet clean --all-file-based-programs`.
+`dotnet clean` could be extended to support cleaning all file-based app outputs,
+e.g., `dotnet clean --all-file-based-apps`.
 
 Adding references via `dotnet package add`/`dotnet reference add` could be supported for file-based programs as well,
 i.e., the command would add a `#:package`/`#:project` directive to the top of a `.cs` file.
@@ -351,6 +389,7 @@ Instead of implicitly including files from the target directory, the importing c
 -->
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
+[verbose-env]: https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables#dotnet_cli_context_
 [ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
 [temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md

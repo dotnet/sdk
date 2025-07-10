@@ -3,14 +3,13 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Install;
-using NuGet.Packaging.Core;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 internal static class ToolExecuteCommandParser
 
 {
-    public static readonly Argument<PackageIdentity> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
+    public static readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = ToolInstallCommandParser.PackageIdentityArgument;
 
     public static readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
     {
