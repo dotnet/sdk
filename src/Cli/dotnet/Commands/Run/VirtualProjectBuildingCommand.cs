@@ -1054,7 +1054,7 @@ internal abstract class CSharpDirective
             "sdk" => Sdk.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "property" => Property.Parse(errors, sourceFile, span, directiveKind, directiveText),
             "package" => Package.Parse(errors, sourceFile, span, directiveKind, directiveText),
-            "project" => Project.Parse(errors, sourceFile, span, directiveText),
+            "project" => Project.Parse(errors, sourceFile, span, directiveKind, directiveText),
             _ => ReportError<Named>(errors, sourceFile, span, string.Format(CliCommandStrings.UnrecognizedDirective, directiveKind, sourceFile.GetLocationString(span))),
         };
     }
@@ -1213,8 +1213,13 @@ internal abstract class CSharpDirective
     {
         private Project() { }
 
-        public static Project Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveText)
+        public static new Project? Parse(ImmutableArray<SimpleDiagnostic>.Builder? errors, SourceFile sourceFile, TextSpan span, string directiveKind, string directiveText)
         {
+            if (directiveText.IsWhiteSpace())
+            {
+                return ReportError<Project?>(errors, sourceFile, span, string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, sourceFile.GetLocationString(span)));
+            }
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.
