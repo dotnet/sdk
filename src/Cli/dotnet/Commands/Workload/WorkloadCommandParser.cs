@@ -28,8 +28,6 @@ internal static class WorkloadCommandParser
 {
     public static readonly string DocsLink = "https://aka.ms/dotnet-workload";
 
-    private static readonly Command Command = ConstructCommand();
-
     public static readonly Option<bool> InfoOption = new("--info")
     {
         Description = CliCommandStrings.WorkloadInfoDescription,
@@ -44,10 +42,10 @@ internal static class WorkloadCommandParser
 
     public static Command GetCommand()
     {
-        Command.Options.Add(InfoOption);
-        Command.Options.Add(VersionOption);
         return Command;
     }
+
+    private static readonly Command Command = ConstructCommand();
 
     internal static string GetWorkloadsVersion(WorkloadInfoHelper workloadInfoHelper = null)
     {
@@ -168,6 +166,9 @@ internal static class WorkloadCommandParser
         command.Subcommands.Add(WorkloadElevateCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadConfigCommandParser.GetCommand());
         command.Subcommands.Add(WorkloadHistoryCommandParser.GetCommand());
+
+        command.Options.Add(InfoOption);
+        command.Options.Add(VersionOption);
 
         command.Validators.Add(commandResult =>
         {
