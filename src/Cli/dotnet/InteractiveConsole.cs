@@ -13,6 +13,11 @@ public static class InteractiveConsole
     /// If you need to confirm an action, Escape means "cancel" and that is fine.
     /// If you need an answer where the "no" might mean something dangerous, Escape should not be used as implicit "no".
     /// </param>
+    /// <returns>
+    /// <see langword="true"/> if the user confirmed the action,
+    /// <see langword="false"/> if the user declined it,
+    /// <see langword="null"/> if the user could not answer because <c>--no-interactive</c> was specified.
+    /// </returns>
     public static bool? Confirm(string message, ParseResult parseResult, bool acceptEscapeForFalse)
     {
         if (parseResult.GetValue(CommonOptions.YesOption))
