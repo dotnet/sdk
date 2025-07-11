@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
@@ -34,7 +32,7 @@ internal static class WorkloadInstallCommandParser
         Description = CliCommandStrings.TempDirOptionDescription
     };
 
-    public static readonly Option<VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(VerbosityOptions.normal);
+    public static readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.VerbosityOption(Utils.VerbosityOptions.normal);
 
     private static readonly Command Command = ConstructCommand();
 

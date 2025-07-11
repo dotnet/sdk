@@ -470,20 +470,6 @@ internal static class CommonOptions
     }
 }
 
-public enum VerbosityOptions
-{
-    quiet,
-    q,
-    minimal,
-    m,
-    normal,
-    n,
-    detailed,
-    d,
-    diagnostic,
-    diag
-}
-
 public class DynamicOption<T>(string name, params string[] aliases) : Option<T>(name, aliases), IDynamicOption
 {
 }

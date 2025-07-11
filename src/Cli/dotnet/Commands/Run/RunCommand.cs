@@ -52,7 +52,6 @@ public class RunCommand
     public string[] ApplicationArgs { get; set; }
     public bool NoRestore { get; }
     public bool NoCache { get; }
-    public VerbosityOptions? Verbosity { get; }
 
     /// <summary>
     /// Parsed structure representing the MSBuild arguments that will be used to build the project.
@@ -86,7 +85,6 @@ public class RunCommand
         bool noRestore,
         bool noCache,
         bool interactive,
-        VerbosityOptions? verbosity,
         MSBuildArgs msbuildArgs,
         string[] applicationArgs,
         bool readCodeFromStdin,
@@ -107,8 +105,7 @@ public class RunCommand
         Interactive = interactive;
         NoRestore = noRestore;
         NoCache = noCache;
-        Verbosity = verbosity;
-        MSBuildArgs = GetBuildArguments(msbuildArgs);
+        MSBuildArgs = SetupSilentBuildArgs(msbuildArgs);
         EnvironmentVariables = environmentVariables;
         RestoreProperties = msbuildRestoreProperties;
     }
@@ -213,7 +210,7 @@ public class RunCommand
             return true;
         }
 
-        if (Verbosity?.IsQuiet() != true)
+        if (MSBuildArgs.Verbosity?.IsQuiet() != true)
         {
             Reporter.Output.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
@@ -316,26 +313,15 @@ public class RunCommand
     /// so we disable as much MSBuild output as possible, unless we're forced to be interactive.
     /// </summary>
     /// <returns></returns>
-    private MSBuildArgs GetBuildArguments(MSBuildArgs msbuildArgs)
+    private MSBuildArgs SetupSilentBuildArgs(MSBuildArgs msbuildArgs)
     {
-        msbuildArgs.OtherMSBuildArgs.Add("-nologo");
+        msbuildArgs = msbuildArgs.CloneWithAdditionalArgs("-nologo");
 
-        if (Verbosity is null) // only do this if null because otherwise the property will already be 'forwarded'
+        if (msbuildArgs.Verbosity is null)
         {
-            msbuildArgs.OtherMSBuildArgs.Add($"-verbosity:{GetDefaultVerbosity(Interactive)}");
+            return msbuildArgs.CloneWithVerbosity(VerbosityOptions.quiet);
         }
         return msbuildArgs;
-    }
-
-    /// <summary>
-    /// Ensures that if we are in an interactive session, we use a verbosity that is appropriate for it.
-    /// Since NuGet credential providers log via Messages, we need to ensure that
-    /// we use a verbosity that will allow those messages to be written.
-    /// </summary>
-    internal static VerbosityOptions GetDefaultVerbosity(bool interactive)
-    {
-
-        return interactive ? VerbosityOptions.minimal : VerbosityOptions.quiet;
     }
 
     internal ICommand GetTargetCommand(Func<ProjectCollection, ProjectInstance>? projectFactory)
@@ -343,7 +329,7 @@ public class RunCommand
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([..MSBuildArgs.OtherMSBuildArgs], "dotnet-run");
         var project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
         ValidatePreconditions(project);
-        InvokeRunArgumentsTarget(project, Verbosity, logger, MSBuildArgs);
+        InvokeRunArgumentsTarget(project, logger, MSBuildArgs);
         logger?.ReallyShutdown();
         var runProperties = ReadRunPropertiesFromProject(project, ApplicationArgs);
         var command = CreateCommandFromRunProperties(project, runProperties);
@@ -406,10 +392,10 @@ public class RunCommand
             return command;
         }
 
-        static void InvokeRunArgumentsTarget(ProjectInstance project, VerbosityOptions? verbosity, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
+        static void InvokeRunArgumentsTarget(ProjectInstance project, FacadeLogger? binaryLogger, MSBuildArgs buildArgs)
         {
             List<ILogger> loggersForBuild = [
-                MakeTerminalLogger(verbosity, buildArgs)
+                MakeTerminalLogger(buildArgs)
             ];
             if (binaryLogger is not null)
             {
@@ -423,9 +409,9 @@ public class RunCommand
         }
     }
 
-    private static ILogger MakeTerminalLogger(VerbosityOptions? verbosity, MSBuildArgs buildArgs)
+    private static ILogger MakeTerminalLogger(MSBuildArgs buildArgs)
     {
-        var msbuildVerbosity = ToLoggerVerbosity(verbosity ?? VerbosityOptions.quiet);
+        var msbuildVerbosity = ToLoggerVerbosity(buildArgs.Verbosity ?? VerbosityOptions.quiet);
         var thing = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{msbuildVerbosity}", ..buildArgs.OtherMSBuildArgs]);
         return thing;
     }
@@ -562,7 +548,7 @@ public class RunCommand
         }
 
         // Only consider `-` to mean "read code from stdin" if it is before double dash `--`
-        // (otherwise it should be fowarded to the target application as its command-line argument).
+        // (otherwise it should be forwarded to the target application as its command-line argument).
         bool readCodeFromStdin = nonBinLogArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
                 .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
@@ -599,7 +585,7 @@ public class RunCommand
             nonBinLogArgs[0] = entryPointFilePath;
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption());
+        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(msbuildProperties, CommonOptions.PropertiesOption, CommonOptions.RestorePropertiesOption, CommonOptions.MSBuildTargetOption(), RunCommandParser.VerbosityOption);
 
         var command = new RunCommand(
             noBuild: noBuild,
@@ -611,7 +597,6 @@ public class RunCommand
             noRestore: parseResult.HasOption(RunCommandParser.NoRestoreOption) || parseResult.HasOption(RunCommandParser.NoBuildOption),
             noCache: parseResult.HasOption(RunCommandParser.NoCacheOption),
             interactive: parseResult.GetValue(RunCommandParser.InteractiveOption),
-            verbosity: parseResult.HasOption(RunCommandParser.VerbosityOption) ? parseResult.GetValue(RunCommandParser.VerbosityOption) : null,
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
