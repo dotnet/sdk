@@ -289,5 +289,27 @@ namespace Microsoft.DotNet.Pack.Tests
             result.Should().Fail()
                 .And.HaveStdOutContaining("NETSDK1083");
         }
+        [Fact]
+        public void DotnetPack_AcceptsPropertyOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--nuspec");
+            result.Should().Pass();
+        }
+
+        [Fact]
+        public void DotnetPack_AcceptsVersionOption()
+        {
+            var testInstance = _testAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--nuspec", "--version", "1.2.3");
+
+            result.Should().Pass();
+        }
     }
 }

@@ -1827,6 +1827,26 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito. A entrada foi adici
         <target state="translated">O diretório de saída no qual os pacotes do build serão colocados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdProperties">
+        <source>PROPERTY</source>
+        <target state="new">PROPERTY</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdPropertiesDescription">
+        <source>Sets properties for the pack operation</source>
+        <target state="new">Sets properties for the pack operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">A configuração a ser usada para compilar o pacote. O padrão é 'Liberar'.</target>

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>PackNoCsproj</id>
+    <version>1.0.0</version>
+    <authors>kalebfikadu</authors>
+    <description>Test pack with no csproj</description>
+  </metadata>
+</package>

@@ -1827,6 +1827,26 @@ La herramienta "{1}" (versión "{2}") se instaló correctamente. Se ha agregado 
         <target state="translated">Directorio de salida en el que se ubicarán los paquetes compilados.</target>
         <note />
       </trans-unit>
+      <trans-unit id="PackCmdProperties">
+        <source>PROPERTY</source>
+        <target state="new">PROPERTY</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdPropertiesDescription">
+        <source>Sets properties for the pack operation</source>
+        <target state="new">Sets properties for the pack operation</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersion">
+        <source>VERSION</source>
+        <target state="new">VERSION</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PackCmdVersionDescription">
+        <source>The version of the package to create</source>
+        <target state="new">The version of the package to create</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PackConfigurationOptionDescription">
         <source>The configuration to use for building the package. The default is 'Release'.</source>
         <target state="translated">Configuración que se va a usar para compilar el paquete. El valor predeterminado es "Release".</target>
