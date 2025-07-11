@@ -120,74 +120,74 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>f451e5d3036a4f140a989e0a7f3f1ae432420e71</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.0.0-preview.1.28">
+    <Dependency Name="Microsoft.Build.NuGetSdkResolver" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Build.Tasks" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
       <SourceBuildTarball RepoName="nuget-client" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Build.Tasks.Console" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Build.Tasks.Pack" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Commands" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Commands" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.CommandLine.XPlat" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Common" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Common" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Configuration" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Configuration" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Credentials" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Credentials" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.DependencyResolver.Core" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Frameworks" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.LibraryModel" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.LibraryModel" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.ProjectModel" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.ProjectModel" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Protocol" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Protocol" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Packaging" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Versioning" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
-    <Dependency Name="NuGet.Localization" Version="7.0.0-preview.1.28">
+    <Dependency Name="NuGet.Localization" Version="7.0.0-preview.1.31">
       <Uri>https://github.com/nuget/nuget.client</Uri>
-      <Sha>c21ba3b47e224cf84490bdc53b89e7f9ebcc1841</Sha>
+      <Sha>139771d57f563266d05e31ebad2948fd81c77fdf</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Test.Sdk" Version="17.15.0-preview-25359-101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
