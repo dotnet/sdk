@@ -20,18 +20,6 @@ internal sealed class ProjectConvertCommandParser
         Arity = ArgumentArity.Zero,
     };
 
-    public static readonly Option<SourceAction?> SourceOption = new("--source")
-    {
-        Description = CliCommandStrings.CmdOptionKeepSourceDescription,
-        Arity = ArgumentArity.ExactlyOne,
-    };
-
-    public enum SourceAction
-    {
-        copy,
-        move,
-    }
-
     public static readonly Option<bool> DryRunOption = new("--dry-run")
     {
         Description = CliCommandStrings.ProjectConvertDryRun,
@@ -44,7 +32,6 @@ internal sealed class ProjectConvertCommandParser
         {
             FileArgument,
             SharedOptions.OutputOption,
-            SourceOption,
             ForceOption,
             CommonOptions.InteractiveOption(),
             DryRunOption,

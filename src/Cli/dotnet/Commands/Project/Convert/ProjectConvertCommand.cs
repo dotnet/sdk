@@ -26,7 +26,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         }
 
         string targetDirectory = DetermineOutputDirectory(file);
-        bool keepSourceFiles = ShouldKeepSourceFiles();
 
         // Find directives (this can fail, so do this before creating the target directory).
         var sourceFile = VirtualProjectBuildingCommand.LoadSourceFile(file);
@@ -42,25 +41,14 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
         var targetFile = Path.Join(targetDirectory, Path.GetFileName(file));
 
         // Process the entry point file.
-        if (keepSourceFiles)
+        if (dryRun)
         {
-            CopyFile(file, targetFile);
-        }
-        else if (directives.Length != 0)
-        {
-            if (dryRun)
-            {
-                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertAndMoveFile, file, targetFile);
-            }
-            else
-            {
-                VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
-                File.Delete(file);
-            }
+            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldCopyFile, file, targetFile);
+            Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldConvertFile, targetFile);
         }
         else
         {
-            MoveFile(file, targetFile);
+            VirtualProjectBuildingCommand.RemoveDirectivesFromFile(directives, sourceFile.Text, targetFile);
         }
 
         // Create project file.
@@ -89,14 +77,7 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
 
             string targetItemDirectory = Path.GetDirectoryName(targetItemFullPath)!;
             CreateDirectory(targetItemDirectory);
-            if (keepSourceFiles)
-            {
-                CopyFile(item.FullPath, targetItemFullPath);
-            }
-            else
-            {
-                MoveFile(item.FullPath, targetItemFullPath);
-            }
+            CopyFile(item.FullPath, targetItemFullPath);
         }
 
         return 0;
@@ -125,18 +106,6 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             else
             {
                 File.Copy(source, target);
-            }
-        }
-
-        void MoveFile(string source, string target)
-        {
-            if (dryRun)
-            {
-                Reporter.Output.WriteLine(CliCommandStrings.ProjectConvertWouldMoveFile, source, target);
-            }
-            else
-            {
-                File.Move(source, target);
             }
         }
 
@@ -220,48 +189,5 @@ internal sealed class ProjectConvertCommand(ParseResult parseResult) : CommandBa
             out var result)
             ? result
             : null;
-    }
-
-    private bool ShouldKeepSourceFiles()
-    {
-        if (_parseResult.GetValue(ProjectConvertCommandParser.SourceOption) is { } source)
-        {
-            if (source is ProjectConvertCommandParser.SourceAction.copy)
-            {
-                return true;
-            }
-
-            if (source is ProjectConvertCommandParser.SourceAction.move)
-            {
-                return false;
-            }
-        }
-
-        return InteractiveConsole.Ask<bool>(
-            string.Format(CliCommandStrings.ProjectConvertAskForSourceFilesAction, CliCommandStrings.ProjectConvertCopyAction, CliCommandStrings.ProjectConvertMoveAction),
-            _parseResult,
-            (answer, out result, [NotNullWhen(returnValue: false)] out error) =>
-            {
-                if (answer is null || string.Equals(answer, CliCommandStrings.ProjectConvertCopyAction, StringComparison.OrdinalIgnoreCase))
-                {
-                    result = true;
-                    error = null;
-                    return true;
-                }
-
-                if (string.Equals(answer, CliCommandStrings.ProjectConvertMoveAction, StringComparison.OrdinalIgnoreCase))
-                {
-                    result = false;
-                    error = null;
-                    return true;
-                }
-
-                result = default;
-                error = string.Format(CliCommandStrings.ProjectConvertInvalidSourceAction, CliCommandStrings.ProjectConvertCopyAction, CliCommandStrings.ProjectConvertMoveAction);
-                return false;
-            },
-            out var result)
-            ? result
-            : throw new GracefulException(CliCommandStrings.ProjectConvertNeedsConfirmation);
     }
 }
