@@ -102,16 +102,23 @@ public class GenerateStaticWebAssetsManifest : Task
             var assetsByIdentity = assets.ToDictionary(a => a.Identity, a => a, OSPath.PathComparer);
             var filteredEndpoints = new List<StaticWebAssetEndpoint>();
 
-            foreach (var endpoint in Endpoints.Select(StaticWebAssetEndpoint.FromTaskItem))
+            // Use optimized filtering that only accesses necessary properties
+            for (var i = 0; i < Endpoints.Length; i++)
             {
-                if (assetsByIdentity.ContainsKey(endpoint.AssetFile))
+                var endpointItem = Endpoints[i];
+                var assetFile = endpointItem.GetMetadata(nameof(StaticWebAssetEndpoint.AssetFile));
+
+                if (assetsByIdentity.ContainsKey(assetFile))
                 {
+                    // Only create the full endpoint object for endpoints that pass the filter
+                    var endpoint = StaticWebAssetEndpoint.FromTaskItem(endpointItem);
                     filteredEndpoints.Add(endpoint);
                     Log.LogMessage(MessageImportance.Low, $"Accepted endpoint: Route='{endpoint.Route}', AssetFile='{endpoint.AssetFile}'");
                 }
                 else
                 {
-                    Log.LogMessage(MessageImportance.Low, $"Filtered out endpoint: Endpoint='{endpoint.Route}' AssetFile='{endpoint.AssetFile}'");
+                    var route = endpointItem.ItemSpec;
+                    Log.LogMessage(MessageImportance.Low, $"Filtered out endpoint: Endpoint='{route}' AssetFile='{assetFile}'");
                 }
             }
 

@@ -24,6 +24,11 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
 
         var result = CandidateEndpoints;
 
+        // Reusable list for optimized endpoint property parsing
+        var endpointPropertiesList = new List<StaticWebAssetEndpointProperty>(4);
+
+        using var context = StaticWebAssetEndpointProperty.CreateWriter();
+
         for (var i = 0; i < CandidateEndpoints.Length; i++)
         {
             var candidateEndpoint = StaticWebAssetEndpoint.FromTaskItem(CandidateEndpoints[i]);
@@ -43,17 +48,28 @@ public class ComputeEndpointsForReferenceStaticWebAssets : Task
                 {
                     candidateEndpoint.Route = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, candidateEndpoint.Route, '/');
 
-                    for (var j = 0; j < candidateEndpoint.EndpointProperties.Length; j++)
+                    // Use optimized property parsing to avoid allocations
+                    var endpointPropertiesString = CandidateEndpoints[i].GetMetadata(nameof(StaticWebAssetEndpoint.EndpointProperties));
+                    StaticWebAssetEndpointProperty.PopulateFromMetadataValue(endpointPropertiesString, endpointPropertiesList);
+
+                    // Modify label properties in the reusable list
+                    var propertiesModified = false;
+                    for (var j = 0; j < endpointPropertiesList.Count; j++)
                     {
-                        ref var property = ref candidateEndpoint.EndpointProperties[j];
+                        var property = endpointPropertiesList[j];
                         if (string.Equals(property.Name, "label", StringComparison.OrdinalIgnoreCase))
                         {
                             property.Value = StaticWebAsset.CombineNormalizedPaths("", asset.BasePath, property.Value, '/');
-                            // We need to do this because we are modifying the properties in place.
-                            // We could instead do candidateEndpoint.EndpointProperties = candidateEndpoint.EndpointProperties
-                            // but that's more obscure than this.
-                            candidateEndpoint.MarkProperiesAsModified();
+                            endpointPropertiesList[j] = property;
+                            propertiesModified = true;
                         }
+                    }
+
+                    if (propertiesModified)
+                    {
+                        // Serialize modified properties back using optimized method
+                        candidateEndpoint.SetEndpointPropertiesString(
+                            StaticWebAssetEndpointProperty.ToMetadataValue(endpointPropertiesList, context));
                     }
 
                     Log.LogMessage(MessageImportance.Low, "Adding endpoint {0} for asset {1} with updated route {2}.", candidateEndpoint.Route, candidateEndpoint.AssetFile, candidateEndpoint.Route);
