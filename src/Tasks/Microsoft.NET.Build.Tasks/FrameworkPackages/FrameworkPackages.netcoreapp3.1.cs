@@ -19,7 +19,7 @@ internal partial class FrameworkPackages
             { "System.ComponentModel.Annotations", "4.7.0" },
             { "System.Diagnostics.DiagnosticSource", "4.7.0" },
             { "System.IO.FileSystem.AccessControl", "4.7.0" },
-            { "System.Reflection.DispatchProxy", "4.7.0" },
+            { "System.Reflection.DispatchProxy", "4.8.2" },
             { "System.Reflection.Metadata", "1.8.0" },
             { "System.Runtime.CompilerServices.Unsafe", "4.7.1" },
             { "System.Runtime.WindowsRuntime", "4.7.0" },
