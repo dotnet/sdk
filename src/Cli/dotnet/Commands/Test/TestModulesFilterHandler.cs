@@ -55,7 +55,7 @@ internal sealed class TestModulesFilterHandler(TestApplicationActionQueue action
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null));
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, true, null, testModule));
             // Write the test application to the channel
             _actionQueue.Enqueue(testApp);
         }
