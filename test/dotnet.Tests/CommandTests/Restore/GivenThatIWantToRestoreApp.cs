@@ -53,6 +53,7 @@ namespace Microsoft.DotNet.Restore.Test
             {
                 Name = "RestoreToDir",
                 TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                TargetExtension = extension,
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
@@ -61,7 +62,7 @@ namespace Microsoft.DotNet.Restore.Test
                 testProject.PackageReferences.Add(new TestPackageReference("FSharp.Core", "6.0.1", updatePackageReference: true));
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: useStaticGraphEvaluation.ToString() + extension, targetExtension: extension);
+            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: useStaticGraphEvaluation.ToString() + extension);
 
             var rootPath = Path.Combine(testAsset.TestRoot, testProject.Name);
 

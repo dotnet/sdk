@@ -70,7 +70,8 @@ namespace Microsoft.DotNet.Watch.UnitTests
             AssertEx.SequenceEqual(expectedChanges, filesChanged.OrderBy(x => x.Path));
         }
 
-        private sealed class TestFileWatcher(IReporter reporter) : FileWatcher(reporter)
+        private sealed class TestFileWatcher(IReporter reporter)
+            : FileWatcher(reporter, TestOptions.GetEnvironmentOptions())
         {
             public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryTreeWatchers => _directoryTreeWatchers;
             public IReadOnlyDictionary<string, DirectoryWatcher> DirectoryWatchers => _directoryWatchers;

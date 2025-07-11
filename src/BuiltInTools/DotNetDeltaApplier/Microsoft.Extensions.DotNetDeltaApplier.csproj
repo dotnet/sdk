@@ -1,7 +1,9 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <Import Project="..\HotReloadAgent\Microsoft.DotNet.HotReload.Agent.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
   <Import Project="..\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
+
   <PropertyGroup>
     <!--
       dotnet-watch may inject this assembly to .NET 6.0+ app.
@@ -15,10 +17,14 @@
     <!-- NuGet -->
     <IsPackable>true</IsPackable>
     <PackageId>Microsoft.DotNet.HotReload.Agent.Host</PackageId>
-    <PackageDescription>
-      Package containing Hot Reload agent host.
-    </PackageDescription>
+    <PackageDescription>Package containing Hot Reload agent host.</PackageDescription>
+    <DisableTransitiveFrameworkReferenceDownloads Condition="'$(DotNetBuildSourceOnly)' == 'true'">true</DisableTransitiveFrameworkReferenceDownloads>
   </PropertyGroup>
+
+  <!-- Reference 6.0.0 targeting packs in Source Build -->
+  <ItemGroup Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(TargetFramework)' == 'net6.0'">
+    <FrameworkReference Update="Microsoft.NETCore.App" TargetingPackVersion="6.0.0" />
+  </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="Microsoft.Extensions.DotNetDeltaApplier.Tests" />

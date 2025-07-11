@@ -1260,9 +1260,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </summary>
     public sealed class Project(in ParseInfo info) : Named(info)
     {
-        public static new Project Parse(in ParseContext context)
+        public static new Project? Parse(in ParseContext context)
         {
             var directiveText = context.DirectiveText;
+            if (directiveText.IsWhiteSpace())
+            {
+                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.MissingDirectiveName, location));
+            }
+
             try
             {
                 // If the path is a directory like '../lib', transform it to a project file path like '../lib/lib.csproj'.

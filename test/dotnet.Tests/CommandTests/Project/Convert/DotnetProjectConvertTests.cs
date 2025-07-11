@@ -809,7 +809,7 @@ public sealed class DotnetProjectConvertTests(ITestOutputHelper log) : SdkTest(l
 
     [Theory, CombinatorialData]
     public void Directives_EmptyName(
-        [CombinatorialValues("sdk", "property", "package")] string directive,
+        [CombinatorialValues("sdk", "property", "package", "project")] string directive,
         [CombinatorialValues(" ", "")] string value)
     {
         VerifyConversionThrows(
