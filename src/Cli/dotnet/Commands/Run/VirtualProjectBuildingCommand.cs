@@ -1265,7 +1265,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             var directiveText = context.DirectiveText;
             if (directiveText.IsWhiteSpace())
             {
-                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, static location => string.Format(CliCommandStrings.MissingDirectiveName, location));
+                string directiveKind = context.DirectiveKind;
+                return context.Diagnostics.AddError<Project?>(context.SourceFile, context.Info.Span, location => string.Format(CliCommandStrings.MissingDirectiveName, directiveKind, location));
             }
 
             try
