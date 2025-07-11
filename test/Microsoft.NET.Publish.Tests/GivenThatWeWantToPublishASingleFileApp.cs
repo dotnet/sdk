@@ -1181,7 +1181,7 @@ class C
                 .Pass();
 
             var publishDir = GetPublishDirectory(publishCommand, targetFramework, runtimeIdentifier: rid).FullName;
-            var singleFilePath = Path.Combine(publishDir, $"{testProject.Name}{Constants.ExeSuffix}");
+            var singleFilePath = Path.Combine(publishDir, testProject.Name);
 
             bool shouldBeSigned = enableMacOSCodeSign ?? CodesignsByDefault;
 
