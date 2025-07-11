@@ -154,7 +154,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Debug.Assert(!(NoRestore && NoBuild));
-        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger(MSBuildArgs.OtherMSBuildArgs.ToArray());
+        var verbosity = MSBuildArgs.Verbosity ?? VerbosityOptions.quiet;
+        var consoleLogger = TerminalLogger.CreateTerminalOrConsoleLogger([$"--verbosity:{verbosity.ToString().ToLowerInvariant()}", .. MSBuildArgs.OtherMSBuildArgs]);
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
 
         RunFileBuildCacheEntry? cacheEntry = null;
