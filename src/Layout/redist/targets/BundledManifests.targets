@@ -103,7 +103,7 @@
                        DestinationPath="%(BundledManifests.FeatureBand)/$([MSBuild]::ValueOrDefault('%(Identity)', '').ToLower())/%(BundledManifests.Version)/localize" />
     </ItemGroup>
 
-    <Error Text="No workload manifest content found." Condition="'@(ManifestContent->Count())' == '0'" />
+    <Error Text="No workload manifest content found." Condition="'@(BundledManifests)' != '' and '@(ManifestContent)' == ''" />
 
     <Copy SourceFiles="@(ManifestContent)"
           DestinationFolder="$(RedistInstallerLayoutPath)sdk-manifests/%(DestinationPath)" />

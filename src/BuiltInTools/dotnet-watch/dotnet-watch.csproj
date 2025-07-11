@@ -29,7 +29,7 @@
 
   <ItemGroup>
     <EmbeddedResource Update="**\*.resx" GenerateSource="true" />
-    <Content Include="Build\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="Watch\DotNetWatch.targets" TargetPath="DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
