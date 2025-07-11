@@ -82,10 +82,10 @@ namespace Microsoft.NET.Publish.Tests
                    RuntimeInformation.RuntimeIdentifier.StartsWith("osx") ? "lib" + baseName + ".dylib" : "lib" + baseName + ".so";
         }
 
-        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework)
+        private DirectoryInfo GetPublishDirectory(PublishCommand publishCommand, string targetFramework = ToolsetInfo.CurrentTargetFramework, string runtimeIdentifier = null)
         {
             return publishCommand.GetOutputDirectory(targetFramework: targetFramework,
-                                                     runtimeIdentifier: RuntimeInformation.RuntimeIdentifier);
+                                                     runtimeIdentifier: runtimeIdentifier ?? RuntimeInformation.RuntimeIdentifier);
         }
 
         [Fact]
@@ -416,7 +416,7 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'. 
+        //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("netcoreapp3.0")]
         [InlineData("netcoreapp3.1")]
@@ -756,17 +756,20 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
-            
+
             var buildCommand = new BuildCommand(testAsset);
             var resultAssertion = buildCommand.Execute("/p:CheckEolTargetFramework=false")
                 .Should().Pass();
-            if (shouldWarn) {
+            if (shouldWarn)
+            {
                 // Note: can't check for Strings.EnableSingleFileAnalyzerUnsupported because each line of
                 // the message gets prefixed with a file path by MSBuild.
                 resultAssertion
                     .And.HaveStdOutContaining($"warning NETSDK1211")
                     .And.HaveStdOutContaining($"<EnableSingleFileAnalyzer Condition=\"$([MSBuild]::IsTargetFrameworkCompatible('$(TargetFramework)', 'net8.0'))\">true</EnableSingleFileAnalyzer>");
-            } else {
+            }
+            else
+            {
                 resultAssertion.And.NotHaveStdOutContaining($"warning");
             }
         }
@@ -1136,6 +1139,60 @@ class C
                         new XElement(ns + "FilesToBundle",
                             new XAttribute("Remove", "@(FilesToBundle)"),
                             new XAttribute("Condition", "'%(FilesToBundle.RelativePath)' == 'SingleFileTest.dll'"))));
+            }
+        }
+
+        [Theory]
+        [InlineData("osx-x64", true)]
+        [InlineData("osx-arm64", true)]
+        [InlineData("osx-x64", false)]
+        [InlineData("osx-arm64", false)]
+        [InlineData("osx-x64", null)]
+        [InlineData("osx-arm64", null)]
+        public void It_codesigns_an_app_targeting_osx(string rid, bool? enableMacOSCodeSign)
+        {
+            const bool CodesignsByDefault = true;
+            var targetFramework = ToolsetInfo.CurrentTargetFramework;
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileTest",
+                TargetFrameworks = targetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties.Add("SelfContained", "true");
+
+            var testAsset = _testAssetsManager.CreateTestProject(
+                testProject,
+                identifier: $"{rid}_{enableMacOSCodeSign}");
+            var publishCommand = new PublishCommand(testAsset);
+
+            List<string> publishArgs = new List<string>(3)
+            {
+                PublishSingleFile,
+                $"/p:RuntimeIdentifier={rid}"
+            };
+            if (enableMacOSCodeSign.HasValue)
+            {
+                publishArgs.Add($"/p:_EnableMacOSCodeSign={enableMacOSCodeSign.Value}");
+            }
+
+            publishCommand.Execute(publishArgs)
+                .Should()
+                .Pass();
+
+            var publishDir = GetPublishDirectory(publishCommand, targetFramework, runtimeIdentifier: rid).FullName;
+            var singleFilePath = Path.Combine(publishDir, testProject.Name);
+
+            bool shouldBeSigned = enableMacOSCodeSign ?? CodesignsByDefault;
+
+            MachOSignature.HasMachOSignatureLoadCommand(new FileInfo(singleFilePath))
+                .Should()
+                .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a Mach-O signature load command.");
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                MachOSignature.HasValidMachOSignature(new FileInfo(singleFilePath), Log)
+                    .Should()
+                    .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a valid Mach-O signature for {rid}.");
             }
         }
     }
