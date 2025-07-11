@@ -55,6 +55,9 @@ internal sealed class TestApplication(TestModule module, BuildOptions buildOptio
     {
         var processStartInfo = new ProcessStartInfo
         {
+            // We should get correct RunProperties right away.
+            // For the case of dotnet test --test-modules path/to/dll, the TestModulesFilterHandler is responsible
+            // for providing the dotnet muxer as RunCommand, and `exec "path/to/dll"` as RunArguments.
             FileName = Module.RunProperties.RunCommand,
             Arguments = GetArguments(testOptions),
             RedirectStandardOutput = true,
