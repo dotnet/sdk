@@ -122,21 +122,24 @@ internal static class CommonOptions
         return allTargets.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
-
     public static Option<VerbosityOptions> VerbosityOption(VerbosityOptions defaultVerbosity) =>
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             DefaultValueFactory = _ => defaultVerbosity
-        }.ForwardAsSingle(o => $"-verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"-verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions?> VerbosityOption() =>
         new ForwardedOption<VerbosityOptions?>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
         {
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName
-        }.ForwardAsSingle(o => $"--verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<VerbosityOptions> HiddenVerbosityOption =
         new ForwardedOption<VerbosityOptions>("--verbosity", "-v", "--v", "-verbosity", "/v", "/verbosity")
@@ -144,7 +147,9 @@ internal static class CommonOptions
             Description = CliStrings.VerbosityOptionDescription,
             HelpName = CliStrings.LevelArgumentName,
             Hidden = true
-        }.ForwardAsSingle(o => $"--verbosity:{o}");
+        }
+        .ForwardAsSingle(o => $"--verbosity:{o}")
+        .AggregateRepeatedTokens();
 
     public static Option<string> FrameworkOption(string description) =>
         new DynamicForwardedOption<string>("--framework", "-f")
