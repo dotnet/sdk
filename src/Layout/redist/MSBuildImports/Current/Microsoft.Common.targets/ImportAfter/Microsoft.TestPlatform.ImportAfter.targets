@@ -18,6 +18,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
   <Import Condition="Exists('$(VSTestTargets)')" Project="$(VSTestTargets)" />
   <Target Name="_MTPBuild">
-    <CallTarget Targets="Build" />
+    <CallTarget Targets="Build" Condition="'$(ShouldRunBuild)' == 'true'"  />
+    <CallTarget Targets="ComputeRunArguments" />
   </Target>
 </Project>

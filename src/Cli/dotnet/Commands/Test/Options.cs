@@ -17,4 +17,5 @@ internal record BuildOptions(
     bool NoLaunchProfile,
     bool NoLaunchProfileArguments,
     int DegreeOfParallelism, List<string> UnmatchedTokens,
-    IEnumerable<string> MSBuildArgs);
+    IEnumerable<string> BinLogArgs,
+    IEnumerable<string> OtherMSBuildArgs);
