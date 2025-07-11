@@ -230,12 +230,27 @@ internal static class SolutionAndProjectUtility
 
         string targetFramework = project.GetPropertyValue(ProjectProperties.TargetFramework);
         RunProperties runProperties = GetRunProperties(project, loggers);
+
+        // dotnet run throws the same if RunCommand is null or empty.
+        // In dotnet test, we are additionally checking that RunCommand is not dll.
+        // In any "default" scenario, RunCommand is never dll.
+        // If we found it to be dll, that is user explicitly setting RunCommand incorrectly.
+        if (string.IsNullOrEmpty(runProperties.RunCommand) || runProperties.RunCommand.HasExtension(CliConstants.DLLExtension))
+        {
+            throw new GracefulException(
+                string.Format(
+                    CliCommandStrings.RunCommandExceptionUnableToRun,
+                    "dotnet test",
+                    "OutputType",
+                    project.GetPropertyValue("OutputType")));
+        }
+
         string projectFullPath = project.GetPropertyValue(ProjectProperties.ProjectFullPath);
 
         // TODO: Support --launch-profile and pass it here.
         var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, project.GetPropertyValue(ProjectProperties.AppDesignerFolder), noLaunchProfile, profileName: null);
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings);
+        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, isTestProject, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath));
 
         static RunProperties GetRunProperties(ProjectInstance project, ICollection<ILogger>? loggers)
         {
@@ -247,12 +262,11 @@ internal static class SolutionAndProjectUtility
             {
                 if (!project.Build(s_computeRunArgumentsTarget, loggers: null))
                 {
-                    Logger.LogTrace(() => $"The target {s_computeRunArgumentsTarget} failed to build. Falling back to TargetPath.");
-                    return new RunProperties(project.GetPropertyValue(ProjectProperties.TargetPath), null, null);
+                    throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget);
                 }
             }
 
-            return RunProperties.FromProjectAndApplicationArguments(project, [], fallbackToTargetPath: true);
+            return RunProperties.FromProjectAndApplicationArguments(project, []);
         }
     }
 

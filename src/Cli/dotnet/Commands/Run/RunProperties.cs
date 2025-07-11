@@ -8,18 +8,9 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 
 internal record RunProperties(string RunCommand, string? RunArguments, string? RunWorkingDirectory)
 {
-    internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs, bool fallbackToTargetPath)
+    internal static RunProperties FromProjectAndApplicationArguments(ProjectInstance project, string[] applicationArgs)
     {
         string runProgram = project.GetPropertyValue("RunCommand");
-        if (fallbackToTargetPath &&
-            (string.IsNullOrEmpty(runProgram) || !File.Exists(runProgram)))
-        {
-            // If we can't find the executable that runCommand is pointing to, we simply use TargetPath instead.
-            // In this case, we discard everything related to "Run" (i.e, RunWorkingDirectory and RunArguments) and use only TargetPath
-            runProgram = project.GetPropertyValue("TargetPath");
-            return new(runProgram, null, null);
-        }
-
         string runArguments = project.GetPropertyValue("RunArguments");
         string runWorkingDirectory = project.GetPropertyValue("RunWorkingDirectory");
 

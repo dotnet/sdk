@@ -378,7 +378,7 @@ public class RunCommand
 
         static RunProperties ReadRunPropertiesFromProject(ProjectInstance project, string[] applicationArgs)
         {
-            var runProperties = RunProperties.FromProjectAndApplicationArguments(project, applicationArgs, fallbackToTargetPath: false);
+            var runProperties = RunProperties.FromProjectAndApplicationArguments(project, applicationArgs);
             if (string.IsNullOrEmpty(runProperties.RunCommand))
             {
                 ThrowUnableToRunError(project);
